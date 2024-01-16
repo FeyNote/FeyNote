@@ -3,4 +3,5 @@ export enum Routes {
   Home = '/',
   Register = '/auth/register',
   Login = '/auth/login',
+  NewArtifact = '/artifact/new',
 }

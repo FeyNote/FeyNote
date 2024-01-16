@@ -7,13 +7,12 @@ import {
   UserNotFoundError,
 } from '@dnd-assistant/api-services';
 import { TRPCError } from '@trpc/server';
-import { validateEmail, validatePassword } from '@dnd-assistant/shared-utils';
 
 export const login = publicProcedure
   .input(
     z.object({
-      email: z.string().refine(validateEmail),
-      password: z.string().refine(validatePassword),
+      email: z.string(),
+      password: z.string(),
     })
   )
   .mutation(async ({ input }) => {

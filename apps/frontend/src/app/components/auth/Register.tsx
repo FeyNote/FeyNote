@@ -1,6 +1,5 @@
 import {
   IonButton,
-  IonToast,
   IonButtons,
   IonCardContent,
   IonCardSubtitle,
@@ -15,8 +14,9 @@ import {
   IonTitle,
   IonToolbar,
   useIonRouter,
+  useIonToast,
 } from '@ionic/react';
-import React, { useState, useCallback, useEffect, useContext } from 'react';
+import React, { useState, useCallback, useContext } from 'react';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -30,11 +30,18 @@ import { getIonInputClassNames } from './input';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const Register: React.FC = () => {
-  const register = trpc.user.register.useMutation();
+  const [presentToast] = useIonToast();
+  const registerMutation = trpc.user.register.useMutation({
+    onError: (error) => {
+      handleTRPCErrors(error.data?.httpStatus, presentToast, {
+        409: 'This user has already been registered.',
+      });
+    },
+  });
   const [email, setEmail] = useState('');
-  const [registrationToastMessage, setRegistrationToastMessage] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailIsTouched, setEmailIsTouched] = useState(false);
@@ -44,43 +51,21 @@ export const Register: React.FC = () => {
   const [emailIsValid, setEmailIsValid] = useState(true);
   const [passwordIsValid, setPasswordIsValid] = useState(true);
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
-  const [registerIsDisabled, setRegisterIsDisabled] = useState(false);
-  const [showRegistrationToast, setShowRegistrationToast] = useState(false);
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
   const registerHook = useCallback(() => {
-    setRegisterIsDisabled(true);
-    register.mutate({
+    registerMutation.mutate({
       email,
       password,
     });
-  }, [email, password, register]);
+  }, [email, password, registerMutation]);
 
-  useEffect(() => {
-    if (register.isSuccess) {
-      setSession(register.data);
-      router.push(Routes.Dashboard);
-    }
-    setRegisterIsDisabled(false);
-  }, [register.data, register.isSuccess, setSession, router]);
-
-  useEffect(() => {
-    if (register.error) {
-      const statusCode = register.error?.data?.httpStatus;
-      switch (statusCode) {
-        case 409:
-          setRegistrationToastMessage('This user has already been registered.');
-          break;
-        default:
-          setRegistrationToastMessage(
-            'Oops, something went wrong, please try again.'
-          );
-      }
-      setRegisterIsDisabled(false);
-      setShowRegistrationToast(true);
-    }
-  }, [register.error]);
+  if (registerMutation.isSuccess) {
+    setSession(registerMutation.data);
+    router.push(Routes.Dashboard);
+    return;
+  }
 
   const emailInputHandler = (value: string) => {
     const isValid = validateEmail(value);
@@ -104,7 +89,7 @@ export const Register: React.FC = () => {
   };
 
   const disableRegisterButton =
-    registerIsDisabled ||
+    registerMutation.isLoading ||
     !emailIsValid ||
     !passwordIsValid ||
     !confirmPasswordIsValid;
@@ -138,7 +123,7 @@ export const Register: React.FC = () => {
                   labelPlacement="stacked"
                   placeholder="Enter your email"
                   value={email}
-                  disabled={registerIsDisabled}
+                  disabled={registerMutation.isLoading}
                   errorText="Must enter a valid email"
                   onIonInput={(e) =>
                     emailInputHandler(e.target.value as string)
@@ -158,7 +143,7 @@ export const Register: React.FC = () => {
                   placeholder="Enter a password"
                   errorText="Passwords must be greater than 8 characters long"
                   value={password}
-                  disabled={registerIsDisabled}
+                  disabled={registerMutation.isLoading}
                   onIonInput={(e) =>
                     passwordInputHandler(e.target.value as string)
                   }
@@ -176,7 +161,7 @@ export const Register: React.FC = () => {
                   labelPlacement="stacked"
                   placeholder="Confirm your password"
                   errorText="Passwords must match"
-                  disabled={registerIsDisabled}
+                  disabled={registerMutation.isLoading}
                   value={confirmPassword}
                   onIonInput={(e) =>
                     confirmPasswordInputHandler(e.target.value as string)
@@ -193,20 +178,13 @@ export const Register: React.FC = () => {
               >
                 Register
               </IonButton>
-              <IonToast
-                isOpen={showRegistrationToast}
-                message={registrationToastMessage}
-                color="danger"
-                onDidDismiss={() => setShowRegistrationToast(false)}
-                duration={5000}
-              />
             </CenteredContainer>
             <SignInWithGoogleButton />
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
                   Already have an account?{' '}
-                  <IonRouterLink routerLink="/auth/login">
+                  <IonRouterLink routerLink={Routes.Login}>
                     Login here!
                   </IonRouterLink>
                 </sub>

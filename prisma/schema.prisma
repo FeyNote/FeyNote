@@ -48,6 +48,7 @@ model ArtifactTemplate {
 
 model FieldTemplate {
   id                 String           @id @default(uuid()) @db.Uuid
+  title              String
   order              Int
   aiPrompt           String?
   type               FieldType
@@ -63,6 +64,8 @@ model FieldTemplate {
 
 model Artifact {
   id                 String           @id @default(uuid()) @db.Uuid
+  title              String
+  isPinned           Boolean          @default(false)
   fields             Field[]
   artifactTemplate   ArtifactTemplate @relation(fields: [artifactTemplateId], references: [id])
   artifactTemplateId String           @db.Uuid
@@ -85,12 +88,12 @@ model Field {
 }
 
 model Image {
-  id        String   @id @default(uuid()) @db.Uuid
-  title     String
-  key       String
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-  Fields    Field[]
+  id         String   @id @default(uuid()) @db.Uuid
+  title      String
+  storageKey String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  Fields     Field[]
 }
 
 enum FieldType {

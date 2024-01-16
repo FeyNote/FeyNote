@@ -12,9 +12,9 @@ import {
   IonPage,
   IonRouterLink,
   IonTitle,
-  IonToast,
   IonToolbar,
   useIonRouter,
+  useIonToast,
 } from '@ionic/react';
 import {
   CenteredContainer,
@@ -25,76 +25,51 @@ import {
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../../utils/trpc';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { validateEmail, validatePassword } from '@dnd-assistant/shared-utils';
+import { useContext, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const Login: React.FC = () => {
-  const login = trpc.user.login.useMutation();
+  const [presentToast] = useIonToast();
+  const loginMutation = trpc.user.login.useMutation({
+    onError: (error) => {
+      handleTRPCErrors(error.data?.httpStatus, presentToast, {
+        400: 'The email or password you submited is incorrect.',
+      });
+    },
+  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [toastMessage, setToastMessage] = useState('');
   const [emailIsTouched, setEmailIsTouched] = useState(false);
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
-  const [emailIsValid, setEmailIsValid] = useState(true);
-  const [passwordIsValid, setPasswordIsValid] = useState(true);
-  const [loginIsDisabled, setLoginIsDisabled] = useState(false);
-  const [showToast, setShowToast] = useState(false);
 
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
-  const loginHook = useCallback(() => {
-    setLoginIsDisabled(true);
-    login.mutate({
+  const loginHook = () => {
+    loginMutation.mutate({
       email,
       password,
     });
-  }, [email, password, login]);
+  };
 
-  useEffect(() => {
-    if (login.isSuccess) {
-      setSession(login.data);
-      router.push(Routes.Dashboard);
-    } else if (login.isError) {
-      setShowToast(true);
-    }
-    setLoginIsDisabled(false);
-  }, [login.data, login.isSuccess, login.isError, setSession, router]);
-
-  useEffect(() => {
-    if (login.error) {
-      const statusCode = login.error?.data?.httpStatus;
-      switch (statusCode) {
-        case 400:
-          setToastMessage('The email or password you submited is incorrect.');
-          break;
-        default:
-          setToastMessage('Oops, something went wrong, please try again.');
-      }
-      setLoginIsDisabled(false);
-      setShowToast(true);
-    }
-  }, [login.error]);
+  if (loginMutation.isSuccess) {
+    setSession(loginMutation.data);
+    router.push(Routes.Dashboard);
+    return;
+  }
 
   const emailInputHandler = (value: string) => {
-    const isValid = validateEmail(value);
-    setEmailIsValid(isValid);
     setEmailIsTouched(true);
     setEmail(value);
   };
 
   const passwordInputHandler = (value: string) => {
-    const isValid = validatePassword(value);
-    setPasswordIsValid(isValid);
     setPasswordIsTouched(true);
     setPassword(value);
   };
-
-  const disableLoginButton =
-    loginIsDisabled || !passwordIsValid || !emailIsValid;
 
   return (
     <IonPage id="main">
@@ -116,16 +91,13 @@ export const Login: React.FC = () => {
             <CenteredIonInputContainer>
               <IonItem>
                 <IonInput
-                  className={getIonInputClassNames(
-                    emailIsValid,
-                    emailIsTouched
-                  )}
+                  className={getIonInputClassNames(true, emailIsTouched)}
                   label="Email"
                   type="email"
                   labelPlacement="stacked"
                   placeholder="Enter your email"
                   value={email}
-                  disabled={loginIsDisabled}
+                  disabled={loginMutation.isLoading}
                   errorText="Must enter a valid email"
                   onIonInput={(e) =>
                     emailInputHandler(e.target.value as string)
@@ -135,17 +107,14 @@ export const Login: React.FC = () => {
               </IonItem>
               <IonItem>
                 <IonInput
-                  className={getIonInputClassNames(
-                    passwordIsValid,
-                    passwordIsTouched
-                  )}
+                  className={getIonInputClassNames(true, passwordIsTouched)}
                   label="Password"
                   type="password"
                   labelPlacement="stacked"
                   placeholder="Enter a password"
                   errorText="Passwords must be greater than 8 characters long"
                   value={password}
-                  disabled={loginIsDisabled}
+                  disabled={loginMutation.isLoading}
                   onIonInput={(e) =>
                     passwordInputHandler(e.target.value as string)
                   }
@@ -155,16 +124,9 @@ export const Login: React.FC = () => {
             </CenteredIonInputContainer>
             <br />
             <CenteredContainer>
-              <IonButton onClick={loginHook} disabled={disableLoginButton}>
+              <IonButton onClick={loginHook} disabled={loginMutation.isLoading}>
                 Login
               </IonButton>
-              <IonToast
-                isOpen={showToast}
-                color="danger"
-                message={toastMessage}
-                onDidDismiss={() => setShowToast(false)}
-                duration={5000}
-              />
               <IonButton fill="clear">Forgot</IonButton>
             </CenteredContainer>
             <SignInWithGoogleButton />
@@ -172,7 +134,7 @@ export const Login: React.FC = () => {
               <CenteredIonText>
                 <sub>
                   To register for an account click{' '}
-                  <IonRouterLink routerLink="/auth/register">
+                  <IonRouterLink routerLink={Routes.Register}>
                     here!
                   </IonRouterLink>
                 </sub>

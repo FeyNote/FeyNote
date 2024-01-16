@@ -4,7 +4,7 @@ import { Register } from './components/auth/Register';
 import { NotFound } from './NotFound';
 import { Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
+import { httpLink } from '@trpc/client';
 import { useEffect, useState } from 'react';
 import { trpc } from '../utils/trpc';
 
@@ -31,6 +31,7 @@ import './css/themes/dark.css';
 import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Routes } from './routes';
+import { SESSION_ITEM_NAME } from './context/session/types';
 
 setupIonicReact();
 export function App() {
@@ -50,10 +51,13 @@ export function App() {
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
-        httpBatchLink({
+        httpLink({
           url: '/api/trpc/',
-          async headers() {
-            return {};
+          headers: () => {
+            const token = localStorage.getItem(SESSION_ITEM_NAME);
+            return {
+              Authorization: token ? `Bearer ${token}` : undefined,
+            };
           },
         }),
       ],
