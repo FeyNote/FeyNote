@@ -5,7 +5,8 @@ export const authenticatedProcedure = publicProcedure.use((opts) => {
   const session = opts.ctx.session;
   if (!session) {
     throw new TRPCError({
-      message: 'User must be logged in with a valid session',
+      message:
+        'You must pass a valid token as "Bearer TOKEN" via the Authorization header to access this procedure.',
       code: 'UNAUTHORIZED',
     });
   }

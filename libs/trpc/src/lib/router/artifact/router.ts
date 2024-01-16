@@ -1,6 +1,6 @@
 import { router as trpcRouter } from '../../trpc';
-import { getAllForUser } from './getAllForUser';
+import { getArtifactsForUser } from './getArtifactsForUser';
 
 export const router = trpcRouter({
-  getAllForUser,
+  getArtifactsForUser,
 });

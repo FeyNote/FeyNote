@@ -25,7 +25,7 @@ import {
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../../utils/trpc';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
@@ -48,18 +48,20 @@ export const Login: React.FC = () => {
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
-  const loginHook = () => {
+  const submitLogin = () => {
     loginMutation.mutate({
       email,
       password,
     });
   };
 
-  if (loginMutation.isSuccess) {
-    setSession(loginMutation.data);
-    router.push(Routes.Dashboard);
-    return;
-  }
+  useEffect(() => {
+    if (loginMutation.isSuccess) {
+      setSession(loginMutation.data);
+      router.push(Routes.Dashboard);
+      return;
+    }
+  }, [loginMutation.isSuccess, loginMutation.data, router]);
 
   const emailInputHandler = (value: string) => {
     setEmailIsTouched(true);
@@ -124,7 +126,10 @@ export const Login: React.FC = () => {
             </CenteredIonInputContainer>
             <br />
             <CenteredContainer>
-              <IonButton onClick={loginHook} disabled={loginMutation.isLoading}>
+              <IonButton
+                onClick={submitLogin}
+                disabled={loginMutation.isLoading}
+              >
                 Login
               </IonButton>
               <IonButton fill="clear">Forgot</IonButton>

@@ -16,7 +16,7 @@ import {
   useIonRouter,
   useIonToast,
 } from '@ionic/react';
-import React, { useState, useCallback, useContext } from 'react';
+import React, { useState, useCallback, useContext, useEffect } from 'react';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -61,11 +61,13 @@ export const Register: React.FC = () => {
     });
   }, [email, password, registerMutation]);
 
-  if (registerMutation.isSuccess) {
-    setSession(registerMutation.data);
-    router.push(Routes.Dashboard);
-    return;
-  }
+  useEffect(() => {
+    if (registerMutation.isSuccess) {
+      setSession(registerMutation.data);
+      router.push(Routes.Dashboard);
+      return;
+    }
+  }, [registerMutation.isSuccess, registerMutation.data, router]);
 
   const emailInputHandler = (value: string) => {
     const isValid = validateEmail(value);

@@ -15,7 +15,7 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const Dashboard: React.FC = () => {
   const [presentToast] = useIonToast();
-  const getUserArtifactsQuery = trpc.artifact.getAllForUser.useQuery(
+  const getUserArtifactsQuery = trpc.artifact.getArtifactsForUser.useQuery(
     undefined,
     {
       retry: false,

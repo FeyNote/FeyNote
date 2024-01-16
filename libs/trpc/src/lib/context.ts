@@ -6,27 +6,19 @@ import { prisma } from '@dnd-assistant/prisma';
 export const createContext = async (
   expressContext: trpcExpress.CreateExpressContextOptions
 ) => {
-  const innerContext = await getInnerContext(expressContext);
+  const session = await getSessionFromAuthHeader(expressContext);
   const { req, res } = expressContext;
   return {
-    ...innerContext,
+    session,
     req,
     res,
   };
 };
 
-const getInnerContext = async (
+const getSessionFromAuthHeader = async (
   expressContext: trpcExpress.CreateExpressContextOptions
 ) => {
-  const session = await getSessionFromAuthHeader(
-    expressContext.req.headers.authorization
-  );
-  return {
-    session,
-  };
-};
-
-const getSessionFromAuthHeader = async (authHeader?: string) => {
+  const authHeader = expressContext.req.headers.authorization;
   if (!authHeader) return null;
   const [, token] = authHeader.split(' ');
   if (!token) return null;
