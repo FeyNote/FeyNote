@@ -9,7 +9,7 @@ const EXTEND_IF_EXPIRES_WITHIN_DAYS = 7;
 /**
  * When extending a session, it will be valid for this length
  */
-const EXTENDED_SESSION_VALID_DAYS = 60;
+const EXTENDED_SESSION_VALID_DAYS = 21;
 
 /**
  * Attempts to extend session if possible, otherwise returns early
