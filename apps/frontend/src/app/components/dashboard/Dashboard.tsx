@@ -9,7 +9,6 @@ import {
   IonToolbar,
   useIonToast,
 } from '@ionic/react';
-import { Routes } from '../../routes';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
