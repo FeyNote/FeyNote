@@ -6,7 +6,7 @@ export const triggerPasswordReset = async (
   email: string,
   returnUrl: string
 ) => {
-  const user = await prisma.user.findUniqueOrThrow({
+  const user = await prisma.user.findUnique({
     where: {
       email,
     },
