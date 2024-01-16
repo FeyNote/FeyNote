@@ -1,6 +1,7 @@
 import { prisma } from '@dnd-assistant/prisma';
 import { generateSessionToken } from './generate-session-token';
 import { generateSessionExpiry } from './generate-session-expiry';
+import { Prisma } from '@prisma/client';
 
 /**
  * The initial length of validity for a session
@@ -13,8 +14,11 @@ const SESSION_VALID_DAYS = 21;
  */
 const SESSION_MAX_VALID_DAYS = 90;
 
-export const generateSession = async (userId: string) => {
-  const session = await prisma.session.create({
+export const generateSession = async (
+  userId: string,
+  tx: Prisma.TransactionClient = prisma
+) => {
+  const session = await tx.session.create({
     data: {
       userId: userId,
       token: generateSessionToken(),
@@ -22,5 +26,6 @@ export const generateSession = async (userId: string) => {
       extendableUntil: generateSessionExpiry(SESSION_MAX_VALID_DAYS),
     },
   });
+
   return session;
 };
