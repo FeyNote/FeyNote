@@ -38,7 +38,7 @@ export const Dashboard: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <IonButton routerLink={Routes.NewArtifact}>New Artifact +</IonButton>
+        <IonButton>New Artifact +</IonButton>
       </IonContent>
     </IonPage>
   );
