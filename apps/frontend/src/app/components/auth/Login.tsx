@@ -61,7 +61,7 @@ export const Login: React.FC = () => {
       router.push(Routes.Dashboard);
       return;
     }
-  }, [loginMutation.isSuccess, loginMutation.data, router]);
+  }, [loginMutation.isSuccess, loginMutation.data, router, setSession]);
 
   const emailInputHandler = (value: string) => {
     setEmailIsTouched(true);

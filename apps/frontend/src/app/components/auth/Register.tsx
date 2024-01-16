@@ -67,7 +67,7 @@ export const Register: React.FC = () => {
       router.push(Routes.Dashboard);
       return;
     }
-  }, [registerMutation.isSuccess, registerMutation.data, router]);
+  }, [registerMutation.isSuccess, registerMutation.data, router, setSession]);
 
   const emailInputHandler = (value: string) => {
     const isValid = validateEmail(value);
