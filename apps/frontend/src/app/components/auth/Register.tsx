@@ -16,7 +16,7 @@ import {
   useIonRouter,
   useIonToast,
 } from '@ionic/react';
-import React, { useState, useCallback, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -34,13 +34,6 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const Register: React.FC = () => {
   const [presentToast] = useIonToast();
-  const registerMutation = trpc.user.register.useMutation({
-    onError: (error) => {
-      handleTRPCErrors(error.data?.httpStatus, presentToast, {
-        409: 'This user has already been registered.',
-      });
-    },
-  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -51,23 +44,30 @@ export const Register: React.FC = () => {
   const [emailIsValid, setEmailIsValid] = useState(true);
   const [passwordIsValid, setPasswordIsValid] = useState(true);
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
-  const registerHook = useCallback(() => {
-    registerMutation.mutate({
-      email,
-      password,
-    });
-  }, [email, password, registerMutation]);
-
-  useEffect(() => {
-    if (registerMutation.isSuccess) {
-      setSession(registerMutation.data);
-      router.push(Routes.Dashboard);
-      return;
-    }
-  }, [registerMutation.isSuccess, registerMutation.data, router, setSession]);
+  const submitRegister = () => {
+    setIsLoading(true);
+    trpc.user.register
+      .mutate({
+        email,
+        password,
+      })
+      .then((_session) => {
+        setSession(_session);
+        router.push(Routes.Dashboard);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast, {
+          409: 'This user has already been registered.',
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
   const emailInputHandler = (value: string) => {
     const isValid = validateEmail(value);
@@ -91,10 +91,7 @@ export const Register: React.FC = () => {
   };
 
   const disableRegisterButton =
-    registerMutation.isLoading ||
-    !emailIsValid ||
-    !passwordIsValid ||
-    !confirmPasswordIsValid;
+    isLoading || !emailIsValid || !passwordIsValid || !confirmPasswordIsValid;
 
   return (
     <IonPage id="main">
@@ -125,7 +122,7 @@ export const Register: React.FC = () => {
                   labelPlacement="stacked"
                   placeholder="Enter your email"
                   value={email}
-                  disabled={registerMutation.isLoading}
+                  disabled={isLoading}
                   errorText="Must enter a valid email"
                   onIonInput={(e) =>
                     emailInputHandler(e.target.value as string)
@@ -145,7 +142,7 @@ export const Register: React.FC = () => {
                   placeholder="Enter a password"
                   errorText="Passwords must be greater than 8 characters long"
                   value={password}
-                  disabled={registerMutation.isLoading}
+                  disabled={isLoading}
                   onIonInput={(e) =>
                     passwordInputHandler(e.target.value as string)
                   }
@@ -163,7 +160,7 @@ export const Register: React.FC = () => {
                   labelPlacement="stacked"
                   placeholder="Confirm your password"
                   errorText="Passwords must match"
-                  disabled={registerMutation.isLoading}
+                  disabled={isLoading}
                   value={confirmPassword}
                   onIonInput={(e) =>
                     confirmPasswordInputHandler(e.target.value as string)
@@ -175,7 +172,7 @@ export const Register: React.FC = () => {
             <br />
             <CenteredContainer>
               <IonButton
-                onClick={registerHook}
+                onClick={submitRegister}
                 disabled={disableRegisterButton}
               >
                 Register

@@ -7,6 +7,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
   const { setSession } = useContext(SessionContext);
 
   const signOut = () => {
+    console.log('signOut called');
     setSession(null);
   };
 

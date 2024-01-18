@@ -3,10 +3,7 @@ import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { NotFound } from './NotFound';
 import { Route } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpLink } from '@trpc/client';
-import { useEffect, useState } from 'react';
-import { trpc } from '../utils/trpc';
+import { useEffect } from 'react';
 
 /* Ionic */
 import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react';
@@ -31,7 +28,6 @@ import './css/themes/dark.css';
 import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Routes } from './routes';
-import { SESSION_ITEM_NAME } from './context/session/types';
 
 setupIonicReact();
 export function App() {
@@ -47,41 +43,21 @@ export function App() {
     );
   }, []);
 
-  const [queryClient] = useState(() => new QueryClient());
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      links: [
-        httpLink({
-          url: '/api/trpc/',
-          headers: () => {
-            const token = localStorage.getItem(SESSION_ITEM_NAME);
-            return {
-              Authorization: token ? `Bearer ${token}` : undefined,
-            };
-          },
-        }),
-      ],
-    })
-  );
   return (
     <IonApp>
       <IonReactRouter>
-        <trpc.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <SessionContextProviderWrapper>
-              <IonSplitPane when="lg" contentId="main">
-                <Menu />
-                <IonRouterOutlet id="main" animated={false}>
-                  <Route exact path={Routes.Home} component={Home} />
-                  <Route exact path={Routes.Login} component={Login} />
-                  <Route exact path={Routes.Register} component={Register} />
-                  <Route exact path={Routes.Dashboard} component={Dashboard} />
-                  <Route component={NotFound} />
-                </IonRouterOutlet>
-              </IonSplitPane>
-            </SessionContextProviderWrapper>
-          </QueryClientProvider>
-        </trpc.Provider>
+        <SessionContextProviderWrapper>
+          <IonSplitPane when="lg" contentId="main">
+            <Menu />
+            <IonRouterOutlet id="main" animated={false}>
+              <Route exact path={Routes.Home} component={Home} />
+              <Route exact path={Routes.Login} component={Login} />
+              <Route exact path={Routes.Register} component={Register} />
+              <Route exact path={Routes.Dashboard} component={Dashboard} />
+              <Route component={NotFound} />
+            </IonRouterOutlet>
+          </IonSplitPane>
+        </SessionContextProviderWrapper>
       </IonReactRouter>
     </IonApp>
   );
