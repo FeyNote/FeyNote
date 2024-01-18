@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useState } from 'react';
+import { ReactNode, useCallback, useMemo, useState } from 'react';
 import { SessionContext } from './SessionContext';
 import { SESSION_ITEM_NAME } from './types';
 
@@ -15,21 +15,21 @@ export const SessionContextProviderWrapper = ({
 
   const setAndPersistSession = useCallback(
     (newSession: string | null) => {
-      setSession(newSession);
       if (newSession) {
         localStorage.setItem(SESSION_ITEM_NAME, newSession);
       } else {
         localStorage.removeItem(SESSION_ITEM_NAME);
       }
+      setSession(newSession);
     },
     [setSession]
   );
 
+  const value = useMemo(() => {
+    return { session, setSession: setAndPersistSession };
+  }, [session, setAndPersistSession]);
+
   return (
-    <SessionContext.Provider
-      value={{ session, setSession: setAndPersistSession }}
-    >
-      {children}
-    </SessionContext.Provider>
+    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
   );
 };

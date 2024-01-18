@@ -25,7 +25,7 @@ import {
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../../utils/trpc';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
@@ -33,35 +33,35 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const Login: React.FC = () => {
   const [presentToast] = useIonToast();
-  const loginMutation = trpc.user.login.useMutation({
-    onError: (error) => {
-      handleTRPCErrors(error.data?.httpStatus, presentToast, {
-        400: 'The email or password you submited is incorrect.',
-      });
-    },
-  });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailIsTouched, setEmailIsTouched] = useState(false);
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
   const submitLogin = () => {
-    loginMutation.mutate({
-      email,
-      password,
-    });
+    setIsLoading(true);
+    trpc.user.login
+      .mutate({
+        email,
+        password,
+      })
+      .then((_session) => {
+        setSession(_session);
+        router.push(Routes.Dashboard);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast, {
+          400: 'The email or password you submited is incorrect.',
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
-
-  useEffect(() => {
-    if (loginMutation.isSuccess) {
-      setSession(loginMutation.data);
-      router.push(Routes.Dashboard);
-      return;
-    }
-  }, [loginMutation.isSuccess, loginMutation.data, router, setSession]);
 
   const emailInputHandler = (value: string) => {
     setEmailIsTouched(true);
@@ -99,7 +99,7 @@ export const Login: React.FC = () => {
                   labelPlacement="stacked"
                   placeholder="Enter your email"
                   value={email}
-                  disabled={loginMutation.isLoading}
+                  disabled={isLoading}
                   errorText="Must enter a valid email"
                   onIonInput={(e) =>
                     emailInputHandler(e.target.value as string)
@@ -116,7 +116,7 @@ export const Login: React.FC = () => {
                   placeholder="Enter a password"
                   errorText="Passwords must be greater than 8 characters long"
                   value={password}
-                  disabled={loginMutation.isLoading}
+                  disabled={isLoading}
                   onIonInput={(e) =>
                     passwordInputHandler(e.target.value as string)
                   }
@@ -126,10 +126,7 @@ export const Login: React.FC = () => {
             </CenteredIonInputContainer>
             <br />
             <CenteredContainer>
-              <IonButton
-                onClick={submitLogin}
-                disabled={loginMutation.isLoading}
-              >
+              <IonButton onClick={submitLogin} disabled={isLoading}>
                 Login
               </IonButton>
               <IonButton fill="clear">Forgot</IonButton>

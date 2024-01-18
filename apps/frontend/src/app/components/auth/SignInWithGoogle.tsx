@@ -1,8 +1,9 @@
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { useIonRouter } from '@ionic/react';
+import { useIonRouter, useIonToast } from '@ionic/react';
 import { Routes } from '../../routes';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 interface Props {
   className?: string;
@@ -14,10 +15,11 @@ const getGoogleRef = () => {
 };
 
 export const SignInWithGoogle: React.FC<Props> = (props) => {
+  const [presentToast] = useIonToast();
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
   const buttonRef = useRef<HTMLDivElement>();
-  const signInWithGoogle = trpc.user.signInWithGoogle.useMutation();
+
   const triggerGoogleButtonRender = useCallback(() => {
     if (getGoogleRef() && buttonRef.current) {
       getGoogleRef().accounts.id.renderButton(buttonRef.current, {
@@ -31,20 +33,21 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
     }
   }, []);
 
-  const googleSignInHook = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const signInWithGoogle = useCallback(
     (args: any) => {
-      signInWithGoogle.mutate(args);
+      trpc.user.signInWithGoogle
+        .mutate(args)
+        .then((_session) => {
+          setSession(_session);
+          router.push(Routes.Dashboard);
+        })
+        .catch((error) => {
+          handleTRPCErrors(error, presentToast);
+        });
     },
-    [signInWithGoogle]
+    [presentToast, setSession]
   );
-
-  useEffect(() => {
-    if (signInWithGoogle.isSuccess) {
-      setSession(signInWithGoogle.data);
-      router.push(Routes.Dashboard);
-    }
-  }, [signInWithGoogle.isSuccess, signInWithGoogle.data, router, setSession]);
 
   const buttonRefHook = useCallback(
     (node: HTMLDivElement) => {
@@ -62,11 +65,11 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
       ux_mode: 'popup',
       login_uri:
         'https://80--main--dnd-assistant--cmeyer.coder.tartarus.cloud/api/login/google',
-      callback: googleSignInHook,
+      callback: signInWithGoogle,
       auto_prompt: 'false',
     });
     triggerGoogleButtonRender();
-  }, [googleSignInHook, triggerGoogleButtonRender]);
+  }, [signInWithGoogle, triggerGoogleButtonRender]);
 
   useEffect(() => {
     const googleScriptNodeId = 'google-auth-script';
