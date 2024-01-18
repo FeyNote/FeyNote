@@ -33,8 +33,8 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
     }
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const signInWithGoogle = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (args: any) => {
       trpc.user.signInWithGoogle
         .mutate(args)
@@ -46,7 +46,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
           handleTRPCErrors(error, presentToast);
         });
     },
-    [presentToast, setSession]
+    [router, presentToast, setSession]
   );
 
   const buttonRefHook = useCallback(
