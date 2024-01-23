@@ -30,8 +30,10 @@ import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { useTranslation } from 'react-i18next';
 
 export const Login: React.FC = () => {
+  const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,6 +75,12 @@ export const Login: React.FC = () => {
     setPassword(value);
   };
 
+  const enterKeyHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter') {
+      submitLogin();
+    }
+  };
+
   return (
     <IonPage id="main">
       <IonHeader>
@@ -88,6 +96,7 @@ export const Login: React.FC = () => {
           <CenteredIonCardHeader>
             <IonCardTitle>Welcome Back!</IonCardTitle>
             <IonCardSubtitle>Your dungeon awaits you...</IonCardSubtitle>
+            {t('examplestr')}
           </CenteredIonCardHeader>
           <IonCardContent>
             <CenteredIonInputContainer>
@@ -117,6 +126,7 @@ export const Login: React.FC = () => {
                   errorText="Passwords must be greater than 8 characters long"
                   value={password}
                   disabled={isLoading}
+                  onKeyDown={enterKeyHandler}
                   onIonInput={(e) =>
                     passwordInputHandler(e.target.value as string)
                   }

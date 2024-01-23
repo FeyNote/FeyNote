@@ -29,6 +29,8 @@ import { SessionContextProviderWrapper } from './context/session/SessionContextP
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Routes } from './routes';
 
+import './i18n';
+
 setupIonicReact();
 export function App() {
   const toggleDarkTheme = (shouldAdd: boolean) => {

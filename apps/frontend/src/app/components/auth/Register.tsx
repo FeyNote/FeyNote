@@ -90,6 +90,12 @@ export const Register: React.FC = () => {
     setConfirmPassword(value);
   };
 
+  const enterKeyHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+    if (e.key === 'Enter') {
+      submitRegister();
+    }
+  };
+
   const disableRegisterButton =
     isLoading || !emailIsValid || !passwordIsValid || !confirmPasswordIsValid;
 
@@ -162,6 +168,7 @@ export const Register: React.FC = () => {
                   errorText="Passwords must match"
                   disabled={isLoading}
                   value={confirmPassword}
+                  onKeyDown={enterKeyHandler}
                   onIonInput={(e) =>
                     confirmPasswordInputHandler(e.target.value as string)
                   }
