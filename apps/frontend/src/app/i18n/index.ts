@@ -1,29 +1,34 @@
-import i18next from 'i18next';
-import Backend, { HttpBackendOptions } from 'i18next-http-backend';
+import i18next, { ModuleType } from 'i18next';
 import { FALLBACK_LANGUAGE, detectLanguage } from './detectLanguage';
+import { initReactI18next } from 'react-i18next';
 
 const language = detectLanguage();
 
-i18next.use(Backend).init<HttpBackendOptions>({
-  debug: true,
-  backend: {
-    loadPath: '/locales/{{lng}}.json',
-    request: (options, url, payload, callback) => {
-      console.log('request;', url.toLowerCase());
-      fetch(url.toLowerCase())
-        .then((res) => res.json())
-        .then((json) => callback(null, { status: 200, data: json }))
-        .catch((err) =>
-          callback(err, {
-            status: err.status || 500,
-            data: { examplestr: 'example string' },
-          })
-        );
+const Backend = {
+  type: 'backend' as ModuleType,
+  read: (
+    language: string,
+    _: string,
+    callback: (err: Error | null, json: Record<string, string> | null) => void
+  ) => {
+    fetch(`/locales/${language.toLowerCase()}.json`)
+      .then((res) => res.json())
+      .then((json) => callback(null, json))
+      .catch((err) => callback(err, null));
+  },
+};
+
+i18next
+  .use(Backend)
+  .use(initReactI18next)
+  .init({
+    load: 'languageOnly',
+    react: {
+      useSuspense: true,
     },
-  },
-  interpolation: {
-    escapeValue: false,
-  },
-  lng: language,
-  fallbackLng: FALLBACK_LANGUAGE,
-});
+    interpolation: {
+      escapeValue: false,
+    },
+    lng: language,
+    fallbackLng: FALLBACK_LANGUAGE,
+  });
