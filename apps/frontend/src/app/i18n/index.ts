@@ -22,7 +22,8 @@ i18next
   .use(customBackend)
   .use(initReactI18next)
   .init({
-    load: 'languageOnly',
+    load: 'currentOnly',
+    lowerCaseLng: true,
     react: {
       useSuspense: true,
     },
