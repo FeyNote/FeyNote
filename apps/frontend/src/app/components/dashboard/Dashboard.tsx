@@ -1,14 +1,10 @@
-import styled from 'styled-components';
 import {
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonMenuButton,
   IonPage,
-  IonSearchbar,
-  IonText,
   IonTitle,
   IonToolbar,
   useIonToast,
@@ -19,36 +15,19 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useState } from 'react';
 import { ArtifactSummary } from '@dnd-assistant/prisma';
 import { filterOutline, caretForwardOutline } from 'ionicons/icons';
-
-const SearchContainer = styled.span`
-  display: flex;
-  justify-content: center;
-`;
-
-const StyledIcon = styled(IonIcon)`
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-right: 12px;
-  opacity: 0.7;
-  &:hover {
-    cursor: pointer;
-    opacity: 1;
-  }
-`;
-
-const StyledIonSearchbar = styled(IonSearchbar)`
-  max-width: 500px;
-`;
-
-const StyledHeader = styled.h1`
-  display: inline;
-  margin-top: auto;
-  margin-bottom: auto;
-`;
+import {
+  FilterIcon,
+  PinnedItemsContainer,
+  SearchContainer,
+  StyledCarrot,
+  StyledHeader,
+  StyledIonSearchbar,
+} from './styles';
 
 export const Dashboard: React.FC = () => {
   const [presentToast] = useIonToast();
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
+  const [showPinnedItems, setShowPinnedItems] = useState(false);
 
   useIonViewWillEnter(() => {
     trpc.artifact.getArtifactsForUser
@@ -76,23 +55,25 @@ export const Dashboard: React.FC = () => {
       <IonContent className="ion-padding">
         <SearchContainer>
           <StyledIonSearchbar placeholder="Artifact Search"></StyledIonSearchbar>
-          <StyledIcon
+          <FilterIcon
             icon={filterOutline}
             size="large"
             color="primary"
-          ></StyledIcon>
+          ></FilterIcon>
           <IonButton fill="outline" shape="round">
             New Artifact +
           </IonButton>
         </SearchContainer>
-        <IonText>
+        <PinnedItemsContainer>
           <StyledHeader>Pinned Items</StyledHeader>
-          <StyledIcon
+          <StyledCarrot
             icon={caretForwardOutline}
             size="large"
             color="primary"
-          ></StyledIcon>
-        </IonText>
+            onClick={() => setShowPinnedItems(!showPinnedItems)}
+            active={showPinnedItems}
+          ></StyledCarrot>
+        </PinnedItemsContainer>
       </IonContent>
     </IonPage>
   );

@@ -6,6 +6,7 @@ export const detectLanguage = () => {
   const navigatorLanguage = window.navigator.language.toLowerCase();
 
   if (languageIsSupported(navigatorLanguage)) {
+    console.log('language supported;', navigatorLanguage);
     return navigatorLanguage;
   }
 
