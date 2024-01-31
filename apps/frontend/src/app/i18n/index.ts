@@ -4,7 +4,7 @@ import { initReactI18next } from 'react-i18next';
 
 const language = detectLanguage();
 
-const Backend = {
+const customBackend = {
   type: 'backend' as ModuleType,
   read: (
     language: string,
@@ -19,7 +19,7 @@ const Backend = {
 };
 
 i18next
-  .use(Backend)
+  .use(customBackend)
   .use(initReactI18next)
   .init({
     load: 'languageOnly',
