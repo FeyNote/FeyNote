@@ -1,10 +1,15 @@
 import {
   IonButton,
   IonButtons,
+  IonCol,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonHeader,
+  IonIcon,
   IonMenuButton,
   IonPage,
+  IonSearchbar,
   IonTitle,
   IonToolbar,
   useIonToast,
@@ -12,25 +17,24 @@ import {
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { filterOutline, add } from 'ionicons/icons';
+import { Artifacts } from './Artifacts';
+import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@dnd-assistant/prisma';
-import { filterOutline, caretForwardOutline } from 'ionicons/icons';
-import {
-  FilterIcon,
-  PinnedItemsContainer,
-  SearchContainer,
-  StyledCarrot,
-  StyledHeader,
-  StyledIonSearchbar,
-} from './styles';
+import { GridContainer, GridRowSearchbar, GridRowArtifacts } from './styles';
 
 export const Dashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
-  const [showPinnedItems, setShowPinnedItems] = useState(false);
+  const pinnedArtifacts = useMemo(
+    () => artifacts.filter((artifact) => artifact.isPinned),
+    [artifacts]
+  );
 
   useIonViewWillEnter(() => {
-    trpc.artifact.getArtifactsForUser
+    trpc.artifact.getArtifactsForSelf
       .query()
       .then((_artifacts) => {
         setArtifacts(_artifacts);
@@ -40,8 +44,6 @@ export const Dashboard: React.FC = () => {
       });
   });
 
-  console.log('artifacts;', artifacts);
-
   return (
     <IonPage id="main">
       <IonHeader>
@@ -49,32 +51,39 @@ export const Dashboard: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Dashboard</IonTitle>
+          <IonTitle>{t('dashboard.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        <SearchContainer>
-          <StyledIonSearchbar placeholder="Artifact Search"></StyledIonSearchbar>
-          <FilterIcon
-            icon={filterOutline}
-            size="large"
-            color="primary"
-          ></FilterIcon>
-          <IonButton fill="outline" shape="round">
-            New Artifact +
-          </IonButton>
-        </SearchContainer>
-        <PinnedItemsContainer>
-          <StyledHeader>Pinned Items</StyledHeader>
-          <StyledCarrot
-            icon={caretForwardOutline}
-            size="large"
-            color="primary"
-            onClick={() => setShowPinnedItems(!showPinnedItems)}
-            active={showPinnedItems}
-          ></StyledCarrot>
-        </PinnedItemsContainer>
+      <IonContent>
+        <GridContainer>
+          <GridRowSearchbar className="ion-align-items-center">
+            <IonSearchbar
+              style={{ padding: 0 }}
+              placeholder={t('dashboard.searchbar.placeholder')}
+            ></IonSearchbar>
+            <IonButton fill="clear">
+              <IonIcon slot="icon-only" icon={filterOutline}></IonIcon>
+            </IonButton>
+          </GridRowSearchbar>
+          <GridRowArtifacts>
+            <IonCol>
+              <Artifacts
+                title={t('dashboard.pinnedItems.header')}
+                artifacts={pinnedArtifacts}
+              />
+              <Artifacts
+                title={t('dashboard.items.header')}
+                artifacts={artifacts}
+              />
+            </IonCol>
+          </GridRowArtifacts>
+        </GridContainer>
       </IonContent>
+      <IonFab slot="fixed" vertical="bottom" horizontal="end">
+        <IonFabButton>
+          <IonIcon icon={add} />
+        </IonFabButton>
+      </IonFab>
     </IonPage>
   );
 };

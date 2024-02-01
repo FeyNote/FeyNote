@@ -88,66 +88,61 @@ export const Login: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Login</IonTitle>
+          <IonTitle>{t('auth.login.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
         <CenteredIonCard>
           <CenteredIonCardHeader>
-            <IonCardTitle>Welcome Back!</IonCardTitle>
-            <IonCardSubtitle>Your dungeon awaits you...</IonCardSubtitle>
-            {t('examplestr')}
+            <IonCardTitle>{t('auth.login.card.title')}</IonCardTitle>
+            <IonCardSubtitle>{t('auth.login.card.subtitle')}</IonCardSubtitle>
           </CenteredIonCardHeader>
           <IonCardContent>
             <CenteredIonInputContainer>
-              <IonItem>
-                <IonInput
-                  className={getIonInputClassNames(true, emailIsTouched)}
-                  label="Email"
-                  type="email"
-                  labelPlacement="stacked"
-                  placeholder="Enter your email"
-                  value={email}
-                  disabled={isLoading}
-                  errorText="Must enter a valid email"
-                  onIonInput={(e) =>
-                    emailInputHandler(e.target.value as string)
-                  }
-                  onIonBlur={() => setEmailIsTouched(false)}
-                />
-              </IonItem>
-              <IonItem>
-                <IonInput
-                  className={getIonInputClassNames(true, passwordIsTouched)}
-                  label="Password"
-                  type="password"
-                  labelPlacement="stacked"
-                  placeholder="Enter a password"
-                  errorText="Passwords must be greater than 8 characters long"
-                  value={password}
-                  disabled={isLoading}
-                  onKeyDown={enterKeyHandler}
-                  onIonInput={(e) =>
-                    passwordInputHandler(e.target.value as string)
-                  }
-                  onIonBlur={() => setPasswordIsTouched(false)}
-                />
-              </IonItem>
+              <IonInput
+                className={getIonInputClassNames(true, emailIsTouched)}
+                label={t('auth.login.field.email.label')}
+                type="email"
+                labelPlacement="stacked"
+                placeholder={t('auth.login.field.email.placeholder')}
+                value={email}
+                disabled={isLoading}
+                errorText={t('auth.login.field.email.error')}
+                onIonInput={(e) => emailInputHandler(e.target.value as string)}
+                onIonBlur={() => setEmailIsTouched(false)}
+              />
+              <IonInput
+                className={getIonInputClassNames(true, passwordIsTouched)}
+                label={t('auth.login.field.password.label')}
+                type="password"
+                labelPlacement="stacked"
+                placeholder={t('auth.login.field.password.placeholder')}
+                errorText={t('auth.login.field.password.error')}
+                value={password}
+                disabled={isLoading}
+                onKeyDown={enterKeyHandler}
+                onIonInput={(e) =>
+                  passwordInputHandler(e.target.value as string)
+                }
+                onIonBlur={() => setPasswordIsTouched(false)}
+              />
             </CenteredIonInputContainer>
             <br />
             <CenteredContainer>
               <IonButton onClick={submitLogin} disabled={isLoading}>
-                Login
+                {t('auth.login.button.login')}
               </IonButton>
-              <IonButton fill="clear">Forgot</IonButton>
+              <IonButton fill="clear">
+                {t('auth.login.button.forgot')}
+              </IonButton>
             </CenteredContainer>
             <SignInWithGoogleButton />
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
-                  To register for an account click{' '}
+                  {t('auth.login.forgot.text')}{' '}
                   <IonRouterLink routerLink={Routes.Register}>
-                    here!
+                    {t('auth.login.forgot.link')}
                   </IonRouterLink>
                 </sub>
               </CenteredIonText>

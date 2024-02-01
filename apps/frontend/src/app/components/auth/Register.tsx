@@ -31,8 +31,10 @@ import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { useTranslation } from 'react-i18next';
 
 export const Register: React.FC = () => {
+  const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -106,75 +108,68 @@ export const Register: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Register</IonTitle>
+          <IonTitle>{t('auth.register.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
         <CenteredIonCard>
           <CenteredIonCardHeader>
-            <IonCardTitle>Welcome!</IonCardTitle>
-            <IonCardSubtitle>Your dungeon awaits you...</IonCardSubtitle>
+            <IonCardTitle>{t('auth.register.card.title')}</IonCardTitle>
+            <IonCardSubtitle>
+              {t('auth.register.card.subtitle')}
+            </IonCardSubtitle>
           </CenteredIonCardHeader>
           <IonCardContent>
             <CenteredIonInputContainer>
-              <IonItem>
-                <IonInput
-                  className={getIonInputClassNames(
-                    emailIsValid,
-                    emailIsTouched
-                  )}
-                  label="Email"
-                  type="email"
-                  labelPlacement="stacked"
-                  placeholder="Enter your email"
-                  value={email}
-                  disabled={isLoading}
-                  errorText="Must enter a valid email"
-                  onIonInput={(e) =>
-                    emailInputHandler(e.target.value as string)
-                  }
-                  onIonBlur={() => setEmailIsTouched(false)}
-                />
-              </IonItem>
-              <IonItem>
-                <IonInput
-                  className={getIonInputClassNames(
-                    passwordIsValid,
-                    passwordIsTouched
-                  )}
-                  label="Password"
-                  type="password"
-                  labelPlacement="stacked"
-                  placeholder="Enter a password"
-                  errorText="Passwords must be greater than 8 characters long"
-                  value={password}
-                  disabled={isLoading}
-                  onIonInput={(e) =>
-                    passwordInputHandler(e.target.value as string)
-                  }
-                  onIonBlur={() => setPasswordIsTouched(false)}
-                />
-              </IonItem>
-              <IonItem>
-                <IonInput
-                  className={getIonInputClassNames(
-                    confirmPasswordIsValid,
-                    confirmPasswordIsTouched
-                  )}
-                  label="Confirm Password"
-                  type="password"
-                  labelPlacement="stacked"
-                  placeholder="Confirm your password"
-                  errorText="Passwords must match"
-                  disabled={isLoading}
-                  value={confirmPassword}
-                  onKeyDown={enterKeyHandler}
-                  onIonInput={(e) =>
-                    confirmPasswordInputHandler(e.target.value as string)
-                  }
-                  onIonBlur={() => setConfirmPasswordIsTouched(false)}
-                />
-              </IonItem>
+              <IonInput
+                className={getIonInputClassNames(emailIsValid, emailIsTouched)}
+                label={t('auth.register.field.email.label')}
+                type="email"
+                labelPlacement="stacked"
+                placeholder={t('auth.register.field.email.placeholder')}
+                value={email}
+                disabled={isLoading}
+                errorText={t('auth.register.field.email.error')}
+                onIonInput={(e) => emailInputHandler(e.target.value as string)}
+                onIonBlur={() => setEmailIsTouched(false)}
+              />
+              <IonInput
+                className={getIonInputClassNames(
+                  passwordIsValid,
+                  passwordIsTouched
+                )}
+                label={t('auth.register.field.password.label')}
+                type="password"
+                labelPlacement="stacked"
+                placeholder={t('auth.register.field.password.placeholder')}
+                errorText={t('auth.register.field.password.error')}
+                value={password}
+                disabled={isLoading}
+                onIonInput={(e) =>
+                  passwordInputHandler(e.target.value as string)
+                }
+                onIonBlur={() => setPasswordIsTouched(false)}
+              />
+              <IonInput
+                className={getIonInputClassNames(
+                  confirmPasswordIsValid,
+                  confirmPasswordIsTouched
+                )}
+                label={t('auth.register.field.confirmPassword.label')}
+                type="password"
+                labelPlacement="stacked"
+                placeholder={t(
+                  'auth.register.field.confirmPassword.placeholder'
+                )}
+                errorText={t('auth.register.field.confirmPassword.error')}
+                disabled={isLoading}
+                value={confirmPassword}
+                onKeyDown={enterKeyHandler}
+                onIonInput={(e) =>
+                  confirmPasswordInputHandler(e.target.value as string)
+                }
+                onIonBlur={() => setConfirmPasswordIsTouched(false)}
+              />
             </CenteredIonInputContainer>
             <br />
             <CenteredContainer>
@@ -182,16 +177,16 @@ export const Register: React.FC = () => {
                 onClick={submitRegister}
                 disabled={disableRegisterButton}
               >
-                Register
+                {t('auth.register.button.register')}
               </IonButton>
             </CenteredContainer>
             <SignInWithGoogleButton />
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
-                  Already have an account?{' '}
+                  {t('auth.register.subtext.text')}{' '}
                   <IonRouterLink routerLink={Routes.Login}>
-                    Login here!
+                    {t('auth.register.subtext.link')}
                   </IonRouterLink>
                 </sub>
               </CenteredIonText>

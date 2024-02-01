@@ -10,15 +10,17 @@ import React, { useContext } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { UnauthenticatedMenuItems } from './UnauthenticatedMenuItems';
 import { AuthenticatedMenuItems } from './AuthenticatedMenuItems';
+import { useTranslation } from 'react-i18next';
 
 export const Menu: React.FC = () => {
+  const { t } = useTranslation();
   const { session } = useContext(SessionContext);
 
   return (
     <IonMenu contentId="main">
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Menu</IonTitle>
+          <IonTitle>{t('menu.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
