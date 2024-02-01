@@ -1,12 +1,12 @@
 import i18next from 'i18next';
 import { FALLBACK_LANGUAGE, detectLanguage } from './detectLanguage';
 import { initReactI18next } from 'react-i18next';
-import { customBackend } from './customBackend';
+import { i18nextCustomBackend } from './i18nextCustomBackend';
 
 const language = detectLanguage();
 
 i18next
-  .use(customBackend)
+  .use(i18nextCustomBackend)
   .use(initReactI18next)
   .init({
     load: 'currentOnly',

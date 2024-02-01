@@ -96,6 +96,7 @@ async function main() {
     data: {
       title: 'Windemere',
       isPinned: true,
+      visibility: 'Private',
       fields: {
         create: [
           {
@@ -117,6 +118,7 @@ async function main() {
     data: {
       title: 'The Grove',
       isPinned: false,
+      visibility: 'Public',
       fields: {
         create: [
           {

@@ -16,12 +16,12 @@ export const AuthenticatedMenuItems: React.FC = () => {
     <>
       <IonMenuToggle autoHide={false}>
         <IonItem routerLink={Routes.Dashboard}>
-          <IonLabel>{t('menu.label.dashboard')}</IonLabel>
+          <IonLabel>{t('menu.dashboard')}</IonLabel>
         </IonItem>
       </IonMenuToggle>
       <IonMenuToggle autoHide={false}>
         <IonItem onClick={signOut} routerLink={Routes.Login}>
-          <IonLabel>{t('menu.label.signOut')}</IonLabel>
+          <IonLabel>{t('menu.signOut')}</IonLabel>
         </IonItem>
       </IonMenuToggle>
     </>

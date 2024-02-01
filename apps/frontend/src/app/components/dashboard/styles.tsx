@@ -5,7 +5,7 @@ export const IonArtifactCard = styled(IonCard)`
   width: min(300px, 100%);
 `;
 
-export const CardContainer = styled.div`
+export const ArtifactCardsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
 `;
@@ -23,6 +23,5 @@ export const GridRowSearchbar = styled.div`
 `;
 
 export const GridRowArtifacts = styled.div`
-  display: flex;
   overflow-y: auto;
 `;

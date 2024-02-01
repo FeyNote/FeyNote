@@ -3,7 +3,7 @@ import { ArtifactSummary } from '@dnd-assistant/prisma';
 import { ArtifactCard } from './ArtifactCard';
 import { IonButton, IonLabel, IonListHeader } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { CardContainer } from './styles';
+import { ArtifactCardsContainer } from './styles';
 
 interface Props {
   artifacts: ArtifactSummary[];
@@ -22,12 +22,12 @@ export const Artifacts: React.FC<Props> = ({ artifacts, title }) => {
           {t(showArtifacts ? 'dashboard.list.hide' : 'dashboard.list.show')}
         </IonButton>
       </IonListHeader>
-      <CardContainer>
+      <ArtifactCardsContainer>
         {showArtifacts &&
           artifacts.map((artifact) => (
             <ArtifactCard key={artifact.id} artifact={artifact} />
           ))}
-      </CardContainer>
+      </ArtifactCardsContainer>
     </div>
   );
 };

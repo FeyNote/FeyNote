@@ -1,6 +1,6 @@
 import { ModuleType } from 'i18next';
 
-export const customBackend = {
+export const i18nextCustomBackend = {
   type: 'backend' as ModuleType,
   read: (
     language: string,

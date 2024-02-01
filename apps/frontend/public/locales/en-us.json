@@ -1,10 +1,10 @@
 {
   "menu.title": "Menu",
-  "menu.label.home": "Home",
-  "menu.label.login": "Login",
-  "menu.label.dashboard": "Dashboard",
-  "menu.label.signOut": "Sign Out",
-  "menu.label.register": "Register",
+  "menu.home": "Home",
+  "menu.login": "Login",
+  "menu.dashboard": "Dashboard",
+  "menu.signOut": "Sign Out",
+  "menu.register": "Register",
 
   "auth.login.title": "Login",
   "auth.login.card.title": "Welcome Back!",
