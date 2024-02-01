@@ -3,7 +3,7 @@ import { Login } from './components/auth/Login';
 import { Register } from './components/auth/Register';
 import { NotFound } from './NotFound';
 import { Route } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 
 /* Ionic */
 import { IonApp, IonRouterOutlet, IonSplitPane } from '@ionic/react';
@@ -29,6 +29,8 @@ import { SessionContextProviderWrapper } from './context/session/SessionContextP
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Routes } from './routes';
 
+import './i18n';
+
 setupIonicReact();
 export function App() {
   const toggleDarkTheme = (shouldAdd: boolean) => {
@@ -44,22 +46,24 @@ export function App() {
   }, []);
 
   return (
-    <IonApp>
-      <IonReactRouter>
-        <SessionContextProviderWrapper>
-          <IonSplitPane when="lg" contentId="main">
-            <Menu />
-            <IonRouterOutlet id="main" animated={false}>
-              <Route exact path={Routes.Home} component={Home} />
-              <Route exact path={Routes.Login} component={Login} />
-              <Route exact path={Routes.Register} component={Register} />
-              <Route exact path={Routes.Dashboard} component={Dashboard} />
-              <Route component={NotFound} />
-            </IonRouterOutlet>
-          </IonSplitPane>
-        </SessionContextProviderWrapper>
-      </IonReactRouter>
-    </IonApp>
+    <Suspense fallback="">
+      <IonApp>
+        <IonReactRouter>
+          <SessionContextProviderWrapper>
+            <IonSplitPane when="lg" contentId="main">
+              <Menu />
+              <IonRouterOutlet id="main" animated={false}>
+                <Route exact path={Routes.Home} component={Home} />
+                <Route exact path={Routes.Login} component={Login} />
+                <Route exact path={Routes.Register} component={Register} />
+                <Route exact path={Routes.Dashboard} component={Dashboard} />
+                <Route component={NotFound} />
+              </IonRouterOutlet>
+            </IonSplitPane>
+          </SessionContextProviderWrapper>
+        </IonReactRouter>
+      </IonApp>
+    </Suspense>
   );
 }
 
