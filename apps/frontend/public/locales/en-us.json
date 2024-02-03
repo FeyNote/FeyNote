@@ -332,5 +332,26 @@
   "artifactTemplate.quest.items.title": "Noteworthy Items",
   "artifactTemplate.quest.items.aiPrompt": "Generate me powerful magical artifacts that exist in a high fantasy setting",
   "artifactTemplate.quest.items.placeholder": "Enter items using @ to reference other artifacts",
-  "artifactTemplate.quest.items.description": "A list of items that are important for you quest, such as ancient weapons, ships, or powerful artifacts"
+  "artifactTemplate.quest.items.description": "A list of items that are important for you quest, such as ancient weapons, ships, or powerful artifacts",
+
+  "artifactTemplate.religon.title": "Religon",
+  "artifactTemplate.religon.name.title": "Name",
+  "artifactTemplate.religon.name.aiPrompt": "Generate a name of a religon that could be found in a high fantasy setting",
+  "artifactTemplate.religon.name.placeholder": "Enter the name of your religon",
+  "artifactTemplate.religon.name.description": "A name for your religon, such as the Followers of the Bloody Hand.",
+
+  "artifactTemplate.religon.description.title": "Description",
+  "artifactTemplate.religon.description.aiPrompt": "Generate me a description of a religous pantheon in a high fantasy setting",
+  "artifactTemplate.religon.description.placeholder": "Enter a description of your religon using @ to reference other artifacts",
+  "artifactTemplate.religon.description.description": "A description of your religon, such as the pantheon, active demi-gods, or the location of its influences.",
+
+  "artifactTemplate.religon.history.title": "History",
+  "artifactTemplate.religon.history.aiPrompt": "Generate me a history of the founding of a high fantasy religon",
+  "artifactTemplate.religon.history.placeholder": "Enter the history of your religon using @ to reference other artifacts",
+  "artifactTemplate.religon.history.description": "The history of your religon, such as who founded it, and where it first took roots.",
+
+  "artifactTemplate.religon.notableNPCs.title": "Notable NPCs",
+  "artifactTemplate.religon.notableNPCs.aiPrompt": "Generate me notable individuals that exist in a high fantasy religous order",
+  "artifactTemplate.religon.notableNPCs.placeholder": "Enter notable NPCs using @ to reference other artifacts",
+  "artifactTemplate.religon.notableNPCs.description": "The notable NPCs that exist within this religon, such as gods or high-ranking priests"
 }
