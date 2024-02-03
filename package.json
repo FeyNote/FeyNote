@@ -7,7 +7,7 @@
     "prepare": "husky install"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed/seed.ts"
   },
   "private": true,
   "dependencies": {

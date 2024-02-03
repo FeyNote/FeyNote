@@ -61,6 +61,8 @@ model FieldTemplate {
   fields             Field[]
   createdAt          DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
+
+  @@unique([order, artifactTemplateId])
 }
 
 model Artifact {
@@ -99,11 +101,14 @@ model Image {
 }
 
 enum FieldType {
-  Image
   Images
   Text
-  WebLink
-  WebLinks
+  TextArea
+  Files
+  MonsterStatBlock
+  ItemStatBlock
+  NPCStatBlock
+  PlayerStatBlock
 }
 
 enum Visibility {
