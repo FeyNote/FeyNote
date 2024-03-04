@@ -28,6 +28,7 @@ import './css/themes/dark.css';
 import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Routes } from './routes';
+import { Artifact } from './components/artifact/Artifact';
 
 setupIonicReact();
 export function App() {
@@ -54,6 +55,7 @@ export function App() {
               <Route exact path={Routes.Login} component={Login} />
               <Route exact path={Routes.Register} component={Register} />
               <Route exact path={Routes.Dashboard} component={Dashboard} />
+              <Route exact path={Routes.Artifact} component={Artifact} />
               <Route component={NotFound} />
             </IonRouterOutlet>
           </IonSplitPane>
