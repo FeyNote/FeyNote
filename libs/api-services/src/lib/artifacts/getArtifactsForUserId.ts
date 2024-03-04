@@ -6,6 +6,11 @@ export const getArtifactsForUserId = async (userId: string) => {
       userId,
     },
     ...artifactSummary,
+    orderBy: [
+      {
+        title: 'desc',
+      },
+    ],
   });
   return artifacts;
 };
