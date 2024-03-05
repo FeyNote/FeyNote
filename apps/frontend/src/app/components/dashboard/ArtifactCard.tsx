@@ -6,6 +6,7 @@ import {
   IonCardTitle,
 } from '@ionic/react';
 import { IonArtifactCard } from './styles';
+import { routes } from '../../routes';
 
 interface Props {
   artifact: ArtifactSummary;
@@ -13,7 +14,11 @@ interface Props {
 
 export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
   return (
-    <IonArtifactCard>
+    <IonArtifactCard
+      href={routes.artifact.build({
+        id: artifact.id,
+      })}
+    >
       <img
         alt="Silhouette of mountains"
         src="https://ionicframework.com/docs/img/demos/card-media.png"

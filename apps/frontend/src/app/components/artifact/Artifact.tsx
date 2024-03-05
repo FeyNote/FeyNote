@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@dnd-assistant/prisma';
+import { ArtifactDetail } from '@dnd-assistant/prisma/types';
 import {
   IonButtons,
   IonContent,

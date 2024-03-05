@@ -27,7 +27,7 @@ import { Menu } from './components/menu/Menu';
 import './css/themes/dark.css';
 import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { Routes } from './routes';
+import { routes } from './routes';
 import { Artifact } from './components/artifact/Artifact';
 
 import './i18n';
@@ -54,11 +54,23 @@ export function App() {
             <IonSplitPane when="lg" contentId="main">
               <Menu />
               <IonRouterOutlet id="main" animated={false}>
-                <Route exact path={Routes.Home} component={Home} />
-                <Route exact path={Routes.Login} component={Login} />
-                <Route exact path={Routes.Register} component={Register} />
-                <Route exact path={Routes.Dashboard} component={Dashboard} />
-                <Route exact path={Routes.Artifact} component={Artifact} />
+                <Route exact path={routes.home.route} component={Home} />
+                <Route exact path={routes.login.route} component={Login} />
+                <Route
+                  exact
+                  path={routes.register.route}
+                  component={Register}
+                />
+                <Route
+                  exact
+                  path={routes.dashboard.route}
+                  component={Dashboard}
+                />
+                <Route
+                  exact
+                  path={routes.artifact.route}
+                  component={Artifact}
+                />
                 <Route component={NotFound} />
               </IonRouterOutlet>
             </IonSplitPane>
