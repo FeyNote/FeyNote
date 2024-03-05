@@ -1,4 +1,4 @@
-import { prisma } from '@dnd-assistant/prisma';
+import { prisma } from '@dnd-assistant/prisma/client';
 import { generateSessionExpiry } from './generate-session-expiry';
 import { Session } from '@prisma/client';
 

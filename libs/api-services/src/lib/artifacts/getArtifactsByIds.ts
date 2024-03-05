@@ -1,10 +1,10 @@
 import { prisma } from '@dnd-assistant/prisma/client';
 import { artifactSummary } from '@dnd-assistant/prisma/types';
 
-export const getArtifactsForUserId = async (userId: string) => {
+export const getArtifactsByIds = async (artifactIds: string[]) => {
   const artifacts = await prisma.artifact.findMany({
     where: {
-      userId,
+      id: { in: artifactIds },
     },
     ...artifactSummary,
     orderBy: [

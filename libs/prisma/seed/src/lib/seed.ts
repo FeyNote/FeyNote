@@ -1,12 +1,10 @@
-import { PrismaClient } from '@prisma/client';
 import { seedRootUser } from './user/seedRootUser';
 import { seedArtifactTemplates } from './artifactTemplates/seedArtifactTemplates';
+import { prisma } from '@dnd-assistant/prisma/client';
 
-const prisma = new PrismaClient();
-
-async function main() {
+export async function seed() {
   const rootUser = await seedRootUser(prisma);
   await seedArtifactTemplates(prisma, rootUser);
 }
 
-main();
+seed();

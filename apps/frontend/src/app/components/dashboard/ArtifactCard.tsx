@@ -1,4 +1,4 @@
-import { ArtifactSummary } from '@dnd-assistant/prisma';
+import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import {
   IonCardContent,
   IonCardHeader,
