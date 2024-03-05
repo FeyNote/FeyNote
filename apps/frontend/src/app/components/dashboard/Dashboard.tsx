@@ -32,11 +32,10 @@ export const Dashboard: React.FC = () => {
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts]
   );
-  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
   useIonViewWillEnter(() => {
     trpc.artifact.getArtifactsForSelf
-      .query({})
+      .query()
       .then((_artifacts) => {
         setArtifacts(_artifacts);
       })
@@ -50,24 +49,16 @@ export const Dashboard: React.FC = () => {
     const target = e.target as HTMLIonSearchbarElement;
     if (target) query = target.value || '';
 
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    const _timeoutId = setTimeout(() => {
-      trpc.artifact.getArtifactsForSelf
-        .query({
-          query,
-        })
-        .then((_artifacts) => {
-          setArtifacts(_artifacts);
-        })
-        .catch((error) => {
-          handleTRPCErrors(error, presentToast);
-        });
-      setTimeoutId(null);
-    }, 300);
-    setTimeoutId(_timeoutId);
+    trpc.artifact.searchArtifactsForSelf
+      .query({
+        query,
+      })
+      .then((_artifacts) => {
+        setArtifacts(_artifacts);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
   };
 
   return (
@@ -85,6 +76,7 @@ export const Dashboard: React.FC = () => {
           <GridRowSearchbar className="ion-align-items-center">
             <IonSearchbar
               style={{ padding: 0 }}
+              debounce={300}
               onIonInput={(e) => handleSearchInput(e)}
               placeholder={t('dashboard.searchbar.placeholder')}
             ></IonSearchbar>

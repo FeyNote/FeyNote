@@ -1,11 +1,11 @@
 import { Client } from '@elastic/elasticsearch';
-import { Indexes, SearchProvider } from './types';
+import { ArtifactIndexDocument, Indexes, SearchProvider } from './types';
 import dedent from 'dedent';
 import { prisma } from '@dnd-assistant/prisma/client';
 
 export class ElasticSearch implements SearchProvider {
   readonly client = new Client({
-    node: process.env['ELASTIC_SEARCH_CON_STR'],
+    node: process.env['ELASTICSEARCH_URI'],
   });
 
   constructor() {}
@@ -48,7 +48,7 @@ export class ElasticSearch implements SearchProvider {
         title,
         visibility,
         fullText,
-      };
+      } satisfies ArtifactIndexDocument;
 
       const action = {
         index: Indexes.Artifacts,
@@ -79,7 +79,6 @@ export class ElasticSearch implements SearchProvider {
   }
 
   async searchArtifacts(userId: string, query: string) {
-    console.log('searching index');
     const results = await this.client.search({
       index: Indexes.Artifacts,
       body: {

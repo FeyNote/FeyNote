@@ -1,9 +1,11 @@
-import { seed } from './seed';
 import { prisma } from '@dnd-assistant/prisma/client';
+import { seedRootUser } from './user/seedRootUser';
+import { seedArtifactTemplates } from './artifactTemplates/seedArtifactTemplates';
 
 async function main() {
   console.log('Started development seeding');
-  await seed();
+  const rootUser = await seedRootUser(prisma);
+  await seedArtifactTemplates(prisma, rootUser);
   const artifactTemplate = await prisma.artifactTemplate.findFirst({});
   if (!artifactTemplate)
     throw new Error('Must run seed.ts must be ran prior to this file');

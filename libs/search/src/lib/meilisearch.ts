@@ -1,5 +1,5 @@
 import { MeiliSearch as Client, MeiliSearchApiError } from 'meilisearch';
-import { Indexes, SearchProvider } from './types';
+import { ArtifactIndexDocument, Indexes, SearchProvider } from './types';
 import dedent from 'dedent';
 import { prisma } from '@dnd-assistant/prisma/client';
 
@@ -56,7 +56,7 @@ export class MeiliSearch implements SearchProvider {
     });
 
     const artifactIndexes = artifacts.map((artifact) => {
-      const { id, userId, title, visibility, fields } = artifact;
+      const { userId, title, visibility, fields } = artifact;
 
       const fullFieldText = fields.reduce(
         (acc, field) => acc + ' ' + field.text,
@@ -69,12 +69,11 @@ export class MeiliSearch implements SearchProvider {
       `;
 
       const artifactIndex = {
-        id,
         userId,
         title,
         visibility,
         fullText,
-      };
+      } satisfies ArtifactIndexDocument;
 
       return artifactIndex;
     });
