@@ -1,4 +1,4 @@
-import { prisma } from '@dnd-assistant/prisma';
+import { prisma } from '@dnd-assistant/prisma/client';
 import { PasswordResetMail } from '../mailer/mail/PasswordResetMail';
 import { generatePasswordResetSession } from '../session/generatePasswordResetSession';
 

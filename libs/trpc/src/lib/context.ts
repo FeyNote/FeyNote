@@ -1,7 +1,7 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
 
 import { inferAsyncReturnType } from '@trpc/server';
-import { prisma } from '@dnd-assistant/prisma';
+import { prisma } from '@dnd-assistant/prisma/client';
 
 export const createContext = async (
   expressContext: trpcExpress.CreateExpressContextOptions

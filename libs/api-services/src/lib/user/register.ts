@@ -1,7 +1,7 @@
 import { UserAlreadyExistError } from '../error';
 import { generateSession } from '../session/generateSession';
 import { generatePasswordHashAndSalt } from './generatePasswordHashAndSalt';
-import { prisma } from '@dnd-assistant/prisma';
+import { prisma } from '@dnd-assistant/prisma/client';
 
 export const register = async (email: string, password: string) => {
   const existingUser = await prisma.user.findFirst({
