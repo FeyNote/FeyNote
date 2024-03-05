@@ -1,17 +1,17 @@
 {
-  "name": "prisma",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/prisma/src",
+  "name": "prisma/types",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/prisma/types/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/libs/prisma",
-        "main": "libs/prisma/src/index.ts",
-        "tsConfig": "libs/prisma/tsconfig.lib.json",
-        "assets": ["libs/prisma/*.md"]
+        "outputPath": "dist/libs/prisma/types",
+        "main": "libs/prisma/types/src/index.ts",
+        "tsConfig": "libs/prisma/types/tsconfig.lib.json",
+        "assets": ["libs/prisma/types/*.md"]
       }
     },
     "lint": {
@@ -22,7 +22,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "libs/prisma/jest.config.ts"
+        "jestConfig": "libs/prisma/types/jest.config.ts"
       }
     }
   },

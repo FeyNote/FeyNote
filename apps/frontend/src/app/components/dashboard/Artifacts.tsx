@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArtifactSummary } from '@dnd-assistant/prisma';
+import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import { ArtifactCard } from './ArtifactCard';
 import { IonButton, IonLabel, IonListHeader } from '@ionic/react';
 import { useTranslation } from 'react-i18next';

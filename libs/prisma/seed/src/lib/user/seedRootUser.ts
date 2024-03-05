@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const ROOT_USER_EMAIL = 'tabletop-assistant@tabletop-assistant.io';
+export const ROOT_USER_EMAIL = 'tabletop-assistant@tabletop-assistant.io';
 
 export const seedRootUser = async (prisma: PrismaClient) => {
   const rootUser = await prisma.user.upsert({

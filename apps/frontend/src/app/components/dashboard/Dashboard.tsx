@@ -21,7 +21,7 @@ import { useMemo, useState } from 'react';
 import { filterOutline, add } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
-import { ArtifactSummary } from '@dnd-assistant/prisma';
+import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import { GridContainer, GridRowSearchbar, GridRowArtifacts } from './styles';
 
 export const Dashboard: React.FC = () => {
@@ -44,6 +44,23 @@ export const Dashboard: React.FC = () => {
       });
   });
 
+  const handleSearchInput = (e: Event) => {
+    let query = '';
+    const target = e.target as HTMLIonSearchbarElement;
+    if (target) query = target.value || '';
+
+    trpc.artifact.searchArtifactsForSelf
+      .query({
+        query,
+      })
+      .then((_artifacts) => {
+        setArtifacts(_artifacts);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+  };
+
   return (
     <IonPage id="main">
       <IonHeader>
@@ -59,6 +76,8 @@ export const Dashboard: React.FC = () => {
           <GridRowSearchbar className="ion-align-items-center">
             <IonSearchbar
               style={{ padding: 0 }}
+              debounce={300}
+              onIonInput={(e) => handleSearchInput(e)}
               placeholder={t('dashboard.searchbar.placeholder')}
             ></IonSearchbar>
             <IonButton fill="clear">

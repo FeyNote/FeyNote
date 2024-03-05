@@ -1,4 +1,4 @@
-import { getArtifactById as _getArtifactById } from '@dnd-assistant/api-services';
+import { getArtifactDetailById } from '@dnd-assistant/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
@@ -10,7 +10,7 @@ export const getArtifactById = authenticatedProcedure
     })
   )
   .query(async ({ ctx, input }) => {
-    const artifact = await _getArtifactById(input.id);
+    const artifact = await getArtifactDetailById(input.id);
 
     // TODO: We will want to check visibility here rather than ownership only.
     if (artifact.userId !== ctx.session.userId) {
