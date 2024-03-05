@@ -1,15 +1,10 @@
 import { ElasticSearch } from './elasticSearch';
-import { MeiliSearch } from './meilisearch';
 import { AvailableSearchProviders, SearchProvider } from './types';
 
 let searchProvider: SearchProvider | undefined;
 switch (process.env['SEARCH_PROVIDER']) {
   case AvailableSearchProviders.ElasticSearch: {
     searchProvider = new ElasticSearch();
-    break;
-  }
-  case AvailableSearchProviders.MeiliSearch: {
-    searchProvider = new MeiliSearch();
     break;
   }
   default: {
