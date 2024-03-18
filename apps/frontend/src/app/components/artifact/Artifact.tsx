@@ -14,15 +14,19 @@ import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useState } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
+import { RouteArgs } from '../../routes';
+import { useParams } from 'react-router-dom';
+import { t } from 'i18next';
 
-export const Artifact = () => {
+export const Artifact: React.FC = () => {
+  const { id } = useParams<RouteArgs['artifact']>();
   const [presentToast] = useIonToast();
   const [artifact, setArtifact] = useState<ArtifactDetail>();
 
   useIonViewWillEnter(() => {
     trpc.artifact.getArtifactById
       .query({
-        id: 'asdf',
+        id,
       })
       .then((_artifact) => {
         setArtifact(_artifact);
@@ -39,7 +43,9 @@ export const Artifact = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Artifact: {}</IonTitle>
+          <IonTitle>
+            {t('artifact.title')}: {artifact?.title}
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">

@@ -24,6 +24,7 @@ import '@ionic/react/css/display.css';
 import { setupIonicReact } from '@ionic/react';
 import { Menu } from './components/menu/Menu';
 
+import './css/global.css';
 import './css/themes/dark.css';
 import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
 import { Dashboard } from './components/dashboard/Dashboard';

@@ -353,5 +353,14 @@
   "artifactTemplate.religon.notableNPCs.title": "Notable NPCs",
   "artifactTemplate.religon.notableNPCs.aiPrompt": "Generate me notable individuals that exist in a high fantasy religous order",
   "artifactTemplate.religon.notableNPCs.placeholder": "Enter notable NPCs using @ to reference other artifacts",
-  "artifactTemplate.religon.notableNPCs.description": "The notable NPCs that exist within this religon, such as gods or high-ranking priests"
+  "artifactTemplate.religon.notableNPCs.description": "The notable NPCs that exist within this religon, such as gods or high-ranking priests",
+
+  "artifact.title": "Artifact",
+  "artifactField.imageAlt": "Image attached to artifact",
+  "artifactField.noImages": "No images",
+
+  "generic.save": "Save",
+  "generic.edit": "Edit",
+  "generic.show": "Show",
+  "generic.hide": "Hide"
 }

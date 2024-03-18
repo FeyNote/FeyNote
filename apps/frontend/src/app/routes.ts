@@ -1,9 +1,22 @@
+/*
+ * An auto-inferred mapping of route names to their complete path and parameter information, inferred from a tagged template literal.
+ * To add a new route, just add a new entry and use ${'paramName'} within your template literal to define another parameter. Everything else will be auto-inferred.
+ */
 export const routes = {
   home: route`/`,
   dashboard: route`/dashboard`,
   register: route`/register`,
   login: route`/login`,
   artifact: route`/artifact/${'id'}`,
+};
+
+/*
+ * Infers each param type for use in `useParams` within a given routed component, based on the route map defined above.
+ */
+export type RouteArgs = {
+  [k in keyof typeof routes]: {
+    [z in (typeof routes)[k]['args'][0]]: string;
+  };
 };
 
 /**
@@ -28,15 +41,17 @@ function route<T>(
   pathParts: TemplateStringsArray,
   ...placeholders: (keyof T)[]
 ) {
-  let path = '';
+  let route = '';
   for (let i = 0; i < pathParts.length; i++) {
     const pathPart = pathParts[i];
+    route += pathPart;
+
     const placeholder = String(placeholders[i] || '');
-    path += pathPart + placeholder;
+    if (placeholder) route += ':' + placeholder;
   }
 
   return {
-    path,
+    route,
     build: (
       args: typeof placeholders extends never[]
         ? void
@@ -53,5 +68,6 @@ function route<T>(
       }
       return relativeUrl;
     },
+    args: placeholders,
   };
 }
