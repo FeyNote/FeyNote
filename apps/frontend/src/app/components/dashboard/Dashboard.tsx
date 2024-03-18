@@ -54,6 +54,7 @@ export const Dashboard: React.FC = () => {
         query,
       })
       .then((_artifacts) => {
+        console.log('settings artifacts', _artifacts);
         setArtifacts(_artifacts);
       })
       .catch((error) => {

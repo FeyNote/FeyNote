@@ -11,11 +11,11 @@ export interface ArtifactIndexDocument {
   title: string;
   visibility: Visibility;
   fullText: string;
+  id: string;
 }
 
 export enum AvailableSearchProviders {
   ElasticSearch = 'elasticsearch',
-  MeiliSearch = 'meilisearch',
 }
 
 export enum Indexes {

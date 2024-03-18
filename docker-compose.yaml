@@ -32,6 +32,11 @@ services:
     command: npx nx serve backend
     environment:
       - DATABASE_URL=postgresql://dnd-assistant:dnd-assistant@postgres:5432/dnd-assistant?schema=public
+      - ELASTICSEARCH_URI=http://elastic:password@elasticsearch:9200
+      - SEARCH_PROVIDER=elasticsearch
+      - EMAIL_FROM_NAME=val
+      - EMAIL_FROM_ADDRESS=val
+      - EMAIL_REPLY_TO_ADDRESS=val
     env_file:
       - ./.env
     depends_on:
@@ -50,6 +55,8 @@ services:
     environment:
       - discovery.type=single-node
       - 'ES_JAVA_OPTS=-Xms500m -Xmx500m'
+      - ELASTIC_PASSWORD=password
+      - xpack.security.enabled=false
   kibana:
     image: kibana:8.12.1
     ports:

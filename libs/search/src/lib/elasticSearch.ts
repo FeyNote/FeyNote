@@ -8,7 +8,53 @@ export class ElasticSearch implements SearchProvider {
     node: process.env['ELASTICSEARCH_URI'],
   });
 
-  constructor() {}
+  constructor() {
+    this.init();
+  }
+
+  async init() {
+    console.log('Establishing a connection to elasticsearch');
+    await this.client.ping();
+    console.log('Established a connection to elasticsearch');
+
+    const exists = await this.client.indices.exists({
+      index: Indexes.Artifacts,
+    });
+
+    if (!exists) {
+      await this.client.indices.create({
+        index: Indexes.Artifacts,
+        body: {
+          mappings: {
+            properties: {
+              title: {
+                type: 'text',
+                analyzer: 'english', // Enable stemming
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    ignore_above: 256,
+                  },
+                },
+              },
+              fullText: {
+                type: 'text',
+                fields: {
+                  keyword: {
+                    type: 'keyword',
+                    ignore_above: 10000,
+                  },
+                },
+              },
+              userId: {
+                type: 'keyword',
+              },
+            },
+          },
+        },
+      });
+    }
+  }
 
   async indexArtifacts(artifactIds: string[]) {
     if (!artifactIds.length) return Promise.resolve();
@@ -30,37 +76,40 @@ export class ElasticSearch implements SearchProvider {
       },
     });
 
-    const actions = artifacts.map((artifact) => {
-      const { id, userId, title, visibility, fields } = artifact;
+    const operations = artifacts
+      .map((artifact) => {
+        const { id, userId, title, visibility, fields } = artifact;
 
-      const fullFieldText = fields.reduce(
-        (acc, field) => acc + ' ' + field.text,
-        ''
-      );
+        const fullFieldText = fields.reduce(
+          (acc, field) => acc + ' ' + field.text,
+          ''
+        );
 
-      const fullText = dedent`
+        const fullText = dedent`
         ${title}
         ${fullFieldText}
       `;
 
-      const document = {
-        userId,
-        title,
-        visibility,
-        fullText,
-      } satisfies ArtifactIndexDocument;
+        const document = {
+          userId,
+          title,
+          visibility,
+          fullText,
+          id,
+        } satisfies ArtifactIndexDocument;
 
-      const action = {
-        index: Indexes.Artifacts,
-        id,
-        document,
-      };
+        const action = {
+          index: {
+            _index: Indexes.Artifacts,
+          },
+        };
 
-      return action;
-    });
+        return [action, document];
+      })
+      .flat();
 
     await this.client.bulk({
-      body: actions,
+      operations,
     });
   }
 
@@ -81,28 +130,27 @@ export class ElasticSearch implements SearchProvider {
   async searchArtifacts(userId: string, query: string) {
     const results = await this.client.search({
       index: Indexes.Artifacts,
-      body: {
-        query: {
-          bool: {
-            should: [
-              {
-                prefix: {
-                  title: query,
-                },
-              },
-            ],
-            must: {
-              match_bool_prefix: {
-                fullText: {
-                  query,
-                  fuzziness: 'AUTO',
-                },
+      query: {
+        bool: {
+          should: [
+            {
+              prefix: {
+                title: query,
               },
             },
-            filter: {
-              terms: {
-                userId,
+          ],
+          must: {
+            match_bool_prefix: {
+              fullText: {
+                query,
+                fuzziness: 'AUTO',
+                operator: 'and',
               },
+            },
+          },
+          filter: {
+            terms: {
+              userId: [userId],
             },
           },
         },
@@ -110,6 +158,8 @@ export class ElasticSearch implements SearchProvider {
     });
     return results.hits.hits
       .sort((a, b) => (a._score && b._score ? b._score - a._score : 0))
-      .map((hit) => hit._id);
+      .map((hit) => hit._source)
+      .filter((source): source is ArtifactIndexDocument => !!source)
+      .map((source) => source.id);
   }
 }
