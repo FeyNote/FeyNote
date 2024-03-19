@@ -14,12 +14,16 @@ const StyledEditorContent = styled(EditorContent)`
 
 interface Props {
   content?: string;
+  onContentChange?: (updatedContent: string) => void;
 }
 
 export const TiptapEditor = (props: Props) => {
   const editor = useEditor({
     extensions: [StarterKit, ListItem],
     content: props.content,
+    onUpdate: ({ editor }) => {
+      props.onContentChange?.(editor.getHTML());
+    },
   });
 
   if (!editor) return;

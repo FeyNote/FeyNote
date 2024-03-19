@@ -22,13 +22,19 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
       select: {
         id: true,
         text: true,
-        images: {
+        fieldImages: {
           select: {
             id: true,
-            title: true,
-            storageKey: true,
-            createdAt: true,
-            updatedAt: true,
+            order: true,
+            image: {
+              select: {
+                id: true,
+                title: true,
+                storageKey: true,
+                createdAt: true,
+                updatedAt: true,
+              },
+            },
           },
         },
         fieldTemplateId: true,

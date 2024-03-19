@@ -5,10 +5,14 @@ import {
   IonItem,
   IonLabel,
   IonListHeader,
+  IonSpinner,
+  useIonToast,
 } from '@ionic/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TiptapEditor } from '../tiptap/TiptapEditor';
+import { trpc } from '../../../utils/trpc';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 type ArtifactDetailField = ArtifactDetail['fields'][0];
 
@@ -20,7 +24,9 @@ interface Props {
 export const ArtifactField = (props: Props) => {
   const { t } = useTranslation();
   const [edit, setEdit] = useState(props.initializeAsEdit ?? false);
-  const [updatedText, setUpdatedText] = useState(props.field.text || '');
+  const [fieldText, setFieldText] = useState(props.field.text || '');
+  const [presentToast] = useIonToast();
+  const [saving, setSaving] = useState(false);
 
   const textDisplayClick = () => {
     const selection = window.getSelection();
@@ -29,13 +35,45 @@ export const ArtifactField = (props: Props) => {
     }
   };
 
+  const saveText = () => {
+    setSaving(true);
+    trpc.field.updateField
+      .mutate({
+        id: props.field.id,
+        text: fieldText,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        setSaving(false);
+      });
+  };
+
+  const saveEditClick = () => {
+    setEdit(!edit);
+
+    if (edit) {
+      if (
+        props.field.fieldTemplate.type === 'Text' ||
+        props.field.fieldTemplate.type === 'TextArea'
+      ) {
+        saveText();
+      }
+    }
+  };
+
   return (
     <div>
       <IonListHeader>
         <IonLabel>{t(props.field.fieldTemplate.title)}</IonLabel>
-        <IonButton onClick={() => setEdit(!edit)}>
-          {t(edit ? 'generic.save' : 'generic.edit')}
-        </IonButton>
+        {saving ? (
+          <IonSpinner></IonSpinner>
+        ) : (
+          <IonButton onClick={saveEditClick}>
+            {t(edit ? 'generic.save' : 'generic.edit')}
+          </IonButton>
+        )}
       </IonListHeader>
       <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
         {props.field.fieldTemplate.type === 'Text' && (
@@ -43,15 +81,13 @@ export const ArtifactField = (props: Props) => {
             {edit ? (
               <IonItem>
                 <IonInput
-                  value={updatedText}
-                  onIonInput={(event) =>
-                    setUpdatedText(event.detail.value || '')
-                  }
+                  value={fieldText}
+                  onIonInput={(event) => setFieldText(event.detail.value || '')}
                 />
               </IonItem>
             ) : (
               <IonItem onClick={() => textDisplayClick()}>
-                <IonLabel>{updatedText}</IonLabel>
+                <IonLabel>{fieldText}</IonLabel>
               </IonItem>
             )}
           </div>
@@ -59,13 +95,18 @@ export const ArtifactField = (props: Props) => {
         {props.field.fieldTemplate.type === 'TextArea' && (
           <div>
             {edit ? (
-              <TiptapEditor content={props.field.text || undefined} />
+              <TiptapEditor
+                content={props.field.text || undefined}
+                onContentChange={(updatedContent) =>
+                  setFieldText(updatedContent)
+                }
+              />
             ) : (
               <IonItem>
                 <IonLabel>
                   <div
                     onClick={textDisplayClick}
-                    dangerouslySetInnerHTML={{ __html: props.field.text || '' }}
+                    dangerouslySetInnerHTML={{ __html: fieldText || '' }}
                   ></div>
                 </IonLabel>
               </IonItem>
@@ -76,12 +117,12 @@ export const ArtifactField = (props: Props) => {
           <div>
             {edit
               ? 'Image uploader not yet implemented'
-              : props.field.images.length
-              ? props.field.images.map((image) => (
+              : props.field.fieldImages.length
+              ? props.field.fieldImages.map((fieldImage) => (
                   <img
                     alt={t('artifactField.imageAlt')}
-                    src={image.storageKey}
-                    key={image.id}
+                    src={fieldImage.image.storageKey}
+                    key={fieldImage.id}
                   />
                 ))
               : t('artifactField.noImages')}
