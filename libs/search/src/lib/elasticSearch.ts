@@ -1,7 +1,8 @@
 import { Client } from '@elastic/elasticsearch';
 import { ArtifactIndexDocument, Indexes, SearchProvider } from './types';
-import dedent from 'dedent';
+import { artifactFieldsSummary } from '@dnd-assistant/prisma/types';
 import { prisma } from '@dnd-assistant/prisma/client';
+import { createArtifactIndexDocument } from './createArtifactIndexDocument';
 
 export class ElasticSearch implements SearchProvider {
   readonly client = new Client({
@@ -63,41 +64,12 @@ export class ElasticSearch implements SearchProvider {
       where: {
         id: { in: artifactIds },
       },
-      select: {
-        id: true,
-        title: true,
-        userId: true,
-        visibility: true,
-        fields: {
-          select: {
-            text: true,
-          },
-        },
-      },
+      ...artifactFieldsSummary,
     });
 
     const operations = artifacts
-      .map((artifact) => {
-        const { id, userId, title, visibility, fields } = artifact;
-
-        const fullFieldText = fields.reduce(
-          (acc, field) => acc + ' ' + field.text,
-          ''
-        );
-
-        const fullText = dedent`
-        ${title}
-        ${fullFieldText}
-      `;
-
-        const document = {
-          userId,
-          title,
-          visibility,
-          fullText,
-          id,
-        } satisfies ArtifactIndexDocument;
-
+      .map((artifactFieldsSummary) => {
+        const document = createArtifactIndexDocument(artifactFieldsSummary);
         const action = {
           index: {
             _index: Indexes.Artifacts,

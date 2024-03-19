@@ -16,6 +16,7 @@ export interface ArtifactIndexDocument {
 
 export enum AvailableSearchProviders {
   ElasticSearch = 'elasticsearch',
+  Typesense = 'typesense',
 }
 
 export enum Indexes {

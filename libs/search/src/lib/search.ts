@@ -1,4 +1,5 @@
 import { ElasticSearch } from './elasticSearch';
+import { TypeSense } from './typesense';
 import { AvailableSearchProviders, SearchProvider } from './types';
 
 const getSearchProvider = () => {
@@ -8,10 +9,16 @@ const getSearchProvider = () => {
       searchProvider = new ElasticSearch();
       break;
     }
+    case AvailableSearchProviders.Typesense: {
+      searchProvider = new TypeSense();
+      break;
+    }
   }
 
   if (!searchProvider)
-    throw new Error('SEARCH_PROVIDER must be set to "elasticsearch".');
+    throw new Error(
+      'SEARCH_PROVIDER must be set to "elasticsearch" or "typesense".'
+    );
   return searchProvider;
 };
 
