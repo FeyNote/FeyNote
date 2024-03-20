@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const artifactFieldsSummary = Prisma.validator<Prisma.ArtifactArgs>()({
+export const indexableArtifact = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
     id: true,
     title: true,
@@ -14,6 +14,6 @@ export const artifactFieldsSummary = Prisma.validator<Prisma.ArtifactArgs>()({
   },
 });
 
-export type ArtifactFieldsSummary = Prisma.ArtifactGetPayload<
-  typeof artifactFieldsSummary
+export type IndexableArtifact = Prisma.ArtifactGetPayload<
+  typeof indexableArtifact
 >;

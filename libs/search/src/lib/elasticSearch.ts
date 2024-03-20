@@ -1,6 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 import { ArtifactIndexDocument, Indexes, SearchProvider } from './types';
-import { artifactFieldsSummary } from '@dnd-assistant/prisma/types';
+import { indexableArtifact } from '@dnd-assistant/prisma/types';
 import { prisma } from '@dnd-assistant/prisma/client';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
 
@@ -64,7 +64,7 @@ export class ElasticSearch implements SearchProvider {
       where: {
         id: { in: artifactIds },
       },
-      ...artifactFieldsSummary,
+      ...indexableArtifact,
     });
 
     const operations = artifacts
@@ -99,6 +99,7 @@ export class ElasticSearch implements SearchProvider {
     });
   }
 
+  // NOTE: Stemming and Fuzzy Searching Does Not Currently Work
   async searchArtifacts(userId: string, query: string) {
     const results = await this.client.search({
       index: Indexes.Artifacts,
@@ -111,15 +112,6 @@ export class ElasticSearch implements SearchProvider {
               },
             },
           ],
-          must: {
-            match_bool_prefix: {
-              fullText: {
-                query,
-                fuzziness: 'AUTO',
-                operator: 'and',
-              },
-            },
-          },
           filter: {
             terms: {
               userId: [userId],

@@ -1,6 +1,4 @@
 FROM node:20-alpine
-ENV DOCKERIZE_VERSION v0.7.0
-
 USER "1000:1000"
 
 WORKDIR /app

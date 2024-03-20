@@ -6,3 +6,4 @@ export * from './lib/error';
 export * from './lib/artifacts/getArtifactsForUserId';
 export * from './lib/artifacts/getArtifactSummariesByIds';
 export * from './lib/session/isSessionExpired';
+export * from './lib/config';

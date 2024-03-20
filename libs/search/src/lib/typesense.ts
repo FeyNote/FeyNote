@@ -1,13 +1,14 @@
 import { prisma } from '@dnd-assistant/prisma/client';
 import { Indexes, SearchProvider } from './types';
 import { Client } from 'typesense';
-import { artifactFieldsSummary } from '@dnd-assistant/prisma/types';
+import { indexableArtifact } from '@dnd-assistant/prisma/types';
+import { config } from '@dnd-assistant/api-services';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
 
 export class TypeSense implements SearchProvider {
-  readonly client = new Client({
-    nodes: JSON.parse(process.env['TYPESENSE_NODES'] || ''),
-    apiKey: process.env['TYPESENSE_API_KEY'] || '',
+  private readonly client = new Client({
+    nodes: JSON.parse(config.typesense.nodes),
+    apiKey: config.typesense.apiKey,
     numRetries: 10,
     retryIntervalSeconds: 1,
     connectionTimeoutSeconds: 10,
@@ -17,7 +18,7 @@ export class TypeSense implements SearchProvider {
     this.init();
   }
 
-  async init() {
+  private async init() {
     console.log('Establishing a connection to typesense');
     const exists = await this.client.collections(Indexes.Artifacts).exists();
     console.log('Established a connection to typesense');
@@ -63,7 +64,7 @@ export class TypeSense implements SearchProvider {
       where: {
         id: { in: artifactIds },
       },
-      ...artifactFieldsSummary,
+      ...indexableArtifact,
     });
     const documents = artifactSummaries.map((artifactSummary) =>
       createArtifactIndexDocument(artifactSummary)

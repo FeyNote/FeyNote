@@ -1,9 +1,9 @@
 import dedent from 'dedent';
 import { ArtifactIndexDocument } from './types';
-import { ArtifactFieldsSummary } from '@dnd-assistant/prisma/types';
+import { IndexableArtifact } from '@dnd-assistant/prisma/types';
 
 export const createArtifactIndexDocument = (
-  artifact: ArtifactFieldsSummary
+  artifact: IndexableArtifact
 ): ArtifactIndexDocument => {
   const { id, userId, title, visibility, fields } = artifact;
 
