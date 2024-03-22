@@ -1,5 +1,5 @@
 import { prisma } from '@dnd-assistant/prisma/client';
-import { generateSessionExpiry } from './generate-session-expiry';
+import { generateSessionExpiry } from './generateSessionExpiry';
 import { Session } from '@prisma/client';
 
 /**

@@ -1,6 +1,7 @@
 import { prisma } from '@dnd-assistant/prisma/client';
 import { seedRootUser } from './user/seedRootUser';
 import { seedArtifactTemplates } from './artifactTemplates/seedArtifactTemplates';
+import { searchProvider } from '@dnd-assistant/search';
 
 async function main() {
   console.log('Started development seeding');
@@ -43,7 +44,7 @@ async function main() {
     };
   });
 
-  await prisma.artifact.create({
+  const artifact1 = await prisma.artifact.create({
     data: {
       title: 'Windemere',
       isPinned: true,
@@ -56,7 +57,7 @@ async function main() {
     },
   });
 
-  await prisma.artifact.create({
+  const artifact2 = await prisma.artifact.create({
     data: {
       title: 'The Grove',
       isPinned: false,
@@ -68,6 +69,8 @@ async function main() {
       userId: user.id,
     },
   });
+
+  await searchProvider.indexArtifacts([artifact1.id, artifact2.id]);
 }
 
 main()

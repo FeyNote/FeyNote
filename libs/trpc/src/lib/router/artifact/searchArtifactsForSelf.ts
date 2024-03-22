@@ -1,5 +1,5 @@
 import { getArtifactSummariesByIds } from '@dnd-assistant/api-services';
-import { searchArtifacts } from '@dnd-assistant/search';
+import { searchProvider } from '@dnd-assistant/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 
@@ -12,7 +12,11 @@ export const searchArtifactsForSelf = authenticatedProcedure
   .query(async ({ input, ctx }) => {
     const { session } = ctx;
     const { query } = input;
-    const searchedArtifactIds = await searchArtifacts(session.userId, query);
+    const searchedArtifactIds = await searchProvider.searchArtifacts(
+      session.userId,
+      query
+    );
+    console.log('searched artifacts', searchedArtifactIds);
     const artifacts = await getArtifactSummariesByIds(searchedArtifactIds);
     return artifacts;
   });
