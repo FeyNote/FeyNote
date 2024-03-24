@@ -1,14 +1,9 @@
-import { ElasticSearch } from './elasticSearch';
 import { TypeSense } from './typesense';
 import { AvailableSearchProviders, SearchProvider } from './types';
 
 const getSearchProvider = () => {
   let searchProvider: SearchProvider | undefined;
   switch (process.env['SEARCH_PROVIDER']) {
-    case AvailableSearchProviders.ElasticSearch: {
-      searchProvider = new ElasticSearch();
-      break;
-    }
     case AvailableSearchProviders.Typesense: {
       searchProvider = new TypeSense();
       break;
