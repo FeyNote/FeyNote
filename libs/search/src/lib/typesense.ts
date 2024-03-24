@@ -45,11 +45,6 @@ export class TypeSense implements SearchProvider {
             optional: false,
           },
           {
-            name: 'visibility',
-            type: 'string',
-            optional: false,
-          },
-          {
             name: 'fullText',
             type: 'string',
             optional: false,
@@ -105,7 +100,7 @@ export class TypeSense implements SearchProvider {
   ) {
     const query_by = withEmbeddings
       ? 'fullTextEmbedding,fullText'
-      : 'title,fullText,visibility';
+      : 'title,fullText';
     const vector_query = withEmbeddings
       ? 'fullTextEmbedding:([], distance_threshold:.75)'
       : undefined;
