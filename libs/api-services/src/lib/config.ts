@@ -15,4 +15,8 @@ export const config = {
     accessKeyId: getEnvOrThrow('AWS_ACCESS_KEY_ID'),
     secretAccessKey: getEnvOrThrow('AWS_SECRET_ACCESS_KEY'),
   },
+  typesense: {
+    apiKey: getEnvOrThrow('TYPESENSE_API_KEY'),
+    nodes: getEnvOrThrow('TYPESENSE_NODES'),
+  },
 };

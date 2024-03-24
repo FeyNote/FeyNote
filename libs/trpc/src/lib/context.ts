@@ -2,6 +2,7 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 
 import { inferAsyncReturnType } from '@trpc/server';
 import { prisma } from '@dnd-assistant/prisma/client';
+import { isSessionExpired } from '@dnd-assistant/api-services';
 
 export const createContext = async (
   expressContext: trpcExpress.CreateExpressContextOptions
@@ -25,6 +26,7 @@ const getSessionFromAuthHeader = async (
   const session = await prisma.session.findUnique({
     where: { token },
   });
+  if (!session || isSessionExpired(session)) return null;
   return session;
 };
 

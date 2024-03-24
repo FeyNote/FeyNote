@@ -1,6 +1,6 @@
 import { prisma } from '@dnd-assistant/prisma/client';
-import { generateSessionToken } from './generate-session-token';
-import { generateSessionExpiry } from './generate-session-expiry';
+import { generateSessionToken } from './generateSessionToken';
+import { generateSessionExpiry } from './generateSessionExpiry';
 import { Prisma } from '@prisma/client';
 
 /**
