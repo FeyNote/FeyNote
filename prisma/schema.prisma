@@ -82,13 +82,24 @@ model Artifact {
 model Field {
   id              String        @id @default(uuid()) @db.Uuid
   text            String?
-  images          Image[]
   fieldTemplate   FieldTemplate @relation(fields: [fieldTemplateId], references: [id])
   fieldTemplateId String        @db.Uuid
   artifact        Artifact      @relation(fields: [artifactId], references: [id])
   artifactId      String        @db.Uuid
   createdAt       DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime      @updatedAt @db.Timestamptz(6)
+  fieldImages     FieldImage[]
+}
+
+model FieldImage {
+  id        String    @id @default(uuid()) @db.Uuid
+  fieldId   String    @db.Uuid
+  field     Field     @relation(fields: [fieldId], references: [id])
+  imageId   String    @db.Uuid
+  image     Image     @relation(fields: [imageId], references: [id])
+  order     Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model Image {
@@ -97,7 +108,7 @@ model Image {
   storageKey String
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  Fields     Field[]
+  fieldImages     FieldImage[]
 }
 
 enum FieldType {

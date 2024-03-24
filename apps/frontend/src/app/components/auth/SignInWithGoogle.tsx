@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useRef } from 'react';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useIonRouter, useIonToast } from '@ionic/react';
-import { Routes } from '../../routes';
+import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 interface Props {
@@ -40,7 +40,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
         .mutate(args)
         .then((_session) => {
           setSession(_session);
-          router.push(Routes.Dashboard);
+          router.push(routes.dashboard.build());
         })
         .catch((error) => {
           handleTRPCErrors(error, presentToast);

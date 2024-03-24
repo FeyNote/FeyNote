@@ -1,0 +1,11 @@
+blockquote {
+  padding-left: 16px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  border-left: 2px solid var(--ion-color-medium);
+  margin-left: 1.5rem;
+}
+
+hr {
+  background: var(--ion-color-medium);
+}

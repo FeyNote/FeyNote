@@ -1,0 +1,56 @@
+import { ArtifactDetail } from '@dnd-assistant/prisma/types';
+import {
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonMenuButton,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  useIonToast,
+  useIonViewWillEnter,
+} from '@ionic/react';
+import { trpc } from '../../../utils/trpc';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { useState } from 'react';
+import { ArtifactRenderer } from './ArtifactRenderer';
+import { RouteArgs } from '../../routes';
+import { useParams } from 'react-router-dom';
+import { t } from 'i18next';
+
+export const Artifact: React.FC = () => {
+  const { id } = useParams<RouteArgs['artifact']>();
+  const [presentToast] = useIonToast();
+  const [artifact, setArtifact] = useState<ArtifactDetail>();
+
+  useIonViewWillEnter(() => {
+    trpc.artifact.getArtifactById
+      .query({
+        id,
+      })
+      .then((_artifact) => {
+        setArtifact(_artifact);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+  });
+
+  return (
+    <IonPage id="main">
+      <IonHeader>
+        <IonToolbar>
+          <IonButtons slot="start">
+            <IonMenuButton></IonMenuButton>
+          </IonButtons>
+          <IonTitle>
+            {t('artifact.title')}: {artifact?.title}
+          </IonTitle>
+        </IonToolbar>
+      </IonHeader>
+      <IonContent className="ion-padding">
+        {artifact && <ArtifactRenderer artifact={artifact} />}
+      </IonContent>
+    </IonPage>
+  );
+};

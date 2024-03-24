@@ -1,7 +1,7 @@
 import { IonItem, IonLabel, IonMenuToggle } from '@ionic/react';
 import { useContext } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
-import { Routes } from '../../routes';
+import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
 
 export const AuthenticatedMenuItems: React.FC = () => {
@@ -15,12 +15,12 @@ export const AuthenticatedMenuItems: React.FC = () => {
   return (
     <>
       <IonMenuToggle autoHide={false}>
-        <IonItem routerLink={Routes.Dashboard}>
+        <IonItem routerLink={routes.dashboard.build()}>
           <IonLabel>{t('menu.dashboard')}</IonLabel>
         </IonItem>
       </IonMenuToggle>
       <IonMenuToggle autoHide={false}>
-        <IonItem onClick={signOut} routerLink={Routes.Login}>
+        <IonItem onClick={signOut} routerLink={routes.login.build()}>
           <IonLabel>{t('menu.signOut')}</IonLabel>
         </IonItem>
       </IonMenuToggle>

@@ -29,7 +29,7 @@ import { validateEmail, validatePassword } from '@dnd-assistant/shared-utils';
 import { getIonInputClassNames } from './input';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { Routes } from '../../routes';
+import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 
@@ -59,7 +59,7 @@ export const Register: React.FC = () => {
       })
       .then((_session) => {
         setSession(_session);
-        router.push(Routes.Dashboard);
+        router.push(routes.dashboard.build());
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
@@ -185,7 +185,7 @@ export const Register: React.FC = () => {
               <CenteredIonText>
                 <sub>
                   {t('auth.register.subtext.text')}{' '}
-                  <IonRouterLink routerLink={Routes.Login}>
+                  <IonRouterLink routerLink={routes.login.build()}>
                     {t('auth.register.subtext.link')}
                   </IonRouterLink>
                 </sub>

@@ -10,7 +10,7 @@ import {
 } from '@ionic/react';
 import React, { useContext, useEffect } from 'react';
 import { SessionContext } from './context/session/SessionContext';
-import { Routes } from './routes';
+import { routes } from './routes';
 
 export const Home: React.FC = () => {
   const { session } = useContext(SessionContext);
@@ -18,7 +18,7 @@ export const Home: React.FC = () => {
 
   useEffect(() => {
     if (session) {
-      router.push(Routes.Dashboard);
+      router.push(routes.dashboard.build());
     }
   }, [session, router]);
 

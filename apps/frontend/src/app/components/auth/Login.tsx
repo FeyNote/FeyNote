@@ -28,7 +28,7 @@ import { trpc } from '../../../utils/trpc';
 import { useContext, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
-import { Routes } from '../../routes';
+import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 
@@ -53,7 +53,7 @@ export const Login: React.FC = () => {
       })
       .then((_session) => {
         setSession(_session);
-        router.push(Routes.Dashboard);
+        router.push(routes.dashboard.build());
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
@@ -141,7 +141,7 @@ export const Login: React.FC = () => {
               <CenteredIonText>
                 <sub>
                   {t('auth.login.forgot.text')}{' '}
-                  <IonRouterLink routerLink={Routes.Register}>
+                  <IonRouterLink routerLink={routes.register.build()}>
                     {t('auth.login.forgot.link')}
                   </IonRouterLink>
                 </sub>
