@@ -17,7 +17,7 @@ import {
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { filterOutline, add } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
@@ -33,7 +33,7 @@ export const Dashboard: React.FC = () => {
     [artifacts]
   );
 
-  useIonViewWillEnter(() => {
+  const getUserArtifacts = useCallback(() => {
     trpc.artifact.getArtifactsForSelf
       .query()
       .then((_artifacts) => {
@@ -42,12 +42,21 @@ export const Dashboard: React.FC = () => {
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
       });
+  }, [setArtifacts]);
+
+  useIonViewWillEnter(() => {
+    getUserArtifacts();
   });
 
   const handleSearchInput = (e: Event) => {
     let query = '';
     const target = e.target as HTMLIonSearchbarElement;
     if (target) query = target.value || '';
+
+    if (!query) {
+      getUserArtifacts();
+      return;
+    }
 
     trpc.artifact.searchArtifactsForSelf
       .query({

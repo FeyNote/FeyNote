@@ -3,7 +3,11 @@ import { Visibility } from '@prisma/client';
 export interface SearchProvider {
   indexArtifacts: (artifactIds: string[]) => Promise<void>;
   deleteArtifacts: (artifactIds: string[]) => Promise<void>;
-  searchArtifacts: (userId: string, query: string) => Promise<string[]>;
+  searchArtifacts: (
+    userId: string,
+    query: string,
+    withEmbeddings?: boolean
+  ) => Promise<string[]>;
 }
 
 export interface ArtifactIndexDocument {
@@ -15,7 +19,6 @@ export interface ArtifactIndexDocument {
 }
 
 export enum AvailableSearchProviders {
-  ElasticSearch = 'elasticsearch',
   Typesense = 'typesense',
 }
 
