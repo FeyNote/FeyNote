@@ -8,11 +8,8 @@ interface Props {
 
 export const ArtifactRenderer = (props: Props) => {
   const fields = useMemo(
-    () =>
-      props.artifact.fields.sort(
-        (a, b) => a.fieldTemplate.order - b.fieldTemplate.order
-      ),
-    [props.artifact.fields]
+    () => props.artifact.artifactFields.sort((a, b) => a.order - b.order),
+    [props.artifact.artifactFields]
   );
   return (
     <>

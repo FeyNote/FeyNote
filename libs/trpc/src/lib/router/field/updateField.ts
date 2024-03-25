@@ -1,23 +1,20 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
-import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@dnd-assistant/prisma/client';
+import { ArtifactFieldInputSchema } from './types';
+import { createArtifactFieldData } from './createArtifactFieldData';
+import { FieldType } from '@prisma/client';
 
 export const updateField = authenticatedProcedure
-  .input(
-    z.object({
-      id: z.string(),
-      imageIds: z.array(z.string()).optional(),
-      text: z.string().optional(),
-    })
-  )
+  .input(ArtifactFieldInputSchema)
   .mutation(async ({ ctx, input }) => {
-    const field = await prisma.field.findUnique({
+    const field = await prisma.artifactField.findUnique({
       where: {
         id: input.id,
       },
       select: {
         id: true,
+        type: true,
         artifact: {
           select: {
             userId: true,
@@ -39,39 +36,46 @@ export const updateField = authenticatedProcedure
       });
     }
 
-    if (input.text && input.imageIds) {
+    const fieldType = input.type || field.type;
+
+    if (fieldType === FieldType.Text && input.imageIds) {
       throw new TRPCError({
-        message: 'Input must be either text OR images',
+        message: 'Text fields cannot have associated images',
+        code: 'BAD_REQUEST',
+      });
+    }
+
+    if (fieldType === FieldType.Images && input.text) {
+      throw new TRPCError({
+        message: 'Image fields cannot have an associated text block',
         code: 'BAD_REQUEST',
       });
     }
 
     if (input.imageIds) {
-      await prisma.fieldImage.deleteMany({
+      await prisma.artifactImage.deleteMany({
         where: {
-          fieldId: input.id,
+          artifactFieldId: input.id,
         },
       });
 
-      await prisma.fieldImage.createMany({
+      await prisma.artifactImage.createMany({
         data: input.imageIds.map((imageId, idx) => ({
-          fieldId: input.id,
+          artifactFieldId: input.id,
           imageId,
           order: idx,
         })),
       });
     }
 
-    if (input.text) {
-      await prisma.field.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          text: input.text,
-        },
-      });
-    }
+    const data = createArtifactFieldData(input);
+
+    await prisma.artifactField.update({
+      where: {
+        id: input.id,
+      },
+      data,
+    });
 
     return;
   });

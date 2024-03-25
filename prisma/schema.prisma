@@ -25,29 +25,29 @@ model User {
 }
 
 model Session {
-  id         String   @id @default(uuid()) @db.Uuid
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String   @db.Uuid
-  token      String   @unique @db.VarChar(255)
-  expiresAt  DateTime @db.Timestamptz(6)
-  extendableUntil  DateTime @db.Timestamptz(6)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  id              String   @id @default(uuid()) @db.Uuid
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @db.Uuid
+  token           String   @unique @db.VarChar(255)
+  expiresAt       DateTime @db.Timestamptz(6)
+  extendableUntil DateTime @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model ArtifactTemplate {
-  id             String          @id @default(uuid()) @db.Uuid
-  title          String
-  fieldTemplates FieldTemplate[]
-  artifacts      Artifact[]
-  user           User?           @relation(fields: [userId], references: [id])
-  userId         String?         @db.Uuid
-  visibility     Visibility
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
+  id                     String                  @id @default(uuid()) @db.Uuid
+  title                  String
+  artifactFieldTemplates ArtifactFieldTemplate[]
+  artifacts              Artifact[]
+  user                   User?                   @relation(fields: [userId], references: [id])
+  userId                 String?                 @db.Uuid
+  visibility             Visibility
+  createdAt              DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt              DateTime                @updatedAt @db.Timestamptz(6)
 }
 
-model FieldTemplate {
+model ArtifactFieldTemplate {
   id                 String           @id @default(uuid()) @db.Uuid
   title              String
   order              Int
@@ -58,7 +58,7 @@ model FieldTemplate {
   required           Boolean          @default(false)
   artifactTemplate   ArtifactTemplate @relation(fields: [artifactTemplateId], references: [id])
   artifactTemplateId String           @db.Uuid
-  fields             Field[]
+  artifactFields     ArtifactField[]
   createdAt          DateTime         @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
 
@@ -69,7 +69,7 @@ model Artifact {
   id                 String           @id @default(uuid()) @db.Uuid
   title              String
   isPinned           Boolean          @default(false)
-  fields             Field[]
+  artifactFields     ArtifactField[]
   artifactTemplate   ArtifactTemplate @relation(fields: [artifactTemplateId], references: [id])
   artifactTemplateId String           @db.Uuid
   user               User             @relation(fields: [userId], references: [id])
@@ -79,36 +79,43 @@ model Artifact {
   updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
 }
 
-model Field {
-  id              String        @id @default(uuid()) @db.Uuid
-  text            String?
-  fieldTemplate   FieldTemplate @relation(fields: [fieldTemplateId], references: [id])
-  fieldTemplateId String        @db.Uuid
-  artifact        Artifact      @relation(fields: [artifactId], references: [id])
-  artifactId      String        @db.Uuid
-  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime      @updatedAt @db.Timestamptz(6)
-  fieldImages     FieldImage[]
+model ArtifactField {
+  id                    String                @id @default(uuid()) @db.Uuid
+  text                  String?
+  title                 String
+  order                 Int
+  aiPrompt              String?
+  description           String?
+  placeholder           String?
+  required              Boolean               @default(false)
+  type                  FieldType
+  artifactFieldTemplate ArtifactFieldTemplate @relation(fields: [fieldTemplateId], references: [id])
+  fieldTemplateId       String                @db.Uuid
+  artifact              Artifact              @relation(fields: [artifactId], references: [id])
+  artifactId            String                @db.Uuid
+  createdAt             DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime              @updatedAt @db.Timestamptz(6)
+  artifactImages        ArtifactImage[]
 }
 
-model FieldImage {
-  id        String    @id @default(uuid()) @db.Uuid
-  fieldId   String    @db.Uuid
-  field     Field     @relation(fields: [fieldId], references: [id])
-  imageId   String    @db.Uuid
-  image     Image     @relation(fields: [imageId], references: [id])
-  order     Int
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+model ArtifactImage {
+  id              String        @id @default(uuid()) @db.Uuid
+  artifactFieldId String        @db.Uuid
+  artifactField   ArtifactField @relation(fields: [artifactFieldId], references: [id])
+  imageId         String        @db.Uuid
+  image           Image         @relation(fields: [imageId], references: [id])
+  order           Int
+  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(6)
 }
 
 model Image {
-  id         String   @id @default(uuid()) @db.Uuid
-  title      String
-  storageKey String
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  fieldImages     FieldImage[]
+  id          String          @id @default(uuid()) @db.Uuid
+  title       String
+  storageKey  String
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @db.Timestamptz(6)
+  fieldImages ArtifactImage[]
 }
 
 enum FieldType {

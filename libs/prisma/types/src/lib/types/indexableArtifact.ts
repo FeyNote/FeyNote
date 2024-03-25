@@ -5,9 +5,19 @@ export const indexableArtifact = Prisma.validator<Prisma.ArtifactArgs>()({
     id: true,
     title: true,
     userId: true,
-    fields: {
+    artifactFields: {
       select: {
         text: true,
+        title: true,
+        artifactImages: {
+          select: {
+            image: {
+              select: {
+                title: true,
+              },
+            },
+          },
+        },
       },
     },
   },

@@ -5,12 +5,19 @@ import { IndexableArtifact } from '@dnd-assistant/prisma/types';
 export const createArtifactIndexDocument = (
   artifact: IndexableArtifact
 ): ArtifactIndexDocument => {
-  const { id, userId, title, fields } = artifact;
+  const { id, userId, title, artifactFields } = artifact;
 
-  const fullFieldText = fields.reduce(
-    (acc, field) => acc + ' ' + field.text,
-    ''
-  );
+  const fullFieldText = artifactFields.reduce((acc, field) => {
+    const allFieldText = `${acc} ${field.title}`;
+    if (field.text) {
+      return `${allFieldText} ${field.text}\n`;
+    }
+    const imageTitleStr = field.artifactImages.reduce(
+      (acc, artifactImage) => `${acc} ${artifactImage.image.title}`,
+      ''
+    );
+    return `${acc} ${imageTitleStr}\n`;
+  }, '');
 
   const fullText = dedent`
   ${title}

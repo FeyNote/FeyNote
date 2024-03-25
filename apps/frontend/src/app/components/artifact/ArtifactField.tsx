@@ -13,8 +13,9 @@ import { useTranslation } from 'react-i18next';
 import { TiptapEditor } from '../tiptap/TiptapEditor';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { FieldType } from '@prisma/client';
 
-type ArtifactDetailField = ArtifactDetail['fields'][0];
+type ArtifactDetailField = ArtifactDetail['artifactFields'][0];
 
 interface Props {
   field: ArtifactDetailField;
@@ -54,10 +55,7 @@ export const ArtifactField = (props: Props) => {
     setEdit(!edit);
 
     if (edit) {
-      if (
-        props.field.fieldTemplate.type === 'Text' ||
-        props.field.fieldTemplate.type === 'TextArea'
-      ) {
+      if (props.field.type === 'Text' || props.field.type === 'TextArea') {
         saveText();
       }
     }
@@ -66,7 +64,7 @@ export const ArtifactField = (props: Props) => {
   return (
     <div>
       <IonListHeader>
-        <IonLabel>{t(props.field.fieldTemplate.title)}</IonLabel>
+        <IonLabel>{t(props.field.title)}</IonLabel>
         {saving ? (
           <IonSpinner></IonSpinner>
         ) : (
@@ -76,7 +74,7 @@ export const ArtifactField = (props: Props) => {
         )}
       </IonListHeader>
       <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
-        {props.field.fieldTemplate.type === 'Text' && (
+        {props.field.type === FieldType.Text && (
           <div>
             {edit ? (
               <IonItem>
@@ -92,7 +90,7 @@ export const ArtifactField = (props: Props) => {
             )}
           </div>
         )}
-        {props.field.fieldTemplate.type === 'TextArea' && (
+        {props.field.type === FieldType.TextArea && (
           <div>
             {edit ? (
               <TiptapEditor
@@ -113,16 +111,16 @@ export const ArtifactField = (props: Props) => {
             )}
           </div>
         )}
-        {props.field.fieldTemplate.type === 'Images' && (
+        {props.field.type === FieldType.Images && (
           <div>
             {edit
               ? 'Image uploader not yet implemented'
-              : props.field.fieldImages.length
-              ? props.field.fieldImages.map((fieldImage) => (
+              : props.field.artifactImages.length
+              ? props.field.artifactImages.map((artifactImage) => (
                   <img
                     alt={t('artifactField.imageAlt')}
-                    src={fieldImage.image.storageKey}
-                    key={fieldImage.id}
+                    src={artifactImage.image.storageKey}
+                    key={artifactImage.id}
                   />
                 ))
               : t('artifactField.noImages')}

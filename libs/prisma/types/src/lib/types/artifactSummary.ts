@@ -8,14 +8,6 @@ export const artifactSummary = Prisma.validator<Prisma.ArtifactArgs>()({
     userId: true,
     createdAt: true,
     updatedAt: true,
-    artifactTemplate: {
-      select: {
-        id: true,
-        title: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    },
   },
 });
 

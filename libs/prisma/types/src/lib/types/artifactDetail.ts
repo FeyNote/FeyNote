@@ -6,23 +6,23 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     title: true,
     isPinned: true,
     userId: true,
+    artifactTemplateId: true,
     createdAt: true,
     updatedAt: true,
-    artifactTemplate: {
+    artifactFields: {
       select: {
         id: true,
         title: true,
-        userId: true,
-        visibility: true,
+        text: true,
+        order: true,
+        aiPrompt: true,
+        description: true,
+        placeholder: true,
+        required: true,
+        type: true,
         createdAt: true,
         updatedAt: true,
-      },
-    },
-    fields: {
-      select: {
-        id: true,
-        text: true,
-        fieldImages: {
+        artifactImages: {
           select: {
             id: true,
             order: true,
@@ -37,24 +37,6 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
             },
           },
         },
-        fieldTemplateId: true,
-        fieldTemplate: {
-          select: {
-            id: true,
-            title: true,
-            order: true,
-            aiPrompt: true,
-            type: true,
-            description: true,
-            placeholder: true,
-            required: true,
-            artifactTemplateId: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-        createdAt: true,
-        updatedAt: true,
       },
     },
   },
