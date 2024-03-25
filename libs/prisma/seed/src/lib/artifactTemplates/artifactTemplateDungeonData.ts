@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateDungeonData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.dungeon.name.title',
       aiPrompt: 'artifactTemplate.dungeon.name.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateDungeonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeon.description.title',
       aiPrompt: 'artifactTemplate.dungeon.description.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateDungeonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeon.monsters.title',
       aiPrompt: 'artifactTemplate.dungeon.monsters.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.monsters.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateDungeonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeon.rooms.title',
       aiPrompt: 'artifactTemplate.dungeon.rooms.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.rooms.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateDungeonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeon.history.title',
       aiPrompt: 'artifactTemplate.dungeon.history.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.history.placeholder',
@@ -51,7 +52,7 @@ export const artifactTemplateDungeonData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.dungeon.images.title',
       aiPrompt: 'artifactTemplate.dungeon.images.aiPrompt',
       placeholder: 'artifactTemplate.dungeon.images.placeholder',

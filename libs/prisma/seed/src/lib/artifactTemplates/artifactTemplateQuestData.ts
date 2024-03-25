@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateQuestData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.quest.name.title',
       aiPrompt: 'artifactTemplate.quest.name.aiPrompt',
       placeholder: 'artifactTemplate.quest.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateQuestData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.quest.description.title',
       aiPrompt: 'artifactTemplate.quest.description.aiPrompt',
       placeholder: 'artifactTemplate.quest.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateQuestData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.quest.locations.title',
       aiPrompt: 'artifactTemplate.quest.locations.aiPrompt',
       placeholder: 'artifactTemplate.quest.locations.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateQuestData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.quest.notableNPCs.title',
       aiPrompt: 'artifactTemplate.quest.notableNPCs.aiPrompt',
       placeholder: 'artifactTemplate.quest.notableNPCs.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateQuestData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.quest.items.title',
       aiPrompt: 'artifactTemplate.quest.items.aiPrompt',
       placeholder: 'artifactTemplate.quest.items.placeholder',

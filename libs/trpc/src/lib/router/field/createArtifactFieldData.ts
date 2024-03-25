@@ -15,9 +15,9 @@ const artifactFieldData: ArtifactFieldDataKey[] = [
   'type',
 ] as const;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export const createArtifactFieldData = (
   artifactFieldInput: ArtifactFieldInputType
+  // eslint-disable-next-line @typescript-eslint/ban-types
 ): ArtifactFieldData | {} => {
   // eslint-disable-next-line @typescript-eslint/ban-types
   let artifactFieldData: ArtifactFieldData | {} = {};

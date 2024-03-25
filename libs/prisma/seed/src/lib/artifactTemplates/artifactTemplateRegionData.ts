@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateRegionData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.region.name.title',
       aiPrompt: 'artifactTemplate.region.name.aiPrompt',
       placeholder: 'artifactTemplate.region.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateRegionData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.region.description.title',
       aiPrompt: 'artifactTemplate.region.description.aiPrompt',
       placeholder: 'artifactTemplate.region.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateRegionData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.region.locations.title',
       aiPrompt: 'artifactTemplate.region.locations.aiPrompt',
       placeholder: 'artifactTemplate.region.locations.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateRegionData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.region.history.title',
       aiPrompt: 'artifactTemplate.region.history.aiPrompt',
       placeholder: 'artifactTemplate.region.history.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateRegionData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.region.images.title',
       aiPrompt: 'artifactTemplate.region.images.aiPrompt',
       placeholder: 'artifactTemplate.region.images.placeholder',

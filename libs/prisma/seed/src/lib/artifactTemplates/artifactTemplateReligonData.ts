@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateReligonData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.religon.name.title',
       aiPrompt: 'artifactTemplate.religon.name.aiPrompt',
       placeholder: 'artifactTemplate.religon.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateReligonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.religon.description.title',
       aiPrompt: 'artifactTemplate.religon.description.aiPrompt',
       placeholder: 'artifactTemplate.religon.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateReligonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.religon.history.title',
       aiPrompt: 'artifactTemplate.religon.history.aiPrompt',
       placeholder: 'artifactTemplate.religon.history.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateReligonData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.religon.notableNPCs.title',
       aiPrompt: 'artifactTemplate.religon.notableNPCs.aiPrompt',
       placeholder: 'artifactTemplate.religon.notableNPCs.placeholder',

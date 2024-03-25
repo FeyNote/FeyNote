@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateItemData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.item.name.title',
       aiPrompt: 'artifactTemplate.item.name.aiPrompt',
       placeholder: 'artifactTemplate.item.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateItemData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.item.description.title',
       aiPrompt: 'artifactTemplate.item.description.aiPrompt',
       placeholder: 'artifactTemplate.item.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateItemData = {
     },
     {
       order: order++,
-      type: 'ItemStatBlock',
+      type: FieldType.ItemStatBlock,
       title: 'artifactTemplate.item.statBlock.title',
       aiPrompt: 'artifactTemplate.item.statBlock.aiPrompt',
       placeholder: 'artifactTemplate.item.statBlock.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateItemData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.item.images.title',
       aiPrompt: 'artifactTemplate.item.images.aiPrompt',
       placeholder: 'artifactTemplate.item.images.placeholder',

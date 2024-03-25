@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateNPCData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.npc.name.title',
       aiPrompt: 'artifactTemplate.npc.name.aiPrompt',
       placeholder: 'artifactTemplate.npc.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateNPCData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.npc.description.title',
       aiPrompt: 'artifactTemplate.npc.description.aiPrompt',
       placeholder: 'artifactTemplate.npc.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateNPCData = {
     },
     {
       order: order++,
-      type: 'NPCStatBlock',
+      type: FieldType.NPCStatBlock,
       title: 'artifactTemplate.npc.statBlock.title',
       aiPrompt: 'artifactTemplate.npc.statBlock.aiPrompt',
       placeholder: 'artifactTemplate.npc.statBlock.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateNPCData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.npc.images.title',
       aiPrompt: 'artifactTemplate.npc.images.aiPrompt',
       placeholder: 'artifactTemplate.npc.images.placeholder',

@@ -2,6 +2,7 @@ import { prisma } from '@dnd-assistant/prisma/client';
 import { seedRootUser } from './user/seedRootUser';
 import { seedArtifactTemplates } from './artifactTemplates/seedArtifactTemplates';
 import { searchProvider } from '@dnd-assistant/search';
+import { FieldType } from '@prisma/client';
 
 async function main() {
   console.log('Started development seeding');
@@ -31,15 +32,18 @@ async function main() {
 
   console.log({ user });
 
-  const fieldTemplates = await prisma.fieldTemplate.findMany({
+  const fieldTemplates = await prisma.artifactFieldTemplate.findMany({
     where: {
       artifactTemplateId: artifactTemplate.id,
     },
   });
 
-  const fields = fieldTemplates.map((fieldTemplate) => {
+  const fields = fieldTemplates.map((fieldTemplate, indx) => {
     return {
       text: 'blah',
+      title: 'Title',
+      order: indx,
+      type: FieldType.Text,
       fieldTemplateId: fieldTemplate.id,
     };
   });
@@ -49,7 +53,7 @@ async function main() {
       title: 'Windemere',
       isPinned: true,
       visibility: 'Private',
-      fields: {
+      artifactFields: {
         create: fields,
       },
       artifactTemplateId: artifactTemplate.id,
@@ -62,7 +66,7 @@ async function main() {
       title: 'The Grove',
       isPinned: false,
       visibility: 'Public',
-      fields: {
+      artifactFields: {
         create: fields,
       },
       artifactTemplateId: artifactTemplate.id,

@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateCityTownData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.cityTown.name.title',
       aiPrompt: 'artifactTemplate.cityTown.name.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.cityTown.description.title',
       aiPrompt: 'artifactTemplate.cityTown.description.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.cityTown.locations.title',
       aiPrompt: 'artifactTemplate.cityTown.locations.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.locations.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.cityTown.notableNPCs.title',
       aiPrompt: 'artifactTemplate.cityTown.notableNPCs.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.notableNPCs.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.cityTown.politics.title',
       aiPrompt: 'artifactTemplate.cityTown.politics.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.politics.placeholder',
@@ -51,7 +52,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.cityTown.history.title',
       aiPrompt: 'artifactTemplate.cityTown.history.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.history.placeholder',
@@ -59,7 +60,7 @@ export const artifactTemplateCityTownData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.cityTown.images.title',
       aiPrompt: 'artifactTemplate.cityTown.images.aiPrompt',
       placeholder: 'artifactTemplate.cityTown.images.placeholder',

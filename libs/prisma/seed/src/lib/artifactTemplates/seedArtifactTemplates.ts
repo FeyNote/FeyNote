@@ -63,8 +63,8 @@ export const seedArtifactTemplates = async (
       const fieldTemplateFullData = {
         ...fieldTemplateData,
         artifactTemplateId: artifactTemplate.id,
-      } satisfies Prisma.FieldTemplateUncheckedCreateInput;
-      await prisma.fieldTemplate.upsert({
+      } satisfies Prisma.ArtifactFieldTemplateUncheckedCreateInput;
+      await prisma.artifactFieldTemplate.upsert({
         where: {
           order_artifactTemplateId: {
             order: fieldTemplateFullData.order,

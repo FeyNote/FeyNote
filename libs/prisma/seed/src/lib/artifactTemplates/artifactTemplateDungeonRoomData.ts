@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateDungeonRoomData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.dungeonroom.name.title',
       aiPrompt: 'artifactTemplate.dungeonroom.name.aiPrompt',
       placeholder: 'artifactTemplate.dungeonroom.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateDungeonRoomData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeonroom.description.title',
       aiPrompt: 'artifactTemplate.dungeonroom.description.aiPrompt',
       placeholder: 'artifactTemplate.dungeonroom.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateDungeonRoomData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.dungeonroom.monsters.title',
       aiPrompt: 'artifactTemplate.dungeonroom.monsters.aiPrompt',
       placeholder: 'artifactTemplate.dungeonroom.monsters.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateDungeonRoomData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.dungeonroom.images.title',
       aiPrompt: 'artifactTemplate.dungeonroom.images.aiPrompt',
       placeholder: 'artifactTemplate.dungeonroom.images.placeholder',

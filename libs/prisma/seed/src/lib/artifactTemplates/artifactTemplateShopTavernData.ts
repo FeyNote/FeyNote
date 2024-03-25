@@ -1,3 +1,4 @@
+import { FieldType } from '@prisma/client';
 import { ArtifactTemplateData } from '../types';
 
 let order = 1;
@@ -10,7 +11,7 @@ export const artifactTemplateShopTavernData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.shopTavern.name.title',
       aiPrompt: 'artifactTemplate.shopTavern.name.aiPrompt',
       placeholder: 'artifactTemplate.shopTavern.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateShopTavernData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.shopTavern.description.title',
       aiPrompt: 'artifactTemplate.shopTavern.description.aiPrompt',
       placeholder: 'artifactTemplate.shopTavern.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateShopTavernData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.shopTavern.items.title',
       aiPrompt: 'artifactTemplate.shopTavern.items.aiPrompt',
       placeholder: 'artifactTemplate.shopTavern.items.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateShopTavernData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.shopTavern.notableNPCs.title',
       aiPrompt: 'artifactTemplate.shopTavern.notableNPCs.aiPrompt',
       placeholder: 'artifactTemplate.shopTavern.notableNPCs.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateShopTavernData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.shopTavern.images.title',
       aiPrompt: 'artifactTemplate.shopTavern.images.aiPrompt',
       placeholder: 'artifactTemplate.shopTavern.images.placeholder',

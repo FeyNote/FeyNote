@@ -1,4 +1,5 @@
 import { ArtifactTemplateData } from '../types';
+import { FieldType } from '@prisma/client';
 
 let order = 1;
 
@@ -10,7 +11,7 @@ export const artifactTemplateGenericLocationData = {
   fields: [
     {
       order: order++,
-      type: 'Text',
+      type: FieldType.Text,
       title: 'artifactTemplate.genericLocation.name.title',
       aiPrompt: 'artifactTemplate.genericLocation.name.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.name.placeholder',
@@ -19,7 +20,7 @@ export const artifactTemplateGenericLocationData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.genericLocation.description.title',
       aiPrompt: 'artifactTemplate.genericLocation.description.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.description.placeholder',
@@ -27,7 +28,7 @@ export const artifactTemplateGenericLocationData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.genericLocation.locations.title',
       aiPrompt: 'artifactTemplate.genericLocation.locations.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.locations.placeholder',
@@ -35,7 +36,7 @@ export const artifactTemplateGenericLocationData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.genericLocation.notableNPCs.title',
       aiPrompt: 'artifactTemplate.genericLocation.notableNPCs.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.notableNPCs.placeholder',
@@ -43,7 +44,7 @@ export const artifactTemplateGenericLocationData = {
     },
     {
       order: order++,
-      type: 'TextArea',
+      type: FieldType.TextArea,
       title: 'artifactTemplate.genericLocation.history.title',
       aiPrompt: 'artifactTemplate.genericLocation.history.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.history.placeholder',
@@ -51,7 +52,7 @@ export const artifactTemplateGenericLocationData = {
     },
     {
       order: order++,
-      type: 'Images',
+      type: FieldType.Images,
       title: 'artifactTemplate.genericLocation.images.title',
       aiPrompt: 'artifactTemplate.genericLocation.images.aiPrompt',
       placeholder: 'artifactTemplate.genericLocation.images.placeholder',
