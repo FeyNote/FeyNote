@@ -45,11 +45,6 @@ export class TypeSense implements SearchProvider {
             optional: false,
           },
           {
-            name: 'visibility',
-            type: 'string',
-            optional: false,
-          },
-          {
             name: 'fullText',
             type: 'string',
             optional: true,
@@ -93,7 +88,7 @@ export class TypeSense implements SearchProvider {
       .documents()
       .search({
         q: query,
-        query_by: 'title,fullText,visibility',
+        query_by: 'title,fullText',
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250, // Desired page count * per_page

@@ -1,17 +1,9 @@
 import { prisma } from '@dnd-assistant/prisma/client';
-import { seedRootUser } from './user/seedRootUser';
-import { seedArtifactTemplates } from './artifactTemplates/seedArtifactTemplates';
 import { searchProvider } from '@dnd-assistant/search';
+import { Prisma } from '@prisma/client';
 
 async function main() {
   console.log('Started development seeding');
-  const rootUser = await seedRootUser(prisma);
-  await seedArtifactTemplates(prisma, rootUser);
-  const artifactTemplate = await prisma.artifactTemplate.findFirst({});
-  if (!artifactTemplate)
-    throw new Error('Must run seed.ts must be ran prior to this file');
-
-  console.log({ artifactTemplateWorld: artifactTemplate });
 
   const email = 'dnd-assistant';
   const user = await prisma.user.upsert({
@@ -31,29 +23,13 @@ async function main() {
 
   console.log({ user });
 
-  const fieldTemplates = await prisma.fieldTemplate.findMany({
-    where: {
-      artifactTemplateId: artifactTemplate.id,
-    },
-  });
-
-  const fields = fieldTemplates.map((fieldTemplate) => {
-    return {
-      text: 'blah',
-      fieldTemplateId: fieldTemplate.id,
-    };
-  });
-
   const artifact1 = await prisma.artifact.create({
     data: {
       title: 'Windemere',
       isPinned: true,
-      visibility: 'Private',
-      fields: {
-        create: fields,
-      },
-      artifactTemplateId: artifactTemplate.id,
       userId: user.id,
+      json: Prisma.JsonNull,
+      text: '',
     },
   });
 
@@ -61,12 +37,9 @@ async function main() {
     data: {
       title: 'The Grove',
       isPinned: false,
-      visibility: 'Public',
-      fields: {
-        create: fields,
-      },
-      artifactTemplateId: artifactTemplate.id,
       userId: user.id,
+      json: Prisma.JsonNull,
+      text: '',
     },
   });
 
