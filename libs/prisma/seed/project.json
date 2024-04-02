@@ -25,13 +25,6 @@
         "jestConfig": "libs/prisma/seed/jest.config.ts"
       }
     },
-    "seed": {
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "libs/prisma/seed",
-        "command": "tsx src/lib/seed.ts"
-      }
-    },
     "seed:dev": {
       "executor": "nx:run-commands",
       "options": {
