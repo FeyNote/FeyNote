@@ -1,12 +1,12 @@
 import { router as trpcRouter } from '../../trpc';
 import { getArtifactById } from './getArtifactById';
-import { getArtifactsForSelf } from './getArtifactsForSelf';
+import { getArtifacts } from './getArtifacts';
 import { searchArtifactsForSelf } from './searchArtifactsForSelf';
 import { updateArtifact } from './updateArtifact';
 
 export const router = trpcRouter({
   getArtifactById,
-  getArtifactsForSelf,
+  getArtifacts,
   searchArtifactsForSelf,
   updateArtifact,
 });

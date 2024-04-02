@@ -35,8 +35,8 @@ export const Dashboard: React.FC = () => {
   );
 
   const getUserArtifacts = () => {
-    trpc.artifact.getArtifactsForSelf
-      .query()
+    trpc.artifact.getArtifacts
+      .query({})
       .then((_artifacts) => {
         setArtifacts(_artifacts);
       })

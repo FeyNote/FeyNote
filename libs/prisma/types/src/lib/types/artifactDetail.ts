@@ -5,6 +5,8 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     id: true,
     title: true,
     isPinned: true,
+    isTemplate: true,
+    isRootTemplate: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
@@ -19,6 +21,15 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     },
     text: true,
     json: true,
+    templatedArtifacts: {
+      select: {
+        id: true,
+        title: true,
+        userId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    },
   },
 });
 
