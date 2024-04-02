@@ -47,7 +47,18 @@ export class TypeSense implements SearchProvider {
           {
             name: 'fullText',
             type: 'string',
-            optional: true,
+            optional: false,
+          },
+          {
+            name: 'fullTextEmbedding',
+            type: 'float[]',
+            embed: {
+              from: ['fullText'],
+              model_config: {
+                model_name: 'openai/text-embedding-3-large',
+                api_key: config.openai.apiKey,
+              },
+            },
           },
         ],
       });
@@ -82,23 +93,35 @@ export class TypeSense implements SearchProvider {
       });
   }
 
-  async searchArtifacts(userId: string, query: string) {
+  async searchArtifacts(
+    userId: string,
+    query: string,
+    withEmbeddings?: boolean
+  ) {
+    const query_by = withEmbeddings
+      ? 'fullTextEmbedding,fullText'
+      : 'title,fullText';
+    const vector_query = withEmbeddings
+      ? 'fullTextEmbedding:([], distance_threshold:.75)'
+      : undefined;
+
     const results = await this.client
       .collections(Indexes.Artifacts)
       .documents()
       .search({
         q: query,
-        query_by: 'title,fullText',
+        query_by,
+        prefix: false,
+        vector_query,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
-        limit_hits: 250, // Desired page count * per_page
-        include_fields: 'id',
+        limit_hits: 250,
       });
 
     return (
-      results.hits?.map(
-        (hit) => (hit.document as Record<string, string>)['id']
-      ) || []
+      results.hits?.map((hit) => {
+        return (hit.document as Record<string, string>)['id'];
+      }) || []
     );
   }
 }

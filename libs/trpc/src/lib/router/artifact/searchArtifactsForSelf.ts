@@ -14,9 +14,9 @@ export const searchArtifactsForSelf = authenticatedProcedure
     const { query } = input;
     const searchedArtifactIds = await searchProvider.searchArtifacts(
       session.userId,
-      query
+      query,
+      true
     );
-    console.log('searched artifacts', searchedArtifactIds);
     const artifacts = await getArtifactSummariesByIds(searchedArtifactIds);
     return artifacts;
   });

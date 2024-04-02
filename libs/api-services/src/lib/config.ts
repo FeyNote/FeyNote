@@ -19,4 +19,7 @@ export const config = {
     apiKey: getEnvOrThrow('TYPESENSE_API_KEY'),
     nodes: getEnvOrThrow('TYPESENSE_NODES'),
   },
+  openai: {
+    apiKey: getEnvOrThrow('OPENAI_API_KEY'),
+  },
 };
