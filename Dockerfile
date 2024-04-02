@@ -3,7 +3,6 @@ USER "1000:1000"
 
 WORKDIR /app
 
-COPY .npmrc .npmrc
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 RUN npm ci
