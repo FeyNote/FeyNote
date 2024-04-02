@@ -65,7 +65,7 @@ export const ArtifactRenderer = (props: Props) => {
       <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
         <Editor
           onContentChange={onEditorContentChange}
-          initialContent={blocknoteContent as Block[]}
+          initialContent={blocknoteContent as Block[]} // We cast with hope
         />
       </div>
     </div>
