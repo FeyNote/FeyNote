@@ -9,6 +9,7 @@
   "private": true,
   "dependencies": {
     "@aws-sdk/client-ses": "^3.481.0",
+    "@google-cloud/firestore": "^7.6.0",
     "@ionic/react": "^7.5.6",
     "@ionic/react-router": "^7.5.6",
     "@prisma/client": "^5.11.0",
@@ -26,6 +27,7 @@
     "google-auth-library": "^9.4.1",
     "i18next": "^23.7.18",
     "meilisearch": "^0.37.0",
+    "openai": "^4.32.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-i18next": "^14.0.1",
