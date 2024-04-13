@@ -1,29 +1,36 @@
-import { Message } from "openai/resources/beta/threads/messages/messages";
-import { openai } from "./openai";
-import { OpenAiRoles } from "./types";
+import { openai } from './openai';
+import { Message, MessageRoles } from './types';
 
 const OPEN_AI_MODEL = 'gpt-3.5-turbo';
 
-const getMessagesFromFirestore = async (threadId: string): Promise<Message[]> => {
-  const messageObj = await
-  return messages
+const getMessagesFromFirestore = async (): Promise<Message[]> => {
+  const messages = [getSystemMessage()];
+  return new Promise((res) => res(messages));
+};
+
+const getSystemMessage = () => {
+  return {
+    content: `You are a personal assistant for the user. Act helpful and willing to assist in all responses.
+    Try to sound like someone who is energetic and really into ttrpg games.`,
+    role: MessageRoles.System,
+  };
 };
 
 export const message = async (threadId: string, query: string) => {
   const messages = [];
-  const previousMessages = await getMessagesFromThread(threadId);
+  const previousMessages = await getMessagesFromFirestore();
 
   if (!previousMessages) {
-    const systemMessage = await getSystemMessage();
+    const systemMessage = getSystemMessage();
     messages.push(systemMessage);
   } else {
     messages.push(...previousMessages);
   }
 
   messages.push({
-    role: OpenAiRoles.User,
-    content: query
-  })
+    role: MessageRoles.User,
+    content: query,
+  });
 
   const response = await openai.chat.completions.create({
     model: OPEN_AI_MODEL,
@@ -32,20 +39,3 @@ export const message = async (threadId: string, query: string) => {
 
   return response;
 };
-
-// Collection Messages
-{
-  _id: 'xxx',// thread-id
-  userId: 'yyy', //user-id
-  messages: [
-    {
-      role: 'system',
-      type: 'text',
-      context: 'You are a ttrpg assistant'
-    },
-    ...
-  ]
-}
-
-
-

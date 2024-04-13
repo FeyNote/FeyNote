@@ -27,7 +27,7 @@
     "google-auth-library": "^9.4.1",
     "i18next": "^23.7.18",
     "meilisearch": "^0.37.0",
-    "openai": "^4.32.0",
+    "openai": "^4.33.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-i18next": "^14.0.1",
