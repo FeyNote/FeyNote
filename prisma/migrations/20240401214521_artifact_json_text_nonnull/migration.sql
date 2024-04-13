@@ -1,7 +1,0 @@
--- AlterTable
-ALTER TABLE "Artifact" ALTER COLUMN "json" DROP DEFAULT,
-ALTER COLUMN "text" DROP DEFAULT;
-
--- AlterTable
-ALTER TABLE "ArtifactTemplate" ALTER COLUMN "json" DROP DEFAULT,
-ALTER COLUMN "text" DROP DEFAULT;

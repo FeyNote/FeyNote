@@ -32,6 +32,7 @@ import { routes } from './routes';
 import { Artifact } from './components/artifact/Artifact';
 
 import './i18n';
+import { NewArtifact } from './components/artifact/NewArtifact';
 
 setupIonicReact();
 export function App() {
@@ -71,6 +72,11 @@ export function App() {
                   exact
                   path={routes.artifact.route}
                   component={Artifact}
+                />
+                <Route
+                  exact
+                  path={routes.newArtifact.route}
+                  component={NewArtifact}
                 />
                 <Route component={NotFound} />
               </IonRouterOutlet>

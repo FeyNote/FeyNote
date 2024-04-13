@@ -23,7 +23,7 @@ export const Artifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const [artifact, setArtifact] = useState<ArtifactDetail>();
 
-  useIonViewWillEnter(() => {
+  const load = () => {
     trpc.artifact.getArtifactById
       .query({
         id,
@@ -34,7 +34,29 @@ export const Artifact: React.FC = () => {
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
       });
+  };
+
+  useIonViewWillEnter(() => {
+    load();
   });
+
+  const save = (updatedArtifact: Partial<ArtifactDetail>) => {
+    if (!artifact) return;
+
+    trpc.artifact.updateArtifact
+      .mutate({
+        id: artifact.id,
+        title: updatedArtifact.title || artifact.title,
+        json: updatedArtifact.json || artifact.json,
+        text: updatedArtifact.text || artifact.text,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        load();
+      });
+  };
 
   return (
     <IonPage id="main">
@@ -49,7 +71,7 @@ export const Artifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {artifact && <ArtifactRenderer artifact={artifact} />}
+        {artifact && <ArtifactRenderer artifact={artifact} save={save} />}
       </IonContent>
     </IonPage>
   );

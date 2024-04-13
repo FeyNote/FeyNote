@@ -24,5 +24,6 @@ export const getArtifacts = authenticatedProcedure
         },
       ],
     });
+
     return artifacts;
   });

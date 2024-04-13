@@ -23,6 +23,7 @@ import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import { GridContainer, GridRowSearchbar, GridRowArtifacts } from './styles';
+import { routes } from '../../routes';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -111,7 +112,11 @@ export const Dashboard: React.FC = () => {
         </GridContainer>
       </IonContent>
       <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton>
+        <IonFabButton
+          routerLink={routes.artifact.build({
+            id: 'new',
+          })}
+        >
           <IonIcon icon={add} />
         </IonFabButton>
       </IonFab>

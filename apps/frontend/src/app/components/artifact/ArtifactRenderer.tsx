@@ -1,73 +1,131 @@
 import { ArtifactDetail } from '@dnd-assistant/prisma/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   IonButton,
-  IonLabel,
-  IonListHeader,
-  IonSpinner,
-  useIonToast,
+  IonCheckbox,
+  IonCol,
+  IonGrid,
+  IonInput,
+  IonItem,
+  IonRow,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { Editor } from '../editor/Editor';
-import { Block } from '@blocknote/core';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { ArtifactEditor } from '../editor/ArtifactEditor';
+import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
+
+type NewArtifactOnlyFields =
+  | 'id'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'templatedArtifacts'
+  | 'artifactTemplate';
+
+export type EditArtifactDetail = Omit<ArtifactDetail, NewArtifactOnlyFields> &
+  Partial<Pick<ArtifactDetail, NewArtifactOnlyFields>>;
 
 interface Props {
-  artifact: ArtifactDetail;
+  artifact: EditArtifactDetail;
+  save: (artifact: Partial<ArtifactDetail>) => void;
+  onArtifactChanged?: (artifact: Partial<ArtifactDetail>) => void;
 }
 
 export const ArtifactRenderer = (props: Props) => {
+  const { onArtifactChanged } = props;
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
-  const [saving, setSaving] = useState(false);
-  const [modified, setModified] = useState(false);
-  const [blocknoteContent, setBlocknoteContent] = useState(props.artifact.json);
+  const [title, setTitle] = useState(props.artifact.title);
+  const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
+  const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
+  const [blocknoteContent, setBlocknoteContent] = useState(
+    props.artifact.json?.blocknoteContent
+  );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
     props.artifact.text
   );
 
-  const save = () => {
-    setSaving(true);
+  const modified =
+    props.artifact.title !== title ||
+    props.artifact.isPinned !== isPinned ||
+    props.artifact.isTemplate !== isTemplate ||
+    props.artifact.text !== blocknoteContentMd;
 
-    trpc.artifact.updateArtifact
-      .mutate({
-        id: props.artifact.id,
-        json: blocknoteContent,
-        text: blocknoteContentMd,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        setSaving(false);
-      });
+  const save = () => {
+    props.save({
+      title,
+      text: blocknoteContentMd,
+      json: {
+        blocknoteContent,
+      },
+    });
   };
 
+  useEffect(() => {
+    onArtifactChanged?.({
+      title,
+      text: blocknoteContentMd,
+      json: {
+        blocknoteContent,
+      },
+    });
+  }, [onArtifactChanged, title, blocknoteContent, blocknoteContentMd]);
+
   const onEditorContentChange = (
-    updatedContent: Block[],
+    updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string
   ) => {
-    setModified(true);
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
   };
 
   return (
-    <div>
-      <IonListHeader>
-        <IonLabel>{props.artifact.title}</IonLabel>
-        {saving && <IonSpinner></IonSpinner>}
-        {!saving && modified && (
-          <IonButton onClick={save}>{t('generic.save')}</IonButton>
-        )}
-      </IonListHeader>
-      <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
-        <Editor
-          onContentChange={onEditorContentChange}
-          initialContent={blocknoteContent as Block[]} // We cast with hope
-        />
-      </div>
-    </div>
+    <IonGrid>
+      <IonRow>
+        <IonCol size="12" sizeLg="9">
+          <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
+            <IonItem>
+              <IonInput
+                placeholder={t('artifactRenderer.title.placeholder')}
+                label={t('artifactRenderer.title.label')}
+                labelPlacement="stacked"
+                value={title}
+                onIonInput={(event) =>
+                  setTitle((event.target.value || '').toString())
+                }
+                type="text"
+              ></IonInput>
+            </IonItem>
+            <div>
+              <ArtifactEditor
+                onContentChange={onEditorContentChange}
+                initialContent={blocknoteContent}
+              />
+            </div>
+          </div>
+        </IonCol>
+        <IonCol size="12" sizeLg="3">
+          <IonButton onClick={save} disabled={!modified} expand="block">
+            {t('generic.save')}
+          </IonButton>
+          <br />
+          <IonItem>
+            <IonCheckbox
+              labelPlacement="end"
+              checked={isPinned}
+              onIonChange={(event) => setIsPinned(event.target.checked)}
+            >
+              {t('artifactRenderer.isPinned')}
+            </IonCheckbox>
+          </IonItem>
+          <IonItem>
+            <IonCheckbox
+              labelPlacement="end"
+              checked={isTemplate}
+              onIonChange={(event) => setIsTemplate(event.target.checked)}
+            >
+              {t('artifactRenderer.isTemplate')}
+            </IonCheckbox>
+          </IonItem>
+        </IonCol>
+      </IonRow>
+    </IonGrid>
   );
 };

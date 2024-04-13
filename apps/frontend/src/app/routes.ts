@@ -7,6 +7,7 @@ export const routes = {
   dashboard: route`/dashboard`,
   register: route`/register`,
   login: route`/login`,
+  newArtifact: route`/artifact/new`,
   artifact: route`/artifact/${'id'}`,
 };
 

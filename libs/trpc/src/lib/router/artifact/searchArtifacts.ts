@@ -3,20 +3,20 @@ import { searchProvider } from '@dnd-assistant/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 
-export const searchArtifactsForSelf = authenticatedProcedure
+export const searchArtifacts = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
     })
   )
   .query(async ({ input, ctx }) => {
-    const { session } = ctx;
-    const { query } = input;
     const searchedArtifactIds = await searchProvider.searchArtifacts(
-      session.userId,
-      query,
+      ctx.session.userId,
+      input.query,
       true
     );
+
     const artifacts = await getArtifactSummariesByIds(searchedArtifactIds);
+
     return artifacts;
   });
