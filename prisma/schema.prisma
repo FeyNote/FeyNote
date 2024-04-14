@@ -48,7 +48,7 @@ model Artifact {
   json               Json
   createdAt          DateTime        @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
-  artfactfiles       ArtifactFile[]
+  artfactFiles       ArtifactFile[]
   templatedArtifacts Artifact[]      @relation("artifactTemplate")
 }
 
