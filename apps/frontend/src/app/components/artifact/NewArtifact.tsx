@@ -1,4 +1,3 @@
-import { ArtifactDetail } from '@dnd-assistant/prisma/types';
 import {
   IonButtons,
   IonContent,
@@ -7,15 +6,18 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
+  useIonRouter,
   useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
 import { t } from 'i18next';
+import { routes } from '../../routes';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
+  const router = useIonRouter();
 
   const newArtifactPlaceholder = {
     id: '',
@@ -27,18 +29,26 @@ export const NewArtifact: React.FC = () => {
     isPinned: false,
   } satisfies EditArtifactDetail;
 
-  const save = (updatedArtifact: Partial<ArtifactDetail>) => {
-    const { title, json, text } = updatedArtifact;
-    if (!title?.trim() || !json || !text?.trim()) {
-      // TODO: Error messaging
-      return;
-    }
-
+  const save = (updatedArtifact: EditArtifactDetail) => {
     trpc.artifact.createArtifact
       .mutate({
-        title,
-        json,
-        text,
+        title: updatedArtifact.title,
+        json: updatedArtifact.json,
+        text: updatedArtifact.text,
+        isPinned: updatedArtifact.isPinned,
+        isTemplate: updatedArtifact.isTemplate,
+      })
+      .then((response) => {
+        const artifactId = response.id;
+        // We navigate to the created artifact but replace it in the browser history, so that
+        // user does not get navigated back to this "create" page when pressing back.
+        router.push(
+          routes.artifact.build({
+            id: artifactId,
+          }),
+          'forward',
+          'replace'
+        );
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

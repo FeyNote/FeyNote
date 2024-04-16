@@ -10,7 +10,8 @@ export const createArtifact = authenticatedProcedure
       title: z.string(),
       text: z.string(),
       json: artifactJsonSchema,
-      isTemplate: z.boolean().optional(),
+      isPinned: z.boolean(),
+      isTemplate: z.boolean(),
     })
   )
   .mutation(async ({ ctx, input }) => {
@@ -20,7 +21,8 @@ export const createArtifact = authenticatedProcedure
         text: input.text,
         json: input.json,
         userId: ctx.session.userId,
-        isTemplate: input.isTemplate ?? false,
+        isPinned: input.isPinned,
+        isTemplate: input.isTemplate,
       },
     });
 

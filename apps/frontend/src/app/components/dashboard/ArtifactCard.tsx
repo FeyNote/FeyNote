@@ -20,7 +20,7 @@ interface Props {
 export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
   return (
     <IonArtifactCard
-      href={routes.artifact.build({
+      routerLink={routes.artifact.build({
         id: artifact.id,
       })}
     >
