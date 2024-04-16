@@ -61,7 +61,7 @@ export const Dashboard: React.FC = () => {
       return;
     }
 
-    trpc.artifact.searchArtifactsForSelf
+    trpc.artifact.searchArtifacts
       .query({
         query,
       })
