@@ -1,9 +1,10 @@
-import { prisma } from '@dnd-assistant/prisma/client';
-import { Indexes, SearchProvider } from './types';
+import { BlockIndexDocument, Indexes, SearchProvider } from './types';
 import { Client } from 'typesense';
-import { indexableArtifact } from '@dnd-assistant/prisma/types';
+import { Block } from '@blocknote/core';
+import { IndexableArtifact } from '@dnd-assistant/prisma/types';
 import { config } from '@dnd-assistant/api-services';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
+import { getBlocksByQuery } from '@dnd-assistant/shared-utils';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
@@ -20,77 +21,68 @@ export class TypeSense implements SearchProvider {
 
   private async init() {
     console.log('Establishing a connection to typesense');
-    const exists = await this.client.collections(Indexes.Artifacts).exists();
+    const doesArtifactIndexExist = await this.client
+      .collections(Indexes.Artifact)
+      .exists();
+    const doesBlockNoteIndexExist = await this.client
+      .collections(Indexes.Block)
+      .exists();
     console.log('Established a connection to typesense');
 
-    if (!exists) {
-      await this.client.collections().create({
-        name: Indexes.Artifacts,
-        fields: [
-          {
-            name: 'id',
-            type: 'string',
-            facet: true,
-            optional: false,
-          },
-          {
-            name: 'userId',
-            type: 'string',
-            facet: true,
-            optional: false,
-          },
-          {
-            name: 'title',
-            type: 'string',
-            optional: false,
-          },
-          {
-            name: 'fullText',
-            type: 'string',
-            optional: false,
-          },
-          {
-            name: 'fullTextEmbedding',
-            type: 'float[]',
-            embed: {
-              from: ['fullText'],
-              model_config: {
-                model_name: 'openai/text-embedding-3-large',
-                api_key: config.openai.apiKey,
-              },
-            },
-          },
-        ],
-      });
+    if (!doesArtifactIndexExist) {
+      await this.createArtifactIndex();
+    }
+    if (!doesBlockNoteIndexExist) {
+      await this.createBlocknoteIndex();
     }
   }
 
-  async indexArtifacts(artifactIds: string[]) {
-    const artifactSummaries = await prisma.artifact.findMany({
-      where: {
-        id: { in: artifactIds },
-      },
-      ...indexableArtifact,
-    });
-    const documents = artifactSummaries.map((artifactSummary) =>
-      createArtifactIndexDocument(artifactSummary)
-    );
+  async indexArtifact(artifact: IndexableArtifact) {
+    const artifactIndexDocument = createArtifactIndexDocument(artifact);
 
     await this.client
-      .collections(Indexes.Artifacts)
+      .collections(Indexes.Artifact)
       .documents()
-      .import(documents, {
+      .import([artifactIndexDocument], {
         action: 'upsert',
       });
+
+    await this.indexBlocks(artifact);
+  }
+
+  async indexBlocks(artifact: IndexableArtifact) {
+    if (!artifact.json.blocknoteContent) return;
+
+    const artifactBlock = artifact.json.blocknoteContent as Block[];
+    const blocks = getBlocksByQuery(true, artifactBlock).map(
+      (blockQueryResult) => {
+        const block = {
+          id: blockQueryResult.block.id,
+          text: blockQueryResult.matchedText,
+          userId: artifact.userId,
+          artifactId: artifact.id,
+        };
+        return block;
+      }
+    );
+
+    await this.deleteBlocksByArtifactIds([artifact.id]);
+    if (!blocks.length) return;
+
+    await this.client.collections(Indexes.Block).documents().import(blocks, {
+      action: 'upsert',
+    });
   }
 
   async deleteArtifacts(artifactIds: string[]) {
     await this.client
-      .collections(Indexes.Artifacts)
+      .collections(Indexes.Artifact)
       .documents()
       .delete({
         filter_by: `id:=[${artifactIds.join(', ')}]`,
       });
+
+    await this.deleteBlocksByArtifactIds(artifactIds);
   }
 
   async searchArtifacts(
@@ -106,7 +98,7 @@ export class TypeSense implements SearchProvider {
       : undefined;
 
     const results = await this.client
-      .collections(Indexes.Artifacts)
+      .collections(Indexes.Artifact)
       .documents()
       .search({
         q: query,
@@ -123,5 +115,105 @@ export class TypeSense implements SearchProvider {
         return (hit.document as Record<string, string>)['id'];
       }) || []
     );
+  }
+  async searchBlocks(userId: string, query: string) {
+    const query_by = 'text';
+
+    const results = await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .search({
+        q: query,
+        query_by,
+        prefix: false,
+        filter_by: `userId:=[${userId}]`,
+        per_page: 250,
+        limit_hits: 250,
+      });
+
+    return (
+      results.hits?.map((hit) => {
+        console.log(hit.document);
+        return hit.document as BlockIndexDocument;
+      }) || []
+    );
+  }
+
+  private async createBlocknoteIndex() {
+    await this.client.collections().create({
+      name: Indexes.Block,
+      fields: [
+        {
+          name: 'id',
+          type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'userId',
+          type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'text',
+          type: 'string',
+          optional: false,
+        },
+        {
+          name: 'artifactId',
+          type: 'string',
+          optional: false,
+        },
+      ],
+    });
+  }
+  private async createArtifactIndex() {
+    await this.client.collections().create({
+      name: Indexes.Artifact,
+      fields: [
+        {
+          name: 'id',
+          type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'userId',
+          type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'title',
+          type: 'string',
+          optional: false,
+        },
+        {
+          name: 'fullText',
+          type: 'string',
+          optional: false,
+        },
+        {
+          name: 'fullTextEmbedding',
+          type: 'float[]',
+          embed: {
+            from: ['fullText'],
+            model_config: {
+              model_name: 'openai/text-embedding-3-large',
+              api_key: config.openai.apiKey,
+            },
+          },
+        },
+      ],
+    });
+  }
+  private async deleteBlocksByArtifactIds(artifactIds: string[]) {
+    await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .delete({
+        filter_by: `artifactId:=[${artifactIds.join(', ')}]`,
+      });
   }
 }

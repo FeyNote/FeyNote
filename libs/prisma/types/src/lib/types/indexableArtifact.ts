@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import { ArtifactJson } from './artifactJson';
 
 export const indexableArtifact = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
@@ -11,4 +12,6 @@ export const indexableArtifact = Prisma.validator<Prisma.ArtifactArgs>()({
 
 export type IndexableArtifact = Prisma.ArtifactGetPayload<
   typeof indexableArtifact
->;
+> & {
+  json: ArtifactJson;
+};
