@@ -1,8 +1,8 @@
 import { Block } from '@blocknote/core';
 
-const isMatch = (query: string, val: string) => {
+const isMatch = (query: string | boolean, val: string) => {
   if (!val.trim()) return false;
-  if (query === '*') return !!val;
+  if (typeof query === 'boolean') return query;
   return val.includes(query);
 };
 
@@ -11,12 +11,13 @@ export interface BlocksByStringQueryResult {
   matchedText: string;
 }
 
-export const getBlocksByStringQuery = (query: string, blocks: Block[]) => {
-  if (!query.trim()) return [];
+export const getBlocksByQuery = (query: string | boolean, blocks: Block[]) => {
+  if (typeof query === 'string' && !query.trim()) return [];
+  if (typeof query === 'boolean' && !query) return [];
 
   const results: BlocksByStringQueryResult[] = [];
   for (const block of blocks) {
-    const childrenResults = getBlocksByStringQuery(query, block.children);
+    const childrenResults = getBlocksByQuery(query, block.children);
     results.push(...childrenResults);
 
     if (

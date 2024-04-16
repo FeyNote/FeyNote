@@ -4,7 +4,7 @@ import { Block } from '@blocknote/core';
 import { IndexableArtifact } from '@dnd-assistant/prisma/types';
 import { config } from '@dnd-assistant/api-services';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
-import { getBlocksByStringQuery } from '@dnd-assistant/shared-utils';
+import { getBlocksByQuery } from '@dnd-assistant/shared-utils';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
@@ -51,8 +51,10 @@ export class TypeSense implements SearchProvider {
   }
 
   async indexBlocks(artifact: IndexableArtifact) {
-    const artifactBlock = artifact.json as Block;
-    const blocks = getBlocksByStringQuery('*', [artifactBlock]).map(
+    if (!artifact.json.blocknoteContent) return;
+
+    const artifactBlock = artifact.json.blocknoteContent as Block[];
+    const blocks = getBlocksByQuery(true, artifactBlock).map(
       (blockQueryResult) => {
         const block = {
           id: blockQueryResult.block.id,
@@ -65,6 +67,7 @@ export class TypeSense implements SearchProvider {
     );
 
     await this.deleteBlocksByArtifactIds([artifact.id]);
+    if (!blocks.length) return;
 
     await this.client.collections(Indexes.Block).documents().import(blocks, {
       action: 'upsert',

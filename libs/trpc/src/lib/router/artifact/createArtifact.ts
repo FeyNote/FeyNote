@@ -35,7 +35,6 @@ export const createArtifact = authenticatedProcedure
     };
 
     await searchProvider.indexArtifact(indexableArtifact);
-    await searchProvider.indexBlocks(indexableArtifact);
 
     // We only return ID since we expect frontend to fetch artifact via getArtifactById
     // rather than adding that logic here.

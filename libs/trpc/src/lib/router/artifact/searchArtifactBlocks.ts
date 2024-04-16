@@ -5,7 +5,7 @@ import { prisma } from '@dnd-assistant/prisma/client';
 import { ArtifactDetail, artifactDetail } from '@dnd-assistant/prisma/types';
 import {
   BlocksByStringQueryResult,
-  getBlocksByStringQuery,
+  getBlocksByQuery,
 } from '@dnd-assistant/shared-utils';
 
 export interface ArtifactBlockResult extends BlocksByStringQueryResult {
@@ -44,10 +44,7 @@ export const searchArtifactBlocks = authenticatedProcedure
         const json = artifact.json;
         if (!json || !json.blocknoteContent) continue;
 
-        const results = getBlocksByStringQuery(
-          input.query,
-          json.blocknoteContent
-        );
+        const results = getBlocksByQuery(input.query, json.blocknoteContent);
 
         for (const result of results) {
           artifactBlockResults.push({
