@@ -49,6 +49,13 @@
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 
+  "artifactRenderer.title.label": "Artifact Name",
+  "artifactRenderer.title.placeholder": "Olympus",
+  "artifactRenderer.isPinned": "Pin",
+  "artifactRenderer.isPinned.help": "When checked, you'll see this artifact appear on the dashboard in a separate section so that you can quickly access it.",
+  "artifactRenderer.isTemplate": "Template",
+  "artifactRenderer.isTemplate.help": "When checked, this artifact will be treated as a template for creating other artifacts, rather than as content itself.",
+
   "generic.save": "Save",
   "generic.edit": "Edit",
   "generic.show": "Show",

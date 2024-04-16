@@ -24,7 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import { routes } from '../../routes';
 import styled from 'styled-components';
-import { NullState } from '../error/NullState';
+import { NullState } from '../info/NullState';
 
 const GridContainer = styled.div`
   display: grid;

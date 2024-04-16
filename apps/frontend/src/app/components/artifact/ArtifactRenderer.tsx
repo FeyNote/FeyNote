@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
+import { InfoButton } from '../info/InfoButton';
 
 type NewArtifactOnlyFields =
   | 'id'
@@ -109,20 +110,30 @@ export const ArtifactRenderer = (props: Props) => {
           <IonItem>
             <IonCheckbox
               labelPlacement="end"
+              justify="start"
               checked={isPinned}
               onIonChange={(event) => setIsPinned(event.target.checked)}
             >
               {t('artifactRenderer.isPinned')}
             </IonCheckbox>
+            <InfoButton
+              slot="end"
+              message={t('artifactRenderer.isPinned.help')}
+            />
           </IonItem>
           <IonItem>
             <IonCheckbox
               labelPlacement="end"
+              justify="start"
               checked={isTemplate}
               onIonChange={(event) => setIsTemplate(event.target.checked)}
             >
               {t('artifactRenderer.isTemplate')}
             </IonCheckbox>
+            <InfoButton
+              slot="end"
+              message={t('artifactRenderer.isTemplate.help')}
+            />
           </IonItem>
         </IonCol>
       </IonRow>
