@@ -8,30 +8,35 @@ import {
   IonInput,
   IonItem,
   IonRow,
+  useIonAlert,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
+import { InfoButton } from '../info/InfoButton';
 
-type NewArtifactOnlyFields =
+type ExistingArtifactOnlyFields =
   | 'id'
+  | 'userId'
   | 'createdAt'
   | 'updatedAt'
   | 'templatedArtifacts'
   | 'artifactTemplate';
 
-export type EditArtifactDetail = Omit<ArtifactDetail, NewArtifactOnlyFields> &
-  Partial<Pick<ArtifactDetail, NewArtifactOnlyFields>>;
+export type EditArtifactDetail =
+  | Omit<ArtifactDetail, ExistingArtifactOnlyFields>
+  | ArtifactDetail;
 
 interface Props {
   artifact: EditArtifactDetail;
-  save: (artifact: Partial<ArtifactDetail>) => void;
-  onArtifactChanged?: (artifact: Partial<ArtifactDetail>) => void;
+  save: (artifact: EditArtifactDetail) => void;
+  onArtifactChanged?: (artifact: EditArtifactDetail) => void;
 }
 
 export const ArtifactRenderer = (props: Props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
+  const [presentAlert] = useIonAlert();
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
@@ -49,24 +54,48 @@ export const ArtifactRenderer = (props: Props) => {
     props.artifact.text !== blocknoteContentMd;
 
   const save = () => {
+    if (!title.trim()) {
+      presentAlert({
+        header: t('artifactDetail.missingTitle.title'),
+        message: t('artifactDetail.missingTitle.message'),
+        buttons: [t('generic.okay')],
+      });
+
+      return;
+    }
+
     props.save({
+      ...props.artifact,
       title,
       text: blocknoteContentMd,
       json: {
         blocknoteContent,
       },
+      isPinned,
+      isTemplate,
     });
   };
 
   useEffect(() => {
     onArtifactChanged?.({
+      ...props.artifact,
       title,
       text: blocknoteContentMd,
       json: {
         blocknoteContent,
       },
+      isPinned,
+      isTemplate,
     });
-  }, [onArtifactChanged, title, blocknoteContent, blocknoteContentMd]);
+  }, [
+    props.artifact,
+    onArtifactChanged,
+    title,
+    blocknoteContent,
+    blocknoteContentMd,
+    isPinned,
+    isTemplate,
+  ]);
 
   const onEditorContentChange = (
     updatedContent: ArtifactEditorBlock[],
@@ -109,20 +138,30 @@ export const ArtifactRenderer = (props: Props) => {
           <IonItem>
             <IonCheckbox
               labelPlacement="end"
+              justify="start"
               checked={isPinned}
               onIonChange={(event) => setIsPinned(event.target.checked)}
             >
               {t('artifactRenderer.isPinned')}
             </IonCheckbox>
+            <InfoButton
+              slot="end"
+              message={t('artifactRenderer.isPinned.help')}
+            />
           </IonItem>
           <IonItem>
             <IonCheckbox
               labelPlacement="end"
+              justify="start"
               checked={isTemplate}
               onIonChange={(event) => setIsTemplate(event.target.checked)}
             >
               {t('artifactRenderer.isTemplate')}
             </IonCheckbox>
+            <InfoButton
+              slot="end"
+              message={t('artifactRenderer.isTemplate.help')}
+            />
           </IonItem>
         </IonCol>
       </IonRow>

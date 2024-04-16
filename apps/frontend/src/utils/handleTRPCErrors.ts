@@ -1,6 +1,7 @@
 import { UseIonToastResult } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@dnd-assistant/trpc';
+import { routes } from '../app/routes';
 
 const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
   _presentToast({
@@ -33,6 +34,12 @@ export const handleTRPCErrors = (
   if (typeof handler === 'function') {
     handler();
     return;
+  }
+
+  // Re-route to login page
+  // TODO: show modal instead (need global context or to change this handler to component so we can access modal hooks)
+  if (errorCode === 401) {
+    window.location.href = routes.login.build();
   }
 
   const defaultErrorMessages = {

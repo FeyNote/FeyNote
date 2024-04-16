@@ -13,7 +13,7 @@ import {
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useState } from 'react';
-import { ArtifactRenderer } from './ArtifactRenderer';
+import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
 import { RouteArgs } from '../../routes';
 import { useParams } from 'react-router-dom';
 import { t } from 'i18next';
@@ -40,15 +40,17 @@ export const Artifact: React.FC = () => {
     load();
   });
 
-  const save = (updatedArtifact: Partial<ArtifactDetail>) => {
+  const save = (updatedArtifact: EditArtifactDetail) => {
     if (!artifact) return;
 
     trpc.artifact.updateArtifact
       .mutate({
         id: artifact.id,
-        title: updatedArtifact.title || artifact.title,
-        json: updatedArtifact.json || artifact.json,
-        text: updatedArtifact.text || artifact.text,
+        title: updatedArtifact.title,
+        json: updatedArtifact.json,
+        text: updatedArtifact.text,
+        isPinned: updatedArtifact.isPinned,
+        isTemplate: updatedArtifact.isTemplate,
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
