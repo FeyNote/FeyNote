@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@dnd-assistant/prisma/types';
+import { ArtifactDetail } from '@feynote/prisma/types';
 import { useEffect, useState } from 'react';
 import {
   IonButton,

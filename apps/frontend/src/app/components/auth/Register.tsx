@@ -25,7 +25,7 @@ import {
   CenteredIonText,
   SignInWithGoogleButton,
 } from './styles';
-import { validateEmail, validatePassword } from '@dnd-assistant/shared-utils';
+import { validateEmail, validatePassword } from '@feynote/shared-utils';
 import { getIonInputClassNames } from './input';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';

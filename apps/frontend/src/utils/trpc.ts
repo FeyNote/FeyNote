@@ -1,4 +1,4 @@
-import type { AppRouter } from '@dnd-assistant/trpc';
+import type { AppRouter } from '@feynote/trpc';
 import { createTRPCProxyClient, httpLink } from '@trpc/client';
 import superjson from 'superjson';
 import { SESSION_ITEM_NAME } from '../app/context/session/types';

@@ -1,4 +1,4 @@
-import { getArtifactDetailById } from '@dnd-assistant/api-services';
+import { getArtifactDetailById } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';

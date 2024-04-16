@@ -1,5 +1,5 @@
-import { prisma } from '@dnd-assistant/prisma/client';
-import { ArtifactDetail, artifactDetail } from '@dnd-assistant/prisma/types';
+import { prisma } from '@feynote/prisma/client';
+import { ArtifactDetail, artifactDetail } from '@feynote/prisma/types';
 
 export const getArtifactDetailById = async (id: string) => {
   const artifact = await prisma.artifact.findUniqueOrThrow({

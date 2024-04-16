@@ -1,9 +1,9 @@
 import { publicProcedure } from '../../trpc';
 import { z } from 'zod';
-import * as services from '@dnd-assistant/api-services';
-import { UserAlreadyExistError } from '@dnd-assistant/api-services';
+import * as services from '@feynote/api-services';
+import { UserAlreadyExistError } from '@feynote/api-services';
 import { TRPCError } from '@trpc/server';
-import { validateEmail, validatePassword } from '@dnd-assistant/shared-utils';
+import { validateEmail, validatePassword } from '@feynote/shared-utils';
 
 export const register = publicProcedure
   .input(

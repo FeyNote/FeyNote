@@ -1,4 +1,4 @@
-import { prisma } from '@dnd-assistant/prisma/client';
+import { prisma } from '@feynote/prisma/client';
 import { generateSessionExpiry } from './generateSessionExpiry';
 import { Session } from '@prisma/client';
 

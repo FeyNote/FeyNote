@@ -1,11 +1,11 @@
 import { publicProcedure } from '../../trpc';
 import { z } from 'zod';
-import * as services from '@dnd-assistant/api-services';
+import * as services from '@feynote/api-services';
 import {
   InvalidCredentialsError,
   UserNoPasswordError,
   UserNotFoundError,
-} from '@dnd-assistant/api-services';
+} from '@feynote/api-services';
 import { TRPCError } from '@trpc/server';
 
 export const login = publicProcedure

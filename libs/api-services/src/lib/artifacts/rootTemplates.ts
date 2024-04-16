@@ -1,4 +1,4 @@
-import { ArtifactJson } from '@dnd-assistant/prisma/types';
+import { ArtifactJson } from '@feynote/prisma/types';
 
 interface RootTemplateLocalizedDetails {
   title: string;

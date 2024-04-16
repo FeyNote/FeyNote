@@ -1,5 +1,5 @@
-import { prisma } from '@dnd-assistant/prisma/client';
-import { artifactSummary } from '@dnd-assistant/prisma/types';
+import { prisma } from '@feynote/prisma/client';
+import { artifactSummary } from '@feynote/prisma/types';
 
 export const getArtifactsForUserId = async (userId: string) => {
   const artifacts = await prisma.artifact.findMany({

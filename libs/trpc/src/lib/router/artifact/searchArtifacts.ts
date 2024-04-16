@@ -1,5 +1,5 @@
-import { getArtifactSummariesByIds } from '@dnd-assistant/api-services';
-import { searchProvider } from '@dnd-assistant/search';
+import { getArtifactSummariesByIds } from '@feynote/api-services';
+import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 

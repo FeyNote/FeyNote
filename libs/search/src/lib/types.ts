@@ -1,4 +1,4 @@
-import { IndexableArtifact } from '@dnd-assistant/prisma/types';
+import { IndexableArtifact } from '@feynote/prisma/types';
 
 export interface SearchProvider {
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;

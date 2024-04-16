@@ -1,7 +1,7 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
-import { prisma } from '@dnd-assistant/prisma/client';
-import { artifactSummary } from '@dnd-assistant/prisma/types';
+import { prisma } from '@feynote/prisma/client';
+import { artifactSummary } from '@feynote/prisma/types';
 
 export const getArtifacts = authenticatedProcedure
   .input(
