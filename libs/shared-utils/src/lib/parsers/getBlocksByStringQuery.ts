@@ -2,6 +2,7 @@ import { Block } from '@blocknote/core';
 
 const isMatch = (query: string, val: string) => {
   if (!val.trim()) return false;
+  if (query === '*') return !!val;
   return val.includes(query);
 };
 

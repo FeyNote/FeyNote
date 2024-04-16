@@ -24,7 +24,16 @@ export const createArtifact = authenticatedProcedure
       },
     });
 
-    await searchProvider.indexArtifacts([id]);
+    const indexableArtifact = {
+      id,
+      userId: ctx.session.userId,
+      text: input.text,
+      title: input.title,
+      json: input.json,
+    };
+
+    await searchProvider.indexArtifact(indexableArtifact);
+    await searchProvider.indexBlocks(indexableArtifact);
 
     // We only return ID since we expect frontend to fetch artifact via getArtifactById
     // rather than adding that logic here.

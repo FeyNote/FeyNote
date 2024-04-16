@@ -36,7 +36,15 @@ export const updateArtifact = authenticatedProcedure
       },
     });
 
-    await searchProvider.indexArtifacts([input.id]);
+    const indexableArtifact = {
+      id: artifact.id,
+      userId: ctx.session.userId,
+      text: input.text,
+      title: input.title,
+      json: input.json,
+    };
+
+    await searchProvider.indexArtifact(indexableArtifact);
 
     // We do not return the complete artifact, but rather expect that the frontend will
     // fetch the complete artifact via getArtifactById

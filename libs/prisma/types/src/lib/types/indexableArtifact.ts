@@ -6,6 +6,7 @@ export const indexableArtifact = Prisma.validator<Prisma.ArtifactArgs>()({
     title: true,
     userId: true,
     text: true,
+    json: true,
   },
 });
 
