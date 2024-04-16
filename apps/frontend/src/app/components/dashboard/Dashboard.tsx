@@ -18,12 +18,29 @@ import {
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useMemo, useState } from 'react';
-import { filterOutline, add } from 'ionicons/icons';
+import { filterOutline, add, documentText } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@dnd-assistant/prisma/types';
-import { GridContainer, GridRowSearchbar, GridRowArtifacts } from './styles';
 import { routes } from '../../routes';
+import styled from 'styled-components';
+import { NullState } from '../error/NullState';
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-rows: 58px auto;
+  height: 100%;
+`;
+
+const GridRowSearchbar = styled.div`
+  display: flex;
+  padding-top: 8px;
+  padding-left: 8px;
+`;
+
+const GridRowArtifacts = styled.div`
+  overflow-y: auto;
+`;
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -99,14 +116,24 @@ export const Dashboard: React.FC = () => {
           </GridRowSearchbar>
           <GridRowArtifacts>
             <IonCol>
-              <Artifacts
-                title={t('dashboard.pinnedItems.header')}
-                artifacts={pinnedArtifacts}
-              />
-              <Artifacts
-                title={t('dashboard.items.header')}
-                artifacts={artifacts}
-              />
+              {!!pinnedArtifacts.length && (
+                <Artifacts
+                  title={t('dashboard.pinnedItems.header')}
+                  artifacts={pinnedArtifacts}
+                />
+              )}
+              {artifacts.length ? (
+                <Artifacts
+                  title={t('dashboard.items.header')}
+                  artifacts={artifacts}
+                />
+              ) : (
+                <NullState
+                  title={t('dashboard.noArtifacts.title')}
+                  message={t('dashboard.noArtifacts.message')}
+                  icon={documentText}
+                />
+              )}
             </IonCol>
           </GridRowArtifacts>
         </GridContainer>

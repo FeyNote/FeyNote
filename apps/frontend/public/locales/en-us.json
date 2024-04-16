@@ -42,6 +42,8 @@
   "dashboard.list.hide": "Hide",
   "dashboard.pinnedItems.header": "Pinned Items",
   "dashboard.items.header": "Items",
+  "dashboard.noArtifacts.title": "No Artifacts",
+  "dashboard.noArtifacts.message": "Click the plus button in the bottom right corner to create one!",
 
   "artifact.title": "Artifact",
   "artifactField.imageAlt": "Image attached to artifact",

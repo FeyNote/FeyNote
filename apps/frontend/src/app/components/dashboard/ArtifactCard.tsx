@@ -1,12 +1,17 @@
 import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import {
+  IonCard,
   IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
 } from '@ionic/react';
-import { IonArtifactCard } from './styles';
 import { routes } from '../../routes';
+import styled from 'styled-components';
+
+const IonArtifactCard = styled(IonCard)`
+  width: min(300px, 100%);
+`;
 
 interface Props {
   artifact: ArtifactSummary;
