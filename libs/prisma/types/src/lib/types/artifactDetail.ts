@@ -1,10 +1,12 @@
 import { Prisma } from '@prisma/client';
+import { ArtifactJson } from './artifactJson';
 
 export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
     id: true,
     title: true,
     isPinned: true,
+    isTemplate: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
@@ -13,46 +15,17 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         id: true,
         title: true,
         userId: true,
-        visibility: true,
         createdAt: true,
         updatedAt: true,
       },
     },
-    fields: {
+    text: true,
+    json: true,
+    templatedArtifacts: {
       select: {
         id: true,
-        text: true,
-        fieldImages: {
-          select: {
-            id: true,
-            order: true,
-            image: {
-              select: {
-                id: true,
-                title: true,
-                storageKey: true,
-                createdAt: true,
-                updatedAt: true,
-              },
-            },
-          },
-        },
-        fieldTemplateId: true,
-        fieldTemplate: {
-          select: {
-            id: true,
-            title: true,
-            order: true,
-            aiPrompt: true,
-            type: true,
-            description: true,
-            placeholder: true,
-            required: true,
-            artifactTemplateId: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
+        title: true,
+        userId: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -60,4 +33,8 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   },
 });
 
-export type ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
+type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
+
+export type ArtifactDetail = Omit<_ArtifactDetail, 'json'> & {
+  json: ArtifactJson;
+};
