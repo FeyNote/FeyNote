@@ -13,6 +13,8 @@ export const updateArtifact = authenticatedProcedure
       title: z.string(),
       text: z.string(),
       json: artifactJsonSchema,
+      isPinned: z.boolean(),
+      isTemplate: z.boolean(),
     })
   )
   .mutation(async ({ ctx, input }) => {
@@ -33,6 +35,8 @@ export const updateArtifact = authenticatedProcedure
         title: input.title,
         text: input.text,
         json: input.json,
+        isPinned: input.isPinned,
+        isTemplate: input.isTemplate,
       },
     });
 

@@ -1,5 +1,4 @@
-version: '3.7'
-
+name: feynote
 services:
   proxy:
     image: nginx
@@ -31,12 +30,12 @@ services:
       - ./prisma:/app/prisma
     command: npx nx serve backend
     environment:
-      - DATABASE_URL=postgresql://dnd-assistant:dnd-assistant@postgres:5432/dnd-assistant?schema=public
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
       - EMAIL_FROM_NAME=val
       - EMAIL_FROM_ADDRESS=val
       - EMAIL_REPLY_TO_ADDRESS=val
-      - TYPESENSE_API_KEY=dnd-assistant
+      - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
     env_file:
       - ./.env
@@ -48,10 +47,10 @@ services:
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=dnd-assistant
-      - POSTGRES_USER=dnd-assistant
-      - POSTGRES_PASSWORD=dnd-assistant
+      - POSTGRES_DB=feynote
+      - POSTGRES_USER=feynote
+      - POSTGRES_PASSWORD=feynote
   typesense:
     image: typesense/typesense:0.25.2
     restart: on-failure
-    command: '--data-dir /media --api-key=dnd-assistant --enable-cors'
+    command: '--data-dir /media --api-key=feynote --enable-cors'
