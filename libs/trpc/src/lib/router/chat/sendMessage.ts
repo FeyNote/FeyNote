@@ -1,14 +1,14 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
-import { message } from '@dnd-assistant/openai';
+import { message, MessageSchema } from '@dnd-assistant/openai';
 
 export const sendMessage = authenticatedProcedure
   .input(
     z.object({
-      query: z.string(),
+      messages: MessageSchema.array().min(1),
     })
   )
-  .query(async ({ ctx, input }) => {
-    const response = await message(ctx.session.userId, input.query);
+  .query(async ({ input }) => {
+    const response = await message(input.messages);
     return response.choices[0].message;
   });

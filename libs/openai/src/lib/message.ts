@@ -3,11 +3,6 @@ import { Message, MessageRoles } from './types';
 
 const OPEN_AI_MODEL = 'gpt-3.5-turbo';
 
-const getMessagesFromFirestore = async (): Promise<Message[]> => {
-  const messages = [getSystemMessage()];
-  return new Promise((res) => res(messages));
-};
-
 const getSystemMessage = () => {
   return {
     content: `You are a personal assistant for the user. Act helpful and willing to assist in all responses.
@@ -16,21 +11,15 @@ const getSystemMessage = () => {
   };
 };
 
-export const message = async (threadId: string, query: string) => {
-  const messages = [];
-  const previousMessages = await getMessagesFromFirestore();
+const hasSystemMessage = (messages: Message[]) => {
+  return messages.find((message) => message.role === MessageRoles.System);
+};
 
-  if (!previousMessages) {
+export const message = async (messages: Message[]) => {
+  if (!hasSystemMessage(messages)) {
     const systemMessage = getSystemMessage();
-    messages.push(systemMessage);
-  } else {
-    messages.push(...previousMessages);
+    messages = [systemMessage, ...messages];
   }
-
-  messages.push({
-    role: MessageRoles.User,
-    content: query,
-  });
 
   const response = await openai.chat.completions.create({
     model: OPEN_AI_MODEL,
