@@ -3,7 +3,12 @@ import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import { ArtifactCard } from './ArtifactCard';
 import { IonButton, IonLabel, IonListHeader } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ArtifactCardsContainer } from './styles';
+import styled from 'styled-components';
+
+const ArtifactCardsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
 
 interface Props {
   artifacts: ArtifactSummary[];

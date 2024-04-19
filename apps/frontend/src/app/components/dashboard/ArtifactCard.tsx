@@ -1,12 +1,17 @@
 import { ArtifactSummary } from '@dnd-assistant/prisma/types';
 import {
+  IonCard,
   IonCardContent,
   IonCardHeader,
   IonCardSubtitle,
   IonCardTitle,
 } from '@ionic/react';
-import { IonArtifactCard } from './styles';
 import { routes } from '../../routes';
+import styled from 'styled-components';
+
+const IonArtifactCard = styled(IonCard)`
+  width: min(300px, 100%);
+`;
 
 interface Props {
   artifact: ArtifactSummary;
@@ -15,7 +20,7 @@ interface Props {
 export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
   return (
     <IonArtifactCard
-      href={routes.artifact.build({
+      routerLink={routes.artifact.build({
         id: artifact.id,
       })}
     >
@@ -25,7 +30,7 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
       />
       <IonCardHeader>
         <IonCardTitle>{artifact.title}</IonCardTitle>
-        <IonCardSubtitle>{artifact.artifactTemplate.title}</IonCardSubtitle>
+        <IonCardSubtitle>{artifact.artifactTemplate?.title}</IonCardSubtitle>
       </IonCardHeader>
 
       <IonCardContent>

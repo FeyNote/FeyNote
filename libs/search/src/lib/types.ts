@@ -1,11 +1,18 @@
+import { IndexableArtifact } from '@dnd-assistant/prisma/types';
+
 export interface SearchProvider {
-  indexArtifacts: (artifactIds: string[]) => Promise<void>;
+  indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
+  indexBlocks: (artifact: IndexableArtifact) => Promise<void>;
   deleteArtifacts: (artifactIds: string[]) => Promise<void>;
   searchArtifacts: (
     userId: string,
     query: string,
     withEmbeddings?: boolean
   ) => Promise<string[]>;
+  searchBlocks: (
+    userId: string,
+    query: string
+  ) => Promise<BlockIndexDocument[]>;
 }
 
 export interface ArtifactIndexDocument {
@@ -15,10 +22,18 @@ export interface ArtifactIndexDocument {
   id: string;
 }
 
+export interface BlockIndexDocument {
+  id: string;
+  userId: string;
+  artifactId: string;
+  text: string;
+}
+
 export enum AvailableSearchProviders {
   Typesense = 'typesense',
 }
 
 export enum Indexes {
-  Artifacts = 'artifacts',
+  Artifact = 'artifact',
+  Block = 'block',
 }

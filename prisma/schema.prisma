@@ -11,118 +11,64 @@ datasource db {
 }
 
 model User {
-  id                String             @id @default(uuid()) @db.Uuid
-  createdAt         DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime           @updatedAt @db.Timestamptz(6)
-  email             String             @unique
-  passwordHash      String?
-  passwordSalt      String?
-  passwordVersion   Int?
-  username          String?
-  sessions          Session[]
-  artifacts         Artifact[]
-  artifactTemplates ArtifactTemplate[]
+  id              String     @id @default(uuid()) @db.Uuid
+  createdAt       DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime   @updatedAt @db.Timestamptz(6)
+  email           String     @unique
+  passwordHash    String?
+  passwordSalt    String?
+  passwordVersion Int?
+  username        String?
+  sessions        Session[]
+  artifacts       Artifact[]
 }
 
 model Session {
-  id         String   @id @default(uuid()) @db.Uuid
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String   @db.Uuid
-  token      String   @unique @db.VarChar(255)
-  expiresAt  DateTime @db.Timestamptz(6)
-  extendableUntil  DateTime @db.Timestamptz(6)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model ArtifactTemplate {
-  id             String          @id @default(uuid()) @db.Uuid
-  title          String
-  fieldTemplates FieldTemplate[]
-  artifacts      Artifact[]
-  user           User?           @relation(fields: [userId], references: [id])
-  userId         String?         @db.Uuid
-  visibility     Visibility
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
-}
-
-model FieldTemplate {
-  id                 String           @id @default(uuid()) @db.Uuid
-  title              String
-  order              Int
-  aiPrompt           String?
-  type               FieldType
-  description        String?
-  placeholder        String?
-  required           Boolean          @default(false)
-  artifactTemplate   ArtifactTemplate @relation(fields: [artifactTemplateId], references: [id])
-  artifactTemplateId String           @db.Uuid
-  fields             Field[]
-  createdAt          DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
-
-  @@unique([order, artifactTemplateId])
+  id              String   @id @default(uuid()) @db.Uuid
+  user            User     @relation(fields: [userId], references: [id])
+  userId          String   @db.Uuid
+  token           String   @unique @db.VarChar(255)
+  expiresAt       DateTime @db.Timestamptz(6)
+  extendableUntil DateTime @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model Artifact {
-  id                 String           @id @default(uuid()) @db.Uuid
+  id                 String          @id @default(uuid()) @db.Uuid
   title              String
-  isPinned           Boolean          @default(false)
-  fields             Field[]
-  artifactTemplate   ArtifactTemplate @relation(fields: [artifactTemplateId], references: [id])
-  artifactTemplateId String           @db.Uuid
-  user               User             @relation(fields: [userId], references: [id])
-  userId             String           @db.Uuid
-  visibility         Visibility
-  createdAt          DateTime         @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime         @updatedAt @db.Timestamptz(6)
+  isPinned           Boolean         @default(false)
+  artifactTemplate   Artifact?       @relation("artifactTemplate", fields: [artifactTemplateId], references: [id])
+  artifactTemplateId String?         @db.Uuid
+  rootTemplateId     String?
+  isTemplate         Boolean         @default(false)
+  user               User            @relation(fields: [userId], references: [id])
+  userId             String          @db.Uuid
+  text               String
+  json               Json
+  createdAt          DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
+  artfactFiles       ArtifactFile[]
+  templatedArtifacts Artifact[]      @relation("artifactTemplate")
 }
 
-model Field {
-  id              String        @id @default(uuid()) @db.Uuid
-  text            String?
-  fieldTemplate   FieldTemplate @relation(fields: [fieldTemplateId], references: [id])
-  fieldTemplateId String        @db.Uuid
-  artifact        Artifact      @relation(fields: [artifactId], references: [id])
-  artifactId      String        @db.Uuid
-  createdAt       DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime      @updatedAt @db.Timestamptz(6)
-  fieldImages     FieldImage[]
-}
-
-model FieldImage {
-  id        String    @id @default(uuid()) @db.Uuid
-  fieldId   String    @db.Uuid
-  field     Field     @relation(fields: [fieldId], references: [id])
-  imageId   String    @db.Uuid
-  image     Image     @relation(fields: [imageId], references: [id])
-  order     Int
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model Image {
+model ArtifactFile {
   id         String   @id @default(uuid()) @db.Uuid
-  title      String
-  storageKey String
+  artifactId String   @db.Uuid
+  artifact   Artifact @relation(fields: [artifactId], references: [id])
+  fileId     String   @db.Uuid
+  file       File     @relation(fields: [fileId], references: [id])
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  fieldImages     FieldImage[]
 }
 
-enum FieldType {
-  Images
-  Text
-  TextArea
-  Files
-  MonsterStatBlock
-  ItemStatBlock
-  NPCStatBlock
-  PlayerStatBlock
-}
-
-enum Visibility {
-  Public
-  Private
+model File {
+  id             String          @id @default(uuid()) @db.Uuid
+  label          String
+  mimetype       String
+  filename       String
+  storageKey     String
+  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
+  artifactFiles  ArtifactFile[]
 }

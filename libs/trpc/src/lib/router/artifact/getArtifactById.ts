@@ -12,7 +12,6 @@ export const getArtifactById = authenticatedProcedure
   .query(async ({ ctx, input }) => {
     const artifact = await getArtifactDetailById(input.id);
 
-    // TODO: We will want to check visibility here rather than ownership only.
     if (artifact.userId !== ctx.session.userId) {
       throw new TRPCError({
         message: 'Artifact not visible to current user',
