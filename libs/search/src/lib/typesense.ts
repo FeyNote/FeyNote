@@ -1,10 +1,10 @@
 import { BlockIndexDocument, Indexes, SearchProvider } from './types';
 import { Client } from 'typesense';
 import { Block } from '@blocknote/core';
-import { IndexableArtifact } from '@dnd-assistant/prisma/types';
-import { config } from '@dnd-assistant/api-services';
+import { IndexableArtifact } from '@feynote/prisma/types';
+import { config } from '@feynote/api-services';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
-import { getBlocksByQuery } from '@dnd-assistant/shared-utils';
+import { getBlocksByQuery } from '@feynote/shared-utils';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({

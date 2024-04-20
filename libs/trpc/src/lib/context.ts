@@ -1,8 +1,8 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
 
 import { inferAsyncReturnType } from '@trpc/server';
-import { prisma } from '@dnd-assistant/prisma/client';
-import { isSessionExpired } from '@dnd-assistant/api-services';
+import { prisma } from '@feynote/prisma/client';
+import { isSessionExpired } from '@feynote/api-services';
 
 export const createContext = async (
   expressContext: trpcExpress.CreateExpressContextOptions

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { publicProcedure } from '../../trpc';
 import { OAuth2Client } from 'google-auth-library';
 import { TRPCError } from '@trpc/server';
-import { upsertLogin } from '@dnd-assistant/api-services';
+import { upsertLogin } from '@feynote/api-services';
 
 export const signInWithGoogle = publicProcedure
   .input(

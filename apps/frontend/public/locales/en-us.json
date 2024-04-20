@@ -21,7 +21,7 @@
   "auth.login.forgot.link": "here!",
 
   "auth.register.title": "Register",
-  "auth.register.card.title": "Welcome Back!",
+  "auth.register.card.title": "Welcome to FeyNote!",
   "auth.register.card.subtitle": "Your dungeon awaits you...",
   "auth.register.field.email.label": "Email",
   "auth.register.field.email.placeholder": "Enter your email",

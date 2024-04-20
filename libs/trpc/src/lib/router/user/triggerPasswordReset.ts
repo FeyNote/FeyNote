@@ -1,6 +1,6 @@
 import { publicProcedure } from '../../trpc';
 import { z } from 'zod';
-import * as services from '@dnd-assistant/api-services';
+import * as services from '@feynote/api-services';
 
 export const triggerPasswordReset = publicProcedure
   .input(

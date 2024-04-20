@@ -1,4 +1,4 @@
-import { prisma } from '@dnd-assistant/prisma/client';
+import { prisma } from '@feynote/prisma/client';
 import { hashPassword } from './hashPassword';
 import {
   InvalidCredentialsError,
