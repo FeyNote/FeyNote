@@ -3,6 +3,7 @@
   "menu.home": "Home",
   "menu.login": "Login",
   "menu.dashboard": "Dashboard",
+  "menu.assistant": "Assistant",
   "menu.signOut": "Sign Out",
   "menu.register": "Register",
 
@@ -57,6 +58,9 @@
   "artifactRenderer.isTemplate.help": "When checked, this artifact will be treated as a template for creating other artifacts, rather than as content itself.",
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
+
+  "assistant.title": "Assistant",
+  "assistant.chat.input.placeholder": "Ask me anything",
 
   "generic.save": "Save",
   "generic.edit": "Edit",

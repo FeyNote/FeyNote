@@ -1,3 +1,4 @@
+import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { openai } from './openai';
 import { Message, MessageRoles } from './types';
 
@@ -23,7 +24,7 @@ export const message = async (messages: Message[]) => {
 
   const response = await openai.chat.completions.create({
     model: OPEN_AI_MODEL,
-    messages,
+    messages: messages as ChatCompletionMessageParam[],
   });
 
   return response;

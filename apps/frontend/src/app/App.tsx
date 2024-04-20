@@ -30,6 +30,7 @@ import { SessionContextProviderWrapper } from './context/session/SessionContextP
 import { Dashboard } from './components/dashboard/Dashboard';
 import { routes } from './routes';
 import { Artifact } from './components/artifact/Artifact';
+import { Assistant } from './components/assistant/Assistant';
 
 import './i18n';
 import { NewArtifact } from './components/artifact/NewArtifact';
@@ -67,6 +68,11 @@ export function App() {
                   exact
                   path={routes.dashboard.route}
                   component={Dashboard}
+                />
+                <Route
+                  exact
+                  path={routes.assistant.route}
+                  component={Assistant}
                 />
                 <Route
                   exact
