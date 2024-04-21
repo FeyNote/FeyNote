@@ -9,7 +9,7 @@ export const signInWithGoogle = publicProcedure
     z.object({
       clientId: z.string(),
       credential: z.string(),
-    })
+    }),
   )
   .mutation(async ({ input }) => {
     const { clientId, credential } = input;

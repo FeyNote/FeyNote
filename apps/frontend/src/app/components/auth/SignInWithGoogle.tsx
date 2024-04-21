@@ -46,7 +46,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
           handleTRPCErrors(error, presentToast);
         });
     },
-    [router, presentToast, setSession]
+    [router, presentToast, setSession],
   );
 
   const buttonRefHook = useCallback(
@@ -54,7 +54,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
       buttonRef.current = node;
       triggerGoogleButtonRender();
     },
-    [triggerGoogleButtonRender]
+    [triggerGoogleButtonRender],
   );
 
   const googleSignInBtnOnLoadHook = useCallback(() => {

@@ -44,6 +44,6 @@ export const sendMail = async (mail: Mail) => {
   await ses.send(
     new SendEmailCommand({
       ...params,
-    })
+    }),
   );
 };

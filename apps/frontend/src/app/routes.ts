@@ -56,7 +56,7 @@ function route<T>(
     build: (
       args: typeof placeholders extends never[]
         ? void
-        : { [key in keyof T]: string }
+        : { [key in keyof T]: string },
     ) => {
       let relativeUrl = '';
       for (let i = 0; i < pathParts.length; i++) {

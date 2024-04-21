@@ -12,7 +12,7 @@ const getSearchProvider = () => {
 
   if (!searchProvider)
     throw new Error(
-      'SEARCH_PROVIDER must be set to "elasticsearch" or "typesense".'
+      'SEARCH_PROVIDER must be set to "elasticsearch" or "typesense".',
     );
   return searchProvider;
 };

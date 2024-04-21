@@ -5,7 +5,7 @@ import { prisma } from '@feynote/prisma/client';
 import { isSessionExpired } from '@feynote/api-services';
 
 export const createContext = async (
-  expressContext: trpcExpress.CreateExpressContextOptions
+  expressContext: trpcExpress.CreateExpressContextOptions,
 ) => {
   const session = await getSessionFromAuthHeader(expressContext);
   const { req, res } = expressContext;
@@ -17,7 +17,7 @@ export const createContext = async (
 };
 
 const getSessionFromAuthHeader = async (
-  expressContext: trpcExpress.CreateExpressContextOptions
+  expressContext: trpcExpress.CreateExpressContextOptions,
 ) => {
   const authHeader = expressContext.req.headers.authorization;
   if (!authHeader) return null;

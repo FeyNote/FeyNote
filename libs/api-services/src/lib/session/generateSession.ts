@@ -16,7 +16,7 @@ const SESSION_MAX_VALID_DAYS = 90;
 
 export const generateSession = async (
   userId: string,
-  tx: Prisma.TransactionClient = prisma
+  tx: Prisma.TransactionClient = prisma,
 ) => {
   const session = await tx.session.create({
     data: {

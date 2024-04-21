@@ -9,7 +9,7 @@ app.use(
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
-  })
+  }),
 );
 
 const port = process.env.PORT || 3001;

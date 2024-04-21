@@ -136,7 +136,7 @@ export const Register: React.FC = () => {
               <IonInput
                 className={getIonInputClassNames(
                   passwordIsValid,
-                  passwordIsTouched
+                  passwordIsTouched,
                 )}
                 label={t('auth.register.field.password.label')}
                 type="password"
@@ -153,13 +153,13 @@ export const Register: React.FC = () => {
               <IonInput
                 className={getIonInputClassNames(
                   confirmPasswordIsValid,
-                  confirmPasswordIsTouched
+                  confirmPasswordIsTouched,
                 )}
                 label={t('auth.register.field.confirmPassword.label')}
                 type="password"
                 labelPlacement="stacked"
                 placeholder={t(
-                  'auth.register.field.confirmPassword.placeholder'
+                  'auth.register.field.confirmPassword.placeholder',
                 )}
                 errorText={t('auth.register.field.confirmPassword.error')}
                 disabled={isLoading}
