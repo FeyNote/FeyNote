@@ -15,14 +15,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@dnd-assistant/api-services": ["libs/api-services/src/index.ts"],
-      "@dnd-assistant/openai": ["libs/openai/src/index.ts"],
-      "@dnd-assistant/prisma/client": ["libs/prisma/client/src/index.ts"],
-      "@dnd-assistant/prisma/seed": ["libs/prisma/seed/src/index.ts"],
-      "@dnd-assistant/prisma/types": ["libs/prisma/types/src/index.ts"],
-      "@dnd-assistant/search": ["libs/search/src/index.ts"],
-      "@dnd-assistant/shared-utils": ["libs/shared-utils/src/index.ts"],
-      "@dnd-assistant/trpc": ["libs/trpc/src/index.ts"]
+      "@feynote/api-services": ["libs/api-services/src/index.ts"],
+      "@feynote/openai": ["libs/openai/src/index.ts"],
+      "@feynote/search": ["libs/search/src/index.ts"],
+      "@feynote/shared-utils": ["libs/shared-utils/src/index.ts"],
+      "@feynote/trpc": ["libs/trpc/src/index.ts"],
+      "@feynote/prisma/client": ["libs/prisma/client/src/index.ts"],
+      "@feynote/prisma/types": ["libs/prisma/types/src/index.ts"],
+      "@feynote/prisma/seed": ["libs/prisma/seed/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,4 +1,3 @@
-/// <reference types='vitest' />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -33,7 +32,7 @@ export default defineConfig({
         server.middlewares.use((_req, res, next) => {
           res.setHeader(
             'Cross-Origin-Opener-Policy',
-            'same-origin-allow-popups'
+            'same-origin-allow-popups',
           );
           next();
         });
@@ -53,9 +52,6 @@ export default defineConfig({
       provider: 'v8',
     },
     globals: true,
-    cache: {
-      dir: '../../node_modules/.vitest',
-    },
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },

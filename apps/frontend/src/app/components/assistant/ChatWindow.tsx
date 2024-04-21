@@ -1,9 +1,9 @@
-import { IonInput, IonTitle, useIonToast } from "@ionic/react";
+import { IonInput, IonTitle, useIonToast } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { useState } from "react";
+import { useState } from 'react';
 
 import { trpc } from '../../../utils/trpc';
-import { Message, MessageRoles } from "@dnd-assistant/openai";
+import { Message, MessageRoles } from '@feynote/openai';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 export const ChatWindow: React.FC = () => {
@@ -22,7 +22,7 @@ export const ChatWindow: React.FC = () => {
   };
 
   const sendMessage = () => {
-    const newMessages = [...messages, message]
+    const newMessages = [...messages, message];
     trpc.chat.sendMessage
       .query({
         messages: newMessages,
@@ -34,7 +34,7 @@ export const ChatWindow: React.FC = () => {
         handleTRPCErrors(error, presentToast, {
           400: 'The email or password you submited is incorrect.',
         });
-      })
+      });
   };
 
   const messageInputHandler = (value: string) => {
@@ -53,10 +53,8 @@ export const ChatWindow: React.FC = () => {
         placeholder={t('assistant.chat.input.placeholder')}
         value={message.content}
         onKeyDown={enterKeyHandler}
-        onIonInput={(e) =>
-          messageInputHandler(e.target.value as string)
-        }
+        onIonInput={(e) => messageInputHandler(e.target.value as string)}
       />
     </>
-  )
+  );
 };

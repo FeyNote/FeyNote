@@ -1,12 +1,12 @@
-import { searchProvider } from '@dnd-assistant/search';
+import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
-import { prisma } from '@dnd-assistant/prisma/client';
-import { ArtifactDetail, artifactDetail } from '@dnd-assistant/prisma/types';
+import { prisma } from '@feynote/prisma/client';
+import { ArtifactDetail, artifactDetail } from '@feynote/prisma/types';
 import {
   BlocksByStringQueryResult,
   getBlocksByQuery,
-} from '@dnd-assistant/shared-utils';
+} from '@feynote/shared-utils';
 
 export interface ArtifactBlockResult extends BlocksByStringQueryResult {
   artifactId: string;
@@ -16,13 +16,13 @@ export const searchArtifactBlocks = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
-    })
+    }),
   )
   .query(async ({ input, ctx }) => {
     const matchedArtifactIds = await searchProvider.searchArtifacts(
       ctx.session.userId,
       input.query,
-      false
+      false,
     );
     const artifacts = (await prisma.artifact.findMany({
       where: {

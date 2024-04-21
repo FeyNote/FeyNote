@@ -1,6 +1,7 @@
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { appRouter, createContext } from '@dnd-assistant/trpc';
+import { appRouter, createContext } from '@feynote/trpc';
+
 const app = express();
 
 app.use(
@@ -8,7 +9,7 @@ app.use(
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
-  })
+  }),
 );
 
 const port = process.env.PORT || 3001;

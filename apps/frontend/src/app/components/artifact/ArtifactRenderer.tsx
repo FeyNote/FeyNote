@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@dnd-assistant/prisma/types';
+import { ArtifactDetail } from '@feynote/prisma/types';
 import { useEffect, useState } from 'react';
 import {
   IonButton,
@@ -41,10 +41,10 @@ export const ArtifactRenderer = (props: Props) => {
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
   const [blocknoteContent, setBlocknoteContent] = useState(
-    props.artifact.json?.blocknoteContent
+    props.artifact.json?.blocknoteContent,
   );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text
+    props.artifact.text,
   );
 
   const modified =
@@ -99,7 +99,7 @@ export const ArtifactRenderer = (props: Props) => {
 
   const onEditorContentChange = (
     updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string
+    updatedContentMd: string,
   ) => {
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);

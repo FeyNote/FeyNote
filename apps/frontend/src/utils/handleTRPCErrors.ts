@@ -1,6 +1,6 @@
 import { UseIonToastResult } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
-import type { AppRouter } from '@dnd-assistant/trpc';
+import type { AppRouter } from '@feynote/trpc';
 import { routes } from '../app/routes';
 
 const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
@@ -19,7 +19,7 @@ const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
 export const handleTRPCErrors = (
   error: unknown,
   _presentToast: UseIonToastResult[0],
-  handlerMap?: Record<number, string | (() => void)>
+  handlerMap?: Record<number, string | (() => void)>,
 ) => {
   let errorCode = 500;
   if (error instanceof TRPCClientError) {

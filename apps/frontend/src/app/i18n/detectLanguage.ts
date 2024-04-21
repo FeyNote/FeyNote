@@ -17,9 +17,9 @@ export const detectLanguage = () => {
 };
 
 const languageIsSupported = (
-  language: string
+  language: string,
 ): language is SupportedLanguages => {
   return Object.values(SupportedLanguages).some(
-    (supportedLanguage) => supportedLanguage === language
+    (supportedLanguage) => supportedLanguage === language,
   );
 };

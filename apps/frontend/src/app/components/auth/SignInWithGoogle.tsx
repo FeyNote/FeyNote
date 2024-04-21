@@ -46,7 +46,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
           handleTRPCErrors(error, presentToast);
         });
     },
-    [router, presentToast, setSession]
+    [router, presentToast, setSession],
   );
 
   const buttonRefHook = useCallback(
@@ -54,7 +54,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
       buttonRef.current = node;
       triggerGoogleButtonRender();
     },
-    [triggerGoogleButtonRender]
+    [triggerGoogleButtonRender],
   );
 
   const googleSignInBtnOnLoadHook = useCallback(() => {
@@ -64,7 +64,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
       context: 'signin',
       ux_mode: 'popup',
       login_uri:
-        'https://80--main--dnd-assistant--cmeyer.coder.tartarus.cloud/api/login/google',
+        'https://80--main--feynote--cmeyer.coder.tartarus.cloud/api/login/google',
       callback: signInWithGoogle,
       auto_prompt: 'false',
     });

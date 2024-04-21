@@ -1,10 +1,10 @@
-import { getArtifactDetailById } from '@dnd-assistant/api-services';
+import { getArtifactDetailById } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
-import { prisma } from '@dnd-assistant/prisma/client';
-import { searchProvider } from '@dnd-assistant/search';
-import { artifactJsonSchema } from '@dnd-assistant/prisma/types';
+import { prisma } from '@feynote/prisma/client';
+import { searchProvider } from '@feynote/search';
+import { artifactJsonSchema } from '@feynote/prisma/types';
 
 export const updateArtifact = authenticatedProcedure
   .input(
@@ -15,7 +15,7 @@ export const updateArtifact = authenticatedProcedure
       json: artifactJsonSchema,
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const artifact = await getArtifactDetailById(input.id);

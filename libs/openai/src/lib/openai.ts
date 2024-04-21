@@ -1,4 +1,4 @@
-import { config } from '@dnd-assistant/api-services';
+import { config } from '@feynote/api-services';
 import OpenAI from 'openai';
 
 export const openai = new OpenAI({

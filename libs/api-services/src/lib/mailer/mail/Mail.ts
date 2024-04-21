@@ -5,6 +5,6 @@ export class Mail {
     public readonly from: string,
     public readonly subject: string,
     public readonly html: string,
-    public readonly plain: string
+    public readonly plain: string,
   ) {}
 }

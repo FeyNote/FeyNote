@@ -5,7 +5,7 @@ export const i18nextCustomBackend = {
   read: (
     language: string,
     _: string,
-    callback: (err: Error | null, json: Record<string, string> | null) => void
+    callback: (err: Error | null, json: Record<string, string> | null) => void,
   ) => {
     fetch(`/locales/${language}.json`)
       .then((res) => res.json())

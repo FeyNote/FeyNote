@@ -4,7 +4,7 @@ export const validatePassword = async (
   password: string,
   hash: string,
   salt: string,
-  version: number
+  version: number,
 ) => {
   switch (version) {
     case 1:

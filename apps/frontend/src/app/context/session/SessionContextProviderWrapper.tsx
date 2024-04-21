@@ -10,7 +10,7 @@ export const SessionContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const [session, setSession] = useState(
-    localStorage.getItem(SESSION_ITEM_NAME)
+    localStorage.getItem(SESSION_ITEM_NAME),
   );
 
   const setAndPersistSession = useCallback(
@@ -22,7 +22,7 @@ export const SessionContextProviderWrapper = ({
       }
       setSession(newSession);
     },
-    [setSession]
+    [setSession],
   );
 
   const value = useMemo(() => {

@@ -1,9 +1,9 @@
 import dedent from 'dedent';
 import { ArtifactIndexDocument } from './types';
-import { IndexableArtifact } from '@dnd-assistant/prisma/types';
+import { IndexableArtifact } from '@feynote/prisma/types';
 
 export const createArtifactIndexDocument = (
-  artifact: IndexableArtifact
+  artifact: IndexableArtifact,
 ): ArtifactIndexDocument => {
   const fullText = dedent`
   ${artifact.title}

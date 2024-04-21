@@ -1,4 +1,4 @@
-import { IndexableArtifact } from '@dnd-assistant/prisma/types';
+import { IndexableArtifact } from '@feynote/prisma/types';
 
 export interface SearchProvider {
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
@@ -7,11 +7,11 @@ export interface SearchProvider {
   searchArtifacts: (
     userId: string,
     query: string,
-    withEmbeddings?: boolean
+    withEmbeddings?: boolean,
   ) => Promise<string[]>;
   searchBlocks: (
     userId: string,
-    query: string
+    query: string,
   ) => Promise<BlockIndexDocument[]>;
 }
 

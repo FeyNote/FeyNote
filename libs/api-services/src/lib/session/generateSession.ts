@@ -1,4 +1,4 @@
-import { prisma } from '@dnd-assistant/prisma/client';
+import { prisma } from '@feynote/prisma/client';
 import { generateSessionToken } from './generateSessionToken';
 import { generateSessionExpiry } from './generateSessionExpiry';
 import { Prisma } from '@prisma/client';
@@ -16,7 +16,7 @@ const SESSION_MAX_VALID_DAYS = 90;
 
 export const generateSession = async (
   userId: string,
-  tx: Prisma.TransactionClient = prisma
+  tx: Prisma.TransactionClient = prisma,
 ) => {
   const session = await tx.session.create({
     data: {

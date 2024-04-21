@@ -1,10 +1,10 @@
-import { prisma } from '@dnd-assistant/prisma/client';
+import { prisma } from '@feynote/prisma/client';
 import { PasswordResetMail } from '../mailer/mail/PasswordResetMail';
 import { generatePasswordResetSession } from '../session/generatePasswordResetSession';
 
 export const triggerPasswordReset = async (
   email: string,
-  returnUrl: string
+  returnUrl: string,
 ) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -25,7 +25,7 @@ export const triggerPasswordReset = async (
   const mail = new PasswordResetMail(
     [email],
     user.username || email,
-    resetLink.toString()
+    resetLink.toString(),
   );
 
   await mail.send();

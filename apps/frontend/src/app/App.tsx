@@ -45,7 +45,7 @@ export function App() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     toggleDarkTheme(prefersDark.matches);
     prefersDark.addEventListener('change', (mediaQuery) =>
-      toggleDarkTheme(mediaQuery.matches)
+      toggleDarkTheme(mediaQuery.matches),
     );
   }, []);
 
