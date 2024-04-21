@@ -7,7 +7,7 @@ export const triggerPasswordReset = publicProcedure
     z.object({
       email: z.string(),
       returnUrl: z.string(),
-    })
+    }),
   )
   .mutation(({ input }) => {
     return services.triggerPasswordReset(input.email, input.returnUrl);

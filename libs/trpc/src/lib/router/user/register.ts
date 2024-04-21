@@ -10,7 +10,7 @@ export const register = publicProcedure
     z.object({
       email: z.string().refine(validateEmail),
       password: z.string().refine(validatePassword),
-    })
+    }),
   )
   .mutation(async ({ input }) => {
     const { email, password } = input;

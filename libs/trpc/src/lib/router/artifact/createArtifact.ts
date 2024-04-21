@@ -12,7 +12,7 @@ export const createArtifact = authenticatedProcedure
       json: artifactJsonSchema,
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const { id } = await prisma.artifact.create({

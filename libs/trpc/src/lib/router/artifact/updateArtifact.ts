@@ -15,7 +15,7 @@ export const updateArtifact = authenticatedProcedure
       json: artifactJsonSchema,
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
-    })
+    }),
   )
   .mutation(async ({ ctx, input }) => {
     const artifact = await getArtifactDetailById(input.id);

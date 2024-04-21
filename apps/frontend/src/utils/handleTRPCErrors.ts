@@ -19,7 +19,7 @@ const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
 export const handleTRPCErrors = (
   error: unknown,
   _presentToast: UseIonToastResult[0],
-  handlerMap?: Record<number, string | (() => void)>
+  handlerMap?: Record<number, string | (() => void)>,
 ) => {
   let errorCode = 500;
   if (error instanceof TRPCClientError) {

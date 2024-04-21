@@ -25,7 +25,10 @@ export const worldRootTemplate = {
 
 export const rootTemplates = [worldRootTemplate] satisfies RootTemplate[];
 
-export const rootTemplatesById = rootTemplates.reduce((acc, rootTemplate) => {
-  acc[rootTemplate.id] = rootTemplate;
-  return acc;
-}, {} as Record<string, RootTemplate>);
+export const rootTemplatesById = rootTemplates.reduce(
+  (acc, rootTemplate) => {
+    acc[rootTemplate.id] = rootTemplate;
+    return acc;
+  },
+  {} as Record<string, RootTemplate>,
+);

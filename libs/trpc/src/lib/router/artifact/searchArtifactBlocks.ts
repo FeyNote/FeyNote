@@ -16,13 +16,13 @@ export const searchArtifactBlocks = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
-    })
+    }),
   )
   .query(async ({ input, ctx }) => {
     const matchedArtifactIds = await searchProvider.searchArtifacts(
       ctx.session.userId,
       input.query,
-      false
+      false,
     );
     const artifacts = (await prisma.artifact.findMany({
       where: {

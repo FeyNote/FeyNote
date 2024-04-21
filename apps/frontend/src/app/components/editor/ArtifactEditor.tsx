@@ -26,7 +26,7 @@ interface Props {
   initialContent?: ArtifactEditorBlock[];
   onContentChange?: (
     updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string
+    updatedContentMd: string,
   ) => void;
 }
 
@@ -44,7 +44,7 @@ export const ArtifactEditor = (props: Props) => {
   };
 
   const getMentionItems = async (
-    query: string
+    query: string,
   ): Promise<EditorSuggestionItem[]> => {
     const blocks = await trpc.artifact.searchArtifactBlocks
       .query({

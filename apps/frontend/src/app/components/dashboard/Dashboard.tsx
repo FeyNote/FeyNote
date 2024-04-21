@@ -49,7 +49,7 @@ export const Dashboard: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
-    [artifacts]
+    [artifacts],
   );
 
   const getUserArtifacts = () => {

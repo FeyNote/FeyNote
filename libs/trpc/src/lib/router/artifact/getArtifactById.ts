@@ -7,7 +7,7 @@ export const getArtifactById = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
-    })
+    }),
   )
   .query(async ({ ctx, input }) => {
     const artifact = await getArtifactDetailById(input.id);

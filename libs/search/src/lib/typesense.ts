@@ -63,7 +63,7 @@ export class TypeSense implements SearchProvider {
           artifactId: artifact.id,
         };
         return block;
-      }
+      },
     );
 
     await this.deleteBlocksByArtifactIds([artifact.id]);
@@ -88,7 +88,7 @@ export class TypeSense implements SearchProvider {
   async searchArtifacts(
     userId: string,
     query: string,
-    withEmbeddings?: boolean
+    withEmbeddings?: boolean,
   ) {
     const query_by = withEmbeddings
       ? 'fullTextEmbedding,fullText'

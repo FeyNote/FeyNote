@@ -13,7 +13,7 @@ export const login = publicProcedure
     z.object({
       email: z.string(),
       password: z.string(),
-    })
+    }),
   )
   .mutation(async ({ input }) => {
     const { email, password } = input;

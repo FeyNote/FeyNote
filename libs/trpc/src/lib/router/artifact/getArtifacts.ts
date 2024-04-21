@@ -7,7 +7,7 @@ export const getArtifacts = authenticatedProcedure
   .input(
     z.object({
       isTemplate: z.boolean().optional(),
-    })
+    }),
   )
   .query(async ({ input, ctx }) => {
     const { session } = ctx;

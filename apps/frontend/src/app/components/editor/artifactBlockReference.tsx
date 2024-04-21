@@ -20,5 +20,5 @@ export const artifactBlockReference = createReactInlineContentSpec(
         {props.inlineContent.props.artifactBlockReferenceText}
       </span>
     ),
-  }
+  },
 );

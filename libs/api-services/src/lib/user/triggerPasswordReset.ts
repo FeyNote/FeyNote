@@ -4,7 +4,7 @@ import { generatePasswordResetSession } from '../session/generatePasswordResetSe
 
 export const triggerPasswordReset = async (
   email: string,
-  returnUrl: string
+  returnUrl: string,
 ) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -25,7 +25,7 @@ export const triggerPasswordReset = async (
   const mail = new PasswordResetMail(
     [email],
     user.username || email,
-    resetLink.toString()
+    resetLink.toString(),
   );
 
   await mail.send();
