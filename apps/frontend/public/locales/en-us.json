@@ -61,6 +61,8 @@
 
   "assistant.title": "Assistant",
   "assistant.chat.input.placeholder": "Ask me anything",
+  "assistant.chat.window.noChats.title": "No Messages",
+  "assistant.chat.window.noChats.message": "This is a new message thread",
 
   "generic.save": "Save",
   "generic.edit": "Edit",

@@ -1,2 +1,2 @@
-export * from './lib/message';
-export * from './lib/types';
+export * from './lib/sendMessageToAssistant';
+export * from './lib/saveAssistantMessages';
