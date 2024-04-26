@@ -1,5 +1,5 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   IonButton,
   IonCheckbox,
@@ -8,12 +8,22 @@ import {
   IonInput,
   IonItem,
   IonRow,
+  IonSelect,
+  IonSelectOption,
   useIonAlert,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ArtifactEditor } from '../editor/ArtifactEditor';
+import {
+  ArtifactEditor,
+  ArtifactEditorApplyTemplate,
+} from '../editor/ArtifactEditor';
 import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
 import { InfoButton } from '../info/InfoButton';
+import {
+  rootTemplates,
+  rootTemplatesById,
+} from './rootTemplates/rootTemplates';
+import { RootTemplate } from './rootTemplates/rootTemplates.types';
 
 type ExistingArtifactOnlyFields =
   | 'id'
@@ -40,12 +50,16 @@ export const ArtifactRenderer = (props: Props) => {
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
+  const [rootTemplateId, setRootTemplateId] = useState(
+    props.artifact.rootTemplateId
+  );
   const [blocknoteContent, setBlocknoteContent] = useState(
     props.artifact.json?.blocknoteContent,
   );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
     props.artifact.text,
   );
+  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const modified =
     props.artifact.title !== title ||
@@ -73,6 +87,7 @@ export const ArtifactRenderer = (props: Props) => {
       },
       isPinned,
       isTemplate,
+      rootTemplateId,
     });
   };
 
@@ -86,6 +101,7 @@ export const ArtifactRenderer = (props: Props) => {
       },
       isPinned,
       isTemplate,
+      rootTemplateId,
     });
   }, [
     props.artifact,
@@ -95,6 +111,7 @@ export const ArtifactRenderer = (props: Props) => {
     blocknoteContentMd,
     isPinned,
     isTemplate,
+    rootTemplateId,
   ]);
 
   const onEditorContentChange = (
@@ -103,6 +120,17 @@ export const ArtifactRenderer = (props: Props) => {
   ) => {
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
+  };
+
+  const applyRootTemplate = (rootTemplate: RootTemplate) => {
+    if ('markdown' in rootTemplate) {
+      editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
+    } else {
+      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive
+      editorApplyTemplateRef.current?.(rootTemplate.blocks);
+    }
+
+    setRootTemplateId(rootTemplate.id);
   };
 
   return (
@@ -126,6 +154,7 @@ export const ArtifactRenderer = (props: Props) => {
               <ArtifactEditor
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
+                applyTemplateRef={editorApplyTemplateRef}
               />
             </div>
           </div>
@@ -134,6 +163,23 @@ export const ArtifactRenderer = (props: Props) => {
           <IonButton onClick={save} disabled={!modified} expand="block">
             {t('generic.save')}
           </IonButton>
+          <IonItem>
+            <IonSelect
+              label={t('artifactRenderer.selectTemplate')}
+              labelPlacement="stacked"
+              placeholder={t('artifactRenderer.selectTemplate.none')}
+              onIonChange={(event) =>
+                applyRootTemplate(rootTemplatesById[event.detail.value])
+              }
+              value={rootTemplateId}
+            >
+              {rootTemplates.map((rootTemplate) => (
+                <IonSelectOption key={rootTemplate.id} value={rootTemplate.id}>
+                  {t(rootTemplate.title)}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
           <br />
           <IonItem>
             <IonCheckbox

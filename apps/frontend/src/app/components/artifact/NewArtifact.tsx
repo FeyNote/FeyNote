@@ -27,6 +27,7 @@ export const NewArtifact: React.FC = () => {
     json: {},
     isTemplate: false,
     isPinned: false,
+    rootTemplateId: null,
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {
@@ -37,6 +38,7 @@ export const NewArtifact: React.FC = () => {
         text: updatedArtifact.text,
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
+        rootTemplateId: updatedArtifact.rootTemplateId,
       })
       .then((response) => {
         const artifactId = response.id;
