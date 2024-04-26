@@ -49,7 +49,7 @@ export const NewArtifact: React.FC = () => {
             id: artifactId,
           }),
           'forward',
-          'replace',
+          'replace'
         );
       })
       .catch((error) => {
