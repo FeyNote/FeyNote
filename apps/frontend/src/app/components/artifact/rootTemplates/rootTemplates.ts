@@ -29,8 +29,11 @@ export const rootTemplates = [
   religionRootTemplate,
 ] satisfies RootTemplate[];
 
-export const rootTemplatesById = rootTemplates.reduce((acc, rootTemplate) => {
-  acc[rootTemplate.id] = rootTemplate;
-  return acc;
-}, {} as Record<string, RootTemplate>);
+export const rootTemplatesById = rootTemplates.reduce(
+  (acc, rootTemplate) => {
+    acc[rootTemplate.id] = rootTemplate;
+    return acc;
+  },
+  {} as Record<string, RootTemplate>,
+);
 console.log(rootTemplates);

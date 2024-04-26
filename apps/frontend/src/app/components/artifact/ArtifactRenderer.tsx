@@ -51,13 +51,13 @@ export const ArtifactRenderer = (props: Props) => {
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
   const [rootTemplateId, setRootTemplateId] = useState(
-    props.artifact.rootTemplateId
+    props.artifact.rootTemplateId,
   );
   const [blocknoteContent, setBlocknoteContent] = useState(
-    props.artifact.json?.blocknoteContent
+    props.artifact.json?.blocknoteContent,
   );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text
+    props.artifact.text,
   );
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
@@ -116,7 +116,7 @@ export const ArtifactRenderer = (props: Props) => {
 
   const onEditorContentChange = (
     updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string
+    updatedContentMd: string,
   ) => {
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);

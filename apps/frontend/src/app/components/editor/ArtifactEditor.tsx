@@ -36,14 +36,14 @@ const StyledIonCard = styled(IonCard)`
 `;
 
 export type ArtifactEditorApplyTemplate = (
-  template: string | ArtifactEditorBlock[]
+  template: string | ArtifactEditorBlock[],
 ) => void;
 
 interface Props {
   initialContent?: ArtifactEditorBlock[];
   onContentChange?: (
     updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string
+    updatedContentMd: string,
   ) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
 }
@@ -62,7 +62,7 @@ export const ArtifactEditor = (props: Props) => {
   };
 
   const getMentionItems = async (
-    query: string
+    query: string,
   ): Promise<EditorSuggestionItem[]> => {
     const blocks = await trpc.artifact.searchArtifactBlocks
       .query({
@@ -95,7 +95,7 @@ export const ArtifactEditor = (props: Props) => {
   };
 
   props.applyTemplateRef.current = async (
-    template: string | ArtifactEditorBlock[]
+    template: string | ArtifactEditorBlock[],
   ) => {
     if (typeof template === 'string') {
       const blocks = await editor.tryParseMarkdownToBlocks(template);
