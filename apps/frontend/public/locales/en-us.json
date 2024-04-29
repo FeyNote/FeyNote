@@ -61,6 +61,13 @@
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
 
+  "selectTemplate.overrideWarning": "Changing templates will override any content currently in your artifact!",
+  "selectTemplate.header": "Select Template",
+  "selectTemplate.rootTemplates": "Official Templates",
+  "selectTemplate.clickToSelect": "Click to Select",
+  "selectTemplate.artifactTemplates": "Your Templates",
+  "selectTemplate.artifacts": "Matching Artifacts",
+
   "rootTemplate.world.title": "World",
   "rootTemplate.world": "# Description\r\n\r\n# Continents\r\n\r\n# History\r\n\r\n# Maps",
   "rootTemplate.region.title": "Region",
@@ -90,5 +97,7 @@
   "generic.edit": "Edit",
   "generic.show": "Show",
   "generic.hide": "Hide",
-  "generic.okay": "Okay"
+  "generic.okay": "Okay",
+  "generic.cancel": "Cancel",
+  "generic.warning": "Warning"
 }

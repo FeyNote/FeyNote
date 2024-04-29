@@ -7,6 +7,7 @@ export const getArtifacts = authenticatedProcedure
   .input(
     z.object({
       isTemplate: z.boolean().optional(),
+      isPinned: z.boolean().optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
@@ -16,6 +17,7 @@ export const getArtifacts = authenticatedProcedure
       where: {
         userId: session.userId,
         isTemplate: input.isTemplate,
+        isPinned: input.isPinned,
       },
       ...artifactSummary,
       orderBy: [

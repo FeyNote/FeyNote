@@ -5,13 +5,15 @@ import {
   IonCheckbox,
   IonCol,
   IonGrid,
+  IonIcon,
   IonInput,
   IonItem,
+  IonLabel,
   IonRow,
-  IonSelect,
-  IonSelectOption,
   useIonAlert,
+  useIonModal,
 } from '@ionic/react';
+import { chevronForward } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import {
   ArtifactEditor,
@@ -19,11 +21,12 @@ import {
 } from '../editor/ArtifactEditor';
 import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
 import { InfoButton } from '../info/InfoButton';
-import {
-  rootTemplates,
-  rootTemplatesById,
-} from './rootTemplates/rootTemplates';
+import { rootTemplatesById } from './rootTemplates/rootTemplates';
 import { RootTemplate } from './rootTemplates/rootTemplates.types';
+import {
+  SelectTemplateModal,
+  SelectTemplateModalProps,
+} from './SelectTemplateModal';
 
 type ExistingArtifactOnlyFields =
   | 'id'
@@ -43,16 +46,41 @@ interface Props {
   onArtifactChanged?: (artifact: EditArtifactDetail) => void;
 }
 
-export const ArtifactRenderer = (props: Props) => {
+export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
+  const [artifactTemplate, setArtifactTemplate] = useState(
+    'artifactTemplate' in props.artifact
+      ? props.artifact.artifactTemplate
+      : null,
+  );
   const [rootTemplateId, setRootTemplateId] = useState(
     props.artifact.rootTemplateId,
   );
+  const rootTemplate = rootTemplateId
+    ? rootTemplatesById[rootTemplateId]
+    : null;
+  const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
+    SelectTemplateModal,
+    {
+      dismiss: (result) => {
+        dismissSelectTemplateModal();
+        if (result) {
+          if (result.type === 'artifact') {
+            applyArtifactTemplate(result.artifactTemplate);
+          }
+          if (result.type === 'rootTemplate') {
+            applyRootTemplate(rootTemplatesById[result.rootTemplateId]);
+          }
+        }
+      },
+    } satisfies SelectTemplateModalProps,
+  );
+
   const [blocknoteContent, setBlocknoteContent] = useState(
     props.artifact.json?.blocknoteContent,
   );
@@ -88,6 +116,7 @@ export const ArtifactRenderer = (props: Props) => {
       isPinned,
       isTemplate,
       rootTemplateId,
+      artifactTemplate,
     });
   };
 
@@ -112,6 +141,7 @@ export const ArtifactRenderer = (props: Props) => {
     isPinned,
     isTemplate,
     rootTemplateId,
+    artifactTemplate,
   ]);
 
   const onEditorContentChange = (
@@ -126,11 +156,20 @@ export const ArtifactRenderer = (props: Props) => {
     if ('markdown' in rootTemplate) {
       editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
     } else {
-      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive
+      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive (move to util)
       editorApplyTemplateRef.current?.(rootTemplate.blocks);
     }
 
     setRootTemplateId(rootTemplate.id);
+    setArtifactTemplate(null);
+  };
+
+  const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
+    const blocks = artifactTemplate.json.blocknoteContent;
+    editorApplyTemplateRef.current?.(blocks || []);
+
+    setArtifactTemplate(artifactTemplate);
+    setRootTemplateId(null);
   };
 
   return (
@@ -163,22 +202,16 @@ export const ArtifactRenderer = (props: Props) => {
           <IonButton onClick={save} disabled={!modified} expand="block">
             {t('generic.save')}
           </IonButton>
-          <IonItem>
-            <IonSelect
-              label={t('artifactRenderer.selectTemplate')}
-              labelPlacement="stacked"
-              placeholder={t('artifactRenderer.selectTemplate.none')}
-              onIonChange={(event) =>
-                applyRootTemplate(rootTemplatesById[event.detail.value])
-              }
-              value={rootTemplateId}
-            >
-              {rootTemplates.map((rootTemplate) => (
-                <IonSelectOption key={rootTemplate.id} value={rootTemplate.id}>
-                  {t(rootTemplate.title)}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
+          <IonItem onClick={() => presentSelectTemplateModal()} button>
+            <IonLabel>
+              <h3>{t('artifactRenderer.selectTemplate')}</h3>
+              {rootTemplate && <p>{t(rootTemplate.title)}</p>}
+              {artifactTemplate && <p>{artifactTemplate.title}</p>}
+              {!rootTemplate && !artifactTemplate && (
+                <p>{t('artifactRenderer.selectTemplate.none')}</p>
+              )}
+            </IonLabel>
+            <IonIcon slot="end" icon={chevronForward} size="small" />
           </IonItem>
           <br />
           <IonItem>

@@ -48,7 +48,7 @@ interface Props {
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
 }
 
-export const ArtifactEditor = (props: Props) => {
+export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const editor = useCreateBlockNote({
     schema: artifactEditorBlocknoteSchema,
