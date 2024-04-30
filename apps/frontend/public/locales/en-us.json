@@ -93,6 +93,7 @@
   "rootTemplate.religion.title": "Religion",
   "rootTemplate.religion": "# Description\r\n\r\n# History\r\n\r\n# Notable NPCs",
 
+  "generic.unsavedChanges": "You have unsaved changes! If you leave this page, you will lose any modifications in-progress.",
   "generic.save": "Save",
   "generic.edit": "Edit",
   "generic.show": "Show",

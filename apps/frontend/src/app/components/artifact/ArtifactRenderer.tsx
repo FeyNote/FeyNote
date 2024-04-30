@@ -27,6 +27,7 @@ import {
   SelectTemplateModal,
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
+import { Prompt } from 'react-router-dom';
 
 type ExistingArtifactOnlyFields =
   | 'id'
@@ -44,6 +45,9 @@ interface Props {
   artifact: EditArtifactDetail;
   save: (artifact: EditArtifactDetail) => void;
   onArtifactChanged?: (artifact: EditArtifactDetail) => void;
+  presentSelectTemplateModalRef?: React.MutableRefObject<
+    (() => void) | undefined
+  >;
 }
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
@@ -80,6 +84,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       },
     } satisfies SelectTemplateModalProps,
   );
+  if (props.presentSelectTemplateModalRef) {
+    props.presentSelectTemplateModalRef.current = presentSelectTemplateModal;
+  }
 
   const [blocknoteContent, setBlocknoteContent] = useState(
     props.artifact.json?.blocknoteContent,
@@ -93,7 +100,19 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.artifact.title !== title ||
     props.artifact.isPinned !== isPinned ||
     props.artifact.isTemplate !== isTemplate ||
-    props.artifact.text !== blocknoteContentMd;
+    props.artifact.text !== blocknoteContentMd ||
+    props.artifact.rootTemplateId !== rootTemplateId ||
+    ('artifactTemplate' in props.artifact &&
+      props.artifact.artifactTemplate?.id !== artifactTemplate?.id);
+
+  useEffect(() => {
+    if (modified) {
+      window.onbeforeunload = () => true;
+    }
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, [modified]);
 
   const save = () => {
     if (!title.trim()) {
@@ -174,6 +193,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   return (
     <IonGrid>
+      <Prompt when={modified} message={t('generic.unsavedChanges')} />
       <IonRow>
         <IonCol size="12" sizeLg="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
