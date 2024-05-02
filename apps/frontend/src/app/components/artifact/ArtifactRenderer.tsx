@@ -107,6 +107,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.artifact.rootTemplateId !== rootTemplateId ||
     ('artifactTemplate' in props.artifact &&
       props.artifact.artifactTemplate?.id !== artifactTemplate?.id);
+  const [enableRouterPrompt, setEnableRouterPrompt] = useState(modified);
 
   useEffect(() => {
     if (modified) {
@@ -127,6 +128,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
       return;
     }
+    setEnableRouterPrompt(false);
 
     props.save({
       ...props.artifact,
@@ -170,6 +172,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => {
+    setEnableRouterPrompt(true);
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
   };
@@ -196,7 +199,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   return (
     <IonGrid>
-      <Prompt when={modified} message={t('generic.unsavedChanges')} />
+      <Prompt when={enableRouterPrompt} message={t('generic.unsavedChanges')} />
       <IonRow>
         <IonCol size="12" sizeLg="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
