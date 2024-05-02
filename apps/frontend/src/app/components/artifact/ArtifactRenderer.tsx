@@ -9,6 +9,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonListHeader,
   IonRow,
   useIonAlert,
   useIonModal,
@@ -28,6 +29,7 @@ import {
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
 import { Prompt } from 'react-router-dom';
+import { routes } from '../../routes';
 
 type ExistingArtifactOnlyFields =
   | 'id'
@@ -57,6 +59,12 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
+  const [blocknoteContent, setBlocknoteContent] = useState(
+    props.artifact.json?.blocknoteContent,
+  );
+  const [blocknoteContentMd, setBlocknoteContentMd] = useState(
+    props.artifact.text,
+  );
   const [artifactTemplate, setArtifactTemplate] = useState(
     'artifactTemplate' in props.artifact
       ? props.artifact.artifactTemplate
@@ -71,6 +79,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
     SelectTemplateModal,
     {
+      enableOverrideWarning: !!blocknoteContentMd.length,
       dismiss: (result) => {
         dismissSelectTemplateModal();
         if (result) {
@@ -88,12 +97,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.presentSelectTemplateModalRef.current = presentSelectTemplateModal;
   }
 
-  const [blocknoteContent, setBlocknoteContent] = useState(
-    props.artifact.json?.blocknoteContent,
-  );
-  const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text,
-  );
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const modified =
@@ -262,6 +265,24 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               message={t('artifactRenderer.isTemplate.help')}
             />
           </IonItem>
+          {'templatedArtifacts' in props.artifact &&
+            !!props.artifact.templatedArtifacts.length && (
+              <>
+                <IonListHeader>
+                  {t('artifactRenderer.templatedArtifacts')}
+                </IonListHeader>
+                {props.artifact.templatedArtifacts.map((el) => (
+                  <IonItem
+                    key={el.id}
+                    routerLink={routes.artifact.build({ id: el.id })}
+                    button
+                  >
+                    <IonLabel>{el.title}</IonLabel>
+                    <IonIcon slot="end" icon={chevronForward} />
+                  </IonItem>
+                ))}
+              </>
+            )}
         </IonCol>
       </IonRow>
     </IonGrid>

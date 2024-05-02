@@ -57,6 +57,7 @@
   "artifactRenderer.isTemplate.help": "When checked, this artifact will be treated as a template for creating other artifacts, rather than as content itself.",
   "artifactRenderer.selectTemplate": "Select Template",
   "artifactRenderer.selectTemplate.none": "None selected",
+  "artifactRenderer.templatedArtifacts": "Template For",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",

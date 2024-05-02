@@ -33,6 +33,7 @@ type SelectTemplateResult =
     };
 
 export interface SelectTemplateModalProps {
+  enableOverrideWarning: boolean;
   dismiss: (result?: SelectTemplateResult) => void;
 }
 
@@ -108,56 +109,54 @@ export const SelectTemplateModal: React.FC<SelectTemplateModalProps> = (
       });
   }, [searchText]);
 
-  const selectArtifactTemplate = (id: string) => {
-    presentAlert({
-      header: t('generic.warning'),
-      message: t('selectTemplate.overrideWarning'),
-      buttons: [
-        t('generic.okay'),
-        {
-          text: t('generic.cancel'),
-          role: 'cancel',
-        },
-      ],
-      onDidDismiss: (event) => {
-        if (event.detail.role === 'cancel') return;
+  /**
+   * Resolves true if user accepts, false if user cancels
+   */
+  const showOverrideWarning = () => {
+    if (!props.enableOverrideWarning) return Promise.resolve(true);
 
-        trpc.artifact.getArtifactById
-          .query({
-            id,
-          })
-          .then((artifactTemplate) => {
-            props.dismiss({
-              type: 'artifact',
-              artifactTemplate,
-            });
-          })
-          .catch((error) => {
-            handleTRPCErrors(error, presentToast);
-          });
-      },
+    return new Promise((resolve) => {
+      presentAlert({
+        header: t('generic.warning'),
+        message: t('selectTemplate.overrideWarning'),
+        buttons: [
+          t('generic.okay'),
+          {
+            text: t('generic.cancel'),
+            role: 'cancel',
+          },
+        ],
+        onDidDismiss: (event) => {
+          resolve(event.detail.role !== 'cancel');
+        },
+      });
     });
   };
 
-  const selectRootTemplate = (rootTemplateId: string) => {
-    presentAlert({
-      header: t('generic.warning'),
-      message: t('selectTemplate.overrideWarning'),
-      buttons: [
-        t('generic.okay'),
-        {
-          text: t('generic.cancel'),
-          role: 'cancel',
-        },
-      ],
-      onDidDismiss: (event) => {
-        if (event.detail.role === 'cancel') return;
+  const selectArtifactTemplate = async (id: string) => {
+    if (!(await showOverrideWarning())) return;
 
+    await trpc.artifact.getArtifactById
+      .query({
+        id,
+      })
+      .then((artifactTemplate) => {
         props.dismiss({
-          type: 'rootTemplate',
-          rootTemplateId,
+          type: 'artifact',
+          artifactTemplate,
         });
-      },
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+  };
+
+  const selectRootTemplate = async (rootTemplateId: string) => {
+    if (!(await showOverrideWarning())) return;
+
+    props.dismiss({
+      type: 'rootTemplate',
+      rootTemplateId,
     });
   };
 

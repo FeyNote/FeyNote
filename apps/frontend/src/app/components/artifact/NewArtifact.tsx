@@ -55,6 +55,11 @@ export const NewArtifact: React.FC = () => {
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
         rootTemplateId: updatedArtifact.rootTemplateId,
+        artifactTemplateId:
+          'artifactTemplate' in updatedArtifact &&
+          updatedArtifact.artifactTemplate
+            ? updatedArtifact.artifactTemplate.id
+            : null,
       })
       .then((response) => {
         const artifactId = response.id;

@@ -16,6 +16,7 @@ export const updateArtifact = authenticatedProcedure
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
       rootTemplateId: z.string().nullable(),
+      artifactTemplateId: z.string().nullable(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -26,6 +27,22 @@ export const updateArtifact = authenticatedProcedure
         message: 'Artifact not visible to current user',
         code: 'FORBIDDEN',
       });
+    }
+
+    if (input.artifactTemplateId) {
+      const template = await prisma.artifact.findUnique({
+        where: {
+          id: input.artifactTemplateId,
+        },
+      });
+
+      if (!template || template.userId !== ctx.session.userId) {
+        throw new TRPCError({
+          message:
+            'Passed artifactTemplateId is not owned by the current user, or does not exist',
+          code: 'FORBIDDEN',
+        });
+      }
     }
 
     await prisma.artifact.update({
