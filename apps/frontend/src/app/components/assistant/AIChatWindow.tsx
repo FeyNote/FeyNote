@@ -1,14 +1,17 @@
 import { IonButton, IonIcon, IonTextarea, useIonToast } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
-
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { MessageRole, Message } from '@feynote/shared-utils';
 import styled from 'styled-components';
 import { send, chatbubbles } from 'ionicons/icons';
 import { NullState } from '../info/NullState';
-import { MessagesContainer } from './MessagesContainer';
+import { AIMessagesContainer } from './AIMessagesContainer';
+import {
+  ChatCompletionMessageParam,
+  ChatCompletionUserMessageParam,
+} from 'openai/resources/chat/completions';
+import { Thread } from '@prisma/client';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -40,40 +43,46 @@ const SendIcon = styled(IonIcon)`
   font-size: 24px;
 `;
 
-export const ChatWindow: React.FC = () => {
+interface Props {
+  thread: Thread;
+}
+
+export const AIChatWindow = (props: Props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
-  const [message, setMessage] = useState<Message>({
-    content: '',
-    role: MessageRole.User,
-  });
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [message, setMessage] = useState<string>('');
+  const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([]);
 
-  const enterKeyHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
-    if (e.key === 'Enter') {
+  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       sendMessage();
+    } else {
+      const currentValue = e.currentTarget.value;
+      if (currentValue && currentValue !== message) {
+        setMessage(currentValue);
+      }
     }
   };
 
   const sendMessage = () => {
-    const newMessages = [...messages, message];
-    trpc.chat.sendMessage
+    if (!message.trim()) return;
+    const query = {
+      role: 'user',
+      content: message,
+    } satisfies ChatCompletionUserMessageParam;
+    setMessage('');
+    setMessages([...messages, query]);
+    trpc.ai.sendMessage
       .query({
-        messages: newMessages,
+        message: query.content,
+        threadId: props.thread.id,
       })
-      .then((_session) => {
-        setMessages(newMessages);
+      .then((newMessages) => {
+        setMessages([...messages, query, ...newMessages]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
       });
-  };
-
-  const messageInputHandler = (value: string) => {
-    setMessage({
-      content: value,
-      role: MessageRole.User,
-    });
   };
 
   return (
@@ -81,23 +90,21 @@ export const ChatWindow: React.FC = () => {
       <ChatArea>
         {!messages.length ? (
           <NullState
-            title={t('assistant.chat.window.noChats.title')}
-            message={t('assistant.chat.window.noChats.message')}
+            title={t('assistant.chat.nullState.title')}
             icon={chatbubbles}
           />
         ) : (
-          <MessagesContainer messages={messages} />
+          <AIMessagesContainer messages={messages} />
         )}
       </ChatArea>
       <ChatTextContainer>
         <IonTextarea
           placeholder={t('assistant.chat.input.placeholder')}
-          value={message.content}
-          onKeyDown={enterKeyHandler}
-          onIonInput={(e) => messageInputHandler(e.target.value as string)}
+          value={message}
+          onKeyUp={keyUpHandler}
         />
         <SendButtonContainer>
-          <IonButton>
+          <IonButton onClick={sendMessage}>
             <SendIcon color="white" icon={send} />
           </IonButton>
         </SendButtonContainer>

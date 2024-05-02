@@ -35,6 +35,8 @@ export async function saveAssistantMessages(
       createdAt: new Date(createdAt.getTime() + i),
     };
   });
+  console.log(`saving messages: ${JSON.stringify(prismaMessages)}`);
+
   await prisma.message.createMany({
     data: prismaMessages,
   });

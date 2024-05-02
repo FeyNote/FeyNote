@@ -1,7 +1,7 @@
 import { router, publicProcedure } from '../trpc';
 import { router as userRouter } from './user/router';
 import { router as artifactRouter } from './artifact/router';
-import { router as chatRouter } from './chat/router';
+import { router as aiRouter } from './ai/router';
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -11,7 +11,7 @@ export const appRouter = router({
   }),
   user: userRouter,
   artifact: artifactRouter,
-  chat: chatRouter,
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;

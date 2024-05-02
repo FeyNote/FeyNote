@@ -20,7 +20,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
         </IonItem>
       </IonMenuToggle>
       <IonMenuToggle autoHide={false}>
-        <IonItem routerLink={routes.assistant.build()}>
+        <IonItem routerLink={routes.ai.build()}>
           <IonLabel>{t('menu.assistant')}</IonLabel>
         </IonItem>
       </IonMenuToggle>

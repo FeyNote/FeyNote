@@ -59,10 +59,15 @@
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
 
-  "assistant.title": "Assistant",
+  "assistant.threads.title": "Assistant",
+  "assistant.threads.nullState.title": "No Message Threads",
+  "assistant.threads.nullState.message": "Click on the plus button to create a new thread!",
+
+  "assistant.chat.title": "Chat",
   "assistant.chat.input.placeholder": "Ask me anything",
-  "assistant.chat.window.noChats.title": "No Messages",
-  "assistant.chat.window.noChats.message": "This is a new message thread",
+  "assistant.chat.nullState.title": "How can I help you today?",
+  "assistant.chat.assistant.name": "FeyNote AI",
+  "assistant.chat.user.name": "You",
 
   "generic.save": "Save",
   "generic.edit": "Edit",

@@ -16,7 +16,7 @@ const Header = styled.h2`
 interface Props {
   icon: string;
   title: string;
-  message: string;
+  message?: string;
 }
 
 export const NullState = (props: Props) => {
@@ -26,7 +26,7 @@ export const NullState = (props: Props) => {
       <br />
       <div>
         <Header>{props.title}</Header>
-        <span>{props.message}</span>
+        {props.message && <span>{props.message}</span>}
       </div>
     </Container>
   );

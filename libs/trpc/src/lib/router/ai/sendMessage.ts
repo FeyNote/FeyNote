@@ -25,5 +25,8 @@ export const sendMessage = authenticatedProcedure
       input.threadId,
     );
     await saveAssistantMessages(newMessages, input.threadId);
-    return newMessages;
+    const assistantMessages = newMessages.filter(
+      (message) => message.role === 'assistant',
+    );
+    return assistantMessages;
   });

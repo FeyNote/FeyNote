@@ -6,6 +6,7 @@ import {
 import { openai } from './openai';
 import { prisma } from '@feynote/prisma/client';
 import { z } from 'zod';
+import { getDocumentContent } from './tools/getDocumentContent';
 
 const OPEN_AI_MODEL = 'gpt-3.5-turbo';
 
@@ -27,6 +28,8 @@ async function retrieveMessageContext(
       createdAt: 'desc',
     },
   });
+  console.log(`working with thread id: ${threadId}`);
+  console.log(`messages stored in thread: ${JSON.stringify(messages)}`);
   const context = messages.map((message) => {
     const json = message.json;
     assertMessageJsonIsChatCompletion(json);
@@ -44,23 +47,47 @@ function assertMessageJsonIsChatCompletion(
   jsonSchema.parse(json);
 }
 
+function getRecentResponseMessages(messages: ChatCompletionMessageParam[]) {
+  if (!messages.length) return [];
+  const responseMessages = [];
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i];
+    if (message.role === 'user') {
+      break;
+    }
+    responseMessages.push(message);
+  }
+  return responseMessages;
+}
+
 export async function sendMessageToAssistant(
   message: string,
   threadId: string,
 ) {
-  const messages = await retrieveMessageContext(threadId);
+  const previousMessages = await retrieveMessageContext(threadId);
   const newMessage = {
     content: message,
     role: 'user',
   } satisfies ChatCompletionUserMessageParam;
   const systemMessage = getSystemMessage();
+  const messages = [systemMessage, ...previousMessages, newMessage];
+  console.log(`message array: ${JSON.stringify(messages)}`);
 
   const response = openai.beta.chat.completions.runTools({
     model: OPEN_AI_MODEL,
-    messages: [systemMessage, ...messages, newMessage],
-    tools: [],
+    messages,
+    tools: [
+      {
+        type: 'function',
+        function: {
+          function: getDocumentContent,
+          parameters: { type: 'object', properties: {} },
+        },
+      },
+    ],
   });
 
   await response.done();
-  return [newMessage, ...response.messages];
+  const responseMessages = getRecentResponseMessages(response.messages);
+  return responseMessages;
 }
