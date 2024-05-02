@@ -270,6 +270,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               <>
                 <IonListHeader>
                   {t('artifactRenderer.templatedArtifacts')}
+                  <InfoButton
+                    message={t('artifactRenderer.templatedArtifacts.help')}
+                  />
                 </IonListHeader>
                 {props.artifact.templatedArtifacts.map((el) => (
                   <IonItem
