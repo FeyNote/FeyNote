@@ -58,8 +58,11 @@ model ArtifactFile {
   artifact   Artifact @relation(fields: [artifactId], references: [id])
   fileId     String   @db.Uuid
   file       File     @relation(fields: [fileId], references: [id])
+  order      Int
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+
+  @@unique([artifactId, order])
 }
 
 model File {

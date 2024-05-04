@@ -1,5 +1,5 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   IonButton,
   IonCheckbox,
@@ -30,6 +30,7 @@ import {
 } from './SelectTemplateModal';
 import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
+import { markdownToTxt } from '@feynote/shared-utils';
 
 type ExistingArtifactOnlyFields =
   | 'id'
@@ -63,7 +64,11 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.artifact.json?.blocknoteContent,
   );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text,
+    props.artifact.json?.blocknoteContentMd || '',
+  );
+  const blocknoteContentText = useMemo(
+    () => markdownToTxt(blocknoteContentMd),
+    [blocknoteContentMd],
   );
   const [artifactTemplate, setArtifactTemplate] = useState(
     'artifactTemplate' in props.artifact
@@ -103,7 +108,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.artifact.title !== title ||
     props.artifact.isPinned !== isPinned ||
     props.artifact.isTemplate !== isTemplate ||
-    props.artifact.text !== blocknoteContentMd ||
+    props.artifact.text !== blocknoteContentText ||
     props.artifact.rootTemplateId !== rootTemplateId ||
     ('artifactTemplate' in props.artifact &&
       props.artifact.artifactTemplate?.id !== artifactTemplate?.id);
@@ -133,9 +138,10 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.save({
       ...props.artifact,
       title,
-      text: blocknoteContentMd,
+      text: blocknoteContentText,
       json: {
         blocknoteContent,
+        blocknoteContentMd,
       },
       isPinned,
       isTemplate,
@@ -148,9 +154,10 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     onArtifactChanged?.({
       ...props.artifact,
       title,
-      text: blocknoteContentMd,
+      text: blocknoteContentText,
       json: {
         blocknoteContent,
+        blocknoteContentMd,
       },
       isPinned,
       isTemplate,
