@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
+import { getBlockReferences } from '@feynote/shared-utils';
 import { TRPCError } from '@trpc/server';
 
 export const createArtifact = authenticatedProcedure
@@ -34,6 +35,31 @@ export const createArtifact = authenticatedProcedure
       }
     }
 
+    const artifactReferences = input.json.blocknoteContent
+      ? getBlockReferences(input.json.blocknoteContent)
+      : [];
+
+    const referencedArtifacts = await prisma.artifact.findMany({
+      where: {
+        id: {
+          in: artifactReferences.map((reference) => reference.artifactId),
+        },
+      },
+    });
+
+    if (
+      referencedArtifacts.some(
+        (referencedArtifact) =>
+          referencedArtifact.userId !== ctx.session.userId,
+      )
+    ) {
+      throw new TRPCError({
+        message:
+          'You do not own one of the artifacts referenced in your query.',
+        code: 'FORBIDDEN',
+      });
+    }
+
     const { id } = await prisma.artifact.create({
       data: {
         title: input.title,
@@ -44,6 +70,14 @@ export const createArtifact = authenticatedProcedure
         isTemplate: input.isTemplate,
         rootTemplateId: input.rootTemplateId,
         artifactTemplateId: input.artifactTemplateId,
+        referencedArtifacts: {
+          createMany: {
+            data: artifactReferences.map((reference) => ({
+              referencedArtifactId: reference.artifactId,
+              referencedArtifactBlockId: reference.artifactBlockId,
+            })),
+          },
+        },
       },
     });
 

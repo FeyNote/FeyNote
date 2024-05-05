@@ -1,11 +1,5 @@
-# blocknote
+# Blocknote
 
-This library was generated with [Nx](https://nx.dev).
+This library should remain as one of the lowest (if not the lowest) libraries in our dependency chain. It should not import any other lib, since it's required from the Prisma lib.
 
-## Building
-
-Run `nx build blocknote` to build the library.
-
-## Running unit tests
-
-Run `nx test blocknote` to execute the unit tests via [Jest](https://jestjs.io).
+We should also avoid storing React, or much here at all -- The hope is to have this lib serve as only the custom schema/type source since both the frontend and the backend need those.

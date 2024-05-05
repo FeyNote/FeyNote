@@ -31,6 +31,30 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         updatedAt: true,
       },
     },
+    referencedArtifacts: {
+      select: {
+        id: true,
+        artifactId: true,
+        referencedArtifact: {
+          select: {
+            title: true,
+            json: true,
+          },
+        },
+      },
+    },
+    referencedFromArtifacts: {
+      select: {
+        id: true,
+        artifactId: true,
+        artifact: {
+          select: {
+            title: true,
+            json: true,
+          },
+        },
+      },
+    },
   },
 });
 

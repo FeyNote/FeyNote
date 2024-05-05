@@ -5,6 +5,7 @@ import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
+import { getBlockReferences } from '@feynote/shared-utils';
 
 export const updateArtifact = authenticatedProcedure
   .input(
@@ -45,6 +46,37 @@ export const updateArtifact = authenticatedProcedure
       }
     }
 
+    const artifactReferences = input.json.blocknoteContent
+      ? getBlockReferences(input.json.blocknoteContent)
+      : [];
+
+    const referencedArtifacts = await prisma.artifact.findMany({
+      where: {
+        id: {
+          in: artifactReferences.map((reference) => reference.artifactId),
+        },
+      },
+    });
+
+    if (
+      referencedArtifacts.some(
+        (referencedArtifact) =>
+          referencedArtifact.userId !== ctx.session.userId,
+      )
+    ) {
+      throw new TRPCError({
+        message:
+          'You do not own one of the artifacts referenced in your query.',
+        code: 'FORBIDDEN',
+      });
+    }
+
+    await prisma.artifactReference.deleteMany({
+      where: {
+        artifactId: input.id,
+      },
+    });
+
     await prisma.artifact.update({
       where: {
         id: input.id,
@@ -56,6 +88,14 @@ export const updateArtifact = authenticatedProcedure
         isPinned: input.isPinned,
         isTemplate: input.isTemplate,
         rootTemplateId: input.rootTemplateId,
+        referencedArtifacts: {
+          createMany: {
+            data: artifactReferences.map((reference) => ({
+              referencedArtifactId: reference.artifactId,
+              referencedArtifactBlockId: reference.artifactBlockId,
+            })),
+          },
+        },
       },
     });
 
