@@ -20,7 +20,7 @@ import {
   ArtifactEditor,
   ArtifactEditorApplyTemplate,
 } from '../editor/ArtifactEditor';
-import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
+import { ArtifactEditorBlock } from '@feynote/blocknote';
 import { InfoButton } from '../info/InfoButton';
 import { rootTemplatesById } from './rootTemplates/rootTemplates';
 import { RootTemplate } from './rootTemplates/rootTemplates.types';

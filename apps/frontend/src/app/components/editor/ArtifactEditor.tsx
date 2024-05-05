@@ -8,16 +8,18 @@ import {
 } from '@blocknote/react';
 import '@blocknote/react/style.css';
 import {
-  EditorSuggestionItem,
-  EditorSuggestionMenuComponent,
+  EditorReferenceSuggestionItem,
+  EditorReferenceMenuComponent,
 } from './EditorSuggestion';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import {
   ArtifactEditorBlock,
-  artifactEditorBlocknoteSchema,
-} from './blocknoteSchema';
+  buildArtifactEditorBlocknoteSchema,
+} from '@feynote/blocknote';
 import { MutableRefObject } from 'react';
+import { ArtifactReference } from './ArtifactReference';
+import { ArtifactBlockReference } from './ArtifactBlockReference';
 
 const StyledIonCard = styled(IonCard)`
   min-height: 500px;
@@ -51,7 +53,12 @@ interface Props {
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const editor = useCreateBlockNote({
-    schema: artifactEditorBlocknoteSchema,
+    schema: buildArtifactEditorBlocknoteSchema({
+      artifactReferenceFC: (props) => <ArtifactReference {...props} />,
+      artifactBlockReferenceFC: (props) => (
+        <ArtifactBlockReference {...props} />
+      ),
+    }),
     initialContent: props.initialContent,
   });
 
@@ -63,7 +70,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
   const getMentionItems = async (
     query: string,
-  ): Promise<EditorSuggestionItem[]> => {
+  ): Promise<EditorReferenceSuggestionItem[]> => {
     const blocks = await trpc.artifact.searchArtifactBlocks
       .query({
         query,
@@ -78,16 +85,20 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
     for (const block of blocks) {
       suggestionItems.push({
-        id: block.block.id,
-        displayName: block.matchedText,
+        artifactId: block.artifactId,
+        artifactBlockId: block.id,
+        referenceText: block.text,
+        placeholder: false,
       });
     }
 
     // We must push an item so that blocknote will keep dialogue open
     if (!suggestionItems.length) {
       suggestionItems.push({
-        id: '',
-        displayName: '',
+        artifactId: '',
+        artifactBlockId: '',
+        referenceText: '',
+        placeholder: true,
       });
     }
 
@@ -111,18 +122,32 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
         <SuggestionMenuController
           triggerCharacter={'@'}
           onItemClick={(item) => {
-            editor.insertInlineContent([
-              {
-                type: 'artifactBlockReference',
-                props: {
-                  artifactBlockId: item.id,
-                  artifactBlockReferenceText: item.displayName,
+            if (item.artifactBlockId) {
+              editor.insertInlineContent([
+                {
+                  type: 'artifactBlockReference',
+                  props: {
+                    artifactId: item.artifactId,
+                    artifactBlockId: item.artifactBlockId,
+                    referenceText: item.referenceText,
+                  },
                 },
-              },
-              ' ', // add a space after
-            ]);
+                ' ', // add a space after
+              ]);
+            } else {
+              editor.insertInlineContent([
+                {
+                  type: 'artifactReference',
+                  props: {
+                    artifactId: item.artifactId,
+                    referenceText: item.referenceText,
+                  },
+                },
+                ' ', // add a space after
+              ]);
+            }
           }}
-          suggestionMenuComponent={EditorSuggestionMenuComponent}
+          suggestionMenuComponent={EditorReferenceMenuComponent}
           getItems={getMentionItems}
         />
       </BlockNoteView>

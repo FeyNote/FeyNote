@@ -1,0 +1,30 @@
+{
+  "name": "blocknote",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/blocknote/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/blocknote",
+        "main": "libs/blocknote/src/index.ts",
+        "tsConfig": "libs/blocknote/tsconfig.lib.json",
+        "assets": ["libs/blocknote/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/blocknote/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

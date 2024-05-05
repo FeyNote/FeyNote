@@ -1,25 +1,27 @@
 import { IonItem, IonList } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
-export interface EditorSuggestionItem {
-  id: string;
-  displayName: string;
+export interface EditorReferenceSuggestionItem {
+  placeholder: boolean; // Blocknote hides our suggestion menu if there are no results
+  artifactId: string;
+  artifactBlockId?: string;
+  referenceText: string;
 }
 
 interface Props {
-  items: EditorSuggestionItem[];
+  items: EditorReferenceSuggestionItem[];
   loadingState: 'loading-initial' | 'loading' | 'loaded';
   selectedIndex: number;
-  onItemClick?: (item: EditorSuggestionItem) => void;
+  onItemClick?: (item: EditorReferenceSuggestionItem) => void;
 }
 
-export const EditorSuggestionMenuComponent: React.FC<Props> = (props) => {
+export const EditorReferenceMenuComponent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  if (!props.items.at(0)?.id) {
+  if (props.items.at(0)?.placeholder) {
     return (
       <IonList>
-        <IonItem>{t('editor.artifactBlockReference.noItems')}</IonItem>
+        <IonItem>{t('editor.referenceMenu.noItems')}</IonItem>
       </IonList>
     );
   }
@@ -27,8 +29,12 @@ export const EditorSuggestionMenuComponent: React.FC<Props> = (props) => {
   return (
     <IonList>
       {props.items.map((el) => (
-        <IonItem key={el.id} onClick={() => props.onItemClick?.(el)} button>
-          {el.displayName}
+        <IonItem
+          key={el.artifactId + el.artifactBlockId}
+          onClick={() => props.onItemClick?.(el)}
+          button
+        >
+          {el.referenceText}
         </IonItem>
       ))}
     </IonList>

@@ -1,4 +1,4 @@
-import { Block } from '@blocknote/core';
+import { ArtifactEditorBlock } from '@feynote/blocknote';
 
 const isMatch = (query: string | boolean, val: string) => {
   if (!val.trim()) return false;
@@ -7,11 +7,14 @@ const isMatch = (query: string | boolean, val: string) => {
 };
 
 export interface BlocksByStringQueryResult {
-  block: Block;
+  block: ArtifactEditorBlock;
   matchedText: string;
 }
 
-export const getBlocksByQuery = (query: string | boolean, blocks: Block[]) => {
+export const getBlocksByQuery = (
+  query: string | boolean,
+  blocks: ArtifactEditorBlock[],
+) => {
   if (typeof query === 'string' && !query.trim()) return [];
   if (typeof query === 'boolean' && !query) return [];
 

@@ -1,4 +1,4 @@
-import { ArtifactEditorBlock } from '../../editor/blocknoteSchema';
+import { ArtifactEditorBlock } from '@feynote/blocknote';
 
 type BlockBasedRootTemplate = {
   blocks: ArtifactEditorBlock[];
