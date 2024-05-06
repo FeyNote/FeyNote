@@ -17,8 +17,8 @@ export default defineConfig({
     port: 4200,
     host: '0.0.0.0',
     fs: {
-      cachedChecks: false
-    }
+      cachedChecks: false,
+    },
   },
 
   preview: {
