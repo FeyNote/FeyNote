@@ -51,6 +51,10 @@ export const Artifact: React.FC = () => {
         text: updatedArtifact.text,
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
+        rootTemplateId: updatedArtifact.rootTemplateId,
+        artifactTemplateId: updatedArtifact.artifactTemplate
+          ? updatedArtifact.artifactTemplate.id
+          : null,
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

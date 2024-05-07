@@ -1,27 +1,43 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   IonButton,
   IonCheckbox,
   IonCol,
   IonGrid,
+  IonIcon,
   IonInput,
   IonItem,
+  IonLabel,
+  IonListHeader,
   IonRow,
   useIonAlert,
+  useIonModal,
 } from '@ionic/react';
+import { chevronForward } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactEditor } from '../editor/ArtifactEditor';
+import {
+  ArtifactEditor,
+  ArtifactEditorApplyTemplate,
+} from '../editor/ArtifactEditor';
 import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
 import { InfoButton } from '../info/InfoButton';
+import { rootTemplatesById } from './rootTemplates/rootTemplates';
+import { RootTemplate } from './rootTemplates/rootTemplates.types';
+import {
+  SelectTemplateModal,
+  SelectTemplateModalProps,
+} from './SelectTemplateModal';
+import { Prompt } from 'react-router-dom';
+import { routes } from '../../routes';
+import { markdownToTxt } from '@feynote/shared-utils';
 
 type ExistingArtifactOnlyFields =
   | 'id'
   | 'userId'
   | 'createdAt'
   | 'updatedAt'
-  | 'templatedArtifacts'
-  | 'artifactTemplate';
+  | 'templatedArtifacts';
 
 export type EditArtifactDetail =
   | Omit<ArtifactDetail, ExistingArtifactOnlyFields>
@@ -31,9 +47,12 @@ interface Props {
   artifact: EditArtifactDetail;
   save: (artifact: EditArtifactDetail) => void;
   onArtifactChanged?: (artifact: EditArtifactDetail) => void;
+  presentSelectTemplateModalRef?: React.MutableRefObject<
+    (() => void) | undefined
+  >;
 }
 
-export const ArtifactRenderer = (props: Props) => {
+export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
@@ -44,14 +63,64 @@ export const ArtifactRenderer = (props: Props) => {
     props.artifact.json?.blocknoteContent,
   );
   const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text,
+    props.artifact.json?.blocknoteContentMd || '',
   );
+  const blocknoteContentText = useMemo(
+    () => markdownToTxt(blocknoteContentMd),
+    [blocknoteContentMd],
+  );
+  const [artifactTemplate, setArtifactTemplate] = useState(
+    'artifactTemplate' in props.artifact
+      ? props.artifact.artifactTemplate
+      : null,
+  );
+  const [rootTemplateId, setRootTemplateId] = useState(
+    props.artifact.rootTemplateId,
+  );
+  const rootTemplate = rootTemplateId
+    ? rootTemplatesById[rootTemplateId]
+    : null;
+  const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
+    SelectTemplateModal,
+    {
+      enableOverrideWarning: !!blocknoteContentMd.length,
+      dismiss: (result) => {
+        dismissSelectTemplateModal();
+        if (result) {
+          if (result.type === 'artifact') {
+            applyArtifactTemplate(result.artifactTemplate);
+          }
+          if (result.type === 'rootTemplate') {
+            applyRootTemplate(rootTemplatesById[result.rootTemplateId]);
+          }
+        }
+      },
+    } satisfies SelectTemplateModalProps,
+  );
+  if (props.presentSelectTemplateModalRef) {
+    props.presentSelectTemplateModalRef.current = presentSelectTemplateModal;
+  }
+
+  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const modified =
     props.artifact.title !== title ||
     props.artifact.isPinned !== isPinned ||
     props.artifact.isTemplate !== isTemplate ||
-    props.artifact.text !== blocknoteContentMd;
+    props.artifact.text !== blocknoteContentText ||
+    props.artifact.rootTemplateId !== rootTemplateId ||
+    ('artifactTemplate' in props.artifact &&
+      props.artifact.artifactTemplate?.id !== artifactTemplate?.id);
+  const [enableRouterPrompt, setEnableRouterPrompt] = useState(modified);
+
+  useEffect(() => {
+    if (modified) {
+      window.onbeforeunload = () => true;
+    }
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, [modified]);
 
   const save = () => {
     if (!title.trim()) {
@@ -63,16 +132,20 @@ export const ArtifactRenderer = (props: Props) => {
 
       return;
     }
+    setEnableRouterPrompt(false);
 
     props.save({
       ...props.artifact,
       title,
-      text: blocknoteContentMd,
+      text: blocknoteContentText,
       json: {
         blocknoteContent,
+        blocknoteContentMd,
       },
       isPinned,
       isTemplate,
+      rootTemplateId,
+      artifactTemplate,
     });
   };
 
@@ -80,12 +153,14 @@ export const ArtifactRenderer = (props: Props) => {
     onArtifactChanged?.({
       ...props.artifact,
       title,
-      text: blocknoteContentMd,
+      text: blocknoteContentText,
       json: {
         blocknoteContent,
+        blocknoteContentMd,
       },
       isPinned,
       isTemplate,
+      rootTemplateId,
     });
   }, [
     props.artifact,
@@ -95,18 +170,42 @@ export const ArtifactRenderer = (props: Props) => {
     blocknoteContentMd,
     isPinned,
     isTemplate,
+    rootTemplateId,
+    artifactTemplate,
   ]);
 
   const onEditorContentChange = (
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => {
+    setEnableRouterPrompt(true);
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
   };
 
+  const applyRootTemplate = (rootTemplate: RootTemplate) => {
+    if ('markdown' in rootTemplate) {
+      editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
+    } else {
+      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive (move to util)
+      editorApplyTemplateRef.current?.(rootTemplate.blocks);
+    }
+
+    setRootTemplateId(rootTemplate.id);
+    setArtifactTemplate(null);
+  };
+
+  const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
+    const blocks = artifactTemplate.json.blocknoteContent;
+    editorApplyTemplateRef.current?.(blocks || []);
+
+    setArtifactTemplate(artifactTemplate);
+    setRootTemplateId(null);
+  };
+
   return (
     <IonGrid>
+      <Prompt when={enableRouterPrompt} message={t('generic.unsavedChanges')} />
       <IonRow>
         <IonCol size="12" sizeLg="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
@@ -126,6 +225,7 @@ export const ArtifactRenderer = (props: Props) => {
               <ArtifactEditor
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
+                applyTemplateRef={editorApplyTemplateRef}
               />
             </div>
           </div>
@@ -134,6 +234,17 @@ export const ArtifactRenderer = (props: Props) => {
           <IonButton onClick={save} disabled={!modified} expand="block">
             {t('generic.save')}
           </IonButton>
+          <IonItem onClick={() => presentSelectTemplateModal()} button>
+            <IonLabel>
+              <h3>{t('artifactRenderer.selectTemplate')}</h3>
+              {rootTemplate && <p>{t(rootTemplate.title)}</p>}
+              {artifactTemplate && <p>{artifactTemplate.title}</p>}
+              {!rootTemplate && !artifactTemplate && (
+                <p>{t('artifactRenderer.selectTemplate.none')}</p>
+              )}
+            </IonLabel>
+            <IonIcon slot="end" icon={chevronForward} size="small" />
+          </IonItem>
           <br />
           <IonItem>
             <IonCheckbox
@@ -163,6 +274,27 @@ export const ArtifactRenderer = (props: Props) => {
               message={t('artifactRenderer.isTemplate.help')}
             />
           </IonItem>
+          {'templatedArtifacts' in props.artifact &&
+            !!props.artifact.templatedArtifacts.length && (
+              <>
+                <IonListHeader>
+                  {t('artifactRenderer.templatedArtifacts')}
+                  <InfoButton
+                    message={t('artifactRenderer.templatedArtifacts.help')}
+                  />
+                </IonListHeader>
+                {props.artifact.templatedArtifacts.map((el) => (
+                  <IonItem
+                    key={el.id}
+                    routerLink={routes.artifact.build({ id: el.id })}
+                    button
+                  >
+                    <IonLabel>{el.title}</IonLabel>
+                    <IonIcon slot="end" icon={chevronForward} />
+                  </IonItem>
+                ))}
+              </>
+            )}
         </IonCol>
       </IonRow>
     </IonGrid>

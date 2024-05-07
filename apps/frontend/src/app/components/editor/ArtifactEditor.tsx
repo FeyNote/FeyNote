@@ -17,10 +17,27 @@ import {
   ArtifactEditorBlock,
   artifactEditorBlocknoteSchema,
 } from './blocknoteSchema';
+import { MutableRefObject } from 'react';
 
 const StyledIonCard = styled(IonCard)`
   min-height: 500px;
+
+  .ProseMirror h1 {
+    font-size: 2rem;
+  }
+
+  .ProseMirror h2 {
+    font-size: 1.6rem;
+  }
+
+  .ProseMirror h3 {
+    font-size: 1.2rem;
+  }
 `;
+
+export type ArtifactEditorApplyTemplate = (
+  template: string | ArtifactEditorBlock[],
+) => void;
 
 interface Props {
   initialContent?: ArtifactEditorBlock[];
@@ -28,9 +45,10 @@ interface Props {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => void;
+  applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
 }
 
-export const ArtifactEditor = (props: Props) => {
+export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const editor = useCreateBlockNote({
     schema: artifactEditorBlocknoteSchema,
@@ -74,6 +92,17 @@ export const ArtifactEditor = (props: Props) => {
     }
 
     return suggestionItems;
+  };
+
+  props.applyTemplateRef.current = async (
+    template: string | ArtifactEditorBlock[],
+  ) => {
+    if (typeof template === 'string') {
+      const blocks = await editor.tryParseMarkdownToBlocks(template);
+      editor.replaceBlocks(editor.document, blocks);
+    } else {
+      editor.replaceBlocks(editor.document, template);
+    }
   };
 
   return (

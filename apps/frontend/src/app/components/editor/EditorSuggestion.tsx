@@ -13,7 +13,7 @@ interface Props {
   onItemClick?: (item: EditorSuggestionItem) => void;
 }
 
-export const EditorSuggestionMenuComponent = (props: Props) => {
+export const EditorSuggestionMenuComponent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
   if (!props.items.at(0)?.id) {

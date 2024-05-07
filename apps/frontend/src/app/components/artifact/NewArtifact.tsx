@@ -8,25 +8,41 @@ import {
   IonToolbar,
   useIonRouter,
   useIonToast,
+  useIonViewDidLeave,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
+import { useEffect, useRef, useState } from 'react';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const router = useIonRouter();
+  const selectTemplateModalShownRef = useRef(false);
+  const presentSelectTemplateModalRef = useRef<() => void>();
+  const [key, setKey] = useState(Math.random());
+
+  useIonViewDidLeave(() => {
+    setKey(Math.random()); // Reset form state when navigating
+  }, []);
+
+  useEffect(() => {
+    if (!selectTemplateModalShownRef.current) {
+      presentSelectTemplateModalRef.current?.();
+      selectTemplateModalShownRef.current = true;
+    }
+  }, []);
 
   const newArtifactPlaceholder = {
-    id: '',
-    userId: '',
     title: '',
     text: '',
     json: {},
     isTemplate: false,
     isPinned: false,
+    rootTemplateId: null,
+    artifactTemplate: null,
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {
@@ -37,6 +53,10 @@ export const NewArtifact: React.FC = () => {
         text: updatedArtifact.text,
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
+        rootTemplateId: updatedArtifact.rootTemplateId,
+        artifactTemplateId: updatedArtifact.artifactTemplate
+          ? updatedArtifact.artifactTemplate.id
+          : null,
       })
       .then((response) => {
         const artifactId = response.id;
@@ -66,7 +86,12 @@ export const NewArtifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <ArtifactRenderer artifact={newArtifactPlaceholder} save={save} />
+        <ArtifactRenderer
+          artifact={newArtifactPlaceholder}
+          save={save}
+          presentSelectTemplateModalRef={presentSelectTemplateModalRef}
+          key={key} // Used to force react to treat this as a different component and reset the state
+        />
       </IonContent>
     </IonPage>
   );
