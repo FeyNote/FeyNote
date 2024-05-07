@@ -36,14 +36,13 @@ export const NewArtifact: React.FC = () => {
   }, []);
 
   const newArtifactPlaceholder = {
-    id: '',
-    userId: '',
     title: '',
     text: '',
     json: {},
     isTemplate: false,
     isPinned: false,
     rootTemplateId: null,
+    artifactTemplate: null,
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {
@@ -55,11 +54,9 @@ export const NewArtifact: React.FC = () => {
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
         rootTemplateId: updatedArtifact.rootTemplateId,
-        artifactTemplateId:
-          'artifactTemplate' in updatedArtifact &&
-          updatedArtifact.artifactTemplate
-            ? updatedArtifact.artifactTemplate.id
-            : null,
+        artifactTemplateId: updatedArtifact.artifactTemplate
+          ? updatedArtifact.artifactTemplate.id
+          : null,
       })
       .then((response) => {
         const artifactId = response.id;

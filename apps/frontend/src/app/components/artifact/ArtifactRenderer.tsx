@@ -37,8 +37,7 @@ type ExistingArtifactOnlyFields =
   | 'userId'
   | 'createdAt'
   | 'updatedAt'
-  | 'templatedArtifacts'
-  | 'artifactTemplate';
+  | 'templatedArtifacts';
 
 export type EditArtifactDetail =
   | Omit<ArtifactDetail, ExistingArtifactOnlyFields>
