@@ -48,15 +48,18 @@ interface Props {
     updatedContentMd: string,
   ) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
+  blocksById: Record<string, ArtifactEditorBlock>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const editor = useCreateBlockNote({
     schema: buildArtifactEditorBlocknoteSchema({
-      artifactReferenceFC: (props) => <ArtifactReference {...props} />,
-      artifactBlockReferenceFC: (props) => (
-        <ArtifactBlockReference {...props} />
+      artifactReferenceFC: (_props) => (
+        <ArtifactReference {..._props} blocksById={props.blocksById} />
+      ),
+      artifactBlockReferenceFC: (_props) => (
+        <ArtifactBlockReference {..._props} blocksById={props.blocksById} />
       ),
     }),
     initialContent: props.initialContent,
@@ -88,6 +91,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
         artifactId: block.artifactId,
         artifactBlockId: block.id,
         referenceText: block.text,
+        artifact: block.artifact,
         placeholder: false,
       });
     }

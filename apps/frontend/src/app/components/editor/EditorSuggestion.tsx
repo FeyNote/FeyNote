@@ -1,10 +1,12 @@
-import { IonItem, IonList } from '@ionic/react';
+import { ArtifactSummary } from '@feynote/prisma/types';
+import { IonItem, IonLabel, IonList } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
 export interface EditorReferenceSuggestionItem {
   placeholder: boolean; // Blocknote hides our suggestion menu if there are no results
   artifactId: string;
   artifactBlockId?: string;
+  artifact?: ArtifactSummary;
   referenceText: string;
 }
 
@@ -34,7 +36,10 @@ export const EditorReferenceMenuComponent: React.FC<Props> = (props) => {
           onClick={() => props.onItemClick?.(el)}
           button
         >
-          {el.referenceText}
+          <IonLabel>
+            {el.referenceText}
+            {el.artifact && <p>{el.artifact.title}</p>}
+          </IonLabel>
         </IonItem>
       ))}
     </IonList>

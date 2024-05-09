@@ -1,6 +1,8 @@
 import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
+import { prisma } from '@feynote/prisma/client';
+import { ArtifactSummary, artifactSummary } from '@feynote/prisma/types';
 
 export const searchArtifactBlocks = authenticatedProcedure
   .input(
@@ -14,5 +16,35 @@ export const searchArtifactBlocks = authenticatedProcedure
       input.query,
     );
 
-    return matchedArtifactBlocks;
+    const matchedArtifactIds = [
+      ...new Set(
+        matchedArtifactBlocks.map((artifactBlock) => artifactBlock.artifactId),
+      ),
+    ];
+
+    const artifacts = await prisma.artifact.findMany({
+      where: {
+        id: {
+          in: matchedArtifactIds,
+        },
+      },
+      ...artifactSummary,
+    });
+
+    const artifactsById = artifacts.reduce(
+      (artifactsById, artifact) => {
+        artifactsById[artifact.id] = artifact;
+        return artifactsById;
+      },
+      {} as Record<string, ArtifactSummary>,
+    );
+
+    const results = matchedArtifactBlocks
+      .map((matchedArtifactBlock) => ({
+        ...matchedArtifactBlock,
+        artifact: artifactsById[matchedArtifactBlock.artifactId],
+      }))
+      .filter((matchedArtifactBlock) => !!matchedArtifactBlock.artifact);
+
+    return results;
   });

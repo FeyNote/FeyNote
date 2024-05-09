@@ -30,19 +30,14 @@ import {
 } from './SelectTemplateModal';
 import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
-import { markdownToTxt } from '@feynote/shared-utils';
+import { getBlocksById, markdownToTxt } from '@feynote/shared-utils';
 
-type ExistingArtifactOnlyFields =
-  | 'id'
-  | 'userId'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'templatedArtifacts'
-  | 'artifactTemplate';
+export type NewArtifactDetail = Omit<
+  ArtifactDetail,
+  'id' | 'userId' | 'createdAt' | 'updatedAt'
+>;
 
-export type EditArtifactDetail =
-  | Omit<ArtifactDetail, ExistingArtifactOnlyFields>
-  | ArtifactDetail;
+export type EditArtifactDetail = NewArtifactDetail | ArtifactDetail;
 
 interface Props {
   artifact: EditArtifactDetail;
@@ -53,10 +48,51 @@ interface Props {
   >;
 }
 
+const getRelatedArtifactBlocksById = (artifact: ArtifactDetail) => {
+  let blocksById: Record<string, ArtifactEditorBlock> = {};
+  for (const referencedArtifact of artifact.referencedArtifacts) {
+    const blocknoteContent =
+      referencedArtifact.referencedArtifact.json.blocknoteContent;
+    if (!blocknoteContent) continue;
+
+    const _blocksById = getBlocksById(blocknoteContent);
+    blocksById = {
+      ...blocksById,
+      ..._blocksById,
+    };
+  }
+  for (const referencedFromArtifacts of artifact.referencedFromArtifacts) {
+    const blocknoteContent =
+      referencedFromArtifacts.artifact.json.blocknoteContent;
+    if (!blocknoteContent) continue;
+
+    const _blocksById = getBlocksById(blocknoteContent);
+    blocksById = {
+      ...blocksById,
+      ..._blocksById,
+    };
+  }
+  if (artifact.json.blocknoteContent) {
+    const _blocksById = getBlocksById(artifact.json.blocknoteContent);
+    blocksById = {
+      ...blocksById,
+      ..._blocksById,
+    };
+  }
+
+  return blocksById;
+};
+
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
+  const blocksById = useMemo(() => {
+    if ('id' in props.artifact) {
+      return getRelatedArtifactBlocksById(props.artifact);
+    }
+    return {};
+  }, [props.artifact]);
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
@@ -71,9 +107,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     [blocknoteContentMd],
   );
   const [artifactTemplate, setArtifactTemplate] = useState(
-    'artifactTemplate' in props.artifact
-      ? props.artifact.artifactTemplate
-      : null,
+    props.artifact.artifactTemplate,
   );
   const [rootTemplateId, setRootTemplateId] = useState(
     props.artifact.rootTemplateId,
@@ -110,8 +144,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     props.artifact.isTemplate !== isTemplate ||
     props.artifact.text !== blocknoteContentText ||
     props.artifact.rootTemplateId !== rootTemplateId ||
-    ('artifactTemplate' in props.artifact &&
-      props.artifact.artifactTemplate?.id !== artifactTemplate?.id);
+    props.artifact.artifactTemplate?.id !== artifactTemplate?.id;
   const [enableRouterPrompt, setEnableRouterPrompt] = useState(modified);
 
   useEffect(() => {
@@ -227,6 +260,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
                 applyTemplateRef={editorApplyTemplateRef}
+                blocksById={blocksById}
               />
             </div>
           </div>
@@ -275,27 +309,26 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               message={t('artifactRenderer.isTemplate.help')}
             />
           </IonItem>
-          {'templatedArtifacts' in props.artifact &&
-            !!props.artifact.templatedArtifacts.length && (
-              <>
-                <IonListHeader>
-                  {t('artifactRenderer.templatedArtifacts')}
-                  <InfoButton
-                    message={t('artifactRenderer.templatedArtifacts.help')}
-                  />
-                </IonListHeader>
-                {props.artifact.templatedArtifacts.map((el) => (
-                  <IonItem
-                    key={el.id}
-                    routerLink={routes.artifact.build({ id: el.id })}
-                    button
-                  >
-                    <IonLabel>{el.title}</IonLabel>
-                    <IonIcon slot="end" icon={chevronForward} />
-                  </IonItem>
-                ))}
-              </>
-            )}
+          {!!props.artifact.templatedArtifacts.length && (
+            <>
+              <IonListHeader>
+                {t('artifactRenderer.templatedArtifacts')}
+                <InfoButton
+                  message={t('artifactRenderer.templatedArtifacts.help')}
+                />
+              </IonListHeader>
+              {props.artifact.templatedArtifacts.map((el) => (
+                <IonItem
+                  key={el.id}
+                  routerLink={routes.artifact.build({ id: el.id })}
+                  button
+                >
+                  <IonLabel>{el.title}</IonLabel>
+                  <IonIcon slot="end" icon={chevronForward} />
+                </IonItem>
+              ))}
+            </>
+          )}
         </IonCol>
       </IonRow>
     </IonGrid>

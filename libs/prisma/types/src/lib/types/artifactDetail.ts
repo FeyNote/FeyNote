@@ -60,6 +60,35 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
 
 type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
 
-export type ArtifactDetail = Omit<_ArtifactDetail, 'json'> & {
+// An apology to the future reader's eyes, for this is necessary until https://github.com/prisma/prisma/issues/3219 is resolved
+type ArtifactDetailReferencedArtifact = Omit<
+  _ArtifactDetail['referencedArtifacts'][0],
+  'referencedArtifact'
+> & {
+  referencedArtifact: Omit<
+    _ArtifactDetail['referencedArtifacts'][0]['referencedArtifact'],
+    'json'
+  > & {
+    json: ArtifactJson;
+  };
+};
+type ArtifactDetailReferencedFromArtifact = Omit<
+  _ArtifactDetail['referencedArtifacts'][0],
+  'artifact'
+> & {
+  artifact: Omit<
+    _ArtifactDetail['referencedArtifacts'][0]['referencedArtifact'],
+    'json'
+  > & {
+    json: ArtifactJson;
+  };
+};
+
+export type ArtifactDetail = Omit<
+  _ArtifactDetail,
+  'json' | 'referencedArtifacts' | 'referencedFromArtifacts'
+> & {
   json: ArtifactJson;
+  referencedArtifacts: ArtifactDetailReferencedArtifact[];
+  referencedFromArtifacts: ArtifactDetailReferencedFromArtifact[];
 };
