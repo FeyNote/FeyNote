@@ -30,7 +30,7 @@ import {
 } from './SelectTemplateModal';
 import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
-import { getBlocksById, markdownToTxt } from '@feynote/shared-utils';
+import { markdownToTxt } from '@feynote/shared-utils';
 
 export type NewArtifactDetail = Omit<
   ArtifactDetail,
@@ -48,50 +48,19 @@ interface Props {
   >;
 }
 
-const getRelatedArtifactBlocksById = (artifact: ArtifactDetail) => {
-  let blocksById: Record<string, ArtifactEditorBlock> = {};
-  for (const referencedArtifact of artifact.referencedArtifacts) {
-    const blocknoteContent =
-      referencedArtifact.referencedArtifact.json.blocknoteContent;
-    if (!blocknoteContent) continue;
-
-    const _blocksById = getBlocksById(blocknoteContent);
-    blocksById = {
-      ...blocksById,
-      ..._blocksById,
-    };
-  }
-  for (const referencedFromArtifacts of artifact.referencedFromArtifacts) {
-    const blocknoteContent =
-      referencedFromArtifacts.artifact.json.blocknoteContent;
-    if (!blocknoteContent) continue;
-
-    const _blocksById = getBlocksById(blocknoteContent);
-    blocksById = {
-      ...blocksById,
-      ..._blocksById,
-    };
-  }
-  if (artifact.json.blocknoteContent) {
-    const _blocksById = getBlocksById(artifact.json.blocknoteContent);
-    blocksById = {
-      ...blocksById,
-      ..._blocksById,
-    };
-  }
-
-  return blocksById;
-};
-
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const blocksById = useMemo(() => {
-    if ('id' in props.artifact) {
-      return getRelatedArtifactBlocksById(props.artifact);
+  const referenceDisplayTextByCompositeId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const ref of props.artifact.artifactReferences) {
+      map.set(ref.targetArtifactId, ref.artifactReferenceDisplayText.displayText)
     }
-    return {};
+    for (const ref of props.artifact.artifactBlockReferences) {
+      map.set(ref.targetArtifactId + ref.targetArtifactBlockId, ref.artifactBlockReferenceDisplayText.displayText)
+    }
+    return map;
   }, [props.artifact]);
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
@@ -260,7 +229,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
                 applyTemplateRef={editorApplyTemplateRef}
-                blocksById={blocksById}
+                referenceDisplayTextByCompositeId={referenceDisplayTextByCompositeId}
               />
             </div>
           </div>

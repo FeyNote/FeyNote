@@ -31,28 +31,48 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         updatedAt: true,
       },
     },
-    referencedArtifacts: {
+    artifactReferences: {
       select: {
         id: true,
         artifactId: true,
-        referencedArtifact: {
+        artifactBlockId: true,
+        targetArtifactId: true,
+        artifactReferenceDisplayText: {
           select: {
-            title: true,
-            json: true,
-          },
-        },
+            displayText: true,
+          }
+        }
       },
     },
-    referencedFromArtifacts: {
+    artifactBlockReferences: {
       select: {
         id: true,
         artifactId: true,
-        artifact: {
+        artifactBlockId: true,
+        targetArtifactId: true,
+        targetArtifactBlockId: true,
+        artifactBlockReferenceDisplayText: {
           select: {
-            title: true,
-            json: true,
-          },
-        },
+            displayText: true,
+          }
+        }
+      },
+    },
+    incomingArtifactReferences: {
+      select: {
+        id: true,
+        artifactId: true,
+        artifactBlockId: true,
+        targetArtifactId: true,
+      },
+    },
+    incomingArtifactBlockReferences: {
+      select: {
+        id: true,
+        artifactId: true,
+        artifactBlockId: true,
+        targetArtifactId: true,
+        targetArtifactBlockId: true,
       },
     },
   },
@@ -60,35 +80,9 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
 
 type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
 
-// An apology to the future reader's eyes, for this is necessary until https://github.com/prisma/prisma/issues/3219 is resolved
-type ArtifactDetailReferencedArtifact = Omit<
-  _ArtifactDetail['referencedArtifacts'][0],
-  'referencedArtifact'
-> & {
-  referencedArtifact: Omit<
-    _ArtifactDetail['referencedArtifacts'][0]['referencedArtifact'],
-    'json'
-  > & {
-    json: ArtifactJson;
-  };
-};
-type ArtifactDetailReferencedFromArtifact = Omit<
-  _ArtifactDetail['referencedArtifacts'][0],
-  'artifact'
-> & {
-  artifact: Omit<
-    _ArtifactDetail['referencedArtifacts'][0]['referencedArtifact'],
-    'json'
-  > & {
-    json: ArtifactJson;
-  };
-};
-
 export type ArtifactDetail = Omit<
   _ArtifactDetail,
-  'json' | 'referencedArtifacts' | 'referencedFromArtifacts'
+  'json'
 > & {
   json: ArtifactJson;
-  referencedArtifacts: ArtifactDetailReferencedArtifact[];
-  referencedFromArtifacts: ArtifactDetailReferencedFromArtifact[];
 };

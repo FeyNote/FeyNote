@@ -3,8 +3,8 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
-import { getBlockReferences } from '@feynote/shared-utils';
 import { TRPCError } from '@trpc/server';
+import { updateArtifactOutgoingReferences } from '@feynote/api-services';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -35,50 +35,29 @@ export const createArtifact = authenticatedProcedure
       }
     }
 
-    const artifactReferences = input.json.blocknoteContent
-      ? getBlockReferences(input.json.blocknoteContent)
-      : [];
-
-    const referencedArtifacts = await prisma.artifact.findMany({
-      where: {
-        id: {
-          in: artifactReferences.map((reference) => reference.artifactId),
+    const id = await prisma.$transaction(async (tx) => {
+      const { id } = await tx.artifact.create({
+        data: {
+          title: input.title,
+          text: input.text,
+          json: input.json,
+          userId: ctx.session.userId,
+          isPinned: input.isPinned,
+          isTemplate: input.isTemplate,
+          rootTemplateId: input.rootTemplateId,
+          artifactTemplateId: input.artifactTemplateId,
         },
-      },
-    });
-
-    if (
-      referencedArtifacts.some(
-        (referencedArtifact) =>
-          referencedArtifact.userId !== ctx.session.userId,
-      )
-    ) {
-      throw new TRPCError({
-        message:
-          'You do not own one of the artifacts referenced in your query.',
-        code: 'FORBIDDEN',
       });
-    }
 
-    const { id } = await prisma.artifact.create({
-      data: {
-        title: input.title,
-        text: input.text,
-        json: input.json,
-        userId: ctx.session.userId,
-        isPinned: input.isPinned,
-        isTemplate: input.isTemplate,
-        rootTemplateId: input.rootTemplateId,
-        artifactTemplateId: input.artifactTemplateId,
-        referencedArtifacts: {
-          createMany: {
-            data: artifactReferences.map((reference) => ({
-              referencedArtifactId: reference.artifactId,
-              referencedArtifactBlockId: reference.artifactBlockId,
-            })),
-          },
-        },
-      },
+      await updateArtifactOutgoingReferences(
+        ctx.session.userId,
+        id,
+        [],
+        input.json.blocknoteContent || [],
+        tx,
+      );
+
+      return id;
     });
 
     const indexableArtifact = {

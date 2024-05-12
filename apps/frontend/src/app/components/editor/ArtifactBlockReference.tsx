@@ -1,6 +1,5 @@
 import {
   ArtifactBlockReferenceFC,
-  ArtifactEditorBlock,
 } from '@feynote/blocknote';
 import { IonRouterLink } from '@ionic/react';
 import styled from 'styled-components';
@@ -11,51 +10,11 @@ const StyledSpan = styled.span`
 `;
 
 interface Props extends React.ComponentProps<ArtifactBlockReferenceFC> {
-  blocksById: Record<string, ArtifactEditorBlock>;
+  referenceDisplayTextByCompositeId: Map<string, string>;
 }
 
-const getTextForBlock = (block: ArtifactEditorBlock): string => {
-  switch (block.type) {
-    case 'paragraph':
-    case 'heading':
-    case 'bulletListItem':
-    case 'numberedListItem': {
-      return (
-        block.content
-          .map((content) => {
-            if (content.type === 'text') {
-              return content.text;
-            }
-            if (content.type === 'link') {
-              return content.content
-                .map((linkContent) => linkContent.text)
-                .join(' ');
-            }
-            if (content.type === 'artifactReference') {
-              return '...';
-            }
-            if (content.type === 'artifactBlockReference') {
-              return '...';
-            }
-          })
-          .join(' ') || 'NO TEXT FOR BLOCK!'
-      );
-    }
-    case 'image': {
-      return block.props.caption || 'Image';
-    }
-    case 'table': {
-      return 'Table';
-    }
-  }
-};
-
 export const ArtifactBlockReference: React.FC<Props> = (props) => {
-  const referencedBlock =
-    props.blocksById[props.inlineContent.props.artifactBlockId];
-  const text = referencedBlock
-    ? getTextForBlock(referencedBlock)
-    : props.inlineContent.props.referenceText;
+  const displayText = props.referenceDisplayTextByCompositeId.get(props.inlineContent.props.artifactId + props.inlineContent.props.artifactBlockId) || props.inlineContent.props.referenceText;
 
   return (
     <StyledSpan>
@@ -64,7 +23,7 @@ export const ArtifactBlockReference: React.FC<Props> = (props) => {
           id: props.inlineContent.props.artifactId,
         })}?blockId=${props.inlineContent.props.artifactBlockId}`}
       >
-        @{text}
+        @{displayText}
       </IonRouterLink>
     </StyledSpan>
   );

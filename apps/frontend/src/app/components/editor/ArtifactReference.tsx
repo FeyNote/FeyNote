@@ -1,13 +1,15 @@
-import { ArtifactEditorBlock, ArtifactReferenceFC } from '@feynote/blocknote';
+import { ArtifactReferenceFC } from '@feynote/blocknote';
 
 interface Props extends React.ComponentProps<ArtifactReferenceFC> {
-  blocksById: Record<string, ArtifactEditorBlock>;
+  referenceDisplayTextByCompositeId: Map<string, string>;
 }
 
 export const ArtifactReference: React.FC<Props> = (props) => {
+  const displayText = props.referenceDisplayTextByCompositeId.get(props.inlineContent.props.artifactId) || props.inlineContent.props.referenceText;
+
   return (
     <span style={{ backgroundColor: '#8400ff33' }}>
-      {props.inlineContent.props.referenceText}
+      @{displayText}
     </span>
   );
 };

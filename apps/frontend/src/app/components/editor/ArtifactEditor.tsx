@@ -48,7 +48,7 @@ interface Props {
     updatedContentMd: string,
   ) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
-  blocksById: Record<string, ArtifactEditorBlock>;
+  referenceDisplayTextByCompositeId: Map<string, string>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
@@ -56,10 +56,10 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   const editor = useCreateBlockNote({
     schema: buildArtifactEditorBlocknoteSchema({
       artifactReferenceFC: (_props) => (
-        <ArtifactReference {..._props} blocksById={props.blocksById} />
+        <ArtifactReference {..._props} referenceDisplayTextByCompositeId={props.referenceDisplayTextByCompositeId} />
       ),
       artifactBlockReferenceFC: (_props) => (
-        <ArtifactBlockReference {..._props} blocksById={props.blocksById} />
+        <ArtifactBlockReference {..._props} referenceDisplayTextByCompositeId={props.referenceDisplayTextByCompositeId} />
       ),
     }),
     initialContent: props.initialContent,

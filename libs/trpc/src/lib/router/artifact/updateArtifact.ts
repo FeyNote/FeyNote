@@ -1,11 +1,10 @@
-import { getArtifactDetailById } from '@feynote/api-services';
+import { getArtifactDetailById, updateArtifactBlockReferenceText, updateArtifactOutgoingReferences, updateArtifactReferenceText } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
-import { getBlockReferences } from '@feynote/shared-utils';
 
 export const updateArtifact = authenticatedProcedure
   .input(
@@ -46,57 +45,40 @@ export const updateArtifact = authenticatedProcedure
       }
     }
 
-    const artifactReferences = input.json.blocknoteContent
-      ? getBlockReferences(input.json.blocknoteContent)
-      : [];
+    await prisma.$transaction(async (tx) => {
+      await updateArtifactReferenceText(
+        input.id,
+        artifact.title,
+        input.title,
+        tx,
+      );
+      await updateArtifactBlockReferenceText(
+        input.id,
+        artifact.json.blocknoteContent || [],
+        input.json.blocknoteContent || [],
+        tx,
+      );
+      await updateArtifactOutgoingReferences(
+        ctx.session.userId,
+        input.id,
+        artifact.json.blocknoteContent || [],
+        input.json.blocknoteContent || [],
+        tx,
+      );
 
-    const referencedArtifacts = await prisma.artifact.findMany({
-      where: {
-        id: {
-          in: artifactReferences.map((reference) => reference.artifactId),
+      await tx.artifact.update({
+        where: {
+          id: input.id,
         },
-      },
-    });
-
-    if (
-      referencedArtifacts.some(
-        (referencedArtifact) =>
-          referencedArtifact.userId !== ctx.session.userId,
-      )
-    ) {
-      throw new TRPCError({
-        message:
-          'You do not own one of the artifacts referenced in your query.',
-        code: 'FORBIDDEN',
+        data: {
+          title: input.title,
+          text: input.text,
+          json: input.json,
+          isPinned: input.isPinned,
+          isTemplate: input.isTemplate,
+          rootTemplateId: input.rootTemplateId,
+        },
       });
-    }
-
-    await prisma.artifactReference.deleteMany({
-      where: {
-        artifactId: input.id,
-      },
-    });
-
-    await prisma.artifact.update({
-      where: {
-        id: input.id,
-      },
-      data: {
-        title: input.title,
-        text: input.text,
-        json: input.json,
-        isPinned: input.isPinned,
-        isTemplate: input.isTemplate,
-        rootTemplateId: input.rootTemplateId,
-        referencedArtifacts: {
-          createMany: {
-            data: artifactReferences.map((reference) => ({
-              referencedArtifactId: reference.artifactId,
-              referencedArtifactBlockId: reference.artifactBlockId,
-            })),
-          },
-        },
-      },
     });
 
     const indexableArtifact = {

@@ -44,8 +44,10 @@ export const NewArtifact: React.FC = () => {
     rootTemplateId: null,
     artifactTemplate: null,
     templatedArtifacts: [],
-    referencedArtifacts: [],
-    referencedFromArtifacts: [],
+    artifactReferences: [],
+    artifactBlockReferences: [],
+    incomingArtifactReferences: [],
+    incomingArtifactBlockReferences: []
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {
