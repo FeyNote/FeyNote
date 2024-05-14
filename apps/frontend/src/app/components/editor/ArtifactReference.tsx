@@ -11,8 +11,11 @@ interface Props extends React.ComponentProps<ArtifactReferenceFC> {
 }
 
 export const ArtifactReference: React.FC<Props> = (props) => {
-  const existingReference = props.knownReferences.get(props.inlineContent.props.artifactId);
-  const displayText = existingReference?.displayText || props.inlineContent.props.referenceText;
+  const existingReference = props.knownReferences.get(
+    props.inlineContent.props.artifactId,
+  );
+  const displayText =
+    existingReference?.displayText || props.inlineContent.props.referenceText;
 
   const routerLink = routes.artifact.build({
     id: props.inlineContent.props.artifactId,

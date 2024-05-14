@@ -1,12 +1,12 @@
-import { ArtifactEditorBlock } from "@feynote/blocknote";
-import { prisma } from "@feynote/prisma/client";
-import { getBlocksDiff } from "@feynote/shared-utils";
-import { Prisma } from "@prisma/client";
+import { ArtifactEditorBlock } from '@feynote/blocknote';
+import { prisma } from '@feynote/prisma/client';
+import { getBlocksDiff } from '@feynote/shared-utils';
+import { Prisma } from '@prisma/client';
 
 /**
-  * Updates all of the stored artifact block reference text for the given artifact.
-  * Block reference text is used for other artifacts to the blocks within this one.
-  */
+ * Updates all of the stored artifact block reference text for the given artifact.
+ * Block reference text is used for other artifacts to the blocks within this one.
+ */
 export async function updateArtifactBlockReferenceText(
   artifactId: string,
   oldBlocknoteContent: ArtifactEditorBlock[],
@@ -15,7 +15,7 @@ export async function updateArtifactBlockReferenceText(
 ) {
   const diff = getBlocksDiff(
     oldBlocknoteContent || [],
-    newBlocknoteContent || []
+    newBlocknoteContent || [],
   );
 
   // We drop to raw query here so that we can execute a PostgreSQL-specific
@@ -26,7 +26,7 @@ export async function updateArtifactBlockReferenceText(
     .filter((element) => element.status !== 'deleted')
     .map((element) => {
       // SECURITY: We must use Prisma.sql to prevent SQL injection
-      return Prisma.sql`(${artifactId}::uuid, ${element.id}::uuid, ${element.displayText})`
+      return Prisma.sql`(${artifactId}::uuid, ${element.id}::uuid, ${element.displayText})`;
     });
 
   // We cannot perform an update call with an empty set of values
@@ -36,8 +36,9 @@ export async function updateArtifactBlockReferenceText(
     UPDATE "ArtifactBlockReferenceDisplayText" AS abtxt SET
       "displayText" = c."displayText"
     FROM (VALUES
-      ${Prisma.join( // SECURITY: We must use Prisma.join to prevent SQL injection
-        sqlValues
+      ${Prisma.join(
+        // SECURITY: We must use Prisma.join to prevent SQL injection
+        sqlValues,
       )}
     ) as c("artifactId", "artifactBlockId", "displayText")
     WHERE

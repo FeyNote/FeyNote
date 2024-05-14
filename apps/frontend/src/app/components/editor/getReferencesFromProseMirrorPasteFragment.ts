@@ -2,8 +2,8 @@ import { Fragment } from 'prosemirror-model';
 
 export function getReferencesFromProsemirrorPasteFragment(fragment: Fragment) {
   const results: {
-    artifactId: string,
-    artifactBlockId?: string,
+    artifactId: string;
+    artifactBlockId?: string;
   }[] = [];
 
   fragment.forEach((node) => {
@@ -15,7 +15,9 @@ export function getReferencesFromProsemirrorPasteFragment(fragment: Fragment) {
     }
 
     if (node.content) {
-      const childResults = getReferencesFromProsemirrorPasteFragment(node.content);
+      const childResults = getReferencesFromProsemirrorPasteFragment(
+        node.content,
+      );
       results.push(...childResults);
     }
   });

@@ -1,17 +1,34 @@
-import { ArtifactEditorBlock } from "@feynote/blocknote";
-import { RawArtifactBlockReference, RawArtifactReference, getReferencesFromBlocks } from "./getReferencesFromBlocks";
+import { ArtifactEditorBlock } from '@feynote/blocknote';
+import {
+  RawArtifactBlockReference,
+  RawArtifactReference,
+  getReferencesFromBlocks,
+} from './getReferencesFromBlocks';
 
 export function getReferencesDiffFromBlocks(
   oldBlocks: ArtifactEditorBlock[],
   newBlocks: ArtifactEditorBlock[],
 ) {
   const oldReferences = getReferencesFromBlocks(oldBlocks);
-  const oldArtifactReferencesById = new Map(oldReferences.artifactReferences.map(el => [el.targetArtifactId, el]));
-  const oldArtifactBlockReferencesById = new Map(oldReferences.artifactBlockReferences.map(el => [el.targetArtifactId + el.targetArtifactBlockId, el]));
+  const oldArtifactReferencesById = new Map(
+    oldReferences.artifactReferences.map((el) => [el.targetArtifactId, el]),
+  );
+  const oldArtifactBlockReferencesById = new Map(
+    oldReferences.artifactBlockReferences.map((el) => [
+      el.targetArtifactId + el.targetArtifactBlockId,
+      el,
+    ]),
+  );
   const newReferences = getReferencesFromBlocks(newBlocks);
-  const newArtifactReferencesById = new Map(newReferences.artifactReferences.map(el => [el.targetArtifactId, el]));
-  const newArtifactBlockReferencesById = new Map(newReferences.artifactBlockReferences.map(el => [el.targetArtifactId + el.targetArtifactBlockId, el]));
-
+  const newArtifactReferencesById = new Map(
+    newReferences.artifactReferences.map((el) => [el.targetArtifactId, el]),
+  );
+  const newArtifactBlockReferencesById = new Map(
+    newReferences.artifactBlockReferences.map((el) => [
+      el.targetArtifactId + el.targetArtifactBlockId,
+      el,
+    ]),
+  );
 
   const addedArtifactReferences: RawArtifactReference[] = [];
   const deletedArtifactReferences: RawArtifactReference[] = [];
@@ -29,12 +46,20 @@ export function getReferencesDiffFromBlocks(
   const addedArtifactBlockReferences: RawArtifactBlockReference[] = [];
   const deletedArtifactBlockReferences: RawArtifactBlockReference[] = [];
   for (const newReference of newReferences.artifactBlockReferences) {
-    if (!oldArtifactBlockReferencesById.has(newReference.targetArtifactId + newReference.targetArtifactBlockId)) {
+    if (
+      !oldArtifactBlockReferencesById.has(
+        newReference.targetArtifactId + newReference.targetArtifactBlockId,
+      )
+    ) {
       addedArtifactBlockReferences.push(newReference);
     }
   }
   for (const oldReference of oldReferences.artifactBlockReferences) {
-    if (!newArtifactBlockReferencesById.has(oldReference.targetArtifactId + oldReference.targetArtifactBlockId)) {
+    if (
+      !newArtifactBlockReferencesById.has(
+        oldReference.targetArtifactId + oldReference.targetArtifactBlockId,
+      )
+    ) {
       deletedArtifactBlockReferences.push(oldReference);
     }
   }
@@ -44,6 +69,6 @@ export function getReferencesDiffFromBlocks(
     deletedArtifactReferences,
 
     addedArtifactBlockReferences,
-    deletedArtifactBlockReferences
+    deletedArtifactBlockReferences,
   };
 }

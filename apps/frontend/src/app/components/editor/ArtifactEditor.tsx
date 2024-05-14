@@ -51,10 +51,12 @@ interface Props {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => void;
-  onReferencesPasted: (references: {
-    artifactId: string,
-    artifactBlockId?: string,
-  }[]) => void;
+  onReferencesPasted: (
+    references: {
+      artifactId: string;
+      artifactBlockId?: string;
+    }[],
+  ) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
   knownReferences: Map<string, Reference>;
 }
@@ -67,23 +69,28 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   const editor = useCreateBlockNote({
     _tiptapOptions: {
       editorProps: {
-        handlePaste: (
-          view,
-          event,
-          slice
-        ) => {
+        handlePaste: (view, event, slice) => {
           const rootFragment = slice.content;
-          const pastedReferences = getReferencesFromProsemirrorPasteFragment(rootFragment);
+          const pastedReferences =
+            getReferencesFromProsemirrorPasteFragment(rootFragment);
           props.onReferencesPasted(pastedReferences);
-        }
-      }
+        },
+      },
     },
     schema: buildArtifactEditorBlocknoteSchema({
       artifactReferenceFC: (_props) => (
-        <ArtifactReference {..._props} knownReferences={props.knownReferences} blocknoteRerenderManager={blocknoteRerenderManager.current} />
+        <ArtifactReference
+          {..._props}
+          knownReferences={props.knownReferences}
+          blocknoteRerenderManager={blocknoteRerenderManager.current}
+        />
       ),
       artifactBlockReferenceFC: (_props) => (
-        <ArtifactBlockReference {..._props} knownReferences={props.knownReferences} blocknoteRerenderManager={blocknoteRerenderManager.current} />
+        <ArtifactBlockReference
+          {..._props}
+          knownReferences={props.knownReferences}
+          blocknoteRerenderManager={blocknoteRerenderManager.current}
+        />
       ),
     }),
     initialContent: props.initialContent,

@@ -1,7 +1,6 @@
 export interface Reference {
-  targetArtifactId: string,
-  targetArtifactBlockId?: string,
-  isBroken: boolean,
-  displayText: string,
+  targetArtifactId: string;
+  targetArtifactBlockId?: string;
+  isBroken: boolean;
+  displayText: string;
 }
-

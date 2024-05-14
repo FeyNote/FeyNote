@@ -18,5 +18,5 @@ export const router = trpcRouter({
   createArtifact,
   deleteArtifact,
   getArtifactReferenceDisplayTexts,
-  getArtifactBlockReferenceDisplayTexts
+  getArtifactBlockReferenceDisplayTexts,
 });

@@ -6,20 +6,20 @@ import { artifactSummary } from '@feynote/prisma/types';
 export const getArtifactReferenceDisplayTexts = authenticatedProcedure
   .input(
     z.object({
-      artifactIds: z.array(z.string())
+      artifactIds: z.array(z.string()),
     }),
   )
   .query(async ({ input, ctx }) => {
     const displayTexts = await prisma.artifactReferenceDisplayText.findMany({
       where: {
         artifactId: {
-          in: input.artifactIds
+          in: input.artifactIds,
         },
       },
       select: {
         artifactId: true,
         displayText: true,
-      }
+      },
     });
 
     return displayTexts;

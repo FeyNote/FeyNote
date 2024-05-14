@@ -24,16 +24,16 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
           }
 
           // This error is here to catch any issues where we may update blocknote and it introduces a new type that we don't have a means of handling and don't want to insert invalid previewtext into the database
-          throw new Error("Unrecognized content type");
+          throw new Error('Unrecognized content type');
         })
         .map((text) => text.trim())
         .filter((text) => !!text)
-        .join(' ')
+        .join(' ');
 
-      return text || "getTextForBlock.noTextGeneric";
+      return text || 'getTextForBlock.noTextGeneric';
     }
     case 'image': {
-      return block.props.caption || "getTextForBlock.noTextImage";
+      return block.props.caption || 'getTextForBlock.noTextImage';
     }
     case 'table': {
       const cellMemberText = block.content.rows.reduce((acc, row) => {
@@ -47,10 +47,9 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
       const resultText = cellMemberText
         .map((textEntry) => textEntry.trim())
         .filter((textEntry) => !!textEntry)
-        .join(" ");
+        .join(' ');
 
-      return resultText || "getTextForBlock.noTextTable";
+      return resultText || 'getTextForBlock.noTextTable';
     }
   }
 };
-

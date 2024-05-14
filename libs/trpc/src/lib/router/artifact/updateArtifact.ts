@@ -1,4 +1,9 @@
-import { getArtifactDetailById, updateArtifactBlockReferenceText, updateArtifactOutgoingReferences, updateArtifactReferenceText } from '@feynote/api-services';
+import {
+  getArtifactDetailById,
+  updateArtifactBlockReferenceText,
+  updateArtifactOutgoingReferences,
+  updateArtifactReferenceText,
+} from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';

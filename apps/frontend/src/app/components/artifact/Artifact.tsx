@@ -1,6 +1,6 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
 import {
-    IonButton,
+  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -13,10 +13,7 @@ import {
   useIonToast,
   useIonViewWillEnter,
 } from '@ionic/react';
-import {
-  options,
-  trash
-} from 'ionicons/icons';
+import { options, trash } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useState } from 'react';
@@ -92,9 +89,7 @@ export const Artifact: React.FC = () => {
       </IonContent>
       <IonPopover trigger="artifact-popover-trigger" triggerAction="click">
         <IonContent class="ion-padding">
-          {artifact && (
-            <ArtifactDeleteButton artifactId={artifact.id} />
-          )}
+          {artifact && <ArtifactDeleteButton artifactId={artifact.id} />}
         </IonContent>
       </IonPopover>
     </IonPage>

@@ -7,7 +7,7 @@ import { TRPCError } from '@trpc/server';
 export const deleteArtifact = authenticatedProcedure
   .input(
     z.object({
-      id: z.string()
+      id: z.string(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -17,7 +17,7 @@ export const deleteArtifact = authenticatedProcedure
       },
       select: {
         userId: true,
-      }
+      },
     });
 
     if (!artifact) {
@@ -34,10 +34,10 @@ export const deleteArtifact = authenticatedProcedure
     await prisma.artifact.delete({
       where: {
         id: input.id,
-      }
+      },
     });
 
     await searchProvider.deleteArtifacts([input.id]);
 
-    return "Ok";
+    return 'Ok';
   });

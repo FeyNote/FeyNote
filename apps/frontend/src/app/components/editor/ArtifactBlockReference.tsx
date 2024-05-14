@@ -1,6 +1,4 @@
-import {
-  ArtifactBlockReferenceFC,
-} from '@feynote/blocknote';
+import { ArtifactBlockReferenceFC } from '@feynote/blocknote';
 import { IonRouterLink } from '@ionic/react';
 import { routes } from '../../routes';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
@@ -19,17 +17,21 @@ export const ArtifactBlockReference: React.FC<Props> = (props) => {
   useEffect(() => {
     const listener = () => {
       setRerender(Math.random());
-    }
+    };
     props.blocknoteRerenderManager.addEventListener(listener);
     return () => {
       props.blocknoteRerenderManager.removeEventListener(listener);
-    }
+    };
   }, []);
 
-  const existingReference = props.knownReferences.get(props.inlineContent.props.artifactId + props.inlineContent.props.artifactBlockId);
-  const displayText = existingReference?.displayText || props.inlineContent.props.referenceText;
+  const existingReference = props.knownReferences.get(
+    props.inlineContent.props.artifactId +
+      props.inlineContent.props.artifactBlockId,
+  );
+  const displayText =
+    existingReference?.displayText || props.inlineContent.props.referenceText;
 
-  console.log("rendered", displayText);
+  console.log('rendered', displayText);
 
   const routerLink = `${routes.artifact.build({
     id: props.inlineContent.props.artifactId,

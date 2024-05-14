@@ -1,34 +1,35 @@
-import { ArtifactEditorBlock } from "@feynote/blocknote";
-import { getBlocksById } from "./getBlocksById";
-import { getTextForBlock } from "./getTextForBlock";
+import { ArtifactEditorBlock } from '@feynote/blocknote';
+import { getBlocksById } from './getBlocksById';
+import { getTextForBlock } from './getTextForBlock';
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace BlocksDiff {
   export type Added = {
-    id: string,
-    status: 'added',
-    oldBlock: undefined,
-    newBlock: ArtifactEditorBlock,
-    displayText: string,
-  }
+    id: string;
+    status: 'added';
+    oldBlock: undefined;
+    newBlock: ArtifactEditorBlock;
+    displayText: string;
+  };
   export type Deleted = {
-    id: string,
-    status: 'deleted',
-    oldBlock: ArtifactEditorBlock,
-    newBlock: undefined,
-    displayText: string,
-  }
+    id: string;
+    status: 'deleted';
+    oldBlock: ArtifactEditorBlock;
+    newBlock: undefined;
+    displayText: string;
+  };
   export type Updated = {
-    id: string,
-    status: 'updated',
-    oldBlock: ArtifactEditorBlock,
-    newBlock: ArtifactEditorBlock,
-    displayText: string,
-  }
+    id: string;
+    status: 'updated';
+    oldBlock: ArtifactEditorBlock;
+    newBlock: ArtifactEditorBlock;
+    displayText: string;
+  };
 
   export type ResultEntry = Added | Deleted | Updated;
 
   export type Result = Map<string, ResultEntry>;
-};
+}
 
 export function getBlocksDiff(
   oldBlockTree: ArtifactEditorBlock[],

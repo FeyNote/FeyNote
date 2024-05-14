@@ -4,21 +4,23 @@ export type RawArtifactReference = {
   artifactBlockId: string;
   targetArtifactId: string;
   displayText: string;
-}
+};
 
 export type RawArtifactBlockReference = {
   artifactBlockId: string;
   targetArtifactId: string;
   targetArtifactBlockId: string;
   displayText: string;
-}
+};
 
 interface ReferencesFromBlocksResult {
-  artifactReferences: RawArtifactReference[],
-  artifactBlockReferences: RawArtifactBlockReference[],
+  artifactReferences: RawArtifactReference[];
+  artifactBlockReferences: RawArtifactBlockReference[];
 }
 
-export const getReferencesFromBlocks = (blocks: ArtifactEditorBlock[]): ReferencesFromBlocksResult => {
+export const getReferencesFromBlocks = (
+  blocks: ArtifactEditorBlock[],
+): ReferencesFromBlocksResult => {
   const artifactReferences: RawArtifactReference[] = [];
   const artifactBlockReferences: RawArtifactBlockReference[] = [];
 
@@ -42,7 +44,7 @@ export const getReferencesFromBlocks = (blocks: ArtifactEditorBlock[]): Referenc
             artifactBlockId: block.id,
 
             targetArtifactId: content.props.artifactId,
-            displayText: content.props.referenceText
+            displayText: content.props.referenceText,
           });
         }
         if (content.type === 'artifactBlockReference') {
@@ -51,7 +53,7 @@ export const getReferencesFromBlocks = (blocks: ArtifactEditorBlock[]): Referenc
 
             targetArtifactId: content.props.artifactId,
             targetArtifactBlockId: content.props.artifactBlockId,
-            displayText: content.props.referenceText
+            displayText: content.props.referenceText,
           });
         }
       }
@@ -60,6 +62,6 @@ export const getReferencesFromBlocks = (blocks: ArtifactEditorBlock[]): Referenc
 
   return {
     artifactReferences,
-    artifactBlockReferences
+    artifactBlockReferences,
   };
 };

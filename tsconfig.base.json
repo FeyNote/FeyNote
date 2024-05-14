@@ -16,13 +16,13 @@
     "baseUrl": ".",
     "paths": {
       "@feynote/api-services": ["libs/api-services/src/index.ts"],
+      "@feynote/blocknote": ["libs/blocknote/src/index.ts"],
       "@feynote/prisma/client": ["libs/prisma/client/src/index.ts"],
       "@feynote/prisma/seed": ["libs/prisma/seed/src/index.ts"],
       "@feynote/prisma/types": ["libs/prisma/types/src/index.ts"],
       "@feynote/search": ["libs/search/src/index.ts"],
       "@feynote/shared-utils": ["libs/shared-utils/src/index.ts"],
-      "@feynote/trpc": ["libs/trpc/src/index.ts"],
-      "@feynote/blocknote": ["libs/blocknote/src/index.ts"]
+      "@feynote/trpc": ["libs/trpc/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

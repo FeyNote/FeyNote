@@ -47,7 +47,7 @@ export const NewArtifact: React.FC = () => {
     artifactReferences: [],
     artifactBlockReferences: [],
     incomingArtifactReferences: [],
-    incomingArtifactBlockReferences: []
+    incomingArtifactBlockReferences: [],
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {

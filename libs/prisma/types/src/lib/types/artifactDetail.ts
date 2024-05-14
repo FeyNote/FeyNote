@@ -41,8 +41,8 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         artifactReferenceDisplayText: {
           select: {
             displayText: true,
-          }
-        }
+          },
+        },
       },
     },
     artifactBlockReferences: {
@@ -56,8 +56,8 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         artifactBlockReferenceDisplayText: {
           select: {
             displayText: true,
-          }
-        }
+          },
+        },
       },
     },
     incomingArtifactReferences: {
@@ -82,9 +82,6 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
 
 type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
 
-export type ArtifactDetail = Omit<
-  _ArtifactDetail,
-  'json'
-> & {
+export type ArtifactDetail = Omit<_ArtifactDetail, 'json'> & {
   json: ArtifactJson;
 };
