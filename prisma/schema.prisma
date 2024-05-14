@@ -116,6 +116,7 @@ model ArtifactBlockReference {
 }
 
 model ArtifactBlockReferenceDisplayText {
+  // We purposefully do not refer to artifactId or artifactBlockId since they can be deleted
   artifactId      String @db.Uuid
   artifactBlockId String @db.Uuid
   displayText     String

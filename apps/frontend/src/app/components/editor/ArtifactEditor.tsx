@@ -17,9 +17,13 @@ import {
   ArtifactEditorBlock,
   buildArtifactEditorBlocknoteSchema,
 } from '@feynote/blocknote';
-import { MutableRefObject } from 'react';
+import { MutableRefObject, useEffect, useRef } from 'react';
 import { ArtifactReference } from './ArtifactReference';
 import { ArtifactBlockReference } from './ArtifactBlockReference';
+import { ArtifactDetail } from '@feynote/prisma/types';
+import { getReferencesFromProsemirrorPasteFragment } from './getReferencesFromProseMirrorPasteFragment';
+import { Reference } from './Reference';
+import { RerenderManager } from './rerenderManager';
 
 const StyledIonCard = styled(IonCard)`
   min-height: 500px;
@@ -47,23 +51,47 @@ interface Props {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => void;
+  onReferencesPasted: (references: {
+    artifactId: string,
+    artifactBlockId?: string,
+  }[]) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
-  referenceDisplayTextByCompositeId: Map<string, string>;
+  knownReferences: Map<string, Reference>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
+
+  const blocknoteRerenderManager = useRef(new RerenderManager());
+
   const editor = useCreateBlockNote({
+    _tiptapOptions: {
+      editorProps: {
+        handlePaste: (
+          view,
+          event,
+          slice
+        ) => {
+          const rootFragment = slice.content;
+          const pastedReferences = getReferencesFromProsemirrorPasteFragment(rootFragment);
+          props.onReferencesPasted(pastedReferences);
+        }
+      }
+    },
     schema: buildArtifactEditorBlocknoteSchema({
       artifactReferenceFC: (_props) => (
-        <ArtifactReference {..._props} referenceDisplayTextByCompositeId={props.referenceDisplayTextByCompositeId} />
+        <ArtifactReference {..._props} knownReferences={props.knownReferences} blocknoteRerenderManager={blocknoteRerenderManager.current} />
       ),
       artifactBlockReferenceFC: (_props) => (
-        <ArtifactBlockReference {..._props} referenceDisplayTextByCompositeId={props.referenceDisplayTextByCompositeId} />
+        <ArtifactBlockReference {..._props} knownReferences={props.knownReferences} blocknoteRerenderManager={blocknoteRerenderManager.current} />
       ),
     }),
     initialContent: props.initialContent,
   });
+
+  useEffect(() => {
+    blocknoteRerenderManager.current.call();
+  }, [props.knownReferences]);
 
   const onChange = async () => {
     const md = await editor.blocksToMarkdownLossy();

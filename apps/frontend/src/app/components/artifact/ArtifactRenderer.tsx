@@ -31,6 +31,8 @@ import {
 import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
 import { markdownToTxt } from '@feynote/shared-utils';
+import { Reference } from '../editor/Reference';
+import { trpc } from '../../../utils/trpc';
 
 export type NewArtifactDetail = Omit<
   ArtifactDetail,
@@ -52,16 +54,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const referenceDisplayTextByCompositeId = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const ref of props.artifact.artifactReferences) {
-      map.set(ref.targetArtifactId, ref.artifactReferenceDisplayText.displayText)
-    }
-    for (const ref of props.artifact.artifactBlockReferences) {
-      map.set(ref.targetArtifactId + ref.targetArtifactBlockId, ref.artifactBlockReferenceDisplayText.displayText)
-    }
-    return map;
-  }, [props.artifact]);
+  const [knownReferences, setKnownReferences] = useState<Map<string, Reference>>(new Map());
   const [title, setTitle] = useState(props.artifact.title);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
@@ -106,6 +99,24 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   }
 
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
+
+  useEffect(() => {
+    for (const artifactReference of props.artifact.artifactReferences) {
+      knownReferences.set(artifactReference.targetArtifactId, {
+        targetArtifactId: artifactReference.targetArtifactId,
+        isBroken: !artifactReference.referenceTargetArtifactId,
+        displayText: artifactReference.artifactReferenceDisplayText.displayText,
+      });
+    }
+    for (const artifactBlockReference of props.artifact.artifactBlockReferences) {
+      knownReferences.set(artifactBlockReference.targetArtifactId + artifactBlockReference.targetArtifactBlockId, {
+        targetArtifactId: artifactBlockReference.targetArtifactId,
+        targetArtifactBlockId: artifactBlockReference.targetArtifactBlockId,
+        isBroken: !artifactBlockReference.referenceTargetArtifactId,
+        displayText: artifactBlockReference.artifactBlockReferenceDisplayText.displayText,
+      });
+    }
+  }, [props.artifact]);
 
   const modified =
     props.artifact.title !== title ||
@@ -206,6 +217,46 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     setRootTemplateId(null);
   };
 
+  const onReferencesPasted = (references: {
+    artifactId: string,
+    artifactBlockId?: string,
+  }[]) => {
+    const artifactBlockReferences = references.filter((reference) => reference.artifactBlockId);
+    const artifactReferences = references.filter((reference) => !reference.artifactBlockId);
+
+    trpc.artifact.getArtifactReferenceDisplayTexts.query({
+      artifactIds: artifactReferences.map((artifactReference) => artifactReference.artifactId)
+    }).then((results): void => {
+      for (const result of results) {
+        knownReferences.set(result.artifactId, {
+          targetArtifactId: result.artifactId,
+          isBroken: false,
+          displayText: result.displayText,
+        });
+      }
+      setKnownReferences(new Map(knownReferences));
+    });
+
+    trpc.artifact.getArtifactBlockReferenceDisplayTexts.query({
+      identifiers: artifactBlockReferences.map((artifactReference) => ({
+        artifactId: artifactReference.artifactId,
+        artifactBlockId: artifactReference.artifactBlockId!,
+      }))
+    }).then((results): void => {
+      for (const result of results) {
+        knownReferences.set(result.artifactId + result.artifactBlockId, {
+          targetArtifactId: result.artifactId,
+          targetArtifactBlockId: result.artifactBlockId,
+          isBroken: false,
+          displayText: result.displayText,
+        });
+      }
+      setKnownReferences(new Map(knownReferences));
+    });
+  }
+
+  console.log("value", knownReferences);
+
   return (
     <IonGrid>
       <Prompt when={enableRouterPrompt} message={t('generic.unsavedChanges')} />
@@ -229,7 +280,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
                 applyTemplateRef={editorApplyTemplateRef}
-                referenceDisplayTextByCompositeId={referenceDisplayTextByCompositeId}
+                knownReferences={knownReferences}
+                onReferencesPasted={onReferencesPasted}
               />
             </div>
           </div>
