@@ -7,8 +7,9 @@ import {
   IonTitle,
   IonToolbar,
   useIonRouter,
+  useIonViewWillEnter,
 } from '@ionic/react';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext } from 'react';
 import { SessionContext } from './context/session/SessionContext';
 import { routes } from './routes';
 
@@ -16,11 +17,11 @@ export const Home: React.FC = () => {
   const { session } = useContext(SessionContext);
   const router = useIonRouter();
 
-  useEffect(() => {
+  useIonViewWillEnter(() => {
     if (session) {
-      router.push(routes.dashboard.build());
+      router.push(routes.dashboard.build(), 'forward', 'replace');
     }
-  }, [session, router]);
+  });
 
   return (
     <IonPage id="main">
