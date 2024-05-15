@@ -37,6 +37,15 @@ export const deleteArtifact = authenticatedProcedure
       },
     });
 
+    await prisma.artifactRevision.updateMany({
+      where: {
+        artifactId: input.id,
+      },
+      data: {
+        artifactDeletedAt: new Date(),
+      },
+    });
+
     await searchProvider.deleteArtifacts([input.id]);
 
     return 'Ok';

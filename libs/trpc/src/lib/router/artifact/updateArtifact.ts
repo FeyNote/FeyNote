@@ -1,5 +1,5 @@
 import {
-  getArtifactDetailById,
+  createArtifactRevision,
   updateArtifactBlockReferenceText,
   updateArtifactOutgoingReferences,
   updateArtifactReferenceText,
@@ -9,7 +9,11 @@ import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
-import { artifactJsonSchema } from '@feynote/prisma/types';
+import {
+  ArtifactJson,
+  artifactDetail,
+  artifactJsonSchema,
+} from '@feynote/prisma/types';
 
 export const updateArtifact = authenticatedProcedure
   .input(
@@ -25,11 +29,16 @@ export const updateArtifact = authenticatedProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const artifact = await getArtifactDetailById(input.id);
+    const artifact = await prisma.artifact.findUnique({
+      where: {
+        id: input.id,
+      },
+      ...artifactDetail,
+    });
 
-    if (artifact.userId !== ctx.session.userId) {
+    if (!artifact || artifact.userId !== ctx.session.userId) {
       throw new TRPCError({
-        message: 'Artifact not visible to current user',
+        message: 'Artifact does not exist or is not visible to current user',
         code: 'FORBIDDEN',
       });
     }
@@ -59,7 +68,7 @@ export const updateArtifact = authenticatedProcedure
       );
       await updateArtifactBlockReferenceText(
         input.id,
-        artifact.json.blocknoteContent || [],
+        (artifact.json as ArtifactJson).blocknoteContent || [],
         input.json.blocknoteContent || [],
         tx,
       );
@@ -69,6 +78,8 @@ export const updateArtifact = authenticatedProcedure
         input.json.blocknoteContent || [],
         tx,
       );
+
+      await createArtifactRevision(input.id, tx);
 
       await tx.artifact.update({
         where: {
@@ -93,7 +104,11 @@ export const updateArtifact = authenticatedProcedure
       json: input.json,
     };
 
-    await searchProvider.indexArtifact(indexableArtifact);
+    // Fire index async
+    searchProvider.indexArtifact(indexableArtifact).catch((e) => {
+      console.error(e);
+      // TODO: fire sentry here
+    });
 
     // We do not return the complete artifact, but rather expect that the frontend will
     // fetch the complete artifact via getArtifactById

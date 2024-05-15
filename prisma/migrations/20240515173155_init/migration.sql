@@ -78,7 +78,7 @@ CREATE TABLE "ArtifactRevision" (
     "artifactFilesJson" JSONB NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
-    "artifactDeletedAt" TIMESTAMPTZ(6) NOT NULL,
+    "artifactDeletedAt" TIMESTAMPTZ(6),
 
     CONSTRAINT "ArtifactRevision_pkey" PRIMARY KEY ("artifactId","revisionId")
 );
@@ -129,9 +129,6 @@ ALTER TABLE "ArtifactFile" ADD CONSTRAINT "ArtifactFile_fileId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "ArtifactRevision" ADD CONSTRAINT "ArtifactRevision_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ArtifactRevision" ADD CONSTRAINT "ArtifactRevision_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "Artifact"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "File" ADD CONSTRAINT "File_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

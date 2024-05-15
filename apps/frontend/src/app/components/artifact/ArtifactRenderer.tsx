@@ -31,6 +31,7 @@ import {
 import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
 import { markdownToTxt } from '@feynote/shared-utils';
+import { isArtifactModified } from './isArtifactSaved';
 
 export type NewArtifactDetail = Omit<
   ArtifactDetail,
@@ -97,13 +98,17 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
-  const modified =
-    props.artifact.title !== title ||
-    props.artifact.isPinned !== isPinned ||
-    props.artifact.isTemplate !== isTemplate ||
-    props.artifact.text !== blocknoteContentText ||
-    props.artifact.rootTemplateId !== rootTemplateId ||
-    props.artifact.artifactTemplate?.id !== artifactTemplate?.id;
+  const modified = isArtifactModified(props.artifact, {
+    json: {
+      blocknoteContent,
+    },
+    title,
+    isPinned,
+    isTemplate,
+    text: blocknoteContentText,
+    rootTemplateId,
+    artifactTemplate,
+  });
   const [enableRouterPrompt, setEnableRouterPrompt] = useState(modified);
 
   useEffect(() => {
@@ -282,6 +287,28 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                   button
                 >
                   <IonLabel>{el.title}</IonLabel>
+                  <IonIcon slot="end" icon={chevronForward} />
+                </IonItem>
+              ))}
+            </>
+          )}
+          {!!props.artifact.incomingArtifactReferences.length && (
+            <>
+              <IonListHeader>
+                {t('artifactRenderer.incomingArtifactReferences')}
+                <InfoButton
+                  message={t(
+                    'artifactRenderer.incomingArtifactReferences.help',
+                  )}
+                />
+              </IonListHeader>
+              {props.artifact.incomingArtifactReferences.map((el) => (
+                <IonItem
+                  key={el.id}
+                  routerLink={routes.artifact.build({ id: el.id })}
+                  button
+                >
+                  <IonLabel>{el.artifact.title}</IonLabel>
                   <IonIcon slot="end" icon={chevronForward} />
                 </IonItem>
               ))}

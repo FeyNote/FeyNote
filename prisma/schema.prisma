@@ -55,7 +55,6 @@ model Artifact {
   artfactFiles               ArtifactFile[]
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
-  artifactRevisions          ArtifactRevision[]
 }
 
 model ArtifactReference {
@@ -101,10 +100,9 @@ model ArtifactRevision {
   artifactJson      Json
   artifactFilesJson Json
 
-  createdAt         DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime @updatedAt @db.Timestamptz(6)
-  artifactDeletedAt DateTime @db.Timestamptz(6)
-  Artifact          Artifact @relation(fields: [artifactId], references: [id])
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
+  artifactDeletedAt DateTime? @db.Timestamptz(6)
 
   @@id([artifactId, revisionId])
 }
