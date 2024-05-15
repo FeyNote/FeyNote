@@ -12,7 +12,7 @@ export const ArtifactReference: ArtifactReferenceFC = (props) => {
   });
 
   return (
-    <ArtifactReferenceSpan isBroken={isBroken}>
+    <ArtifactReferenceSpan $isBroken={isBroken}>
       <IonRouterLink routerLink={isBroken ? undefined : routerLink}>
         @{displayText}
       </IonRouterLink>

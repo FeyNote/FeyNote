@@ -17,7 +17,7 @@ import {
   ArtifactEditorBlock,
   buildArtifactEditorBlocknoteSchema,
 } from '@feynote/blocknote';
-import { MutableRefObject } from 'react';
+import { MutableRefObject, useState } from 'react';
 import { ArtifactReference } from './ArtifactReference';
 import { ArtifactBlockReference } from './ArtifactBlockReference';
 
@@ -54,6 +54,7 @@ interface Props {
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
+  const [referenceSearchText, setReferenceSearchText] = useState('');
 
   const editor = useCreateBlockNote({
     schema: buildArtifactEditorBlocknoteSchema({
@@ -72,6 +73,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   const getMentionItems = async (
     query: string,
   ): Promise<EditorReferenceSuggestionItem[]> => {
+    setReferenceSearchText(query);
     const blocks = await trpc.artifact.searchArtifactBlocks
       .query({
         query,
@@ -119,37 +121,63 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     }
   };
 
+  const onItemClick = async (item: EditorReferenceSuggestionItem) => {
+    if (item.placeholder) {
+      const artifact = await trpc.artifact.createArtifact.mutate({
+        title: referenceSearchText,
+        isPinned: false,
+        isTemplate: false,
+        artifactTemplateId: null,
+        rootTemplateId: null,
+        text: '',
+        json: {
+          blocknoteContentMd: '',
+          blocknoteContent: undefined,
+        },
+      });
+
+      editor.insertInlineContent([
+        {
+          type: 'artifactReference',
+          props: {
+            artifactId: artifact.id,
+            referenceText: referenceSearchText,
+            isBroken: false,
+          },
+        },
+      ]);
+    } else if (item.artifactBlockId) {
+      editor.insertInlineContent([
+        {
+          type: 'artifactBlockReference',
+          props: {
+            artifactId: item.artifactId,
+            artifactBlockId: item.artifactBlockId,
+            referenceText: item.referenceText,
+            isBroken: false,
+          },
+        },
+      ]);
+    } else {
+      editor.insertInlineContent([
+        {
+          type: 'artifactReference',
+          props: {
+            artifactId: item.artifactId,
+            referenceText: item.referenceText,
+            isBroken: false,
+          },
+        },
+      ]);
+    }
+  };
+
   return (
     <StyledIonCard onClick={() => editor.focus()}>
       <BlockNoteView editor={editor} onChange={onChange}>
         <SuggestionMenuController
           triggerCharacter={'@'}
-          onItemClick={(item) => {
-            if (item.artifactBlockId) {
-              editor.insertInlineContent([
-                {
-                  type: 'artifactBlockReference',
-                  props: {
-                    artifactId: item.artifactId,
-                    artifactBlockId: item.artifactBlockId,
-                    referenceText: item.referenceText,
-                    isBroken: false,
-                  },
-                },
-              ]);
-            } else {
-              editor.insertInlineContent([
-                {
-                  type: 'artifactReference',
-                  props: {
-                    artifactId: item.artifactId,
-                    referenceText: item.referenceText,
-                    isBroken: false,
-                  },
-                },
-              ]);
-            }
-          }}
+          onItemClick={onItemClick}
           suggestionMenuComponent={EditorReferenceMenu}
           getItems={getMentionItems}
         />

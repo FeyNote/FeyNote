@@ -12,7 +12,7 @@ export const ArtifactBlockReference: ArtifactBlockReferenceFC = (props) => {
   })}?blockId=${props.inlineContent.props.artifactBlockId}`;
 
   return (
-    <ArtifactReferenceSpan isBroken={isBroken}>
+    <ArtifactReferenceSpan $isBroken={isBroken}>
       <IonRouterLink routerLink={isBroken ? undefined : routerLink}>
         @{displayText}
       </IonRouterLink>

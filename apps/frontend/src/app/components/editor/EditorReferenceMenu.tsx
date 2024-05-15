@@ -35,11 +35,14 @@ interface Props {
 export const EditorReferenceMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  if (props.items.at(0)?.placeholder) {
+  const firstItem = props.items.at(0);
+  if (firstItem?.placeholder) {
     return (
-      <IonList>
-        <IonItem>{t('editor.referenceMenu.noItems')}</IonItem>
-      </IonList>
+      <StyledIonList>
+        <IonItem onClick={() => props.onItemClick?.(firstItem)} button>
+          {t('editor.referenceMenu.noItems')}
+        </IonItem>
+      </StyledIonList>
     );
   }
 
