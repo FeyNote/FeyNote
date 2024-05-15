@@ -66,7 +66,6 @@ export const updateArtifact = authenticatedProcedure
       await updateArtifactOutgoingReferences(
         ctx.session.userId,
         input.id,
-        artifact.json.blocknoteContent || [],
         input.json.blocknoteContent || [],
         tx,
       );

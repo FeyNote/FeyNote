@@ -12,12 +12,13 @@ export async function updateArtifactReferenceText(
   tx: Prisma.TransactionClient = prisma,
 ) {
   if (oldTitle !== newTitle) {
-    await tx.artifactReferenceDisplayText.update({
+    await tx.artifactReference.updateMany({
       where: {
-        artifactId,
+        targetArtifactId: artifactId,
+        targetArtifactBlockId: null,
       },
       data: {
-        displayText: newTitle,
+        referenceText: newTitle,
       },
     });
   }

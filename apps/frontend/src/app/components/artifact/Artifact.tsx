@@ -13,7 +13,7 @@ import {
   useIonToast,
   useIonViewWillEnter,
 } from '@ionic/react';
-import { options, trash } from 'ionicons/icons';
+import { options } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useState } from 'react';

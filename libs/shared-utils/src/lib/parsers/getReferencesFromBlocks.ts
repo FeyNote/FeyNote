@@ -1,36 +1,20 @@
 import { ArtifactEditorBlock } from '@feynote/blocknote';
 
-export type RawArtifactReference = {
+export interface ReferencesFromBlocksResult {
   artifactBlockId: string;
   targetArtifactId: string;
-  displayText: string;
-};
-
-export type RawArtifactBlockReference = {
-  artifactBlockId: string;
-  targetArtifactId: string;
-  targetArtifactBlockId: string;
-  displayText: string;
-};
-
-interface ReferencesFromBlocksResult {
-  artifactReferences: RawArtifactReference[];
-  artifactBlockReferences: RawArtifactBlockReference[];
+  targetArtifactBlockId?: string;
+  referenceText: string;
 }
 
 export const getReferencesFromBlocks = (
   blocks: ArtifactEditorBlock[],
-): ReferencesFromBlocksResult => {
-  const artifactReferences: RawArtifactReference[] = [];
-  const artifactBlockReferences: RawArtifactBlockReference[] = [];
+): ReferencesFromBlocksResult[] => {
+  const results: ReferencesFromBlocksResult[] = [];
 
   for (const block of blocks) {
-    const {
-      artifactReferences: childArtifactReferences,
-      artifactBlockReferences: childArtifactBlockReferences,
-    } = getReferencesFromBlocks(block.children);
-    artifactReferences.push(...childArtifactReferences);
-    artifactBlockReferences.push(...childArtifactBlockReferences);
+    const childResults = getReferencesFromBlocks(block.children);
+    results.push(...childResults);
 
     if (
       block.type === 'heading' ||
@@ -40,28 +24,25 @@ export const getReferencesFromBlocks = (
     ) {
       for (const content of block.content) {
         if (content.type === 'artifactReference') {
-          artifactReferences.push({
+          results.push({
             artifactBlockId: block.id,
 
             targetArtifactId: content.props.artifactId,
-            displayText: content.props.referenceText,
+            referenceText: content.props.referenceText,
           });
         }
         if (content.type === 'artifactBlockReference') {
-          artifactBlockReferences.push({
+          results.push({
             artifactBlockId: block.id,
 
             targetArtifactId: content.props.artifactId,
             targetArtifactBlockId: content.props.artifactBlockId,
-            displayText: content.props.referenceText,
+            referenceText: content.props.referenceText,
           });
         }
       }
     }
   }
 
-  return {
-    artifactReferences,
-    artifactBlockReferences,
-  };
+  return results;
 };

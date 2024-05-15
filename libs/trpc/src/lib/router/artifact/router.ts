@@ -6,8 +6,6 @@ import { searchArtifacts } from './searchArtifacts';
 import { updateArtifact } from './updateArtifact';
 import { createArtifact } from './createArtifact';
 import { deleteArtifact } from './deleteArtifact';
-import { getArtifactReferenceDisplayTexts } from './getArtifactReferenceDisplayTexts';
-import { getArtifactBlockReferenceDisplayTexts } from './getArtifactBlockReferenceDisplayTexts';
 
 export const router = trpcRouter({
   getArtifactById,
@@ -17,6 +15,4 @@ export const router = trpcRouter({
   updateArtifact,
   createArtifact,
   deleteArtifact,
-  getArtifactReferenceDisplayTexts,
-  getArtifactBlockReferenceDisplayTexts,
 });

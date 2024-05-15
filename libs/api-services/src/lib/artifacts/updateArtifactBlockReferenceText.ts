@@ -26,24 +26,24 @@ export async function updateArtifactBlockReferenceText(
     .filter((element) => element.status !== 'deleted')
     .map((element) => {
       // SECURITY: We must use Prisma.sql to prevent SQL injection
-      return Prisma.sql`(${artifactId}::uuid, ${element.id}::uuid, ${element.displayText})`;
+      return Prisma.sql`(${artifactId}::uuid, ${element.id}::uuid, ${element.referenceText})`;
     });
 
   // We cannot perform an update call with an empty set of values
   if (!sqlValues.length) return;
 
   await tx.$queryRaw`
-    UPDATE "ArtifactBlockReferenceDisplayText" AS abtxt SET
-      "displayText" = c."displayText"
+    UPDATE "ArtifactReference" AS ar SET
+      "referenceText" = c."referenceText"
     FROM (VALUES
       ${Prisma.join(
         // SECURITY: We must use Prisma.join to prevent SQL injection
         sqlValues,
       )}
-    ) as c("artifactId", "artifactBlockId", "displayText")
+    ) as c("targetArtifactId", "targetArtifactBlockId", "referenceText")
     WHERE
-      c."artifactId" = abtxt."artifactId"
+      c."targetArtifactId" = ar."targetArtifactId"
       AND
-      c."artifactBlockId" = abtxt."artifactBlockId"
+      c."targetArtifactBlockId" = ar."targetArtifactBlockId"
   `;
 }

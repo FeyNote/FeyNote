@@ -1,74 +1,39 @@
 import { ArtifactEditorBlock } from '@feynote/blocknote';
 import {
-  RawArtifactBlockReference,
-  RawArtifactReference,
+  ReferencesFromBlocksResult,
   getReferencesFromBlocks,
 } from './getReferencesFromBlocks';
+
+const getKeyForReference = (reference: ReferencesFromBlocksResult) => {
+  if (reference.targetArtifactBlockId) {
+    return reference.targetArtifactId + reference.targetArtifactBlockId;
+  } else {
+    return reference.targetArtifactId;
+  }
+};
 
 export function getReferencesDiffFromBlocks(
   oldBlocks: ArtifactEditorBlock[],
   newBlocks: ArtifactEditorBlock[],
 ) {
   const oldReferences = getReferencesFromBlocks(oldBlocks);
-  const oldArtifactReferencesById = new Map(
-    oldReferences.artifactReferences.map((el) => [el.targetArtifactId, el]),
-  );
-  const oldArtifactBlockReferencesById = new Map(
-    oldReferences.artifactBlockReferences.map((el) => [
-      el.targetArtifactId + el.targetArtifactBlockId,
-      el,
-    ]),
+  const oldReferencesById = new Map(
+    oldReferences.map((el) => [getKeyForReference(el), el]),
   );
   const newReferences = getReferencesFromBlocks(newBlocks);
-  const newArtifactReferencesById = new Map(
-    newReferences.artifactReferences.map((el) => [el.targetArtifactId, el]),
-  );
-  const newArtifactBlockReferencesById = new Map(
-    newReferences.artifactBlockReferences.map((el) => [
-      el.targetArtifactId + el.targetArtifactBlockId,
-      el,
-    ]),
+  const newReferencesById = new Map(
+    newReferences.map((el) => [getKeyForReference(el), el]),
   );
 
-  const addedArtifactReferences: RawArtifactReference[] = [];
-  const deletedArtifactReferences: RawArtifactReference[] = [];
-  for (const newReference of newReferences.artifactReferences) {
-    if (!oldArtifactReferencesById.has(newReference.targetArtifactId)) {
-      addedArtifactReferences.push(newReference);
-    }
-  }
-  for (const oldReference of oldReferences.artifactReferences) {
-    if (!newArtifactReferencesById.has(oldReference.targetArtifactId)) {
-      deletedArtifactReferences.push(oldReference);
-    }
-  }
-
-  const addedArtifactBlockReferences: RawArtifactBlockReference[] = [];
-  const deletedArtifactBlockReferences: RawArtifactBlockReference[] = [];
-  for (const newReference of newReferences.artifactBlockReferences) {
-    if (
-      !oldArtifactBlockReferencesById.has(
-        newReference.targetArtifactId + newReference.targetArtifactBlockId,
-      )
-    ) {
-      addedArtifactBlockReferences.push(newReference);
-    }
-  }
-  for (const oldReference of oldReferences.artifactBlockReferences) {
-    if (
-      !newArtifactBlockReferencesById.has(
-        oldReference.targetArtifactId + oldReference.targetArtifactBlockId,
-      )
-    ) {
-      deletedArtifactBlockReferences.push(oldReference);
-    }
-  }
+  const deletedReferences = oldReferences.filter((oldReference) => {
+    return !newReferencesById.has(getKeyForReference(oldReference));
+  });
+  const addedReferences = newReferences.filter((newReference) => {
+    return !oldReferencesById.has(getKeyForReference(newReference));
+  });
 
   return {
-    addedArtifactReferences,
-    deletedArtifactReferences,
-
-    addedArtifactBlockReferences,
-    deletedArtifactBlockReferences,
+    addedReferences,
+    deletedReferences,
   };
 }

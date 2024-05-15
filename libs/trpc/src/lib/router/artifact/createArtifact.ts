@@ -52,7 +52,6 @@ export const createArtifact = authenticatedProcedure
       await updateArtifactOutgoingReferences(
         ctx.session.userId,
         id,
-        [],
         input.json.blocknoteContent || [],
         tx,
       );

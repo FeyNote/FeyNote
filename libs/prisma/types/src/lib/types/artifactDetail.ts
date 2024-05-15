@@ -37,38 +37,12 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         artifactId: true,
         artifactBlockId: true,
         targetArtifactId: true,
-        referenceTargetArtifactId: true,
-        artifactReferenceDisplayText: {
-          select: {
-            displayText: true,
-          },
-        },
-      },
-    },
-    artifactBlockReferences: {
-      select: {
-        id: true,
-        artifactId: true,
-        artifactBlockId: true,
-        targetArtifactId: true,
         targetArtifactBlockId: true,
         referenceTargetArtifactId: true,
-        artifactBlockReferenceDisplayText: {
-          select: {
-            displayText: true,
-          },
-        },
+        referenceText: true,
       },
     },
     incomingArtifactReferences: {
-      select: {
-        id: true,
-        artifactId: true,
-        artifactBlockId: true,
-        targetArtifactId: true,
-      },
-    },
-    incomingArtifactBlockReferences: {
       select: {
         id: true,
         artifactId: true,

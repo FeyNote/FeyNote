@@ -17,13 +17,9 @@ import {
   ArtifactEditorBlock,
   buildArtifactEditorBlocknoteSchema,
 } from '@feynote/blocknote';
-import { MutableRefObject, useEffect, useRef } from 'react';
+import { MutableRefObject } from 'react';
 import { ArtifactReference } from './ArtifactReference';
 import { ArtifactBlockReference } from './ArtifactBlockReference';
-import { ArtifactDetail } from '@feynote/prisma/types';
-import { getReferencesFromProsemirrorPasteFragment } from './getReferencesFromProseMirrorPasteFragment';
-import { Reference } from './Reference';
-import { RerenderManager } from './rerenderManager';
 
 const StyledIonCard = styled(IonCard)`
   min-height: 500px;
@@ -51,54 +47,19 @@ interface Props {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => void;
-  onReferencesPasted: (
-    references: {
-      artifactId: string;
-      artifactBlockId?: string;
-    }[],
-  ) => void;
   applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
-  knownReferences: Map<string, Reference>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
 
-  const blocknoteRerenderManager = useRef(new RerenderManager());
-
   const editor = useCreateBlockNote({
-    _tiptapOptions: {
-      editorProps: {
-        handlePaste: (view, event, slice) => {
-          const rootFragment = slice.content;
-          const pastedReferences =
-            getReferencesFromProsemirrorPasteFragment(rootFragment);
-          props.onReferencesPasted(pastedReferences);
-        },
-      },
-    },
     schema: buildArtifactEditorBlocknoteSchema({
-      artifactReferenceFC: (_props) => (
-        <ArtifactReference
-          {..._props}
-          knownReferences={props.knownReferences}
-          blocknoteRerenderManager={blocknoteRerenderManager.current}
-        />
-      ),
-      artifactBlockReferenceFC: (_props) => (
-        <ArtifactBlockReference
-          {..._props}
-          knownReferences={props.knownReferences}
-          blocknoteRerenderManager={blocknoteRerenderManager.current}
-        />
-      ),
+      artifactReferenceFC: ArtifactReference,
+      artifactBlockReferenceFC: ArtifactBlockReference,
     }),
     initialContent: props.initialContent,
   });
-
-  useEffect(() => {
-    blocknoteRerenderManager.current.call();
-  }, [props.knownReferences]);
 
   const onChange = async () => {
     const md = await editor.blocksToMarkdownLossy();
@@ -169,9 +130,9 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
                     artifactId: item.artifactId,
                     artifactBlockId: item.artifactBlockId,
                     referenceText: item.referenceText,
+                    isBroken: false,
                   },
                 },
-                ' ', // add a space after
               ]);
             } else {
               editor.insertInlineContent([
@@ -180,9 +141,9 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
                   props: {
                     artifactId: item.artifactId,
                     referenceText: item.referenceText,
+                    isBroken: false,
                   },
                 },
-                ' ', // add a space after
               ]);
             }
           }}

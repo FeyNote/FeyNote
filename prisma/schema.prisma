@@ -55,8 +55,6 @@ model Artifact {
   artfactFiles                    ArtifactFile[]
   artifactReferences              ArtifactReference[]      @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences      ArtifactReference[]      @relation("artifactReferenceTargetArtifact")
-  artifactBlockReferences         ArtifactBlockReference[] @relation("artifactBlockReferenceSourceArtifact")
-  incomingArtifactBlockReferences ArtifactBlockReference[] @relation("artifactBlockReferenceTargetArtifact")
   artifactRevisions               ArtifactRevision[]
 }
 
@@ -73,87 +71,14 @@ model ArtifactReference {
 
   // Target artifact may not actually exist
   targetArtifactId String @db.Uuid
+  targetArtifactBlockId String? @db.Uuid
 
-  artifactReferenceDisplayText ArtifactReferenceDisplayText @relation(fields: [targetArtifactId], references: [artifactId])
-
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model ArtifactReferenceDisplayText {
-  artifactId  String @db.Uuid
-  displayText String
-
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  lastUsedAt DateTime @default(now()) @db.Timestamptz(6)
-
-  // These are artifact references that depend on this displayText entry
-  dependentArtifactReferences ArtifactReference[]
-
-  @@id([artifactId])
-}
-
-model ArtifactBlockReference {
-  id String @id @default(uuid()) @db.Uuid
-
-  artifactId      String   @db.Uuid
-  artifact        Artifact @relation("artifactBlockReferenceSourceArtifact", fields: [artifactId], references: [id], onDelete: Cascade)
-  artifactBlockId String   @db.Uuid
-
-  // Used for actual reference to artifact, so we can join
-  referenceTargetArtifactId String?   @db.Uuid
-  targetArtifact            Artifact? @relation("artifactBlockReferenceTargetArtifact", fields: [referenceTargetArtifactId], references: [id], onDelete: SetNull)
-
-  // Target artifact, or target block may not actually exist
-  targetArtifactId      String @db.Uuid
-  targetArtifactBlockId String @db.Uuid
-
-  artifactBlockReferenceDisplayText ArtifactBlockReferenceDisplayText @relation(fields: [targetArtifactId, targetArtifactBlockId], references: [artifactId, artifactBlockId])
+  referenceText String
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
-model ArtifactBlockReferenceDisplayText {
-  // We purposefully do not refer to artifactId or artifactBlockId since they can be deleted
-  artifactId      String @db.Uuid
-  artifactBlockId String @db.Uuid
-  displayText     String
-
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-  lastUsedAt DateTime @default(now()) @db.Timestamptz(6)
-
-  // These are artifact references that depend on this displayText entry
-  dependentArtifactBlockReferences ArtifactBlockReference[]
-
-  @@id([artifactId, artifactBlockId])
-}
-
-// model ArtifactReferenceDisplayText {
-//   targetArtifactId String @db.Uuid
-//   displayText      String
-//
-//   createdAt  DateTime @default(now()) @db.Timestamptz(6)
-//   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-//   lastUsedAt DateTime @default(now()) @db.Timestamptz(6)
-//
-//   @@id([targetArtifactId])
-// }
-//
-// model ArtifactBlockReferenceDisplayText {
-//   targetArtifactId      String @db.Uuid
-//   targetArtifactBlockId String @db.Uuid
-//   displayText           String
-//
-//   createdAt  DateTime @default(now()) @db.Timestamptz(6)
-//   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-//   lastUsedAt DateTime @default(now()) @db.Timestamptz(6)
-//
-//   @@id([targetArtifactId, targetArtifactBlockId])
-// }
-//
 model ArtifactFile {
   id         String   @id @default(uuid()) @db.Uuid
   artifactId String   @db.Uuid

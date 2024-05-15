@@ -16,6 +16,9 @@ const config = {
     referenceText: {
       default: 'Unknown',
     },
+    isBroken: {
+      default: false,
+    },
   },
   content: 'none',
 } as const satisfies CustomInlineContentConfig;

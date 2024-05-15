@@ -9,21 +9,21 @@ export namespace BlocksDiff {
     status: 'added';
     oldBlock: undefined;
     newBlock: ArtifactEditorBlock;
-    displayText: string;
+    referenceText: string;
   };
   export type Deleted = {
     id: string;
     status: 'deleted';
     oldBlock: ArtifactEditorBlock;
     newBlock: undefined;
-    displayText: string;
+    referenceText: string;
   };
   export type Updated = {
     id: string;
     status: 'updated';
     oldBlock: ArtifactEditorBlock;
     newBlock: ArtifactEditorBlock;
-    displayText: string;
+    referenceText: string;
   };
 
   export type ResultEntry = Added | Deleted | Updated;
@@ -55,7 +55,7 @@ export function getBlocksDiff(
           status: 'updated',
           oldBlock: oldBlocksById[newBlock.id],
           newBlock,
-          displayText: newText,
+          referenceText: newText,
         });
       }
     } else {
@@ -66,7 +66,7 @@ export function getBlocksDiff(
         status: 'added',
         oldBlock: undefined,
         newBlock,
-        displayText: newText,
+        referenceText: newText,
       });
     }
   }
@@ -80,7 +80,7 @@ export function getBlocksDiff(
         status: 'deleted',
         oldBlock,
         newBlock: undefined,
-        displayText: oldText,
+        referenceText: oldText,
       });
     }
   }
