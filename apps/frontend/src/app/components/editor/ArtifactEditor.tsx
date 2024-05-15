@@ -9,8 +9,8 @@ import {
 import '@blocknote/react/style.css';
 import {
   EditorReferenceSuggestionItem,
-  EditorReferenceMenuComponent,
-} from './EditorSuggestion';
+  EditorReferenceMenu,
+} from './EditorReferenceMenu';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import {
@@ -22,6 +22,8 @@ import { ArtifactReference } from './ArtifactReference';
 import { ArtifactBlockReference } from './ArtifactBlockReference';
 
 const StyledIonCard = styled(IonCard)`
+  contain: unset;
+  overflow: visible;
   min-height: 500px;
 
   .ProseMirror h1 {
@@ -73,6 +75,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     const blocks = await trpc.artifact.searchArtifactBlocks
       .query({
         query,
+        limit: 15,
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -147,7 +150,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
               ]);
             }
           }}
-          suggestionMenuComponent={EditorReferenceMenuComponent}
+          suggestionMenuComponent={EditorReferenceMenu}
           getItems={getMentionItems}
         />
       </BlockNoteView>

@@ -13,6 +13,9 @@ export interface SearchProvider {
   searchArtifactBlocks: (
     userId: string,
     query: string,
+    options?: {
+      prefix: boolean;
+    },
   ) => Promise<BlockIndexDocument[]>;
 }
 

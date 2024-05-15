@@ -36,4 +36,3 @@ export const rootTemplatesById = rootTemplates.reduce(
   },
   {} as Record<string, RootTemplate>,
 );
-console.log(rootTemplates);

@@ -136,16 +136,20 @@ export class TypeSense implements SearchProvider {
       }) || []
     );
   }
-  async searchArtifactBlocks(userId: string, query: string) {
-    const query_by = 'text';
-
+  async searchArtifactBlocks(
+    userId: string,
+    query: string,
+    options?: {
+      prefix: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+    },
+  ) {
     const results = await this.client
       .collections(Indexes.Block)
       .documents()
       .search({
         q: query,
-        query_by,
-        prefix: false,
+        query_by: 'text',
+        prefix: options?.prefix || false,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
@@ -153,7 +157,6 @@ export class TypeSense implements SearchProvider {
 
     return (
       results.hits?.map((hit) => {
-        console.log(hit.document);
         return hit.document as BlockIndexDocument;
       }) || []
     );

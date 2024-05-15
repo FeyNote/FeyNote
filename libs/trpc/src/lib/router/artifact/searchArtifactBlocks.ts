@@ -8,12 +8,16 @@ export const searchArtifactBlocks = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
+      limit: z.number().min(1).max(100).optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
     const matchedArtifactBlocks = await searchProvider.searchArtifactBlocks(
       ctx.session.userId,
       input.query,
+      {
+        prefix: true,
+      },
     );
 
     const matchedArtifactIds = [
@@ -29,6 +33,7 @@ export const searchArtifactBlocks = authenticatedProcedure
         },
       },
       ...artifactSummary,
+      take: input.limit || 100,
     });
 
     const artifactsById = artifacts.reduce(
