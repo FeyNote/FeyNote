@@ -45,6 +45,7 @@
   "dashboard.noArtifacts.title": "No Artifacts",
   "dashboard.noArtifacts.message": "Click the plus button in the bottom right corner to create one!",
 
+  "newArtifact.title": "New Artifact",
   "artifact.title": "Artifact",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
