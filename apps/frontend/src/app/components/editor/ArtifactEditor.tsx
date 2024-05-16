@@ -1,12 +1,9 @@
 import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
 import '@blocknote/core/fonts/inter.css';
-import {
-  BlockNoteView,
-  SuggestionMenuController,
-  useCreateBlockNote,
-} from '@blocknote/react';
-import '@blocknote/react/style.css';
+import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
+import { BlockNoteView } from '@blocknote/mantine';
+import '@blocknote/mantine/style.css';
 import {
   EditorReferenceSuggestionItem,
   EditorReferenceMenu,
@@ -145,6 +142,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
             isBroken: false,
           },
         },
+        ' ',
       ]);
     } else if (item.artifactBlockId) {
       editor.insertInlineContent([
@@ -157,6 +155,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
             isBroken: false,
           },
         },
+        ' ',
       ]);
     } else {
       editor.insertInlineContent([
@@ -168,6 +167,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
             isBroken: false,
           },
         },
+        ' ',
       ]);
     }
   };

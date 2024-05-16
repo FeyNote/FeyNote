@@ -1,3 +1,4 @@
+import { SuggestionMenuProps } from '@blocknote/react';
 import { ArtifactSummary } from '@feynote/prisma/types';
 import { IonItem, IonLabel, IonList } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +9,12 @@ const StyledIonList = styled(IonList)`
   max-height: 300px;
   overflow-y: auto;
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+`;
+
+const StyledIonItem = styled(IonItem)<{
+  $selected: boolean;
+}>`
+  ${(props) => (props.$selected ? '--background: rgba(0,0,0,0.2);' : '')}
 `;
 
 const filterSuggestionItem = (el: EditorReferenceSuggestionItem) => {
@@ -25,14 +32,9 @@ export interface EditorReferenceSuggestionItem {
   referenceText: string;
 }
 
-interface Props {
-  items: EditorReferenceSuggestionItem[];
-  loadingState: 'loading-initial' | 'loading' | 'loaded';
-  selectedIndex: number;
-  onItemClick?: (item: EditorReferenceSuggestionItem) => void;
-}
-
-export const EditorReferenceMenu: React.FC<Props> = (props) => {
+export const EditorReferenceMenu: React.FC<
+  SuggestionMenuProps<EditorReferenceSuggestionItem>
+> = (props) => {
   const { t } = useTranslation();
 
   const firstItem = props.items.at(0);
@@ -48,17 +50,18 @@ export const EditorReferenceMenu: React.FC<Props> = (props) => {
 
   return (
     <StyledIonList>
-      {props.items.filter(filterSuggestionItem).map((el) => (
-        <IonItem
+      {props.items.filter(filterSuggestionItem).map((el, idx) => (
+        <StyledIonItem
           key={el.artifactId + el.artifactBlockId}
           onClick={() => props.onItemClick?.(el)}
+          $selected={props.selectedIndex === idx}
           button
         >
           <IonLabel>
             {el.referenceText}
             {el.artifact && <p>{el.artifact.title}</p>}
           </IonLabel>
-        </IonItem>
+        </StyledIonItem>
       ))}
     </StyledIonList>
   );
