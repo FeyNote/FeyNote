@@ -4,22 +4,20 @@ import { z } from 'zod';
 import { ArtifactSummary, artifactSummary } from '@feynote/prisma/types';
 import { prisma } from '@feynote/prisma/client';
 
-export const searchArtifacts = authenticatedProcedure
+export const searchArtifactTitles = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
       limit: z.number().min(1).max(100).optional(),
-      withEmbeddings: z.boolean().optional(),
       isTemplate: z.boolean().optional(),
       isPinned: z.boolean().optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
     const limit = input.limit || 100;
-    const resultArtifactIds = await searchProvider.searchArtifacts(
+    const resultArtifactIds = await searchProvider.searchArtifactTitles(
       ctx.session.userId,
       input.query,
-      input.withEmbeddings ?? true,
     );
 
     const artifacts = await prisma.artifact.findMany({

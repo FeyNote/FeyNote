@@ -65,6 +65,7 @@
   "artifactReferencePreview.noContent": "No content",
 
   "editor.referenceMenu.noItems": "No results. Click to create",
+  "editor.referenceMenu.artifact": "Artifact",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",

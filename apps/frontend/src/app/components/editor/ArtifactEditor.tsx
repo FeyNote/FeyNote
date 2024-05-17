@@ -7,6 +7,7 @@ import '@blocknote/mantine/style.css';
 import {
   EditorReferenceSuggestionItem,
   EditorReferenceMenu,
+  EditorReferenceSuggestionItemType,
 } from './EditorReferenceMenu';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
@@ -71,7 +72,16 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     query: string,
   ): Promise<EditorReferenceSuggestionItem[]> => {
     setReferenceSearchText(query);
-    const blocks = await trpc.artifact.searchArtifactBlocks
+
+    const artifactsPromise = trpc.artifact.searchArtifactTitles
+      .query({
+        query,
+        limit: 10,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+    const blocksPromise = trpc.artifact.searchArtifactBlocks
       .query({
         query,
         limit: 15,
@@ -80,12 +90,29 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
         handleTRPCErrors(error, presentToast);
       });
 
-    if (!blocks) return [];
+    const [artifacts, blocks] = await Promise.all([
+      artifactsPromise,
+      blocksPromise,
+    ]);
+
+    if (!blocks || !artifacts) return [];
 
     const suggestionItems = [];
 
+    for (const artifact of artifacts) {
+      suggestionItems.push({
+        type: EditorReferenceSuggestionItemType.Artifact,
+        artifactId: artifact.id,
+        artifactBlockId: undefined,
+        referenceText: artifact.title,
+        artifact: artifact,
+        placeholder: false,
+      });
+    }
+
     for (const block of blocks) {
       suggestionItems.push({
+        type: EditorReferenceSuggestionItemType.ArtifactBlock,
         artifactId: block.artifactId,
         artifactBlockId: block.id,
         referenceText: block.text,
@@ -100,7 +127,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
         artifactId: '',
         artifactBlockId: '',
         referenceText: '',
-        placeholder: true,
+        type: EditorReferenceSuggestionItemType.Placeholder,
       });
     }
 
@@ -119,7 +146,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   };
 
   const onItemClick = async (item: EditorReferenceSuggestionItem) => {
-    if (item.placeholder) {
+    if (item.type === EditorReferenceSuggestionItemType.Placeholder) {
       const artifact = await trpc.artifact.createArtifact.mutate({
         title: referenceSearchText,
         isPinned: false,

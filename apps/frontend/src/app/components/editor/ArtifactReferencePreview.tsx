@@ -21,7 +21,7 @@ const Container = styled.div<{
   max-height: 300px;
   overflow-y: auto;
   background: var(--ion-background-color);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.3);
   padding: 10px;
 
   .bn-editor {

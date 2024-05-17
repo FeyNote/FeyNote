@@ -26,12 +26,18 @@ const filterSuggestionItem = (el: EditorReferenceSuggestionItem) => {
   return el.referenceText.replace(new RegExp(/[\W_0-9]/, 'g'), '').length > 0;
 };
 
+export enum EditorReferenceSuggestionItemType {
+  Artifact = 'artifact',
+  ArtifactBlock = 'artifactBlock',
+  Placeholder = 'placeholder', // Blocknote hides our suggestion menu if there are no results
+}
+
 export interface EditorReferenceSuggestionItem {
-  placeholder: boolean; // Blocknote hides our suggestion menu if there are no results
   artifactId: string;
   artifactBlockId?: string;
   artifact?: ArtifactSummary;
   referenceText: string;
+  type: EditorReferenceSuggestionItemType;
 }
 
 export const EditorReferenceMenu: React.FC<
@@ -40,7 +46,7 @@ export const EditorReferenceMenu: React.FC<
   const { t } = useTranslation();
 
   const firstItem = props.items.at(0);
-  if (firstItem?.placeholder) {
+  if (firstItem?.type === EditorReferenceSuggestionItemType.Placeholder) {
     return (
       <StyledIonList>
         <IonItem onClick={() => props.onItemClick?.(firstItem)} button>
@@ -62,7 +68,11 @@ export const EditorReferenceMenu: React.FC<
           <IonLabel>
             {el.referenceText.substring(0, REFERENCETEXT_CUTOFF_LENGTH)}
             {el.referenceText.length > REFERENCETEXT_CUTOFF_LENGTH && '...'}
-            {el.artifact && <p>{el.artifact.title}</p>}
+            {el.type === EditorReferenceSuggestionItemType.ArtifactBlock &&
+              el.artifact && <p>{el.artifact.title}</p>}
+            {el.type === EditorReferenceSuggestionItemType.Artifact && (
+              <p>{t('editor.referenceMenu.artifact')}</p>
+            )}
           </IonLabel>
         </StyledIonItem>
       ))}
