@@ -176,7 +176,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => {
-    setEnableRouterPrompt(true);
+    setEnableRouterPrompt(updatedContentMd !== blocknoteContentMd);
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
   };

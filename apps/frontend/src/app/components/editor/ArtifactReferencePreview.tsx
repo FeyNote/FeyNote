@@ -7,7 +7,6 @@ import { BlockNoteView } from '@blocknote/mantine';
 import styled from 'styled-components';
 import { getBlockById } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
-import { IonCard } from '@ionic/react';
 
 const Container = styled.div<{
   $top: number;
