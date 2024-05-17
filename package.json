@@ -9,9 +9,9 @@
   "private": true,
   "dependencies": {
     "@aws-sdk/client-ses": "^3.556.0",
-    "@blocknote/core": "^0.13.2",
-    "@blocknote/mantine": "^0.13.2",
-    "@blocknote/react": "^0.13.2",
+    "@blocknote/core": "0.13.0",
+    "@blocknote/mantine": "0.13.0",
+    "@blocknote/react": "0.13.0",
     "@ionic/react": "^8.0.0",
     "@ionic/react-router": "^8.0.0",
     "@prisma/client": "^5.12.1",

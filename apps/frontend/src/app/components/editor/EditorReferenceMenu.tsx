@@ -4,6 +4,8 @@ import { IonItem, IonLabel, IonList } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
+const REFERENCETEXT_CUTOFF_LENGTH = 50;
+
 const StyledIonList = styled(IonList)`
   width: 300px;
   max-height: 300px;
@@ -58,7 +60,8 @@ export const EditorReferenceMenu: React.FC<
           button
         >
           <IonLabel>
-            {el.referenceText}
+            {el.referenceText.substring(0, REFERENCETEXT_CUTOFF_LENGTH)}
+            {el.referenceText.length > REFERENCETEXT_CUTOFF_LENGTH && '...'}
             {el.artifact && <p>{el.artifact.title}</p>}
           </IonLabel>
         </StyledIonItem>

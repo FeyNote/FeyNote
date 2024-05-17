@@ -7,7 +7,8 @@ export const getBlockById = (
   for (const block of blocks) {
     if (block.id === blockId) return block;
 
-    return getBlockById(block.children, blockId);
+    const childResult = getBlockById(block.children, blockId);
+    if (childResult) return childResult;
   }
 
   return;
