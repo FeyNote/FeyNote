@@ -4,7 +4,6 @@ import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
 import { ArtifactBlockReferenceFC } from '@feynote/blocknote';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
-import { createPortal } from 'react-dom';
 import { useRef } from 'react';
 
 export const ArtifactBlockReference: ArtifactBlockReferenceFC = (props) => {
@@ -29,22 +28,13 @@ export const ArtifactBlockReference: ArtifactBlockReferenceFC = (props) => {
       <IonRouterLink routerLink={isBroken ? undefined : routerLink}>
         @{referenceText}
       </IonRouterLink>
-      {showPreview &&
-        artifact &&
-        ref.current &&
-        createPortal(
-          // We portal because blocknote styling does not play well with blocknote instances inside of each other
-          <ArtifactReferencePreview
-            artifact={artifact}
-            artifactBlockId={artifactBlockId}
-            top={
-              ref.current.getBoundingClientRect().top +
-              ref.current.getBoundingClientRect().height
-            }
-            left={ref.current.getBoundingClientRect().left}
-          />,
-          document.getElementById('referencePreviewContainer')!,
-        )}
+      {showPreview && artifact && ref.current && (
+        <ArtifactReferencePreview
+          artifact={artifact}
+          artifactBlockId={artifactBlockId}
+          previewTarget={ref.current}
+        />
+      )}
     </ArtifactReferenceSpan>
   );
 };

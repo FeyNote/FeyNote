@@ -7,6 +7,8 @@ import { BlockNoteView } from '@blocknote/mantine';
 import styled from 'styled-components';
 import { getBlockById } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
+import { createPortal } from 'react-dom';
 
 const Container = styled.div<{
   $top: number;
@@ -37,8 +39,7 @@ const Header = styled.h2`
 interface Props {
   artifact: ArtifactDetail;
   artifactBlockId?: string;
-  top: number;
-  left: number;
+  previewTarget: HTMLElement;
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
@@ -63,14 +64,27 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     initialContent,
   });
 
-  return (
-    <Container $top={props.top} $left={props.left}>
+  const top = useMemo(
+    () =>
+      props.previewTarget.getBoundingClientRect().top +
+      props.previewTarget.getBoundingClientRect().height,
+    [props.previewTarget],
+  );
+  const left = useMemo(
+    () => props.previewTarget.getBoundingClientRect().left,
+    [props.previewTarget],
+  );
+
+  // We portal because blocknote styling does not play well with blocknote instances inside of each other
+  return createPortal(
+    <Container $top={top} $left={left}>
       <Header>{props.artifact.title}</Header>
       {initialContent && props.artifact.text.trim().length ? (
         <BlockNoteView editor={editor} editable={false}></BlockNoteView>
       ) : (
         <span>{t('artifactReferencePreview.noContent')}</span>
       )}
-    </Container>
+    </Container>,
+    document.getElementById('referencePreviewContainer')!,
   );
 };
