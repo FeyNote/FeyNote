@@ -305,7 +305,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               {props.artifact.incomingArtifactReferences.map((el) => (
                 <IonItem
                   key={el.id}
-                  routerLink={routes.artifact.build({ id: el.id })}
+                  routerLink={routes.artifact.build({ id: el.artifactId })}
                   button
                 >
                   <IonLabel>{el.artifact.title}</IonLabel>
