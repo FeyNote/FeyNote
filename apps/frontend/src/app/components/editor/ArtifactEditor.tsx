@@ -1,6 +1,5 @@
 import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
-import '@blocknote/core/fonts/inter.css';
 import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
