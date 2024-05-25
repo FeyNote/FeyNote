@@ -1,6 +1,6 @@
-import { MonsterSheetFC } from '@feynote/blocknote';
+import { MonsterSheetFC, SpellSheetFC } from '@feynote/blocknote';
 
-export const SheetEditorExternalFC: MonsterSheetFC = (props) => {
+export const SheetEditorExternalFC: MonsterSheetFC & SpellSheetFC = (props) => {
   return (
     // TODO: Sanitize HTML prior to render
     <div

@@ -55,6 +55,7 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
     case 'horizontalRule': {
       return '';
     }
+    case 'spellSheet':
     case 'monsterSheet': {
       // TODO: strip HTML from block contentHtml
       return 'Not implemented yet';

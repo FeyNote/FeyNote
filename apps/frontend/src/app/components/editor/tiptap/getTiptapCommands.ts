@@ -11,9 +11,22 @@ interface CommandArgs {
 export const getTiptapCommands = ({ query }: { query: string }) => {
   return [
     {
-      title: 'Title',
-      subtitle: 'Used as the top-most title',
+      title: 'Heading 1',
+      subtitle: 'Used as a grand title',
       icon: LuHeading1,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setNode('heading', { level: 1 })
+          .run();
+      },
+    },
+    {
+      title: 'Heading 2',
+      subtitle: 'Used for smaller titles',
+      icon: LuHeading2,
       command: ({ editor, range }: CommandArgs) => {
         editor
           .chain()
@@ -24,7 +37,7 @@ export const getTiptapCommands = ({ query }: { query: string }) => {
       },
     },
     {
-      title: 'Section Header',
+      title: 'Heading 3',
       subtitle: 'Used for subsections',
       icon: LuHeading2,
       command: ({ editor, range }: CommandArgs) => {
@@ -33,6 +46,19 @@ export const getTiptapCommands = ({ query }: { query: string }) => {
           .focus()
           .deleteRange(range)
           .setNode('heading', { level: 3 })
+          .run();
+      },
+    },
+    {
+      title: 'Heading 4',
+      subtitle: 'Used for subsections',
+      icon: LuHeading2,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setNode('heading', { level: 4 })
           .run();
       },
     },

@@ -13,6 +13,7 @@ import {
 } from './artifactReference';
 import { MonsterSheetFC, buildMonsterSheetSpec } from './monsterSheet';
 import { HorizontalRuleFC, buildHorizontalRuleSpec } from './horizontalRule';
+import { SpellSheetFC, buildSpellSheetSpec } from './spellSheet';
 
 interface ArtifactEditorBlocknoteSchemaBuildArgs {
   artifactReferenceFC: ArtifactReferenceFC;
@@ -20,6 +21,8 @@ interface ArtifactEditorBlocknoteSchemaBuildArgs {
   horizontalRuleFC: HorizontalRuleFC;
   monsterSheetFC: MonsterSheetFC;
   monsterSheetExternalFC?: MonsterSheetFC;
+  spellSheetFC: SpellSheetFC;
+  spellSheetExternalFC?: SpellSheetFC;
 }
 
 /**
@@ -44,6 +47,10 @@ export const buildArtifactEditorBlocknoteSchema = (
       monsterSheet: buildMonsterSheetSpec(
         buildArgs.monsterSheetFC,
         buildArgs.monsterSheetExternalFC,
+      ),
+      spellSheet: buildSpellSheetSpec(
+        buildArgs.spellSheetFC,
+        buildArgs.spellSheetExternalFC,
       ),
     },
   });

@@ -22,6 +22,7 @@ import { filterSuggestionItems } from '@blocknote/core';
 import { getSlashMenuItems } from './getSlashMenuItems';
 import { HorizontalRule } from './HorizontalRule';
 import { SheetEditorExternalFC } from './sheets/SheetEditorExternalFC';
+import { SpellSheet } from './sheets/SpellSheet';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
@@ -65,6 +66,8 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       horizontalRuleFC: HorizontalRule,
       monsterSheetFC: MonsterSheet,
       monsterSheetExternalFC: SheetEditorExternalFC,
+      spellSheetFC: SpellSheet,
+      spellSheetExternalFC: SheetEditorExternalFC,
     }),
     initialContent: props.initialContent,
   });
