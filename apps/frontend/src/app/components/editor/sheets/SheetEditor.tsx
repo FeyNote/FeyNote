@@ -80,11 +80,7 @@ export const SheetEditor: FC<Props> = (props) => {
 
   return (
     <props.container $focused={!!editor?.isFocused}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onMouseOver={() => document.body.classList.add('disableTableHandles')}
-        onMouseOut={() => document.body.classList.remove('disableTableHandles')}
-      >
+      <div onClick={(e) => e.stopPropagation()}>
         <EditorContent
           editor={editor}
           style={{ minWidth: '200px' }}

@@ -5,6 +5,7 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
     case 'paragraph':
     case 'heading':
     case 'bulletListItem':
+    case 'checkListItem':
     case 'numberedListItem': {
       const text = block.content
         .map((content) => {

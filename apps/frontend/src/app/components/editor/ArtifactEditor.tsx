@@ -242,12 +242,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   return (
     <StyledIonCard onClick={() => editor.focus()}>
       <style type="text/css">{styles}</style>
-      <BlockNoteView
-        editor={editor}
-        onChange={onChange}
-        slashMenu={false}
-        tableHandles={false}
-      >
+      <BlockNoteView editor={editor} onChange={onChange} slashMenu={false}>
         <SuggestionMenuController
           triggerCharacter={'/'}
           // Replaces the default Slash Menu items with our custom ones.

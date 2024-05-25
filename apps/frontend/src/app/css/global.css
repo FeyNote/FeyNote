@@ -13,14 +13,6 @@
   src: url('/fonts/scaly-sans-caps.woff2') format('woff2');
 }
 
-body.disableTableHandles .bn-table-handle {
-  display: none;
-}
-
-body div:has(> .bn-table-handle) {
-  transition: none !important;
-}
-
 hr {
   background: var(--ion-color-medium);
 }
