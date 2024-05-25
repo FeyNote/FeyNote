@@ -1,11 +1,30 @@
-blockquote {
-  padding-left: 16px;
-  padding-top: 1px;
-  padding-bottom: 1px;
-  border-left: 2px solid var(--ion-color-medium);
-  margin-left: 1.5rem;
+@font-face {
+  font-family: 'MrEavesRemake';
+  src: url('/fonts/mr-eaves-small-caps.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'ScalySansRemake';
+  src: url('/fonts/scaly-sans.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'ScalySansCapsRemake';
+  src: url('/fonts/scaly-sans-caps.woff2') format('woff2');
+}
+
+body.disableTableHandles .bn-table-handle {
+  display: none;
+}
+
+body div:has(> .bn-table-handle) {
+  transition: none !important;
 }
 
 hr {
   background: var(--ion-color-medium);
+}
+
+.bn-drag-preview:has(.node-monsterSheet) {
+  display: none;
 }

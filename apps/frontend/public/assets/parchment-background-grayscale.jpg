@@ -1,0 +1,23 @@
+--2024-05-24 16:24:40--  https://github.com/naturalcrit/homebrewery/blob/master/themes/assets/parchmentBackgroundGrayscale.jpg?raw=true
+Resolving github.com (github.com)... 140.82.116.3
+Connecting to github.com (github.com)|140.82.116.3|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://github.com/naturalcrit/homebrewery/raw/master/themes/assets/parchmentBackgroundGrayscale.jpg [following]
+--2024-05-24 16:24:40--  https://github.com/naturalcrit/homebrewery/raw/master/themes/assets/parchmentBackgroundGrayscale.jpg
+Reusing existing connection to github.com:443.
+HTTP request sent, awaiting response... 302 Found
+Location: https://raw.githubusercontent.com/naturalcrit/homebrewery/master/themes/assets/parchmentBackgroundGrayscale.jpg [following]
+--2024-05-24 16:24:40--  https://raw.githubusercontent.com/naturalcrit/homebrewery/master/themes/assets/parchmentBackgroundGrayscale.jpg
+Resolving raw.githubusercontent.com (raw.githubusercontent.com)... 185.199.111.133, 185.199.110.133, 185.199.109.133, ...
+Connecting to raw.githubusercontent.com (raw.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 163927 (160K) [image/jpeg]
+Saving to: ‘parchmentBackgroundGrayscale.jpg?raw=true’
+
+     0K .......... .......... .......... .......... .......... 31% 17.1M 0s
+    50K .......... .......... .......... .......... .......... 62% 19.0M 0s
+   100K .......... .......... .......... .......... .......... 93%  103M 0s
+   150K ..........                                            100%  102M=0.006s
+
+2024-05-24 16:24:40 (26.1 MB/s) - ‘parchmentBackgroundGrayscale.jpg?raw=true’ saved [163927/163927]
+

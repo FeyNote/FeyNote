@@ -51,5 +51,17 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
 
       return resultText || 'getTextForBlock.noTextTable';
     }
+    case 'horizontalRule': {
+      return '';
+    }
+    case 'monsterSheet': {
+      // TODO: strip HTML from block contentHtml
+      return 'Not implemented yet';
+    }
+    case 'file':
+    case 'audio':
+    case 'video': {
+      return 'File';
+    }
   }
 };

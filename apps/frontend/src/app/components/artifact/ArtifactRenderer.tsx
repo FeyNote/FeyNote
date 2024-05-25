@@ -165,6 +165,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     onArtifactChanged,
     title,
     blocknoteContent,
+    blocknoteContentText,
     blocknoteContentMd,
     isPinned,
     isTemplate,
@@ -176,6 +177,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => {
+    console.log(updatedContentMd);
     setEnableRouterPrompt(updatedContentMd !== blocknoteContentMd);
     setBlocknoteContent(updatedContent);
     setBlocknoteContentMd(updatedContentMd);
