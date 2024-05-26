@@ -16,6 +16,7 @@ import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
 import { useEffect, useRef, useState } from 'react';
+import { ArtifactTheme } from '@prisma/client';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
@@ -39,6 +40,7 @@ export const NewArtifact: React.FC = () => {
     title: '',
     text: '',
     json: {},
+    theme: ArtifactTheme.default,
     isTemplate: false,
     isPinned: false,
     rootTemplateId: null,
@@ -54,6 +56,7 @@ export const NewArtifact: React.FC = () => {
         title: updatedArtifact.title,
         json: updatedArtifact.json,
         text: updatedArtifact.text,
+        theme: updatedArtifact.theme,
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
         rootTemplateId: updatedArtifact.rootTemplateId,

@@ -23,23 +23,13 @@ import { getSlashMenuItems } from './getSlashMenuItems';
 import { HorizontalRule } from './HorizontalRule';
 import { SheetEditorExternalFC } from './sheets/SheetEditorExternalFC';
 import { SpellSheet } from './sheets/SpellSheet';
+import { BNStylesTest } from './sheets/BaseSheet';
+import { ArtifactTheme } from '@prisma/client';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
   overflow: visible;
   min-height: 500px;
-
-  .ProseMirror h1 {
-    font-size: 2rem;
-  }
-
-  .ProseMirror h2 {
-    font-size: 1.6rem;
-  }
-
-  .ProseMirror h3 {
-    font-size: 1.2rem;
-  }
 `;
 
 export type ArtifactEditorApplyTemplate = (
@@ -47,6 +37,7 @@ export type ArtifactEditorApplyTemplate = (
 ) => void;
 
 interface Props {
+  theme: ArtifactTheme;
   initialContent?: ArtifactEditorBlock[];
   onContentChange?: (
     updatedContent: ArtifactEditorBlock[],
@@ -192,6 +183,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     if (item.type === EditorReferenceSuggestionItemType.Placeholder) {
       const artifact = await trpc.artifact.createArtifact.mutate({
         title: referenceSearchText,
+        theme: ArtifactTheme.default,
         isPinned: false,
         isTemplate: false,
         artifactTemplateId: null,
@@ -244,22 +236,28 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
   return (
     <StyledIonCard onClick={() => editor.focus()}>
-      <style type="text/css">{styles}</style>
-      <BlockNoteView editor={editor} onChange={onChange} slashMenu={false}>
-        <SuggestionMenuController
-          triggerCharacter={'/'}
-          // Replaces the default Slash Menu items with our custom ones.
-          getItems={async (query) =>
-            filterSuggestionItems(getSlashMenuItems(editor), query)
-          }
-        />
-        <SuggestionMenuController
-          triggerCharacter={'@'}
-          onItemClick={onItemClick}
-          suggestionMenuComponent={EditorReferenceMenu}
-          getItems={getMentionItems}
-        />
-      </BlockNoteView>
+      <BNStylesTest $focused={false} data-theme={props.theme}>
+        <BlockNoteView
+          editor={editor}
+          onChange={onChange}
+          slashMenu={false}
+          formattingToolbar={false}
+        >
+          <SuggestionMenuController
+            triggerCharacter={'/'}
+            // Replaces the default Slash Menu items with our custom ones.
+            getItems={async (query) =>
+              filterSuggestionItems(getSlashMenuItems(editor), query)
+            }
+          />
+          <SuggestionMenuController
+            triggerCharacter={'@'}
+            onItemClick={onItemClick}
+            suggestionMenuComponent={EditorReferenceMenu}
+            getItems={getMentionItems}
+          />
+        </BlockNoteView>
+      </BNStylesTest>
     </StyledIonCard>
   );
 };

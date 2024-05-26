@@ -11,6 +11,8 @@ import {
   IonLabel,
   IonListHeader,
   IonRow,
+  IonSelect,
+  IonSelectOption,
   useIonAlert,
   useIonModal,
 } from '@ionic/react';
@@ -32,6 +34,8 @@ import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
 import { markdownToTxt } from '@feynote/shared-utils';
 import { isArtifactModified } from './isArtifactSaved';
+import { ArtifactTheme } from '@prisma/client';
+import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 
 export type NewArtifactDetail = Omit<
   ArtifactDetail,
@@ -54,6 +58,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
   const [title, setTitle] = useState(props.artifact.title);
+  const [theme, setTheme] = useState(props.artifact.theme);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
   const [blocknoteContent, setBlocknoteContent] = useState(
@@ -103,6 +108,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       blocknoteContent,
     },
     title,
+    theme,
     isPinned,
     isTemplate,
     text: blocknoteContentText,
@@ -140,6 +146,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         blocknoteContent,
         blocknoteContentMd,
       },
+      theme,
       isPinned,
       isTemplate,
       rootTemplateId,
@@ -156,6 +163,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         blocknoteContent,
         blocknoteContentMd,
       },
+      theme,
       isPinned,
       isTemplate,
       rootTemplateId,
@@ -167,6 +175,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     blocknoteContent,
     blocknoteContentText,
     blocknoteContentMd,
+    theme,
     isPinned,
     isTemplate,
     rootTemplateId,
@@ -223,6 +232,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
             </IonItem>
             <div>
               <ArtifactEditor
+                theme={theme}
                 onContentChange={onEditorContentChange}
                 initialContent={blocknoteContent}
                 applyTemplateRef={editorApplyTemplateRef}
@@ -294,6 +304,20 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               ))}
             </>
           )}
+          <IonItem>
+            <IonSelect
+              label={t('artifactRenderer.theme')}
+              labelPlacement="fixed"
+              value={theme}
+              onIonChange={(e) => setTheme(e.detail.value)}
+            >
+              {Object.values(ArtifactTheme).map((el) => (
+                <IonSelectOption key={el} value={el}>
+                  {t(artifactThemeTitleI18nByName[el])}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
           {!!props.artifact.incomingArtifactReferences.length && (
             <>
               <IonListHeader>

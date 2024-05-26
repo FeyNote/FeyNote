@@ -62,7 +62,11 @@
   "artifactRenderer.templatedArtifacts.help": "The artifacts listed here use the artifact you're viewing as a template.",
   "artifactRenderer.incomingArtifactReferences": "Referenced By",
   "artifactRenderer.incomingArtifactReferences.help": "The artifacts listed here reference the artifact you're viewing somewhere in their content.",
+  "artifactRenderer.theme": "Theme",
   "artifactReferencePreview.noContent": "No content",
+
+  "artifactTheme.default": "Default",
+  "artifactTheme.classic": "Classic",
 
   "editor.referenceMenu.noItems": "No results. Click to create",
   "editor.referenceMenu.artifact": "Artifact",

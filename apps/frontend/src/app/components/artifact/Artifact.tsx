@@ -63,6 +63,7 @@ export const Artifact: React.FC = () => {
         title: updatedArtifact.title,
         json: updatedArtifact.json,
         text: updatedArtifact.text,
+        theme: updatedArtifact.theme,
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
         rootTemplateId: updatedArtifact.rootTemplateId,
