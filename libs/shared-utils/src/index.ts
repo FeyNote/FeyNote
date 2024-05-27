@@ -5,6 +5,8 @@ export * from './lib/parsers/getReferencesFromBlocks';
 export * from './lib/parsers/getReferencesDiffFromBlocks';
 export * from './lib/parsers/getTextForBlock';
 export * from './lib/parsers/getBlockById';
+export * from './lib/parsers/getBlockClosestParent';
+export * from './lib/parsers/getBlockParentById';
 export * from './lib/parsers/getBlocksById';
 export * from './lib/parsers/getBlocksByQuery';
 export * from './lib/parsers/getBlocksDiff';
