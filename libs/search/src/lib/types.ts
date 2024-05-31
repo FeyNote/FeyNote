@@ -9,9 +9,13 @@ export interface SearchProvider {
     query: string,
     withEmbeddings?: boolean,
   ) => Promise<string[]>;
-  searchBlocks: (
+  searchArtifactTitles: (userId: string, query: string) => Promise<string[]>;
+  searchArtifactBlocks: (
     userId: string,
     query: string,
+    options?: {
+      prefix: boolean;
+    },
   ) => Promise<BlockIndexDocument[]>;
 }
 

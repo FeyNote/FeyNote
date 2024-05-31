@@ -43,6 +43,21 @@ CREATE TABLE "Artifact" (
 );
 
 -- CreateTable
+CREATE TABLE "ArtifactReference" (
+    "id" UUID NOT NULL,
+    "artifactId" UUID NOT NULL,
+    "artifactBlockId" UUID NOT NULL,
+    "referenceTargetArtifactId" UUID,
+    "targetArtifactId" UUID NOT NULL,
+    "targetArtifactBlockId" UUID,
+    "referenceText" TEXT NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+
+    CONSTRAINT "ArtifactReference_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ArtifactFile" (
     "id" UUID NOT NULL,
     "artifactId" UUID NOT NULL,
@@ -55,8 +70,23 @@ CREATE TABLE "ArtifactFile" (
 );
 
 -- CreateTable
+CREATE TABLE "ArtifactRevision" (
+    "artifactId" UUID NOT NULL,
+    "revisionId" INTEGER NOT NULL,
+    "userId" UUID NOT NULL,
+    "artifactJson" JSONB NOT NULL,
+    "artifactFilesJson" JSONB NOT NULL,
+    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
+    "artifactDeletedAt" TIMESTAMPTZ(6),
+
+    CONSTRAINT "ArtifactRevision_pkey" PRIMARY KEY ("artifactId","revisionId")
+);
+
+-- CreateTable
 CREATE TABLE "File" (
     "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
     "label" TEXT NOT NULL,
     "mimetype" TEXT NOT NULL,
     "filename" TEXT NOT NULL,
@@ -77,16 +107,28 @@ CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
 CREATE UNIQUE INDEX "ArtifactFile_artifactId_order_key" ON "ArtifactFile"("artifactId", "order");
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_artifactTemplateId_fkey" FOREIGN KEY ("artifactTemplateId") REFERENCES "Artifact"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArtifactFile" ADD CONSTRAINT "ArtifactFile_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "Artifact"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArtifactReference" ADD CONSTRAINT "ArtifactReference_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "Artifact"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ArtifactFile" ADD CONSTRAINT "ArtifactFile_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ArtifactReference" ADD CONSTRAINT "ArtifactReference_referenceTargetArtifactId_fkey" FOREIGN KEY ("referenceTargetArtifactId") REFERENCES "Artifact"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ArtifactFile" ADD CONSTRAINT "ArtifactFile_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "Artifact"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ArtifactFile" ADD CONSTRAINT "ArtifactFile_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ArtifactRevision" ADD CONSTRAINT "ArtifactRevision_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "File" ADD CONSTRAINT "File_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

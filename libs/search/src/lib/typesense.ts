@@ -53,15 +53,14 @@ export class TypeSense implements SearchProvider {
   async indexBlocks(artifact: IndexableArtifact) {
     if (!artifact.json.blocknoteContent) return;
 
-    const artifactBlock = artifact.json.blocknoteContent as Block[];
-    const blocks = getBlocksByQuery(true, artifactBlock).map(
+    const blocks = getBlocksByQuery(true, artifact.json.blocknoteContent).map(
       (blockQueryResult) => {
         const block = {
           id: blockQueryResult.block.id,
           text: blockQueryResult.matchedText,
           userId: artifact.userId,
           artifactId: artifact.id,
-        };
+        } satisfies BlockIndexDocument;
         return block;
       },
     );
@@ -116,11 +115,11 @@ export class TypeSense implements SearchProvider {
       }) || []
     );
   }
-  async searchBlocks(userId: string, query: string) {
-    const query_by = 'text';
+  async searchArtifactTitles(userId: string, query: string) {
+    const query_by = 'title';
 
     const results = await this.client
-      .collections(Indexes.Block)
+      .collections(Indexes.Artifact)
       .documents()
       .search({
         q: query,
@@ -133,7 +132,31 @@ export class TypeSense implements SearchProvider {
 
     return (
       results.hits?.map((hit) => {
-        console.log(hit.document);
+        return (hit.document as Record<string, string>)['id'];
+      }) || []
+    );
+  }
+  async searchArtifactBlocks(
+    userId: string,
+    query: string,
+    options?: {
+      prefix: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+    },
+  ) {
+    const results = await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .search({
+        q: query,
+        query_by: 'text',
+        prefix: options?.prefix || false,
+        filter_by: `userId:=[${userId}]`,
+        per_page: 250,
+        limit_hits: 250,
+      });
+
+    return (
+      results.hits?.map((hit) => {
         return hit.document as BlockIndexDocument;
       }) || []
     );

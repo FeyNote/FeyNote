@@ -43,6 +43,9 @@ export const NewArtifact: React.FC = () => {
     isPinned: false,
     rootTemplateId: null,
     artifactTemplate: null,
+    templatedArtifacts: [],
+    artifactReferences: [],
+    incomingArtifactReferences: [],
   } satisfies EditArtifactDetail;
 
   const save = (updatedArtifact: EditArtifactDetail) => {
@@ -54,9 +57,7 @@ export const NewArtifact: React.FC = () => {
         isPinned: updatedArtifact.isPinned,
         isTemplate: updatedArtifact.isTemplate,
         rootTemplateId: updatedArtifact.rootTemplateId,
-        artifactTemplateId: updatedArtifact.artifactTemplate
-          ? updatedArtifact.artifactTemplate.id
-          : null,
+        artifactTemplateId: updatedArtifact.artifactTemplate?.id || null,
       })
       .then((response) => {
         const artifactId = response.id;

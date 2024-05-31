@@ -1,25 +1,26 @@
 import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
-import '@blocknote/core/fonts/inter.css';
+import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
+import { BlockNoteView } from '@blocknote/mantine';
+import '@blocknote/mantine/style.css';
 import {
-  BlockNoteView,
-  SuggestionMenuController,
-  useCreateBlockNote,
-} from '@blocknote/react';
-import '@blocknote/react/style.css';
-import {
-  EditorSuggestionItem,
-  EditorSuggestionMenuComponent,
-} from './EditorSuggestion';
+  EditorReferenceSuggestionItem,
+  EditorReferenceMenu,
+  EditorReferenceSuggestionItemType,
+} from './EditorReferenceMenu';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import {
   ArtifactEditorBlock,
-  artifactEditorBlocknoteSchema,
-} from './blocknoteSchema';
-import { MutableRefObject } from 'react';
+  buildArtifactEditorBlocknoteSchema,
+} from '@feynote/blocknote';
+import { MutableRefObject, useState } from 'react';
+import { ArtifactReference } from './ArtifactReference';
+import { ArtifactBlockReference } from './ArtifactBlockReference';
 
 const StyledIonCard = styled(IonCard)`
+  contain: unset;
+  overflow: visible;
   min-height: 500px;
 
   .ProseMirror h1 {
@@ -50,8 +51,13 @@ interface Props {
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
+  const [referenceSearchText, setReferenceSearchText] = useState('');
+
   const editor = useCreateBlockNote({
-    schema: artifactEditorBlocknoteSchema,
+    schema: buildArtifactEditorBlocknoteSchema({
+      artifactReferenceFC: ArtifactReference,
+      artifactBlockReferenceFC: ArtifactBlockReference,
+    }),
     initialContent: props.initialContent,
   });
 
@@ -63,31 +69,64 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
   const getMentionItems = async (
     query: string,
-  ): Promise<EditorSuggestionItem[]> => {
-    const blocks = await trpc.artifact.searchArtifactBlocks
+  ): Promise<EditorReferenceSuggestionItem[]> => {
+    setReferenceSearchText(query);
+
+    const artifactsPromise = trpc.artifact.searchArtifactTitles
       .query({
         query,
+        limit: 10,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+    const blocksPromise = trpc.artifact.searchArtifactBlocks
+      .query({
+        query,
+        limit: 15,
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
       });
 
-    if (!blocks) return [];
+    const [artifacts, blocks] = await Promise.all([
+      artifactsPromise,
+      blocksPromise,
+    ]);
+
+    if (!blocks || !artifacts) return [];
 
     const suggestionItems = [];
 
+    for (const artifact of artifacts) {
+      suggestionItems.push({
+        type: EditorReferenceSuggestionItemType.Artifact,
+        artifactId: artifact.id,
+        artifactBlockId: undefined,
+        referenceText: artifact.title,
+        artifact: artifact,
+        placeholder: false,
+      });
+    }
+
     for (const block of blocks) {
       suggestionItems.push({
-        id: block.block.id,
-        displayName: block.matchedText,
+        type: EditorReferenceSuggestionItemType.ArtifactBlock,
+        artifactId: block.artifactId,
+        artifactBlockId: block.id,
+        referenceText: block.text,
+        artifact: block.artifact,
+        placeholder: false,
       });
     }
 
     // We must push an item so that blocknote will keep dialogue open
     if (!suggestionItems.length) {
       suggestionItems.push({
-        id: '',
-        displayName: '',
+        artifactId: '',
+        artifactBlockId: '',
+        referenceText: '',
+        type: EditorReferenceSuggestionItemType.Placeholder,
       });
     }
 
@@ -105,24 +144,67 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     }
   };
 
+  const onItemClick = async (item: EditorReferenceSuggestionItem) => {
+    if (item.type === EditorReferenceSuggestionItemType.Placeholder) {
+      const artifact = await trpc.artifact.createArtifact.mutate({
+        title: referenceSearchText,
+        isPinned: false,
+        isTemplate: false,
+        artifactTemplateId: null,
+        rootTemplateId: null,
+        text: '',
+        json: {
+          blocknoteContentMd: '',
+          blocknoteContent: undefined,
+        },
+      });
+
+      editor.insertInlineContent([
+        {
+          type: 'artifactReference',
+          props: {
+            artifactId: artifact.id,
+            referenceText: referenceSearchText,
+            isBroken: false,
+          },
+        },
+        ' ',
+      ]);
+    } else if (item.artifactBlockId) {
+      editor.insertInlineContent([
+        {
+          type: 'artifactBlockReference',
+          props: {
+            artifactId: item.artifactId,
+            artifactBlockId: item.artifactBlockId,
+            referenceText: item.referenceText,
+            isBroken: false,
+          },
+        },
+        ' ',
+      ]);
+    } else {
+      editor.insertInlineContent([
+        {
+          type: 'artifactReference',
+          props: {
+            artifactId: item.artifactId,
+            referenceText: item.referenceText,
+            isBroken: false,
+          },
+        },
+        ' ',
+      ]);
+    }
+  };
+
   return (
     <StyledIonCard onClick={() => editor.focus()}>
       <BlockNoteView editor={editor} onChange={onChange}>
         <SuggestionMenuController
           triggerCharacter={'@'}
-          onItemClick={(item) => {
-            editor.insertInlineContent([
-              {
-                type: 'artifactBlockReference',
-                props: {
-                  artifactBlockId: item.id,
-                  artifactBlockReferenceText: item.displayName,
-                },
-              },
-              ' ', // add a space after
-            ]);
-          }}
-          suggestionMenuComponent={EditorSuggestionMenuComponent}
+          onItemClick={onItemClick}
+          suggestionMenuComponent={EditorReferenceMenu}
           getItems={getMentionItems}
         />
       </BlockNoteView>

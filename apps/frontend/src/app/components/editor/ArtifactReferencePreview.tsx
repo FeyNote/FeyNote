@@ -1,0 +1,122 @@
+import { useCreateBlockNote } from '@blocknote/react';
+import { ArtifactDetail } from '@feynote/prisma/types';
+import { buildArtifactEditorBlocknoteSchema } from '@feynote/blocknote';
+import { ArtifactReference } from './ArtifactReference';
+import { ArtifactBlockReference } from './ArtifactBlockReference';
+import { BlockNoteView } from '@blocknote/mantine';
+import styled from 'styled-components';
+import { getBlockById } from '@feynote/shared-utils';
+import { useTranslation } from 'react-i18next';
+import { useMemo } from 'react';
+import { createPortal } from 'react-dom';
+
+const PREVIEW_WIDTH_PX = 400;
+const PREVIEW_MIN_HEIGHT_PX = 100;
+const PREVIEW_MAX_HEIGHT_PX = 300;
+
+const Container = styled.div<{
+  $top?: number;
+  $left?: number;
+  $right?: number;
+  $bottom?: number;
+}>`
+  position: absolute;
+  ${(props) => props.$top !== undefined && `top: ${props.$top}px;`}
+  ${(props) => props.$left !== undefined && `left: ${props.$left}px;`}
+  ${(props) => props.$right !== undefined && `right: ${props.$right}px;`}
+  ${(props) => props.$bottom !== undefined && `top: ${props.$bottom}px;`}
+  ${(props) => props.$bottom !== undefined && `transform: translateY(-100%);`}
+  z-index: 100;
+  width: ${PREVIEW_WIDTH_PX}px;
+  min-height: ${PREVIEW_MIN_HEIGHT_PX}px;
+  max-height: ${PREVIEW_MAX_HEIGHT_PX}px;
+  overflow-y: auto;
+  background: var(--ion-background-color);
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.3);
+  padding: 10px;
+
+  .bn-editor {
+    padding-inline-start: 10px;
+  }
+`;
+
+const Header = styled.h2`
+  margin-top: 8px;
+  margin-bottom: 16px;
+`;
+
+interface Props {
+  artifact: ArtifactDetail;
+  artifactBlockId?: string;
+  previewTarget: HTMLElement;
+}
+
+export const ArtifactReferencePreview: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
+  const getBlocknoteContentForBlocknoteId = (blockId: string) => {
+    const block = getBlockById(
+      props.artifact.json.blocknoteContent || [],
+      blockId,
+    );
+    if (block) return [block];
+    return;
+  };
+  const initialContent = props.artifactBlockId
+    ? getBlocknoteContentForBlocknoteId(props.artifactBlockId)
+    : props.artifact.json.blocknoteContent;
+
+  const editor = useCreateBlockNote({
+    schema: buildArtifactEditorBlocknoteSchema({
+      artifactReferenceFC: ArtifactReference,
+      artifactBlockReferenceFC: ArtifactBlockReference,
+    }),
+    initialContent,
+  });
+
+  const bounds = useMemo(() => {
+    const previewTargetBoundingRect =
+      props.previewTarget.getBoundingClientRect();
+    const bounds = {} as {
+      top?: number;
+      bottom?: number;
+      left?: number;
+      right?: number;
+    };
+
+    if (
+      previewTargetBoundingRect.top +
+        previewTargetBoundingRect.height +
+        PREVIEW_MAX_HEIGHT_PX <
+      window.innerHeight
+    ) {
+      bounds.top =
+        previewTargetBoundingRect.top + previewTargetBoundingRect.height;
+    } else {
+      bounds.bottom = previewTargetBoundingRect.top;
+    }
+    if (previewTargetBoundingRect.left + PREVIEW_WIDTH_PX < window.innerWidth) {
+      bounds.left = previewTargetBoundingRect.left;
+    } else {
+      bounds.right = 0;
+    }
+    return bounds;
+  }, [props.previewTarget]);
+
+  // We portal because blocknote styling does not play well with blocknote instances inside of each other
+  return createPortal(
+    <Container
+      $top={bounds.top}
+      $left={bounds.left}
+      $bottom={bounds.bottom}
+      $right={bounds.right}
+    >
+      <Header>{props.artifact.title}</Header>
+      {initialContent && props.artifact.text.trim().length ? (
+        <BlockNoteView editor={editor} editable={false}></BlockNoteView>
+      ) : (
+        <span>{t('artifactReferencePreview.noContent')}</span>
+      )}
+    </Container>,
+    document.getElementById('referencePreviewContainer')!,
+  );
+};

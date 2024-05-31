@@ -45,6 +45,7 @@
   "dashboard.noArtifacts.title": "No Artifacts",
   "dashboard.noArtifacts.message": "Click the plus button in the bottom right corner to create one!",
 
+  "newArtifact.title": "New Artifact",
   "artifact.title": "Artifact",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
@@ -59,6 +60,12 @@
   "artifactRenderer.selectTemplate.none": "None selected",
   "artifactRenderer.templatedArtifacts": "Template For",
   "artifactRenderer.templatedArtifacts.help": "The artifacts listed here use the artifact you're viewing as a template.",
+  "artifactRenderer.incomingArtifactReferences": "Referenced By",
+  "artifactRenderer.incomingArtifactReferences.help": "The artifacts listed here reference the artifact you're viewing somewhere in their content.",
+  "artifactReferencePreview.noContent": "No content",
+
+  "editor.referenceMenu.noItems": "No results. Click to create",
+  "editor.referenceMenu.artifact": "Artifact",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
@@ -102,5 +109,6 @@
   "generic.hide": "Hide",
   "generic.okay": "Okay",
   "generic.cancel": "Cancel",
+  "generic.delete": "Delete",
   "generic.warning": "Warning"
 }

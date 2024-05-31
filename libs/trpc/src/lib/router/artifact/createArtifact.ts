@@ -4,6 +4,7 @@ import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
 import { TRPCError } from '@trpc/server';
+import { updateArtifactOutgoingReferences } from '@feynote/api-services';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -34,17 +35,28 @@ export const createArtifact = authenticatedProcedure
       }
     }
 
-    const { id } = await prisma.artifact.create({
-      data: {
-        title: input.title,
-        text: input.text,
-        json: input.json,
-        userId: ctx.session.userId,
-        isPinned: input.isPinned,
-        isTemplate: input.isTemplate,
-        rootTemplateId: input.rootTemplateId,
-        artifactTemplateId: input.artifactTemplateId,
-      },
+    const id = await prisma.$transaction(async (tx) => {
+      const { id } = await tx.artifact.create({
+        data: {
+          title: input.title,
+          text: input.text,
+          json: input.json,
+          userId: ctx.session.userId,
+          isPinned: input.isPinned,
+          isTemplate: input.isTemplate,
+          rootTemplateId: input.rootTemplateId,
+          artifactTemplateId: input.artifactTemplateId,
+        },
+      });
+
+      await updateArtifactOutgoingReferences(
+        ctx.session.userId,
+        id,
+        input.json.blocknoteContent || [],
+        tx,
+      );
+
+      return id;
     });
 
     const indexableArtifact = {

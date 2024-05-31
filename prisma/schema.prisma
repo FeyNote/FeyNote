@@ -11,21 +11,23 @@ datasource db {
 }
 
 model User {
-  id              String     @id @default(uuid()) @db.Uuid
-  createdAt       DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime   @updatedAt @db.Timestamptz(6)
-  email           String     @unique
-  passwordHash    String?
-  passwordSalt    String?
-  passwordVersion Int?
-  username        String?
-  sessions        Session[]
-  artifacts       Artifact[]
+  id               String             @id @default(uuid()) @db.Uuid
+  createdAt        DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime           @updatedAt @db.Timestamptz(6)
+  email            String             @unique
+  passwordHash     String?
+  passwordSalt     String?
+  passwordVersion  Int?
+  username         String?
+  sessions         Session[]
+  artifacts        Artifact[]
+  ArtifactRevision ArtifactRevision[]
+  File             File[]
 }
 
 model Session {
   id              String   @id @default(uuid()) @db.Uuid
-  user            User     @relation(fields: [userId], references: [id])
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String   @db.Uuid
   token           String   @unique @db.VarChar(255)
   expiresAt       DateTime @db.Timestamptz(6)
@@ -35,29 +37,53 @@ model Session {
 }
 
 model Artifact {
-  id                 String          @id @default(uuid()) @db.Uuid
+  id                 String     @id @default(uuid()) @db.Uuid
   title              String
-  isPinned           Boolean         @default(false)
-  artifactTemplate   Artifact?       @relation("artifactTemplate", fields: [artifactTemplateId], references: [id])
-  artifactTemplateId String?         @db.Uuid
+  isPinned           Boolean    @default(false)
+  artifactTemplate   Artifact?  @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
+  artifactTemplateId String?    @db.Uuid
+  templatedArtifacts Artifact[] @relation("artifactTemplate")
   rootTemplateId     String?
-  isTemplate         Boolean         @default(false)
-  user               User            @relation(fields: [userId], references: [id])
-  userId             String          @db.Uuid
+  isTemplate         Boolean    @default(false)
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String     @db.Uuid
   text               String
   json               Json
-  createdAt          DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime        @updatedAt @db.Timestamptz(6)
-  artfactFiles       ArtifactFile[]
-  templatedArtifacts Artifact[]      @relation("artifactTemplate")
+  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
+
+  artfactFiles               ArtifactFile[]
+  artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
+  incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
+}
+
+model ArtifactReference {
+  id String @id @default(uuid()) @db.Uuid
+
+  artifactId      String   @db.Uuid
+  artifact        Artifact @relation("artifactReferenceSourceArtifact", fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactBlockId String   @db.Uuid
+
+  // Used for actual reference to artifact, so we can join
+  referenceTargetArtifactId String?   @db.Uuid
+  targetArtifact            Artifact? @relation("artifactReferenceTargetArtifact", fields: [referenceTargetArtifactId], references: [id], onDelete: SetNull)
+
+  // Target artifact may not actually exist
+  targetArtifactId      String  @db.Uuid
+  targetArtifactBlockId String? @db.Uuid
+
+  referenceText String
+
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model ArtifactFile {
   id         String   @id @default(uuid()) @db.Uuid
   artifactId String   @db.Uuid
-  artifact   Artifact @relation(fields: [artifactId], references: [id])
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
   fileId     String   @db.Uuid
-  file       File     @relation(fields: [fileId], references: [id])
+  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
   order      Int
   createdAt  DateTime @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @db.Timestamptz(6)
@@ -65,13 +91,31 @@ model ArtifactFile {
   @@unique([artifactId, order])
 }
 
+model ArtifactRevision {
+  artifactId String @db.Uuid
+  revisionId Int
+  userId     String @db.Uuid
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  artifactJson      Json
+  artifactFilesJson Json
+
+  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
+  artifactDeletedAt DateTime? @db.Timestamptz(6)
+
+  @@id([artifactId, revisionId])
+}
+
 model File {
-  id             String          @id @default(uuid()) @db.Uuid
-  label          String
-  mimetype       String
-  filename       String
-  storageKey     String
-  createdAt      DateTime        @default(now()) @db.Timestamptz(6)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(6)
-  artifactFiles  ArtifactFile[]
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @db.Uuid
+  user          User           @relation(fields: [userId], references: [id])
+  label         String
+  mimetype      String
+  filename      String
+  storageKey    String
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime       @updatedAt @db.Timestamptz(6)
+  artifactFiles ArtifactFile[]
 }
