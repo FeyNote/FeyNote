@@ -1,8 +1,10 @@
 import { Extension } from '@tiptap/core';
 import { Suggestion } from '@tiptap/suggestion';
+import { getTiptapCommands } from './getTiptapCommands';
+import { renderCommandList } from './renderCommandList';
 
-export const TiptapCommands = Extension.create({
-  name: 'commands',
+export const CommandsPlugin = Extension.create({
+  name: 'customCommands',
 
   addOptions() {
     return {
@@ -24,5 +26,10 @@ export const TiptapCommands = Extension.create({
         ...this.options.suggestion,
       }),
     ];
+  },
+}).configure({
+  suggestion: {
+    items: getTiptapCommands,
+    render: renderCommandList,
   },
 });

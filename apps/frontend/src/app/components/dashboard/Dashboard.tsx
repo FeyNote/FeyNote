@@ -12,6 +12,7 @@ import {
   IonSearchbar,
   IonTitle,
   IonToolbar,
+  useIonRouter,
   useIonToast,
   useIonViewWillEnter,
 } from '@ionic/react';
@@ -51,6 +52,7 @@ export const Dashboard: React.FC = () => {
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts],
   );
+  const router = useIonRouter();
 
   const getUserArtifacts = () => {
     trpc.artifact.getArtifacts
@@ -88,6 +90,25 @@ export const Dashboard: React.FC = () => {
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
       });
+  };
+
+  const newArtifact = async () => {
+    const artifact = await trpc.artifact.createArtifact.mutate({
+      title: 'Untitled',
+      theme: 'default',
+      isPinned: false,
+      isTemplate: false,
+      text: '',
+      json: {},
+      rootTemplateId: null,
+      artifactTemplateId: null,
+    });
+
+    router.push(
+      routes.artifact.build({ id: artifact.id }),
+      'forward',
+      'replace',
+    );
   };
 
   return (
@@ -139,11 +160,7 @@ export const Dashboard: React.FC = () => {
         </GridContainer>
       </IonContent>
       <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton
-          routerLink={routes.artifact.build({
-            id: 'new',
-          })}
-        >
+        <IonFabButton onClick={newArtifact}>
           <IonIcon icon={add} />
         </IonFabButton>
       </IonFab>

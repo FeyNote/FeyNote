@@ -23,17 +23,18 @@ const MonsterSheetStyles = styled(BaseSheet)`
 
 export const MonsterSheet: MonsterSheetFC = (props) => {
   return (
-    <SheetEditor
-      container={MonsterSheetStyles}
-      content={props.block.props.content}
-      onUpdate={(update) => {
-        props.editor.updateBlock(props.block, {
-          props: {
-            content: update.content,
-            contentHtml: update.contentHtml,
-          },
-        });
-      }}
-    />
+    <div className="monster-sheet"></div>
+    // <SheetEditor
+    //   container={MonsterSheetStyles}
+    //   content={props.block.props.content}
+    //   onUpdate={(update) => {
+    //     props.editor.updateBlock(props.block, {
+    //       props: {
+    //         content: update.content,
+    //         contentHtml: update.contentHtml,
+    //       },
+    //     });
+    //   }}
+    // />
   );
 };

@@ -17,24 +17,16 @@ import { options } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useRef, useState } from 'react';
-import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
+import { ArtifactRenderer } from './ArtifactRenderer';
 import { RouteArgs } from '../../routes';
 import { useParams } from 'react-router-dom';
 import { t } from 'i18next';
 import { ArtifactDeleteButton } from './ArtifactDeleteButton';
-import { isArtifactModified } from './isArtifactSaved';
-
-/**
- * Used to delay after user stops typing to initate a save
- */
-const AUTOSAVE_TIMEOUT = 2000;
 
 export const Artifact: React.FC = () => {
   const { id } = useParams<RouteArgs['artifact']>();
   const [presentToast] = useIonToast();
   const [artifact, setArtifact] = useState<ArtifactDetail>();
-  const saveTimeout = useRef<NodeJS.Timeout>();
-  const savingRef = useRef<boolean>(false);
 
   const load = () => {
     trpc.artifact.getArtifactById
@@ -43,7 +35,6 @@ export const Artifact: React.FC = () => {
       })
       .then((_artifact) => {
         setArtifact(_artifact);
-        savingRef.current = false;
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -53,43 +44,6 @@ export const Artifact: React.FC = () => {
   useIonViewWillEnter(() => {
     load();
   });
-
-  const save = (updatedArtifact: EditArtifactDetail) => {
-    if (!artifact) return;
-
-    trpc.artifact.updateArtifact
-      .mutate({
-        id: artifact.id,
-        title: updatedArtifact.title,
-        json: updatedArtifact.json,
-        text: updatedArtifact.text,
-        theme: updatedArtifact.theme,
-        isPinned: updatedArtifact.isPinned,
-        isTemplate: updatedArtifact.isTemplate,
-        rootTemplateId: updatedArtifact.rootTemplateId,
-        artifactTemplateId: updatedArtifact.artifactTemplate?.id || null,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        load();
-      });
-  };
-
-  const onChange = (updatedArtifact: EditArtifactDetail) => {
-    if (!artifact) return;
-
-    if (saveTimeout.current) {
-      clearTimeout(saveTimeout.current);
-    }
-
-    saveTimeout.current = setTimeout(() => {
-      if (savingRef.current) return onChange(updatedArtifact);
-      if (!isArtifactModified(artifact, updatedArtifact)) return;
-      save(updatedArtifact);
-    }, AUTOSAVE_TIMEOUT);
-  };
 
   return (
     <IonPage id="main">
@@ -109,13 +63,7 @@ export const Artifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {artifact && (
-          <ArtifactRenderer
-            artifact={artifact}
-            save={save}
-            onArtifactChanged={onChange}
-          />
-        )}
+        {artifact && <ArtifactRenderer artifact={artifact} />}
       </IonContent>
       <IonPopover trigger="artifact-popover-trigger" triggerAction="click">
         <IonContent class="ion-padding">

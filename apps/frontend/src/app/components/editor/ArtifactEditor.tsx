@@ -1,35 +1,44 @@
 import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
-import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
-import { BlockNoteView } from '@blocknote/mantine';
-import styles from '@blocknote/mantine/style.css?inline';
-import {
-  EditorReferenceSuggestionItem,
-  EditorReferenceMenu,
-  EditorReferenceSuggestionItemType,
-} from './EditorReferenceMenu';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import {
-  ArtifactEditorBlock,
-  buildArtifactEditorBlocknoteSchema,
-} from '@feynote/blocknote';
-import { MutableRefObject, useEffect, useState } from 'react';
-import { ArtifactReference } from './ArtifactReference';
-import { ArtifactBlockReference } from './ArtifactBlockReference';
-import { MonsterSheet } from './sheets/MonsterSheet';
-import { filterSuggestionItems } from '@blocknote/core';
-import { getSlashMenuItems } from './getSlashMenuItems';
-import { HorizontalRule } from './HorizontalRule';
-import { SheetEditorExternalFC } from './sheets/SheetEditorExternalFC';
-import { SpellSheet } from './sheets/SpellSheet';
-import { BNStylesTest } from './sheets/BaseSheet';
+import { ArtifactEditorBlock } from '@feynote/blocknote';
+import { MutableRefObject, useEffect, useMemo, useState } from 'react';
 import { ArtifactTheme } from '@prisma/client';
+import { useEditor, EditorContent } from '@tiptap/react';
+import Paragraph from '@tiptap/extension-paragraph';
+import Blockquote from '@tiptap/extension-blockquote';
+import ListItem from '@tiptap/extension-list-item';
+import OrderedList from '@tiptap/extension-ordered-list';
+import BulletList from '@tiptap/extension-bullet-list';
+import HardBreak from '@tiptap/extension-hard-break';
+import Bold from '@tiptap/extension-bold';
+import Italic from '@tiptap/extension-italic';
+import Dropcursor from '@tiptap/extension-dropcursor';
+import Gapcursor from '@tiptap/extension-gapcursor';
+import Table from '@tiptap/extension-table';
+import TableRow from '@tiptap/extension-table-row';
+import TableHeader from '@tiptap/extension-table-header';
+import TableCell from '@tiptap/extension-table-cell';
+import Document from '@tiptap/extension-document';
+import Placeholder from '@tiptap/extension-placeholder';
+import Text from '@tiptap/extension-text';
+import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import { Indent } from './tiptap/extensionIndentation';
+import { ArtifactEditorStyles } from './ArtifactEditorStyles';
+import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
+import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
+import * as Y from 'yjs';
+import { ReferencesPlugin } from './tiptap/referenceList/ReferencesPlugin';
+import { CommandsPlugin } from './tiptap/commandList/CommandsPlugin';
+import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
+import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HeadingPlugin } from './tiptap/extensionHeading';
+import UniqueID from '@tiptap-pro/extension-unique-id';
+import { ArtifactDetail } from '@feynote/prisma/types';
+import { KnownArtifactReference } from './tiptap/referenceList/KnownArtifactReference';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
   overflow: visible;
-  min-height: 500px;
 `;
 
 export type ArtifactEditorApplyTemplate = (
@@ -37,227 +46,104 @@ export type ArtifactEditorApplyTemplate = (
 ) => void;
 
 interface Props {
+  knownReferencesRef: MutableRefObject<Map<string, KnownArtifactReference>>;
+  yjsProvider: TiptapCollabProvider;
   theme: ArtifactTheme;
-  initialContent?: ArtifactEditorBlock[];
-  onContentChange?: (
-    updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string,
-  ) => void;
   applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
-  const [referenceSearchText, setReferenceSearchText] = useState('');
 
-  const editor = useCreateBlockNote({
-    schema: buildArtifactEditorBlocknoteSchema({
-      artifactReferenceFC: ArtifactReference,
-      artifactBlockReferenceFC: ArtifactBlockReference,
-      horizontalRuleFC: HorizontalRule,
-      monsterSheetFC: MonsterSheet,
-      monsterSheetExternalFC: SheetEditorExternalFC,
-      spellSheetFC: SpellSheet,
-      spellSheetExternalFC: SheetEditorExternalFC,
-    }),
-    initialContent: props.initialContent,
+  const editor = useEditor({
+    extensions: [
+      Document,
+      Paragraph,
+      HeadingPlugin,
+      Text,
+      HorizontalRule,
+      Blockquote,
+      ListItem,
+      OrderedList,
+      BulletList,
+      HardBreak,
+      Bold,
+      Italic,
+      Dropcursor,
+      Gapcursor,
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell,
+      Indent,
+      GlobalDragHandle,
+      Collaboration.configure({
+        document: props.yjsProvider.document,
+        field: 'tiptapBody',
+      }),
+      CollaborationCursor.configure({
+        provider: props.yjsProvider,
+        user: {
+          name: 'Cyndi Lauper',
+          color: '#f783ac',
+        },
+      }),
+      CommandsPlugin,
+      ReferencesPlugin.configure({
+        knownReferencesRef: props.knownReferencesRef,
+      }),
+      Placeholder.configure({
+        placeholder:
+          'Write something … It’ll be shared with everyone else looking at this example.',
+      }),
+      UniqueID.configure({
+        types: ['heading', 'paragraph'],
+        filterTransaction: (transaction) => !isChangeOrigin(transaction),
+      }),
+    ],
+    onUpdate: ({ editor }) => {
+      console.log(editor.getJSON());
+      // props.onContentChange?.(
+      //   editor.getJSON() as any,
+      //   editor.getText(),
+      // );
+    },
   });
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      const pos = editor.getTextCursorPosition();
-      console.log('keydown');
-      if (pos?.block?.type === 'monsterSheet') {
-        console.log('keydown in monsterSheet');
-        event.preventDefault();
-        event.stopPropagation();
-
-        const keyEvent = new KeyboardEvent('keydown', {
-          code: 'Enter',
-          key: 'Enter',
-          shiftKey: true,
-          view: window,
-          bubbles: false,
-        });
-        editor.domElement.dispatchEvent(keyEvent);
-      }
-    }
-  };
 
   useEffect(() => {
-    try {
-      editor.domElement.addEventListener('keydown', handleKeyDown, true);
-      return () =>
-        editor.domElement.removeEventListener('keydown', handleKeyDown, true);
-    } catch (e) {
-      // Do nothing, we don't care if we fail to add the event listener
-      // (which can happen if editor.domElement isn't ready since it's a getter)
-    }
-  });
-
-  const onChange = async () => {
-    const md = await editor.blocksToMarkdownLossy();
-
-    props.onContentChange?.(editor.document, md);
-  };
-
-  const getMentionItems = async (
-    query: string,
-  ): Promise<EditorReferenceSuggestionItem[]> => {
-    setReferenceSearchText(query);
-
-    const artifactsPromise = trpc.artifact.searchArtifactTitles
-      .query({
-        query,
-        limit: 10,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-    const blocksPromise = trpc.artifact.searchArtifactBlocks
-      .query({
-        query,
-        limit: 15,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-
-    const [artifacts, blocks] = await Promise.all([
-      artifactsPromise,
-      blocksPromise,
-    ]);
-
-    if (!blocks || !artifacts) return [];
-
-    const suggestionItems = [];
-
-    for (const artifact of artifacts) {
-      suggestionItems.push({
-        type: EditorReferenceSuggestionItemType.Artifact,
-        artifactId: artifact.id,
-        artifactBlockId: undefined,
-        referenceText: artifact.title,
-        artifact: artifact,
-        placeholder: false,
-      });
-    }
-
-    for (const block of blocks) {
-      suggestionItems.push({
-        type: EditorReferenceSuggestionItemType.ArtifactBlock,
-        artifactId: block.artifactId,
-        artifactBlockId: block.id,
-        referenceText: block.text,
-        artifact: block.artifact,
-        placeholder: false,
-      });
-    }
-
-    // We must push an item so that blocknote will keep dialogue open
-    if (!suggestionItems.length) {
-      suggestionItems.push({
-        artifactId: '',
-        artifactBlockId: '',
-        referenceText: '',
-        type: EditorReferenceSuggestionItemType.Placeholder,
-      });
-    }
-
-    return suggestionItems;
-  };
-
-  if (props.applyTemplateRef)
-    props.applyTemplateRef.current = async (
-      template: string | ArtifactEditorBlock[],
-    ) => {
-      if (typeof template === 'string') {
-        const blocks = await editor.tryParseMarkdownToBlocks(template);
-        editor.replaceBlocks(editor.document, blocks);
-      } else {
-        editor.replaceBlocks(editor.document, template);
-      }
-    };
-
-  const onItemClick = async (item: EditorReferenceSuggestionItem) => {
-    if (item.type === EditorReferenceSuggestionItemType.Placeholder) {
-      const artifact = await trpc.artifact.createArtifact.mutate({
-        title: referenceSearchText,
-        theme: ArtifactTheme.default,
-        isPinned: false,
-        isTemplate: false,
-        artifactTemplateId: null,
-        rootTemplateId: null,
-        text: '',
-        json: {
-          blocknoteContentMd: '',
-          blocknoteContent: undefined,
-        },
-      });
-
-      editor.insertInlineContent([
-        {
-          type: 'artifactReference',
-          props: {
-            artifactId: artifact.id,
-            referenceText: referenceSearchText,
-            isBroken: false,
-          },
-        },
-        ' ',
-      ]);
-    } else if (item.artifactBlockId) {
-      editor.insertInlineContent([
-        {
-          type: 'artifactBlockReference',
-          props: {
-            artifactId: item.artifactId,
-            artifactBlockId: item.artifactBlockId,
-            referenceText: item.referenceText,
-            isBroken: false,
-          },
-        },
-        ' ',
-      ]);
-    } else {
-      editor.insertInlineContent([
-        {
-          type: 'artifactReference',
-          props: {
-            artifactId: item.artifactId,
-            referenceText: item.referenceText,
-            isBroken: false,
-          },
-        },
-        ' ',
-      ]);
-    }
-  };
+    console.log(editor);
+  }, [editor]);
 
   return (
-    <StyledIonCard onClick={() => editor.focus()}>
-      <BNStylesTest $focused={false} data-theme={props.theme}>
-        <BlockNoteView
-          editor={editor}
-          onChange={onChange}
-          slashMenu={false}
-          formattingToolbar={false}
-        >
-          <SuggestionMenuController
-            triggerCharacter={'/'}
-            // Replaces the default Slash Menu items with our custom ones.
-            getItems={async (query) =>
-              filterSuggestionItems(getSlashMenuItems(editor), query)
-            }
-          />
-          <SuggestionMenuController
-            triggerCharacter={'@'}
-            onItemClick={onItemClick}
-            suggestionMenuComponent={EditorReferenceMenu}
-            getItems={getMentionItems}
-          />
-        </BlockNoteView>
-      </BNStylesTest>
+    <StyledIonCard>
+      <ArtifactEditorStyles>
+        <EditorContent editor={editor}></EditorContent>
+      </ArtifactEditorStyles>
     </StyledIonCard>
   );
+  //
+  // <BNStylesTest $focused={false} data-theme={props.theme}>
+  //   <BlockNoteView
+  //     editor={editor}
+  //     onChange={onChange}
+  //     slashMenu={false}
+  //     formattingToolbar={false}
+  //   >
+  //     <SuggestionMenuController
+  //       triggerCharacter={'/'}
+  //       // Replaces the default Slash Menu items with our custom ones.
+  //       getItems={async (query) =>
+  //         filterSuggestionItems(getSlashMenuItems(editor), query)
+  //       }
+  //     />
+  //     <SuggestionMenuController
+  //       triggerCharacter={'@'}
+  //       onItemClick={onItemClick}
+  //       suggestionMenuComponent={EditorReferenceMenu}
+  //       getItems={getMentionItems}
+  //     />
+  //   </BlockNoteView>
+  // </BNStylesTest>
 };

@@ -18,10 +18,8 @@ import { Table } from '@tiptap/extension-table';
 import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
-import { TiptapCommands } from '../tiptap/TiptapCommands';
-import { renderCommandList } from '../tiptap/renderCommandList';
 import { FC, useMemo } from 'react';
-import { getTiptapCommands } from '../tiptap/getTiptapCommands';
+import { CommandsPlugin } from '../tiptap/commandList/CommandsPlugin';
 
 interface SheetEditorContainerProps {
   $focused: boolean;
@@ -62,12 +60,7 @@ export const SheetEditor: FC<Props> = (props) => {
       TableRow,
       TableHeader,
       TableCell,
-      TiptapCommands.configure({
-        suggestion: {
-          items: getTiptapCommands,
-          render: renderCommandList,
-        },
-      }),
+      CommandsPlugin,
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {

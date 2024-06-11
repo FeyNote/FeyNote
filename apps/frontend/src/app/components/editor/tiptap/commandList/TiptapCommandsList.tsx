@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { MdHorizontalRule } from 'react-icons/md';
 import styled from 'styled-components';
 
 const SuggestionListContainer = styled.div`
@@ -154,6 +155,22 @@ export class TiptapCommandsList extends Component<Props, State> {
             </SuggestionListItem>
           );
         })}
+        {items.length === 0 && (
+          <SuggestionListItem
+            $selected={this.state.selectedIndex === 0}
+            key={0}
+          >
+            <SuggestionListItemIcon>
+              <MdHorizontalRule size={18} />
+            </SuggestionListItemIcon>
+            <SuggestionListItemText>
+              <SuggestionListItemTitle>No results</SuggestionListItemTitle>
+              <SuggestionListItemSubtitle>
+                No results for search text
+              </SuggestionListItemSubtitle>
+            </SuggestionListItemText>
+          </SuggestionListItem>
+        )}
       </SuggestionListContainer>
     );
   }

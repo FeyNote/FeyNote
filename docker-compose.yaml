@@ -20,6 +20,28 @@ services:
     command: npx nx serve frontend
     depends_on:
       - backend
+  hocuspocus:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: npx nx serve hocuspocus
+    environment:
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      - SEARCH_PROVIDER=typesense
+      - EMAIL_FROM_NAME=val
+      - EMAIL_FROM_ADDRESS=val
+      - EMAIL_REPLY_TO_ADDRESS=val
+      - TYPESENSE_API_KEY=feynote
+      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - typesense
   backend:
     build:
       context: .

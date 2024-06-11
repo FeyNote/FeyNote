@@ -63,12 +63,17 @@
   "artifactRenderer.incomingArtifactReferences": "Referenced By",
   "artifactRenderer.incomingArtifactReferences.help": "The artifacts listed here reference the artifact you're viewing somewhere in their content.",
   "artifactRenderer.theme": "Theme",
+  "artifactRenderer.connection.connected": "Connected",
+  "artifactRenderer.connection.connecting": "Connecting. Changes will be synced when reconnected",
+  "artifactRenderer.connection.disconnected": "Disconnected. Changes will be synced when reconnected",
   "artifactReferencePreview.noContent": "No content",
 
   "artifactTheme.default": "Default",
   "artifactTheme.classic": "Classic",
 
-  "editor.referenceMenu.noItems": "No results. Click to create",
+  "editor.referenceMenu.noItems.title": "No results",
+  "editor.referenceMenu.noItems.subtitle": "Click to create",
+  "editor.referenceMenu.artifactBlock": "Block within {{title}}",
   "editor.referenceMenu.artifact": "Artifact",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",

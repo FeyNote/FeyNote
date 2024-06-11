@@ -1,5 +1,7 @@
 import { Component } from 'react';
 import styled from 'styled-components';
+import { MdHorizontalRule } from 'react-icons/md';
+import { t } from 'i18next';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -58,14 +60,15 @@ const SuggestionListItemSubtitle = styled.div`
   font-size: 11px;
 `;
 
-export interface CommandItem {
-  title: string;
-  subtitle: string;
-  icon: React.FC<any>;
+export interface ReferenceItem {
+  artifactId: string;
+  artifactBlockId: string | undefined;
+  referenceText: string;
+  artifact: any;
 }
 
 interface Props {
-  items: CommandItem[];
+  items: ReferenceItem[];
   command: (...args: any) => void;
 }
 
@@ -73,12 +76,12 @@ interface State {
   selectedIndex: number;
 }
 
-export class TiptapCommandsList extends Component<Props, State> {
+export class TiptapReferenceList extends Component<Props, State> {
   state = {
     selectedIndex: 0,
   };
 
-  componentDidUpdate(oldProps: any) {
+  componentDidUpdate(oldProps: Props) {
     if (this.props.items !== oldProps.items) {
       this.setState({
         selectedIndex: 0,
@@ -86,7 +89,7 @@ export class TiptapCommandsList extends Component<Props, State> {
     }
   }
 
-  onKeyDown({ event }: any) {
+  onKeyDown({ event }: { event: KeyboardEvent }) {
     if (event.key === 'ArrowUp') {
       this.upHandler();
       return true;
@@ -124,10 +127,16 @@ export class TiptapCommandsList extends Component<Props, State> {
   }
 
   selectItem(index: number) {
+    if (!this.props.items.length) return;
+
     const item = this.props.items[index];
 
     if (item) {
-      this.props.command(item);
+      this.props.command({
+        artifactId: item.artifactId,
+        artifactBlockId: item.artifactBlockId,
+        referenceText: item.referenceText,
+      });
     }
   }
 
@@ -143,17 +152,41 @@ export class TiptapCommandsList extends Component<Props, State> {
               onClick={() => this.selectItem(index)}
             >
               <SuggestionListItemIcon>
-                <item.icon size={18} />
+                <MdHorizontalRule size={18} />
               </SuggestionListItemIcon>
               <SuggestionListItemText>
-                <SuggestionListItemTitle>{item.title}</SuggestionListItemTitle>
+                <SuggestionListItemTitle>
+                  {item.referenceText}
+                </SuggestionListItemTitle>
                 <SuggestionListItemSubtitle>
-                  {item.subtitle}
+                  {item.artifactBlockId
+                    ? t('editor.referenceMenu.artifactBlock', {
+                        title: item.artifact.title,
+                      })
+                    : t('editor.referenceMenu.artifact')}
                 </SuggestionListItemSubtitle>
               </SuggestionListItemText>
             </SuggestionListItem>
           );
         })}
+        {items.length === 0 && (
+          <SuggestionListItem
+            $selected={this.state.selectedIndex === 0}
+            key={0}
+          >
+            <SuggestionListItemIcon>
+              <MdHorizontalRule size={18} />
+            </SuggestionListItemIcon>
+            <SuggestionListItemText>
+              <SuggestionListItemTitle>
+                {t('editor.referenceMenu.noItems.title')}
+              </SuggestionListItemTitle>
+              <SuggestionListItemSubtitle>
+                {t('editor.referenceMenu.noItems.subtitle')}
+              </SuggestionListItemSubtitle>
+            </SuggestionListItemText>
+          </SuggestionListItem>
+        )}
       </SuggestionListContainer>
     );
   }

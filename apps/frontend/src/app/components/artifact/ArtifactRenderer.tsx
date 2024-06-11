@@ -1,5 +1,5 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   IonButton,
   IonCheckbox,
@@ -30,47 +30,123 @@ import {
   SelectTemplateModal,
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
-import { Prompt } from 'react-router-dom';
 import { routes } from '../../routes';
 import { markdownToTxt } from '@feynote/shared-utils';
-import { isArtifactModified } from './isArtifactSaved';
 import { ArtifactTheme } from '@prisma/client';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
+import * as Y from 'yjs';
+import {
+  HocuspocusProvider,
+  HocuspocusProviderWebsocket,
+  TiptapCollabProvider,
+} from '@hocuspocus/provider';
+import { IndexeddbPersistence } from 'y-indexeddb';
+import styled from 'styled-components';
+import { Prompt } from 'react-router-dom';
+import { SessionContext } from '../../context/session/SessionContext';
+import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
 
-export type NewArtifactDetail = Omit<
-  ArtifactDetail,
-  'id' | 'userId' | 'createdAt' | 'updatedAt'
->;
+const ConnectionStatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
 
-export type EditArtifactDetail = NewArtifactDetail | ArtifactDetail;
+const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
+  border-radius: 100%;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+
+  ${(props) => {
+    switch (props.$status) {
+      case ConnectionStatus.Connected: {
+        return `background-color: var(--ion-color-success);`;
+      }
+      case ConnectionStatus.Connecting: {
+        return `background-color: var(--ion-color-warning);`;
+      }
+      case ConnectionStatus.Disconnected: {
+        return `background-color: var(--ion-color-danger);`;
+      }
+    }
+  }}
+`;
+
+const ConnectionStatusText = styled.div``;
 
 interface Props {
-  artifact: EditArtifactDetail;
-  save: (artifact: EditArtifactDetail) => void;
-  onArtifactChanged?: (artifact: EditArtifactDetail) => void;
-  presentSelectTemplateModalRef?: React.MutableRefObject<
-    (() => void) | undefined
-  >;
+  artifact: ArtifactDetail;
 }
 
+class TiptapCollabManager {
+  connection?: {
+    artifactId: string;
+    yjsDoc: Y.Doc;
+    tiptapCollabProvider: TiptapCollabProvider;
+    indexeddbProvider: IndexeddbPersistence;
+  };
+
+  get(artifactId: string, token: string | null) {
+    if (artifactId === this.connection?.artifactId) {
+      return this.connection;
+    }
+
+    if (this.connection) {
+      this.connection.tiptapCollabProvider.destroy();
+    }
+
+    const yjsDoc = new Y.Doc();
+    const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
+    const tiptapCollabProvider = new TiptapCollabProvider({
+      name: artifactId,
+      baseUrl: '/hocuspocus',
+      document: yjsDoc,
+      token,
+      // websocketProvider: new HocuspocusProviderWebsocket({
+      //   url: '/hocuspocus',
+      //   delay: 1000,
+      //   minDelay: 1000,
+      //   maxDelay: 10000,
+      // })
+    });
+
+    this.connection = {
+      artifactId,
+      yjsDoc,
+      tiptapCollabProvider,
+      indexeddbProvider,
+    };
+
+    return this.connection;
+  }
+
+  destroy() {
+    this.connection?.tiptapCollabProvider.destroy();
+  }
+}
+enum ConnectionStatus {
+  Connected = 'connected',
+  Connecting = 'connecting',
+  Disconnected = 'disconnected',
+}
+const connectionStatusToI18n = {
+  [ConnectionStatus.Connected]: 'artifactRenderer.connection.connected',
+  [ConnectionStatus.Connecting]: 'artifactRenderer.connection.connecting',
+  [ConnectionStatus.Disconnected]: 'artifactRenderer.connection.disconnected',
+} satisfies Record<ConnectionStatus, string>;
+const tiptapCollabManager = new TiptapCollabManager();
+
 export const ArtifactRenderer: React.FC<Props> = (props) => {
-  const { onArtifactChanged } = props;
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
+  const [connectionStatus, setConnectionStatus] = useState(
+    ConnectionStatus.Disconnected,
+  );
+  const { session } = useContext(SessionContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
-  const [blocknoteContent, setBlocknoteContent] = useState(
-    props.artifact.json?.blocknoteContent,
-  );
-  const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.json?.blocknoteContentMd || '',
-  );
-  const blocknoteContentText = useMemo(
-    () => markdownToTxt(blocknoteContentMd),
-    [blocknoteContentMd],
-  );
   const [artifactTemplate, setArtifactTemplate] = useState(
     props.artifact.artifactTemplate,
   );
@@ -83,7 +159,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
     SelectTemplateModal,
     {
-      enableOverrideWarning: !!blocknoteContentMd.length,
+      enableOverrideWarning: true,
       dismiss: (result) => {
         dismissSelectTemplateModal();
         if (result) {
@@ -97,100 +173,75 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       },
     } satisfies SelectTemplateModalProps,
   );
-  if (props.presentSelectTemplateModalRef) {
-    props.presentSelectTemplateModalRef.current = presentSelectTemplateModal;
-  }
 
-  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
+  const knownReferences = useMemo(() => {
+    const mapEntries = props.artifact.artifactReferences.map<
+      [string, KnownArtifactReference]
+    >((el) => {
+      const val = {
+        artifactBlockId: el.artifactBlockId,
+        targetArtifactId: el.targetArtifactId,
+        targetArtifactBlockId: el.targetArtifactBlockId || undefined,
+        referenceText: el.referenceText,
+        isBroken: !!el.referenceTargetArtifactId,
+      };
+      const key = el.targetArtifactBlockId
+        ? `${el.artifactId}.${el.targetArtifactBlockId}`
+        : el.artifactId;
 
-  const modified = isArtifactModified(props.artifact, {
-    json: {
-      blocknoteContent,
-    },
-    title,
-    theme,
-    isPinned,
-    isTemplate,
-    text: blocknoteContentText,
-    rootTemplateId,
-    artifactTemplate,
-  });
-  const [enableRouterPrompt, setEnableRouterPrompt] = useState(modified);
+      return [key, val];
+    });
+
+    return new Map(mapEntries);
+  }, []);
+  const knownReferencesRef = useRef(knownReferences);
+  knownReferencesRef.current = knownReferences;
+
+  const connection = tiptapCollabManager.get(props.artifact.id, session);
+  useEffect(() => {
+    const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
+
+    const listener: Parameters<typeof artifactMetaMap.observe>[0] = (evt) => {
+      setTitle((evt.target.get('title') as string) ?? title);
+      setTheme(
+        (evt.target.get('theme') as typeof props.artifact.theme) ?? theme,
+      );
+      setIsPinned((evt.target.get('isPinned') as boolean) ?? isPinned);
+      setIsTemplate((evt.target.get('isTemplate') as boolean) ?? isTemplate);
+    };
+
+    artifactMetaMap.observe(listener);
+    return () => artifactMetaMap.unobserve(listener);
+  }, [connection]);
 
   useEffect(() => {
-    if (modified) {
+    const listener = ({ status }: { status: string }) => {
+      console.log('status change', status);
+      if (status === 'connecting') {
+        setConnectionStatus(ConnectionStatus.Connecting);
+      } else if (status === 'connected') {
+        setConnectionStatus(ConnectionStatus.Connected);
+      } else {
+        setConnectionStatus(ConnectionStatus.Disconnected);
+      }
+    };
+
+    connection.tiptapCollabProvider.on('status', listener);
+    return () => {
+      connection.tiptapCollabProvider.off('status', listener);
+    };
+  }, [connection]);
+
+  useEffect(() => {
+    if (connectionStatus !== ConnectionStatus.Connected) {
       window.onbeforeunload = () => true;
     }
     return () => {
       window.onbeforeunload = null;
     };
-  }, [modified]);
+  }, [connectionStatus]);
 
-  const save = () => {
-    if (!title.trim()) {
-      presentAlert({
-        header: t('artifactDetail.missingTitle.title'),
-        message: t('artifactDetail.missingTitle.message'),
-        buttons: [t('generic.okay')],
-      });
-
-      return;
-    }
-    setEnableRouterPrompt(false);
-
-    props.save({
-      ...props.artifact,
-      title,
-      text: blocknoteContentText,
-      json: {
-        blocknoteContent,
-        blocknoteContentMd,
-      },
-      theme,
-      isPinned,
-      isTemplate,
-      rootTemplateId,
-      artifactTemplate,
-    });
-  };
-
-  useEffect(() => {
-    onArtifactChanged?.({
-      ...props.artifact,
-      title,
-      text: blocknoteContentText,
-      json: {
-        blocknoteContent,
-        blocknoteContentMd,
-      },
-      theme,
-      isPinned,
-      isTemplate,
-      rootTemplateId,
-    });
-  }, [
-    props.artifact,
-    onArtifactChanged,
-    title,
-    blocknoteContent,
-    blocknoteContentText,
-    blocknoteContentMd,
-    theme,
-    isPinned,
-    isTemplate,
-    rootTemplateId,
-    artifactTemplate,
-  ]);
-
-  const onEditorContentChange = (
-    updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string,
-  ) => {
-    console.log(updatedContentMd);
-    setEnableRouterPrompt(updatedContentMd !== blocknoteContentMd);
-    setBlocknoteContent(updatedContent);
-    setBlocknoteContentMd(updatedContentMd);
-  };
+  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const applyRootTemplate = (rootTemplate: RootTemplate) => {
     if ('markdown' in rootTemplate) {
@@ -212,9 +263,16 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     setRootTemplateId(null);
   };
 
+  const setMetaProp = (metaPropName: string, value: any) => {
+    (connection.yjsDoc.getMap('artifactMeta') as any).set(metaPropName, value);
+  };
+
   return (
     <IonGrid>
-      <Prompt when={enableRouterPrompt} message={t('generic.unsavedChanges')} />
+      <Prompt
+        when={connectionStatus !== ConnectionStatus.Connected}
+        message={t('generic.unsavedChanges')}
+      />
       <IonRow>
         <IonCol size="12" sizeLg="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
@@ -224,26 +282,29 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 label={t('artifactRenderer.title.label')}
                 labelPlacement="stacked"
                 value={title}
-                onIonInput={(event) =>
-                  setTitle((event.target.value || '').toString())
-                }
+                onIonInput={(event) => {
+                  setMetaProp('title', event.target.value || '');
+                }}
                 type="text"
               ></IonInput>
             </IonItem>
             <div>
               <ArtifactEditor
                 theme={theme}
-                onContentChange={onEditorContentChange}
-                initialContent={blocknoteContent}
                 applyTemplateRef={editorApplyTemplateRef}
+                knownReferencesRef={knownReferencesRef}
+                yjsProvider={connection.tiptapCollabProvider}
               />
             </div>
+            <ConnectionStatusContainer>
+              <ConnectionStatusIcon $status={connectionStatus} />
+              <ConnectionStatusText>
+                {t(connectionStatusToI18n[connectionStatus])}
+              </ConnectionStatusText>
+            </ConnectionStatusContainer>
           </div>
         </IonCol>
         <IonCol size="12" sizeLg="3">
-          <IonButton onClick={save} disabled={!modified} expand="block">
-            {t('generic.save')}
-          </IonButton>
           <IonItem onClick={() => presentSelectTemplateModal()} button>
             <IonLabel>
               <h3>{t('artifactRenderer.selectTemplate')}</h3>
@@ -261,7 +322,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               labelPlacement="end"
               justify="start"
               checked={isPinned}
-              onIonChange={(event) => setIsPinned(event.target.checked)}
+              onIonChange={(event) => {
+                setMetaProp('isPinned', event.target.checked);
+              }}
             >
               {t('artifactRenderer.isPinned')}
             </IonCheckbox>
@@ -275,7 +338,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               labelPlacement="end"
               justify="start"
               checked={isTemplate}
-              onIonChange={(event) => setIsTemplate(event.target.checked)}
+              onIonChange={(event) => {
+                setMetaProp('isTemplate', event.target.checked);
+              }}
             >
               {t('artifactRenderer.isTemplate')}
             </IonCheckbox>
@@ -309,7 +374,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               label={t('artifactRenderer.theme')}
               labelPlacement="fixed"
               value={theme}
-              onIonChange={(e) => setTheme(e.detail.value)}
+              onIonChange={(e) => {
+                setMetaProp('theme', e.detail.value);
+              }}
             >
               {Object.values(ArtifactTheme).map((el) => (
                 <IonSelectOption key={el} value={el}>
