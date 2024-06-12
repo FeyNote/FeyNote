@@ -1,7 +1,7 @@
 import { getTextForJSONContent } from './getTextForJSONContent';
 import { JSONContent } from '@tiptap/core';
 import { getJSONContentMapById } from './getJSONContentMapById';
-import { getIdForJSONContent } from './getIdForJSONContent';
+import { getIdForJSONContentUnsafe } from './getIdForJSONContentUnsafe';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSONContentDiff {
@@ -46,14 +46,14 @@ export function getJSONContentDiff(
   const results: JSONContentDiff.Result = new Map();
 
   for (const newEl of newJSONContents) {
-    const oldEl = oldJSONContentById.get(getIdForJSONContent(newEl));
+    const oldEl = oldJSONContentById.get(getIdForJSONContentUnsafe(newEl));
     if (oldEl) {
       const oldText = getTextForJSONContent(oldEl);
       const newText = getTextForJSONContent(newEl);
 
       if (oldText !== newText) {
-        results.set(getIdForJSONContent(newEl), {
-          id: getIdForJSONContent(newEl),
+        results.set(getIdForJSONContentUnsafe(newEl), {
+          id: getIdForJSONContentUnsafe(newEl),
           status: 'updated',
           oldJSONContent: oldEl,
           newJSONContent: newEl,
@@ -63,8 +63,8 @@ export function getJSONContentDiff(
     } else {
       const newText = getTextForJSONContent(newEl);
 
-      results.set(getIdForJSONContent(newEl), {
-        id: getIdForJSONContent(newEl),
+      results.set(getIdForJSONContentUnsafe(newEl), {
+        id: getIdForJSONContentUnsafe(newEl),
         status: 'added',
         oldJSONContent: undefined,
         newJSONContent: newEl,
@@ -74,12 +74,12 @@ export function getJSONContentDiff(
   }
 
   for (const oldEl of oldJSONContents) {
-    const newEl = newJSONContentById.get(getIdForJSONContent(oldEl));
+    const newEl = newJSONContentById.get(getIdForJSONContentUnsafe(oldEl));
     if (!newEl) {
       const oldText = getTextForJSONContent(oldEl);
 
-      results.set(getIdForJSONContent(oldEl), {
-        id: getIdForJSONContent(oldEl),
+      results.set(getIdForJSONContentUnsafe(oldEl), {
+        id: getIdForJSONContentUnsafe(oldEl),
         status: 'deleted',
         oldJSONContent: oldEl,
         newJSONContent: undefined,

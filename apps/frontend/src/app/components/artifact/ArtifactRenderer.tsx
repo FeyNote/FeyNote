@@ -124,8 +124,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   useEffect(() => {
     for (const reference of props.artifact.artifactReferences) {
       const key = reference.targetArtifactBlockId
-        ? `${reference.artifactId}.${reference.targetArtifactBlockId}`
-        : reference.artifactId;
+        ? `${reference.targetArtifactId}.${reference.targetArtifactBlockId}`
+        : reference.targetArtifactId;
 
       knownReferences.set(key, {
         artifactBlockId: reference.artifactBlockId,

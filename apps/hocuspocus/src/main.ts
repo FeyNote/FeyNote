@@ -91,8 +91,8 @@ const server = Server.configure({
           await enqueueArtifactUpdate({
             artifactId: args.documentName,
             userId: args.context.userId,
-            oldYBin: artifact.yBin,
-            newYBin: args.state,
+            oldYBinB64: artifact.yBin.toString('base64'),
+            newYBinB64: args.state.toString('base64'),
           });
         } catch (e) {
           console.error(e);

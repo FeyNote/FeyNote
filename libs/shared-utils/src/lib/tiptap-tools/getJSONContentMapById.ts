@@ -1,11 +1,13 @@
 import { JSONContent } from '@tiptap/core';
+import { getIdForJSONContent } from './getIdForJSONContent';
 
 export const getJSONContentMapById = (
   root: JSONContent,
 ): Map<string, JSONContent> => {
   const jsonContentById = new Map<string, JSONContent>();
 
-  if (root.attrs?.['id']) jsonContentById.set(root.attrs?.['id'], root);
+  const id = getIdForJSONContent(root);
+  if (id) jsonContentById.set(id, root);
   if (!root.content) return jsonContentById;
 
   for (const content of root.content) {

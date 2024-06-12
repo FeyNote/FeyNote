@@ -101,7 +101,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
           'Write something … It’ll be shared with everyone else looking at this example.',
       }),
       UniqueID.configure({
-        types: ['heading', 'paragraph'],
+        types: ['heading', 'paragraph', 'artifactReference'],
         filterTransaction: (transaction) => !isChangeOrigin(transaction),
       }),
     ],

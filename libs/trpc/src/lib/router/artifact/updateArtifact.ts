@@ -69,8 +69,8 @@ export const updateArtifact = authenticatedProcedure
     await enqueueArtifactUpdate({
       artifactId: artifact.id,
       userId: ctx.session.userId,
-      oldYBin: artifact.yBin,
-      newYBin: artifact.yBin,
+      oldYBinB64: artifact.yBin.toString('base64'),
+      newYBinB64: artifact.yBin.toString('base64'),
     });
 
     // We do not return the complete artifact, but rather expect that the frontend will

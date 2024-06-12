@@ -25,7 +25,7 @@ export function patchJsonContentWithReferenceText(
   }
 
   jsonContentForEach(root, (jsonContent) => {
-    if (jsonContent.attrs && jsonContent.type === 'customReference') {
+    if (jsonContent.attrs && jsonContent.type === 'artifactReference') {
       const reference = referenceByReferenceId.get(
         jsonContent.attrs['artifactId'] + jsonContent.attrs['artifactBlockId'],
       );

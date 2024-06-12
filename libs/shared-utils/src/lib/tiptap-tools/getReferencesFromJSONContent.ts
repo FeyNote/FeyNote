@@ -1,6 +1,6 @@
 import { JSONContent } from '@tiptap/core';
 import { jsonContentForEach } from './jsonContentForEach';
-import { getIdForJSONContent } from './getIdForJSONContent';
+import { getIdForJSONContentUnsafe } from './getIdForJSONContentUnsafe';
 
 export interface ReferencesFromJSONContentResult {
   artifactBlockId: string;
@@ -17,7 +17,7 @@ export const getReferencesFromJSONContent = (
   jsonContentForEach(jsonContent, (element) => {
     if (element.type === 'artifactReference') {
       results.push({
-        artifactBlockId: getIdForJSONContent(element),
+        artifactBlockId: getIdForJSONContentUnsafe(element),
         targetArtifactId: element.attrs?.['artifactId'],
         targetArtifactBlockId: element.attrs?.['artifactBlockId'],
         referenceText: element.attrs?.['referenceText'],

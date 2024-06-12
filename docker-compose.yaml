@@ -78,7 +78,7 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve queueWorker
+    command: npx nx serve queue-worker
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense

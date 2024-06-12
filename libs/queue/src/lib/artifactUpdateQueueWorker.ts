@@ -24,59 +24,78 @@ export const artifactUpdateQueueWorker = new Worker<
 >(
   ARTIFACT_UPDATE_QUEUE_NAME,
   async (args) => {
-    const oldYjsDoc = new Y.Doc();
-    Y.applyUpdate(oldYjsDoc, args.data.oldYBin);
-    const newYjsDoc = new Y.Doc();
-    Y.applyUpdate(newYjsDoc, args.data.newYBin);
+    try {
+      console.log(`Processing job ${args.id}`);
 
-    const oldJSONContent = getTiptapContentFromYjsDoc(
-      oldYjsDoc,
-      ARTIFACT_TIPTAP_BODY_KEY,
-    );
-    const newJSONContent = getTiptapContentFromYjsDoc(
-      newYjsDoc,
-      ARTIFACT_TIPTAP_BODY_KEY,
-    );
+      const oldYjsDoc = new Y.Doc();
+      const oldYBin = Buffer.from(args.data.oldYBinB64, 'base64');
+      Y.applyUpdate(oldYjsDoc, oldYBin);
 
-    const oldTitle = oldYjsDoc.getMap(ARTIFACT_META_KEY).get('title') as string;
-    const newTitle = newYjsDoc.getMap(ARTIFACT_META_KEY).get('title') as string;
+      const newYjsDoc = new Y.Doc();
+      const newYBin = Buffer.from(args.data.newYBinB64, 'base64');
+      Y.applyUpdate(newYjsDoc, newYBin);
 
-    await prisma.$transaction(
-      async (tx) => {
-        await updateArtifactTitleReferenceText(
-          args.data.artifactId,
-          oldTitle,
-          newTitle,
-          tx,
-        );
+      const oldJSONContent = getTiptapContentFromYjsDoc(
+        oldYjsDoc,
+        ARTIFACT_TIPTAP_BODY_KEY,
+      );
+      const newJSONContent = getTiptapContentFromYjsDoc(
+        newYjsDoc,
+        ARTIFACT_TIPTAP_BODY_KEY,
+      );
 
-        await updateArtifactContentReferenceText(
-          args.data.artifactId,
-          oldJSONContent,
-          newJSONContent,
-          tx,
-        );
+      const oldTitle = oldYjsDoc
+        .getMap(ARTIFACT_META_KEY)
+        .get('title') as string;
+      const newTitle = newYjsDoc
+        .getMap(ARTIFACT_META_KEY)
+        .get('title') as string;
 
-        await updateArtifactOutgoingReferences(
-          args.data.artifactId,
-          newJSONContent,
-          tx,
-        );
+      await prisma.$transaction(
+        async (tx) => {
+          await updateArtifactTitleReferenceText(
+            args.data.artifactId,
+            oldTitle,
+            newTitle,
+            tx,
+          );
 
-        const indexableArtifact = {
-          id: args.data.artifactId,
-          userId: args.data.userId,
-          title: newTitle,
-          text: getTextForJSONContent(newJSONContent),
-          jsonContent: newJSONContent,
-        };
+          await updateArtifactContentReferenceText(
+            args.data.artifactId,
+            oldJSONContent,
+            newJSONContent,
+            tx,
+          );
 
-        await searchProvider.indexArtifact(indexableArtifact);
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
-      },
-    );
+          await updateArtifactOutgoingReferences(
+            args.data.artifactId,
+            newJSONContent,
+            tx,
+          );
+
+          const indexableArtifact = {
+            id: args.data.artifactId,
+            userId: args.data.userId,
+            title: newTitle,
+            text: getTextForJSONContent(newJSONContent),
+            jsonContent: newJSONContent,
+          };
+
+          await searchProvider.indexArtifact(indexableArtifact);
+        },
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
+    } catch (e) {
+      console.log(`Failed processing job ${args.id}`, e);
+
+      // TODO: Cloud logging
+
+      throw e;
+    }
+
+    console.log(`Finished processing job ${args.id}`);
   },
   {
     autorun: false,

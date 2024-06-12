@@ -1,6 +1,6 @@
 export interface ArtifactUpdateQueueItem {
   artifactId: string;
   userId: string;
-  oldYBin: Buffer;
-  newYBin: Buffer;
+  oldYBinB64: string;
+  newYBinB64: string;
 }

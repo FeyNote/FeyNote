@@ -10,7 +10,7 @@ type ReferencePluginOptions = MentionOptions & {
 };
 
 export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
-  name: 'customReference',
+  name: 'artifactReference',
   addAttributes() {
     return {
       artifactId: {
@@ -61,9 +61,7 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
     allowSpaces: true,
   },
   renderHTML({ options, node }) {
-    const knownReference = (
-      options as ReferencePluginOptions
-    ).knownReferences.get(node.attrs.artifactId);
+    const knownReference = this.knownReferences?.get(node.attrs.artifactId);
 
     return [
       'a',
@@ -75,9 +73,8 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
     ];
   },
   renderText({ options, node }) {
-    const knownReference = (
-      options as ReferencePluginOptions
-    ).knownReferences.get(node.attrs.artifactId);
+    const knownReference = this.knownReferences?.get(node.attrs.artifactId);
+
     return `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
   },
 });

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
+  max-height: 450px;
   background-color: var(--ion-card-background);
   border-radius: 4px;
   box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
@@ -27,7 +28,10 @@ const SuggestionListItem = styled.button<{
   ${(props) =>
     props.$selected ? `background-color: var(--ion-background-color);` : ``}
   width: 100%;
-  height: 52px;
+  min-height: 52px;
+
+  padding-top: 6px;
+  padding-bottom: 6px;
 
   &:hover {
     background-color: var(--ion-background-color);

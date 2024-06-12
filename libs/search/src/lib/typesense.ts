@@ -12,6 +12,7 @@ import {
   jsonContentForEach,
   getIdForJSONContent,
 } from '@feynote/shared-utils';
+import { isIndexable } from './indexableCharacters';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
@@ -63,9 +64,16 @@ export class TypeSense implements SearchProvider {
     const blocks: BlockIndexDocument[] = [];
 
     jsonContentForEach(artifact.jsonContent, (jsonContent) => {
+      const id = getIdForJSONContent(jsonContent);
+      // We only want to index things that have an identifier
+      if (!id) return;
+
+      const text = getTextForJSONContent(jsonContent);
+      if (!isIndexable(text)) return;
+
       const block = {
-        id: getIdForJSONContent(jsonContent),
-        text: getTextForJSONContent(jsonContent),
+        id,
+        text,
         userId: artifact.userId,
         artifactId: artifact.id,
       } satisfies BlockIndexDocument;
