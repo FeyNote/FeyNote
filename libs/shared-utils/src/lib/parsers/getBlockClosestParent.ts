@@ -10,7 +10,12 @@ const _getBlockClosestParent = (
     if (comparator(block)) parent = block;
     if (block.id === blockId) return parent || false;
 
-    const childResult = _getBlockClosestParent(block.children, blockId, comparator, parent);
+    const childResult = _getBlockClosestParent(
+      block.children,
+      blockId,
+      comparator,
+      parent,
+    );
     // False is used to short-circuit a full tree search if we've already found the ID of our target node
     if (childResult || childResult === false) return childResult;
   }
@@ -23,12 +28,7 @@ export const getBlockClosestParent = (
   blockId: string,
   comparator: (block: ArtifactEditorBlock) => boolean,
 ): ArtifactEditorBlock | undefined => {
-  const result = _getBlockClosestParent(
-    blocks,
-    blockId,
-    comparator,
-    undefined,
-  );
+  const result = _getBlockClosestParent(blocks, blockId, comparator, undefined);
 
   if (!result) return undefined;
   return result;

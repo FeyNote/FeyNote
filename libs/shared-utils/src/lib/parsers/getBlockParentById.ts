@@ -19,9 +19,5 @@ export const getBlockParentById = (
   blocks: ArtifactEditorBlock[],
   blockId: string,
 ): ArtifactEditorBlock | undefined => {
-  return _getBlockParentById(
-    blocks,
-    blockId,
-    undefined,
-  );
+  return _getBlockParentById(blocks, blockId, undefined);
 };
