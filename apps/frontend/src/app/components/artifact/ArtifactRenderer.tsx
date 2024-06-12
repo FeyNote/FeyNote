@@ -1,7 +1,6 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  IonButton,
   IonCheckbox,
   IonCol,
   IonGrid,
@@ -22,7 +21,6 @@ import {
   ArtifactEditor,
   ArtifactEditorApplyTemplate,
 } from '../editor/ArtifactEditor';
-import { ArtifactEditorBlock } from '@feynote/blocknote';
 import { InfoButton } from '../info/InfoButton';
 import { rootTemplatesById } from './rootTemplates/rootTemplates';
 import { RootTemplate } from './rootTemplates/rootTemplates.types';
@@ -31,20 +29,14 @@ import {
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
 import { routes } from '../../routes';
-import { markdownToTxt } from '@feynote/shared-utils';
 import { ArtifactTheme } from '@prisma/client';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
-import * as Y from 'yjs';
-import {
-  HocuspocusProvider,
-  HocuspocusProviderWebsocket,
-  TiptapCollabProvider,
-} from '@hocuspocus/provider';
-import { IndexeddbPersistence } from 'y-indexeddb';
 import styled from 'styled-components';
 import { Prompt } from 'react-router-dom';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
+import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 
 const ConnectionStatusContainer = styled.div`
   display: flex;
@@ -72,58 +64,6 @@ const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
   }}
 `;
 
-const ConnectionStatusText = styled.div``;
-
-interface Props {
-  artifact: ArtifactDetail;
-}
-
-class TiptapCollabManager {
-  connection?: {
-    artifactId: string;
-    yjsDoc: Y.Doc;
-    tiptapCollabProvider: TiptapCollabProvider;
-    indexeddbProvider: IndexeddbPersistence;
-  };
-
-  get(artifactId: string, token: string | null) {
-    if (artifactId === this.connection?.artifactId) {
-      return this.connection;
-    }
-
-    if (this.connection) {
-      this.connection.tiptapCollabProvider.destroy();
-    }
-
-    const yjsDoc = new Y.Doc();
-    const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
-    const tiptapCollabProvider = new TiptapCollabProvider({
-      name: artifactId,
-      baseUrl: '/hocuspocus',
-      document: yjsDoc,
-      token,
-      // websocketProvider: new HocuspocusProviderWebsocket({
-      //   url: '/hocuspocus',
-      //   delay: 1000,
-      //   minDelay: 1000,
-      //   maxDelay: 10000,
-      // })
-    });
-
-    this.connection = {
-      artifactId,
-      yjsDoc,
-      tiptapCollabProvider,
-      indexeddbProvider,
-    };
-
-    return this.connection;
-  }
-
-  destroy() {
-    this.connection?.tiptapCollabProvider.destroy();
-  }
-}
 enum ConnectionStatus {
   Connected = 'connected',
   Connecting = 'connecting',
@@ -134,7 +74,10 @@ const connectionStatusToI18n = {
   [ConnectionStatus.Connecting]: 'artifactRenderer.connection.connecting',
   [ConnectionStatus.Disconnected]: 'artifactRenderer.connection.disconnected',
 } satisfies Record<ConnectionStatus, string>;
-const tiptapCollabManager = new TiptapCollabManager();
+
+interface Props {
+  artifact: ArtifactDetail;
+}
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
@@ -142,6 +85,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,
   );
+  const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
@@ -174,30 +118,29 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     } satisfies SelectTemplateModalProps,
   );
 
-  const knownReferences = useMemo(() => {
-    const mapEntries = props.artifact.artifactReferences.map<
-      [string, KnownArtifactReference]
-    >((el) => {
-      const val = {
-        artifactBlockId: el.artifactBlockId,
-        targetArtifactId: el.targetArtifactId,
-        targetArtifactBlockId: el.targetArtifactBlockId || undefined,
-        referenceText: el.referenceText,
-        isBroken: !!el.referenceTargetArtifactId,
-      };
-      const key = el.targetArtifactBlockId
-        ? `${el.artifactId}.${el.targetArtifactBlockId}`
-        : el.artifactId;
+  // We must preserve the original map between renders
+  // because tiptap exists outside of React's render cycle
+  const [knownReferences] = useState(new Map());
+  useEffect(() => {
+    for (const reference of props.artifact.artifactReferences) {
+      const key = reference.targetArtifactBlockId
+        ? `${reference.artifactId}.${reference.targetArtifactBlockId}`
+        : reference.artifactId;
 
-      return [key, val];
-    });
+      knownReferences.set(key, {
+        artifactBlockId: reference.artifactBlockId,
+        targetArtifactId: reference.targetArtifactId,
+        targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
+        referenceText: reference.referenceText,
+        isBroken: !!reference.referenceTargetArtifactId,
+      });
+    }
+  }, [props.artifact.artifactReferences]);
 
-    return new Map(mapEntries);
-  }, []);
-  const knownReferencesRef = useRef(knownReferences);
-  knownReferencesRef.current = knownReferences;
-
-  const connection = tiptapCollabManager.get(props.artifact.id, session);
+  const connection = artifactCollaborationManager.get(
+    props.artifact.id,
+    session,
+  );
   useEffect(() => {
     const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
 
@@ -256,15 +199,18 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   };
 
   const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
-    const blocks = artifactTemplate.json.blocknoteContent;
-    editorApplyTemplateRef.current?.(blocks || []);
+    // const blocks = artifactTemplate.json.blocknoteContent;
+    // editorApplyTemplateRef.current?.(blocks || []);
 
     setArtifactTemplate(artifactTemplate);
     setRootTemplateId(null);
   };
 
   const setMetaProp = (metaPropName: string, value: any) => {
-    (connection.yjsDoc.getMap('artifactMeta') as any).set(metaPropName, value);
+    (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
+      metaPropName,
+      value,
+    );
   };
 
   return (
@@ -292,16 +238,17 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               <ArtifactEditor
                 theme={theme}
                 applyTemplateRef={editorApplyTemplateRef}
-                knownReferencesRef={knownReferencesRef}
+                knownReferences={knownReferences}
                 yjsProvider={connection.tiptapCollabProvider}
+                onReady={() => setEditorReady(true)}
               />
             </div>
-            <ConnectionStatusContainer>
-              <ConnectionStatusIcon $status={connectionStatus} />
-              <ConnectionStatusText>
-                {t(connectionStatusToI18n[connectionStatus])}
-              </ConnectionStatusText>
-            </ConnectionStatusContainer>
+            {editorReady && (
+              <ConnectionStatusContainer>
+                <ConnectionStatusIcon $status={connectionStatus} />
+                <div>{t(connectionStatusToI18n[connectionStatus])}</div>
+              </ConnectionStatusContainer>
+            )}
           </div>
         </IonCol>
         <IonCol size="12" sizeLg="3">

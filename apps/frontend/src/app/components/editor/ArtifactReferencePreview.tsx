@@ -56,28 +56,28 @@ interface Props {
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const getBlocknoteContentForBlocknoteId = (blockId: string) => {
-    const block = getBlockById(
-      props.artifact.json.blocknoteContent || [],
-      blockId,
-    );
-    if (block) return [block];
-    return;
-  };
-  const initialContent = props.artifactBlockId
-    ? getBlocknoteContentForBlocknoteId(props.artifactBlockId)
-    : props.artifact.json.blocknoteContent;
-
-  const editor = useCreateBlockNote({
-    schema: buildArtifactEditorBlocknoteSchema({
-      artifactReferenceFC: ArtifactReference,
-      artifactBlockReferenceFC: ArtifactBlockReference,
-      horizontalRuleFC: HorizontalRule,
-      monsterSheetFC: MonsterSheet,
-      spellSheetFC: SpellSheet,
-    }),
-    initialContent,
-  });
+  // const getBlocknoteContentForBlocknoteId = (blockId: string) => {
+  //   const block = getBlockById(
+  //     props.artifact.json.blocknoteContent || [],
+  //     blockId,
+  //   );
+  //   if (block) return [block];
+  //   return;
+  // };
+  // const initialContent = props.artifactBlockId
+  //   ? getBlocknoteContentForBlocknoteId(props.artifactBlockId)
+  //   : props.artifact.json.blocknoteContent;
+  //
+  // const editor = useCreateBlockNote({
+  //   schema: buildArtifactEditorBlocknoteSchema({
+  //     artifactReferenceFC: ArtifactReference,
+  //     artifactBlockReferenceFC: ArtifactBlockReference,
+  //     horizontalRuleFC: HorizontalRule,
+  //     monsterSheetFC: MonsterSheet,
+  //     spellSheetFC: SpellSheet,
+  //   }),
+  //   initialContent,
+  // });
 
   const bounds = useMemo(() => {
     const previewTargetBoundingRect =
@@ -117,9 +117,10 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       $right={bounds.right}
     >
       <Header>{props.artifact.title}</Header>
-      {initialContent && props.artifact.text.trim().length ? (
-        <BlockNoteView editor={editor} editable={false}></BlockNoteView>
+      {props.artifact.text.trim().length ? (
+        'TODO'
       ) : (
+        // <BlockNoteView editor={editor} editable={false}></BlockNoteView>
         <span>{t('artifactReferencePreview.noContent')}</span>
       )}
     </Container>,

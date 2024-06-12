@@ -1,6 +1,6 @@
 import { JSONContent } from '@tiptap/core';
 
-export const getJsonContentById = (
+export const getJSONContentById = (
   jsonContent: JSONContent,
   id: string,
 ): JSONContent | undefined => {
@@ -8,7 +8,7 @@ export const getJsonContentById = (
   if (!jsonContent.content) return;
 
   for (const el of jsonContent.content) {
-    const childResult = getJsonContentById(el, id);
+    const childResult = getJSONContentById(el, id);
     if (childResult) return childResult;
   }
 

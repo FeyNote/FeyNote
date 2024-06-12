@@ -1,11 +1,12 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { searchProvider } from '@feynote/search';
+import { enqueueArtifactUpdate } from '@feynote/queue';
 import { artifactJsonSchema } from '@feynote/prisma/types';
 import { TRPCError } from '@trpc/server';
-import { updateArtifactOutgoingReferences } from '@feynote/api-services';
 import { ArtifactTheme } from '@prisma/client';
+import * as Y from 'yjs';
+import { constructYArtifact } from '@feynote/shared-utils';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -37,40 +38,35 @@ export const createArtifact = authenticatedProcedure
       }
     }
 
-    const id = await prisma.$transaction(async (tx) => {
-      const { id } = await tx.artifact.create({
-        data: {
-          title: input.title,
-          text: input.text,
-          json: input.json,
-          userId: ctx.session.userId,
-          theme: input.theme,
-          isPinned: input.isPinned,
-          isTemplate: input.isTemplate,
-          rootTemplateId: input.rootTemplateId,
-          artifactTemplateId: input.artifactTemplateId,
-        },
-      });
+    const yDoc = constructYArtifact({
+      title: input.title,
+      theme: input.theme,
+      isPinned: input.isPinned,
+      isTemplate: input.isTemplate,
+    });
+    const yBin = Buffer.from(Y.encodeStateAsUpdate(yDoc));
 
-      await updateArtifactOutgoingReferences(
-        ctx.session.userId,
-        id,
-        input.json.blocknoteContent || [],
-        tx,
-      );
-
-      return id;
+    const { id } = await prisma.artifact.create({
+      data: {
+        title: input.title,
+        text: input.text,
+        json: input.json,
+        userId: ctx.session.userId,
+        theme: input.theme,
+        isPinned: input.isPinned,
+        isTemplate: input.isTemplate,
+        rootTemplateId: input.rootTemplateId,
+        artifactTemplateId: input.artifactTemplateId,
+        yBin,
+      },
     });
 
-    const indexableArtifact = {
-      id,
+    await enqueueArtifactUpdate({
+      artifactId: id,
       userId: ctx.session.userId,
-      text: input.text,
-      title: input.title,
-      json: input.json,
-    };
-
-    await searchProvider.indexArtifact(indexableArtifact);
+      oldYBin: yBin,
+      newYBin: yBin,
+    });
 
     // We only return ID since we expect frontend to fetch artifact via getArtifactById
     // rather than adding that logic here.

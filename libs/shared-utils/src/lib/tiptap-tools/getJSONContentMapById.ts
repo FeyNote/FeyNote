@@ -1,6 +1,6 @@
 import { JSONContent } from '@tiptap/core';
 
-export const getJsonContentMapById = (
+export const getJSONContentMapById = (
   root: JSONContent,
 ): Map<string, JSONContent> => {
   const jsonContentById = new Map<string, JSONContent>();
@@ -9,7 +9,7 @@ export const getJsonContentMapById = (
   if (!root.content) return jsonContentById;
 
   for (const content of root.content) {
-    const childrenResults = getJsonContentMapById(content);
+    const childrenResults = getJSONContentMapById(content);
     childrenResults.forEach((value, key) => {
       jsonContentById.set(key, value);
     });

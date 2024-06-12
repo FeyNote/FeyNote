@@ -1,22 +1,19 @@
-import { ArtifactEditorBlock } from '@feynote/blocknote';
 import { prisma } from '@feynote/prisma/client';
-import { getBlocksDiff } from '@feynote/shared-utils';
+import { getJSONContentDiff } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
+import { JSONContent } from '@tiptap/core';
 
 /**
- * Updates all of the stored artifact block reference text for the given artifact.
- * Block reference text is used for other artifacts to the blocks within this one.
+ * Updates all of the stored artifact content reference text for the given artifact.
+ * Content reference text is used for other artifacts to the content within this one.
  */
-export async function updateArtifactBlockReferenceText(
+export async function updateArtifactContentReferenceText(
   artifactId: string,
-  oldBlocknoteContent: ArtifactEditorBlock[],
-  newBlocknoteContent: ArtifactEditorBlock[],
+  oldTiptapContent: JSONContent,
+  newTiptapContent: JSONContent,
   tx: Prisma.TransactionClient = prisma,
 ) {
-  const diff = getBlocksDiff(
-    oldBlocknoteContent || [],
-    newBlocknoteContent || [],
-  );
+  const diff = getJSONContentDiff(oldTiptapContent, newTiptapContent);
 
   // We drop to raw query here so that we can execute a PostgreSQL-specific
   // update query. This allows us to perform an update query with different values

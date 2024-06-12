@@ -35,6 +35,7 @@ import { HeadingPlugin } from './tiptap/extensionHeading';
 import UniqueID from '@tiptap-pro/extension-unique-id';
 import { ArtifactDetail } from '@feynote/prisma/types';
 import { KnownArtifactReference } from './tiptap/referenceList/KnownArtifactReference';
+import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
@@ -46,10 +47,11 @@ export type ArtifactEditorApplyTemplate = (
 ) => void;
 
 interface Props {
-  knownReferencesRef: MutableRefObject<Map<string, KnownArtifactReference>>;
+  knownReferences: Map<string, KnownArtifactReference>;
   yjsProvider: TiptapCollabProvider;
   theme: ArtifactTheme;
   applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
+  onReady?: () => void;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
@@ -81,7 +83,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       GlobalDragHandle,
       Collaboration.configure({
         document: props.yjsProvider.document,
-        field: 'tiptapBody',
+        field: ARTIFACT_TIPTAP_BODY_KEY,
       }),
       CollaborationCursor.configure({
         provider: props.yjsProvider,
@@ -92,7 +94,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       }),
       CommandsPlugin,
       ReferencesPlugin.configure({
-        knownReferencesRef: props.knownReferencesRef,
+        knownReferences: props.knownReferences,
       }),
       Placeholder.configure({
         placeholder:
@@ -109,6 +111,9 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       //   editor.getJSON() as any,
       //   editor.getText(),
       // );
+    },
+    onCreate: () => {
+      props.onReady?.();
     },
   });
 

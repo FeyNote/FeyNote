@@ -3,13 +3,10 @@ import { getReferenceSuggestions } from './getReferenceSuggestions';
 import { renderReferenceList } from './renderReferenceList';
 import { mergeAttributes } from '@tiptap/core';
 import { routes } from '../../../../routes';
-import { MutableRefObject } from 'react';
 import { KnownArtifactReference } from './KnownArtifactReference';
 
 type ReferencePluginOptions = MentionOptions & {
-  knownReferencesRef: MutableRefObject<
-    Map<string, KnownArtifactReference>
-  > | null;
+  knownReferences: Map<string, KnownArtifactReference>;
 };
 
 export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
@@ -45,15 +42,15 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
       },
 
       referenceText: {
-        default: null,
+        default: 'Reference',
       },
     };
   },
 
   addOptions() {
     return {
-      ...Mention.options,
-      knownReferencesRef: null,
+      ...this.parent?.(),
+      knownReferences: new Map(),
     };
   },
 }).configure({
@@ -66,7 +63,7 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
   renderHTML({ options, node }) {
     const knownReference = (
       options as ReferencePluginOptions
-    ).knownReferencesRef?.current.get(node.attrs.artifactId);
+    ).knownReferences.get(node.attrs.artifactId);
 
     return [
       'a',
@@ -80,7 +77,7 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
   renderText({ options, node }) {
     const knownReference = (
       options as ReferencePluginOptions
-    ).knownReferencesRef?.current.get(node.attrs.artifactId);
+    ).knownReferences.get(node.attrs.artifactId);
     return `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
   },
 });

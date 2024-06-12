@@ -5,13 +5,13 @@ import {
 } from '@aws-sdk/client-ses';
 
 import { Mail } from './mail/Mail';
-import { config } from '../config';
+import { globalServerConfig } from '@feynote/config';
 
 const ses = new SESClient({
-  region: config.aws.region,
+  region: globalServerConfig.aws.region,
   credentials: {
-    accessKeyId: config.aws.accessKeyId,
-    secretAccessKey: config.aws.secretAccessKey,
+    accessKeyId: globalServerConfig.aws.accessKeyId,
+    secretAccessKey: globalServerConfig.aws.secretAccessKey,
   },
 });
 
@@ -37,8 +37,8 @@ export const sendMail = async (mail: Mail) => {
         Data: mail.subject,
       },
     },
-    Source: `"${config.email.fromName}" <${config.email.fromAddress}>`,
-    ReplyToAddresses: [config.email.replyToAddress],
+    Source: `"${globalServerConfig.email.fromName}" <${globalServerConfig.email.fromAddress}>`,
+    ReplyToAddresses: [globalServerConfig.email.replyToAddress],
   };
 
   await ses.send(

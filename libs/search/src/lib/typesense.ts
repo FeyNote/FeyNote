@@ -1,15 +1,22 @@
-import { BlockIndexDocument, Indexes, SearchProvider } from './types';
+import {
+  IndexableArtifact,
+  BlockIndexDocument,
+  Indexes,
+  SearchProvider,
+} from './types';
 import { Client } from 'typesense';
-import { Block } from '@blocknote/core';
-import { IndexableArtifact } from '@feynote/prisma/types';
-import { config } from '@feynote/api-services';
+import { globalServerConfig } from '@feynote/config';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
-import { getBlocksByQuery } from '@feynote/shared-utils';
+import {
+  getTextForJSONContent,
+  jsonContentForEach,
+  getIdForJSONContent,
+} from '@feynote/shared-utils';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
-    nodes: JSON.parse(config.typesense.nodes),
-    apiKey: config.typesense.apiKey,
+    nodes: JSON.parse(globalServerConfig.typesense.nodes),
+    apiKey: globalServerConfig.typesense.apiKey,
     numRetries: 10,
     retryIntervalSeconds: 1,
     connectionTimeoutSeconds: 10,
@@ -24,7 +31,7 @@ export class TypeSense implements SearchProvider {
     const doesArtifactIndexExist = await this.client
       .collections(Indexes.Artifact)
       .exists();
-    const doesBlockNoteIndexExist = await this.client
+    const doesBlockIndexExist = await this.client
       .collections(Indexes.Block)
       .exists();
     console.log('Established a connection to typesense');
@@ -32,8 +39,8 @@ export class TypeSense implements SearchProvider {
     if (!doesArtifactIndexExist) {
       await this.createArtifactIndex();
     }
-    if (!doesBlockNoteIndexExist) {
-      await this.createBlocknoteIndex();
+    if (!doesBlockIndexExist) {
+      await this.createBlockIndex();
     }
   }
 
@@ -51,19 +58,20 @@ export class TypeSense implements SearchProvider {
   }
 
   async indexBlocks(artifact: IndexableArtifact) {
-    if (!artifact.json.blocknoteContent) return;
+    if (!artifact.jsonContent) return;
 
-    const blocks = getBlocksByQuery(true, artifact.json.blocknoteContent).map(
-      (blockQueryResult) => {
-        const block = {
-          id: blockQueryResult.block.id,
-          text: blockQueryResult.matchedText,
-          userId: artifact.userId,
-          artifactId: artifact.id,
-        } satisfies BlockIndexDocument;
-        return block;
-      },
-    );
+    const blocks: BlockIndexDocument[] = [];
+
+    jsonContentForEach(artifact.jsonContent, (jsonContent) => {
+      const block = {
+        id: getIdForJSONContent(jsonContent),
+        text: getTextForJSONContent(jsonContent),
+        userId: artifact.userId,
+        artifactId: artifact.id,
+      } satisfies BlockIndexDocument;
+
+      blocks.push(block);
+    });
 
     await this.deleteBlocksByArtifactIds([artifact.id]);
     if (!blocks.length) return;
@@ -162,7 +170,7 @@ export class TypeSense implements SearchProvider {
     );
   }
 
-  private async createBlocknoteIndex() {
+  private async createBlockIndex() {
     await this.client.collections().create({
       name: Indexes.Block,
       fields: [
@@ -224,7 +232,7 @@ export class TypeSense implements SearchProvider {
             from: ['fullText'],
             model_config: {
               model_name: 'openai/text-embedding-3-large',
-              api_key: config.openai.apiKey,
+              api_key: globalServerConfig.openai.apiKey,
             },
           },
         },

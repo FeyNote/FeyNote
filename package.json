@@ -53,6 +53,7 @@
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "@types/dedent": "^0.7.2",
+    "bullmq": "^5.7.15",
     "debounce": "^2.1.0",
     "dedent": "^1.5.3",
     "express": "^4.19.2",

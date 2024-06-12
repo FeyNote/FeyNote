@@ -2,10 +2,10 @@ import { prisma } from '@feynote/prisma/client';
 import { Prisma } from '@prisma/client';
 
 /**
- * Updates the artifact reference text
- * Reference text is used for other artifacts to reference this one.
+ * Updates the artifact title reference text
+ * Title reference text is used for other artifacts to reference this one directly.
  */
-export async function updateArtifactReferenceText(
+export async function updateArtifactTitleReferenceText(
   artifactId: string,
   oldTitle: string,
   newTitle: string,

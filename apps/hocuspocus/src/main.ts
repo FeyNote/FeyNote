@@ -3,34 +3,20 @@ import { Logger } from '@hocuspocus/extension-logger';
 import { Throttle } from '@hocuspocus/extension-throttle';
 import { Database } from '@hocuspocus/extension-database';
 import { prisma } from '@feynote/prisma/client';
-import { TiptapTransformer } from '@hocuspocus/transformer';
-import { isSessionExpired } from '@feynote/api-services';
-import { ArtifactTheme } from '@prisma/client';
-import { z } from 'zod';
-import * as Y from 'yjs';
-import { applyUpdate } from 'yjs';
-import { encodeStateAsUpdate } from 'yjs';
-
-const artifactMetaSchema = z.object({
-  title: z.string(),
-  theme: z.nativeEnum(ArtifactTheme),
-  isPinned: z.boolean(),
-  isTemplate: z.boolean(),
-});
+import { enqueueArtifactUpdate } from '@feynote/queue';
+import { isSessionExpired, yArtifactMetaSchema } from '@feynote/api-services';
+import {
+  ARTIFACT_TIPTAP_BODY_KEY,
+  getMetaFromYArtifact,
+  getTiptapContentFromYjsDoc,
+} from '@feynote/shared-utils';
 
 const server = Server.configure({
+  stopOnSignals: true, // Listen to SIGINT, SIGTERM
   async onAuthenticate({ token }) {
     const session = await prisma.session.findUnique({
       where: {
         token,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
       },
     });
     if (!session) throw new Error('Session not found');
@@ -40,7 +26,7 @@ const server = Server.configure({
     }
 
     return {
-      session,
+      userId: session.userId,
     };
   },
   extensions: [
@@ -50,87 +36,66 @@ const server = Server.configure({
     }),
     new Logger(),
     new Database({
-      fetch: async (asdf) => {
+      fetch: async (args) => {
         const artifact = await prisma.artifact.findUnique({
           where: {
-            id: asdf.documentName,
+            id: args.documentName,
+            userId: args.context.userId, // TODO: Impl sharing permission check here
           },
           select: {
-            title: true,
-            theme: true,
-            isPinned: true,
-            isTemplate: true,
-            json: true,
+            yBin: true,
           },
         });
 
         if (!artifact) return null;
 
-        const json = artifact.json as any;
-
-        // Doc does not have any yJS content
-        if (!json.yjsState) return null;
-
-        const buff = Buffer.from(json.yjsState, 'base64');
-        const document = new Y.Doc();
-        applyUpdate(document, buff);
-
-        const artifactMetaYMap = document.getMap('artifactMeta');
-
-        if (!artifactMetaYMap.has('title')) {
-          artifactMetaYMap.set('title', artifact.title);
-        }
-        if (!artifactMetaYMap.has('theme')) {
-          artifactMetaYMap.set('theme', artifact.theme);
-        }
-        if (!artifactMetaYMap.has('isPinned')) {
-          artifactMetaYMap.set('isPinned', artifact.isPinned);
-        }
-        if (!artifactMetaYMap.has('isTemplate')) {
-          artifactMetaYMap.set('isTemplate', artifact.isTemplate);
-        }
-
-        return encodeStateAsUpdate(document);
+        return artifact.yBin;
       },
-      store: async ({ documentName, state, document }) => {
+      store: async (args) => {
         try {
           const artifact = await prisma.artifact.findUnique({
             where: {
-              id: documentName,
+              id: args.documentName,
+              userId: args.context.userId, // TODO: Impl sharing permission check here
+            },
+            select: {
+              yBin: true,
+              json: true,
             },
           });
 
           if (!artifact) throw new Error('Artifact does not exist');
 
-          const tiptapDocument = TiptapTransformer.fromYdoc(
-            document,
-            'tiptapBody',
+          const tiptapBody = getTiptapContentFromYjsDoc(
+            args.document,
+            ARTIFACT_TIPTAP_BODY_KEY,
           );
+          const artifactMeta = getMetaFromYArtifact(args.document);
 
-          const artifactMetaYMap = document.getMap('artifactMeta');
-          const artifactMeta = {
-            title: artifactMetaYMap.get('title') as string,
-            theme: artifactMetaYMap.get('theme') as ArtifactTheme,
-            isPinned: artifactMetaYMap.get('isPinned') as boolean,
-            isTemplate: artifactMetaYMap.get('isTemplate') as boolean,
-          };
-
-          artifactMetaSchema.parse(artifactMeta);
+          yArtifactMetaSchema.parse(artifactMeta);
 
           await prisma.artifact.update({
             where: {
-              id: documentName,
+              id: args.documentName,
             },
             data: {
               ...artifactMeta,
+              yBin: args.state,
               json: {
                 ...(artifact.json as any),
-                yjsState: state.toString('base64'),
-                tiptapDocument,
+                tiptapBody,
               },
             },
           });
+
+          await enqueueArtifactUpdate({
+            artifactId: args.documentName,
+            userId: args.context.userId,
+            oldYBin: artifact.yBin,
+            newYBin: args.state,
+          });
         } catch (e) {
+          console.error(e);
           // Any error that is thrown in our handler must not be ejected to Hocuspocus, otherwise Hocuspocus will crash terminating all connections.
           //
           // TODO: Capture with cloud logger

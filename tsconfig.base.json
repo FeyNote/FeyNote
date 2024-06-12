@@ -16,6 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@feynote/api-services": ["libs/api-services/src/index.ts"],
+      "@feynote/queue": ["libs/queue/src/index.ts"],
+      "@feynote/config": ["libs/config/src/index.ts"],
       "@feynote/blocknote": ["libs/blocknote/src/index.ts"],
       "@feynote/prisma/client": ["libs/prisma/client/src/index.ts"],
       "@feynote/prisma/seed": ["libs/prisma/seed/src/index.ts"],

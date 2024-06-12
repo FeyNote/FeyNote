@@ -1,10 +1,6 @@
-const getEnvOrThrow = (name: string) => {
-  const envVar = process.env[name];
-  if (!envVar) throw new Error(`Environment variable ${name} does not exist`);
-  return envVar;
-};
+import { getEnvOrThrow } from './getEnvOrThrow';
 
-export const config = {
+export const globalServerConfig = {
   email: {
     fromName: getEnvOrThrow('EMAIL_FROM_NAME'),
     fromAddress: getEnvOrThrow('EMAIL_FROM_ADDRESS'),
@@ -21,5 +17,16 @@ export const config = {
   },
   openai: {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
+  },
+  redis: {
+    host: getEnvOrThrow('REDIS_HOST'),
+    port: parseInt(getEnvOrThrow('REDIS_PORT')),
+  },
+  worker: {
+    queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '1'),
+    queueCompleteCount: parseInt(
+      process.env['WORKER_QUEUE_COMPLETE_COUNT'] || '1000',
+    ),
+    queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
   },
 };

@@ -1,0 +1,52 @@
+{
+  "name": "queue-worker",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/queue-worker/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/queue-worker",
+        "main": "apps/queue-worker/src/main.ts",
+        "tsConfig": "apps/queue-worker/tsconfig.app.json",
+        "webpackConfig": "apps/queue-worker/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "queue-worker:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "queue-worker:build:development"
+        },
+        "production": {
+          "buildTarget": "queue-worker:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/queue-worker/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

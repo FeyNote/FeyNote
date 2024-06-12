@@ -1,4 +1,12 @@
-import { IndexableArtifact } from '@feynote/prisma/types';
+import { JSONContent } from '@tiptap/core';
+
+export interface IndexableArtifact {
+  id: string;
+  title: string;
+  text: string;
+  userId: string;
+  jsonContent: JSONContent | null;
+}
 
 export interface SearchProvider {
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;

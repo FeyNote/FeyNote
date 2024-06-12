@@ -1,6 +1,5 @@
 import dedent from 'dedent';
-import { ArtifactIndexDocument } from './types';
-import { IndexableArtifact } from '@feynote/prisma/types';
+import { ArtifactIndexDocument, IndexableArtifact } from './types';
 
 export const createArtifactIndexDocument = (
   artifact: IndexableArtifact,
