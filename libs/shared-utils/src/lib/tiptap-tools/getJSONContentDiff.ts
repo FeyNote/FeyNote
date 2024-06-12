@@ -40,8 +40,8 @@ export function getJSONContentDiff(
   const newJSONContentById = getJSONContentMapById(_newJSONContent);
 
   // Fetch flat list of blocks, rather than tree which is what this function is called with
-  const oldJSONContents = Object.values(oldJSONContentById);
-  const newJSONContents = Object.values(newJSONContentById);
+  const oldJSONContents = [...oldJSONContentById.values()];
+  const newJSONContents = [...newJSONContentById.values()];
 
   const results: JSONContentDiff.Result = new Map();
 

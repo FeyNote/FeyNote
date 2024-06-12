@@ -4,6 +4,7 @@ import { renderReferenceList } from './renderReferenceList';
 import { mergeAttributes } from '@tiptap/core';
 import { routes } from '../../../../routes';
 import { KnownArtifactReference } from './KnownArtifactReference';
+import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 
 type ReferencePluginOptions = MentionOptions & {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -61,7 +62,11 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
     allowSpaces: true,
   },
   renderHTML({ options, node }) {
-    const knownReference = this.knownReferences?.get(node.attrs.artifactId);
+    const key = getKnownArtifactReferenceKey(
+      node.attrs.artifactId,
+      node.attrs.artifactBlockId || undefined,
+    );
+    const knownReference = this.knownReferences?.get(key);
 
     return [
       'a',
@@ -73,7 +78,11 @@ export const ReferencesPlugin = Mention.extend<ReferencePluginOptions>({
     ];
   },
   renderText({ options, node }) {
-    const knownReference = this.knownReferences?.get(node.attrs.artifactId);
+    const key = getKnownArtifactReferenceKey(
+      node.attrs.artifactId,
+      node.attrs.artifactBlockId || undefined,
+    );
+    const knownReference = this.knownReferences?.get(key);
 
     return `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
   },

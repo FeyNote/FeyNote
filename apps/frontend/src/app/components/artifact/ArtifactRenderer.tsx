@@ -37,6 +37,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import { getKnownArtifactReferenceKey } from '../editor/tiptap/referenceList/getKnownArtifactReferenceKey';
 
 const ConnectionStatusContainer = styled.div`
   display: flex;
@@ -120,12 +121,13 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   // We must preserve the original map between renders
   // because tiptap exists outside of React's render cycle
-  const [knownReferences] = useState(new Map());
+  const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
   useEffect(() => {
     for (const reference of props.artifact.artifactReferences) {
-      const key = reference.targetArtifactBlockId
-        ? `${reference.targetArtifactId}.${reference.targetArtifactBlockId}`
-        : reference.targetArtifactId;
+      const key = getKnownArtifactReferenceKey(
+        reference.targetArtifactId,
+        reference.targetArtifactBlockId || undefined,
+      );
 
       knownReferences.set(key, {
         artifactBlockId: reference.artifactBlockId,
