@@ -63,7 +63,7 @@ export const Artifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {artifact && <ArtifactRenderer artifact={artifact} />}
+        {artifact && <ArtifactRenderer artifact={artifact} reload={load} />}
       </IonContent>
       <IonPopover trigger="artifact-popover-trigger" triggerAction="click">
         <IonContent class="ion-padding">

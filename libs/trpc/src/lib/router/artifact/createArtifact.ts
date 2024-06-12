@@ -41,8 +41,6 @@ export const createArtifact = authenticatedProcedure
     const yDoc = constructYArtifact({
       title: input.title,
       theme: input.theme,
-      isPinned: input.isPinned,
-      isTemplate: input.isTemplate,
     });
     const yBin = Buffer.from(Y.encodeStateAsUpdate(yDoc));
 

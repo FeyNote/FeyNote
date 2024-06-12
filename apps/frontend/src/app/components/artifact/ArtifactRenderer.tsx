@@ -14,6 +14,7 @@ import {
   IonSelectOption,
   useIonAlert,
   useIonModal,
+  useIonToast,
 } from '@ionic/react';
 import { chevronForward } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -36,8 +37,10 @@ import { Prompt } from 'react-router-dom';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
-import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/referenceList/getKnownArtifactReferenceKey';
+import { trpc } from '../../../utils/trpc';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 const ConnectionStatusContainer = styled.div`
   display: flex;
@@ -78,11 +81,13 @@ const connectionStatusToI18n = {
 
 interface Props {
   artifact: ArtifactDetail;
+  reload: () => void;
 }
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
+  const [presentToast] = useIonToast();
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,
   );
@@ -146,13 +151,10 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   useEffect(() => {
     const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
 
-    const listener: Parameters<typeof artifactMetaMap.observe>[0] = (evt) => {
-      setTitle((evt.target.get('title') as string) ?? title);
-      setTheme(
-        (evt.target.get('theme') as typeof props.artifact.theme) ?? theme,
-      );
-      setIsPinned((evt.target.get('isPinned') as boolean) ?? isPinned);
-      setIsTemplate((evt.target.get('isTemplate') as boolean) ?? isTemplate);
+    const listener = () => {
+      const yArtifactMeta = getMetaFromYArtifact(connection.yjsDoc);
+      setTitle(yArtifactMeta.title ?? title);
+      setTheme(yArtifactMeta.theme ?? theme);
     };
 
     artifactMetaMap.observe(listener);
@@ -215,6 +217,24 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
+  const updateArtifact = (updates: Partial<ArtifactDetail>) => {
+    trpc.artifact.updateArtifact
+      .mutate({
+        id: props.artifact.id,
+        isPinned,
+        isTemplate,
+        rootTemplateId,
+        artifactTemplateId: artifactTemplate?.id || null,
+        ...updates,
+      })
+      .then(() => {
+        props.reload();
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+  };
+
   return (
     <IonGrid>
       <Prompt
@@ -272,7 +292,10 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               justify="start"
               checked={isPinned}
               onIonChange={(event) => {
-                setMetaProp('isPinned', event.target.checked);
+                setIsPinned(event.target.checked);
+                updateArtifact({
+                  isPinned: event.target.checked,
+                });
               }}
             >
               {t('artifactRenderer.isPinned')}
@@ -288,7 +311,10 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               justify="start"
               checked={isTemplate}
               onIonChange={(event) => {
-                setMetaProp('isTemplate', event.target.checked);
+                setIsTemplate(event.target.checked);
+                updateArtifact({
+                  isTemplate: event.target.checked,
+                });
               }}
             >
               {t('artifactRenderer.isTemplate')}

@@ -9,8 +9,6 @@ export const getMetaFromYArtifact = (yArtifact: Y.Doc) => {
   const artifactMeta = {
     title: artifactMetaYMap.get('title') as string,
     theme: artifactMetaYMap.get('theme') as ArtifactTheme,
-    isPinned: artifactMetaYMap.get('isPinned') as boolean,
-    isTemplate: artifactMetaYMap.get('isTemplate') as boolean,
   } satisfies YArtifactMetaSchema;
 
   return artifactMeta;

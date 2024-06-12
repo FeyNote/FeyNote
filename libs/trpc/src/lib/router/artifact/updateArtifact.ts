@@ -2,18 +2,13 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, artifactJsonSchema } from '@feynote/prisma/types';
-import { ArtifactTheme } from '@prisma/client';
+import { artifactDetail } from '@feynote/prisma/types';
 import { enqueueArtifactUpdate } from '@feynote/queue';
 
 export const updateArtifact = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
-      title: z.string(),
-      text: z.string(),
-      json: artifactJsonSchema,
-      theme: z.nativeEnum(ArtifactTheme),
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
       rootTemplateId: z.string().nullable(),
@@ -56,13 +51,10 @@ export const updateArtifact = authenticatedProcedure
         id: input.id,
       },
       data: {
-        title: input.title,
-        text: input.text,
-        json: input.json,
-        theme: input.theme,
         isPinned: input.isPinned,
         isTemplate: input.isTemplate,
         rootTemplateId: input.rootTemplateId,
+        artifactTemplateId: input.artifactTemplateId,
       },
     });
 
