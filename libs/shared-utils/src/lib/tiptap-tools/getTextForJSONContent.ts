@@ -2,7 +2,7 @@ import { JSONContent } from '@tiptap/core';
 
 export const getTextForJSONContent = (root: JSONContent): string => {
   if (root.type === 'text') {
-    return root.text || '';
+    return root.text?.trim() || '';
   }
   if (!root.content) return '';
 
@@ -10,5 +10,5 @@ export const getTextForJSONContent = (root: JSONContent): string => {
   for (const content of root.content) {
     childContent.push(getTextForJSONContent(content));
   }
-  return childContent.join('');
+  return childContent.filter((el) => el).join(' ');
 };

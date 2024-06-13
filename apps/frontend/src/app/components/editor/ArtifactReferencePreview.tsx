@@ -1,17 +1,8 @@
-import { useCreateBlockNote } from '@blocknote/react';
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { buildArtifactEditorBlocknoteSchema } from '@feynote/blocknote';
-import { ArtifactReference } from './ArtifactReference';
-import { ArtifactBlockReference } from './ArtifactBlockReference';
-import { BlockNoteView } from '@blocknote/mantine';
 import styled from 'styled-components';
-import { getBlockById } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { MonsterSheet } from './sheets/MonsterSheet';
-import { HorizontalRule } from './HorizontalRule';
-import { SpellSheet } from './sheets/SpellSheet';
 
 const PREVIEW_WIDTH_PX = 400;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -56,28 +47,6 @@ interface Props {
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  // const getBlocknoteContentForBlocknoteId = (blockId: string) => {
-  //   const block = getBlockById(
-  //     props.artifact.json.blocknoteContent || [],
-  //     blockId,
-  //   );
-  //   if (block) return [block];
-  //   return;
-  // };
-  // const initialContent = props.artifactBlockId
-  //   ? getBlocknoteContentForBlocknoteId(props.artifactBlockId)
-  //   : props.artifact.json.blocknoteContent;
-  //
-  // const editor = useCreateBlockNote({
-  //   schema: buildArtifactEditorBlocknoteSchema({
-  //     artifactReferenceFC: ArtifactReference,
-  //     artifactBlockReferenceFC: ArtifactBlockReference,
-  //     horizontalRuleFC: HorizontalRule,
-  //     monsterSheetFC: MonsterSheet,
-  //     spellSheetFC: SpellSheet,
-  //   }),
-  //   initialContent,
-  // });
 
   const bounds = useMemo(() => {
     const previewTargetBoundingRect =
@@ -108,7 +77,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     return bounds;
   }, [props.previewTarget]);
 
-  // We portal because blocknote styling does not play well with blocknote instances inside of each other
+  // We portal because styling does not play well with editor instances inside of each other
   return createPortal(
     <Container
       $top={bounds.top}
@@ -120,7 +89,6 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       {props.artifact.text.trim().length ? (
         'TODO'
       ) : (
-        // <BlockNoteView editor={editor} editable={false}></BlockNoteView>
         <span>{t('artifactReferencePreview.noContent')}</span>
       )}
     </Container>,

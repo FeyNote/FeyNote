@@ -8,6 +8,7 @@ import { isSessionExpired, yArtifactMetaSchema } from '@feynote/api-services';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getMetaFromYArtifact,
+  getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
 
@@ -70,6 +71,7 @@ const server = Server.configure({
             args.document,
             ARTIFACT_TIPTAP_BODY_KEY,
           );
+          const text = getTextForJSONContent(tiptapBody);
           const artifactMeta = getMetaFromYArtifact(args.document);
 
           yArtifactMetaSchema.parse(artifactMeta);
@@ -80,6 +82,7 @@ const server = Server.configure({
             },
             data: {
               ...artifactMeta,
+              text,
               yBin: args.state,
               json: {
                 ...(artifact.json as any),

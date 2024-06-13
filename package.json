@@ -9,9 +9,6 @@
   "private": true,
   "dependencies": {
     "@aws-sdk/client-ses": "^3.556.0",
-    "@blocknote/core": "0.13.4",
-    "@blocknote/mantine": "0.13.4",
-    "@blocknote/react": "0.13.4",
     "@hocuspocus/extension-database": "^2.13.0",
     "@hocuspocus/extension-logger": "^2.13.1",
     "@hocuspocus/extension-throttle": "^2.13.1",
@@ -48,6 +45,7 @@
     "@tiptap/extension-table-header": "^2.4.0",
     "@tiptap/extension-table-row": "^2.4.0",
     "@tiptap/extension-text": "^2.4.0",
+    "@tiptap/react": "^2.4.0",
     "@tiptap/starter-kit": "^2.4.0",
     "@tiptap/suggestion": "^2.4.0",
     "@trpc/client": "^10.45.2",

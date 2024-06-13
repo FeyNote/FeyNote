@@ -37,10 +37,17 @@ import { Prompt } from 'react-router-dom';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
-import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  getMetaFromYArtifact,
+  getTiptapContentFromYjsDoc,
+  randomizeJSONContentUUIDs,
+} from '@feynote/shared-utils';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/referenceList/getKnownArtifactReferenceKey';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import * as Y from 'yjs';
 
 const ConnectionStatusContainer = styled.div`
   display: flex;
@@ -195,7 +202,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
     } else {
       // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive (move to util)
-      editorApplyTemplateRef.current?.(rootTemplate.blocks);
+      editorApplyTemplateRef.current?.(rootTemplate.jsonContent);
     }
 
     setRootTemplateId(rootTemplate.id);
@@ -203,8 +210,14 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   };
 
   const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
-    // const blocks = artifactTemplate.json.blocknoteContent;
-    // editorApplyTemplateRef.current?.(blocks || []);
+    const templateYDoc = new Y.Doc();
+    Y.applyUpdate(templateYDoc, artifactTemplate.yBin);
+    const templateTiptapBody = getTiptapContentFromYjsDoc(
+      templateYDoc,
+      ARTIFACT_TIPTAP_BODY_KEY,
+    );
+    randomizeJSONContentUUIDs(templateTiptapBody);
+    editorApplyTemplateRef.current?.(templateTiptapBody);
 
     setArtifactTemplate(artifactTemplate);
     setRootTemplateId(null);

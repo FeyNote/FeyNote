@@ -103,21 +103,10 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
         filterTransaction: (transaction) => !isChangeOrigin(transaction),
       }),
     ],
-    onUpdate: ({ editor }) => {
-      console.log(editor.getJSON());
-      // props.onContentChange?.(
-      //   editor.getJSON() as any,
-      //   editor.getText(),
-      // );
-    },
     onCreate: () => {
       props.onReady?.();
     },
   });
-
-  useEffect(() => {
-    console.log(editor);
-  }, [editor]);
 
   if (props.applyTemplateRef) {
     props.applyTemplateRef.current = (template) => {
@@ -132,27 +121,4 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       </ArtifactEditorStyles>
     </StyledIonCard>
   );
-  //
-  // <BNStylesTest $focused={false} data-theme={props.theme}>
-  //   <BlockNoteView
-  //     editor={editor}
-  //     onChange={onChange}
-  //     slashMenu={false}
-  //     formattingToolbar={false}
-  //   >
-  //     <SuggestionMenuController
-  //       triggerCharacter={'/'}
-  //       // Replaces the default Slash Menu items with our custom ones.
-  //       getItems={async (query) =>
-  //         filterSuggestionItems(getSlashMenuItems(editor), query)
-  //       }
-  //     />
-  //     <SuggestionMenuController
-  //       triggerCharacter={'@'}
-  //       onItemClick={onItemClick}
-  //       suggestionMenuComponent={EditorReferenceMenu}
-  //       getItems={getMentionItems}
-  //     />
-  //   </BlockNoteView>
-  // </BNStylesTest>
 };
