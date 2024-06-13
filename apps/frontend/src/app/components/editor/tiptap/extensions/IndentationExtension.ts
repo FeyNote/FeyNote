@@ -29,8 +29,8 @@ type IndentOptions = {
   defaultIndentLevel: number;
   HTMLAttributes: Record<string, any>;
 };
-export const Indent = Extension.create<IndentOptions, never>({
-  name: 'indent',
+export const IndentationExtension = Extension.create<IndentOptions, never>({
+  name: 'customIndentation',
 
   addOptions() {
     return {

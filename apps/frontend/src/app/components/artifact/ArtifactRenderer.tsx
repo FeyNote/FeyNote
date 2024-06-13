@@ -35,7 +35,8 @@ import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nBy
 import styled from 'styled-components';
 import { Prompt } from 'react-router-dom';
 import { SessionContext } from '../../context/session/SessionContext';
-import { KnownArtifactReference } from '../editor/tiptap/referenceList/KnownArtifactReference';
+import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
+import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import {
   ARTIFACT_META_KEY,
@@ -44,7 +45,6 @@ import {
   getTiptapContentFromYjsDoc,
   randomizeJSONContentUUIDs,
 } from '@feynote/shared-utils';
-import { getKnownArtifactReferenceKey } from '../editor/tiptap/referenceList/getKnownArtifactReferenceKey';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import * as Y from 'yjs';

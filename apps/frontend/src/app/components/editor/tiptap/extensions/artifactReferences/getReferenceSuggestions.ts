@@ -1,4 +1,4 @@
-import { trpc } from '../../../../../utils/trpc';
+import { trpc } from '../../../../../../utils/trpc';
 import { ReferenceListItem } from './ReferenceListItem';
 
 export const getReferenceSuggestions = async ({

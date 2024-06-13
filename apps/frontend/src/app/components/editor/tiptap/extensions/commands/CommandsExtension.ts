@@ -3,7 +3,7 @@ import { Suggestion } from '@tiptap/suggestion';
 import { getTiptapCommands } from './getTiptapCommands';
 import { renderCommandList } from './renderCommandList';
 
-export const CommandsPlugin = Extension.create({
+export const CommandsExtension = Extension.create({
   name: 'customCommands',
 
   addOptions() {
