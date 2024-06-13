@@ -3,8 +3,13 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { useArtifactEditor } from '../../../getTiptapEditor';
+import * as Y from 'yjs';
+import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
+import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
+import { EditorContent } from '@tiptap/react';
 
-const PREVIEW_WIDTH_PX = 400;
+const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
 const PREVIEW_MAX_HEIGHT_PX = 300;
 
@@ -21,7 +26,7 @@ const Container = styled.div<{
   ${(props) => props.$bottom !== undefined && `top: ${props.$bottom}px;`}
   ${(props) => props.$bottom !== undefined && `transform: translateY(-100%);`}
   z-index: 100;
-  width: ${PREVIEW_WIDTH_PX}px;
+  width: min(${PREVIEW_WIDTH_PX}px, 100%);
   min-height: ${PREVIEW_MIN_HEIGHT_PX}px;
   max-height: ${PREVIEW_MAX_HEIGHT_PX}px;
   overflow-y: auto;
@@ -47,6 +52,21 @@ interface Props {
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+
+  const yDoc = useMemo(() => {
+    const yDoc = new Y.Doc();
+
+    Y.applyUpdate(yDoc, props.artifact.yBin);
+
+    return yDoc;
+  }, [props.artifact]);
+
+  const editor = useArtifactEditor({
+    editable: false,
+    knownReferences: new Map(), // TODO: Update this
+    yjsProvider: undefined,
+    yDoc,
+  });
 
   const bounds = useMemo(() => {
     const previewTargetBoundingRect =
@@ -87,7 +107,11 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     >
       <Header>{props.artifact.title}</Header>
       {props.artifact.text.trim().length ? (
-        'TODO'
+        <ArtifactEditorContainer>
+          <ArtifactEditorStyles>
+            <EditorContent editor={editor}></EditorContent>
+          </ArtifactEditorStyles>
+        </ArtifactEditorContainer>
       ) : (
         <span>{t('artifactReferencePreview.noContent')}</span>
       )}

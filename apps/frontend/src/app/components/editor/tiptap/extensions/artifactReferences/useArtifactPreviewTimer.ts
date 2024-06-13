@@ -1,8 +1,8 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
 import { useIonToast } from '@ionic/react';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { handleTRPCErrors } from '../../../../../../utils/handleTRPCErrors';
 import { useRef, useState } from 'react';
-import { trpc } from '../../../utils/trpc';
+import { trpc } from '../../../../../../utils/trpc';
 
 /**
  * Milliseconds the user has to hover in order for reference preview to open

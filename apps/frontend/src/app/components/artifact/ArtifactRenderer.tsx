@@ -146,7 +146,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         targetArtifactId: reference.targetArtifactId,
         targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
         referenceText: reference.referenceText,
-        isBroken: !!reference.referenceTargetArtifactId,
+        isBroken: !reference.referenceTargetArtifactId,
       });
     }
   }, [props.artifact.artifactReferences]);

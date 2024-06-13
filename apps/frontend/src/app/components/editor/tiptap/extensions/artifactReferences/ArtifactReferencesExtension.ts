@@ -5,8 +5,10 @@ import { mergeAttributes } from '@tiptap/core';
 import { routes } from '../../../../../routes';
 import { KnownArtifactReference } from './KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
 
-type ReferencePluginOptions = MentionOptions & {
+export type ReferencePluginOptions = MentionOptions & {
   knownReferences: Map<string, KnownArtifactReference>;
 };
 
@@ -55,6 +57,10 @@ export const ArtifactReferencesExtension =
         ...this.parent?.(),
         knownReferences: new Map(),
       };
+    },
+
+    addNodeView() {
+      return ReactNodeViewRenderer(ArtifactReferenceNodeView);
     },
   }).configure({
     suggestion: {
