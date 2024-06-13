@@ -1,7 +1,6 @@
 import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
-import { ArtifactEditorBlock } from '@feynote/blocknote';
-import { MutableRefObject, useEffect, useMemo, useState } from 'react';
+import { MutableRefObject, useEffect } from 'react';
 import { ArtifactTheme } from '@prisma/client';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Paragraph from '@tiptap/extension-paragraph';
@@ -26,16 +25,15 @@ import { Indent } from './tiptap/extensionIndentation';
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
-import * as Y from 'yjs';
 import { ReferencesPlugin } from './tiptap/referenceList/ReferencesPlugin';
 import { CommandsPlugin } from './tiptap/commandList/CommandsPlugin';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { HeadingPlugin } from './tiptap/extensionHeading';
 import UniqueID from '@tiptap-pro/extension-unique-id';
-import { ArtifactDetail } from '@feynote/prisma/types';
 import { KnownArtifactReference } from './tiptap/referenceList/KnownArtifactReference';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
+import { JSONContent } from '@tiptap/core';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
@@ -43,7 +41,7 @@ const StyledIonCard = styled(IonCard)`
 `;
 
 export type ArtifactEditorApplyTemplate = (
-  template: string | ArtifactEditorBlock[],
+  template: string | JSONContent,
 ) => void;
 
 interface Props {
@@ -120,6 +118,12 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   useEffect(() => {
     console.log(editor);
   }, [editor]);
+
+  if (props.applyTemplateRef) {
+    props.applyTemplateRef.current = (template) => {
+      editor?.commands.setContent(template);
+    };
+  }
 
   return (
     <StyledIonCard>
