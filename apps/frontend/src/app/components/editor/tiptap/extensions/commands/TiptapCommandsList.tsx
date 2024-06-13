@@ -3,6 +3,7 @@ import { MdHorizontalRule } from 'react-icons/md';
 import styled from 'styled-components';
 
 const SuggestionListContainer = styled.div`
+  font-family: var(--ion-font-family);
   width: min(350px, 100vw);
   max-height: 450px;
   background-color: var(--ion-card-background);

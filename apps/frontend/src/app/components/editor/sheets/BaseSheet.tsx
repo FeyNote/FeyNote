@@ -1,108 +1,5 @@
 import styled from 'styled-components';
 
-const suggestionListContainerStyles = `
-  font-family: var(--ion-font-family);
-  width: min(350px, 100vw);
-  background-color: var(--ion-card-background);
-  border-radius: 4px;
-  box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
-  color: var(--ion-text-color);
-  overflow-y: auto;
-  padding: 4px;
-`;
-
-const suggestionListSectionLabelStyles = `
-  padding-left: 8px;
-  font-size: 0.75rem;
-  margin-top: 6px;
-  margin-bottom: 6px;
-`;
-
-const suggestionListItemStyles = `
-  display: grid;
-  grid-template-columns: 50px auto min-content;
-  align-items: center;
-  text-align: left;
-  cursor: pointer;
-
-  border-radius: 4px;
-
-  color: var(--ion-text-color);
-  background-color: var(--ion-card-background);
-
-  width: 100%;
-  height: 52px;
-
-  &.selected, &[aria-selected="true"] {
-    background-color: var(--ion-background-color);
-  }
-
-  &:hover {
-    background-color: var(--ion-background-color);
-  }
-`;
-
-const suggestionListItemIconStyles = `
-  text-align: center;
-  background-color: var(--ion-background-color);
-  height: 34px;
-  width: 34px;
-  border-radius: 6px;
-  margin-right: 4px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: center;
-`;
-
-const suggestionListItemShortcutStyles = `
-  text-align: center;
-  background-color: var(--ion-background-color);
-  border-radius: 20px;
-  padding-left: 7px;
-  padding-right: 7px;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  font-size: 0.7rem;
-  white-space: nowrap;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  justify-self: center;
-`;
-
-const suggestionListItemTitleStyles = `
-  margin: 0;
-  margin-bottom: 2px;
-  font-size: 0.95rem;
-`;
-
-const suggestionListItemSubtitleStyles = `
-  color: rgba(var(--ion-text-color-rgb), 0.8);
-  margin: 0;
-  color: rgba(255,255,255,0.8);
-  font-size: 0.7rem;
-`;
-
-const themedCSSVariables = {
-  default: `
-    --sheet-text-color: var(--ion-text-color);
-    --sheet-font-family: var(--ion-font-family);
-    --sheet-header-color: var(--ion-text-color);
-    --sheet-header-font-family: var(--ion-font-family);
-    --sheet-placeholder-color: rgba(255,255,255,0.7);
-  `,
-  classic: `
-    --sheet-text-color: black;
-    --sheet-font-family: BookInsanityRemake;
-    --sheet-header-color: #58180D;
-    --sheet-header-font-family: MrEavesRemake;
-    --sheet-placeholder-color: rgba(0,0,0,0.7);
-  `,
-};
-
 const baseSheetStyles = `
   .bn-block:has(.monster-sheet) {
     min-width: min(450px, 100%);
@@ -239,165 +136,18 @@ export const BaseSheet = styled.div<{
 export const BNStylesTest = styled.div<{
   $focused: boolean;
 }>`
-  ${themedCSSVariables.default}
+  text-rendering: optimizeLegibility;
 
   padding-top: 12px;
   padding-bottom: 12px;
   padding-left: 8px;
   padding-right: 8px;
 
-  text-rendering: optimizeLegibility;
-
   font-family: var(--sheet-font-family);
+  color: var(--sheet-text-color);
 
-  .bn-editor {
-    outline: none;
-  }
-
-  .bn-container {
-    margin-left: 16px;
-    color: var(--sheet-text-color);
-  }
-
-  .bn-side-menu {
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
-    margin-right: 16px;
-    border-radius: 4px;
-    padding: 2px;
-    background: var(--ion-card-background);
-
-    button {
-      background: var(--ion-card-background);
-      color: white;
-      border-radius: 4px;
-
-      &:hover {
-        background-color: var(--ion-background-color);
-      }
-    }
-
-    svg {
-      vertical-align: middle;
-    }
-  }
-
-  .bn-table-handle {
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
-    background: var(--ion-card-background);
-    color: white;
-    border-radius: 4px;
-
-    svg {
-      vertical-align: middle;
-    }
-  }
-
-  .bn-block-group .bn-block-group {
-    margin-left: 16px;
-  }
-
-  .bn-inline-content:has(> .ProseMirror-trailingBreak)::before {
-    pointer-events: none;
-    height: 0;
-    position: absolute;
-    font-style: italic;
+  .placeholder {
     color: var(--sheet-placeholder-color);
-  }
-
-  .bn-suggestion-menu {
-    ${suggestionListContainerStyles}
-
-    .bn-suggestion-menu-label {
-      ${suggestionListSectionLabelStyles}
-    }
-
-    .bn-suggestion-menu-item {
-      ${suggestionListItemStyles}
-
-      .bn-mt-suggestion-menu-item-section:nth-child(1) {
-        ${suggestionListItemIconStyles}
-      }
-
-      .bn-mt-suggestion-menu-item-body {
-        .bn-mt-suggestion-menu-item-title {
-          ${suggestionListItemTitleStyles}
-        }
-
-        .bn-mt-suggestion-menu-item-subtitle {
-          ${suggestionListItemSubtitleStyles}
-        }
-      }
-
-      .bn-mt-suggestion-menu-item-section:nth-child(3) {
-        ${suggestionListItemShortcutStyles}
-      }
-    }
-  }
-
-  .bn-menu-dropdown {
-    position: absolute;
-    font-family: var(--ion-font-family);
-    background-color: var(--ion-card-background);
-    border-radius: 4px;
-    min-width: 125px;
-    box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
-    color: var(--ion-text-color);
-    padding: 4px;
-
-    .mantine-Menu-item {
-      background: transparent;
-      width: 100%;
-      height: 25px;
-      border-radius: 4px;
-      text-align: left;
-      display: flex;
-      align-items: center;
-
-      .mantine-Menu-itemLabel {
-        width: 100%;
-        margin-right: 6px;
-
-        > [aria-haspopup='menu'] {
-          display: flex;
-          justify-content: space-between;
-        }
-      }
-
-      [data-position='right'] {
-        margin-left: auto;
-      }
-
-      &.selected,
-      &[aria-selected='true'] {
-        background-color: var(--ion-background-color);
-      }
-
-      &:hover {
-        background-color: var(--ion-background-color);
-      }
-    }
-
-    .bn-color-icon {
-      margin-right: 6px;
-      align-items: center;
-      border: rgba(var(--ion-text-color-rgb), 0.5);
-      border-radius: 4px;
-      display: flex;
-      justify-content: center;
-    }
-
-    .mantine-Menu-item,
-    .mantine-Menu-label {
-      text-align: left;
-      padding-left: 12px;
-      padding-right: 12px;
-      padding-top: 5px;
-      padding-bottom: 5px;
-
-      button {
-        text-align: left;
-      }
-    }
   }
 
   h1 {
@@ -472,23 +222,6 @@ export const BNStylesTest = styled.div<{
     tr,
     td {
       border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-  }
-
-  &[data-theme='classic'] {
-    ${themedCSSVariables.classic}
-
-    background-color: #EEE5CE;
-    background-image: url('/assets/parchment-background.jpg');
-    box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
-
-    h3 {
-      border-bottom: 2px solid #c0ad6a;
-    }
-
-    hr {
-      height: 2px;
-      background-color: #c0ad6a;
     }
   }
 

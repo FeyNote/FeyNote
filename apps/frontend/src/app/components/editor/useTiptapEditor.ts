@@ -24,12 +24,13 @@ import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import * as Y from 'yjs';
 
-import { IndentationExtension } from './tiptap/extensions/IndentationExtension';
+import { IndentationExtension } from './tiptap/extensions/indentation/IndentationExtension';
 import { ArtifactReferencesExtension } from './tiptap/extensions/artifactReferences/ArtifactReferencesExtension';
 import { CommandsExtension } from './tiptap/extensions/commands/CommandsExtension';
-import { HeadingExtension } from './tiptap/extensions/HeadingExtension';
+import { HeadingExtension } from './tiptap/extensions/heading/HeadingExtension';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
+import { useTranslation } from 'react-i18next';
 
 type DocArgOptions =
   | {
@@ -48,6 +49,8 @@ type UseArtifactEditorArgs = {
 } & DocArgOptions;
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
+  const { t } = useTranslation();
+
   const extensions = [
     DocumentExtension,
     ParagraphExtension,
@@ -92,8 +95,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     }),
     PlaceholderExtension.configure({
       placeholder: args.editable
-        ? 'Write something … It’ll be shared with everyone else looking at this example.'
-        : 'No content',
+        ? t('editor.placeholder')
+        : t('editor.placeholder.readOnlyEmpty'),
     }),
     UniqueIDExtension.configure({
       types: ['heading', 'paragraph', 'artifactReference'],

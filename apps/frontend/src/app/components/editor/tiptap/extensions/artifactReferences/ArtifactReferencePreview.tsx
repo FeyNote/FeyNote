@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { useArtifactEditor } from '../../../getTiptapEditor';
+import { useArtifactEditor } from '../../../useTiptapEditor';
 import * as Y from 'yjs';
 import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
 import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';

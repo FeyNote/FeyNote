@@ -31,5 +31,6 @@ export const CommandsExtension = Extension.create({
   suggestion: {
     items: getTiptapCommands,
     render: renderCommandList,
+    allowSpaces: true,
   },
 });

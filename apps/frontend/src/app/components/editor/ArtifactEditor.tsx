@@ -1,4 +1,3 @@
-import { useIonToast } from '@ionic/react';
 import { MutableRefObject } from 'react';
 import { ArtifactTheme } from '@prisma/client';
 import { EditorContent } from '@tiptap/react';
@@ -7,7 +6,7 @@ import { TiptapCollabProvider } from '@hocuspocus/provider';
 
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { useArtifactEditor } from './getTiptapEditor';
+import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 
 export type ArtifactEditorApplyTemplate = (
@@ -23,8 +22,6 @@ interface Props {
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
-  const [presentToast] = useIonToast();
-
   const editor = useArtifactEditor({
     editable: true,
     knownReferences: props.knownReferences,
@@ -41,7 +38,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
   return (
     <ArtifactEditorContainer>
-      <ArtifactEditorStyles>
+      <ArtifactEditorStyles data-theme={props.theme}>
         <EditorContent editor={editor}></EditorContent>
       </ArtifactEditorStyles>
     </ArtifactEditorContainer>

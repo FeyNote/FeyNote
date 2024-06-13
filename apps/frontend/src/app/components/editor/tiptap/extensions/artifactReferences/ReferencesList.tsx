@@ -2,6 +2,7 @@ import { Component } from 'react';
 import styled from 'styled-components';
 import { MdHorizontalRule } from 'react-icons/md';
 import { t } from 'i18next';
+import { trpc } from '../../../../../../utils/trpc';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -73,16 +74,19 @@ export interface ReferenceItem {
 
 interface Props {
   items: ReferenceItem[];
+  query: string;
   command: (...args: any) => void;
 }
 
 interface State {
   selectedIndex: number;
+  creatingItem: boolean;
 }
 
-export class TiptapReferenceList extends Component<Props, State> {
+export class ReferencesList extends Component<Props, State> {
   state = {
     selectedIndex: 0,
+    creatingItem: false,
   };
 
   componentDidUpdate(oldProps: Props) {
@@ -130,8 +134,40 @@ export class TiptapReferenceList extends Component<Props, State> {
     this.selectItem(this.state.selectedIndex);
   }
 
+  createItem() {
+    if (this.state.creatingItem) return;
+
+    this.setState({
+      creatingItem: true,
+    });
+
+    const title =
+      this.props.query.charAt(0).toUpperCase() + this.props.query.slice(1);
+    trpc.artifact.createArtifact
+      .mutate({
+        title,
+        theme: 'default',
+        isPinned: false,
+        isTemplate: false,
+        text: '',
+        json: {},
+        rootTemplateId: null,
+        artifactTemplateId: null,
+      })
+      .then((artifact) => {
+        this.props.command({
+          artifactId: artifact.id,
+          artifactBlockId: undefined,
+          referenceText: title,
+        });
+      });
+  }
+
   selectItem(index: number) {
-    if (!this.props.items.length) return;
+    if (!this.props.items.length) {
+      this.createItem();
+      return;
+    }
 
     const item = this.props.items[index];
 
@@ -177,6 +213,7 @@ export class TiptapReferenceList extends Component<Props, State> {
           <SuggestionListItem
             $selected={this.state.selectedIndex === 0}
             key={0}
+            onClick={() => this.createItem()}
           >
             <SuggestionListItemIcon>
               <MdHorizontalRule size={18} />

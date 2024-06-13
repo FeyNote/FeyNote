@@ -1,7 +1,7 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
 import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
-import { TiptapReferenceList } from './TiptapReferenceList';
+import { ReferencesList } from './ReferencesList';
 import { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { ReferenceListItem } from './ReferenceListItem';
 
@@ -11,7 +11,7 @@ export const renderReferenceList = () => {
 
   return {
     onStart: (props: SuggestionProps<ReferenceListItem>) => {
-      component = new ReactRenderer(TiptapReferenceList, {
+      component = new ReactRenderer(ReferencesList, {
         props,
         editor: props.editor,
       });
