@@ -19,7 +19,7 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { FC, useMemo } from 'react';
-import { CommandsPlugin } from '../tiptap/commandList/CommandsPlugin';
+import { CommandsExtension } from '../tiptap/extensions/commands/CommandsExtension';
 
 interface SheetEditorContainerProps {
   $focused: boolean;
@@ -60,7 +60,7 @@ export const SheetEditor: FC<Props> = (props) => {
       TableRow,
       TableHeader,
       TableCell,
-      CommandsPlugin,
+      CommandsExtension,
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {
