@@ -2,7 +2,10 @@ import styled from 'styled-components';
 import { collaborationCursorExtensionStyles } from './tiptap/extensions/collaborationCursorExtensionStyles';
 import { indentationExtensionStyles } from './tiptap/extensions/indentation/indentationExtensionStyles';
 import { placeholderExtensionStyles } from './tiptap/extensions/placeholderExtensionStyles';
-import { globalDragHandleExtensionStyles } from './tiptap/extensions/globalDragHandleExtensionStyles';
+import { globalDragHandleExtensionStyles } from './tiptap/extensions/globalDragHandle/globalDragHandleExtensionStyles';
+import { monsterStatsheetExtensionStyles } from './tiptap/extensions/statsheet/monsterStatblock/monsterStatsheetExtensionStyles';
+import { spellSheetExtensionStyles } from './tiptap/extensions/statsheet/spellSheet/spellSheetExtensionStyles';
+import { ttrpgNoteExtensionStyles } from './tiptap/extensions/ttrpgNote/ttrpgNoteExtensionStyles';
 
 const themeVariables = {
   default: `
@@ -53,6 +56,9 @@ export const ArtifactEditorStyles = styled.div`
   ${indentationExtensionStyles}
   ${placeholderExtensionStyles}
   ${globalDragHandleExtensionStyles}
+  ${monsterStatsheetExtensionStyles}
+  ${spellSheetExtensionStyles}
+  ${ttrpgNoteExtensionStyles}
 
   .tiptap {
     padding-left: 16px;

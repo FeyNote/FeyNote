@@ -97,6 +97,12 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     return bounds;
   }, [props.previewTarget]);
 
+  const referencePreviewContainer = document.getElementById(
+    'referencePreviewContainer',
+  );
+  if (!referencePreviewContainer)
+    throw new Error('referencePreviewContainer not defined in index.html!');
+
   // We portal because styling does not play well with editor instances inside of each other
   return createPortal(
     <Container
@@ -116,6 +122,6 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
         <span>{t('artifactReferencePreview.noContent')}</span>
       )}
     </Container>,
-    document.getElementById('referencePreviewContainer')!,
+    referencePreviewContainer,
   );
 };

@@ -8,6 +8,7 @@ import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
+import { DragHandle } from './tiptap/extensions/globalDragHandle/DragHandle';
 
 export type ArtifactEditorApplyTemplate = (
   template: string | JSONContent,
@@ -40,6 +41,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     <ArtifactEditorContainer>
       <ArtifactEditorStyles data-theme={props.theme}>
         <EditorContent editor={editor}></EditorContent>
+        <DragHandle />
       </ArtifactEditorStyles>
     </ArtifactEditorContainer>
   );

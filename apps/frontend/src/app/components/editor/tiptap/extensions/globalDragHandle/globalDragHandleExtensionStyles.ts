@@ -1,16 +1,15 @@
 import { css } from 'styled-components';
 
 export const globalDragHandleExtensionStyles = css`
-  .drag-handle {
+  #tiptap-global-drag-handle-container {
+    left: 48px !important;
+
     width: 20px;
     height: 20px;
-    background: purple;
     position: fixed;
     transform: translateX(-15px);
 
-    transition:
-      opacity 70ms,
-      top 100ms;
+    transition: opacity 70ms;
 
     &.hide {
       opacity: 0;

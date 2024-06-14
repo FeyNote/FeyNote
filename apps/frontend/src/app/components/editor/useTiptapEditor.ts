@@ -19,7 +19,6 @@ import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
-import GlobalDragHandleExtension from 'tiptap-extension-global-drag-handle';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import * as Y from 'yjs';
@@ -31,6 +30,10 @@ import { HeadingExtension } from './tiptap/extensions/heading/HeadingExtension';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useTranslation } from 'react-i18next';
+import { MonsterStatblockExtension } from './tiptap/extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
+import { SpellSheetExtension } from './tiptap/extensions/statsheet/spellSheet/SpellSheetExtension';
+import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
+import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 
 type DocArgOptions =
   | {
@@ -102,6 +105,9 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       types: ['heading', 'paragraph', 'artifactReference'],
       filterTransaction: (transaction) => !isChangeOrigin(transaction),
     }),
+    MonsterStatblockExtension,
+    SpellSheetExtension,
+    TTRPGNoteExtension,
   ];
 
   return useEditor({

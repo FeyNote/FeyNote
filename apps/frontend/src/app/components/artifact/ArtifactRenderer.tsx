@@ -1,5 +1,5 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   IonCheckbox,
   IonCol,
@@ -49,6 +49,17 @@ import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import * as Y from 'yjs';
 
+enum ConnectionStatus {
+  Connected = 'connected',
+  Connecting = 'connecting',
+  Disconnected = 'disconnected',
+}
+const connectionStatusToI18n = {
+  [ConnectionStatus.Connected]: 'artifactRenderer.connection.connected',
+  [ConnectionStatus.Connecting]: 'artifactRenderer.connection.connecting',
+  [ConnectionStatus.Disconnected]: 'artifactRenderer.connection.disconnected',
+} satisfies Record<ConnectionStatus, string>;
+
 const ConnectionStatusContainer = styled.div`
   display: flex;
   align-items: center;
@@ -75,17 +86,6 @@ const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
   }}
 `;
 
-enum ConnectionStatus {
-  Connected = 'connected',
-  Connecting = 'connecting',
-  Disconnected = 'disconnected',
-}
-const connectionStatusToI18n = {
-  [ConnectionStatus.Connected]: 'artifactRenderer.connection.connected',
-  [ConnectionStatus.Connecting]: 'artifactRenderer.connection.connecting',
-  [ConnectionStatus.Disconnected]: 'artifactRenderer.connection.disconnected',
-} satisfies Record<ConnectionStatus, string>;
-
 interface Props {
   artifact: ArtifactDetail;
   reload: () => void;
@@ -93,7 +93,6 @@ interface Props {
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentAlert] = useIonAlert();
   const [presentToast] = useIonToast();
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,

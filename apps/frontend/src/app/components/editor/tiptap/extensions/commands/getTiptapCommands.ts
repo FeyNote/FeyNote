@@ -11,6 +11,30 @@ interface CommandArgs {
 export const getTiptapCommands = ({ query }: { query: string }) => {
   return [
     {
+      title: 'Insert Monster Statblock',
+      subtitle: 'Starts an editable monster statblock',
+      icon: LuTable,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setMonsterStatblock().run();
+      },
+    },
+    {
+      title: 'Insert Spell',
+      subtitle: 'Starts an editable spell object',
+      icon: LuTable,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setSpellSheet().run();
+      },
+    },
+    {
+      title: 'Insert Note',
+      subtitle: 'Starts an editable note object',
+      icon: LuTable,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setTTRPGNote().run();
+      },
+    },
+    {
       title: 'Heading 1',
       subtitle: 'Used as a grand title',
       icon: LuHeading1,
