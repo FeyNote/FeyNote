@@ -18,7 +18,7 @@ const Menu = styled.div`
   width: 100px;
   position: relative;
 
-  box-shadow: 1px 1px 7px rgba(0,0,0,0.35);
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.35);
   background: var(--ion-card-background);
   color: var(--ion-text-color);
   border-radius: 4px;
@@ -41,7 +41,9 @@ export const DragHandle = () => {
   const [showMenu, setShowMenu] = useState(false);
   const closeTimerRef = useRef<NodeJS.Timeout>();
 
-  const domHandleContainer = document.querySelector('#tiptap-global-drag-handle-container');
+  const domHandleContainer = document.querySelector(
+    '#tiptap-global-drag-handle-container',
+  );
 
   const domHandle = document.querySelector('#tiptap-global-drag-handle');
 
@@ -49,10 +51,10 @@ export const DragHandle = () => {
 
   useEffect(() => {
     if (showMenu) {
-      domHandleContainer?.setAttribute("data-frozen", "true");
+      domHandleContainer?.setAttribute('data-frozen', 'true');
     }
 
-    return () => domHandleContainer?.removeAttribute("data-frozen");
+    return () => domHandleContainer?.removeAttribute('data-frozen');
   }, [showMenu]);
 
   const onMouseLeave = () => {
@@ -61,11 +63,11 @@ export const DragHandle = () => {
     closeTimerRef.current = setTimeout(() => {
       setShowMenu(false);
     }, MOUSE_EXIT_FORGIVENESS);
-  }
+  };
 
   const onMouseEnter = () => {
     clearTimeout(closeTimerRef.current);
-  }
+  };
 
   if (!domHandleContainer || !domHandle || !domMenu) return <></>;
 
@@ -80,28 +82,15 @@ export const DragHandle = () => {
   );
 
   const menuJsx = (
-    <Menu
-      onMouseLeave={onMouseLeave}
-      onMouseEnter={onMouseEnter}
-    >
-      <MenuItem>
-        {t('editor.dragmenu.delete')}
-      </MenuItem>
+    <Menu onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter}>
+      <MenuItem>{t('editor.dragmenu.delete')}</MenuItem>
     </Menu>
   );
 
   return (
     <>
-      {createPortal(
-        handleJsx,
-        domHandle,
-      )}
-      {showMenu && (
-        createPortal(
-          menuJsx,
-          domMenu,
-        )
-      )}
+      {createPortal(handleJsx, domHandle)}
+      {showMenu && createPortal(menuJsx, domMenu)}
     </>
   );
 };

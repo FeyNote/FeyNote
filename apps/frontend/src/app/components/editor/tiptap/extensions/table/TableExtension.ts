@@ -1,17 +1,16 @@
 /**
-  *
-  *
-  *
-  * Taken from https://github.com/sjdemartini/mui-tiptap/blob/7e952fdf7c16c3ee2287b49c27260d88f7866ff5/src/extensions/TableImproved.ts
-  *
-  *
-  *
-  *
-  */
+ *
+ *
+ *
+ * Taken from https://github.com/sjdemartini/mui-tiptap/blob/7e952fdf7c16c3ee2287b49c27260d88f7866ff5/src/extensions/TableImproved.ts
+ *
+ *
+ *
+ *
+ */
 
-
-import { Table } from "@tiptap/extension-table";
-import { columnResizing, tableEditing } from "@tiptap/pm/tables";
+import { Table } from '@tiptap/extension-table';
+import { columnResizing, tableEditing } from '@tiptap/pm/tables';
 
 /**
  * Extend the standard Table extension, but ensures that columns maintain their
@@ -56,4 +55,3 @@ export const TableExtension = Table.extend({
     ];
   },
 });
-
