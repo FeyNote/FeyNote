@@ -62,28 +62,29 @@ function absoluteRect(node: Element) {
 }
 
 /**
- * Because custom blocks should still be draggable, but
+ * Because container blocks should still be draggable, but
  * there are gaps in normal blocks, we only want to treat
  * hovering in the following X number of pixels as hovering
- * our custom block
+ * our container block
  */
-const CUSTOM_BLOCK_TOP_PX = 30;
+const CONTAINER_BLOCK_TOP_PX = 30;
 
 function nodeDOMAtCoords(coords: { x: number; y: number }) {
   return document
     .elementsFromPoint(coords.x, coords.y)
     .find((elem: Element) => {
-      const isMovableCustomBlock = elem.matches(
+      const isContainerBlock = elem.matches(
         [
           '[data-monster-statblock]',
           '[data-ttrpg-note]',
           '[data-spellsheet]',
+          'table',
         ].join(', '),
       );
 
       if (
-        isMovableCustomBlock &&
-        elem.getBoundingClientRect().y + CUSTOM_BLOCK_TOP_PX > coords.y
+        isContainerBlock &&
+        elem.getBoundingClientRect().y + CONTAINER_BLOCK_TOP_PX > coords.y
       ) {
         return true;
       }
@@ -91,7 +92,8 @@ function nodeDOMAtCoords(coords: { x: number; y: number }) {
       return elem.matches(
         [
           'li',
-          'p:not(:first-child)',
+          // 'p:not(:first-child)',
+          'p',
           'pre',
           'blockquote',
           'h1, h2, h3, h4, h5, h6',

@@ -2,10 +2,10 @@ import { css } from 'styled-components';
 
 export const globalDragHandleExtensionStyles = css`
   #tiptap-global-drag-handle-container {
+    display: flex;
+
     left: 48px !important;
 
-    width: 20px;
-    height: 20px;
     position: fixed;
     transform: translateX(-15px);
 
@@ -13,6 +13,11 @@ export const globalDragHandleExtensionStyles = css`
 
     &.hide {
       opacity: 0;
+    }
+
+    #tiptap-global-drag-handle {
+      height: 18px;
+      width: 18px;
     }
   }
 `;

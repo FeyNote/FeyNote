@@ -9,7 +9,6 @@ import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
 import DropcursorExtension from '@tiptap/extension-dropcursor';
 import GapcursorExtension from '@tiptap/extension-gapcursor';
-import TableExtension from '@tiptap/extension-table';
 import TableRowExtension from '@tiptap/extension-table-row';
 import TableHeaderExtension from '@tiptap/extension-table-header';
 import TableCellExtension from '@tiptap/extension-table-cell';
@@ -34,6 +33,7 @@ import { MonsterStatblockExtension } from './tiptap/extensions/statsheet/monster
 import { SpellSheetExtension } from './tiptap/extensions/statsheet/spellSheet/SpellSheetExtension';
 import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
 import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
+import { TableExtension } from './tiptap/extensions/table/TableExtension';
 
 type DocArgOptions =
   | {
@@ -71,6 +71,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     GapcursorExtension,
     TableExtension.configure({
       resizable: true,
+      allowTableNodeSelection: true,
     }),
     TableRowExtension,
     TableHeaderExtension,

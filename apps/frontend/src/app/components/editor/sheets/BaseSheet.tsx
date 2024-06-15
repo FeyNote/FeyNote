@@ -59,37 +59,6 @@
 //     border: none;
 //   }
 //
-//   table {
-//     table-layout: fixed;
-//     column-span: none;
-//     background-color: transparent;
-//     border-style: none;
-//     border-image: none;
-//     break-inside: avoid;
-//     width: 100%;
-//     border: 0;
-//     overflow: hidden;
-//
-//     thead,
-//     th {
-//       font-weight: 800;
-//     }
-//   }
-//
-//   th,
-//   tr,
-//   td {
-//     border: 1px solid transparent;
-//   }
-//
-//   .ProseMirror-focused {
-//     th,
-//     tr,
-//     td {
-//       border: 1px solid rgba(0, 0, 0, 0.1);
-//     }
-//   }
-//
 //   [data-text-color='gray'] {
 //     color: #9b9a97;
 //   }
