@@ -40,6 +40,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         {showPreview && artifact && ref.current && (
           <ArtifactReferencePreview
             artifact={artifact}
+            artifactBlockId={props.node.attrs.artifactBlockId || undefined}
             previewTarget={ref.current}
           />
         )}

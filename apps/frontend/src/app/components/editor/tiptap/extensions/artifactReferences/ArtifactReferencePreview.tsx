@@ -1,7 +1,7 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useArtifactEditor } from '../../../useTiptapEditor';
 import * as Y from 'yjs';
@@ -39,7 +39,7 @@ const Container = styled.div<{
   }
 `;
 
-const Header = styled.h2`
+const Header = styled.h4`
   margin-top: 8px;
   margin-bottom: 16px;
 `;
@@ -52,6 +52,7 @@ interface Props {
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const scrollExecutedRef = useRef(false);
 
   const yDoc = useMemo(() => {
     const yDoc = new Y.Doc();
@@ -67,6 +68,19 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     yjsProvider: undefined,
     yDoc,
   });
+
+  useEffect(() => {
+    // We only want to execute the scroll once, so we don't repeatedly scroll the user
+    if (scrollExecutedRef.current) return;
+    // Focusing a blockId is optional
+    if (!props.artifactBlockId) return;
+
+    const el = document.querySelector(`[data-id="${props.artifactBlockId}"]`);
+    if (el) {
+      el.scrollIntoView();
+      scrollExecutedRef.current = true;
+    }
+  }, [editor]);
 
   const bounds = useMemo(() => {
     const previewTargetBoundingRect =
