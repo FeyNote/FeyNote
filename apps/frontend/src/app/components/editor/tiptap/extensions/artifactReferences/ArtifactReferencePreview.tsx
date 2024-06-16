@@ -114,7 +114,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       <Header>{props.artifact.title}</Header>
       {props.artifact.text.trim().length ? (
         <ArtifactEditorContainer>
-          <ArtifactEditorStyles>
+          <ArtifactEditorStyles data-theme={props.artifact.theme}>
             <EditorContent editor={editor}></EditorContent>
           </ArtifactEditorStyles>
         </ArtifactEditorContainer>
