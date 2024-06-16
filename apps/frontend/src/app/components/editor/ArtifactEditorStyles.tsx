@@ -6,43 +6,7 @@ import { globalDragHandleExtensionStyles } from './tiptap/extensions/globalDragH
 import { monsterStatsheetExtensionStyles } from './tiptap/extensions/statsheet/monsterStatblock/monsterStatsheetExtensionStyles';
 import { spellSheetExtensionStyles } from './tiptap/extensions/statsheet/spellSheet/spellSheetExtensionStyles';
 import { ttrpgNoteExtensionStyles } from './tiptap/extensions/ttrpgNote/ttrpgNoteExtensionStyles';
-
-const themeVariables = {
-  default: `
-    --sheet-text-color: var(--ion-text-color);
-    --sheet-font-family: var(--ion-font-family);
-    --sheet-h1-color: var(--ion-text-color);
-    --sheet-h1-font-family: var(--ion-font-family);
-    --sheet-h2-color: var(--ion-text-color);
-    --sheet-h2-font-family: var(--ion-font-family);
-    --sheet-h3-color: var(--ion-text-color);
-    --sheet-h3-font-family: var(--ion-font-family);
-    --sheet-h4-color: var(--ion-text-color);
-    --sheet-h4-font-family: var(--ion-font-family);
-    --sheet-h5-color: var(--ion-text-color);
-    --sheet-h5-font-family: var(--ion-font-family);
-    --sheet-h6-color: var(--ion-text-color);
-    --sheet-h6-font-family: var(--ion-font-family);
-    --sheet-placeholder-color: rgba(255,255,255,0.7);
-  `,
-  classic: `
-    --sheet-text-color: black;
-    --sheet-font-family: BookInsanityRemake;
-    --sheet-h1-color: #58180D;
-    --sheet-h1-font-family: MrEavesRemake;
-    --sheet-h2-color: #58180D;
-    --sheet-h2-font-family: MrEavesRemake;
-    --sheet-h3-color: #58180D;
-    --sheet-h3-font-family: MrEavesRemake;
-    --sheet-h4-color: #58180D;
-    --sheet-h4-font-family: MrEavesRemake;
-    --sheet-h5-color: black;
-    --sheet-h5-font-family: ScalySansCapsRemake;
-    --sheet-h6-color: black;
-    --sheet-h6-font-family: ScalySansCapsRemake;
-    --sheet-placeholder-color: rgba(0,0,0,0.7);
-  `,
-};
+import { themeVariables } from './themeVariables';
 
 export const ArtifactEditorStyles = styled.div`
   ${themeVariables.default}
@@ -94,7 +58,7 @@ export const ArtifactEditorStyles = styled.div`
 
   h5 {
     margin-top: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     font-size: 1.1rem;
     color: var(--sheet-h5-color);
     font-family: var(--sheet-h5-font-family);
@@ -102,7 +66,7 @@ export const ArtifactEditorStyles = styled.div`
 
   h6 {
     margin-top: 16px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
     font-size: 0.95rem;
     color: var(--sheet-h6-color);
     font-family: var(--sheet-h6-font-family);
@@ -112,6 +76,7 @@ export const ArtifactEditorStyles = styled.div`
     font-size: 0.875rem;
     margin-top: 10px;
     margin-bottom: 10px;
+    line-height: 1.25;
   }
 
   hr {
@@ -159,20 +124,6 @@ export const ArtifactEditorStyles = styled.div`
     background-color: #EEE5CE;
     background-image: url('/assets/parchment-background.jpg');
     box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
-
-    h3 {
-      border-bottom: 2px solid #c0ad6a;
-    }
-
-    h5,
-    h6 {
-      font-weight: bold;
-    }
-
-    hr {
-      height: 2px;
-      background-color: #c0ad6a;
-    }
   }
 
   ${collaborationCursorExtensionStyles}

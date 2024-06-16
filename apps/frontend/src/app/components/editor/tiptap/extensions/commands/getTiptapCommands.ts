@@ -231,6 +231,21 @@ export const getTiptapCommands = ({
       },
     },
     {
+      title: 'Insert Wide Monster Statblock',
+      keywords: ['stats'],
+      subtitle: 'Starts a double-wide monster statblock',
+      visible: !editor.isActive('table'),
+      icon: GiMonsterGrasp,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setMonsterStatblock(true)
+          .run();
+      },
+    },
+    {
       title: 'Insert Spell',
       keywords: [],
       subtitle: 'Starts an editable spell object',

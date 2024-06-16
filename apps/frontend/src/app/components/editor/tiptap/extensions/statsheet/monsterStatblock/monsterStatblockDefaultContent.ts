@@ -20,18 +20,10 @@ export const monsterStatblockDefaultContent = [
     content: [
       { type: 'text', marks: [{ type: 'bold' }], text: 'Armor Class ' },
       { type: 'text', text: '16 (chain mail, shield)' },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
+      { type: 'hardBreak' },
       { type: 'text', marks: [{ type: 'bold' }], text: 'Hit Points ' },
       { type: 'text', text: '41(1d4 + 5)' },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
+      { type: 'hardBreak' },
       { type: 'text', marks: [{ type: 'bold' }], text: 'Speed ' },
       { type: 'text', text: '13ft.' },
     ],
@@ -182,25 +174,13 @@ export const monsterStatblockDefaultContent = [
         text: 'Condition Immunities ',
       },
       { type: 'text', text: 'groovy, buzzed, melancholy' },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
+      { type: 'hardBreak' },
       { type: 'text', marks: [{ type: 'bold' }], text: 'Senses ' },
       { type: 'text', text: 'darkvision 60 ft., passive Perception 14' },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
+      { type: 'hardBreak' },
       { type: 'text', marks: [{ type: 'bold' }], text: 'Languages ' },
       { type: 'text', text: 'Latin, Pottymouth' },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
+      { type: 'hardBreak' },
       { type: 'text', marks: [{ type: 'bold' }], text: 'Challenge ' },
       { type: 'text', text: '2 (4603 XP)' },
     ],
@@ -254,6 +234,67 @@ export const monsterStatblockDefaultContent = [
       {
         type: 'text',
         text: 'While walking near this creature, you must make a dexterity check or become “a soapy mess” for three hours, after which your skin will get all dry and itchy.',
+      },
+    ],
+  },
+  {
+    type: 'heading',
+    attrs: { level: 3 },
+    content: [{ type: 'text', text: 'Actions' }],
+  },
+  {
+    type: 'paragraph',
+    content: [
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }, { type: 'italic' }],
+        text: 'Corkscrew Strike.',
+      },
+      {
+        type: 'text',
+        marks: [{ type: 'italic' }],
+        text: ' Melee Weapon Attack:',
+      },
+      {
+        type: 'text',
+        text: ' +4 to hit, reach 5ft., one target.',
+      },
+      {
+        type: 'text',
+        marks: [{ type: 'italic' }],
+        text: ' Hit',
+      },
+      {
+        type: 'text',
+        text: ' 5 (1d6 + 2)',
+      },
+    ],
+  },
+  {
+    type: 'paragraph',
+    content: [
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }, { type: 'italic' }],
+        text: 'Airplane Hammer.',
+      },
+      {
+        type: 'text',
+        marks: [{ type: 'italic' }],
+        text: ' Melee Weapon Attack:',
+      },
+      {
+        type: 'text',
+        text: ' +4 to hit, reach 5ft., one target.',
+      },
+      {
+        type: 'text',
+        marks: [{ type: 'italic' }],
+        text: ' Hit',
+      },
+      {
+        type: 'text',
+        text: ' 5 (1d6 + 2)',
       },
     ],
   },

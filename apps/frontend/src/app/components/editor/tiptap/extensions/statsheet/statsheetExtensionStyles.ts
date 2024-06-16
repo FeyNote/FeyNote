@@ -1,8 +1,10 @@
 import { css } from 'styled-components';
+import { themeVariables } from '../../../themeVariables';
 
 export const statsheetExtensionStyles = css`
-  min-width: min(450px, 100%);
-  max-width: 500px;
+  ${themeVariables.classic}
+
+  width: min(375px, 100%);
   padding-top: 12px;
   padding-bottom: 12px;
   padding-left: 8px;
@@ -53,12 +55,17 @@ export const statsheetExtensionStyles = css`
     font-weight: bold;
   }
 
-  h2 + p,
-  h3 + p,
-  h4 + p {
+  h2:first-child + p,
+  h3:first-child + p,
+  h4:first-child + p {
     margin-top: 0;
     margin-bottom: 0;
     font-size: 0.304cm;
+  }
+
+  p {
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   hr {

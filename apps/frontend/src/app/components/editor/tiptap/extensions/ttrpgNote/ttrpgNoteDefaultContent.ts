@@ -1,7 +1,7 @@
 export const ttrpgNoteDefaultContent = [
   {
     type: 'heading',
-    attrs: { level: 5 },
+    attrs: { level: 6 },
     content: [{ type: 'text', text: 'Time to Drop Knowledge' }],
   },
   {

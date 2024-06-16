@@ -8,7 +8,7 @@ export interface MonsterStatblockOptions {
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     customMonsterStatblock: {
-      setMonsterStatblock: () => ReturnType;
+      setMonsterStatblock: (wide?: boolean) => ReturnType;
     };
   }
 }
@@ -29,7 +29,7 @@ export const MonsterStatblockExtension = Node.create({
   addCommands() {
     return {
       setMonsterStatblock:
-        () =>
+        (wide?: boolean) =>
         ({ commands }: CommandProps) => {
           return commands.insertContent([
             {
@@ -37,7 +37,9 @@ export const MonsterStatblockExtension = Node.create({
             },
             {
               type: this.name,
-              attrs: {},
+              attrs: {
+                wide,
+              },
               content: monsterStatblockDefaultContent,
             },
             {
@@ -45,6 +47,20 @@ export const MonsterStatblockExtension = Node.create({
             },
           ]);
         },
+    };
+  },
+
+  addAttributes() {
+    return {
+      wide: {
+        default: false,
+        parseHTML: (element) => element.getAttribute('data-wide'),
+        renderHTML: (attributes: any) => {
+          return {
+            'data-wide': attributes.wide,
+          };
+        },
+      },
     };
   },
 
