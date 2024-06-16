@@ -78,7 +78,6 @@ function nodeDOMAtCoords(coords: { x: number; y: number }) {
           '[data-monster-statblock]',
           '[data-ttrpg-note]',
           '[data-spellsheet]',
-          'table',
         ].join(', '),
       );
 

@@ -34,6 +34,7 @@ import { SpellSheetExtension } from './tiptap/extensions/statsheet/spellSheet/Sp
 import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
 import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 import { TableExtension } from './tiptap/extensions/table/TableExtension';
+import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolatingContainerBackspaceExtension';
 
 type DocArgOptions =
   | {
@@ -109,6 +110,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     MonsterStatblockExtension,
     SpellSheetExtension,
     TTRPGNoteExtension,
+    IsolatingContainerBackspaceExtension,
   ];
 
   return useEditor({

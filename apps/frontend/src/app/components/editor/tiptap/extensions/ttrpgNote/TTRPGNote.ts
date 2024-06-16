@@ -14,6 +14,7 @@ export const TTRPGNoteExtension = Node.create({
   content: 'block+',
   group: 'block',
   defining: true,
+  isolating: true,
 
   addCommands() {
     return {
