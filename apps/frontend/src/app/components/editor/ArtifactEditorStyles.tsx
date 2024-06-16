@@ -31,35 +31,6 @@ export const ArtifactEditorStyles = styled.div`
   font-family: var(--sheet-font-family);
   color: var(--sheet-text-color);
 
-  .placeholder {
-    color: var(--sheet-placeholder-color);
-  }
-
-  &[data-theme='classic'] {
-    ${themeVariables.classic}
-
-    background-color: #EEE5CE;
-    background-image: url('/assets/parchment-background.jpg');
-    box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
-
-    h3 {
-      border-bottom: 2px solid #c0ad6a;
-    }
-
-    hr {
-      height: 2px;
-      background-color: #c0ad6a;
-    }
-  }
-
-  ${collaborationCursorExtensionStyles}
-  ${indentationExtensionStyles}
-  ${placeholderExtensionStyles}
-  ${globalDragHandleExtensionStyles}
-  ${monsterStatsheetExtensionStyles}
-  ${spellSheetExtensionStyles}
-  ${ttrpgNoteExtensionStyles}
-
   .tiptap {
     padding-left: 16px;
     padding-right: 16px;
@@ -67,6 +38,50 @@ export const ArtifactEditorStyles = styled.div`
     padding-bottom: 1px;
     min-height: 500px;
     outline: none;
+  }
+
+  h1 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-size: 2.1rem;
+    color: var(--sheet-header-color);
+    font-family: var(--sheet-header-font-family);
+  }
+
+  h2 {
+    margin-top: 18px;
+    margin-bottom: 10px;
+    font-size: 1.75rem;
+    color: var(--sheet-header-color);
+    font-family: var(--sheet-header-font-family);
+  }
+
+  h3 {
+    margin-top: 16px;
+    margin-bottom: 10px;
+    font-size: 1.37rem;
+    color: var(--sheet-header-color);
+    font-family: var(--sheet-header-font-family);
+  }
+
+  h4 {
+    margin-top: 14px;
+    margin-bottom: 10px;
+    font-size: 1.08rem;
+    color: var(--sheet-header-color);
+    font-family: var(--sheet-header-font-family);
+  }
+
+  p {
+    font-size: 0.875rem;
+  }
+
+  hr {
+    height: 1px;
+    background: var(--ion-color-medium);
+    margin-top: 8px;
+    margin-bottom: 8px;
+    border: none;
   }
 
   table {
@@ -99,4 +114,29 @@ export const ArtifactEditorStyles = styled.div`
       border: 1px solid rgba(0, 0, 0, 0.1);
     }
   }
+
+  &[data-theme='classic'] {
+    ${themeVariables.classic}
+
+    background-color: #EEE5CE;
+    background-image: url('/assets/parchment-background.jpg');
+    box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
+
+    h3 {
+      border-bottom: 2px solid #c0ad6a;
+    }
+
+    hr {
+      height: 2px;
+      background-color: #c0ad6a;
+    }
+  }
+
+  ${collaborationCursorExtensionStyles}
+  ${indentationExtensionStyles}
+  ${placeholderExtensionStyles}
+  ${globalDragHandleExtensionStyles}
+  ${monsterStatsheetExtensionStyles}
+  ${spellSheetExtensionStyles}
+  ${ttrpgNoteExtensionStyles}
 `;
