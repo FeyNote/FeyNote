@@ -126,6 +126,22 @@ export const ArtifactEditorStyles = styled.div`
     p:first-child {
       padding-top: 16px;
     }
+    p:last-child {
+      padding-bottom: 16px;
+    }
+
+    p {
+      text-indent: 18px;
+    }
+
+    h1 + p,
+    h2 + p,
+    h3 + p,
+    h4 + p,
+    h5 + p,
+    h6 + p {
+      text-indent: 0;
+    }
 
     background-color: #eee5ce;
     background-image: url('/assets/parchment-background.jpg');
