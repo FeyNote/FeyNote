@@ -121,7 +121,13 @@ export const ArtifactEditorStyles = styled.div`
   &[data-theme='classic'] {
     ${themeVariables.classic}
 
-    background-color: #EEE5CE;
+    // We don't have any padding at the top of the editor, and
+    // paragraphs don't have any padding in classic mode
+    p:first-child {
+      padding-top: 16px;
+    }
+
+    background-color: #eee5ce;
     background-image: url('/assets/parchment-background.jpg');
     box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
   }
