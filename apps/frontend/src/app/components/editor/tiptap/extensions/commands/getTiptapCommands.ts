@@ -7,9 +7,16 @@ import {
   RiInsertColumnRight,
   RiInsertRowBottom,
   RiInsertRowTop,
-  RiTable2,
 } from 'react-icons/ri';
-import { LuHeading1, LuHeading2, LuTable } from 'react-icons/lu';
+import {
+  LuHeading1,
+  LuHeading2,
+  LuHeading3,
+  LuHeading4,
+  LuHeading5,
+  LuHeading6,
+  LuTable,
+} from 'react-icons/lu';
 import { MdHorizontalRule } from 'react-icons/md';
 import { CgExtensionRemove, CgNotes } from 'react-icons/cg';
 import { RxMagicWand } from 'react-icons/rx';
@@ -61,9 +68,9 @@ export const getTiptapCommands = ({
     {
       title: 'Heading 3',
       keywords: ['h3'],
-      subtitle: 'Used for subsections',
+      subtitle: 'Used for sections',
       visible: true,
-      icon: LuHeading2,
+      icon: LuHeading3,
       command: ({ editor, range }: CommandArgs) => {
         editor
           .chain()
@@ -78,13 +85,43 @@ export const getTiptapCommands = ({
       keywords: ['h4'],
       subtitle: 'Used for subsections',
       visible: true,
-      icon: LuHeading2,
+      icon: LuHeading4,
       command: ({ editor, range }: CommandArgs) => {
         editor
           .chain()
           .focus()
           .deleteRange(range)
           .setNode('heading', { level: 4 })
+          .run();
+      },
+    },
+    {
+      title: 'Heading 5',
+      keywords: ['h5'],
+      subtitle: 'Used for subsections',
+      visible: true,
+      icon: LuHeading5,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setNode('heading', { level: 5 })
+          .run();
+      },
+    },
+    {
+      title: 'Heading 6',
+      keywords: ['h6'],
+      subtitle: 'Used for subsections',
+      visible: true,
+      icon: LuHeading6,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setNode('heading', { level: 6 })
           .run();
       },
     },

@@ -11,15 +11,35 @@ const themeVariables = {
   default: `
     --sheet-text-color: var(--ion-text-color);
     --sheet-font-family: var(--ion-font-family);
-    --sheet-header-color: var(--ion-text-color);
-    --sheet-header-font-family: var(--ion-font-family);
+    --sheet-h1-color: var(--ion-text-color);
+    --sheet-h1-font-family: var(--ion-font-family);
+    --sheet-h2-color: var(--ion-text-color);
+    --sheet-h2-font-family: var(--ion-font-family);
+    --sheet-h3-color: var(--ion-text-color);
+    --sheet-h3-font-family: var(--ion-font-family);
+    --sheet-h4-color: var(--ion-text-color);
+    --sheet-h4-font-family: var(--ion-font-family);
+    --sheet-h5-color: var(--ion-text-color);
+    --sheet-h5-font-family: var(--ion-font-family);
+    --sheet-h6-color: var(--ion-text-color);
+    --sheet-h6-font-family: var(--ion-font-family);
     --sheet-placeholder-color: rgba(255,255,255,0.7);
   `,
   classic: `
     --sheet-text-color: black;
     --sheet-font-family: BookInsanityRemake;
-    --sheet-header-color: #58180D;
-    --sheet-header-font-family: MrEavesRemake;
+    --sheet-h1-color: #58180D;
+    --sheet-h1-font-family: MrEavesRemake;
+    --sheet-h2-color: #58180D;
+    --sheet-h2-font-family: MrEavesRemake;
+    --sheet-h3-color: #58180D;
+    --sheet-h3-font-family: MrEavesRemake;
+    --sheet-h4-color: #58180D;
+    --sheet-h4-font-family: MrEavesRemake;
+    --sheet-h5-color: black;
+    --sheet-h5-font-family: ScalySansCapsRemake;
+    --sheet-h6-color: black;
+    --sheet-h6-font-family: ScalySansCapsRemake;
     --sheet-placeholder-color: rgba(0,0,0,0.7);
   `,
 };
@@ -44,36 +64,54 @@ export const ArtifactEditorStyles = styled.div`
     margin-top: 20px;
     margin-bottom: 10px;
     font-size: 2.1rem;
-    color: var(--sheet-header-color);
-    font-family: var(--sheet-header-font-family);
+    color: var(--sheet-h1-color);
+    font-family: var(--sheet-h1-font-family);
   }
 
   h2 {
     margin-top: 18px;
     margin-bottom: 10px;
     font-size: 1.75rem;
-    color: var(--sheet-header-color);
-    font-family: var(--sheet-header-font-family);
+    color: var(--sheet-h2-color);
+    font-family: var(--sheet-h2-font-family);
   }
 
   h3 {
     margin-top: 16px;
     margin-bottom: 10px;
-    font-size: 1.37rem;
-    color: var(--sheet-header-color);
-    font-family: var(--sheet-header-font-family);
+    font-size: 1.5rem;
+    color: var(--sheet-h3-color);
+    font-family: var(--sheet-h3-font-family);
   }
 
   h4 {
-    margin-top: 14px;
+    margin-top: 16px;
     margin-bottom: 10px;
-    font-size: 1.08rem;
-    color: var(--sheet-header-color);
-    font-family: var(--sheet-header-font-family);
+    font-size: 1.35rem;
+    color: var(--sheet-h4-color);
+    font-family: var(--sheet-h4-font-family);
+  }
+
+  h5 {
+    margin-top: 16px;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: var(--sheet-h5-color);
+    font-family: var(--sheet-h5-font-family);
+  }
+
+  h6 {
+    margin-top: 16px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    color: var(--sheet-h6-color);
+    font-family: var(--sheet-h6-font-family);
   }
 
   p {
     font-size: 0.875rem;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 
   hr {
@@ -124,6 +162,11 @@ export const ArtifactEditorStyles = styled.div`
 
     h3 {
       border-bottom: 2px solid #c0ad6a;
+    }
+
+    h5,
+    h6 {
+      font-weight: bold;
     }
 
     hr {
