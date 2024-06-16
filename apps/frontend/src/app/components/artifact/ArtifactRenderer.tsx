@@ -48,6 +48,7 @@ import {
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import * as Y from 'yjs';
+import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -89,6 +90,7 @@ const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
 interface Props {
   artifact: ArtifactDetail;
   reload: () => void;
+  scrollToBlockId?: string;
 }
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
@@ -129,6 +131,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       },
     } satisfies SelectTemplateModalProps,
   );
+
+  useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
 
   // We must preserve the original map between renders
   // because tiptap exists outside of React's render cycle

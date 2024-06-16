@@ -2,25 +2,32 @@ import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { routes } from '../../../../../routes';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
-import { IonRouterLink } from '@ionic/react';
+import { IonRouterLink, useIonRouter } from '@ionic/react';
 import type { ReferencePluginOptions } from './ArtifactReferencesExtension';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
 import { useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
+  const router = useIonRouter();
+
+  const { artifactId, artifactBlockId } = props.node.attrs;
+
   const key = getKnownArtifactReferenceKey(
-    props.node.attrs.artifactId,
-    props.node.attrs.artifactBlockId || undefined,
+    artifactId,
+    artifactBlockId || undefined,
   );
   const ref = useRef<HTMLSpanElement>(null);
 
   const options = props.extension.options as ReferencePluginOptions;
   const knownReference = options.knownReferences.get(key);
 
-  const link = routes.artifact.build({ id: props.node.attrs.artifactId });
+  let link = routes.artifact.build({ id: props.node.attrs.artifactId });
+  if (artifactBlockId) {
+    link += `?blockId=${artifactBlockId}`;
+  }
 
-  const { artifact, showPreview, onMouseOver, onMouseOut } =
+  const { artifact, showPreview, onMouseOver, onMouseOut, close } =
     useArtifactPreviewTimer(
       props.node.attrs.artifactId,
       knownReference?.isBroken ?? false,
@@ -34,11 +41,15 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <IonRouterLink routerLink={knownReference?.isBroken ? undefined : link}>
+        <IonRouterLink
+          routerLink={knownReference?.isBroken ? undefined : link}
+          onClick={() => close()}
+        >
           {knownReference?.referenceText || props.node.attrs.referenceText}
         </IonRouterLink>
         {showPreview && artifact && ref.current && (
           <ArtifactReferencePreview
+            onClick={() => (router.push(link, 'forward', 'push'), close())}
             artifact={artifact}
             artifactBlockId={props.node.attrs.artifactBlockId || undefined}
             previewTarget={ref.current}

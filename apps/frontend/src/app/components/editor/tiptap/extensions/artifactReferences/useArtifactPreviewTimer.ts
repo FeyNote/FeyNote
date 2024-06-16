@@ -58,10 +58,16 @@ export const useArtifactPreviewTimer = (
     }, CLOSE_TIMEOUT);
   };
 
+  const close = () => {
+    clearTimeout(hoverTimeoutRef.current);
+    setShowPreview(false);
+  };
+
   return {
     artifact,
     showPreview,
     onMouseOver,
     onMouseOut,
+    close,
   };
 };

@@ -8,6 +8,7 @@ import * as Y from 'yjs';
 import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
 import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
 import { EditorContent } from '@tiptap/react';
+import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -18,6 +19,7 @@ const Container = styled.div<{
   $left?: number;
   $right?: number;
   $bottom?: number;
+  $pointer?: boolean;
 }>`
   position: absolute;
   ${(props) => props.$top !== undefined && `top: ${props.$top}px;`}
@@ -25,6 +27,7 @@ const Container = styled.div<{
   ${(props) => props.$right !== undefined && `right: ${props.$right}px;`}
   ${(props) => props.$bottom !== undefined && `top: ${props.$bottom}px;`}
   ${(props) => props.$bottom !== undefined && `transform: translateY(-100%);`}
+  ${(props) => props.$pointer && `cursor: pointer;`}
   z-index: 100;
   width: min(${PREVIEW_WIDTH_PX}px, 100%);
   min-height: ${PREVIEW_MIN_HEIGHT_PX}px;
@@ -48,11 +51,11 @@ interface Props {
   artifact: ArtifactDetail;
   artifactBlockId?: string;
   previewTarget: HTMLElement;
+  onClick?: () => void;
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const scrollExecutedRef = useRef(false);
 
   const yDoc = useMemo(() => {
     const yDoc = new Y.Doc();
@@ -69,18 +72,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     yDoc,
   });
 
-  useEffect(() => {
-    // We only want to execute the scroll once, so we don't repeatedly scroll the user
-    if (scrollExecutedRef.current) return;
-    // Focusing a blockId is optional
-    if (!props.artifactBlockId) return;
-
-    const el = document.querySelector(`[data-id="${props.artifactBlockId}"]`);
-    if (el) {
-      el.scrollIntoView();
-      scrollExecutedRef.current = true;
-    }
-  }, [editor]);
+  useScrollBlockIntoView(props.artifactBlockId, [editor]);
 
   const bounds = useMemo(() => {
     const previewTargetBoundingRect =
@@ -124,6 +116,8 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       $left={bounds.left}
       $bottom={bounds.bottom}
       $right={bounds.right}
+      $pointer={!!props.onClick}
+      onClick={() => props.onClick?.()}
     >
       <Header>{props.artifact.title}</Header>
       {props.artifact.text.trim().length ? (
