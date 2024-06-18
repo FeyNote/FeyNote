@@ -37,7 +37,7 @@ export const getTiptapCommands = ({
   const commands = [
     {
       title: 'Heading 1',
-      keywords: ['h1'],
+      keywords: ['h1', 'header'],
       subtitle: 'Used as a grand title',
       visible: true,
       icon: LuHeading1,
@@ -52,7 +52,7 @@ export const getTiptapCommands = ({
     },
     {
       title: 'Heading 2',
-      keywords: ['h2'],
+      keywords: ['h2', 'header'],
       subtitle: 'Used for smaller titles',
       visible: true,
       icon: LuHeading2,
@@ -67,7 +67,7 @@ export const getTiptapCommands = ({
     },
     {
       title: 'Heading 3',
-      keywords: ['h3'],
+      keywords: ['h3', 'header'],
       subtitle: 'Used for sections',
       visible: true,
       icon: LuHeading3,
@@ -82,7 +82,7 @@ export const getTiptapCommands = ({
     },
     {
       title: 'Heading 4',
-      keywords: ['h4'],
+      keywords: ['h4', 'header'],
       subtitle: 'Used for subsections',
       visible: true,
       icon: LuHeading4,
@@ -97,7 +97,7 @@ export const getTiptapCommands = ({
     },
     {
       title: 'Heading 5',
-      keywords: ['h5'],
+      keywords: ['h5', 'header'],
       subtitle: 'Used for subsections',
       visible: true,
       icon: LuHeading5,
@@ -112,7 +112,7 @@ export const getTiptapCommands = ({
     },
     {
       title: 'Heading 6',
-      keywords: ['h6'],
+      keywords: ['h6', 'header'],
       subtitle: 'Used for subsections',
       visible: true,
       icon: LuHeading6,
