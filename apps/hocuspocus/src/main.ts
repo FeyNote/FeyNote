@@ -1,111 +1,39 @@
-import { Server } from '@hocuspocus/server';
+import { Extension, Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';
 import { Throttle } from '@hocuspocus/extension-throttle';
-import { Database } from '@hocuspocus/extension-database';
-import { prisma } from '@feynote/prisma/client';
-import { enqueueArtifactUpdate } from '@feynote/queue';
-import { isSessionExpired, yArtifactMetaSchema } from '@feynote/api-services';
-import {
-  ARTIFACT_TIPTAP_BODY_KEY,
-  getMetaFromYArtifact,
-  getTextForJSONContent,
-  getTiptapContentFromYjsDoc,
-} from '@feynote/shared-utils';
+
+import { globalServerConfig } from '@feynote/config';
+import { onStoreDocument } from './onStoreDocument';
+import { onLoadDocument } from './onLoadDocument';
+import { beforeHandleMessage } from './beforeHandleMessage';
+import { onAuthenticate } from './onAuthenticate';
+
+const extensions: Extension[] = [];
+
+if (globalServerConfig.hocuspocus.throttle.enable) {
+  extensions.push(
+    new Throttle({
+      throttle:
+        globalServerConfig.hocuspocus.throttle.connectionsPerMinuteBeforeBan,
+      banTime: globalServerConfig.hocuspocus.throttle.banTimeMinutes,
+    }),
+  );
+}
+
+if (globalServerConfig.hocuspocus.logging.enable) {
+  extensions.push(new Logger());
+}
 
 const server = Server.configure({
   stopOnSignals: true, // Listen to SIGINT, SIGTERM
-  async onAuthenticate({ token }) {
-    const session = await prisma.session.findUnique({
-      where: {
-        token,
-      },
-    });
-    if (!session) throw new Error('Session not found');
-
-    if (isSessionExpired(session)) {
-      throw new Error('Session is expired');
-    }
-
-    return {
-      userId: session.userId,
-    };
-  },
-  extensions: [
-    new Throttle({
-      throttle: 30, // Connections per minute
-      banTime: 5, // Minutes
-    }),
-    new Logger(),
-    new Database({
-      fetch: async (args) => {
-        const artifact = await prisma.artifact.findUnique({
-          where: {
-            id: args.documentName,
-            userId: args.context.userId, // TODO: Impl sharing permission check here
-          },
-          select: {
-            yBin: true,
-          },
-        });
-
-        if (!artifact) return null;
-
-        return artifact.yBin;
-      },
-      store: async (args) => {
-        try {
-          const artifact = await prisma.artifact.findUnique({
-            where: {
-              id: args.documentName,
-              userId: args.context.userId, // TODO: Impl sharing permission check here
-            },
-            select: {
-              yBin: true,
-              json: true,
-            },
-          });
-
-          if (!artifact) throw new Error('Artifact does not exist');
-
-          const tiptapBody = getTiptapContentFromYjsDoc(
-            args.document,
-            ARTIFACT_TIPTAP_BODY_KEY,
-          );
-          const text = getTextForJSONContent(tiptapBody);
-          const artifactMeta = getMetaFromYArtifact(args.document);
-
-          yArtifactMetaSchema.parse(artifactMeta);
-
-          await prisma.artifact.update({
-            where: {
-              id: args.documentName,
-            },
-            data: {
-              ...artifactMeta,
-              text,
-              yBin: args.state,
-              json: {
-                ...(artifact.json as any),
-                tiptapBody,
-              },
-            },
-          });
-
-          await enqueueArtifactUpdate({
-            artifactId: args.documentName,
-            userId: args.context.userId,
-            oldYBinB64: artifact.yBin.toString('base64'),
-            newYBinB64: args.state.toString('base64'),
-          });
-        } catch (e) {
-          console.error(e);
-          // Any error that is thrown in our handler must not be ejected to Hocuspocus, otherwise Hocuspocus will crash terminating all connections.
-          //
-          // TODO: Capture with cloud logger
-        }
-      },
-    }),
-  ],
+  debounce: globalServerConfig.hocuspocus.writeDelayMs,
+  maxDebounce: globalServerConfig.hocuspocus.maxWriteDelayMs,
+  timeout: globalServerConfig.hocuspocus.connectionTimeout,
+  onAuthenticate,
+  beforeHandleMessage,
+  onLoadDocument,
+  onStoreDocument,
+  extensions,
 });
 
 server.listen();

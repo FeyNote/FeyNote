@@ -1,3 +1,4 @@
+import { coerceBoolean } from './coerceBoolean';
 import { getEnvOrThrow } from './getEnvOrThrow';
 
 export const globalServerConfig = {
@@ -21,6 +22,31 @@ export const globalServerConfig = {
   redis: {
     host: getEnvOrThrow('REDIS_HOST'),
     port: parseInt(getEnvOrThrow('REDIS_PORT')),
+  },
+  hocuspocus: {
+    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
+    maxWriteDelayMs: parseInt(
+      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
+    ),
+    connectionTimeout: parseInt(
+      process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '30000',
+    ),
+    throttle: {
+      enable: process.env['HOCUSPOCUS_THROTTLE_ENABLE']
+        ? coerceBoolean(process.env['HOCUSPOCUS_THROTTLE_ENABLE'])
+        : true,
+      connectionsPerMinuteBeforeBan: parseInt(
+        process.env['HOCUSPOCUS_THROTTLE_CPM'] || '30',
+      ),
+      banTimeMinutes: parseInt(
+        process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '5',
+      ),
+    },
+    logging: {
+      enable: process.env['HOCUSPOCUS_LOGGING_ENABLE']
+        ? coerceBoolean(process.env['HOCUSPOCUS_LOGGING_ENABLE'])
+        : true,
+    },
   },
   worker: {
     queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '1'),
