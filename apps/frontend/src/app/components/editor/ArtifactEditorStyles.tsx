@@ -143,8 +143,12 @@ export const ArtifactEditorStyles = styled.div`
       text-indent: 0;
     }
 
+    background: url('/assets/parchment-background.jpg');
     background-color: #eee5ce;
-    background-image: url('/assets/parchment-background.jpg');
+    .dark & {
+      background: linear-gradient(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.09)),
+        url('/assets/parchment-background.jpg');
+    }
     box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
   }
 
