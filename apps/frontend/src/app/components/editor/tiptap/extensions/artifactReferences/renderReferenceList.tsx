@@ -40,7 +40,7 @@ export const renderReferenceList = () => {
         return true;
       }
 
-      return component.ref?.onKeyDown(props);
+      return component?.ref?.onKeyDown(props);
     },
     onExit() {
       popup[0].destroy();
