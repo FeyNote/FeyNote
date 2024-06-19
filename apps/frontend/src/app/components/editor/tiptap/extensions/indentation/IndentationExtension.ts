@@ -193,7 +193,11 @@ export const getOutdent: (
 ) => KeyboardShortcutCommand =
   (outdentOnlyAtHead) =>
   ({ editor }) => {
-    if (outdentOnlyAtHead && editor.state.selection.$head.parentOffset > 0) {
+    if (
+      outdentOnlyAtHead &&
+      (editor.state.selection.$head.parentOffset > 0 ||
+        editor.state.selection.content().content.size)
+    ) {
       return false;
     }
     if (
