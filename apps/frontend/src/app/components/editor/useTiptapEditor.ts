@@ -17,6 +17,7 @@ import PlaceholderExtension from '@tiptap/extension-placeholder';
 import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
+import LinkExtension from '@tiptap/extension-link';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
@@ -70,6 +71,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     ItalicExtension,
     DropcursorExtension,
     GapcursorExtension,
+    LinkExtension,
     TableExtension.configure({
       resizable: true,
       allowTableNodeSelection: true,
