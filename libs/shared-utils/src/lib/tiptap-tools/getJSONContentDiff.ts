@@ -8,6 +8,8 @@ export namespace JSONContentDiff {
   export type Added = {
     id: string;
     status: 'added';
+    oldText: undefined;
+    newText: string;
     oldJSONContent: undefined;
     newJSONContent: JSONContent;
     referenceText: string;
@@ -15,6 +17,8 @@ export namespace JSONContentDiff {
   export type Deleted = {
     id: string;
     status: 'deleted';
+    oldText: string;
+    newText: undefined;
     oldJSONContent: JSONContent;
     newJSONContent: undefined;
     referenceText: string;
@@ -22,6 +26,8 @@ export namespace JSONContentDiff {
   export type Updated = {
     id: string;
     status: 'updated';
+    oldText: string;
+    newText: string;
     oldJSONContent: JSONContent;
     newJSONContent: JSONContent;
     referenceText: string;
@@ -55,6 +61,8 @@ export function getJSONContentDiff(
         results.set(getIdForJSONContentUnsafe(newEl), {
           id: getIdForJSONContentUnsafe(newEl),
           status: 'updated',
+          oldText,
+          newText,
           oldJSONContent: oldEl,
           newJSONContent: newEl,
           referenceText: newText,
@@ -66,6 +74,8 @@ export function getJSONContentDiff(
       results.set(getIdForJSONContentUnsafe(newEl), {
         id: getIdForJSONContentUnsafe(newEl),
         status: 'added',
+        oldText: undefined,
+        newText,
         oldJSONContent: undefined,
         newJSONContent: newEl,
         referenceText: newText,
@@ -81,6 +91,8 @@ export function getJSONContentDiff(
       results.set(getIdForJSONContentUnsafe(oldEl), {
         id: getIdForJSONContentUnsafe(oldEl),
         status: 'deleted',
+        oldText,
+        newText: undefined,
         oldJSONContent: oldEl,
         newJSONContent: undefined,
         referenceText: oldText,

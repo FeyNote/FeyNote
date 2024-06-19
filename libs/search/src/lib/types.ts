@@ -2,10 +2,17 @@ import { JSONContent } from '@tiptap/core';
 
 export interface IndexableArtifact {
   id: string;
-  title: string;
-  text: string;
   userId: string;
-  jsonContent: JSONContent | null;
+  oldState: {
+    title: string;
+    text: string;
+    jsonContent: JSONContent | null;
+  };
+  newState: {
+    title: string;
+    text: string;
+    jsonContent: JSONContent | null;
+  };
 }
 
 export interface SearchProvider {

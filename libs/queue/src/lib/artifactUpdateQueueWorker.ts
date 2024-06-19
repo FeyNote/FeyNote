@@ -76,9 +76,16 @@ export const artifactUpdateQueueWorker = new Worker<
           const indexableArtifact = {
             id: args.data.artifactId,
             userId: args.data.userId,
-            title: newTitle,
-            text: getTextForJSONContent(newJSONContent),
-            jsonContent: newJSONContent,
+            oldState: {
+              title: oldTitle,
+              text: getTextForJSONContent(oldJSONContent),
+              jsonContent: oldJSONContent,
+            },
+            newState: {
+              title: newTitle,
+              text: getTextForJSONContent(newJSONContent),
+              jsonContent: newJSONContent,
+            },
           };
 
           await searchProvider.indexArtifact(indexableArtifact);

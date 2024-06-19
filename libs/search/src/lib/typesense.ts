@@ -11,6 +11,7 @@ import {
   getTextForJSONContent,
   jsonContentForEach,
   getIdForJSONContent,
+  getJSONContentDiff,
 } from '@feynote/shared-utils';
 import { isIndexable } from './indexableCharacters';
 
@@ -59,11 +60,61 @@ export class TypeSense implements SearchProvider {
   }
 
   async indexBlocks(artifact: IndexableArtifact) {
-    if (!artifact.jsonContent) return;
+    if (!artifact.newState.jsonContent) {
+      // Artifact no longer has block content
+      return this.deleteBlocksByArtifactIds([artifact.id]);
+    }
+
+    if (!artifact.oldState.jsonContent) {
+      // Artifact never had block content before, so full reindex
+      return this.reindexBlocks(artifact);
+    }
+
+    // Artifact is an update. To save time, we only update blocks that have been added, modified, or deleted
+    const diff = getJSONContentDiff(
+      artifact.oldState.jsonContent,
+      artifact.newState.jsonContent,
+    );
+
+    const upsertBlocks: BlockIndexDocument[] = [];
+    const deleteBlocks: BlockIndexDocument[] = [];
+    for (const [id, diffItem] of diff.entries()) {
+      if (diffItem.status === 'deleted') {
+        deleteBlocks.push({
+          id,
+          text: diffItem.oldText,
+          userId: artifact.userId,
+          artifactId: artifact.id,
+        });
+        continue;
+      }
+
+      upsertBlocks.push({
+        id,
+        text: diffItem.newText,
+        userId: artifact.userId,
+        artifactId: artifact.id,
+      });
+    }
+
+    await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+
+    await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .import(upsertBlocks, {
+        action: 'upsert',
+      });
+  }
+
+  /**
+   * Removes all existing block entries and re-creates them
+   */
+  private async reindexBlocks(artifact: IndexableArtifact) {
+    if (!artifact.newState.jsonContent) return;
 
     const blocks: BlockIndexDocument[] = [];
-
-    jsonContentForEach(artifact.jsonContent, (jsonContent) => {
+    jsonContentForEach(artifact.newState.jsonContent, (jsonContent) => {
       const id = getIdForJSONContent(jsonContent);
       // We only want to index things that have an identifier
       if (!id) return;
@@ -254,5 +305,18 @@ export class TypeSense implements SearchProvider {
       .delete({
         filter_by: `artifactId:=[${artifactIds.join(', ')}]`,
       });
+  }
+  private async deleteBlocksByIds(ids: string[]) {
+    const PAGE_SIZE = 50;
+    const totalPages = Math.ceil(ids.length / PAGE_SIZE);
+    for (let page = 0; page < totalPages; page++) {
+      const items = ids.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+      await this.client
+        .collections(Indexes.Block)
+        .documents()
+        .delete({
+          filter_by: `id:=[${items.join(', ')}]`,
+        });
+    }
   }
 }
