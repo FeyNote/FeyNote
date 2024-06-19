@@ -46,7 +46,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 1 })
+          .setHeading({ level: 1 })
           .run();
       },
     },
@@ -61,7 +61,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 2 })
+          .setHeading({ level: 2 })
           .run();
       },
     },
@@ -76,7 +76,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 3 })
+          .setHeading({ level: 3 })
           .run();
       },
     },
@@ -91,7 +91,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 4 })
+          .setHeading({ level: 4 })
           .run();
       },
     },
@@ -106,7 +106,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 5 })
+          .setHeading({ level: 5 })
           .run();
       },
     },
@@ -121,7 +121,7 @@ export const getTiptapCommands = ({
           .chain()
           .focus()
           .deleteRange(range)
-          .setNode('heading', { level: 6 })
+          .setHeading({ level: 6 })
           .run();
       },
     },
