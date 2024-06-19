@@ -7,6 +7,11 @@ import type { ReferencePluginOptions } from './ArtifactReferencesExtension';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
 import { useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
+import styled from 'styled-components';
+
+const StyledNodeViewWrapper = styled(NodeViewWrapper)`
+  display: inline;
+`;
 
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const router = useIonRouter();
@@ -34,7 +39,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
 
   return (
-    <NodeViewWrapper>
+    <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
         $isBroken={false}
@@ -56,6 +61,6 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
           />
         )}
       </ArtifactReferenceSpan>
-    </NodeViewWrapper>
+    </StyledNodeViewWrapper>
   );
 };
