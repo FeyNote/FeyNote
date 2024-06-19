@@ -24,12 +24,12 @@ export const globalServerConfig = {
     port: parseInt(getEnvOrThrow('REDIS_PORT')),
   },
   hocuspocus: {
-    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
+    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '5000'),
     maxWriteDelayMs: parseInt(
-      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
+      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '30000',
     ),
     connectionTimeout: parseInt(
-      process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '30000',
+      process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '15000',
     ),
     throttle: {
       enable: process.env['HOCUSPOCUS_THROTTLE_ENABLE']
