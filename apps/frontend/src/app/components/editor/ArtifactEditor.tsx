@@ -2,7 +2,7 @@ import { IonCard, useIonToast } from '@ionic/react';
 import styled from 'styled-components';
 import { SuggestionMenuController, useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
-import '@blocknote/mantine/style.css';
+import styles from '@blocknote/mantine/style.css?inline';
 import {
   EditorReferenceSuggestionItem,
   EditorReferenceMenu,
@@ -14,26 +14,22 @@ import {
   ArtifactEditorBlock,
   buildArtifactEditorBlocknoteSchema,
 } from '@feynote/blocknote';
-import { MutableRefObject, useState } from 'react';
+import { MutableRefObject, useEffect, useState } from 'react';
 import { ArtifactReference } from './ArtifactReference';
 import { ArtifactBlockReference } from './ArtifactBlockReference';
+import { MonsterSheet } from './sheets/MonsterSheet';
+import { filterSuggestionItems } from '@blocknote/core';
+import { getSlashMenuItems } from './getSlashMenuItems';
+import { HorizontalRule } from './HorizontalRule';
+import { SheetEditorExternalFC } from './sheets/SheetEditorExternalFC';
+import { SpellSheet } from './sheets/SpellSheet';
+import { BNStylesTest } from './sheets/BaseSheet';
+import { ArtifactTheme } from '@prisma/client';
 
 const StyledIonCard = styled(IonCard)`
   contain: unset;
   overflow: visible;
   min-height: 500px;
-
-  .ProseMirror h1 {
-    font-size: 2rem;
-  }
-
-  .ProseMirror h2 {
-    font-size: 1.6rem;
-  }
-
-  .ProseMirror h3 {
-    font-size: 1.2rem;
-  }
 `;
 
 export type ArtifactEditorApplyTemplate = (
@@ -41,12 +37,13 @@ export type ArtifactEditorApplyTemplate = (
 ) => void;
 
 interface Props {
+  theme: ArtifactTheme;
   initialContent?: ArtifactEditorBlock[];
   onContentChange?: (
     updatedContent: ArtifactEditorBlock[],
     updatedContentMd: string,
   ) => void;
-  applyTemplateRef: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
+  applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
 }
 
 export const ArtifactEditor: React.FC<Props> = (props) => {
@@ -57,8 +54,45 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     schema: buildArtifactEditorBlocknoteSchema({
       artifactReferenceFC: ArtifactReference,
       artifactBlockReferenceFC: ArtifactBlockReference,
+      horizontalRuleFC: HorizontalRule,
+      monsterSheetFC: MonsterSheet,
+      monsterSheetExternalFC: SheetEditorExternalFC,
+      spellSheetFC: SpellSheet,
+      spellSheetExternalFC: SheetEditorExternalFC,
     }),
     initialContent: props.initialContent,
+  });
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      const pos = editor.getTextCursorPosition();
+      console.log('keydown');
+      if (pos?.block?.type === 'monsterSheet') {
+        console.log('keydown in monsterSheet');
+        event.preventDefault();
+        event.stopPropagation();
+
+        const keyEvent = new KeyboardEvent('keydown', {
+          code: 'Enter',
+          key: 'Enter',
+          shiftKey: true,
+          view: window,
+          bubbles: false,
+        });
+        editor.domElement.dispatchEvent(keyEvent);
+      }
+    }
+  };
+
+  useEffect(() => {
+    try {
+      editor.domElement.addEventListener('keydown', handleKeyDown, true);
+      return () =>
+        editor.domElement.removeEventListener('keydown', handleKeyDown, true);
+    } catch (e) {
+      // Do nothing, we don't care if we fail to add the event listener
+      // (which can happen if editor.domElement isn't ready since it's a getter)
+    }
   });
 
   const onChange = async () => {
@@ -133,21 +167,23 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
     return suggestionItems;
   };
 
-  props.applyTemplateRef.current = async (
-    template: string | ArtifactEditorBlock[],
-  ) => {
-    if (typeof template === 'string') {
-      const blocks = await editor.tryParseMarkdownToBlocks(template);
-      editor.replaceBlocks(editor.document, blocks);
-    } else {
-      editor.replaceBlocks(editor.document, template);
-    }
-  };
+  if (props.applyTemplateRef)
+    props.applyTemplateRef.current = async (
+      template: string | ArtifactEditorBlock[],
+    ) => {
+      if (typeof template === 'string') {
+        const blocks = await editor.tryParseMarkdownToBlocks(template);
+        editor.replaceBlocks(editor.document, blocks);
+      } else {
+        editor.replaceBlocks(editor.document, template);
+      }
+    };
 
   const onItemClick = async (item: EditorReferenceSuggestionItem) => {
     if (item.type === EditorReferenceSuggestionItemType.Placeholder) {
       const artifact = await trpc.artifact.createArtifact.mutate({
         title: referenceSearchText,
+        theme: ArtifactTheme.default,
         isPinned: false,
         isTemplate: false,
         artifactTemplateId: null,
@@ -200,14 +236,28 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
 
   return (
     <StyledIonCard onClick={() => editor.focus()}>
-      <BlockNoteView editor={editor} onChange={onChange}>
-        <SuggestionMenuController
-          triggerCharacter={'@'}
-          onItemClick={onItemClick}
-          suggestionMenuComponent={EditorReferenceMenu}
-          getItems={getMentionItems}
-        />
-      </BlockNoteView>
+      <BNStylesTest $focused={false} data-theme={props.theme}>
+        <BlockNoteView
+          editor={editor}
+          onChange={onChange}
+          slashMenu={false}
+          formattingToolbar={false}
+        >
+          <SuggestionMenuController
+            triggerCharacter={'/'}
+            // Replaces the default Slash Menu items with our custom ones.
+            getItems={async (query) =>
+              filterSuggestionItems(getSlashMenuItems(editor), query)
+            }
+          />
+          <SuggestionMenuController
+            triggerCharacter={'@'}
+            onItemClick={onItemClick}
+            suggestionMenuComponent={EditorReferenceMenu}
+            getItems={getMentionItems}
+          />
+        </BlockNoteView>
+      </BNStylesTest>
     </StyledIonCard>
   );
 };

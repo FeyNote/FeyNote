@@ -5,6 +5,7 @@ import { searchProvider } from '@feynote/search';
 import { artifactJsonSchema } from '@feynote/prisma/types';
 import { TRPCError } from '@trpc/server';
 import { updateArtifactOutgoingReferences } from '@feynote/api-services';
+import { ArtifactTheme } from '@prisma/client';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -12,6 +13,7 @@ export const createArtifact = authenticatedProcedure
       title: z.string(),
       text: z.string(),
       json: artifactJsonSchema,
+      theme: z.nativeEnum(ArtifactTheme),
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
       rootTemplateId: z.string().nullable(),
@@ -42,6 +44,7 @@ export const createArtifact = authenticatedProcedure
           text: input.text,
           json: input.json,
           userId: ctx.session.userId,
+          theme: input.theme,
           isPinned: input.isPinned,
           isTemplate: input.isTemplate,
           rootTemplateId: input.rootTemplateId,

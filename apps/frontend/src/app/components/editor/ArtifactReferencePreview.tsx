@@ -9,6 +9,9 @@ import { getBlockById } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import { MonsterSheet } from './sheets/MonsterSheet';
+import { HorizontalRule } from './HorizontalRule';
+import { SpellSheet } from './sheets/SpellSheet';
 
 const PREVIEW_WIDTH_PX = 400;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -69,6 +72,9 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     schema: buildArtifactEditorBlocknoteSchema({
       artifactReferenceFC: ArtifactReference,
       artifactBlockReferenceFC: ArtifactBlockReference,
+      horizontalRuleFC: HorizontalRule,
+      monsterSheetFC: MonsterSheet,
+      spellSheetFC: SpellSheet,
     }),
     initialContent,
   });

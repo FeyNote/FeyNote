@@ -5,6 +5,7 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
     case 'paragraph':
     case 'heading':
     case 'bulletListItem':
+    case 'checkListItem':
     case 'numberedListItem': {
       const text = block.content
         .map((content) => {
@@ -50,6 +51,19 @@ export const getTextForBlock = (block: ArtifactEditorBlock): string => {
         .join(' ');
 
       return resultText || 'getTextForBlock.noTextTable';
+    }
+    case 'horizontalRule': {
+      return '';
+    }
+    case 'spellSheet':
+    case 'monsterSheet': {
+      // TODO: strip HTML from block contentHtml
+      return 'Not implemented yet';
+    }
+    case 'file':
+    case 'audio':
+    case 'video': {
+      return 'File';
     }
   }
 };

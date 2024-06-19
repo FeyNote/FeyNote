@@ -14,6 +14,7 @@ import {
   artifactDetail,
   artifactJsonSchema,
 } from '@feynote/prisma/types';
+import { ArtifactTheme } from '@prisma/client';
 
 export const updateArtifact = authenticatedProcedure
   .input(
@@ -22,6 +23,7 @@ export const updateArtifact = authenticatedProcedure
       title: z.string(),
       text: z.string(),
       json: artifactJsonSchema,
+      theme: z.nativeEnum(ArtifactTheme),
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
       rootTemplateId: z.string().nullable(),
@@ -89,6 +91,7 @@ export const updateArtifact = authenticatedProcedure
           title: input.title,
           text: input.text,
           json: input.json,
+          theme: input.theme,
           isPinned: input.isPinned,
           isTemplate: input.isTemplate,
           rootTemplateId: input.rootTemplateId,

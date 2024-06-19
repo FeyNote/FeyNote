@@ -39,6 +39,7 @@ model Session {
 model Artifact {
   id                 String     @id @default(uuid()) @db.Uuid
   title              String
+  theme              ArtifactTheme     @default(default)
   isPinned           Boolean    @default(false)
   artifactTemplate   Artifact?  @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
   artifactTemplateId String?    @db.Uuid
@@ -105,6 +106,11 @@ model ArtifactRevision {
   artifactDeletedAt DateTime? @db.Timestamptz(6)
 
   @@id([artifactId, revisionId])
+}
+
+enum ArtifactTheme {
+  default
+  classic
 }
 
 model File {

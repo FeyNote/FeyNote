@@ -11,6 +11,7 @@ export const isArtifactModified = (
 ) => {
   return (
     oldArtifact.title !== newArtifact.title ||
+    oldArtifact.theme !== newArtifact.theme ||
     oldArtifact.isPinned !== newArtifact.isPinned ||
     oldArtifact.isTemplate !== newArtifact.isTemplate ||
     oldArtifact.text !== newArtifact.text ||

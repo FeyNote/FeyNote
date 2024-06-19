@@ -1,4 +1,8 @@
-import { BlockNoteSchema, defaultInlineContentSpecs } from '@blocknote/core';
+import {
+  BlockNoteSchema,
+  defaultBlockSpecs,
+  defaultInlineContentSpecs,
+} from '@blocknote/core';
 import {
   ArtifactBlockReferenceFC,
   buildArtifactBlockReferenceSpec,
@@ -7,10 +11,18 @@ import {
   ArtifactReferenceFC,
   buildArtifactReferenceSpec,
 } from './artifactReference';
+import { MonsterSheetFC, buildMonsterSheetSpec } from './monsterSheet';
+import { HorizontalRuleFC, buildHorizontalRuleSpec } from './horizontalRule';
+import { SpellSheetFC, buildSpellSheetSpec } from './spellSheet';
 
 interface ArtifactEditorBlocknoteSchemaBuildArgs {
   artifactReferenceFC: ArtifactReferenceFC;
   artifactBlockReferenceFC: ArtifactBlockReferenceFC;
+  horizontalRuleFC: HorizontalRuleFC;
+  monsterSheetFC: MonsterSheetFC;
+  monsterSheetExternalFC?: MonsterSheetFC;
+  spellSheetFC: SpellSheetFC;
+  spellSheetExternalFC?: SpellSheetFC;
 }
 
 /**
@@ -29,8 +41,28 @@ export const buildArtifactEditorBlocknoteSchema = (
         buildArgs.artifactBlockReferenceFC,
       ),
     },
+    blockSpecs: {
+      ...defaultBlockSpecs,
+      horizontalRule: buildHorizontalRuleSpec(buildArgs.horizontalRuleFC),
+      monsterSheet: buildMonsterSheetSpec(
+        buildArgs.monsterSheetFC,
+        buildArgs.monsterSheetExternalFC,
+      ),
+      spellSheet: buildSpellSheetSpec(
+        buildArgs.spellSheetFC,
+        buildArgs.spellSheetExternalFC,
+      ),
+    },
   });
+
+export type ArtifactEditorPartialBlock = ReturnType<
+  typeof buildArtifactEditorBlocknoteSchema
+>['PartialBlock'];
 
 export type ArtifactEditorBlock = ReturnType<
   typeof buildArtifactEditorBlocknoteSchema
 >['Block'];
+
+export type ArtifactEditor = ReturnType<
+  typeof buildArtifactEditorBlocknoteSchema
+>['BlockNoteEditor'];

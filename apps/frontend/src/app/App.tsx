@@ -53,7 +53,7 @@ export function App() {
       <IonApp>
         <IonReactRouter>
           <SessionContextProviderWrapper>
-            <IonSplitPane when="lg" contentId="main">
+            <IonSplitPane when="false" contentId="main">
               <Menu />
               <IonRouterOutlet id="main" animated={false}>
                 <Route exact path={routes.home.route} component={Home} />
