@@ -28,6 +28,7 @@ import styled from 'styled-components';
 const ThreadsContainer = styled(IonList)`
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
+  height: 100%;
 `;
 
 export const AIThreadsMenu: React.FC = () => {

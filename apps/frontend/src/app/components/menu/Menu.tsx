@@ -17,7 +17,7 @@ export const Menu: React.FC = () => {
   const { session } = useContext(SessionContext);
 
   return (
-    <IonMenu contentId="main">
+    <IonMenu disabled={true} contentId="main">
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('menu.title')}</IonTitle>

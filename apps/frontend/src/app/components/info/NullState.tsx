@@ -3,8 +3,13 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   text-align: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding-top: 16px;
+  padding-bottom: 16px;
 `;
 
 const Header = styled.h2`
