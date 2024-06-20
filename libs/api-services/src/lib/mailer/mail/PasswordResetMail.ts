@@ -1,13 +1,13 @@
-import { config } from '../../config';
 import { Mail } from './Mail';
 import dedent from 'dedent';
 import { signature } from './reusables/signature';
 import { sendMail } from '../sendMail';
+import { globalServerConfig } from '@feynote/config';
 
 export class PasswordResetMail implements Mail {
   public readonly to: string[];
   public readonly cc: undefined;
-  public readonly from = config.email.fromAddress;
+  public readonly from = globalServerConfig.email.fromAddress;
   public readonly subject: string;
   public readonly html: string;
   public readonly plain: string;

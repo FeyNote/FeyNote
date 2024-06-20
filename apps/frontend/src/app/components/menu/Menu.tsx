@@ -17,7 +17,7 @@ export const Menu: React.FC = () => {
   const { session } = useContext(SessionContext);
 
   return (
-    <IonMenu contentId="main">
+    <IonMenu contentId="main" swipeGesture={false}>
       <IonHeader>
         <IonToolbar>
           <IonTitle>{t('menu.title')}</IonTitle>

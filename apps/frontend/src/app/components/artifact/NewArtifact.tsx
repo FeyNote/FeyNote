@@ -2,65 +2,41 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonItem,
   IonMenuButton,
   IonPage,
+  IonSpinner,
   IonTitle,
   IonToolbar,
   useIonRouter,
   useIonToast,
-  useIonViewDidLeave,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
+import { ArtifactRenderer } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
-import { useEffect, useRef, useState } from 'react';
-import { ArtifactTheme } from '@prisma/client';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const router = useIonRouter();
-  const selectTemplateModalShownRef = useRef(false);
-  const presentSelectTemplateModalRef = useRef<() => void>();
-  const [key, setKey] = useState(Math.random());
 
-  useIonViewDidLeave(() => {
-    setKey(Math.random()); // Reset form state when navigating
+  useIonViewDidEnter(() => {
+    create();
   }, []);
 
-  useEffect(() => {
-    if (!selectTemplateModalShownRef.current) {
-      presentSelectTemplateModalRef.current?.();
-      selectTemplateModalShownRef.current = true;
-    }
-  }, []);
-
-  const newArtifactPlaceholder = {
-    title: '',
-    text: '',
-    json: {},
-    theme: ArtifactTheme.default,
-    isTemplate: false,
-    isPinned: false,
-    rootTemplateId: null,
-    artifactTemplate: null,
-    templatedArtifacts: [],
-    artifactReferences: [],
-    incomingArtifactReferences: [],
-  } satisfies EditArtifactDetail;
-
-  const save = (updatedArtifact: EditArtifactDetail) => {
+  const create = () => {
     trpc.artifact.createArtifact
       .mutate({
-        title: updatedArtifact.title,
-        json: updatedArtifact.json,
-        text: updatedArtifact.text,
-        theme: updatedArtifact.theme,
-        isPinned: updatedArtifact.isPinned,
-        isTemplate: updatedArtifact.isTemplate,
-        rootTemplateId: updatedArtifact.rootTemplateId,
-        artifactTemplateId: updatedArtifact.artifactTemplate?.id || null,
+        title: 'Untitled',
+        json: {},
+        text: '',
+        theme: 'default',
+        isPinned: false,
+        isTemplate: false,
+        rootTemplateId: null,
+        artifactTemplateId: null,
       })
       .then((response) => {
         const artifactId = response.id;
@@ -90,12 +66,9 @@ export const NewArtifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <ArtifactRenderer
-          artifact={newArtifactPlaceholder}
-          save={save}
-          presentSelectTemplateModalRef={presentSelectTemplateModalRef}
-          key={key} // Used to force react to treat this as a different component and reset the state
-        />
+        <IonItem className="ion-text-center">
+          <IonSpinner></IonSpinner>
+        </IonItem>
       </IonContent>
     </IonPage>
   );

@@ -1,18 +1,17 @@
-import { ArtifactEditorBlock } from '@feynote/blocknote';
 import { prisma } from '@feynote/prisma/client';
-import { getReferencesFromBlocks, getBlocksDiff } from '@feynote/shared-utils';
+import { getReferencesFromJSONContent } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
+import { JSONContent } from '@tiptap/core';
 
 export async function updateArtifactOutgoingReferences(
-  userId: string,
   artifactId: string,
-  blocknoteContent: ArtifactEditorBlock[],
+  jsonContent: JSONContent,
   tx: Prisma.TransactionClient = prisma,
 ) {
   // Recreate all artifact references since it's more efficient to do so than to
   // try and diff
-  const referencesFromBlocks = getReferencesFromBlocks(blocknoteContent);
-  const referencedArtifactIds = referencesFromBlocks.map(
+  const referencesFromJSONContent = getReferencesFromJSONContent(jsonContent);
+  const referencedArtifactIds = referencesFromJSONContent.map(
     (artifactReference) => artifactReference.targetArtifactId,
   );
   const connectableReferencedArtifacts = await tx.artifact.findMany({
@@ -23,14 +22,9 @@ export async function updateArtifactOutgoingReferences(
     },
     select: {
       id: true,
-      userId: true,
     },
   });
-  for (const connectableReferencedArtifact of connectableReferencedArtifacts) {
-    if (connectableReferencedArtifact.userId !== userId) {
-      throw new Error("Referenced an artifact that user doesn't own!");
-    }
-  }
+
   const connectableReferencedArtifactIds = new Set(
     connectableReferencedArtifacts.map(
       (connectableReferencedArtifact) => connectableReferencedArtifact.id,
@@ -42,7 +36,7 @@ export async function updateArtifactOutgoingReferences(
     },
   });
   await tx.artifactReference.createMany({
-    data: referencesFromBlocks.map((reference) => ({
+    data: referencesFromJSONContent.map((reference) => ({
       artifactId,
       artifactBlockId: reference.artifactBlockId,
 

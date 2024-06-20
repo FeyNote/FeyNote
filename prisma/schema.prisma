@@ -50,6 +50,7 @@ model Artifact {
   userId             String     @db.Uuid
   text               String
   json               Json
+  yBin               Bytes      @db.ByteA
   createdAt          DateTime   @default(now()) @db.Timestamptz(6)
   updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
 

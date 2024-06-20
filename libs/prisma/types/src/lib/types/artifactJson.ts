@@ -1,14 +1,13 @@
 import { z } from 'zod';
-import { ArtifactEditorBlock } from '@feynote/blocknote';
+import { JSONContent } from '@tiptap/core';
 
 export const artifactJsonSchema = z.object({
-  blocknoteContent: z.array(z.any()).optional(), // We don't want to attempt to validate a blocknote schema
-  blocknoteContentMd: z.string().optional(),
+  tiptapJSONContent: z.record(z.string(), z.any()).optional(), // We don't want to attempt to validate a tiptap schema
 });
 
 export type ArtifactJson = Omit<
   z.infer<typeof artifactJsonSchema>,
-  'blocknoteContent'
+  'tiptapJSONContent'
 > & {
-  blocknoteContent?: ArtifactEditorBlock[];
+  tiptapJSONContent?: JSONContent;
 };

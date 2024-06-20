@@ -21,6 +21,8 @@ export const handleTRPCErrors = (
   _presentToast: UseIonToastResult[0],
   handlerMap?: Record<number, string | (() => void)>,
 ) => {
+  console.log(error);
+
   let errorCode = 500;
   if (error instanceof TRPCClientError) {
     errorCode =

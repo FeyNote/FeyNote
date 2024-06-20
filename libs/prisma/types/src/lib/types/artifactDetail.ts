@@ -23,6 +23,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     },
     text: true,
     json: true,
+    yBin: true,
     templatedArtifacts: {
       select: {
         id: true,

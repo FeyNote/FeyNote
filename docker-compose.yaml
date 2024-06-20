@@ -20,6 +20,31 @@ services:
     command: npx nx serve frontend
     depends_on:
       - backend
+  hocuspocus:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: npx nx serve hocuspocus
+    environment:
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      - SEARCH_PROVIDER=typesense
+      - EMAIL_FROM_NAME=val
+      - EMAIL_FROM_ADDRESS=val
+      - EMAIL_REPLY_TO_ADDRESS=val
+      - TYPESENSE_API_KEY=feynote
+      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+      - REDIS_HOST=valkey
+      - REDIS_PORT=6379
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
   backend:
     build:
       context: .
@@ -37,11 +62,39 @@ services:
       - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+      - REDIS_HOST=valkey
+      - REDIS_PORT=6379
     env_file:
       - ./.env
     depends_on:
       - postgres
       - typesense
+      - valkey
+  queue-worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: npx nx serve queue-worker
+    environment:
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      - SEARCH_PROVIDER=typesense
+      - EMAIL_FROM_NAME=val
+      - EMAIL_FROM_ADDRESS=val
+      - EMAIL_REPLY_TO_ADDRESS=val
+      - TYPESENSE_API_KEY=feynote
+      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+      - REDIS_HOST=valkey
+      - REDIS_PORT=6379
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
   postgres:
     image: postgres:16.0
     ports:
@@ -54,3 +107,5 @@ services:
     image: typesense/typesense:0.25.2
     restart: on-failure
     command: '--data-dir /media --api-key=feynote --enable-cors'
+  valkey:
+    image: valkey/valkey:7.2.5-bookworm

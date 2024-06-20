@@ -1,7 +1,7 @@
-import { ArtifactEditorBlock } from '@feynote/blocknote';
+import { JSONContent } from '@tiptap/core';
 
-type BlockBasedRootTemplate = {
-  blocks: ArtifactEditorBlock[];
+type JSONContentBasedRootTemplate = {
+  jsonContent: JSONContent;
 };
 
 type StringBasedRootTemplate = {
@@ -12,4 +12,4 @@ export type RootTemplate = {
   id: string;
   title: string;
   rootTemplate: true;
-} & (BlockBasedRootTemplate | StringBasedRootTemplate);
+} & (JSONContentBasedRootTemplate | StringBasedRootTemplate);
