@@ -7,8 +7,8 @@ export const artifactUpdateQueue = new Queue<ArtifactUpdateQueueItem, void>(
   ARTIFACT_UPDATE_QUEUE_NAME,
   {
     connection: {
-      host: globalServerConfig.redis.host,
-      port: globalServerConfig.redis.port,
+      host: globalServerConfig.worker.redis.host,
+      port: globalServerConfig.worker.redis.port,
     },
   },
 );

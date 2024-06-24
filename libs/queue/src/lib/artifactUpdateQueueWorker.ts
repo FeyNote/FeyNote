@@ -107,8 +107,8 @@ export const artifactUpdateQueueWorker = new Worker<
   {
     autorun: false,
     connection: {
-      host: globalServerConfig.redis.host,
-      port: globalServerConfig.redis.port,
+      host: globalServerConfig.worker.redis.host,
+      port: globalServerConfig.worker.redis.port,
     },
     removeOnComplete: { count: globalServerConfig.worker.queueCompleteCount },
     removeOnFail: { count: globalServerConfig.worker.queueFailCount },
