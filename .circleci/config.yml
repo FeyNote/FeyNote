@@ -85,7 +85,7 @@ jobs:
       #     command: sed -i "s/APP_VERSION = \"development\";/APP_VERSION = \"${CIRCLE_TAG:=stg}\";/" www/service-worker.js
       - run:
           name: push
-          command: ./scripts/push-frontend-s3.sh
+          command: ./scripts/push-frontend-s3.sh ${CIRCLE_TAG:=stg}
 
 workflows:
   version: 2
