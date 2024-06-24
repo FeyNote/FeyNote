@@ -36,6 +36,7 @@ if (globalServerConfig.hocuspocus.logging.enable) {
 
 const server = Server.configure({
   stopOnSignals: true, // Listen to SIGINT, SIGTERM
+  port: globalServerConfig.hocuspocus.port,
   debounce: globalServerConfig.hocuspocus.writeDelayMs,
   maxDebounce: globalServerConfig.hocuspocus.maxWriteDelayMs,
   timeout: globalServerConfig.hocuspocus.connectionTimeout,
