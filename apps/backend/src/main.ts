@@ -12,7 +12,7 @@ app.use(
   }),
 );
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });

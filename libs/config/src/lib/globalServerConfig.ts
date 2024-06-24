@@ -20,6 +20,7 @@ export const globalServerConfig = {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
   },
   hocuspocus: {
+    port: parseInt(process.env['HOCUSPOCUS_PORT'] || '8080'),
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '5000'),
     maxWriteDelayMs: parseInt(
       process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '30000',
