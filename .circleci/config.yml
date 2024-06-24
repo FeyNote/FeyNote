@@ -52,14 +52,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.14
+          version: docker24
           docker_layer_caching: true
       - run:
           name: docker-login
           command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
       - run:
           name: push
-          command: echo "not implemented"
+          command: ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
   push_frontend:
     resource_class: large
     docker:
@@ -68,15 +68,24 @@ jobs:
       - checkout
       - aws-cli/setup
       - setup_remote_docker:
-          version: 20.10.14
+          version: docker24
           docker_layer_caching: true
       - install-dependencies
       - run:
           name: build-frontend
           command: npx nx build frontend
       - run:
+          name: move-frontend-build
+          command: mv dist/apps/frontend ./www
+      - run:
+          name: set-frontend-version
+          command: sed -i "s/window.version = \"development\";/window.version = \"${CIRCLE_TAG:=stg}\";/" www/index.html
+      # - run:
+      #     name: set-service-worker-version
+      #     command: sed -i "s/APP_VERSION = \"development\";/APP_VERSION = \"${CIRCLE_TAG:=stg}\";/" www/service-worker.js
+      - run:
           name: push
-          command: echo "not implemented"
+          command: ./scripts/build-push-frontend.sh
 
 workflows:
   version: 2

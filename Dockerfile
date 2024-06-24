@@ -19,4 +19,8 @@ RUN npx prisma generate
 
 RUN npx nx run-many -t build
 
+# Include version build arg within the container env
+ARG APP_VERSION
+ENV APP_VERSION=$APP_VERSION
+
 CMD echo "Must provide command to run containers"
