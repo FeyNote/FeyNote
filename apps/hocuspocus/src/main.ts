@@ -1,6 +1,7 @@
 import { Extension, Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';
 import { Throttle } from '@hocuspocus/extension-throttle';
+import { Redis } from '@hocuspocus/extension-redis';
 
 import { globalServerConfig } from '@feynote/config';
 import { onStoreDocument } from './onStoreDocument';
@@ -16,6 +17,15 @@ if (globalServerConfig.hocuspocus.throttle.enable) {
       throttle:
         globalServerConfig.hocuspocus.throttle.connectionsPerMinuteBeforeBan,
       banTime: globalServerConfig.hocuspocus.throttle.banTimeMinutes,
+    }),
+  );
+}
+
+if (globalServerConfig.hocuspocus.redis.enable) {
+  extensions.push(
+    new Redis({
+      host: globalServerConfig.hocuspocus.redis.host,
+      port: globalServerConfig.hocuspocus.redis.port,
     }),
   );
 }

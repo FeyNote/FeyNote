@@ -19,10 +19,6 @@ export const globalServerConfig = {
   openai: {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
   },
-  redis: {
-    host: getEnvOrThrow('REDIS_HOST'),
-    port: parseInt(getEnvOrThrow('REDIS_PORT')),
-  },
   hocuspocus: {
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '5000'),
     maxWriteDelayMs: parseInt(
@@ -47,6 +43,13 @@ export const globalServerConfig = {
         ? coerceBoolean(process.env['HOCUSPOCUS_LOGGING_ENABLE'])
         : true,
     },
+    redis: {
+      enable: process.env['HOCUSPOCUS_REDIS_ENABLE']
+        ? coerceBoolean(process.env['HOCUSPOCUS_REDIS_ENABLE'])
+        : true,
+      host: process.env['HOCUSPOCUS_REDIS_HOST'],
+      port: parseInt(process.env['HOCUSPOCUS_REDIS_PORT'] || '6379'),
+    },
   },
   worker: {
     queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '1'),
@@ -54,5 +57,9 @@ export const globalServerConfig = {
       process.env['WORKER_QUEUE_COMPLETE_COUNT'] || '1000',
     ),
     queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
+    redis: {
+      host: getEnvOrThrow('WORKER_REDIS_HOST'),
+      port: parseInt(getEnvOrThrow('WORKER_REDIS_PORT')),
+    },
   },
 };
