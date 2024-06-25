@@ -30,7 +30,7 @@ import {
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
 import { routes } from '../../routes';
-import { ArtifactTheme } from '@prisma/client';
+import type { ArtifactTheme } from '@prisma/client';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import styled from 'styled-components';
 import { Prompt } from 'react-router-dom';
@@ -369,9 +369,13 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 setMetaProp('theme', e.detail.value);
               }}
             >
-              {Object.values(ArtifactTheme).map((el) => (
+              {Object.keys(artifactThemeTitleI18nByName).map((el) => (
                 <IonSelectOption key={el} value={el}>
-                  {t(artifactThemeTitleI18nByName[el])}
+                  {t(
+                    artifactThemeTitleI18nByName[
+                      el as keyof typeof artifactThemeTitleI18nByName
+                    ],
+                  )}
                 </IonSelectOption>
               ))}
             </IonSelect>

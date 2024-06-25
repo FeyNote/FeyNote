@@ -1,6 +1,6 @@
-import { ArtifactTheme } from '@prisma/client';
+import type { ArtifactTheme } from '@prisma/client';
 
 export const artifactThemeTitleI18nByName = {
-  [ArtifactTheme.default]: 'artifactTheme.default',
-  [ArtifactTheme.classic]: 'artifactTheme.classic',
-};
+  default: 'artifactTheme.default',
+  classic: 'artifactTheme.classic',
+} as const satisfies Record<ArtifactTheme, string>;

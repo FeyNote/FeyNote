@@ -1,4 +1,4 @@
-import { ArtifactTheme } from '@prisma/client';
+import type { ArtifactTheme } from '@prisma/client';
 
 export interface YArtifactMetaSchema {
   title: string;
