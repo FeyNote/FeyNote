@@ -18,6 +18,8 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
     command: npx nx serve frontend
+    environment:
+      - VITE_ENVIRONMENT=development
     depends_on:
       - backend
   hocuspocus:

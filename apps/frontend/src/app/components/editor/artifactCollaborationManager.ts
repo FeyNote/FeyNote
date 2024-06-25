@@ -1,4 +1,5 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { getApiUrls } from '../../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
 
@@ -23,7 +24,7 @@ class ArtifactCollaborationManager {
     const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
     const tiptapCollabProvider = new TiptapCollabProvider({
       name: artifactId,
-      baseUrl: '/hocuspocus',
+      baseUrl: getApiUrls().hocuspocus,
       document: yjsDoc,
       token,
       // websocketProvider: new HocuspocusProviderWebsocket({
