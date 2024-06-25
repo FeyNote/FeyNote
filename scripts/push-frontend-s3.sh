@@ -12,6 +12,6 @@ then
   exit 1
 fi
 
-aws s3 sync www s3://feynote-www/frontend/$TAG/ \
+aws s3 sync www s3://feynote-public/frontend/$TAG/ \
   --cache-control "public, max-age=3600, must-revalidate"
 

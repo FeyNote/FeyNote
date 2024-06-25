@@ -11,5 +11,5 @@ fi
 export RELEASE_ENV="$1"
 export RELEASE_TAG="$2"
 
-aws s3 cp --recursive s3://feynote-www/frontend/$RELEASE_TAG/ s3://feynote-www/frontend/$RELEASE_ENV
+aws s3 cp --recursive s3://feynote-public/frontend/$RELEASE_TAG/ s3://feynote-public/frontend/$RELEASE_ENV
 
