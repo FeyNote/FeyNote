@@ -1,5 +1,5 @@
 import { MutableRefObject } from 'react';
-import { ArtifactTheme } from '@prisma/client';
+import type { ArtifactTheme } from '@prisma/client';
 import { EditorContent } from '@tiptap/react';
 import { JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
