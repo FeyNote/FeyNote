@@ -20,11 +20,6 @@ export const getArtifacts = authenticatedProcedure
         isPinned: input.isPinned,
       },
       ...artifactSummary,
-      orderBy: [
-        {
-          title: 'desc',
-        },
-      ],
     });
 
     return artifacts;

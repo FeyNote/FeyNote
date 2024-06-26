@@ -1,4 +1,4 @@
-import { LanguageLocalityMap, SupportedLanguages } from './types';
+import { LanguageLocalityMap, SupportedLanguages } from '@feynote/shared-utils';
 
 export const FALLBACK_LANGUAGE = SupportedLanguages.EN_US;
 

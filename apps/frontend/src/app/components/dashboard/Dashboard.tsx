@@ -104,11 +104,7 @@ export const Dashboard: React.FC = () => {
       artifactTemplateId: null,
     });
 
-    router.push(
-      routes.artifact.build({ id: artifact.id }),
-      'forward',
-      'replace',
-    );
+    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
   };
 
   return (

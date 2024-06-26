@@ -1,4 +1,4 @@
-import { IonItem, IonLabel, IonMenuToggle } from '@ionic/react';
+import { IonCard, IonItem, IonLabel, IonMenuToggle } from '@ionic/react';
 import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
 
@@ -6,7 +6,7 @@ export const UnauthenticatedMenuItems: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <>
+    <IonCard>
       <IonMenuToggle autoHide={false}>
         <IonItem routerLink={routes.home.build()}>
           <IonLabel>{t('menu.home')}</IonLabel>
@@ -22,6 +22,6 @@ export const UnauthenticatedMenuItems: React.FC = () => {
           <IonLabel>{t('menu.register')}</IonLabel>
         </IonItem>
       </IonMenuToggle>
-    </>
+    </IonCard>
   );
 };

@@ -19,6 +19,7 @@ model User {
   passwordSalt     String?
   passwordVersion  Int?
   username         String?
+  preferences      Json?
   sessions         Session[]
   artifacts        Artifact[]
   ArtifactRevision ArtifactRevision[]
@@ -37,22 +38,22 @@ model Session {
 }
 
 model Artifact {
-  id                 String     @id @default(uuid()) @db.Uuid
+  id                 String        @id @default(uuid()) @db.Uuid
   title              String
-  theme              ArtifactTheme     @default(default)
-  isPinned           Boolean    @default(false)
-  artifactTemplate   Artifact?  @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
-  artifactTemplateId String?    @db.Uuid
-  templatedArtifacts Artifact[] @relation("artifactTemplate")
+  theme              ArtifactTheme @default(default)
+  isPinned           Boolean       @default(false)
+  artifactTemplate   Artifact?     @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
+  artifactTemplateId String?       @db.Uuid
+  templatedArtifacts Artifact[]    @relation("artifactTemplate")
   rootTemplateId     String?
-  isTemplate         Boolean    @default(false)
-  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId             String     @db.Uuid
+  isTemplate         Boolean       @default(false)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId             String        @db.Uuid
   text               String
   json               Json
-  yBin               Bytes      @db.ByteA
-  createdAt          DateTime   @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime   @updatedAt @db.Timestamptz(6)
+  yBin               Bytes         @db.ByteA
+  createdAt          DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
 
   artfactFiles               ArtifactFile[]
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")

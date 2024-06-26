@@ -3,6 +3,9 @@
   "menu.home": "Home",
   "menu.login": "Login",
   "menu.dashboard": "Dashboard",
+  "menu.pinned": "Pinned Artifacts",
+  "menu.recentlyUpdated": "Recently Updated Artifacts",
+  "menu.more": "Show More",
   "menu.signOut": "Sign Out",
   "menu.register": "Register",
 
