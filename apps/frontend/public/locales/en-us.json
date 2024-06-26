@@ -68,9 +68,9 @@
   "assistant.chat.nullState.title": "How can I help you today?",
   "assistant.chat.assistant.name": "FeyNote AI",
   "assistant.chat.user.name": "You",
-  "assistant.chatMenu.item.rename": "Rename",
-  "assistant.chatMenu.item.delete": "Delete",
-  "assistant.chatMenu.item.save": "Save",
+  "assistant.chat.retry.genericerror": "I'm sorry something went wrong, please try again.",
+  "assistant.chat.options.rename": "Rename Thread",
+  "assistant.chat.options.delete": "Delete Thread",
 
   "generic.save": "Save",
   "generic.edit": "Edit",

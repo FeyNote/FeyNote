@@ -10,7 +10,7 @@ export const updateThread = authenticatedProcedure
       title: z.string(),
     }),
   )
-  .query(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }) => {
     const thread = await prisma.thread.update({
       where: { id: input.id, userId: ctx.session.userId },
       data: {

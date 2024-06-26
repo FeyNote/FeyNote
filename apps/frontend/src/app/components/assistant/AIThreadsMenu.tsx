@@ -21,7 +21,7 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
 import { useIonRouter } from '@ionic/react';
-import { AIThread } from './AIThread';
+import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import styled from 'styled-components';
 
@@ -55,7 +55,7 @@ export const AIThreadsMenu: React.FC = () => {
   const createNewThread = () => {
     setShowLoading(true);
     trpc.ai.createThread
-      .query()
+      .mutate()
       .then((thread) => {
         router.push(`ai/${thread.id}`);
         setShowLoading(false);
@@ -92,7 +92,7 @@ export const AIThreadsMenu: React.FC = () => {
           ) : (
             <IonList>
               {threads.map((thread, idx) => (
-                <AIThread key={thread.title + idx} thread={thread} />
+                <AIThreadMenuItem key={thread.title + idx} thread={thread} />
               ))}
             </IonList>
           )}
