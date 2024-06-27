@@ -70,7 +70,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
 
         setRecentlyUpdatedArtifacts(
           artifacts.sort(
-            (a, b) => a.updatedAt.getTime() - b.updatedAt.getTime(),
+            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
           ),
         );
       })
