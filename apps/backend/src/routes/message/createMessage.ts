@@ -42,11 +42,9 @@ export async function createMessage(req: Request, res: Response) {
       threadId: threadId,
     },
   });
-  console.log(`Sending message to assistant; ${JSON.stringify(message)}`);
+
   const stream = await sendMessageToAssistant(query, threadId, session.userId);
   let assistantMessageContent = '';
-  console.log(`looping through stream; ${JSON.stringify(stream)}`);
-
   res.writeHead(200, {
     'Content-Type': 'text/plain',
     'Transfer-Encoding': 'chunked',
@@ -54,10 +52,13 @@ export async function createMessage(req: Request, res: Response) {
 
   for await (const chunk of stream) {
     const messageChunk = chunk.choices[0]?.delta?.content;
-    assistantMessageContent += messageChunk;
-    if (messageChunk) res.write(messageChunk);
+    if (messageChunk) {
+      assistantMessageContent += messageChunk;
+      res.write(messageChunk);
+    }
   }
   res.end();
+
   const assistantMessage = {
     role: 'assistant',
     content: assistantMessageContent,

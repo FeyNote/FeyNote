@@ -11,7 +11,7 @@ const ContentContainer = styled(IonContent)`
   flex-direction: column;
 `;
 
-const MessageSegment = styled.div`
+const MessageContainer = styled.div`
   width: 100%;
   display: flex;
   padding-left: 1.5rem;
@@ -39,7 +39,7 @@ const MessageHeader = styled(IonLabel)`
   font-weight: 500;
 `;
 interface Props {
-  messages: ChatMessage[];
+  messages: (ChatMessage | null)[];
 }
 
 export const AIMessagesContainer = (props: Props) => {
@@ -47,21 +47,23 @@ export const AIMessagesContainer = (props: Props) => {
 
   return (
     <ContentContainer>
-      {props.messages.map((message) => {
-        const name =
-          message.role === 'user'
-            ? t('assistant.chat.user.name')
-            : t('assistant.chat.assistant.name');
-        return (
-          <MessageSegment key={message.id}>
-            <UserIcon icon={personCircle} />
-            <FlexColumn>
-              <MessageHeader>{name}</MessageHeader>
-              {message.content}
-            </FlexColumn>
-          </MessageSegment>
-        );
-      })}
+      {props.messages
+        .filter((message) => !!message)
+        .map((message, idx) => {
+          const name =
+            message.role === 'user'
+              ? t('assistant.chat.user.name')
+              : t('assistant.chat.assistant.name');
+          return (
+            <MessageContainer key={message.id + idx}>
+              <UserIcon icon={personCircle} />
+              <FlexColumn>
+                <MessageHeader>{name}</MessageHeader>
+                {message.content}
+              </FlexColumn>
+            </MessageContainer>
+          );
+        })}
     </ContentContainer>
   );
 };

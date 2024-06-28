@@ -101,6 +101,11 @@ export const AIChat: React.FC = () => {
   const [threadTitle, setThreadTitle] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [disableInput, setDisableInput] = useState<boolean>(false);
+  const [tempUserMessage, setTempUserMessage] = useState<ChatMessage | null>(
+    null,
+  );
+  const [tempAssistantMessage, setTempAssistantMessage] =
+    useState<ChatMessage | null>(null);
   const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
     id,
     title: threadTitle,
@@ -156,7 +161,7 @@ export const AIChat: React.FC = () => {
       });
       const reader = response.body?.getReader();
       if (!reader) return;
-      const newMessage = {
+      const tempMsg = {
         id: 'temp',
         role: 'assistant',
         content: '',
@@ -170,13 +175,14 @@ export const AIChat: React.FC = () => {
         }
         const text = decoder.decode(value, { stream: true });
         if (text) {
-          console.log(`adding text: ${text}`);
-          newMessage.content += text;
+          tempMsg.content += text;
+          setTempAssistantMessage({
+            ...tempMsg,
+          });
         }
-        if (messages.length) messages.pop();
-        setMessages([...messages, newMessage]);
       }
-      getThreadInfo();
+      await getThreadInfo();
+      setTempAssistantMessage(null);
       setDisableInput(false);
     } catch (error) {
       handleTRPCErrors(error, presentToast);
@@ -184,17 +190,18 @@ export const AIChat: React.FC = () => {
     }
   };
 
-  const sendMessage = (query: string) => {
+  const sendMessage = async (query: string) => {
     if (!message.trim()) return;
-    const tempUserMessage = {
+    const tmpMsg = {
       id: 'temp',
       role: 'user',
       content: query,
     };
     setMessage('');
+    setTempUserMessage(tmpMsg);
     setDisableInput(true);
-    setMessages([...messages, tempUserMessage]);
-    createMessage(query);
+    await createMessage(query);
+    setTempUserMessage(null);
   };
 
   const retryMessage = (messageId: string) => {
@@ -254,13 +261,15 @@ export const AIChat: React.FC = () => {
         {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>
           <ChatArea>
-            {!messages.length ? (
+            {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
               <NullState
                 title={t('assistant.chat.nullState.title')}
                 icon={chatbubbles}
               />
             ) : (
-              <AIMessagesContainer messages={messages} />
+              <AIMessagesContainer
+                messages={[...messages, tempUserMessage, tempAssistantMessage]}
+              />
             )}
           </ChatArea>
           <ChatTextContainer>
