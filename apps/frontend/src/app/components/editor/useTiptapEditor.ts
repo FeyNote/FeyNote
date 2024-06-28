@@ -4,6 +4,8 @@ import BlockquoteExtension from '@tiptap/extension-blockquote';
 import ListItemExtension from '@tiptap/extension-list-item';
 import OrderedListExtension from '@tiptap/extension-ordered-list';
 import BulletListExtension from '@tiptap/extension-bullet-list';
+import TaskListExtension from '@tiptap/extension-task-list';
+import TaskItemExtension from '@tiptap/extension-task-item';
 import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
@@ -66,6 +68,10 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     ListItemExtension,
     OrderedListExtension,
     BulletListExtension,
+    TaskListExtension,
+    TaskItemExtension.configure({
+      nested: true,
+    }),
     HardBreakExtension,
     BoldExtension,
     ItalicExtension,
