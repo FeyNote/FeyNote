@@ -1,6 +1,7 @@
 import {
   IonButton,
   IonCard,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -13,6 +14,12 @@ import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../../utils/trpc';
 import { ArtifactSummary } from '@feynote/prisma/types';
+import styled from 'styled-components';
+import { add } from 'ionicons/icons';
+
+const CompactIonItem = styled(IonItem)`
+  --min-height: 34px;
+`;
 
 /**
  * The default number of pinned artifacts to show
@@ -99,16 +106,19 @@ export const AuthenticatedMenuItems: React.FC = () => {
           <IonList>
             <IonListHeader>
               <IonLabel>{t('menu.pinned')}</IonLabel>
+              <IonButton size="small">
+                <IonIcon icon={add} slot="icon-only" />
+              </IonButton>
             </IonListHeader>
             {pinnedArtifacts
               .slice(0, pinnedArtifactsLimit)
               .map((pinnedArtifact) => (
-                <IonItem
+                <CompactIonItem
                   key={pinnedArtifact.id}
                   routerLink={routes.artifact.build({ id: pinnedArtifact.id })}
                 >
-                  <IonLabel>{pinnedArtifact.title}</IonLabel>
-                </IonItem>
+                  {pinnedArtifact.title}
+                </CompactIonItem>
               ))}
             {pinnedArtifacts.length > pinnedArtifactsLimit && (
               <IonButton onClick={showMorePinned} fill="clear">
@@ -128,14 +138,14 @@ export const AuthenticatedMenuItems: React.FC = () => {
             {recentlyUpdatedArtifacts
               .slice(0, recentlyUpdatedArtifactsLimit)
               .map((recentlyUpdatedArtifact) => (
-                <IonItem
+                <CompactIonItem
                   key={recentlyUpdatedArtifact.id}
                   routerLink={routes.artifact.build({
                     id: recentlyUpdatedArtifact.id,
                   })}
                 >
-                  <IonLabel>{recentlyUpdatedArtifact.title}</IonLabel>
-                </IonItem>
+                  {recentlyUpdatedArtifact.title}
+                </CompactIonItem>
               ))}
             {recentlyUpdatedArtifacts.length >
               recentlyUpdatedArtifactsLimit && (
