@@ -10,9 +10,12 @@ import {
   IonTextarea,
   IonTitle,
   IonToolbar,
+  UseIonRouterResult,
   useIonPopover,
+  useIonRouter,
   useIonToast,
   useIonViewWillEnter,
+  useIonViewWillLeave,
 } from '@ionic/react';
 import { send, chatbubbles, ellipsisVertical } from 'ionicons/icons';
 import { NullState } from '../info/NullState';
@@ -28,7 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { SESSION_ITEM_NAME } from '../../context/session/types';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
-import { ThreadOptionsPopover } from './ThreadOptionsPopover';
+import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -67,35 +70,59 @@ export interface ChatMessage {
   role: string;
 }
 
-const buildThreadOptionsPopover = (id: string, title: string) => {
-  return () => <ThreadOptionsPopover id={id} title={title} />;
+const buildThreadOptionsPopover = ({
+  id,
+  title,
+  setTitle,
+  router,
+}: {
+  id: string;
+  title: string;
+  setTitle: (title: string) => void;
+  router: UseIonRouterResult;
+}) => {
+  return (
+    <AIThreadOptionsPopover
+      id={id}
+      title={title}
+      router={router}
+      setTitle={setTitle}
+    />
+  );
 };
 
 export const AIChat: React.FC = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
-  const { id } = useParams<RouteArgs['aiChat']>();
+  const router = useIonRouter();
+  const { id } = useParams<RouteArgs['assistantChat']>();
   const [showLoading, setShowLoading] = useState(true);
   const [message, setMessage] = useState<string>('');
+  const [threadTitle, setThreadTitle] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [disableInput, setDisableInput] = useState<boolean>(false);
-  const [present, dismiss] = useIonPopover(
-    buildThreadOptionsPopover(id, 'temp'),
-    {
-      onDismiss: () => dismiss(),
-    },
-  );
-
-  useIonViewWillEnter(() => {
-    getMessages().then(() => setShowLoading(false));
+  const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
+    id,
+    title: threadTitle,
+    setTitle: setThreadTitle,
+    router,
   });
 
-  const getMessages = async () => {
+  useIonViewWillEnter(() => {
+    getThreadInfo().then(() => setShowLoading(false));
+  });
+
+  useIonViewWillLeave(() => {
+    dismiss();
+  });
+
+  const getThreadInfo = async () => {
     try {
-      const threadMessages = await trpc.ai.getMessages.query({
-        threadId: id,
+      const threadDTO = await trpc.ai.getThread.query({
+        id,
       });
-      setMessages(threadMessages);
+      setMessages(threadDTO.messages);
+      setThreadTitle(threadDTO.title);
     } catch (error) {
       handleTRPCErrors(error, presentToast);
     }
@@ -149,7 +176,7 @@ export const AIChat: React.FC = () => {
         if (messages.length) messages.pop();
         setMessages([...messages, newMessage]);
       }
-      getMessages();
+      getThreadInfo();
       setDisableInput(false);
     } catch (error) {
       handleTRPCErrors(error, presentToast);
@@ -200,7 +227,7 @@ export const AIChat: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
-        getMessages();
+        getThreadInfo();
       });
   };
 
@@ -211,9 +238,13 @@ export const AIChat: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          {<IonTitle>{t('assistant.chat.title')}</IonTitle>}
+          {<IonTitle>{t('assistant.title')}</IonTitle>}
           <IonButtons slot="end">
-            <IonButton onClick={() => present()} color="primary">
+            <IonButton
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onClick={(event: any) => present({ event })}
+              color="primary"
+            >
               <IonIcon icon={ellipsisVertical} />
             </IonButton>
           </IonButtons>

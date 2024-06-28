@@ -70,8 +70,16 @@ export function App() {
                   path={routes.dashboard.route}
                   component={Dashboard}
                 />
-                <Route exact path={routes.ai.route} component={AIThreadsMenu} />
-                <Route exact path={routes.aiChat.route} component={AIChat} />
+                <Route
+                  exact
+                  path={routes.assistant.route}
+                  component={AIThreadsMenu}
+                />
+                <Route
+                  exact
+                  path={routes.assistantChat.route}
+                  component={AIChat}
+                />
                 <Route
                   exact
                   path={routes.artifact.route}

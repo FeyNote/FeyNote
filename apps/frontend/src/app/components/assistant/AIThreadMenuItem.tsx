@@ -9,7 +9,10 @@ interface Props {
 
 export const AIThreadMenuItem = (props: Props) => {
   return (
-    <IonItem button routerLink={routes.aiChat.build({ id: props.thread.id })}>
+    <IonItem
+      button
+      routerLink={routes.assistantChat.build({ id: props.thread.id })}
+    >
       <IonIcon slot="start" icon={mail} />
       <IonLabel>
         {props.thread.title}

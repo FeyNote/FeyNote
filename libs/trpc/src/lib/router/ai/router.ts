@@ -1,5 +1,4 @@
 import { router as trpcRouter } from '../../trpc';
-import { getMessages } from './getMessages';
 import { deleteMessage } from './deleteMessage';
 import { getThreads } from './getThreads';
 import { getThread } from './getThread';
@@ -8,7 +7,6 @@ import { updateThread } from './updateThread';
 import { deleteThread } from './deleteThread';
 
 export const router = trpcRouter({
-  getMessages,
   deleteMessage,
   getThreads,
   getThread,

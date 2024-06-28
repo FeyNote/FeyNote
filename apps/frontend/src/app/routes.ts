@@ -9,8 +9,8 @@ export const routes = {
   login: route`/login`,
   newArtifact: route`/artifact/new`,
   artifact: route`/artifact/${'id'}`,
-  ai: route`/ai`,
-  aiChat: route`/ai/${'id'}`,
+  assistant: route`/assistant`,
+  assistantChat: route`/assistant/${'id'}`,
 };
 
 /*

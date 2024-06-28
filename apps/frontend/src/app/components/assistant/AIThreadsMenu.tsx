@@ -13,6 +13,7 @@ import {
   IonToolbar,
   useIonToast,
   useIonViewWillEnter,
+  useIonRouter,
 } from '@ionic/react';
 import { Thread } from '@prisma/client';
 import { useState } from 'react';
@@ -20,10 +21,10 @@ import { useTranslation } from 'react-i18next';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
-import { useIonRouter } from '@ionic/react';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import styled from 'styled-components';
+import { routes } from '../../routes';
 
 const ThreadsContainer = styled(IonList)`
   padding-bottom: 0.5rem;
@@ -55,9 +56,11 @@ export const AIThreadsMenu: React.FC = () => {
   const createNewThread = () => {
     setShowLoading(true);
     trpc.ai.createThread
-      .mutate()
+      .mutate({
+        title: t('assistant.chat.newThreadTitle'),
+      })
       .then((thread) => {
-        router.push(`ai/${thread.id}`);
+        router.push(routes.assistantChat.build({ id: thread.id }));
         setShowLoading(false);
       })
       .catch((error) => {
@@ -77,7 +80,7 @@ export const AIThreadsMenu: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>{t('assistant.threads.title')}</IonTitle>
+          <IonTitle>{t('assistant.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
