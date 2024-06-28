@@ -26,6 +26,7 @@ import { t } from 'i18next';
 import { useContext, useMemo } from 'react';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
+import { isLargeEnoughForSplitPane } from '../../../utils/isLargeEnoughForSplitPane';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -56,7 +57,6 @@ export const Settings: React.FC = () => {
   const [presentAlert] = useIonAlert();
   const { setPreference, getPreference, _preferencesService } =
     useContext(PreferencesContext);
-  const showSplitPaneOption = window.innerWidth >= 1200;
 
   const languageOptions = useMemo(() => {
     try {
@@ -142,7 +142,7 @@ export const Settings: React.FC = () => {
       <IonContent className="ion-padding">
         <IonList>
           <IonListHeader>{t('settings.interface')}</IonListHeader>
-          {showSplitPaneOption && (
+          {isLargeEnoughForSplitPane() && (
             <IonItem>
               <IonToggle
                 checked={getPreference(PreferenceNames.EnableSplitPane)}
