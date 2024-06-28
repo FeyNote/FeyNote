@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useReducer, useRef } from 'react';
+import { ReactNode, useEffect, useMemo, useReducer, useRef } from 'react';
 import {
   GetPreferenceHandler,
   PreferencesContext,
@@ -21,15 +21,21 @@ export const PreferencesContextProviderWrapper = ({
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const gotInitialLoadEvent = useRef(false);
 
-  if (!gotInitialLoadEvent.current) {
-    // I hate react sometimes
-    preferencesService.initialLoading.then(() => {
-      if (!gotInitialLoadEvent.current) {
-        triggerRerender();
-        gotInitialLoadEvent.current = true;
-      }
-    });
-  }
+  useEffect(() => {
+    let isMounted = true;
+    if (!gotInitialLoadEvent.current) {
+      // I hate react sometimes
+      preferencesService.initialLoading.then(() => {
+        if (!gotInitialLoadEvent.current && isMounted) {
+          triggerRerender();
+          gotInitialLoadEvent.current = true;
+        }
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useAppThemeWatcher(preferencesService.preferences);
   useAppFontSizeWatcher(preferencesService.preferences);
