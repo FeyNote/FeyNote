@@ -1,8 +1,13 @@
 import { z } from 'zod';
+import { JSONContent } from '@tiptap/core';
 
 export const artifactJsonSchema = z.object({
-  blocknoteContent: z.array(z.any()).optional(), // We don't want to attempt to validate a blocknote schema
+  tiptapJSONContent: z.record(z.string(), z.any()).optional(), // We don't want to attempt to validate a tiptap schema
 });
 
-// blocknoteContent is typed as any rather than overriding because we can't load blocknote react on the server side :(
-export type ArtifactJson = z.infer<typeof artifactJsonSchema>;
+export type ArtifactJson = Omit<
+  z.infer<typeof artifactJsonSchema>,
+  'tiptapJSONContent'
+> & {
+  tiptapJSONContent?: JSONContent;
+};

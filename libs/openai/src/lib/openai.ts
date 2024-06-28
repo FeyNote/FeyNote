@@ -1,6 +1,6 @@
-import { config } from '@feynote/api-services';
+import { globalServerConfig } from '@feynote/config';
 import OpenAI from 'openai';
 
 export const openai = new OpenAI({
-  apiKey: config.openai.apiKey,
+  apiKey: globalServerConfig.openai.apiKey,
 });

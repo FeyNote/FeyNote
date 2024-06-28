@@ -2,61 +2,54 @@ import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { ArtifactDetail, artifactDetail } from '@feynote/prisma/types';
-import {
-  BlocksByStringQueryResult,
-  getBlocksByQuery,
-} from '@feynote/shared-utils';
-
-export interface ArtifactBlockResult extends BlocksByStringQueryResult {
-  artifactId: string;
-}
+import { ArtifactSummary, artifactSummary } from '@feynote/prisma/types';
 
 export const searchArtifactBlocks = authenticatedProcedure
   .input(
     z.object({
       query: z.string(),
+      limit: z.number().min(1).max(100).optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
-    const matchedArtifactIds = await searchProvider.searchArtifacts(
+    const matchedArtifactBlocks = await searchProvider.searchArtifactBlocks(
       ctx.session.userId,
       input.query,
-      false,
-    );
-    const artifacts = (await prisma.artifact.findMany({
-      where: {
-        id: { in: matchedArtifactIds },
+      {
+        prefix: true,
       },
-      ...artifactDetail,
-      orderBy: [
-        {
-          title: 'desc',
+    );
+
+    const matchedArtifactIds = [
+      ...new Set(
+        matchedArtifactBlocks.map((artifactBlock) => artifactBlock.artifactId),
+      ),
+    ];
+
+    const artifacts = await prisma.artifact.findMany({
+      where: {
+        id: {
+          in: matchedArtifactIds,
         },
-      ],
-    })) as ArtifactDetail[];
+      },
+      ...artifactSummary,
+      take: input.limit || 100,
+    });
 
-    const artifactBlockResults: ArtifactBlockResult[] = [];
+    const artifactsById = artifacts.reduce(
+      (artifactsById, artifact) => {
+        artifactsById[artifact.id] = artifact;
+        return artifactsById;
+      },
+      {} as Record<string, ArtifactSummary>,
+    );
 
-    for (const artifact of artifacts) {
-      // We do not want to break loading if an artifact is malformed.
-      try {
-        const json = artifact.json;
-        if (!json || !json.blocknoteContent) continue;
+    const results = matchedArtifactBlocks
+      .map((matchedArtifactBlock) => ({
+        ...matchedArtifactBlock,
+        artifact: artifactsById[matchedArtifactBlock.artifactId],
+      }))
+      .filter((matchedArtifactBlock) => !!matchedArtifactBlock.artifact);
 
-        const results = getBlocksByQuery(input.query, json.blocknoteContent);
-
-        for (const result of results) {
-          artifactBlockResults.push({
-            ...result,
-            artifactId: artifact.id,
-          });
-        }
-      } catch (e) {
-        // TODO: Use Sentry here
-        console.log(`Error while parsing artifact ${artifact.id}`);
-      }
-    }
-
-    return artifactBlockResults;
+    return results;
   });

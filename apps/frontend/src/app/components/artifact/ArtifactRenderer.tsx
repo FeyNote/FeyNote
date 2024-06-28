@@ -1,112 +1,262 @@
 import { ArtifactDetail } from '@feynote/prisma/types';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
-  IonButton,
   IonCheckbox,
   IonCol,
   IonGrid,
+  IonIcon,
   IonInput,
   IonItem,
+  IonLabel,
+  IonListHeader,
   IonRow,
+  IonSelect,
+  IonSelectOption,
   useIonAlert,
+  useIonModal,
+  useIonToast,
 } from '@ionic/react';
+import { chevronForward } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactEditor } from '../editor/ArtifactEditor';
-import { ArtifactEditorBlock } from '../editor/blocknoteSchema';
+import {
+  ArtifactEditor,
+  ArtifactEditorApplyTemplate,
+} from '../editor/ArtifactEditor';
 import { InfoButton } from '../info/InfoButton';
+import { rootTemplatesById } from './rootTemplates/rootTemplates';
+import { RootTemplate } from './rootTemplates/rootTemplates.types';
+import {
+  SelectTemplateModal,
+  SelectTemplateModalProps,
+} from './SelectTemplateModal';
+import { routes } from '../../routes';
+import type { ArtifactTheme } from '@prisma/client';
+import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
+import styled from 'styled-components';
+import { Prompt } from 'react-router-dom';
+import { SessionContext } from '../../context/session/SessionContext';
+import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
+import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
+import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  getMetaFromYArtifact,
+  getTiptapContentFromYjsDoc,
+  randomizeJSONContentUUIDs,
+} from '@feynote/shared-utils';
+import { trpc } from '../../../utils/trpc';
+import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import * as Y from 'yjs';
+import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 
-type ExistingArtifactOnlyFields =
-  | 'id'
-  | 'userId'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'templatedArtifacts'
-  | 'artifactTemplate';
+enum ConnectionStatus {
+  Connected = 'connected',
+  Connecting = 'connecting',
+  Disconnected = 'disconnected',
+}
+const connectionStatusToI18n = {
+  [ConnectionStatus.Connected]: 'artifactRenderer.connection.connected',
+  [ConnectionStatus.Connecting]: 'artifactRenderer.connection.connecting',
+  [ConnectionStatus.Disconnected]: 'artifactRenderer.connection.disconnected',
+} satisfies Record<ConnectionStatus, string>;
 
-export type EditArtifactDetail =
-  | Omit<ArtifactDetail, ExistingArtifactOnlyFields>
-  | ArtifactDetail;
+const ConnectionStatusContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
+  border-radius: 100%;
+  width: 10px;
+  height: 10px;
+  margin-right: 10px;
+
+  ${(props) => {
+    switch (props.$status) {
+      case ConnectionStatus.Connected: {
+        return `background-color: var(--ion-color-success);`;
+      }
+      case ConnectionStatus.Connecting: {
+        return `background-color: var(--ion-color-warning);`;
+      }
+      case ConnectionStatus.Disconnected: {
+        return `background-color: var(--ion-color-danger);`;
+      }
+    }
+  }}
+`;
 
 interface Props {
-  artifact: EditArtifactDetail;
-  save: (artifact: EditArtifactDetail) => void;
-  onArtifactChanged?: (artifact: EditArtifactDetail) => void;
+  artifact: ArtifactDetail;
+  reload: () => void;
+  scrollToBlockId?: string;
 }
 
-export const ArtifactRenderer = (props: Props) => {
-  const { onArtifactChanged } = props;
+export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentAlert] = useIonAlert();
+  const [presentToast] = useIonToast();
+  const [connectionStatus, setConnectionStatus] = useState(
+    ConnectionStatus.Disconnected,
+  );
+  const [editorReady, setEditorReady] = useState(false);
+  const { session } = useContext(SessionContext);
   const [title, setTitle] = useState(props.artifact.title);
+  const [theme, setTheme] = useState(props.artifact.theme);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
-  const [blocknoteContent, setBlocknoteContent] = useState(
-    props.artifact.json?.blocknoteContent,
+  const [artifactTemplate, setArtifactTemplate] = useState(
+    props.artifact.artifactTemplate,
   );
-  const [blocknoteContentMd, setBlocknoteContentMd] = useState(
-    props.artifact.text,
+  const [rootTemplateId, setRootTemplateId] = useState(
+    props.artifact.rootTemplateId,
   );
-
-  const modified =
-    props.artifact.title !== title ||
-    props.artifact.isPinned !== isPinned ||
-    props.artifact.isTemplate !== isTemplate ||
-    props.artifact.text !== blocknoteContentMd;
-
-  const save = () => {
-    if (!title.trim()) {
-      presentAlert({
-        header: t('artifactDetail.missingTitle.title'),
-        message: t('artifactDetail.missingTitle.message'),
-        buttons: [t('generic.okay')],
-      });
-
-      return;
-    }
-
-    props.save({
-      ...props.artifact,
-      title,
-      text: blocknoteContentMd,
-      json: {
-        blocknoteContent,
+  const rootTemplate = rootTemplateId
+    ? rootTemplatesById[rootTemplateId]
+    : null;
+  const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
+    SelectTemplateModal,
+    {
+      enableOverrideWarning: true,
+      dismiss: (result) => {
+        dismissSelectTemplateModal();
+        if (result) {
+          if (result.type === 'artifact') {
+            applyArtifactTemplate(result.artifactTemplate);
+          }
+          if (result.type === 'rootTemplate') {
+            applyRootTemplate(rootTemplatesById[result.rootTemplateId]);
+          }
+        }
       },
-      isPinned,
-      isTemplate,
-    });
-  };
+    } satisfies SelectTemplateModalProps,
+  );
+
+  useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
+
+  // We must preserve the original map between renders
+  // because tiptap exists outside of React's render cycle
+  const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
+  useEffect(() => {
+    for (const reference of props.artifact.artifactReferences) {
+      const key = getKnownArtifactReferenceKey(
+        reference.targetArtifactId,
+        reference.targetArtifactBlockId || undefined,
+      );
+
+      knownReferences.set(key, {
+        artifactBlockId: reference.artifactBlockId,
+        targetArtifactId: reference.targetArtifactId,
+        targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
+        referenceText: reference.referenceText,
+        isBroken: !reference.referenceTargetArtifactId,
+      });
+    }
+  }, [props.artifact.artifactReferences]);
+
+  const connection = artifactCollaborationManager.get(
+    props.artifact.id,
+    session,
+  );
+  useEffect(() => {
+    const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
+
+    const listener = () => {
+      const yArtifactMeta = getMetaFromYArtifact(connection.yjsDoc);
+      setTitle(yArtifactMeta.title ?? title);
+      setTheme(yArtifactMeta.theme ?? theme);
+    };
+
+    artifactMetaMap.observe(listener);
+    return () => artifactMetaMap.unobserve(listener);
+  }, [connection]);
 
   useEffect(() => {
-    onArtifactChanged?.({
-      ...props.artifact,
-      title,
-      text: blocknoteContentMd,
-      json: {
-        blocknoteContent,
-      },
-      isPinned,
-      isTemplate,
-    });
-  }, [
-    props.artifact,
-    onArtifactChanged,
-    title,
-    blocknoteContent,
-    blocknoteContentMd,
-    isPinned,
-    isTemplate,
-  ]);
+    const listener = ({ status }: { status: string }) => {
+      console.log('status change', status);
+      if (status === 'connecting') {
+        setConnectionStatus(ConnectionStatus.Connecting);
+      } else if (status === 'connected') {
+        setConnectionStatus(ConnectionStatus.Connected);
+      } else {
+        setConnectionStatus(ConnectionStatus.Disconnected);
+      }
+    };
 
-  const onEditorContentChange = (
-    updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string,
-  ) => {
-    setBlocknoteContent(updatedContent);
-    setBlocknoteContentMd(updatedContentMd);
+    connection.tiptapCollabProvider.on('status', listener);
+    return () => {
+      connection.tiptapCollabProvider.off('status', listener);
+    };
+  }, [connection]);
+
+  useEffect(() => {
+    if (connectionStatus !== ConnectionStatus.Connected) {
+      window.onbeforeunload = () => true;
+    }
+    return () => {
+      window.onbeforeunload = null;
+    };
+  }, [connectionStatus]);
+
+  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
+
+  const applyRootTemplate = (rootTemplate: RootTemplate) => {
+    if ('markdown' in rootTemplate) {
+      editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
+    } else {
+      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive (move to util)
+      editorApplyTemplateRef.current?.(rootTemplate.jsonContent);
+    }
+
+    setRootTemplateId(rootTemplate.id);
+    setArtifactTemplate(null);
+  };
+
+  const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
+    const templateYDoc = new Y.Doc();
+    Y.applyUpdate(templateYDoc, artifactTemplate.yBin);
+    const templateTiptapBody = getTiptapContentFromYjsDoc(
+      templateYDoc,
+      ARTIFACT_TIPTAP_BODY_KEY,
+    );
+    randomizeJSONContentUUIDs(templateTiptapBody);
+    editorApplyTemplateRef.current?.(templateTiptapBody);
+
+    setArtifactTemplate(artifactTemplate);
+    setRootTemplateId(null);
+  };
+
+  const setMetaProp = (metaPropName: string, value: any) => {
+    (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
+      metaPropName,
+      value,
+    );
+  };
+
+  const updateArtifact = (updates: Partial<ArtifactDetail>) => {
+    trpc.artifact.updateArtifact
+      .mutate({
+        id: props.artifact.id,
+        isPinned,
+        isTemplate,
+        rootTemplateId,
+        artifactTemplateId: artifactTemplate?.id || null,
+        ...updates,
+      })
+      .then(() => {
+        props.reload();
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
   };
 
   return (
     <IonGrid>
+      <Prompt
+        when={connectionStatus !== ConnectionStatus.Connected}
+        message={t('generic.unsavedChanges')}
+      />
       <IonRow>
         <IonCol size="12" sizeLg="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
@@ -116,31 +266,53 @@ export const ArtifactRenderer = (props: Props) => {
                 label={t('artifactRenderer.title.label')}
                 labelPlacement="stacked"
                 value={title}
-                onIonInput={(event) =>
-                  setTitle((event.target.value || '').toString())
-                }
+                onIonInput={(event) => {
+                  setMetaProp('title', event.target.value || '');
+                }}
                 type="text"
               ></IonInput>
             </IonItem>
             <div>
               <ArtifactEditor
-                onContentChange={onEditorContentChange}
-                initialContent={blocknoteContent}
+                theme={theme}
+                applyTemplateRef={editorApplyTemplateRef}
+                knownReferences={knownReferences}
+                yjsProvider={connection.tiptapCollabProvider}
+                onReady={() => setEditorReady(true)}
               />
             </div>
+            {editorReady && (
+              <ConnectionStatusContainer>
+                <ConnectionStatusIcon $status={connectionStatus} />
+                <div>{t(connectionStatusToI18n[connectionStatus])}</div>
+              </ConnectionStatusContainer>
+            )}
           </div>
         </IonCol>
         <IonCol size="12" sizeLg="3">
-          <IonButton onClick={save} disabled={!modified} expand="block">
-            {t('generic.save')}
-          </IonButton>
+          <IonItem onClick={() => presentSelectTemplateModal()} button>
+            <IonLabel>
+              <h3>{t('artifactRenderer.selectTemplate')}</h3>
+              {rootTemplate && <p>{t(rootTemplate.title)}</p>}
+              {artifactTemplate && <p>{artifactTemplate.title}</p>}
+              {!rootTemplate && !artifactTemplate && (
+                <p>{t('artifactRenderer.selectTemplate.none')}</p>
+              )}
+            </IonLabel>
+            <IonIcon slot="end" icon={chevronForward} size="small" />
+          </IonItem>
           <br />
           <IonItem>
             <IonCheckbox
               labelPlacement="end"
               justify="start"
               checked={isPinned}
-              onIonChange={(event) => setIsPinned(event.target.checked)}
+              onIonChange={(event) => {
+                setIsPinned(event.target.checked);
+                updateArtifact({
+                  isPinned: event.target.checked,
+                });
+              }}
             >
               {t('artifactRenderer.isPinned')}
             </IonCheckbox>
@@ -154,7 +326,12 @@ export const ArtifactRenderer = (props: Props) => {
               labelPlacement="end"
               justify="start"
               checked={isTemplate}
-              onIonChange={(event) => setIsTemplate(event.target.checked)}
+              onIonChange={(event) => {
+                setIsTemplate(event.target.checked);
+                updateArtifact({
+                  isTemplate: event.target.checked,
+                });
+              }}
             >
               {t('artifactRenderer.isTemplate')}
             </IonCheckbox>
@@ -163,6 +340,68 @@ export const ArtifactRenderer = (props: Props) => {
               message={t('artifactRenderer.isTemplate.help')}
             />
           </IonItem>
+          {!!props.artifact.templatedArtifacts.length && (
+            <>
+              <IonListHeader>
+                {t('artifactRenderer.templatedArtifacts')}
+                <InfoButton
+                  message={t('artifactRenderer.templatedArtifacts.help')}
+                />
+              </IonListHeader>
+              {props.artifact.templatedArtifacts.map((el) => (
+                <IonItem
+                  key={el.id}
+                  routerLink={routes.artifact.build({ id: el.id })}
+                  button
+                >
+                  <IonLabel>{el.title}</IonLabel>
+                  <IonIcon slot="end" icon={chevronForward} />
+                </IonItem>
+              ))}
+            </>
+          )}
+          <IonItem>
+            <IonSelect
+              label={t('artifactRenderer.theme')}
+              labelPlacement="fixed"
+              value={theme}
+              onIonChange={(e) => {
+                setMetaProp('theme', e.detail.value);
+              }}
+            >
+              {Object.keys(artifactThemeTitleI18nByName).map((el) => (
+                <IonSelectOption key={el} value={el}>
+                  {t(
+                    artifactThemeTitleI18nByName[
+                      el as keyof typeof artifactThemeTitleI18nByName
+                    ],
+                  )}
+                </IonSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+          {!!props.artifact.incomingArtifactReferences.length && (
+            <>
+              <IonListHeader>
+                {t('artifactRenderer.incomingArtifactReferences')}
+                <InfoButton
+                  message={t(
+                    'artifactRenderer.incomingArtifactReferences.help',
+                  )}
+                />
+              </IonListHeader>
+              {props.artifact.incomingArtifactReferences.map((el) => (
+                <IonItem
+                  key={el.id}
+                  routerLink={routes.artifact.build({ id: el.artifactId })}
+                  button
+                >
+                  <IonLabel>{el.artifact.title}</IonLabel>
+                  <IonIcon slot="end" icon={chevronForward} />
+                </IonItem>
+              ))}
+            </>
+          )}
         </IonCol>
       </IonRow>
     </IonGrid>

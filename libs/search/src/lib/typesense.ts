@@ -1,15 +1,24 @@
-import { BlockIndexDocument, Indexes, SearchProvider } from './types';
+import {
+  IndexableArtifact,
+  BlockIndexDocument,
+  Indexes,
+  SearchProvider,
+} from './types';
 import { Client } from 'typesense';
-import { Block } from '@blocknote/core';
-import { IndexableArtifact } from '@feynote/prisma/types';
-import { config } from '@feynote/api-services';
+import { globalServerConfig } from '@feynote/config';
 import { createArtifactIndexDocument } from './createArtifactIndexDocument';
-import { getBlocksByQuery } from '@feynote/shared-utils';
+import {
+  getTextForJSONContent,
+  jsonContentForEach,
+  getIdForJSONContent,
+  getJSONContentDiff,
+} from '@feynote/shared-utils';
+import { isIndexable } from './indexableCharacters';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
-    nodes: JSON.parse(config.typesense.nodes),
-    apiKey: config.typesense.apiKey,
+    nodes: JSON.parse(globalServerConfig.typesense.nodes),
+    apiKey: globalServerConfig.typesense.apiKey,
     numRetries: 10,
     retryIntervalSeconds: 1,
     connectionTimeoutSeconds: 10,
@@ -24,7 +33,7 @@ export class TypeSense implements SearchProvider {
     const doesArtifactIndexExist = await this.client
       .collections(Indexes.Artifact)
       .exists();
-    const doesBlockNoteIndexExist = await this.client
+    const doesBlockIndexExist = await this.client
       .collections(Indexes.Block)
       .exists();
     console.log('Established a connection to typesense');
@@ -32,8 +41,8 @@ export class TypeSense implements SearchProvider {
     if (!doesArtifactIndexExist) {
       await this.createArtifactIndex();
     }
-    if (!doesBlockNoteIndexExist) {
-      await this.createBlocknoteIndex();
+    if (!doesBlockIndexExist) {
+      await this.createBlockIndex();
     }
   }
 
@@ -51,20 +60,77 @@ export class TypeSense implements SearchProvider {
   }
 
   async indexBlocks(artifact: IndexableArtifact) {
-    if (!artifact.json.blocknoteContent) return;
+    if (!artifact.newState.jsonContent) {
+      // Artifact no longer has block content
+      return this.deleteBlocksByArtifactIds([artifact.id]);
+    }
 
-    const artifactBlock = artifact.json.blocknoteContent as Block[];
-    const blocks = getBlocksByQuery(true, artifactBlock).map(
-      (blockQueryResult) => {
-        const block = {
-          id: blockQueryResult.block.id,
-          text: blockQueryResult.matchedText,
+    if (!artifact.oldState.jsonContent) {
+      // Artifact never had block content before, so full reindex
+      return this.reindexBlocks(artifact);
+    }
+
+    // Artifact is an update. To save time, we only update blocks that have been added, modified, or deleted
+    const diff = getJSONContentDiff(
+      artifact.oldState.jsonContent,
+      artifact.newState.jsonContent,
+    );
+
+    const upsertBlocks: BlockIndexDocument[] = [];
+    const deleteBlocks: BlockIndexDocument[] = [];
+    for (const [id, diffItem] of diff.entries()) {
+      if (diffItem.status === 'deleted') {
+        deleteBlocks.push({
+          id,
+          text: diffItem.oldText,
           userId: artifact.userId,
           artifactId: artifact.id,
-        };
-        return block;
-      },
-    );
+        });
+        continue;
+      }
+
+      upsertBlocks.push({
+        id,
+        text: diffItem.newText,
+        userId: artifact.userId,
+        artifactId: artifact.id,
+      });
+    }
+
+    await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+
+    await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .import(upsertBlocks, {
+        action: 'upsert',
+      });
+  }
+
+  /**
+   * Removes all existing block entries and re-creates them
+   */
+  private async reindexBlocks(artifact: IndexableArtifact) {
+    if (!artifact.newState.jsonContent) return;
+
+    const blocks: BlockIndexDocument[] = [];
+    jsonContentForEach(artifact.newState.jsonContent, (jsonContent) => {
+      const id = getIdForJSONContent(jsonContent);
+      // We only want to index things that have an identifier
+      if (!id) return;
+
+      const text = getTextForJSONContent(jsonContent);
+      if (!isIndexable(text)) return;
+
+      const block = {
+        id,
+        text,
+        userId: artifact.userId,
+        artifactId: artifact.id,
+      } satisfies BlockIndexDocument;
+
+      blocks.push(block);
+    });
 
     await this.deleteBlocksByArtifactIds([artifact.id]);
     if (!blocks.length) return;
@@ -116,11 +182,11 @@ export class TypeSense implements SearchProvider {
       }) || []
     );
   }
-  async searchBlocks(userId: string, query: string) {
-    const query_by = 'text';
+  async searchArtifactTitles(userId: string, query: string) {
+    const query_by = 'title';
 
     const results = await this.client
-      .collections(Indexes.Block)
+      .collections(Indexes.Artifact)
       .documents()
       .search({
         q: query,
@@ -133,13 +199,37 @@ export class TypeSense implements SearchProvider {
 
     return (
       results.hits?.map((hit) => {
-        console.log(hit.document);
+        return (hit.document as Record<string, string>)['id'];
+      }) || []
+    );
+  }
+  async searchArtifactBlocks(
+    userId: string,
+    query: string,
+    options?: {
+      prefix: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+    },
+  ) {
+    const results = await this.client
+      .collections(Indexes.Block)
+      .documents()
+      .search({
+        q: query,
+        query_by: 'text',
+        prefix: options?.prefix || false,
+        filter_by: `userId:=[${userId}]`,
+        per_page: 250,
+        limit_hits: 250,
+      });
+
+    return (
+      results.hits?.map((hit) => {
         return hit.document as BlockIndexDocument;
       }) || []
     );
   }
 
-  private async createBlocknoteIndex() {
+  private async createBlockIndex() {
     await this.client.collections().create({
       name: Indexes.Block,
       fields: [
@@ -201,7 +291,7 @@ export class TypeSense implements SearchProvider {
             from: ['fullText'],
             model_config: {
               model_name: 'openai/text-embedding-3-large',
-              api_key: config.openai.apiKey,
+              api_key: globalServerConfig.openai.apiKey,
             },
           },
         },
@@ -215,5 +305,18 @@ export class TypeSense implements SearchProvider {
       .delete({
         filter_by: `artifactId:=[${artifactIds.join(', ')}]`,
       });
+  }
+  private async deleteBlocksByIds(ids: string[]) {
+    const PAGE_SIZE = 50;
+    const totalPages = Math.ceil(ids.length / PAGE_SIZE);
+    for (let page = 0; page < totalPages; page++) {
+      const items = ids.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+      await this.client
+        .collections(Indexes.Block)
+        .documents()
+        .delete({
+          filter_by: `id:=[${items.join(', ')}]`,
+        });
+    }
   }
 }

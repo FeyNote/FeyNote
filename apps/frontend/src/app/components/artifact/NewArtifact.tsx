@@ -2,16 +2,19 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonItem,
   IonMenuButton,
   IonPage,
+  IonSpinner,
   IonTitle,
   IonToolbar,
   useIonRouter,
   useIonToast,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { ArtifactRenderer, EditArtifactDetail } from './ArtifactRenderer';
+import { ArtifactRenderer } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
 
@@ -19,24 +22,21 @@ export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const router = useIonRouter();
 
-  const newArtifactPlaceholder = {
-    id: '',
-    userId: '',
-    title: '',
-    text: '',
-    json: {},
-    isTemplate: false,
-    isPinned: false,
-  } satisfies EditArtifactDetail;
+  useIonViewDidEnter(() => {
+    create();
+  }, []);
 
-  const save = (updatedArtifact: EditArtifactDetail) => {
+  const create = () => {
     trpc.artifact.createArtifact
       .mutate({
-        title: updatedArtifact.title,
-        json: updatedArtifact.json,
-        text: updatedArtifact.text,
-        isPinned: updatedArtifact.isPinned,
-        isTemplate: updatedArtifact.isTemplate,
+        title: 'Untitled',
+        json: {},
+        text: '',
+        theme: 'default',
+        isPinned: false,
+        isTemplate: false,
+        rootTemplateId: null,
+        artifactTemplateId: null,
       })
       .then((response) => {
         const artifactId = response.id;
@@ -66,7 +66,9 @@ export const NewArtifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <ArtifactRenderer artifact={newArtifactPlaceholder} save={save} />
+        <IonItem className="ion-text-center">
+          <IonSpinner></IonSpinner>
+        </IonItem>
       </IonContent>
     </IonPage>
   );

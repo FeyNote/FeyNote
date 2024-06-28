@@ -1,30 +1,49 @@
-import { getArtifactDetailById } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { searchProvider } from '@feynote/search';
-import { artifactJsonSchema } from '@feynote/prisma/types';
+import { artifactDetail } from '@feynote/prisma/types';
+import { enqueueArtifactUpdate } from '@feynote/queue';
 
 export const updateArtifact = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
-      title: z.string(),
-      text: z.string(),
-      json: artifactJsonSchema,
       isPinned: z.boolean(),
       isTemplate: z.boolean(),
+      rootTemplateId: z.string().nullable(),
+      artifactTemplateId: z.string().nullable(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const artifact = await getArtifactDetailById(input.id);
+    const artifact = await prisma.artifact.findUnique({
+      where: {
+        id: input.id,
+      },
+      ...artifactDetail,
+    });
 
-    if (artifact.userId !== ctx.session.userId) {
+    if (!artifact || artifact.userId !== ctx.session.userId) {
       throw new TRPCError({
-        message: 'Artifact not visible to current user',
+        message: 'Artifact does not exist or is not visible to current user',
         code: 'FORBIDDEN',
       });
+    }
+
+    if (input.artifactTemplateId) {
+      const template = await prisma.artifact.findUnique({
+        where: {
+          id: input.artifactTemplateId,
+        },
+      });
+
+      if (!template || template.userId !== ctx.session.userId) {
+        throw new TRPCError({
+          message:
+            'Passed artifactTemplateId is not owned by the current user, or does not exist',
+          code: 'FORBIDDEN',
+        });
+      }
     }
 
     await prisma.artifact.update({
@@ -32,23 +51,19 @@ export const updateArtifact = authenticatedProcedure
         id: input.id,
       },
       data: {
-        title: input.title,
-        text: input.text,
-        json: input.json,
         isPinned: input.isPinned,
         isTemplate: input.isTemplate,
+        rootTemplateId: input.rootTemplateId,
+        artifactTemplateId: input.artifactTemplateId,
       },
     });
 
-    const indexableArtifact = {
-      id: artifact.id,
+    await enqueueArtifactUpdate({
+      artifactId: artifact.id,
       userId: ctx.session.userId,
-      text: input.text,
-      title: input.title,
-      json: input.json,
-    };
-
-    await searchProvider.indexArtifact(indexableArtifact);
+      oldYBinB64: artifact.yBin.toString('base64'),
+      newYBinB64: artifact.yBin.toString('base64'),
+    });
 
     // We do not return the complete artifact, but rather expect that the frontend will
     // fetch the complete artifact via getArtifactById

@@ -1,102 +1,48 @@
-import { IonCard, useIonToast } from '@ionic/react';
-import styled from 'styled-components';
-import '@blocknote/core/fonts/inter.css';
-import {
-  BlockNoteView,
-  SuggestionMenuController,
-  useCreateBlockNote,
-} from '@blocknote/react';
-import '@blocknote/react/style.css';
-import {
-  EditorSuggestionItem,
-  EditorSuggestionMenuComponent,
-} from './EditorSuggestion';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import {
-  ArtifactEditorBlock,
-  artifactEditorBlocknoteSchema,
-} from './blocknoteSchema';
+import { MutableRefObject } from 'react';
+import type { ArtifactTheme } from '@prisma/client';
+import { EditorContent } from '@tiptap/react';
+import { JSONContent } from '@tiptap/core';
+import { TiptapCollabProvider } from '@hocuspocus/provider';
 
-const StyledIonCard = styled(IonCard)`
-  min-height: 500px;
-`;
+import { ArtifactEditorStyles } from './ArtifactEditorStyles';
+import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
+import { useArtifactEditor } from './useTiptapEditor';
+import { ArtifactEditorContainer } from './ArtifactEditorContainer';
+import { DragHandle } from './tiptap/extensions/globalDragHandle/DragHandle';
+
+export type ArtifactEditorApplyTemplate = (
+  template: string | JSONContent,
+) => void;
 
 interface Props {
-  initialContent?: ArtifactEditorBlock[];
-  onContentChange?: (
-    updatedContent: ArtifactEditorBlock[],
-    updatedContentMd: string,
-  ) => void;
+  knownReferences: Map<string, KnownArtifactReference>;
+  yjsProvider: TiptapCollabProvider;
+  theme: ArtifactTheme;
+  applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
+  onReady?: () => void;
 }
 
-export const ArtifactEditor = (props: Props) => {
-  const [presentToast] = useIonToast();
-  const editor = useCreateBlockNote({
-    schema: artifactEditorBlocknoteSchema,
-    initialContent: props.initialContent,
+export const ArtifactEditor: React.FC<Props> = (props) => {
+  const editor = useArtifactEditor({
+    editable: true,
+    knownReferences: props.knownReferences,
+    yjsProvider: props.yjsProvider,
+    yDoc: undefined,
+    onReady: props.onReady,
   });
 
-  const onChange = async () => {
-    const md = await editor.blocksToMarkdownLossy();
-
-    props.onContentChange?.(editor.document, md);
-  };
-
-  const getMentionItems = async (
-    query: string,
-  ): Promise<EditorSuggestionItem[]> => {
-    const blocks = await trpc.artifact.searchArtifactBlocks
-      .query({
-        query,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-
-    if (!blocks) return [];
-
-    const suggestionItems = [];
-
-    for (const block of blocks) {
-      suggestionItems.push({
-        id: block.block.id,
-        displayName: block.matchedText,
-      });
-    }
-
-    // We must push an item so that blocknote will keep dialogue open
-    if (!suggestionItems.length) {
-      suggestionItems.push({
-        id: '',
-        displayName: '',
-      });
-    }
-
-    return suggestionItems;
-  };
+  if (props.applyTemplateRef) {
+    props.applyTemplateRef.current = (template) => {
+      editor?.commands.setContent(template);
+    };
+  }
 
   return (
-    <StyledIonCard onClick={() => editor.focus()}>
-      <BlockNoteView editor={editor} onChange={onChange}>
-        <SuggestionMenuController
-          triggerCharacter={'@'}
-          onItemClick={(item) => {
-            editor.insertInlineContent([
-              {
-                type: 'artifactBlockReference',
-                props: {
-                  artifactBlockId: item.id,
-                  artifactBlockReferenceText: item.displayName,
-                },
-              },
-              ' ', // add a space after
-            ]);
-          }}
-          suggestionMenuComponent={EditorSuggestionMenuComponent}
-          getItems={getMentionItems}
-        />
-      </BlockNoteView>
-    </StyledIonCard>
+    <ArtifactEditorContainer>
+      <ArtifactEditorStyles data-theme={props.theme}>
+        <EditorContent editor={editor}></EditorContent>
+        <DragHandle />
+      </ArtifactEditorStyles>
+    </ArtifactEditorContainer>
   );
 };

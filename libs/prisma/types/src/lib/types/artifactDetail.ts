@@ -5,8 +5,10 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
     id: true,
     title: true,
+    theme: true,
     isPinned: true,
     isTemplate: true,
+    rootTemplateId: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
@@ -21,6 +23,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     },
     text: true,
     json: true,
+    yBin: true,
     templatedArtifacts: {
       select: {
         id: true,
@@ -28,6 +31,31 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         userId: true,
         createdAt: true,
         updatedAt: true,
+      },
+    },
+    artifactReferences: {
+      select: {
+        id: true,
+        artifactId: true,
+        artifactBlockId: true,
+        targetArtifactId: true,
+        targetArtifactBlockId: true,
+        referenceTargetArtifactId: true,
+        referenceText: true,
+      },
+    },
+    incomingArtifactReferences: {
+      select: {
+        id: true,
+        artifactId: true,
+        artifact: {
+          select: {
+            title: true,
+          },
+        },
+        artifactBlockId: true,
+        targetArtifactId: true,
+        targetArtifactBlockId: true,
       },
     },
   },

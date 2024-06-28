@@ -60,11 +60,9 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
   const googleSignInBtnOnLoadHook = useCallback(() => {
     getGoogleRef()?.accounts.id.initialize({
       client_id:
-        '855994409293-i9rrk07efudt7djsekpjjvah0iub2gr1.apps.googleusercontent.com',
+        '458922288770-fig3hth6vu4ujhlg9slhsmbcrv2atug6.apps.googleusercontent.com',
       context: 'signin',
       ux_mode: 'popup',
-      login_uri:
-        'https://80--main--feynote--cmeyer.coder.tartarus.cloud/api/login/google',
       callback: signInWithGoogle,
       auto_prompt: 'false',
     });

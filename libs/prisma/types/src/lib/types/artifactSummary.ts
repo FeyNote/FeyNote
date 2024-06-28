@@ -6,6 +6,7 @@ export const artifactSummary = Prisma.validator<Prisma.ArtifactArgs>()({
     title: true,
     isPinned: true,
     isTemplate: true,
+    text: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
@@ -15,6 +16,20 @@ export const artifactSummary = Prisma.validator<Prisma.ArtifactArgs>()({
         title: true,
         createdAt: true,
         updatedAt: true,
+      },
+    },
+    artfactFiles: {
+      select: {
+        id: true,
+        fileId: true,
+        order: true,
+        file: {
+          select: {
+            filename: true,
+            storageKey: true,
+            mimetype: true,
+          },
+        },
       },
     },
   },

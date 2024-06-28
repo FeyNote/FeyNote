@@ -15,10 +15,13 @@ export const InfoButton = (props: Props) => {
     onDismiss: (data: unknown, role: string) => dismiss(data, role),
   });
 
+  // React applies the slot property even if you pass slot={undefined} :|
+  const slotProps = props.slot ? { slot: props.slot } : {};
+
   return (
     <IonButton
       size="small"
-      slot={props.slot}
+      {...slotProps}
       fill="clear"
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onClick={(event: any) => present({ event })}
