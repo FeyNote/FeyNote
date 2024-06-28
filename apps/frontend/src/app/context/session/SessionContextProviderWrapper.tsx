@@ -13,21 +13,18 @@ export const SessionContextProviderWrapper = ({
     localStorage.getItem(SESSION_ITEM_NAME),
   );
 
-  const setAndPersistSession = useCallback(
-    (newSession: string | null) => {
-      if (newSession) {
-        localStorage.setItem(SESSION_ITEM_NAME, newSession);
-      } else {
-        localStorage.removeItem(SESSION_ITEM_NAME);
-      }
-      setSession(newSession);
-    },
-    [setSession],
-  );
+  const setAndPersistSession = (newSession: string | null) => {
+    if (newSession) {
+      localStorage.setItem(SESSION_ITEM_NAME, newSession);
+    } else {
+      localStorage.removeItem(SESSION_ITEM_NAME);
+    }
+    setSession(newSession);
+  };
 
   const value = useMemo(() => {
     return { session, setSession: setAndPersistSession };
-  }, [session, setAndPersistSession]);
+  }, [session]);
 
   return (
     <SessionContext.Provider value={value}>{children}</SessionContext.Provider>

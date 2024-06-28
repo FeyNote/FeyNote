@@ -1,5 +1,3 @@
-import i18next from 'i18next';
-import { detectLanguage } from '../app/i18n/detectLanguage';
 import {
   AppPreferences,
   AppTheme,
@@ -7,10 +5,7 @@ import {
   PreferencesSync,
   SupportedFontSize,
 } from '@feynote/shared-utils';
-import { setFontSize } from './setFontSize';
 import { trpc } from './trpc';
-import { setBrowserLanguage } from '../app/i18n/setBrowserLanguage';
-import { setAppTheme } from './setAppTheme';
 import { SESSION_ITEM_NAME } from '../app/context/session/types';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
@@ -26,12 +21,13 @@ export class PreferencesService {
     [PreferenceNames.Theme]: AppTheme.Default,
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
   };
+  initialLoading: Promise<void>;
 
   constructor() {
-    this.load();
+    this.initialLoading = this.load();
   }
 
-  save(localOnly?: boolean) {
+  async save(localOnly?: boolean) {
     try {
       const serialized = JSON.stringify(this.preferences);
       localStorage.setItem(PREFERENCE_LOCALSTORAGE_KEY, serialized);
@@ -48,7 +44,9 @@ export class PreferencesService {
 
     // Do not sync remote preferences if not logged in
     if (!localStorage.getItem(SESSION_ITEM_NAME)) return;
-    trpc.user.setPreferences.mutate(this.preferences);
+    await trpc.user.setPreferences.mutate(this.preferences).catch(() => {
+      // Do nothing
+    });
   }
 
   /**
@@ -79,7 +77,7 @@ export class PreferencesService {
     return mutatedPreferences;
   }
 
-  load() {
+  async load() {
     try {
       const serialized = localStorage.getItem(PREFERENCE_LOCALSTORAGE_KEY);
       const savedPreferences = serialized ? JSON.parse(serialized) || {} : {};
@@ -99,38 +97,20 @@ export class PreferencesService {
 
     // Do not sync remote preferences if not logged in
     if (!localStorage.getItem(SESSION_ITEM_NAME)) return;
-    trpc.user.getPreferences
+    return trpc.user.getPreferences
       .query()
       .catch(() => {
         // Do nothing
       })
-      .then((remotePreferences) => {
+      .then(async (remotePreferences) => {
         if (remotePreferences) {
           const patchedPreferences = this.patchPreferences(remotePreferences);
           const filteredPreferences =
             this.filterRemotePreferences(patchedPreferences);
-
-          const previousLanguagePref =
-            this.preferences[PreferenceNames.Language];
-          const previousTheme = this.preferences[PreferenceNames.Theme];
           Object.assign(this.preferences, filteredPreferences);
 
-          this.save(true);
-
-          setFontSize(this.preferences[PreferenceNames.FontSize]);
-
-          const language =
-            this.preferences[PreferenceNames.Language] || detectLanguage();
-          if (
-            previousLanguagePref !== this.preferences[PreferenceNames.Language]
-          ) {
-            i18next.changeLanguage(language);
-            setBrowserLanguage(language);
-          }
-
-          if (previousTheme !== this.preferences[PreferenceNames.Theme]) {
-            setAppTheme(this.preferences[PreferenceNames.Theme]);
-          }
+          // Persist remote preferences to localstorage (local only, do not cause another sync)
+          await this.save(true);
         }
       });
   }

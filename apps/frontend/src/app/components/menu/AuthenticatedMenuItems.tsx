@@ -149,6 +149,11 @@ export const AuthenticatedMenuItems: React.FC = () => {
 
       <IonCard>
         <IonMenuToggle autoHide={false}>
+          <IonItem routerLink={routes.settings.build()}>
+            <IonLabel>{t('menu.settings')}</IonLabel>
+          </IonItem>
+        </IonMenuToggle>
+        <IonMenuToggle autoHide={false}>
           <IonItem onClick={signOut} routerLink={routes.login.build()}>
             <IonLabel>{t('menu.signOut')}</IonLabel>
           </IonItem>
