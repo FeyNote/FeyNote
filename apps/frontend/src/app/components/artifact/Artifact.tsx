@@ -23,10 +23,12 @@ import { RouteArgs } from '../../routes';
 import { useParams } from 'react-router-dom';
 import { t } from 'i18next';
 import { ArtifactDeleteButton } from './ArtifactDeleteButton';
+import { useProgressBar } from '../../../utils/useProgressBar';
 
 export const Artifact: React.FC = () => {
   const { id } = useParams<RouteArgs['artifact']>();
   const [presentToast] = useIonToast();
+  const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDetail>();
   const router = useIonRouter();
   const searchParams = useMemo(
@@ -35,6 +37,7 @@ export const Artifact: React.FC = () => {
   );
 
   const load = () => {
+    const progress = startProgressBar();
     trpc.artifact.getArtifactById
       .query({
         id,
@@ -44,6 +47,9 @@ export const Artifact: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
@@ -66,6 +72,7 @@ export const Artifact: React.FC = () => {
               <IonIcon slot="icon-only" icon={options} />
             </IonButton>
           </IonButtons>
+          {ProgressBar}
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">

@@ -28,6 +28,7 @@ import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
+import { useProgressBar } from '../../../utils/useProgressBar';
 
 const GridContainer = styled.div`
   display: grid;
@@ -49,6 +50,7 @@ export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const { eventManager } = useContext(EventContext);
+  const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
@@ -58,6 +60,7 @@ export const Dashboard: React.FC = () => {
   const router = useIonRouter();
 
   const getUserArtifacts = () => {
+    const progress = startProgressBar();
     trpc.artifact.getArtifacts
       .query({})
       .then((_artifacts) => {
@@ -65,6 +68,9 @@ export const Dashboard: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
@@ -83,6 +89,7 @@ export const Dashboard: React.FC = () => {
       return;
     }
 
+    const progress = startProgressBar();
     trpc.artifact.searchArtifacts
       .query({
         query,
@@ -92,6 +99,9 @@ export const Dashboard: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
@@ -120,6 +130,7 @@ export const Dashboard: React.FC = () => {
             <IonMenuButton></IonMenuButton>
           </IonButtons>
           <IonTitle>{t('dashboard.title')}</IonTitle>
+          {ProgressBar}
         </IonToolbar>
       </IonHeader>
       <IonContent>
