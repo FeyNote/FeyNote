@@ -24,18 +24,6 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
     .sort((a, b) => a.order - b.order)
     .at(0);
 
-  const text = artifact.text
-    .split(/\n/)
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .join('\n')
-    .replace(/\n/g, ' ');
-
-  let truncatedText = text.substring(0, 200);
-  if (text.length > 200) {
-    truncatedText += '...';
-  }
-
   return (
     <IonArtifactCard
       routerLink={routes.artifact.build({
@@ -54,7 +42,7 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
         <IonCardSubtitle>{artifact.artifactTemplate?.title}</IonCardSubtitle>
       </IonCardHeader>
 
-      <IonCardContent>{truncatedText}</IonCardContent>
+      <IonCardContent>{artifact.text}</IonCardContent>
     </IonArtifactCard>
   );
 };
