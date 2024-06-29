@@ -116,6 +116,18 @@ services:
     image: typesense/typesense:0.25.2
     restart: on-failure
     command: '--data-dir /media --api-key=feynote --enable-cors'
+  5e-database:
+    image: redchickenco/5e-database:3.3.4
+  5e-srd-api:
+    image: redchickenco/5e-srd-api:3.7.2
+    environment:
+      MONGODB_URI: mongodb://5e-database/5e-database
+      REDIS_URL: redis://5e-srd-redis:6379
+    depends_on:
+      - 5e-database
+      - 5e-srd-redis
+  5e-srd-redis:
+    image: valkey/valkey:7.2.5-bookworm
   queue-worker-valkey:
     image: valkey/valkey:7.2.5-bookworm
   hocuspocus-valkey:
