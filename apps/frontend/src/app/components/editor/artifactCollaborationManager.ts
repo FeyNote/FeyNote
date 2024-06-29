@@ -6,13 +6,17 @@ import * as Y from 'yjs';
 class ArtifactCollaborationManager {
   connection?: {
     artifactId: string;
+    token: string;
     yjsDoc: Y.Doc;
     tiptapCollabProvider: TiptapCollabProvider;
     indexeddbProvider: IndexeddbPersistence;
   };
 
-  get(artifactId: string, token: string | null) {
-    if (artifactId === this.connection?.artifactId) {
+  get(artifactId: string, token = 'anonymous') {
+    if (
+      artifactId === this.connection?.artifactId &&
+      token === this.connection?.token
+    ) {
       return this.connection;
     }
 
@@ -37,6 +41,7 @@ class ArtifactCollaborationManager {
 
     this.connection = {
       artifactId,
+      token,
       yjsDoc,
       tiptapCollabProvider,
       indexeddbProvider,
