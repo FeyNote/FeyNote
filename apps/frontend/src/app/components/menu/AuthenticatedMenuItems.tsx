@@ -171,7 +171,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
                 </CompactIonItem>
               ))}
             {pinnedArtifacts.length > pinnedArtifactsLimit && (
-              <IonButton onClick={showMorePinned} fill="clear">
+              <IonButton onClick={showMorePinned} fill="clear" size="small">
                 {t('menu.more')}
               </IonButton>
             )}
@@ -199,7 +199,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
               ))}
             {recentlyUpdatedArtifacts.length >
               recentlyUpdatedArtifactsLimit && (
-              <IonButton onClick={showMoreRecent} fill="clear">
+              <IonButton onClick={showMoreRecent} fill="clear" size="small">
                 {t('menu.more')}
               </IonButton>
             )}
