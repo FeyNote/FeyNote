@@ -49,6 +49,8 @@ import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import * as Y from 'yjs';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -101,6 +103,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   );
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
+  const { eventManager } = useContext(EventContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
@@ -233,8 +236,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = (updates: Partial<ArtifactDetail>) => {
-    trpc.artifact.updateArtifact
+  const updateArtifact = async (updates: Partial<ArtifactDetail>) => {
+    await trpc.artifact.updateArtifact
       .mutate({
         id: props.artifact.id,
         isPinned,
@@ -268,6 +271,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 value={title}
                 onIonInput={(event) => {
                   setMetaProp('title', event.target.value || '');
+                  eventManager.broadcast([EventName.ArtifactTitleUpdated]);
                 }}
                 type="text"
               ></IonInput>
@@ -307,11 +311,12 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               labelPlacement="end"
               justify="start"
               checked={isPinned}
-              onIonChange={(event) => {
+              onIonChange={async (event) => {
                 setIsPinned(event.target.checked);
-                updateArtifact({
+                await updateArtifact({
                   isPinned: event.target.checked,
                 });
+                eventManager.broadcast([EventName.ArtifactPinned]);
               }}
             >
               {t('artifactRenderer.isPinned')}

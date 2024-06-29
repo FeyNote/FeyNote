@@ -18,7 +18,7 @@ import {
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { filterOutline, add, documentText } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,8 @@ import { ArtifactSummary } from '@feynote/prisma/types';
 import { routes } from '../../routes';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
 
 const GridContainer = styled.div`
   display: grid;
@@ -46,6 +48,7 @@ const GridRowArtifacts = styled.div`
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
+  const { eventManager } = useContext(EventContext);
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
@@ -105,6 +108,8 @@ export const Dashboard: React.FC = () => {
     });
 
     router.push(routes.artifact.build({ id: artifact.id }), 'forward');
+
+    eventManager.broadcast([EventName.ArtifactCreated]);
   };
 
   return (

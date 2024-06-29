@@ -8,7 +8,7 @@ import {
   IonListHeader,
   IonMenuToggle,
 } from '@ionic/react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,10 @@ import { trpc } from '../../../utils/trpc';
 import { ArtifactSummary } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { add } from 'ionicons/icons';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
+import { ImmediateDebouncer } from '@feynote/shared-utils';
+import { useLocation } from 'react-router-dom';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -37,10 +41,19 @@ const RECENT_ARTIFACTS_LIMIT_DEFAULT = 5;
  * How many more recent artifacts to show when "more" is clicked
  */
 const RECENT_ARTIFACTS_LIMIT_INC = 10;
+/**
+ * Reload debounce interval in ms
+ */
+const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
 export const AuthenticatedMenuItems: React.FC = () => {
   const { t } = useTranslation();
   const { setSession } = useContext(SessionContext);
+  const { eventManager } = useContext(EventContext);
+  /**
+   * Re-render this component whenever navigation changes
+   */
+  const location = useLocation();
   const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactSummary[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
     PINNED_ARTIFACTS_LIMIT_DEFAULT,
@@ -86,9 +99,46 @@ export const AuthenticatedMenuItems: React.FC = () => {
       });
   };
 
+  const loadDebouncerRef = useRef(
+    new ImmediateDebouncer(
+      () => {
+        load();
+      },
+      RELOAD_DEBOUNCE_INTERVAL,
+      {
+        enableFollowupCall: false,
+      },
+    ),
+  );
+
   useEffect(() => {
-    // TODO: Re-load based on context so changes to artifacts update menu
-    load();
+    loadDebouncerRef.current.call();
+  }, [location]);
+
+  useEffect(() => {
+    const handler = (event: EventName) => {
+      const immediateEvents = [
+        EventName.ArtifactCreated,
+        EventName.ArtifactPinned,
+      ];
+      const immediate = immediateEvents.includes(event);
+
+      loadDebouncerRef.current.call(immediate);
+    };
+
+    eventManager.addEventListener(handler, [
+      EventName.ArtifactCreated,
+      EventName.ArtifactTitleUpdated,
+      EventName.ArtifactPinned,
+    ]);
+
+    return () => {
+      eventManager.removeEventListener(handler, [
+        EventName.ArtifactCreated,
+        EventName.ArtifactTitleUpdated,
+        EventName.ArtifactPinned,
+      ]);
+    };
   }, []);
 
   return (
