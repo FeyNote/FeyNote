@@ -174,21 +174,25 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     return () => artifactMetaMap.unobserve(listener);
   }, [connection]);
 
-  useEffect(() => {
-    const listener = ({ status }: { status: string }) => {
-      console.log('status change', status);
-      if (status === 'connecting') {
-        setConnectionStatus(ConnectionStatus.Connecting);
-      } else if (status === 'connected') {
-        setConnectionStatus(ConnectionStatus.Connected);
-      } else {
-        setConnectionStatus(ConnectionStatus.Disconnected);
-      }
-    };
+  const onConnectionStatusChange = ({ status }: { status: string }) => {
+    if (status === 'connecting') {
+      setConnectionStatus(ConnectionStatus.Connecting);
+    } else if (status === 'connected') {
+      setConnectionStatus(ConnectionStatus.Connected);
+    } else {
+      setConnectionStatus(ConnectionStatus.Disconnected);
+    }
+  };
 
-    connection.tiptapCollabProvider.on('status', listener);
+  useEffect(() => {
+    onConnectionStatusChange({
+      status: connection.tiptapCollabProvider.status,
+    });
+  }, [connection.tiptapCollabProvider.status]);
+  useEffect(() => {
+    connection.tiptapCollabProvider.on('status', onConnectionStatusChange);
     return () => {
-      connection.tiptapCollabProvider.off('status', listener);
+      connection.tiptapCollabProvider.off('status', onConnectionStatusChange);
     };
   }, [connection]);
 
