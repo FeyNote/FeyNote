@@ -265,7 +265,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         message={t('generic.unsavedChanges')}
       />
       <IonRow>
-        <IonCol size="12" sizeLg="9">
+        <IonCol size="12" sizeXl="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
             <IonItem>
               <IonInput
@@ -297,7 +297,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
             )}
           </div>
         </IonCol>
-        <IonCol size="12" sizeLg="3">
+        <IonCol size="12" sizeXl="3">
           <IonItem onClick={() => presentSelectTemplateModal()} button>
             <IonLabel>
               <h3>{t('artifactRenderer.selectTemplate')}</h3>
