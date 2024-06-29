@@ -21,6 +21,7 @@ class ArtifactCollaborationManager {
     }
 
     if (this.connection) {
+      this.connection.indexeddbProvider.destroy();
       this.connection.tiptapCollabProvider.destroy();
     }
 
