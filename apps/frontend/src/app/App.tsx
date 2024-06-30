@@ -39,13 +39,25 @@ import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { isLargeEnoughForSplitPane } from '../utils/isLargeEnoughForSplitPane';
 import styled from 'styled-components';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 const StyledSplitPane = styled(IonSplitPane)`
   --side-width: 250px;
 `;
 
+const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
+
 setupIonicReact();
 export function App() {
+  useRegisterSW({
+    onRegistered(registration) {
+      registration?.update();
+      setInterval(() => {
+        registration?.update();
+      }, SW_UPDATE_INTERVAL_MS);
+    },
+  });
+
   return (
     <Suspense fallback="">
       <IonApp>
