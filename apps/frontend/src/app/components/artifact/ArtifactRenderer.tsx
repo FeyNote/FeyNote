@@ -159,7 +159,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   const connection = artifactCollaborationManager.get(
     props.artifact.id,
-    session,
+    session || undefined,
   );
   useEffect(() => {
     const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
