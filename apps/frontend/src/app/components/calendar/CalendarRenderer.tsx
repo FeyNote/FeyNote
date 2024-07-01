@@ -78,8 +78,6 @@ const startDayOfWeekForMonth = (
       dayOfWeek = dayOfWeek - daysInWeek;
     }
 
-    // dayOfWeek = (dayOfWeek + (remainderDays % daysInWeek)) % daysInWeek;
-
     if (year >= findYear && month >= findMonth - 1) {
       break;
     }
