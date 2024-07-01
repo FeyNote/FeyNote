@@ -108,6 +108,7 @@ export const Dashboard: React.FC = () => {
   const newArtifact = async () => {
     const artifact = await trpc.artifact.createArtifact.mutate({
       title: 'Untitled',
+      type: 'calendar',
       theme: 'default',
       isPinned: false,
       isTemplate: false,

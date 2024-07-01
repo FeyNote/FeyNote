@@ -51,6 +51,7 @@ import * as Y from 'yjs';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
+import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -258,6 +259,32 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       });
   };
 
+  const renderEditor = () => {
+    if (props.artifact.type === 'tiptap') {
+      return (
+        <ArtifactEditor
+          theme={theme}
+          applyTemplateRef={editorApplyTemplateRef}
+          knownReferences={knownReferences}
+          yjsProvider={connection.tiptapCollabProvider}
+          onReady={() => setEditorReady(true)}
+        />
+      );
+    }
+
+    if (props.artifact.type === 'calendar') {
+      return (
+        <ArtifactCalendar
+          theme={theme}
+          applyTemplateRef={editorApplyTemplateRef}
+          knownReferences={knownReferences}
+          yjsProvider={connection.tiptapCollabProvider}
+          onReady={() => setEditorReady(true)}
+        />
+      );
+    }
+  };
+
   return (
     <IonGrid>
       {
@@ -283,15 +310,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 type="text"
               ></IonInput>
             </IonItem>
-            <div>
-              <ArtifactEditor
-                theme={theme}
-                applyTemplateRef={editorApplyTemplateRef}
-                knownReferences={knownReferences}
-                yjsProvider={connection.tiptapCollabProvider}
-                onReady={() => setEditorReady(true)}
-              />
-            </div>
+            <div>{renderEditor()}</div>
             {editorReady && (
               <ConnectionStatusContainer>
                 <ConnectionStatusIcon $status={connectionStatus} />

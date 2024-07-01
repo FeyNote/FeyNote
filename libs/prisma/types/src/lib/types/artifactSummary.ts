@@ -4,6 +4,7 @@ export const artifactSummary = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
     id: true,
     title: true,
+    type: true,
     isPinned: true,
     isTemplate: true,
     text: true,

@@ -149,6 +149,7 @@ export class ReferencesList extends Component<Props, State> {
     trpc.artifact.createArtifact
       .mutate({
         title,
+        type: 'tiptap',
         theme: 'default',
         isPinned: false,
         isTemplate: false,
