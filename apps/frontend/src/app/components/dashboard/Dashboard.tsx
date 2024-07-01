@@ -5,6 +5,7 @@ import {
   IonContent,
   IonFab,
   IonFabButton,
+  IonFabList,
   IonHeader,
   IonIcon,
   IonMenuButton,
@@ -19,7 +20,7 @@ import {
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useContext, useMemo, useState } from 'react';
-import { filterOutline, add, documentText } from 'ionicons/icons';
+import { filterOutline, add, documentText, calendar } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@feynote/prisma/types';
@@ -29,6 +30,7 @@ import { NullState } from '../info/NullState';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { useProgressBar } from '../../../utils/useProgressBar';
+import type { ArtifactType } from '@prisma/client';
 
 const GridContainer = styled.div`
   display: grid;
@@ -105,10 +107,10 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  const newArtifact = async () => {
+  const newArtifact = async (type: ArtifactType) => {
     const artifact = await trpc.artifact.createArtifact.mutate({
       title: 'Untitled',
-      type: 'calendar',
+      type,
       theme: 'default',
       isPinned: false,
       isTemplate: false,
@@ -173,9 +175,17 @@ export const Dashboard: React.FC = () => {
         </GridContainer>
       </IonContent>
       <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton onClick={newArtifact}>
+        <IonFabButton>
           <IonIcon icon={add} />
         </IonFabButton>
+        <IonFabList side="top">
+          <IonFabButton onClick={() => newArtifact('tiptap')}>
+            <IonIcon icon={documentText}></IonIcon>
+          </IonFabButton>
+          <IonFabButton onClick={() => newArtifact('calendar')}>
+            <IonIcon icon={calendar}></IonIcon>
+          </IonFabButton>
+        </IonFabList>
       </IonFab>
     </IonPage>
   );
