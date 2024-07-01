@@ -50,7 +50,7 @@
     ],
     "sharedGlobals": []
   },
-  "nxCloudAccessToken": "NzU0OTA3ZjctOTIxNC00NzA4LWEwNzEtY2NmMGZlYTQ5YzBkfHJlYWQtd3JpdGU=",
+  "nxCloudAccessToken": "MWYyNjRiZGMtNjFiOS00OGFmLTkxYWQtYWJhNDFhZDJiZDI0fHJlYWQtd3JpdGU=",
   "generators": {
     "@nx/workspace:move": {
       "projectNameAndRootFormat": "as-provided"

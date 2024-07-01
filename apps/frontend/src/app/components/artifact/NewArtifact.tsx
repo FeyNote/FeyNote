@@ -17,10 +17,14 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
+import { useContext } from 'react';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const router = useIonRouter();
+  const { eventManager } = useContext(EventContext);
 
   useIonViewDidEnter(() => {
     create();
@@ -49,6 +53,8 @@ export const NewArtifact: React.FC = () => {
           'forward',
           'replace',
         );
+
+        eventManager.broadcast([EventName.ArtifactCreated]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

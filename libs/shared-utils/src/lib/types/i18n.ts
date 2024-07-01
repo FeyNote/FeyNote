@@ -5,3 +5,5 @@ export enum SupportedLanguages {
 export const LanguageLocalityMap = {
   en: SupportedLanguages.EN_US,
 };
+
+export const supportedRtlLanguages: SupportedLanguages[] = [];
