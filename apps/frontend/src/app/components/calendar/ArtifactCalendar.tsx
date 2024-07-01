@@ -112,7 +112,6 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
 
   useEffect(() => {
     const listener = () => {
-      console.log('rerendering');
       triggerRerender();
     };
 

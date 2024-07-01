@@ -93,8 +93,6 @@ const startDayOfWeekForMonth = (
     }
   }
 
-  console.log('day of week', dayOfWeek);
-
   return dayOfWeek;
 };
 
@@ -124,7 +122,6 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     .get(centerMonth - 1);
   const monthsInYear: number = props.docData.config.get('monthsInYear');
   const firstWeekNumDays = daysInWeek - startDayOfMonth;
-  console.log('first', startDayOfMonth);
   const weekCount =
     1 + Math.ceil((daysInMonth - firstWeekNumDays) / daysInWeek);
 
