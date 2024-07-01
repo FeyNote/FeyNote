@@ -46,6 +46,8 @@
     "@tiptap/extension-table-cell": "^2.4.0",
     "@tiptap/extension-table-header": "^2.4.0",
     "@tiptap/extension-table-row": "^2.4.0",
+    "@tiptap/extension-task-item": "^2.4.0",
+    "@tiptap/extension-task-list": "^2.4.0",
     "@tiptap/extension-text": "^2.4.0",
     "@tiptap/react": "^2.4.0",
     "@tiptap/starter-kit": "^2.4.0",
@@ -122,6 +124,7 @@
     "ts-node": "10.9.2",
     "tsx": "^4.7.2",
     "typescript": "^5.4.5",
+    "typescript": "^5.5.2",
     "vite": "^5.2.10",
     "vite-plugin-pwa": "^0.20.0"
   },
