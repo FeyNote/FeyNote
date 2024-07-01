@@ -35,7 +35,7 @@ const MAX_DAYS_IN_YEAR = 1000;
 const MAX_DAYS_IN_WEEK = 14;
 
 const DEFAULT_CALENDAR_CONFIG = {
-  calendarStartDayOfWeek: 6, // Zero-indexed
+  calendarStartDayOfWeek: 0, // Zero-indexed
   daysInYear: 365,
   daysInWeek: 7,
   monthsInYear: 12,
