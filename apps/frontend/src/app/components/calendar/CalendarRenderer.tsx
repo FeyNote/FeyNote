@@ -53,11 +53,18 @@ const startDayOfWeekForMonth = (
   let lastYear = 0;
   let month = 1;
   let lastMonth = 0;
+  if (month >= monthsInYear) {
+    month = 0;
+    year++;
+  }
 
   while (year <= findYear) {
     const daysInLastMonth = daysInMonthList.get(lastMonth);
     const leapInLastMonth = leapInMonthList.get(lastMonth);
-    const leapDays = leapInLastMonth && year % leapInLastMonth === 0 ? 1 : 0;
+
+    // Must avoid year 0 being considered as leap year!
+    const leapDays =
+      leapInLastMonth && lastYear && lastYear % leapInLastMonth === 0 ? 1 : 0;
     /**
      * The difference between last month's dayOfWeek and this month's dayOfWeek
      */
@@ -86,6 +93,8 @@ const startDayOfWeekForMonth = (
     }
   }
 
+  console.log('day of week', dayOfWeek);
+
   return dayOfWeek;
 };
 
@@ -110,8 +119,12 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
   const daysInMonth: number = props.docData.config
     .get('daysInMonth')
     .get(centerMonth - 1);
+  const leapInMonth: number = props.docData.config
+    .get('leapInMonth')
+    .get(centerMonth - 1);
   const monthsInYear: number = props.docData.config.get('monthsInYear');
   const firstWeekNumDays = daysInWeek - startDayOfMonth;
+  console.log('first', startDayOfMonth);
   const weekCount =
     1 + Math.ceil((daysInMonth - firstWeekNumDays) / daysInWeek);
 
@@ -139,20 +152,22 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
         <IonButton onClick={() => moveCenter(1)}>&gt;</IonButton>
       </MonthSwitcher>
       <DayTitlesContainer>
-        {new Array(daysInWeek).fill(0).map((_, dayIdx) => (
+        {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
           <DayTitle>{dayOfWeekNames.get(dayIdx) as any}</DayTitle>
         ))}
       </DayTitlesContainer>
-      {new Array(weekCount).fill(0).map((_, weekIdx) => (
+      {new Array(weekCount || 1).fill(0).map((_, weekIdx) => (
         <CalendarWeek key={weekIdx}>
-          {new Array(daysInWeek).fill(0).map((_, dayIdx) => (
+          {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
             <CalendarDay>
               {(() => {
                 const num =
                   -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
 
+                const leapDays = centerYear % leapInMonth === 0 ? 1 : 0;
+
                 if (num < 1) return '';
-                if (num > daysInMonth) return '';
+                if (num > daysInMonth + leapDays) return '';
                 return -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
               })()}
             </CalendarDay>

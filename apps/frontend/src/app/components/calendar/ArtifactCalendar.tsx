@@ -203,6 +203,36 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
 
     return daysInMonth.get(idx);
   };
+  const onLeapInMonthChange = (idx: number, value: string) => {
+    if (!value) return;
+
+    if (!docData.config.has('leapInMonth')) {
+      docData.config.set('leapInMonth', new Y.Array());
+    }
+    const leapInMonth: Y.Array<number> = docData.config.get('leapInMonth');
+
+    yDoc.transact(() => {
+      const monthsInYear = docData.config.get('monthsInYear') || 1;
+      if (leapInMonth.length > monthsInYear) {
+        leapInMonth.delete(monthsInYear - 1, leapInMonth.length - monthsInYear);
+      }
+      if (leapInMonth.length < monthsInYear) {
+        leapInMonth.insert(
+          leapInMonth.length,
+          new Array(monthsInYear - leapInMonth.length).fill(1),
+        );
+      }
+
+      leapInMonth.delete(idx);
+      leapInMonth.insert(idx, [parseInt(value)]);
+    });
+  };
+  const getLeapInMonth = (idx: number) => {
+    const leapInMonth: Y.Array<string> = docData.config.get('leapInMonth');
+    if (!leapInMonth) return '0';
+
+    return leapInMonth.get(idx);
+  };
   const onDayOfWeekNameChange = (idx: number, value: string) => {
     if (!docData.config.has('dayOfWeekNames')) {
       docData.config.set('dayOfWeekNames', new Y.Array());
@@ -272,7 +302,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
             .fill(0)
             .map((_, idx) => (
               <IonRow key={idx}>
-                <IonCol size="10">
+                <IonCol size="6">
                   <IonItem>
                     <IonInput
                       labelPlacement="stacked"
@@ -285,16 +315,29 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
                     />
                   </IonItem>
                 </IonCol>
-                <IonCol size="2">
+                <IonCol size="3">
                   <IonItem key={idx}>
                     <IonInput
                       labelPlacement="stacked"
-                      label={`Number of days`}
+                      label={`Days`}
                       onIonInput={(event) =>
                         onDaysInMonthChange(idx, event.detail.value || '')
                       }
                       debounce={200}
                       value={getDaysInMonth(idx)}
+                    />
+                  </IonItem>
+                </IonCol>
+                <IonCol size="3">
+                  <IonItem key={idx}>
+                    <IonInput
+                      labelPlacement="stacked"
+                      label={`Leap/Y`}
+                      onIonInput={(event) =>
+                        onLeapInMonthChange(idx, event.detail.value || '')
+                      }
+                      debounce={200}
+                      value={getLeapInMonth(idx)}
                     />
                   </IonItem>
                 </IonCol>
