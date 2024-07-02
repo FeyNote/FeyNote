@@ -1,5 +1,10 @@
 import { isSessionExpired } from '@feynote/api-services';
-import { sendMessageToAssistant } from '@feynote/openai';
+import {
+  generateThreadName,
+  getAssistantMessage,
+  getAssistantMessageStream,
+  SystemMessage,
+} from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
 
@@ -36,14 +41,13 @@ export async function createMessage(req: Request, res: Response) {
     role: 'user',
     content: query,
   };
-  await prisma.message.create({
-    data: {
-      json: message,
-      threadId: threadId,
-    },
-  });
 
-  const stream = await sendMessageToAssistant(query, threadId, session.userId);
+  const stream = await getAssistantMessageStream(
+    SystemMessage.TTRPGAssistant,
+    query,
+    threadId,
+    session.userId,
+  );
   let assistantMessageContent = '';
   res.writeHead(200, {
     'Content-Type': 'text/plain',
@@ -63,10 +67,31 @@ export async function createMessage(req: Request, res: Response) {
     role: 'assistant',
     content: assistantMessageContent,
   };
-  await prisma.message.create({
-    data: {
-      json: assistantMessage,
-      threadId: threadId,
-    },
+  const createdAt = new Date();
+  await prisma.message.createMany({
+    data: [
+      {
+        json: message,
+        threadId,
+        createdAt,
+      },
+      {
+        json: assistantMessage,
+        threadId,
+        createdAt: new Date(createdAt.getMilliseconds() + 1),
+      },
+    ],
   });
+
+  if (!thread.title) {
+    const title = await generateThreadName(query, threadId, session.userId);
+    if (title) {
+      await prisma.thread.update({
+        where: { id: threadId },
+        data: {
+          title,
+        },
+      });
+    }
+  }
 }

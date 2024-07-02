@@ -5,12 +5,12 @@ import { prisma } from '@feynote/prisma/client';
 export const createThread = authenticatedProcedure
   .input(
     z.object({
-      title: z.string(),
+      title: z.string().optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
     const threads = await prisma.thread.create({
-      data: { userId: ctx.session.userId, title: input.title },
+      data: { userId: ctx.session.userId, title: input.title || undefined },
     });
     return threads;
   });

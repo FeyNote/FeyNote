@@ -56,9 +56,7 @@ export const AIThreadsMenu: React.FC = () => {
   const createNewThread = () => {
     setShowLoading(true);
     trpc.ai.createThread
-      .mutate({
-        title: t('assistant.chat.newThreadTitle'),
-      })
+      .mutate({})
       .then((thread) => {
         router.push(routes.assistantChat.build({ id: thread.id }));
         setShowLoading(false);

@@ -98,7 +98,7 @@ export const AIChat: React.FC = () => {
   const { id } = useParams<RouteArgs['assistantChat']>();
   const [showLoading, setShowLoading] = useState(true);
   const [message, setMessage] = useState<string>('');
-  const [threadTitle, setThreadTitle] = useState('');
+  const [threadTitle, setThreadTitle] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [disableInput, setDisableInput] = useState<boolean>(false);
   const [tempUserMessage, setTempUserMessage] = useState<ChatMessage | null>(
@@ -108,7 +108,7 @@ export const AIChat: React.FC = () => {
     useState<ChatMessage | null>(null);
   const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
     id,
-    title: threadTitle,
+    title: threadTitle || t('assistant.thread.emptyTitle'),
     setTitle: setThreadTitle,
     router,
   });

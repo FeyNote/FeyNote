@@ -4,18 +4,17 @@ import { assertJsonIsChatCompletion } from './tools/assertJsonIsChatCompletion';
 
 export async function retrieveMessageContext(
   threadId: string,
-  userId: string,
 ): Promise<ChatCompletionMessageParam[]> {
   //TODO: Implement User Context History Size
   // ---
-  const contextHistorySize = 20;
+  const contextHistorySize = 10;
   // ---
 
   const messages = await prisma.message.findMany({
-    where: { id: threadId },
+    where: { threadId },
     take: contextHistorySize,
     orderBy: {
-      createdAt: 'desc',
+      createdAt: 'asc',
     },
   });
 

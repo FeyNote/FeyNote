@@ -7,7 +7,7 @@ ALTER TABLE "File" ALTER COLUMN "userId" DROP NOT NULL;
 -- CreateTable
 CREATE TABLE "Thread" (
     "id" UUID NOT NULL,
-    "title" TEXT NOT NULL,
+    "title" TEXT,
     "userId" UUID NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
