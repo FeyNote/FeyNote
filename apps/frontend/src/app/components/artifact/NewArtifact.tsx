@@ -34,6 +34,7 @@ export const NewArtifact: React.FC = () => {
     trpc.artifact.createArtifact
       .mutate({
         title: 'Untitled',
+        type: 'tiptap',
         json: {},
         text: '',
         theme: 'default',
