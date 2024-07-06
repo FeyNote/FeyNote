@@ -260,18 +260,16 @@ export const AIChat: React.FC = () => {
       <IonContent>
         {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>
-          <ChatArea>
-            {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
-              <NullState
-                title={t('assistant.chat.nullState.title')}
-                icon={chatbubbles}
-              />
-            ) : (
-              <AIMessagesContainer
-                messages={[...messages, tempUserMessage, tempAssistantMessage]}
-              />
-            )}
-          </ChatArea>
+          {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
+            <NullState
+              title={t('assistant.chat.nullState.title')}
+              icon={chatbubbles}
+            />
+          ) : (
+            <AIMessagesContainer
+              messages={[...messages, tempUserMessage, tempAssistantMessage]}
+            />
+          )}
           <ChatTextContainer>
             <IonTextarea
               placeholder={t('assistant.chat.input.placeholder')}

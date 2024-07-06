@@ -92,9 +92,10 @@ export const AIThreadsMenu: React.FC = () => {
             />
           ) : (
             <IonList>
-              {threads.map((thread, idx) => (
-                <AIThreadMenuItem key={thread.title + idx} thread={thread} />
-              ))}
+              {threads.map((thread, idx) => {
+                const title = thread.title || t('assistant.thread.emptyTitle');
+                return <AIThreadMenuItem key={title + idx} thread={thread} />;
+              })}
             </IonList>
           )}
         </ThreadsContainer>
