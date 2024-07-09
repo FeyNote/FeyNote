@@ -15,7 +15,6 @@ import {
   useIonViewWillEnter,
   useIonRouter,
 } from '@ionic/react';
-import { Thread } from '@prisma/client';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
@@ -25,6 +24,7 @@ import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import styled from 'styled-components';
 import { routes } from '../../routes';
+import { ThreadSummary } from '@feynote/prisma/types';
 
 const ThreadsContainer = styled(IonList)`
   padding-bottom: 0.5rem;
@@ -36,7 +36,7 @@ export const AIThreadsMenu: React.FC = () => {
   const router = useIonRouter();
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
-  const [threads, setThreads] = useState<Thread[]>([]);
+  const [threads, setThreads] = useState<ThreadSummary[]>([]);
   const [showLoading, setShowLoading] = useState(false);
 
   const getUserThreads = () => {

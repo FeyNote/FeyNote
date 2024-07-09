@@ -41,15 +41,6 @@ const ChatContainer = styled.div`
   flex-direction: column;
 `;
 
-const ChatArea = styled.div`
-  display: flex;
-  height: 100%;
-  width: 100%;
-  border-bottom: 2px solid #222222;
-  align-items: center;
-  justify-content: center;
-`;
-
 const ChatTextContainer = styled.div`
   display: flex;
   align-items: center;

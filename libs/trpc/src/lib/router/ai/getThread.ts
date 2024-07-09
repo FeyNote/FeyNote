@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { assertJsonIsChatCompletion } from '@feynote/openai';
+import { threadSummary } from '@feynote/prisma/types';
 
 export const getThread = authenticatedProcedure
   .input(
@@ -13,16 +14,7 @@ export const getThread = authenticatedProcedure
   .query(async ({ ctx, input }) => {
     const thread = await prisma.thread.findFirst({
       where: { id: input.id, userId: ctx.session.userId },
-      select: {
-        id: true,
-        title: true,
-        messages: {
-          select: {
-            id: true,
-            json: true,
-          },
-        },
-      },
+      ...threadSummary,
     });
     if (!thread) {
       throw new TRPCError({

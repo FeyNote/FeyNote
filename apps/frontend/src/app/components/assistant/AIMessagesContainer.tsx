@@ -1,9 +1,10 @@
-import { IonIcon, IonLabel } from '@ionic/react';
+import { IonIcon, IonImg, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { ChatMessage } from './AIChat';
 import { personCircle } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { useEffect } from 'react';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import FeynotePNG from '/assets/feynote_icon.png';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -38,6 +39,11 @@ const UserIcon = styled(IonIcon)`
   padding-right: 0.75rem;
 `;
 
+const AILogo = styled.img`
+  height: 24px;
+  padding-right: 0.75rem;
+`;
+
 const FlexColumn = styled.div`
   display: flex;
   flex-direction: column;
@@ -59,13 +65,17 @@ export const AIMessagesContainer = (props: Props) => {
         {props.messages
           .filter((message) => !!message)
           .map((message, idx) => {
-            const name =
-              message.role === 'user'
-                ? t('assistant.chat.user.name')
-                : t('assistant.chat.assistant.name');
+            const isUser = message.role === 'user';
+            const name = isUser
+              ? t('assistant.chat.user.name')
+              : t('assistant.chat.assistant.name');
             return (
               <MessageContainer key={message.id + idx}>
-                <UserIcon icon={personCircle} />
+                {isUser ? (
+                  <UserIcon icon={personCircle} />
+                ) : (
+                  <AILogo src={FeynotePNG} />
+                )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>
                   {message.content}
