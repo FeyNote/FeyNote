@@ -34,13 +34,13 @@ const MessageContainer = styled.div`
 const UserIcon = styled(IonIcon)`
   display: flex;
   align-items: flex-end;
-  font-size: 24px;
-  min-width: 24px;
+  font-size: 30px;
+  min-width: 30px;
   padding-right: 0.75rem;
 `;
 
 const AILogo = styled.img`
-  height: 24px;
+  height: 30px;
   padding-right: 0.75rem;
 `;
 
