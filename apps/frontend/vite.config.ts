@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   root: __dirname,
@@ -41,6 +42,35 @@ export default defineConfig({
         });
       },
     },
+    VitePWA({
+      registerType: 'autoUpdate',
+      strategies: 'injectManifest',
+      injectRegister: 'inline',
+      srcDir: 'src',
+      filename: 'service-worker.ts',
+      devOptions: {
+        enabled: true,
+      },
+      manifest: {
+        name: 'FeyNote - Tabletop Note Keeper',
+        short_name: 'FeyNote',
+        description:
+          'A place to store your notes for your favorite tabletop game',
+        theme_color: '#ffffff',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
+      },
+    }),
   ],
 
   // Uncomment this if you are using workers.

@@ -11,6 +11,7 @@ export const routes = {
   artifact: route`/artifact/${'id'}`,
   assistant: route`/assistant`,
   assistantChat: route`/assistant/${'id'}`,
+  settings: route`/settings`,
 };
 
 /*

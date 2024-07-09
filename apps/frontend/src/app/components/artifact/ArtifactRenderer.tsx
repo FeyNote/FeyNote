@@ -49,6 +49,9 @@ import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import * as Y from 'yjs';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
+import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -101,6 +104,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   );
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
+  const { eventManager } = useContext(EventContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
@@ -156,7 +160,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   const connection = artifactCollaborationManager.get(
     props.artifact.id,
-    session,
+    session || undefined,
   );
   useEffect(() => {
     const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
@@ -171,32 +175,36 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     return () => artifactMetaMap.unobserve(listener);
   }, [connection]);
 
-  useEffect(() => {
-    const listener = ({ status }: { status: string }) => {
-      console.log('status change', status);
-      if (status === 'connecting') {
-        setConnectionStatus(ConnectionStatus.Connecting);
-      } else if (status === 'connected') {
-        setConnectionStatus(ConnectionStatus.Connected);
-      } else {
-        setConnectionStatus(ConnectionStatus.Disconnected);
-      }
-    };
+  const onConnectionStatusChange = ({ status }: { status: string }) => {
+    if (status === 'connecting') {
+      setConnectionStatus(ConnectionStatus.Connecting);
+    } else if (status === 'connected') {
+      setConnectionStatus(ConnectionStatus.Connected);
+    } else {
+      setConnectionStatus(ConnectionStatus.Disconnected);
+    }
+  };
 
-    connection.tiptapCollabProvider.on('status', listener);
+  useEffect(() => {
+    onConnectionStatusChange({
+      status: connection.tiptapCollabProvider.status,
+    });
+  }, [connection.tiptapCollabProvider.status]);
+  useEffect(() => {
+    connection.tiptapCollabProvider.on('status', onConnectionStatusChange);
     return () => {
-      connection.tiptapCollabProvider.off('status', listener);
+      connection.tiptapCollabProvider.off('status', onConnectionStatusChange);
     };
   }, [connection]);
 
-  useEffect(() => {
-    if (connectionStatus !== ConnectionStatus.Connected) {
-      window.onbeforeunload = () => true;
-    }
-    return () => {
-      window.onbeforeunload = null;
-    };
-  }, [connectionStatus]);
+  // useEffect(() => {
+  //   if (connectionStatus !== ConnectionStatus.Connected) {
+  //     window.onbeforeunload = () => true;
+  //   }
+  //   return () => {
+  //     window.onbeforeunload = null;
+  //   };
+  // }, [connectionStatus]);
 
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
@@ -233,8 +241,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = (updates: Partial<ArtifactDetail>) => {
-    trpc.artifact.updateArtifact
+  const updateArtifact = async (updates: Partial<ArtifactDetail>) => {
+    await trpc.artifact.updateArtifact
       .mutate({
         id: props.artifact.id,
         isPinned,
@@ -251,14 +259,43 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       });
   };
 
+  const renderEditor = () => {
+    if (props.artifact.type === 'tiptap') {
+      return (
+        <ArtifactEditor
+          theme={theme}
+          applyTemplateRef={editorApplyTemplateRef}
+          knownReferences={knownReferences}
+          yjsProvider={connection.tiptapCollabProvider}
+          onReady={() => setEditorReady(true)}
+        />
+      );
+    }
+
+    if (props.artifact.type === 'calendar') {
+      return (
+        <ArtifactCalendar
+          theme={theme}
+          applyTemplateRef={editorApplyTemplateRef}
+          knownReferences={knownReferences}
+          yjsProvider={connection.tiptapCollabProvider}
+          onReady={() => setEditorReady(true)}
+        />
+      );
+    }
+  };
+
   return (
     <IonGrid>
-      <Prompt
-        when={connectionStatus !== ConnectionStatus.Connected}
-        message={t('generic.unsavedChanges')}
-      />
+      {
+        // TODO: After numerous battles with react, we need to come up with a better way of doing this
+        // (<Prompt
+        //   when={connectionStatus !== ConnectionStatus.Connected}
+        //   message={t('generic.unsavedChanges')}
+        // />)
+      }
       <IonRow>
-        <IonCol size="12" sizeLg="9">
+        <IonCol size="12" sizeXl="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
             <IonItem>
               <IonInput
@@ -268,19 +305,12 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
                 value={title}
                 onIonInput={(event) => {
                   setMetaProp('title', event.target.value || '');
+                  eventManager.broadcast([EventName.ArtifactTitleUpdated]);
                 }}
                 type="text"
               ></IonInput>
             </IonItem>
-            <div>
-              <ArtifactEditor
-                theme={theme}
-                applyTemplateRef={editorApplyTemplateRef}
-                knownReferences={knownReferences}
-                yjsProvider={connection.tiptapCollabProvider}
-                onReady={() => setEditorReady(true)}
-              />
-            </div>
+            <div>{renderEditor()}</div>
             {editorReady && (
               <ConnectionStatusContainer>
                 <ConnectionStatusIcon $status={connectionStatus} />
@@ -289,7 +319,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
             )}
           </div>
         </IonCol>
-        <IonCol size="12" sizeLg="3">
+        <IonCol size="12" sizeXl="3">
           <IonItem onClick={() => presentSelectTemplateModal()} button>
             <IonLabel>
               <h3>{t('artifactRenderer.selectTemplate')}</h3>
@@ -307,11 +337,12 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               labelPlacement="end"
               justify="start"
               checked={isPinned}
-              onIonChange={(event) => {
+              onIonChange={async (event) => {
                 setIsPinned(event.target.checked);
-                updateArtifact({
+                await updateArtifact({
                   isPinned: event.target.checked,
                 });
+                eventManager.broadcast([EventName.ArtifactPinned]);
               }}
             >
               {t('artifactRenderer.isPinned')}

@@ -24,10 +24,8 @@ export const Menu: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <IonCard>
-          {session && <AuthenticatedMenuItems />}
-          {!session && <UnauthenticatedMenuItems />}
-        </IonCard>
+        {session && <AuthenticatedMenuItems />}
+        {!session && <UnauthenticatedMenuItems />}
       </IonContent>
     </IonMenu>
   );

@@ -4,7 +4,7 @@ import { prisma } from '@feynote/prisma/client';
 import { enqueueArtifactUpdate } from '@feynote/queue';
 import { artifactJsonSchema } from '@feynote/prisma/types';
 import { TRPCError } from '@trpc/server';
-import { ArtifactTheme } from '@prisma/client';
+import { ArtifactTheme, ArtifactType } from '@prisma/client';
 import * as Y from 'yjs';
 import { constructYArtifact } from '@feynote/shared-utils';
 
@@ -12,6 +12,7 @@ export const createArtifact = authenticatedProcedure
   .input(
     z.object({
       title: z.string(),
+      type: z.nativeEnum(ArtifactType),
       text: z.string(),
       json: artifactJsonSchema,
       theme: z.nativeEnum(ArtifactTheme),
@@ -47,6 +48,7 @@ export const createArtifact = authenticatedProcedure
     const { id } = await prisma.artifact.create({
       data: {
         title: input.title,
+        type: input.type,
         text: input.text,
         json: input.json,
         userId: ctx.session.userId,

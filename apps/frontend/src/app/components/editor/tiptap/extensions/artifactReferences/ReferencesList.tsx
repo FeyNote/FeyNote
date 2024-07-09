@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { MdHorizontalRule } from 'react-icons/md';
 import { t } from 'i18next';
 import { trpc } from '../../../../../../utils/trpc';
+import { EventContext } from '../../../../../context/events/EventContext';
+import { EventName } from '../../../../../context/events/EventName';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -84,6 +86,7 @@ interface State {
 }
 
 export class ReferencesList extends Component<Props, State> {
+  static contextType = EventContext;
   state = {
     selectedIndex: 0,
     creatingItem: false,
@@ -146,6 +149,7 @@ export class ReferencesList extends Component<Props, State> {
     trpc.artifact.createArtifact
       .mutate({
         title,
+        type: 'tiptap',
         theme: 'default',
         isPinned: false,
         isTemplate: false,
@@ -160,6 +164,12 @@ export class ReferencesList extends Component<Props, State> {
           artifactBlockId: undefined,
           referenceText: title,
         });
+
+        // Hacky/glitchy way of getting context inside of a class component as recommended here:
+        // https://legacy.reactjs.org/docs/context.html
+        (this.context as any).eventManager.broadcast([
+          EventName.ArtifactCreated,
+        ]);
       });
   }
 

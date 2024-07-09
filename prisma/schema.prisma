@@ -19,6 +19,7 @@ model User {
   passwordSalt     String?
   passwordVersion  Int?
   username         String?
+  preferences      Json?
   sessions         Session[]
   artifacts        Artifact[]
   ArtifactRevision ArtifactRevision[]
@@ -40,6 +41,7 @@ model Session {
 model Artifact {
   id                 String        @id @default(uuid()) @db.Uuid
   title              String
+  type               ArtifactType  @default(tiptap)
   theme              ArtifactTheme @default(default)
   isPinned           Boolean       @default(false)
   artifactTemplate   Artifact?     @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
@@ -108,6 +110,11 @@ model ArtifactRevision {
   artifactDeletedAt DateTime? @db.Timestamptz(6)
 
   @@id([artifactId, revisionId])
+}
+
+enum ArtifactType {
+  tiptap
+  calendar
 }
 
 enum ArtifactTheme {

@@ -5,6 +5,7 @@ import {
   IonContent,
   IonFab,
   IonFabButton,
+  IonFabList,
   IonHeader,
   IonIcon,
   IonMenuButton,
@@ -18,14 +19,18 @@ import {
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useMemo, useState } from 'react';
-import { filterOutline, add, documentText } from 'ionicons/icons';
+import { useContext, useMemo, useState } from 'react';
+import { filterOutline, add, documentText, calendar } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactSummary } from '@feynote/prisma/types';
 import { routes } from '../../routes';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
+import { useProgressBar } from '../../../utils/useProgressBar';
+import type { ArtifactType } from '@prisma/client';
 
 const GridContainer = styled.div`
   display: grid;
@@ -46,6 +51,8 @@ const GridRowArtifacts = styled.div`
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
+  const { eventManager } = useContext(EventContext);
+  const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
@@ -55,6 +62,7 @@ export const Dashboard: React.FC = () => {
   const router = useIonRouter();
 
   const getUserArtifacts = () => {
+    const progress = startProgressBar();
     trpc.artifact.getArtifacts
       .query({})
       .then((_artifacts) => {
@@ -62,6 +70,9 @@ export const Dashboard: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
@@ -80,6 +91,7 @@ export const Dashboard: React.FC = () => {
       return;
     }
 
+    const progress = startProgressBar();
     trpc.artifact.searchArtifacts
       .query({
         query,
@@ -89,12 +101,16 @@ export const Dashboard: React.FC = () => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
-  const newArtifact = async () => {
+  const newArtifact = async (type: ArtifactType) => {
     const artifact = await trpc.artifact.createArtifact.mutate({
       title: 'Untitled',
+      type,
       theme: 'default',
       isPinned: false,
       isTemplate: false,
@@ -104,11 +120,9 @@ export const Dashboard: React.FC = () => {
       artifactTemplateId: null,
     });
 
-    router.push(
-      routes.artifact.build({ id: artifact.id }),
-      'forward',
-      'replace',
-    );
+    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
+
+    eventManager.broadcast([EventName.ArtifactCreated]);
   };
 
   return (
@@ -119,6 +133,7 @@ export const Dashboard: React.FC = () => {
             <IonMenuButton></IonMenuButton>
           </IonButtons>
           <IonTitle>{t('dashboard.title')}</IonTitle>
+          {ProgressBar}
         </IonToolbar>
       </IonHeader>
       <IonContent>
@@ -160,9 +175,17 @@ export const Dashboard: React.FC = () => {
         </GridContainer>
       </IonContent>
       <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton onClick={newArtifact}>
+        <IonFabButton>
           <IonIcon icon={add} />
         </IonFabButton>
+        <IonFabList side="top">
+          <IonFabButton onClick={() => newArtifact('tiptap')}>
+            <IonIcon icon={documentText}></IonIcon>
+          </IonFabButton>
+          <IonFabButton onClick={() => newArtifact('calendar')}>
+            <IonIcon icon={calendar}></IonIcon>
+          </IonFabButton>
+        </IonFabList>
       </IonFab>
     </IonPage>
   );
