@@ -10,7 +10,7 @@ export const routes = {
   newArtifact: route`/artifact/new`,
   artifact: route`/artifact/${'id'}`,
   assistant: route`/assistant`,
-  assistantChat: route`/assistant/${'id'}`,
+  assistantThread: route`/assistant/${'id'}`,
   settings: route`/settings`,
 };
 

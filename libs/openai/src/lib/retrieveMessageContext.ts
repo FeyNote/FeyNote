@@ -5,10 +5,8 @@ import { assertJsonIsChatCompletion } from './tools/assertJsonIsChatCompletion';
 export async function retrieveMessageContext(
   threadId: string,
 ): Promise<ChatCompletionMessageParam[]> {
-  //TODO: Implement User Context History Size
-  // ---
+  //TODO: Retrieve Context Size from User Subscription https://github.com/RedChickenCo/FeyNote/issues/84
   const contextHistorySize = 10;
-  // ---
 
   const messages = await prisma.message.findMany({
     where: { threadId },
@@ -18,10 +16,16 @@ export async function retrieveMessageContext(
     },
   });
 
-  const context = messages.map((message) => {
-    const json = message.json;
-    assertJsonIsChatCompletion(json);
-    return json;
-  });
+  const context = messages
+    .filter((message) => {
+      try {
+        assertJsonIsChatCompletion(message.json);
+      } catch (e) {
+        // Ignore Messages that don't match Chat Completion Schema
+        return false;
+      }
+      return true;
+    })
+    .map((message) => message.json as unknown as ChatCompletionMessageParam);
   return context;
 }

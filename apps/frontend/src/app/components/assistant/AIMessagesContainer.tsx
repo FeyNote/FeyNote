@@ -1,10 +1,8 @@
-import { IonIcon, IonImg, IonLabel } from '@ionic/react';
+import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
-import { ChatMessage } from './AIChat';
+import { ChatMessage } from './AIThread';
 import { personCircle } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import FeynotePNG from '/assets/feynote_icon.png';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -58,7 +56,7 @@ interface Props {
 
 export const AIMessagesContainer = (props: Props) => {
   const { t } = useTranslation();
-
+  // TODO: Markdown to HTML Conversion https://github.com/RedChickenCo/FeyNote/issues/82
   return (
     <Scroller>
       <ScrollerContent>
@@ -74,7 +72,7 @@ export const AIMessagesContainer = (props: Props) => {
                 {isUser ? (
                   <UserIcon icon={personCircle} />
                 ) : (
-                  <AILogo src={FeynotePNG} />
+                  <AILogo src="/assets/feynote_icon.png" />
                 )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>

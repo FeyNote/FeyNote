@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonContent,
@@ -20,7 +21,7 @@ import {
 import { send, chatbubbles, ellipsisVertical } from 'ionicons/icons';
 import { NullState } from '../info/NullState';
 import { useParams } from 'react-router-dom';
-import { RouteArgs } from '../../routes';
+import { RouteArgs, routes } from '../../routes';
 import {
   handleGenericError,
   handleTRPCErrors,
@@ -82,11 +83,11 @@ const buildThreadOptionsPopover = ({
   );
 };
 
-export const AIChat: React.FC = () => {
+export const AIThread: React.FC = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const router = useIonRouter();
-  const { id } = useParams<RouteArgs['assistantChat']>();
+  const { id } = useParams<RouteArgs['assistantThread']>();
   const [showLoading, setShowLoading] = useState(true);
   const [message, setMessage] = useState<string>('');
   const [threadTitle, setThreadTitle] = useState<string | null>(null);
@@ -118,7 +119,7 @@ export const AIChat: React.FC = () => {
         id,
       });
       setMessages(threadDTO.messages);
-      setThreadTitle(threadDTO.title);
+      setThreadTitle(threadDTO.title || null);
     } catch (error) {
       handleTRPCErrors(error, presentToast);
     }
@@ -206,15 +207,12 @@ export const AIChat: React.FC = () => {
       (message) => message.role === 'user',
     );
     if (!mostRecentUserMessage) {
-      return handleGenericError(
-        t('assistant.chat.retry.genericerror'),
-        presentToast,
-      );
+      return handleGenericError(t('generic.error'), presentToast);
     }
 
     setMessages(remainingMessages);
 
-    trpc.ai.deleteMessage
+    trpc.ai.deleteMessagesSince
       .mutate({
         messageId,
         threadId: id,
@@ -234,14 +232,16 @@ export const AIChat: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
+            <>
+              <IonBackButton defaultHref={routes.assistant.build()} />
+              <IonMenuButton></IonMenuButton>
+            </>
           </IonButtons>
           {<IonTitle>{t('assistant.title')}</IonTitle>}
           <IonButtons slot="end">
             <IonButton
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onClick={(event: any) => present({ event })}
-              color="primary"
             >
               <IonIcon icon={ellipsisVertical} />
             </IonButton>

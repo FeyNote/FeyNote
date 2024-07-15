@@ -30,8 +30,8 @@ import { SessionContextProviderWrapper } from './context/session/SessionContextP
 import { Dashboard } from './components/dashboard/Dashboard';
 import { routes } from './routes';
 import { Artifact } from './components/artifact/Artifact';
-import { AIThreadsMenu } from './components/assistant/AIThreadsMenu';
-import { AIChat } from './components/assistant/AIChat';
+import { AIThreadsList } from './components/assistant/AIThreadsList';
+import { AIThread } from './components/assistant/AIThread';
 
 import './i18n';
 import { NewArtifact } from './components/artifact/NewArtifact';
@@ -112,12 +112,12 @@ export function App() {
                       <Route
                         exact
                         path={routes.assistant.route}
-                        component={AIThreadsMenu}
+                        component={AIThreadsList}
                       />
                       <Route
                         exact
-                        path={routes.assistantChat.route}
-                        component={AIChat}
+                        path={routes.assistantThread.route}
+                        component={AIThread}
                       />
                       <Route component={NotFound} />
                     </IonRouterOutlet>

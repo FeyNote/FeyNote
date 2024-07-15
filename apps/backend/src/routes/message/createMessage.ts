@@ -1,9 +1,8 @@
 import { isSessionExpired } from '@feynote/api-services';
 import {
   generateThreadName,
-  getAssistantMessage,
-  getAssistantMessageStream,
-  SystemMessage,
+  generateAssistantResponseStream,
+  systemMessage,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
@@ -42,11 +41,10 @@ export async function createMessage(req: Request, res: Response) {
     content: query,
   };
 
-  const stream = await getAssistantMessageStream(
-    SystemMessage.TTRPGAssistant,
+  const stream = await generateAssistantResponseStream(
+    systemMessage.ttrpgAssistant,
     query,
     threadId,
-    session.userId,
   );
   let assistantMessageContent = '';
   res.writeHead(200, {
@@ -84,7 +82,7 @@ export async function createMessage(req: Request, res: Response) {
   });
 
   if (!thread.title) {
-    const title = await generateThreadName(query, threadId, session.userId);
+    const title = await generateThreadName(query, threadId);
     if (title) {
       await prisma.thread.update({
         where: { id: threadId },

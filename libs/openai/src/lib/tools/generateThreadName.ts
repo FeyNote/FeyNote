@@ -1,25 +1,18 @@
-import { getAssistantMessage } from '../getAssistantMessage';
-import { SystemMessage } from './systemMessage';
+import { generateAssistantResponse } from '../generateAssistantResponse';
+import { systemMessage } from './SystemMessage';
 
 export async function generateThreadName(
   query: string,
   threadId: string,
-  userId: string,
-): Promise<string | null> {
-  const nameGenerationMessages = await getAssistantMessage(
-    SystemMessage.NameGeneration,
+): Promise<string | undefined | null> {
+  const nameGenerationMessages = await generateAssistantResponse(
+    systemMessage.nameGeneration,
     query,
     threadId,
-    userId,
   );
   if (nameGenerationMessages.length) {
-    const generatedTitles =
-      // eslint-disable-next-line no-useless-escape
-      nameGenerationMessages[0].content?.match(/(?<=\<)(.*?)(?=\>)/);
-    if (generatedTitles?.length) {
-      const parsedTitle = generatedTitles[0];
-      return parsedTitle;
-    }
+    const generatedTitle = nameGenerationMessages[0].content;
+    return generatedTitle;
   }
   return null;
 }

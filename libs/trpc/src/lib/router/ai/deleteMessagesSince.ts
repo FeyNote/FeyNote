@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
-export const deleteMessage = authenticatedProcedure
+export const deleteMessagesSince = authenticatedProcedure
   .input(
     z.object({
       messageId: z.string(),

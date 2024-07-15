@@ -1,26 +1,25 @@
-import { ChatCompletionUserMessageParam } from 'openai/resources/chat/completions';
+import {
+  ChatCompletionSystemMessageParam,
+  ChatCompletionUserMessageParam,
+} from 'openai/resources/chat/completions';
 import { openai } from './openai';
 import { getDocumentContent } from './tools/getDocumentContent';
 import { retrieveMessageContext } from './retrieveMessageContext';
-import { getSystemMessage, SystemMessage } from './tools/systemMessage';
-import { getOpenAIModel } from './tools/getOpenAIModel';
+import { OpenAIModel } from './tools/openAIModels';
 
-export async function getAssistantMessageStream(
-  systemMessage: SystemMessage,
+export async function generateAssistantResponseStream(
+  systemMessage: ChatCompletionSystemMessageParam,
   message: string,
   threadId: string,
-  userId: string,
 ) {
-  const _systemMessage = getSystemMessage(systemMessage);
   const previousMessages = await retrieveMessageContext(threadId);
   const userMessage = {
     content: message,
     role: 'user',
   } satisfies ChatCompletionUserMessageParam;
-  const messages = [_systemMessage, ...previousMessages, userMessage];
-  const model = getOpenAIModel(userId);
+  const messages = [systemMessage, ...previousMessages, userMessage];
   const response = openai.beta.chat.completions.runTools({
-    model,
+    model: OpenAIModel.GPT4,
     messages,
     stream: true,
     tools: [

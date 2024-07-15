@@ -8,7 +8,6 @@ import {
   IonList,
   IonMenuButton,
   IonPage,
-  IonProgressBar,
   IonTitle,
   IonToolbar,
   useIonToast,
@@ -24,46 +23,43 @@ import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import styled from 'styled-components';
 import { routes } from '../../routes';
-import { ThreadSummary } from '@feynote/prisma/types';
+import { ThreadDTO } from '@feynote/prisma/types';
+import { useProgressBar } from '../../../utils/useProgressBar';
 
-const ThreadsContainer = styled(IonList)`
-  padding-bottom: 0.5rem;
-  padding-top: 0.5rem;
-  height: 100%;
-`;
-
-export const AIThreadsMenu: React.FC = () => {
+export const AIThreadsList: React.FC = () => {
   const router = useIonRouter();
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
-  const [threads, setThreads] = useState<ThreadSummary[]>([]);
-  const [showLoading, setShowLoading] = useState(false);
+  const [threads, setThreads] = useState<ThreadDTO[]>([]);
+  const { startProgressBar, ProgressBar } = useProgressBar();
 
   const getUserThreads = () => {
-    setShowLoading(true);
+    const progress = startProgressBar();
     trpc.ai.getThreads
       .query()
       .then((_threads) => {
         setThreads(_threads);
-        setShowLoading(false);
       })
       .catch((error) => {
-        setShowLoading(false);
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
   const createNewThread = () => {
-    setShowLoading(true);
+    const progress = startProgressBar();
     trpc.ai.createThread
       .mutate({})
       .then((thread) => {
-        router.push(routes.assistantChat.build({ id: thread.id }));
-        setShowLoading(false);
+        router.push(routes.assistantThread.build({ id: thread.id }));
       })
       .catch((error) => {
-        setShowLoading(false);
         handleTRPCErrors(error, presentToast);
+      })
+      .finally(() => {
+        progress.dismiss();
       });
   };
 
@@ -81,9 +77,9 @@ export const AIThreadsMenu: React.FC = () => {
           <IonTitle>{t('assistant.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
-        {showLoading && <IonProgressBar type="indeterminate" />}
-        <ThreadsContainer>
+      <IonContent className="ion-padding">
+        {ProgressBar}
+        <IonList>
           {!threads.length ? (
             <NullState
               title={t('assistant.threads.nullState.title')}
@@ -92,13 +88,12 @@ export const AIThreadsMenu: React.FC = () => {
             />
           ) : (
             <IonList>
-              {threads.map((thread, idx) => {
-                const title = thread.title || t('assistant.thread.emptyTitle');
-                return <AIThreadMenuItem key={title + idx} thread={thread} />;
+              {threads.map((thread) => {
+                return <AIThreadMenuItem key={thread.id} thread={thread} />;
               })}
             </IonList>
           )}
-        </ThreadsContainer>
+        </IonList>
         <IonFab slot="fixed" vertical="bottom" horizontal="end">
           <IonFabButton onClick={createNewThread}>
             <IonIcon icon={add} />
