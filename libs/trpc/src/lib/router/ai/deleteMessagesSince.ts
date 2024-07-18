@@ -20,7 +20,7 @@ export const deleteMessagesSince = authenticatedProcedure
       });
     }
     const messages = await prisma.message.findMany({
-      where: { id: input.threadId },
+      where: { threadId: input.threadId },
       orderBy: {
         createdAt: 'desc',
       },

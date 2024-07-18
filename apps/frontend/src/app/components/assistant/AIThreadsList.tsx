@@ -21,7 +21,6 @@ import { trpc } from '../../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
-import styled from 'styled-components';
 import { routes } from '../../routes';
 import { ThreadDTO } from '@feynote/prisma/types';
 import { useProgressBar } from '../../../utils/useProgressBar';
@@ -79,21 +78,20 @@ export const AIThreadsList: React.FC = () => {
       </IonHeader>
       <IonContent className="ion-padding">
         {ProgressBar}
-        <IonList>
-          {!threads.length ? (
-            <NullState
-              title={t('assistant.threads.nullState.title')}
-              message={t('assistant.threads.nullState.message')}
-              icon={chatbubbles}
-            />
-          ) : (
-            <IonList>
-              {threads.map((thread) => {
-                return <AIThreadMenuItem key={thread.id} thread={thread} />;
-              })}
-            </IonList>
-          )}
-        </IonList>
+        {!threads.length ? (
+          <NullState
+            className="ion-padding"
+            title={t('assistant.threads.nullState.title')}
+            message={t('assistant.threads.nullState.message')}
+            icon={chatbubbles}
+          />
+        ) : (
+          <IonList>
+            {threads.map((thread) => {
+              return <AIThreadMenuItem key={thread.id} thread={thread} />;
+            })}
+          </IonList>
+        )}
         <IonFab slot="fixed" vertical="bottom" horizontal="end">
           <IonFabButton onClick={createNewThread}>
             <IonIcon icon={add} />

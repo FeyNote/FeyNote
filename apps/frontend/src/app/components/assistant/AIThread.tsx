@@ -19,7 +19,6 @@ import {
   useIonViewWillLeave,
 } from '@ionic/react';
 import { send, chatbubbles, ellipsisVertical } from 'ionicons/icons';
-import { NullState } from '../info/NullState';
 import { useParams } from 'react-router-dom';
 import { RouteArgs, routes } from '../../routes';
 import {
@@ -72,6 +71,7 @@ const buildThreadOptionsPopover = ({
   title: string;
   setTitle: (title: string) => void;
   router: UseIonRouterResult;
+  dismiss: any;
 }) => {
   return (
     <AIThreadOptionsPopover
@@ -183,7 +183,7 @@ export const AIThread: React.FC = () => {
   };
 
   const sendMessage = async (query: string) => {
-    if (!message.trim()) return;
+    if (!query.trim()) return;
     const tmpMsg = {
       id: 'temp',
       role: 'user',
@@ -198,28 +198,31 @@ export const AIThread: React.FC = () => {
 
   const retryMessage = (messageId: string) => {
     // Delete Previous Message
-    const messageCopyByRecent = [...messages].reverse();
-    const regeneratedIndex = messageCopyByRecent.findIndex(
+    const messageCopyOrderByRecent = [...messages].reverse();
+    const retryMessageIndex = messageCopyOrderByRecent.findIndex(
       (message) => message.id === messageId,
     );
-    const remainingMessages = messageCopyByRecent.slice(regeneratedIndex);
-    const mostRecentUserMessage = remainingMessages.find(
+    // Remove all messages sent since retry
+    const remainingMessages = messageCopyOrderByRecent.slice(
+      retryMessageIndex + 1,
+    );
+    const retriedUserMessage = remainingMessages.find(
       (message) => message.role === 'user',
     );
-    if (!mostRecentUserMessage) {
+    if (!retriedUserMessage) {
       return handleGenericError(t('generic.error'), presentToast);
     }
 
-    setMessages(remainingMessages);
+    setMessages(remainingMessages.reverse());
 
     trpc.ai.deleteMessagesSince
       .mutate({
-        messageId,
+        messageId: retriedUserMessage.id,
         threadId: id,
       })
       .then(() => {
         // Resend User Prompt Previous Message
-        sendMessage(mostRecentUserMessage?.content);
+        createMessage(retriedUserMessage.content);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -237,7 +240,7 @@ export const AIThread: React.FC = () => {
               <IonMenuButton></IonMenuButton>
             </>
           </IonButtons>
-          {<IonTitle>{t('assistant.title')}</IonTitle>}
+          <IonTitle>{threadTitle || t('assistant.thread.emptyTitle')}</IonTitle>
           <IonButtons slot="end">
             <IonButton
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -252,18 +255,20 @@ export const AIThread: React.FC = () => {
         {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>
           {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
-            <NullState
-              title={t('assistant.chat.nullState.title')}
-              icon={chatbubbles}
-            />
+            <div style={{ height: '100%' }}>
+              {
+                // TODO https://github.com/RedChickenCo/FeyNote/issues/86
+              }
+            </div>
           ) : (
             <AIMessagesContainer
+              retryMessage={retryMessage}
               messages={[...messages, tempUserMessage, tempAssistantMessage]}
             />
           )}
           <ChatTextContainer>
             <IonTextarea
-              placeholder={t('assistant.chat.input.placeholder')}
+              placeholder={t('assistant.thread.input.placeholder')}
               value={message}
               onKeyUp={(e) => keyUpHandler(e)}
               disabled={disableInput}

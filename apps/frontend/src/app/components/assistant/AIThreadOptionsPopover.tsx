@@ -1,9 +1,9 @@
 import {
-  AlertInput,
   IonContent,
   IonIcon,
   IonItem,
   IonLabel,
+  IonList,
   UseIonRouterResult,
   useIonAlert,
   useIonToast,
@@ -14,11 +14,6 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { routes } from '../../routes';
 import { trpc } from '../../../utils/trpc';
 import styled from 'styled-components';
-import { useState } from 'react';
-
-const StyledParagraph = styled(IonLabel)`
-  font-size: 0.75rem;
-`;
 
 interface Props {
   id: string;
@@ -32,7 +27,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
 
-  const triggerAlert = async () => {
+  const triggerRenameThreadAlert = async () => {
     presentAlert({
       subHeader: t('assistant.thread.rename'),
       buttons: [
@@ -69,25 +64,40 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
     });
   };
 
-  const deleteThread = async () => {
-    try {
-      await trpc.ai.deleteThread.mutate({
-        id: props.id,
-      });
-      props.router.push(routes.assistant.build());
-    } catch (error) {
-      handleTRPCErrors(error, presentToast);
-    }
+  const triggerDeleteThreadAlert = async () => {
+    presentAlert({
+      subHeader: t('assistant.thread.delete.confirmation'),
+      buttons: [
+        {
+          text: t('generic.cancel'),
+          role: 'cancel',
+        },
+        {
+          text: t('generic.confirm'),
+          role: 'confirm',
+          handler: async () => {
+            try {
+              await trpc.ai.deleteThread.mutate({
+                id: props.id,
+              });
+              props.router.push(routes.assistant.build());
+            } catch (error) {
+              handleTRPCErrors(error, presentToast);
+            }
+          },
+        },
+      ],
+    });
   };
 
   return (
-    <IonContent class="ion-padding">
-      <IonItem button onClick={triggerAlert}>
-        <StyledParagraph>{t('assistant.thread.rename')}</StyledParagraph>
+    <IonContent>
+      <IonItem button onClick={triggerRenameThreadAlert}>
+        <IonLabel>{t('assistant.thread.rename')}</IonLabel>
         <IonIcon id="thread-popover" slot="start" size="small" icon={pencil} />
       </IonItem>
-      <IonItem color="danger" button onClick={() => deleteThread()}>
-        <StyledParagraph>{t('assistant.thread.delete')}</StyledParagraph>
+      <IonItem button onClick={triggerDeleteThreadAlert}>
+        <IonLabel>{t('assistant.thread.delete')}</IonLabel>
         <IonIcon
           id="thread-popover"
           slot="start"

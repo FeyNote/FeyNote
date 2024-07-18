@@ -3,13 +3,6 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  padding-top: 16px;
-  padding-bottom: 16px;
 `;
 
 const Header = styled.h2`
@@ -22,11 +15,12 @@ interface Props {
   icon: string;
   title: string;
   message?: string;
+  className?: string;
 }
 
 export const NullState = (props: Props) => {
   return (
-    <Container>
+    <Container className={props.className}>
       <IonIcon icon={props.icon} size="large" />
       <br />
       <div>

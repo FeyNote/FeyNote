@@ -1,7 +1,7 @@
-import { IonIcon, IonLabel } from '@ionic/react';
+import { IonButton, IonButtons, IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { ChatMessage } from './AIThread';
-import { personCircle } from 'ionicons/icons';
+import { personCircle, arrowUndoOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 
 const ScrollerContent = styled.div`
@@ -50,8 +50,10 @@ const FlexColumn = styled.div`
 const MessageHeader = styled(IonLabel)`
   font-weight: 500;
 `;
+
 interface Props {
   messages: (ChatMessage | null)[];
+  retryMessage: (messageId: string) => void;
 }
 
 export const AIMessagesContainer = (props: Props) => {
@@ -65,8 +67,8 @@ export const AIMessagesContainer = (props: Props) => {
           .map((message, idx) => {
             const isUser = message.role === 'user';
             const name = isUser
-              ? t('assistant.chat.user.name')
-              : t('assistant.chat.assistant.name');
+              ? t('assistant.thread.user.name')
+              : t('assistant.thread.assistant.name');
             return (
               <MessageContainer key={message.id + idx}>
                 {isUser ? (
@@ -77,6 +79,13 @@ export const AIMessagesContainer = (props: Props) => {
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>
                   {message.content}
+                  {!isUser && (
+                    <IonButtons>
+                      <IonButton onClick={() => props.retryMessage(message.id)}>
+                        <IonIcon icon={arrowUndoOutline} />
+                      </IonButton>
+                    </IonButtons>
+                  )}
                 </FlexColumn>
               </MessageContainer>
             );

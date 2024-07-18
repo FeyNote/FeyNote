@@ -65,18 +65,22 @@ export async function createMessage(req: Request, res: Response) {
     role: 'assistant',
     content: assistantMessageContent,
   };
-  const createdAt = new Date();
+  const userMessageCreatedAt = new Date();
+  const assistantMessageCreatedAt = new Date(userMessageCreatedAt);
+  assistantMessageCreatedAt.setMilliseconds(
+    userMessageCreatedAt.getMilliseconds() + 1,
+  );
   await prisma.message.createMany({
     data: [
       {
         json: message,
         threadId,
-        createdAt,
+        createdAt: userMessageCreatedAt,
       },
       {
         json: assistantMessage,
         threadId,
-        createdAt: new Date(createdAt.getMilliseconds() + 1),
+        createdAt: assistantMessageCreatedAt,
       },
     ],
   });
