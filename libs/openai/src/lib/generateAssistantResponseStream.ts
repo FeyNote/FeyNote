@@ -11,6 +11,7 @@ export async function generateAssistantResponseStream(
   systemMessage: ChatCompletionSystemMessageParam,
   message: string,
   threadId: string,
+  model: OpenAIModel,
 ) {
   const previousMessages = await retrieveMessageContext(threadId);
   const userMessage = {
@@ -19,7 +20,7 @@ export async function generateAssistantResponseStream(
   } satisfies ChatCompletionUserMessageParam;
   const messages = [systemMessage, ...previousMessages, userMessage];
   const response = openai.beta.chat.completions.runTools({
-    model: OpenAIModel.GPT4,
+    model,
     messages,
     stream: true,
     tools: [

@@ -3,6 +3,7 @@ import {
   generateThreadName,
   generateAssistantResponseStream,
   systemMessage,
+  OpenAIModel,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
@@ -45,6 +46,7 @@ export async function createMessage(req: Request, res: Response) {
     systemMessage.ttrpgAssistant,
     query,
     threadId,
+    OpenAIModel.GPT4,
   );
   let assistantMessageContent = '';
   res.writeHead(200, {
@@ -59,7 +61,6 @@ export async function createMessage(req: Request, res: Response) {
       res.write(messageChunk);
     }
   }
-  res.end();
 
   const assistantMessage = {
     role: 'assistant',
@@ -96,4 +97,5 @@ export async function createMessage(req: Request, res: Response) {
       });
     }
   }
+  res.end();
 }
