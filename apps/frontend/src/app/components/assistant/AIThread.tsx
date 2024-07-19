@@ -18,7 +18,7 @@ import {
   useIonViewWillEnter,
   useIonViewWillLeave,
 } from '@ionic/react';
-import { send, chatbubbles, ellipsisVertical } from 'ionicons/icons';
+import { send, ellipsisVertical } from 'ionicons/icons';
 import { useParams } from 'react-router-dom';
 import { RouteArgs, routes } from '../../routes';
 import {

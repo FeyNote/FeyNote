@@ -1,5 +1,6 @@
 import { IonButton, IonButtons, IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
+import { starkdown } from 'starkdown';
 import { ChatMessage } from './AIThread';
 import { personCircle, arrowUndoOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -78,7 +79,11 @@ export const AIMessagesContainer = (props: Props) => {
                 )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>
-                  {message.content}
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: starkdown(message.content),
+                    }}
+                  ></div>
                   {!isUser && (
                     <IonButtons>
                       <IonButton onClick={() => props.retryMessage(message.id)}>
