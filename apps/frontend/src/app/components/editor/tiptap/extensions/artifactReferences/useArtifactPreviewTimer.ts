@@ -1,8 +1,5 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
-import { useIonToast } from '@ionic/react';
-import { handleTRPCErrors } from '../../../../../../utils/handleTRPCErrors';
-import { useRef, useState } from 'react';
-import { trpc } from '../../../../../../utils/trpc';
+import { useContext, useRef, useState } from 'react';
+import { YManagerContext } from '../../../../../context/yManager/YManagerContext';
 
 /**
  * Milliseconds the user has to hover in order for reference preview to open
@@ -20,33 +17,15 @@ export const useArtifactPreviewTimer = (
   artifactId: string,
   isBroken: boolean,
 ) => {
-  const [presentToast] = useIonToast();
-  const [artifact, setArtifact] = useState<ArtifactDetail>();
+  const { yManager } = useContext(YManagerContext);
+  const isArtifactOnManifest = yManager.isArtifactOnManifest(artifactId);
+  const artifactConnection = isArtifactOnManifest && !isBroken ? yManager.connectArtifact(artifactId) : null;
   const [showPreview, setShowPreview] = useState(false);
-
-  const loadArtifact = async () => {
-    if (isBroken) return;
-    if (artifact) return;
-
-    const _artifact = await trpc.artifact.getArtifactById
-      .query({
-        id: artifactId,
-      })
-      .catch((e) => {
-        handleTRPCErrors(e, presentToast);
-      });
-    if (!_artifact) return;
-
-    setArtifact(_artifact);
-  };
 
   const hoverTimeoutRef = useRef<NodeJS.Timeout>();
   const onMouseOver = () => {
-    loadArtifact();
     clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(async () => {
-      await loadArtifact();
-
       setShowPreview(true);
     }, OPEN_TIMEOUT);
   };
@@ -64,7 +43,7 @@ export const useArtifactPreviewTimer = (
   };
 
   return {
-    artifact,
+    artifactConnection,
     showPreview,
     onMouseOver,
     onMouseOut,

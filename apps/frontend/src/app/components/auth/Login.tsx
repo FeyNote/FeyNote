@@ -31,6 +31,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { YManagerContext } from '../../context/yManager/YManagerContext';
 
 export const Login: React.FC = () => {
   const { t } = useTranslation();
@@ -40,12 +41,14 @@ export const Login: React.FC = () => {
   const [emailIsTouched, setEmailIsTouched] = useState(false);
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { onBeforeAuth } = useContext(YManagerContext);
 
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
 
   const submitLogin = () => {
     setIsLoading(true);
+    onBeforeAuth();
     trpc.user.login
       .mutate({
         email,

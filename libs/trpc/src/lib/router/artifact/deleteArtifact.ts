@@ -1,7 +1,6 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { searchProvider } from '@feynote/search';
 import { TRPCError } from '@trpc/server';
 
 export const deleteArtifact = authenticatedProcedure
@@ -36,17 +35,6 @@ export const deleteArtifact = authenticatedProcedure
         id: input.id,
       },
     });
-
-    await prisma.artifactRevision.updateMany({
-      where: {
-        artifactId: input.id,
-      },
-      data: {
-        artifactDeletedAt: new Date(),
-      },
-    });
-
-    await searchProvider.deleteArtifacts([input.id]);
 
     return 'Ok';
   });

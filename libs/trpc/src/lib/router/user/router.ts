@@ -4,6 +4,7 @@ import { login } from './login';
 import { signInWithGoogle } from './signInWithGoogle';
 import { getPreferences } from './getPreferences';
 import { setPreferences } from './setPreferences';
+import { syncManifest } from './syncManifest';
 
 export const router = trpcRouter({
   login,
@@ -11,4 +12,5 @@ export const router = trpcRouter({
   signInWithGoogle,
   getPreferences,
   setPreferences,
+  syncManifest,
 });

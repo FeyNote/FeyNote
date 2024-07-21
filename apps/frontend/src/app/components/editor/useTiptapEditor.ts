@@ -29,7 +29,7 @@ import { IndentationExtension } from './tiptap/extensions/indentation/Indentatio
 import { ArtifactReferencesExtension } from './tiptap/extensions/artifactReferences/ArtifactReferencesExtension';
 import { CommandsExtension } from './tiptap/extensions/commands/CommandsExtension';
 import { HeadingExtension } from './tiptap/extensions/heading/HeadingExtension';
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useTranslation } from 'react-i18next';
 import { MonsterStatblockExtension } from './tiptap/extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
@@ -38,14 +38,16 @@ import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
 import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 import { TableExtension } from './tiptap/extensions/table/TableExtension';
 import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolatingContainerBackspaceExtension';
+import { useContext } from 'react';
+import { SessionContext } from '../../context/session/SessionContext';
 
 type DocArgOptions =
   | {
-      yjsProvider: TiptapCollabProvider;
+      yProvider: HocuspocusProvider;
       yDoc: undefined;
     }
   | {
-      yjsProvider: undefined;
+      yProvider: undefined;
       yDoc: Y.Doc;
     };
 
@@ -57,6 +59,7 @@ type UseArtifactEditorArgs = {
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
+  const { session } = useContext(SessionContext);
 
   const extensions = [
     DocumentExtension,
@@ -88,20 +91,20 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     IndentationExtension,
     GlobalDragHandleExtension,
     Collaboration.configure({
-      document: args.yDoc || args.yjsProvider.document,
+      document: args.yDoc || args.yProvider.document,
       field: ARTIFACT_TIPTAP_BODY_KEY,
     }),
-    ...(args.yjsProvider
-      ? [
-          CollaborationCursor.configure({
-            provider: args.yjsProvider,
-            user: {
-              name: 'Cyndi Lauper',
-              color: '#f783ac',
-            },
-          }),
-        ]
-      : []),
+    // ...(args.yProvider
+    //   ? [
+    //       CollaborationCursor.configure({
+    //         provider: args.yProvider,
+    //         user: {
+    //           name: session?.email || 'Anonymous',
+    //           color: '#f783ac', // TODO: randomize color with a preference setting
+    //         },
+    //       }),
+    //     ]
+    //   : []),
     CommandsExtension,
     ArtifactReferencesExtension.configure({
       knownReferences: args.knownReferences,

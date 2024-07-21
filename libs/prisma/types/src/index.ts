@@ -1,3 +1,2 @@
-export * from './lib/types/artifactSummary';
-export * from './lib/types/artifactDetail';
-export * from './lib/types/artifactJson';
+// TODO: Do we need this library anymore?
+// Kept it for now, but we may consider condensing the prisma library down...

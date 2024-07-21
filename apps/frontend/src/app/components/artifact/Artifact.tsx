@@ -1,4 +1,3 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
 import {
   IonButton,
   IonButtons,
@@ -29,33 +28,11 @@ export const Artifact: React.FC = () => {
   const { id } = useParams<RouteArgs['artifact']>();
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const [artifact, setArtifact] = useState<ArtifactDetail>();
   const router = useIonRouter();
   const searchParams = useMemo(
     () => new URLSearchParams(router.routeInfo.search),
     [router.routeInfo.search],
   );
-
-  const load = () => {
-    const progress = startProgressBar();
-    trpc.artifact.getArtifactById
-      .query({
-        id,
-      })
-      .then((_artifact) => {
-        setArtifact(_artifact);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        progress.dismiss();
-      });
-  };
-
-  useIonViewWillEnter(() => {
-    load();
-  });
 
   return (
     <IonPage id="main">
@@ -65,7 +42,7 @@ export const Artifact: React.FC = () => {
             <IonMenuButton></IonMenuButton>
           </IonButtons>
           <IonTitle>
-            {t('artifact.title')}: {artifact?.title}
+            {t('artifact.title')}: TODO: Merge this and ArtifactRenderer
           </IonTitle>
           <IonButtons slot="end">
             <IonButton id="artifact-popover-trigger">
@@ -76,17 +53,14 @@ export const Artifact: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        {artifact && (
-          <ArtifactRenderer
-            artifact={artifact}
-            reload={load}
-            scrollToBlockId={searchParams.get('blockId') || undefined}
-          />
-        )}
+        <ArtifactRenderer
+          artifactId={id}
+          scrollToBlockId={searchParams.get('blockId') || undefined}
+        />
       </IonContent>
       <IonPopover trigger="artifact-popover-trigger" triggerAction="click">
         <IonContent class="ion-padding">
-          {artifact && <ArtifactDeleteButton artifactId={artifact.id} />}
+          <ArtifactDeleteButton artifactId={id} />
         </IonContent>
       </IonPopover>
     </IonPage>

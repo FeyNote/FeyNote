@@ -1,14 +1,14 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useArtifactEditor } from '../../../useTiptapEditor';
-import * as Y from 'yjs';
 import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
 import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
 import { EditorContent } from '@tiptap/react';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
+import { HocuspocusProvider } from '@hocuspocus/provider';
+import { ARTIFACT_TIPTAP_BODY_KEY, getMetaFromYArtifact, getTextForJSONContent, getTiptapContentFromYjsDoc } from '@feynote/shared-utils';
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -48,7 +48,7 @@ const Header = styled.h4`
 `;
 
 interface Props {
-  artifact: ArtifactDetail;
+  yProvider: HocuspocusProvider;
   artifactBlockId?: string;
   previewTarget: HTMLElement;
   onClick?: () => void;
@@ -57,19 +57,11 @@ interface Props {
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  const yDoc = useMemo(() => {
-    const yDoc = new Y.Doc();
-
-    Y.applyUpdate(yDoc, props.artifact.yBin);
-
-    return yDoc;
-  }, [props.artifact]);
-
   const editor = useArtifactEditor({
     editable: false,
     knownReferences: new Map(), // TODO: Update this
-    yjsProvider: undefined,
-    yDoc,
+    yProvider: props.yProvider,
+    yDoc: undefined,
   });
 
   useScrollBlockIntoView(props.artifactBlockId, [editor]);
@@ -109,6 +101,9 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   if (!referencePreviewContainer)
     throw new Error('referencePreviewContainer not defined in index.html!');
 
+  const artifactMeta = getMetaFromYArtifact(props.yProvider.document);
+  const artifactText = useMemo(() => getTextForJSONContent(getTiptapContentFromYjsDoc(props.yProvider.document, ARTIFACT_TIPTAP_BODY_KEY)), []);
+
   // We portal because styling does not play well with editor instances inside of each other
   return createPortal(
     <Container
@@ -119,10 +114,10 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       $pointer={!!props.onClick}
       onClick={() => props.onClick?.()}
     >
-      <Header>{props.artifact.title}</Header>
-      {props.artifact.text.trim().length ? (
+      <Header>{artifactMeta.title}</Header>
+      {artifactText.trim().length ? (
         <ArtifactEditorContainer>
-          <ArtifactEditorStyles data-theme={props.artifact.theme}>
+          <ArtifactEditorStyles data-theme={artifactMeta.theme}>
             <EditorContent editor={editor}></EditorContent>
           </ArtifactEditorStyles>
         </ArtifactEditorContainer>

@@ -1,6 +1,6 @@
-import type { ArtifactTheme } from '@prisma/client';
+import { ArtifactTheme } from "@feynote/shared-utils";
 
 export const artifactThemeTitleI18nByName = {
-  default: 'artifactTheme.default',
-  classic: 'artifactTheme.classic',
+  modern: 'artifactTheme.modern',
+  fantasy: 'artifactTheme.fantasy',
 } as const satisfies Record<ArtifactTheme, string>;

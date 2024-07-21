@@ -6,6 +6,7 @@ import {
   UserNotFoundError,
 } from '../error';
 import { generateSession } from '../session/generateSession';
+import { Token } from '@feynote/shared-utils';
 
 export const login = async (email: string, password: string) => {
   const user = await prisma.user.findFirst({
@@ -30,5 +31,9 @@ export const login = async (email: string, password: string) => {
 
   const session = await generateSession(user.id);
 
-  return session.token;
+  return {
+    token: session.token,
+    userId: session.userId,
+    email: email,
+  } satisfies Token;
 };

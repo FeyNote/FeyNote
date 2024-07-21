@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(uuid()) @db.Uuid
-  createdAt        DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime           @updatedAt @db.Timestamptz(6)
-  email            String             @unique
-  passwordHash     String?
-  passwordSalt     String?
-  passwordVersion  Int?
-  username         String?
-  preferences      Json?
-  sessions         Session[]
-  artifacts        Artifact[]
-  ArtifactRevision ArtifactRevision[]
-  File             File[]
+  id              String          @id @default(uuid()) @db.Uuid
+  createdAt       DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime        @updatedAt @db.Timestamptz(6)
+  email           String          @unique
+  passwordHash    String?
+  passwordSalt    String?
+  passwordVersion Int?
+  username        String?
+  preferences     Json?
+  yManifestBin    Bytes           @db.ByteA
+  sessions        Session[]
+  files           File[]
+  artifacts       Artifact[]
+  artifactShares  ArtifactShare[]
 }
 
 model Session {
@@ -38,25 +39,14 @@ model Session {
 }
 
 model Artifact {
-  id                 String        @id @default(uuid()) @db.Uuid
-  title              String
-  type               ArtifactType  @default(tiptap)
-  theme              ArtifactTheme @default(default)
-  isPinned           Boolean       @default(false)
-  artifactTemplate   Artifact?     @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
-  artifactTemplateId String?       @db.Uuid
-  templatedArtifacts Artifact[]    @relation("artifactTemplate")
-  rootTemplateId     String?
-  isTemplate         Boolean       @default(false)
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId             String        @db.Uuid
-  text               String
-  json               Json
-  yBin               Bytes         @db.ByteA
-  createdAt          DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
-
-  artfactFiles               ArtifactFile[]
+  id                         String              @id @default(uuid()) @db.Uuid
+  user                       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                     String              @db.Uuid
+  yBin                       Bytes               @db.ByteA
+  syncVersion                Int                 @default(1)
+  createdAt                  DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt                  DateTime            @updatedAt @db.Timestamptz(6)
+  artifactShares             ArtifactShare[]
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
 }
@@ -82,54 +72,24 @@ model ArtifactReference {
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
 }
 
-model ArtifactFile {
-  id         String   @id @default(uuid()) @db.Uuid
-  artifactId String   @db.Uuid
-  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  fileId     String   @db.Uuid
-  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  order      Int
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([artifactId, order])
-}
-
-model ArtifactRevision {
-  artifactId String @db.Uuid
-  revisionId Int
-  userId     String @db.Uuid
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  artifactJson      Json
-  artifactFilesJson Json
-
-  createdAt         DateTime  @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime  @updatedAt @db.Timestamptz(6)
-  artifactDeletedAt DateTime? @db.Timestamptz(6)
-
-  @@id([artifactId, revisionId])
-}
-
-enum ArtifactType {
-  tiptap
-  calendar
-}
-
-enum ArtifactTheme {
-  default
-  classic
+model ArtifactShare {
+  id          String   @id @default(uuid()) @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @db.Uuid
+  artifact    Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactId  String   @db.Uuid
+  accessLevel String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model File {
-  id            String         @id @default(uuid()) @db.Uuid
-  userId        String         @db.Uuid
-  user          User           @relation(fields: [userId], references: [id])
-  label         String
-  mimetype      String
-  filename      String
-  storageKey    String
-  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(6)
-  artifactFiles ArtifactFile[]
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id])
+  mimetype   String
+  filename   String
+  storageKey String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
 }

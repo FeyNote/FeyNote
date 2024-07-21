@@ -4,6 +4,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { useIonRouter, useIonToast } from '@ionic/react';
 import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { YManagerContext } from '../../context/yManager/YManagerContext';
 
 interface Props {
   className?: string;
@@ -19,6 +20,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
   const { setSession } = useContext(SessionContext);
   const router = useIonRouter();
   const buttonRef = useRef<HTMLDivElement>();
+  const { onBeforeAuth } = useContext(YManagerContext);
 
   const triggerGoogleButtonRender = useCallback(() => {
     if (getGoogleRef() && buttonRef.current) {
@@ -36,6 +38,7 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
   const signInWithGoogle = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (args: any) => {
+      onBeforeAuth();
       trpc.user.signInWithGoogle
         .mutate(args)
         .then((_session) => {

@@ -1,9 +1,11 @@
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import type { ArtifactTheme } from '@prisma/client';
 import { ArtifactEditorApplyTemplate } from '../editor/ArtifactEditor';
 import { useEffect, useMemo, useReducer } from 'react';
-import * as Y from 'yjs';
+import {
+  Array as YArray,
+  Map as YMap,
+} from 'yjs';
 import {
   IonCard,
   IonCol,
@@ -14,6 +16,7 @@ import {
   IonRow,
 } from '@ionic/react';
 import { CalendarRenderer } from './CalendarRenderer';
+import { ArtifactTheme } from '@feynote/shared-utils';
 
 interface YCalendarEntry {
   title: string;
@@ -40,9 +43,9 @@ const DEFAULT_CALENDAR_CONFIG = {
   daysInWeek: 7,
   monthsInYear: 12,
   center: `${new Date().getFullYear()}.${new Date().getMonth() + 1}.${new Date().getDate().toFixed()}`,
-  daysInMonth: Y.Array.from([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]),
-  leapInMonth: Y.Array.from([0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
-  monthNames: Y.Array.from([
+  daysInMonth: YArray.from([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]),
+  leapInMonth: YArray.from([0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+  monthNames: YArray.from([
     'January',
     'February',
     'March',
@@ -56,7 +59,7 @@ const DEFAULT_CALENDAR_CONFIG = {
     'November',
     'December',
   ]),
-  dayOfWeekNames: Y.Array.from([
+  dayOfWeekNames: YArray.from([
     'Sunday',
     'Monday',
     'Tuesday',
@@ -69,7 +72,7 @@ const DEFAULT_CALENDAR_CONFIG = {
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
-  yjsProvider: TiptapCollabProvider;
+  yProvider: HocuspocusProvider;
   theme: ArtifactTheme;
   applyTemplateRef?: React.MutableRefObject<
     ArtifactEditorApplyTemplate | undefined
@@ -78,30 +81,30 @@ interface Props {
 }
 
 export interface DocData {
-  calendarMap: Y.Map<any>;
-  entries: Y.Array<YCalendarEntry>;
-  config: Y.Map<any>;
+  calendarMap: YMap<any>;
+  entries: YArray<YCalendarEntry>;
+  config: YMap<any>;
 }
 
 export const ArtifactCalendar: React.FC<Props> = (props) => {
-  const yDoc = props.yjsProvider.document;
+  const yDoc = props.yProvider.document;
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
 
   const docData: DocData = useMemo(() => {
     const calendarMap = yDoc.getMap<any>('calendar');
 
     if (!calendarMap.has('entries')) {
-      calendarMap.set('entries', new Y.Array());
+      calendarMap.set('entries', new YArray());
     }
-    const entries: Y.Array<YCalendarEntry> = calendarMap.get('entries');
+    const entries: YArray<YCalendarEntry> = calendarMap.get('entries');
 
     if (!calendarMap.has('config')) {
       calendarMap.set(
         'config',
-        new Y.Map(Object.entries(DEFAULT_CALENDAR_CONFIG)),
+        new YMap(Object.entries(DEFAULT_CALENDAR_CONFIG)),
       );
     }
-    const config: Y.Map<any> = calendarMap.get('config');
+    const config: YMap<any> = calendarMap.get('config');
 
     return {
       calendarMap,
@@ -146,9 +149,9 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
   };
   const onMonthNameChange = (idx: number, value: string) => {
     if (!docData.config.has('monthNames')) {
-      docData.config.set('monthNames', new Y.Array());
+      docData.config.set('monthNames', new YArray());
     }
-    const monthNames: Y.Array<string> = docData.config.get('monthNames');
+    const monthNames: YArray<string> = docData.config.get('monthNames');
 
     yDoc.transact(() => {
       const monthsInYear = docData.config.get('monthsInYear') || 1;
@@ -167,7 +170,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     });
   };
   const getMonthName = (idx: number) => {
-    const monthNames: Y.Array<string> = docData.config.get('monthNames');
+    const monthNames: YArray<string> = docData.config.get('monthNames');
     if (!monthNames) return '';
 
     return monthNames.get(idx);
@@ -176,9 +179,9 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     if (!value) return;
 
     if (!docData.config.has('daysInMonth')) {
-      docData.config.set('daysInMonth', new Y.Array());
+      docData.config.set('daysInMonth', new YArray());
     }
-    const daysInMonth: Y.Array<number> = docData.config.get('daysInMonth');
+    const daysInMonth: YArray<number> = docData.config.get('daysInMonth');
 
     yDoc.transact(() => {
       const monthsInYear = docData.config.get('monthsInYear') || 1;
@@ -197,7 +200,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     });
   };
   const getDaysInMonth = (idx: number) => {
-    const daysInMonth: Y.Array<string> = docData.config.get('daysInMonth');
+    const daysInMonth: YArray<string> = docData.config.get('daysInMonth');
     if (!daysInMonth) return '1';
 
     return daysInMonth.get(idx);
@@ -206,9 +209,9 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     if (!value) return;
 
     if (!docData.config.has('leapInMonth')) {
-      docData.config.set('leapInMonth', new Y.Array());
+      docData.config.set('leapInMonth', new YArray());
     }
-    const leapInMonth: Y.Array<number> = docData.config.get('leapInMonth');
+    const leapInMonth: YArray<number> = docData.config.get('leapInMonth');
 
     yDoc.transact(() => {
       const monthsInYear = docData.config.get('monthsInYear') || 1;
@@ -227,16 +230,16 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     });
   };
   const getLeapInMonth = (idx: number) => {
-    const leapInMonth: Y.Array<string> = docData.config.get('leapInMonth');
+    const leapInMonth: YArray<string> = docData.config.get('leapInMonth');
     if (!leapInMonth) return '0';
 
     return leapInMonth.get(idx);
   };
   const onDayOfWeekNameChange = (idx: number, value: string) => {
     if (!docData.config.has('dayOfWeekNames')) {
-      docData.config.set('dayOfWeekNames', new Y.Array());
+      docData.config.set('dayOfWeekNames', new YArray());
     }
-    const dayOfWeekNames: Y.Array<string> =
+    const dayOfWeekNames: YArray<string> =
       docData.config.get('dayOfWeekNames');
 
     yDoc.transact(() => {
@@ -259,7 +262,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     });
   };
   const getDayOfWeekName = (idx: number) => {
-    const dayOfWeekNames: Y.Array<string> =
+    const dayOfWeekNames: YArray<string> =
       docData.config.get('dayOfWeekNames');
     if (!dayOfWeekNames) return '';
 

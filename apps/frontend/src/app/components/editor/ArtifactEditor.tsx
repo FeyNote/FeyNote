@@ -1,14 +1,14 @@
 import { MutableRefObject } from 'react';
-import type { ArtifactTheme } from '@prisma/client';
 import { EditorContent } from '@tiptap/react';
 import { JSONContent } from '@tiptap/core';
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { DragHandle } from './tiptap/extensions/globalDragHandle/DragHandle';
+import { ArtifactTheme } from '@feynote/shared-utils';
 
 export type ArtifactEditorApplyTemplate = (
   template: string | JSONContent,
@@ -16,7 +16,7 @@ export type ArtifactEditorApplyTemplate = (
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
-  yjsProvider: TiptapCollabProvider;
+  yProvider: HocuspocusProvider;
   theme: ArtifactTheme;
   applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
   onReady?: () => void;
@@ -26,7 +26,7 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
   const editor = useArtifactEditor({
     editable: true,
     knownReferences: props.knownReferences,
-    yjsProvider: props.yjsProvider,
+    yProvider: props.yProvider,
     yDoc: undefined,
     onReady: props.onReady,
   });

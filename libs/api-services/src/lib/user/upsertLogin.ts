@@ -1,5 +1,6 @@
 import { prisma } from '@feynote/prisma/client';
 import { generateSession } from '../session/generateSession';
+import { generateEmptyManifest } from './generateEmptyManifest';
 
 export const upsertLogin = async (email: string) => {
   const user = await prisma.user.upsert({
@@ -8,6 +9,7 @@ export const upsertLogin = async (email: string) => {
     },
     create: {
       email,
+      yManifestBin: generateEmptyManifest(),
     },
     update: {},
   });

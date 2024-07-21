@@ -1,5 +1,7 @@
+import { Token } from '@feynote/shared-utils';
 import { UserAlreadyExistError } from '../error';
 import { generateSession } from '../session/generateSession';
+import { generateEmptyManifest } from './generateEmptyManifest';
 import { generatePasswordHashAndSalt } from './generatePasswordHashAndSalt';
 import { prisma } from '@feynote/prisma/client';
 
@@ -14,20 +16,25 @@ export const register = async (email: string, password: string) => {
 
   const { hash, salt, version } = await generatePasswordHashAndSalt(password);
 
-  const token = await prisma.$transaction(async (tx) => {
+  const session = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         passwordHash: hash,
         passwordSalt: salt,
         passwordVersion: version,
         email,
+        yManifestBin: generateEmptyManifest(),
       },
     });
 
     const session = await generateSession(user.id, tx);
 
-    return session.token;
+    return session;
   });
 
-  return token;
+  return {
+    token: session.token,
+    userId: session.userId,
+    email,
+  } satisfies Token;
 };

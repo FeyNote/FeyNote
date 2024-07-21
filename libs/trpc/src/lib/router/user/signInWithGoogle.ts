@@ -3,6 +3,7 @@ import { publicProcedure } from '../../trpc';
 import { OAuth2Client } from 'google-auth-library';
 import { TRPCError } from '@trpc/server';
 import { upsertLogin } from '@feynote/api-services';
+import { Token } from '@feynote/shared-utils';
 
 export const signInWithGoogle = publicProcedure
   .input(
@@ -26,5 +27,9 @@ export const signInWithGoogle = publicProcedure
       });
     }
     const session = await upsertLogin(payload.email);
-    return session.token;
+    return {
+      token: session.token,
+      userId: session.userId,
+      email: payload.email,
+    } satisfies Token;
   });

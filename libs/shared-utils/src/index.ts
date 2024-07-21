@@ -19,4 +19,8 @@ export * from './lib/yjs/updateYArtifactMeta';
 export * from './lib/yjs/YArtifactMetaSchema';
 export * from './lib/types/i18n';
 export * from './lib/types/preferences';
+export * from './lib/types/themes';
 export * from './lib/ImmediateDebouncer';
+export * from './lib/types/token';
+export * from './lib/types/ArtifactType';
+export * from './lib/types/Manifest';

@@ -2,9 +2,7 @@ import { Component } from 'react';
 import styled from 'styled-components';
 import { MdHorizontalRule } from 'react-icons/md';
 import { t } from 'i18next';
-import { trpc } from '../../../../../../utils/trpc';
-import { EventContext } from '../../../../../context/events/EventContext';
-import { EventName } from '../../../../../context/events/EventName';
+import { YManagerContext } from '../../../../../context/yManager/YManagerContext';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -67,15 +65,15 @@ const SuggestionListItemSubtitle = styled.div`
   font-size: 11px;
 `;
 
-export interface ReferenceItem {
+export interface ReferenceSuggestionItem {
   artifactId: string;
   artifactBlockId: string | undefined;
-  referenceText: string;
-  artifact: any;
+  title: string;
+  text: string;
 }
 
 interface Props {
-  items: ReferenceItem[];
+  items: ReferenceSuggestionItem[];
   query: string;
   command: (...args: any) => void;
 }
@@ -86,7 +84,7 @@ interface State {
 }
 
 export class ReferencesList extends Component<Props, State> {
-  static contextType = EventContext;
+  static contextType = YManagerContext;
   state = {
     selectedIndex: 0,
     creatingItem: false,
@@ -137,7 +135,7 @@ export class ReferencesList extends Component<Props, State> {
     this.selectItem(this.state.selectedIndex);
   }
 
-  createItem() {
+  async createItem() {
     if (this.state.creatingItem) return;
 
     this.setState({
@@ -146,31 +144,19 @@ export class ReferencesList extends Component<Props, State> {
 
     const title =
       this.props.query.charAt(0).toUpperCase() + this.props.query.slice(1);
-    trpc.artifact.createArtifact
-      .mutate({
-        title,
-        type: 'tiptap',
-        theme: 'default',
-        isPinned: false,
-        isTemplate: false,
-        text: '',
-        json: {},
-        rootTemplateId: null,
-        artifactTemplateId: null,
-      })
-      .then((artifact) => {
-        this.props.command({
-          artifactId: artifact.id,
-          artifactBlockId: undefined,
-          referenceText: title,
-        });
 
-        // Hacky/glitchy way of getting context inside of a class component as recommended here:
-        // https://legacy.reactjs.org/docs/context.html
-        (this.context as any).eventManager.broadcast([
-          EventName.ArtifactCreated,
-        ]);
-      });
+    // Hacky/glitchy way of getting context inside of a class component as recommended here:
+    // https://legacy.reactjs.org/docs/context.html
+    const id = await (this.context as any).yManager.createArtifact({
+      title,
+      type: 'tiptap',
+      theme: 'default',
+    });
+
+    this.props.command({
+      artifactId: id,
+      artifactBlockId: undefined,
+    });
   }
 
   selectItem(index: number) {
@@ -185,7 +171,6 @@ export class ReferencesList extends Component<Props, State> {
       this.props.command({
         artifactId: item.artifactId,
         artifactBlockId: item.artifactBlockId,
-        referenceText: item.referenceText,
       });
     }
   }
@@ -206,12 +191,12 @@ export class ReferencesList extends Component<Props, State> {
               </SuggestionListItemIcon>
               <SuggestionListItemText>
                 <SuggestionListItemTitle>
-                  {item.referenceText}
+                  {item.text}
                 </SuggestionListItemTitle>
                 <SuggestionListItemSubtitle>
                   {item.artifactBlockId
                     ? t('editor.referenceMenu.artifactBlock', {
-                        title: item.artifact.title,
+                        title: item.title,
                       })
                     : t('editor.referenceMenu.artifact')}
                 </SuggestionListItemSubtitle>

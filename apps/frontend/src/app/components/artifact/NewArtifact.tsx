@@ -9,57 +9,37 @@ import {
   IonTitle,
   IonToolbar,
   useIonRouter,
-  useIonToast,
   useIonViewDidEnter,
 } from '@ionic/react';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { ArtifactRenderer } from './ArtifactRenderer';
 import { t } from 'i18next';
 import { routes } from '../../routes';
 import { useContext } from 'react';
-import { EventContext } from '../../context/events/EventContext';
-import { EventName } from '../../context/events/EventName';
+import { YManagerContext } from '../../context/yManager/YManagerContext';
 
 export const NewArtifact: React.FC = () => {
-  const [presentToast] = useIonToast();
   const router = useIonRouter();
-  const { eventManager } = useContext(EventContext);
+  const { yManager } = useContext(YManagerContext);
 
   useIonViewDidEnter(() => {
     create();
   }, []);
 
-  const create = () => {
-    trpc.artifact.createArtifact
-      .mutate({
-        title: 'Untitled',
-        type: 'tiptap',
-        json: {},
-        text: '',
-        theme: 'default',
-        isPinned: false,
-        isTemplate: false,
-        rootTemplateId: null,
-        artifactTemplateId: null,
-      })
-      .then((response) => {
-        const artifactId = response.id;
-        // We navigate to the created artifact but replace it in the browser history, so that
-        // user does not get navigated back to this "create" page when pressing back.
-        router.push(
-          routes.artifact.build({
-            id: artifactId,
-          }),
-          'forward',
-          'replace',
-        );
+  const create = async () => {
+    const id = await yManager.createArtifact({
+      title: 'Untitled',
+      type: 'tiptap',
+      theme: 'modern',
+    });
 
-        eventManager.broadcast([EventName.ArtifactCreated]);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
+    // We navigate to the created artifact but replace it in the browser history, so that
+    // user does not get navigated back to this "create" page when pressing back.
+    router.push(
+      routes.artifact.build({
+        id,
+      }),
+      'forward',
+      'replace',
+    );
   };
 
   return (

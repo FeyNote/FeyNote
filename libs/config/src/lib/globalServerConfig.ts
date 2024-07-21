@@ -26,7 +26,7 @@ export const globalServerConfig = {
       process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '30000',
     ),
     connectionTimeout: parseInt(
-      process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '15000',
+      process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '30000',
     ),
     throttle: {
       enable: process.env['HOCUSPOCUS_THROTTLE_ENABLE']

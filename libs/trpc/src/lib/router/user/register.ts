@@ -15,8 +15,8 @@ export const register = publicProcedure
   .mutation(async ({ input }) => {
     const { email, password } = input;
     try {
-      const sessionToken = await services.register(email, password);
-      return sessionToken;
+      const token = await services.register(email, password);
+      return token;
     } catch (e) {
       if (e instanceof UserAlreadyExistError) {
         throw new TRPCError({

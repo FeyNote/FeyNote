@@ -6,47 +6,51 @@ export const getReferenceSuggestions = async ({
 }: {
   query: string;
 }): Promise<ReferenceListItem[]> => {
-  const artifactsPromise = trpc.artifact.searchArtifactTitles.query({
-    query,
-    limit: 10,
-  });
+  // const artifactsPromise = trpc.artifact.searchArtifactTitles.query({
+  //   query,
+  //   limit: 10,
+  // });
   // .catch((error) => {
   //   handleTRPCErrors(error, presentToast);
   // });
-  const blocksPromise = trpc.artifact.searchArtifactBlocks.query({
-    query,
-    limit: 15,
-  });
+  // const blocksPromise = trpc.artifact.searchArtifactBlocks.query({
+  //   query,
+  //   limit: 15,
+  // });
   // .catch((error) => {
   //   handleTRPCErrors(error, presentToast);
   // });
 
-  const [artifacts, blocks] = await Promise.all([
-    artifactsPromise,
-    blocksPromise,
-  ]);
+  // const [artifacts, blocks] = await Promise.all([
+  //   artifactsPromise,
+  //   blocksPromise,
+  // ]);
 
-  if (!blocks || !artifacts) return [];
+  // if (!blocks || !artifacts) return [];
 
-  const suggestionItems = [];
+  const suggestionItems: {
+    artifactId: string,
+    artifactBlockId: string | undefined,
+    referenceText: string,
+  }[] = [];
 
-  for (const artifact of artifacts) {
-    suggestionItems.push({
-      artifactId: artifact.id,
-      artifactBlockId: undefined,
-      referenceText: artifact.title,
-      artifact: artifact,
-    });
-  }
-
-  for (const block of blocks) {
-    suggestionItems.push({
-      artifactId: block.artifactId,
-      artifactBlockId: block.id,
-      referenceText: block.text,
-      artifact: block.artifact,
-    });
-  }
+  // for (const artifact of artifacts) {
+  //   suggestionItems.push({
+  //     artifactId: artifact.id,
+  //     artifactBlockId: undefined,
+  //     referenceText: artifact.title,
+  //     artifact: artifact,
+  //   });
+  // }
+  //
+  // for (const block of blocks) {
+  //   suggestionItems.push({
+  //     artifactId: block.artifactId,
+  //     artifactBlockId: block.id,
+  //     referenceText: block.text,
+  //     artifact: block.artifact,
+  //   });
+  // }
 
   return suggestionItems.slice(0, 10);
 };
