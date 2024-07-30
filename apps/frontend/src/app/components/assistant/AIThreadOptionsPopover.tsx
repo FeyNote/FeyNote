@@ -94,16 +94,11 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
     <IonContent>
       <IonItem button onClick={triggerRenameThreadAlert}>
         <IonLabel>{t('assistant.thread.rename')}</IonLabel>
-        <IonIcon id="thread-popover" slot="start" size="small" icon={pencil} />
+        <IonIcon slot="start" size="small" icon={pencil} />
       </IonItem>
       <IonItem button onClick={triggerDeleteThreadAlert}>
         <IonLabel>{t('assistant.thread.delete')}</IonLabel>
-        <IonIcon
-          id="thread-popover"
-          slot="start"
-          size="small"
-          icon={trashBin}
-        />
+        <IonIcon slot="start" size="small" icon={trashBin} />
       </IonItem>
     </IonContent>
   );
