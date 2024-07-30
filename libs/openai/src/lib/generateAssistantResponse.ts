@@ -5,8 +5,8 @@ import {
 import { openai } from './openai';
 import { getDocumentContent } from './tools/getDocumentContent';
 import { retrieveMessageContext } from './retrieveMessageContext';
-import { OpenAIModel } from './tools/openAIModels';
-import { SystemMessage } from './tools/SystemMessage';
+import { OpenAIModel } from './utils/openAIModels';
+import { SystemMessage } from './utils/SystemMessage';
 
 export async function generateAssistantResponse(
   systemMessage: SystemMessage,

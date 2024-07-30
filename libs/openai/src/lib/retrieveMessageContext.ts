@@ -1,6 +1,6 @@
 import { prisma } from '@feynote/prisma/client';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { assertJsonIsChatCompletion } from './tools/assertJsonIsChatCompletion';
+import { assertJsonIsChatCompletion } from './utils/assertJsonIsChatCompletion';
 
 export async function retrieveMessageContext(
   threadId: string,
