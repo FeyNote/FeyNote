@@ -1,9 +1,13 @@
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { appRouter, createContext } from '@feynote/trpc';
+import message from './routes/message';
+import bodyParser from 'body-parser';
 import cors from 'cors';
 
 const app = express();
+app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
 
 const defaultCorsAllowlist = [
   'https://feynote.com',
@@ -38,6 +42,8 @@ app.use(
     createContext,
   }),
 );
+
+app.use('/message', message);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {

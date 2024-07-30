@@ -16,6 +16,14 @@ const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
   });
 };
 
+export const handleGenericError = (
+  message: string,
+  _presentToast: UseIonToastResult[0],
+) => {
+  presentToast(_presentToast, message);
+  return;
+};
+
 export const handleTRPCErrors = (
   error: unknown,
   _presentToast: UseIonToastResult[0],

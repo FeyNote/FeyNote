@@ -18,7 +18,7 @@ const ses = new SESClient({
 export const sendMail = async (mail: Mail) => {
   const params: SendEmailCommandInput = {
     Destination: {
-      CcAddresses: mail.cc,
+      CcAddresses: mail.cc || [],
       ToAddresses: mail.to,
     },
     Message: {

@@ -9,6 +9,8 @@ export const routes = {
   login: route`/login`,
   newArtifact: route`/artifact/new`,
   artifact: route`/artifact/${'id'}`,
+  assistant: route`/assistant`,
+  assistantThread: route`/assistant/${'id'}`,
   settings: route`/settings`,
 };
 

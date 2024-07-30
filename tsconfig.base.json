@@ -2,6 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "rootDir": ".",
+    "strict": true,
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
@@ -16,6 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@feynote/api-services": ["libs/api-services/src/index.ts"],
+      "@feynote/openai": ["libs/openai/src/index.ts"],
       "@feynote/config": ["libs/config/src/index.ts"],
       "@feynote/prisma/client": ["libs/prisma/client/src/index.ts"],
       "@feynote/prisma/seed": ["libs/prisma/seed/src/index.ts"],

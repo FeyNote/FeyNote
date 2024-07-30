@@ -3,8 +3,6 @@ import styled from 'styled-components';
 
 const Container = styled.div`
   text-align: center;
-  margin-top: 16px;
-  margin-bottom: 16px;
 `;
 
 const Header = styled.h2`
@@ -16,17 +14,18 @@ const Header = styled.h2`
 interface Props {
   icon: string;
   title: string;
-  message: string;
+  message?: string;
+  className?: string;
 }
 
 export const NullState = (props: Props) => {
   return (
-    <Container>
+    <Container className={props.className}>
       <IonIcon icon={props.icon} size="large" />
       <br />
       <div>
         <Header>{props.title}</Header>
-        <span>{props.message}</span>
+        {props.message && <span>{props.message}</span>}
       </div>
     </Container>
   );
