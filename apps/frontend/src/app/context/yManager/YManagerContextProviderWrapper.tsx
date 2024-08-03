@@ -1,8 +1,8 @@
-import { ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useContext, useState } from 'react';
 import { YManagerContext } from './YManagerContext';
 import { SessionContext } from '../session/SessionContext';
 import { YManager } from '../../util/YManager';
-import { openDB, deleteDB, wrap, unwrap, IDBPDatabase } from 'idb';
+import { openDB } from 'idb';
 
 interface Props {
   children: ReactNode;
@@ -25,7 +25,7 @@ class FuckYouReact {
       this.yManager?.destroy();
     }
 
-    const manifestDb = await openDB("manifest", undefined, {
+    const manifestDb = await openDB(`manifest:${userId}`, undefined, {
       upgrade: (db) => {
         console.log("DB version is:", db.version);
 
@@ -57,14 +57,15 @@ export const YManagerContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const { session } = useContext(SessionContext);
-  const [yManager, setYManager] = useState<YManager>();
+  const [yManager, setYManager] = useState<YManager | null>(null);
 
   const onBeforeAuth = () => {
+    // TODO: deal with auth change
   }
 
-  // TODO: we gotta think about how to handle this...
   if (!session) return (
-    <YManagerContext.Provider value={{ yManager: null as any, onBeforeAuth }}>{children}</YManagerContext.Provider>
+    // TODO: this is currently a lie. we provide a null yManager so that we can even render the login page. We may want to consider things like rendering the login/register page directly here, or something...
+    <YManagerContext.Provider value={{ yManager: yManager as YManager, onBeforeAuth }}>{children}</YManagerContext.Provider>
   );
 
   fuckYouReact.init(session.userId, session.token, yManager => {
@@ -72,11 +73,15 @@ export const YManagerContextProviderWrapper = ({
     setYManager(yManager)
   });
 
-  // We wait until the yManager is loaded (until the manifest has been loaded from indexeddb)
   if (!yManager) return (
-    <YManagerContext.Provider value={{ yManager: null as any, onBeforeAuth }}>{children}</YManagerContext.Provider>
+    // TODO: a better UI for loading
+    <>Loading...</>
   );
 
+  // Sin.
+  (window as any).yManager = yManager;
+
+  // yManager will be null until it is loaded (until the manifest has been loaded from indexeddb)
   return (
     <YManagerContext.Provider value={{ yManager, onBeforeAuth }}>{children}</YManagerContext.Provider>
   );

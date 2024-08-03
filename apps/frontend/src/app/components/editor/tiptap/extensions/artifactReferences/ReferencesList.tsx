@@ -68,8 +68,8 @@ const SuggestionListItemSubtitle = styled.div`
 export interface ReferenceSuggestionItem {
   artifactId: string;
   artifactBlockId: string | undefined;
-  title: string;
-  text: string;
+  artifactTitle: string;
+  referenceText: string;
 }
 
 interface Props {
@@ -156,6 +156,7 @@ export class ReferencesList extends Component<Props, State> {
     this.props.command({
       artifactId: id,
       artifactBlockId: undefined,
+      referenceText: title,
     });
   }
 
@@ -171,6 +172,7 @@ export class ReferencesList extends Component<Props, State> {
       this.props.command({
         artifactId: item.artifactId,
         artifactBlockId: item.artifactBlockId,
+        referenceText: item.referenceText,
       });
     }
   }
@@ -191,12 +193,12 @@ export class ReferencesList extends Component<Props, State> {
               </SuggestionListItemIcon>
               <SuggestionListItemText>
                 <SuggestionListItemTitle>
-                  {item.text}
+                  {item.referenceText}
                 </SuggestionListItemTitle>
                 <SuggestionListItemSubtitle>
                   {item.artifactBlockId
                     ? t('editor.referenceMenu.artifactBlock', {
-                        title: item.title,
+                        title: item.artifactTitle,
                       })
                     : t('editor.referenceMenu.artifact')}
                 </SuggestionListItemSubtitle>

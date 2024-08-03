@@ -1,56 +1,37 @@
-import { trpc } from '../../../../../../utils/trpc';
+import type { Editor } from '@tiptap/core';
+import { SearchWildcard, type YManager } from '../../../../../util/YManager';
 import { ReferenceListItem } from './ReferenceListItem';
+import type { ReferenceSuggestionItem } from './ReferencesList';
+
+/**
+  * We don't want to show every single suggestion in the entire world if the user
+  * types the letter 'a'. We limit the result count to this many results
+  */
+const SUGGESTION_RESULT_LIMIT = 15;
 
 export const getReferenceSuggestions = async ({
   query,
+  editor
 }: {
   query: string;
+  editor: Editor;
 }): Promise<ReferenceListItem[]> => {
-  // const artifactsPromise = trpc.artifact.searchArtifactTitles.query({
-  //   query,
-  //   limit: 10,
-  // });
-  // .catch((error) => {
-  //   handleTRPCErrors(error, presentToast);
-  // });
-  // const blocksPromise = trpc.artifact.searchArtifactBlocks.query({
-  //   query,
-  //   limit: 15,
-  // });
-  // .catch((error) => {
-  //   handleTRPCErrors(error, presentToast);
-  // });
+  const yManager = (window as any).yManager as YManager;
+  const searchResults = await yManager.search(query || SearchWildcard);
 
-  // const [artifacts, blocks] = await Promise.all([
-  //   artifactsPromise,
-  //   blocksPromise,
-  // ]);
+  const currentNodeId = editor.view.state.selection.$anchor.node().attrs.id;
 
-  // if (!blocks || !artifacts) return [];
+  const suggestionItems = searchResults
+    .map((searchResult) => ({
+      artifactId: searchResult.artifactId,
+      artifactBlockId: searchResult.blockId,
+      referenceText: searchResult.previewText,
+      artifactTitle: searchResult.artifactTitle,
+    } satisfies ReferenceSuggestionItem as ReferenceSuggestionItem))
+    // Prevent showing suggestions to reference blocks with no text
+    .filter((suggestionItem) => suggestionItem.referenceText.trim().length)
+    // Prevent referencing the current block (not a hard restriction, just generally don't show to user)
+    .filter((suggestionItem) => suggestionItem.artifactBlockId !== currentNodeId);
 
-  const suggestionItems: {
-    artifactId: string,
-    artifactBlockId: string | undefined,
-    referenceText: string,
-  }[] = [];
-
-  // for (const artifact of artifacts) {
-  //   suggestionItems.push({
-  //     artifactId: artifact.id,
-  //     artifactBlockId: undefined,
-  //     referenceText: artifact.title,
-  //     artifact: artifact,
-  //   });
-  // }
-  //
-  // for (const block of blocks) {
-  //   suggestionItems.push({
-  //     artifactId: block.artifactId,
-  //     artifactBlockId: block.id,
-  //     referenceText: block.text,
-  //     artifact: block.artifact,
-  //   });
-  // }
-
-  return suggestionItems.slice(0, 10);
+  return suggestionItems.slice(0, SUGGESTION_RESULT_LIMIT);
 };

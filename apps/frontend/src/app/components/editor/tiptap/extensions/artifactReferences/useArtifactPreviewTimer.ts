@@ -18,8 +18,7 @@ export const useArtifactPreviewTimer = (
   isBroken: boolean,
 ) => {
   const { yManager } = useContext(YManagerContext);
-  const isArtifactOnManifest = yManager.isArtifactOnManifest(artifactId);
-  const artifactConnection = isArtifactOnManifest && !isBroken ? yManager.connectArtifact(artifactId) : null;
+  const artifactConnection = isBroken ? null : yManager.connectArtifact(artifactId);
   const [showPreview, setShowPreview] = useState(false);
 
   const hoverTimeoutRef = useRef<NodeJS.Timeout>();

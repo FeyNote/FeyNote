@@ -103,8 +103,10 @@
 
   "editor.placeholder": "Changes are automatically saved. Use / to bring up the command menu, or @ to reference another another artifact",
   "editor.placeholder.readOnlyEmpty": "Artifact has no content",
-  "editor.referenceMenu.noItems.title": "No results",
+  "editor.referenceMenu.noItems.title": "No results for \"{{title}}\"",
   "editor.referenceMenu.noItems.subtitle": "Click to create",
+  "editor.referenceMenu.create.title": "Create \"{{title}}\"",
+  "editor.referenceMenu.create.subtitle": "Click to create",
   "editor.referenceMenu.artifactBlock": "Block within {{title}}",
   "editor.referenceMenu.artifact": "Artifact",
 

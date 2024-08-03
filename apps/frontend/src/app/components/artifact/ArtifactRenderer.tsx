@@ -118,23 +118,26 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   // We must preserve the original map between renders
   // because tiptap exists outside of React's render cycle
-  // const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
-  // useEffect(() => {
-  //   for (const reference of props.artifact.artifactReferences) {
-  //     const key = getKnownArtifactReferenceKey(
-  //       reference.targetArtifactId,
-  //       reference.targetArtifactBlockId || undefined,
-  //     );
-  //
-  //     knownReferences.set(key, {
-  //       artifactBlockId: reference.artifactBlockId,
-  //       targetArtifactId: reference.targetArtifactId,
-  //       targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
-  //       referenceText: reference.referenceText,
-  //       isBroken: !reference.referenceTargetArtifactId,
-  //     });
-  //   }
-  // }, [props.artifact.artifactReferences]);
+  const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
+  useEffect(() => {
+    yManager.getOutgoingEdges(props.artifactId).then((edges) => {
+      for (const edge of edges) {
+        const key = getKnownArtifactReferenceKey(
+          edge.targetArtifactId,
+          edge.targetArtifactBlockId || undefined,
+        );
+
+        knownReferences.set(key, {
+          artifactBlockId: edge.artifactBlockId,
+          targetArtifactId: edge.targetArtifactId,
+          targetArtifactBlockId: edge.targetArtifactBlockId || undefined,
+          referenceText: edge.referenceText,
+          isBroken: false, // TODO: what the hell do we do about this
+        });
+      }
+    });
+  }, [props.artifactId]);
+
   //
   // useEffect(() => {
   //   const iHandler = () => {
@@ -160,6 +163,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     };
 
     artifactMetaMap.observe(listener);
+    listener();
     return () => artifactMetaMap.unobserve(listener);
   }, [yArtifact.doc]);
 
@@ -204,7 +208,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         <ArtifactEditor
           theme={theme}
           applyTemplateRef={editorApplyTemplateRef}
-          knownReferences={new Map()}
+          knownReferences={knownReferences}
           yProvider={yArtifact.tiptapCollabProvider}
           onReady={() => setEditorReady(true)}
         />
@@ -216,7 +220,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
         <ArtifactCalendar
           theme={theme}
           applyTemplateRef={editorApplyTemplateRef}
-          knownReferences={new Map()}
+          knownReferences={knownReferences}
           yProvider={yArtifact.tiptapCollabProvider}
           onReady={() => setEditorReady(true)}
         />

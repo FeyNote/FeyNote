@@ -13,20 +13,26 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
       let artifact = await prisma.artifact.findUnique({
         where: {
           id: identifier,
-          userId: args.context.userId, // TODO: Impl sharing permission check here
         },
         select: {
+          userId: true,
           yBin: true,
         },
       });
 
-      if (artifact) {
-        Y.applyUpdate(args.document, artifact.yBin);
-        return args.document;
+      if (!artifact) {
+        console.log(`Artifact not found: ${args.documentName}`);
+        throw new Error(); // Important to throw an error without message, since that'll just unbind client from document
       }
 
-      console.log("Artifact not found");
-      return new Y.Doc();
+      if (artifact.userId !== args.context.userId) {
+        console.log(args.documentName, artifact.userId, args.context.userId);
+        console.log(`No access to: ${args.documentName}`); // TODO: Impl sharing permission check here
+        throw new Error(); // Important to throw an error without message, since that'll just unbind client from document
+      }
+
+      Y.applyUpdate(args.document, artifact.yBin);
+      return args.document;
 
       // const newDoc = new Y.Doc();
       // await prisma.artifact.create({
@@ -41,6 +47,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
       // return args.document;
     }
 
+    // TODO: remove this since we don't want to do manifest using ydoc
     case SupportedDocumentType.Manifest: {
       const user = await prisma.user.findUnique({
         where: {
