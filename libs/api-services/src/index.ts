@@ -5,3 +5,6 @@ export * from './lib/user/triggerPasswordReset';
 export * from './lib/error';
 export * from './lib/session/isSessionExpired';
 export * from './lib/artifacts/yArtifactMetaSchema';
+export * from './lib/artifacts/updateArtifactOutgoingReferences';
+export * from './lib/artifacts/updateArtifactTitleReferenceText';
+export * from './lib/artifacts/updateArtifactContentReferenceText';

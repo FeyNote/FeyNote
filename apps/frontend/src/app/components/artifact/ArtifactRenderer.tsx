@@ -121,6 +121,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
   useEffect(() => {
     yManager.getOutgoingEdges(props.artifactId).then((edges) => {
+      console.log("edges", edges);
       for (const edge of edges) {
         const key = getKnownArtifactReferenceKey(
           edge.targetArtifactId,
@@ -135,6 +136,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
           isBroken: false, // TODO: what the hell do we do about this
         });
       }
+      console.log("knownReferences", knownReferences);
     });
   }, [props.artifactId]);
 
