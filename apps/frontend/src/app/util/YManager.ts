@@ -466,6 +466,13 @@ class SyncManager {
   }
 }
 
+interface StoredSearchFields {
+  artifactId: string;
+  blockId: string | undefined;
+  previewText: string;
+  artifactTitle: string | undefined;
+}
+
 class SearchManager {
   private miniSearch: MiniSearch;
   private knownBlockIdsByArtifactId = new Map<
@@ -484,12 +491,12 @@ class SearchManager {
     this.miniSearch = new MiniSearch(this.miniSearchOptions);
   }
 
-  search(text: Query): SearchResult[] {
+  search(text: Query): (SearchResult & StoredSearchFields)[] {
     return Array.from(
       this.miniSearch.search(text, {
         prefix: true,
       }),
-    );
+    ) as (SearchResult & StoredSearchFields)[]; // Thanks minisearch typings...
   }
 
   async populateFromLocalDb() {
@@ -501,7 +508,7 @@ class SearchManager {
 
     try {
       // TODO: This takes a while in Chrome, but
-      this.miniSearch = await MiniSearch.loadJSONAsync(
+      this.miniSearch = MiniSearch.loadJSON(
         indexRecord.value,
         this.miniSearchOptions,
       );
@@ -551,14 +558,17 @@ class SearchManager {
    * Helps get around the fact that _storedFields is a protected property
    * and we don't want to have a ts-expect-error floating everywhere
    */
-  private getStoredFields(): IterableIterator<{
-    artifactId: string;
-    blockId: string | undefined;
-    previewText: string;
-    artifactTitle: string | undefined;
-  }> {
+  private getStoredFields(): IterableIterator<StoredSearchFields> {
     // @ts-expect-error _storedFields is a protected property
     return this.miniSearch._storedFields.values();
+  }
+
+  getStoredFieldsForArtifactId(
+    artifactId: string,
+  ): StoredSearchFields | undefined {
+    return this.miniSearch.getStoredFields(
+      this.getIndexId(artifactId, undefined),
+    ) as any;
   }
 
   onReady(): Promise<void> {
@@ -1005,6 +1015,20 @@ export class YManager {
     return id;
   }
 
+  getKnownArtifacts(): ReturnType<
+    typeof this.searchManager.getStoredFieldsForArtifactId
+  >[] {
+    const storedArtifactFields = [];
+
+    for (const artifactId of this.searchManager.getKnownIndexIds().keys()) {
+      storedArtifactFields.push(
+        this.searchManager.getStoredFieldsForArtifactId(artifactId),
+      );
+    }
+
+    return storedArtifactFields;
+  }
+
   async destroy(): Promise<void> {
     await Promise.all(this.cleanupOps.map((op) => op()));
     await this.syncManager.destroy();
@@ -1015,7 +1039,9 @@ export class YManager {
   /**
    * This method is labelled as async so that we have the potential for async behaviors later
    */
-  async search(text: Query): Promise<SearchResult[]> {
+  async search(
+    text: Query,
+  ): Promise<ReturnType<typeof this.searchManager.search>> {
     return this.searchManager.search(text);
   }
 
