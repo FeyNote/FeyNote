@@ -21,9 +21,9 @@ export const globalServerConfig = {
   },
   hocuspocus: {
     port: parseInt(process.env['HOCUSPOCUS_PORT'] || '8080'),
-    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '5000'),
+    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '3000'),
     maxWriteDelayMs: parseInt(
-      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '30000',
+      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '15000',
     ),
     connectionTimeout: parseInt(
       process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '30000',
@@ -33,10 +33,10 @@ export const globalServerConfig = {
         ? coerceBoolean(process.env['HOCUSPOCUS_THROTTLE_ENABLE'])
         : true,
       connectionsPerMinuteBeforeBan: parseInt(
-        process.env['HOCUSPOCUS_THROTTLE_CPM'] || '30',
+        process.env['HOCUSPOCUS_THROTTLE_CPM'] || '500',
       ),
       banTimeMinutes: parseInt(
-        process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '5',
+        process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '1',
       ),
     },
     logging: {

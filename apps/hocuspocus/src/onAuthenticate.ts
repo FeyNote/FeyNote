@@ -9,9 +9,13 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       token: args.token,
     },
   });
-  if (!session) throw new Error('Session not found');
+  if (!session) {
+    console.log(`Session not found`);
+    throw new Error('Session not found');
+  }
 
   if (isSessionExpired(session)) {
+    console.log(`Session is expired`);
     throw new Error('Session is expired');
   }
 

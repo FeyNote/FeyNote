@@ -97,7 +97,8 @@ export const GlobalSearchContextProviderWrapper = ({
 
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === "p"){
+      if ((event.ctrlKey || event.metaKey) && event.key === "k"){
+        event.preventDefault();
         trigger();
       }
       if (event.key === "Escape"){

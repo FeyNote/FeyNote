@@ -25,9 +25,9 @@ class FuckYouReact {
       this.yManager?.destroy();
     }
 
-    const manifestDb = await openDB(`manifest:${userId}`, undefined, {
+    const manifestDb = await openDB(`manifest:${userId}`, 2, {
       upgrade: (db) => {
-        console.log("DB version is:", db.version);
+        console.log("Manifest DB version is:", db.version);
 
         const artifactVersionsDb = db.createObjectStore("artifactVersions", {
           keyPath: "artifactId",
@@ -43,6 +43,10 @@ class FuckYouReact {
         edgesDb.createIndex("artifactId, artifactBlockId", ["artifactId", "artifactBlockId"], { unique: false });
         edgesDb.createIndex("targetArtifactId", "targetArtifactId", { unique: false });
         edgesDb.createIndex("targetArtifactId, targetArtifactBlockId", ["targetArtifactId", "targetArtifactBlockId"], { unique: false });
+
+        db.createObjectStore("searchIndex", {
+          keyPath: "id",
+        });
       }
     });
 
