@@ -31,7 +31,7 @@ export const globalServerConfig = {
     throttle: {
       enable: process.env['HOCUSPOCUS_THROTTLE_ENABLE']
         ? coerceBoolean(process.env['HOCUSPOCUS_THROTTLE_ENABLE'])
-        : true,
+        : false,
       connectionsPerMinuteBeforeBan: parseInt(
         process.env['HOCUSPOCUS_THROTTLE_CPM'] || '500',
       ),

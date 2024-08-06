@@ -25,7 +25,7 @@ class FuckYouReact {
       this.yManager?.destroy();
     }
 
-    const manifestDb = await openDB(`manifest:${userId}`, 2, {
+    const manifestDb = await openDB(`manifest:${userId}`, undefined, {
       upgrade: (db) => {
         console.log("Manifest DB version is:", db.version);
 

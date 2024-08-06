@@ -10,6 +10,7 @@ import { t } from 'i18next';
 import { TRPCClientError } from '@trpc/client';
 
 const ENABLE_VERBOSE_SYNC_LOGGING = true;
+const ENABLE_VERBOSE_INDEX_LOGGING = true;
 
 /**
   * Abitrary integers to represent important version numbers
@@ -20,11 +21,20 @@ const SIGNIFICANT_VERSION_CODES = {
 
 const MANIFEST_SYNC_INTERVAL_MS = 60 * 1000;
 const ARTIFACT_SYNC_TIMEOUT_MS = 5000;
-const SEARCH_DB_SAVE_INTERVAL_MS = 10 * 60 * 1000;
+/**
+  * The amount of debounce time before saving the search index to disk.
+  * Time re-extends by this amount every time a change is made to the index.
+  */
+const SEARCH_DB_SAVE_TIMEOUT_MS = 10 * 1000;
+/**
+  * The maximum allowable float time that the search index won't be saved to disk.
+  * Effectively a cap for SEARCH_DB_SAVE_TIMEOUT_MS.
+  */
+const SEARCH_DB_SAVE_MAX_TIMEOUT_MS = 2 * 60 * 1000;
 /**
   * How many artifacts to sync at once
   */
-const SYNC_BATCH_SIZE = 10;
+const SYNC_BATCH_SIZE = 5;
 
 const getTiptapIdsFromYEvent = (yEvent: YEvent<any>) => {
   // Yjs change target is simple, but we do recurse up the tree here to cover all nodes changed
@@ -262,7 +272,7 @@ class SyncManager {
           maxDelay: 1000,
         });
 
-        // We must operate in batches, because loading every single document in existence is dumb.
+        // We must operate in batches, because loading every single document in existence at the same time is dumb.
         const batches = [...needsSync].reduce((batches, id) => {
           const previousBatch = batches.at(-1);
           if (previousBatch && previousBatch.length < SYNC_BATCH_SIZE) {
@@ -395,16 +405,13 @@ class SearchManager {
     storeFields: ["artifactId", "blockId", "artifactTitle", "previewText"],
   } satisfies Options;
   private initPromise = this.populateFromLocalDb();
-  private saveInterval: NodeJS.Timeout;
+  private saveTimeout: NodeJS.Timeout | undefined;
+  private maxSaveTimeout: NodeJS.Timeout | undefined;
 
   constructor(
     private manifestDb: IDBPDatabase,
   ) {
     this.miniSearch = new MiniSearch(this.miniSearchOptions);
-
-    this.saveInterval = setInterval(() => {
-      this.saveToLocalDB();
-    }, SEARCH_DB_SAVE_INTERVAL_MS);
   }
 
   search(text: Query): SearchResult[] {
@@ -414,17 +421,28 @@ class SearchManager {
   }
 
   async populateFromLocalDb() {
+    performance.mark("startIndexLoad");
+
     const indexRecord = await this.manifestDb.get("searchIndex", "index");
 
     if (!indexRecord) return;
 
     try {
+      // TODO: This takes a while in Chrome, but
       this.miniSearch = await MiniSearch.loadJSONAsync(indexRecord.value, this.miniSearchOptions);
 
       this.repopulateKnownIds();
     } catch(e) {
       console.error("Failed to load MiniSearch index from local DB", e);
     }
+
+    performance.mark("endIndexLoad");
+    const measure = performance.measure(
+      "indexLoadTime",
+      "startIndexLoad",
+      "endIndexLoad"
+    );
+    console.log(`Loading index took ${measure.duration}ms. ${this.knownBlockIdsByArtifactId.size} artifacts loaded.`);
   }
 
   repopulateKnownIds() {
@@ -481,6 +499,8 @@ class SearchManager {
     const indexIds = [...blockIds].map((blockId) => this.getIndexId(artifactId, blockId));
     this.miniSearch.discardAll(indexIds);
     this.knownBlockIdsByArtifactId.delete(artifactId);
+
+    this.scheduleSave();
   }
 
   /**
@@ -507,6 +527,7 @@ class SearchManager {
     if (!this.knownBlockIdsByArtifactId.has(artifactId)) {
       this.knownBlockIdsByArtifactId.set(artifactId, new Set());
     }
+    const knownBlockIds = this.knownBlockIdsByArtifactId.get(artifactId)!;
 
     if (artifactMeta.title) {
       const artifactIndexDoc = {
@@ -521,13 +542,26 @@ class SearchManager {
       } else {
         this.miniSearch.add(artifactIndexDoc);
       }
-      this.knownBlockIdsByArtifactId.get(artifactId)?.add(undefined);
+      knownBlockIds.add(undefined);
     } else {
       if (this.miniSearch.has(artifactIndexId)) {
         this.miniSearch.discard(artifactIndexId);
       }
-      this.knownBlockIdsByArtifactId.get(artifactId)?.delete(undefined);
+      knownBlockIds.delete(undefined);
     }
+
+    for (const blockId of jsonContentById.keys()) {
+      if (!this.miniSearch.has(this.getIndexId(artifactId, blockId))) {
+        blockIds.push(blockId);
+      }
+    }
+    for (const blockId of knownBlockIds) {
+      if (blockId && !jsonContentById.has(blockId)) {
+        blockIds.push(blockId);
+      }
+    }
+
+    if (ENABLE_VERBOSE_INDEX_LOGGING) console.log(`Updating search index for ${artifactId}, ${blockIds.length} blocks to update`);
 
     for (const blockId of blockIds) {
       const blockIndexId = this.getIndexId(artifactId, blockId);
@@ -557,9 +591,28 @@ class SearchManager {
         this.knownBlockIdsByArtifactId.get(artifactId)?.delete(blockId);
       }
     }
+
+    this.scheduleSave();
+  }
+
+  scheduleSave() {
+    clearTimeout(this.saveTimeout);
+
+    this.saveTimeout = setTimeout(() => {
+      this.saveToLocalDB();
+    }, SEARCH_DB_SAVE_TIMEOUT_MS);
+
+    if (!this.maxSaveTimeout) {
+      this.maxSaveTimeout = setTimeout(() => {
+        this.saveToLocalDB();
+      }, SEARCH_DB_SAVE_MAX_TIMEOUT_MS);
+    }
   }
 
   async saveToLocalDB(): Promise<void> {
+    clearTimeout(this.saveTimeout);
+    clearTimeout(this.maxSaveTimeout);
+
     if (await this.manifestDb.get("searchIndex", "index")) {
       await this.manifestDb.put("searchIndex", {
         id: "index",
@@ -575,7 +628,8 @@ class SearchManager {
 
   async destroy(): Promise<void> {
     await this.saveToLocalDB();
-    clearInterval(this.saveInterval);
+    clearTimeout(this.saveTimeout);
+    clearTimeout(this.maxSaveTimeout);
   }
 }
 
