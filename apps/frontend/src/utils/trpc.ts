@@ -23,7 +23,9 @@ export const trpc = createTRPCProxyClient<AppRouter>({
     httpLink({
       url: getApiUrls().trpc,
       headers: () => {
-        const { token } = JSON.parse(localStorage.getItem(SESSION_ITEM_NAME) || "{}");
+        const { token } = JSON.parse(
+          localStorage.getItem(SESSION_ITEM_NAME) || '{}',
+        );
         return {
           Authorization: token ? `Bearer ${token}` : undefined,
         };

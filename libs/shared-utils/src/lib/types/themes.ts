@@ -1,1 +1,1 @@
-export type ArtifactTheme = "modern" | "fantasy";
+export type ArtifactTheme = 'modern' | 'fantasy';

@@ -80,7 +80,11 @@ export function App() {
                       >
                         <Menu />
                         <IonRouterOutlet id="main" animated={false}>
-                          <Route exact path={routes.home.route} component={Home} />
+                          <Route
+                            exact
+                            path={routes.home.route}
+                            component={Home}
+                          />
                           <Route
                             exact
                             path={routes.login.route}

@@ -14,8 +14,8 @@ export const createArtifact = authenticatedProcedure
   .mutation(async ({ ctx, input }) => {
     const existingArtifact = await prisma.artifact.findUnique({
       where: {
-        id: input.id
-      }
+        id: input.id,
+      },
     });
     if (existingArtifact) {
       throw new TRPCError({
@@ -25,9 +25,9 @@ export const createArtifact = authenticatedProcedure
     }
 
     const yDoc = constructYArtifact({
-      title: "",
-      theme: "modern",
-      type: "tiptap",
+      title: '',
+      theme: 'modern',
+      type: 'tiptap',
     });
     const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 

@@ -1,1 +1,1 @@
-export type ArtifactType = "tiptap" | "calendar";
+export type ArtifactType = 'tiptap' | 'calendar';

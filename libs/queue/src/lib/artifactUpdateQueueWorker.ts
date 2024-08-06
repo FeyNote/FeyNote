@@ -2,7 +2,12 @@ import { Worker } from 'bullmq';
 import { ArtifactUpdateQueueItem } from './ArtifactUpdateQueueItem';
 import { ARTIFACT_UPDATE_QUEUE_NAME } from './ARTIFACT_UPDATE_QUEUE_NAME';
 import { globalServerConfig } from '@feynote/config';
-import { ARTIFACT_META_KEY, ARTIFACT_TIPTAP_BODY_KEY, getTextForJSONContent, getTiptapContentFromYjsDoc } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  getTextForJSONContent,
+  getTiptapContentFromYjsDoc,
+} from '@feynote/shared-utils';
 import { applyUpdate, Doc } from 'yjs';
 import { prisma } from '@feynote/prisma/client';
 import { Prisma } from '@prisma/client';

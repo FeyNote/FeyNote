@@ -1,4 +1,4 @@
-import { ArtifactTheme } from "@feynote/shared-utils";
+import { ArtifactTheme } from '@feynote/shared-utils';
 
 export const artifactThemeTitleI18nByName = {
   modern: 'artifactTheme.modern',

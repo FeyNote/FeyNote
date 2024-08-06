@@ -15,7 +15,7 @@ const StyledNodeViewWrapper = styled(NodeViewWrapper)`
 
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const router = useIonRouter();
-  console.log("rendering a reference");
+  console.log('rendering a reference');
 
   const { artifactId, artifactBlockId } = props.node.attrs;
 

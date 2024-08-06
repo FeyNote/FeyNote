@@ -22,20 +22,19 @@ export const syncManifest = authenticatedProcedure.query(async ({ ctx }) => {
         select: {
           id: true,
           syncVersion: true,
-        }
-      }
+        },
+      },
     },
   });
 
-  const [
-    artifacts,
-    artifactShares,
-  ] = await Promise.all([
+  const [artifacts, artifactShares] = await Promise.all([
     artifactsPromise,
     artifactSharesPromise,
   ]);
 
-  const allArtifactIds = artifacts.map((artifact) => artifact.id).concat(artifactShares.map((artifactShare) => artifactShare.artifact.id));
+  const allArtifactIds = artifacts
+    .map((artifact) => artifact.id)
+    .concat(artifactShares.map((artifactShare) => artifactShare.artifact.id));
 
   const relationships = await prisma.artifactReference.findMany({
     where: {
@@ -64,7 +63,8 @@ export const syncManifest = authenticatedProcedure.query(async ({ ctx }) => {
     manifest.artifactVersions[artifact.id] = artifact.syncVersion;
   }
   for (const artifactShare of artifactShares) {
-    manifest.artifactVersions[artifactShare.artifact.id] = artifactShare.artifact.syncVersion;
+    manifest.artifactVersions[artifactShare.artifact.id] =
+      artifactShare.artifact.syncVersion;
   }
 
   return manifest;

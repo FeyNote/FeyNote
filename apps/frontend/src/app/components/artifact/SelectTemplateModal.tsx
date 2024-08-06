@@ -40,11 +40,7 @@ export interface SelectTemplateModalProps {
 export const SelectTemplateModal: React.FC<SelectTemplateModalProps> = (
   props,
 ) => {
-  return (
-    <>
-      TODO: Reimplement templating with local YDocs
-    </>
-  );
+  return <>TODO: Reimplement templating with local YDocs</>;
   // const [presentToast] = useIonToast();
   // const [presentAlert] = useIonAlert();
   // const [searchText, setSearchText] = useState('');

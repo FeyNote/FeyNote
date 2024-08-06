@@ -218,7 +218,7 @@ export class ReferencesList extends Component<Props, State> {
             <SuggestionListItemText>
               <SuggestionListItemTitle>
                 {t('editor.referenceMenu.noItems.title', {
-                  title: this.props.query
+                  title: this.props.query,
                 })}
               </SuggestionListItemTitle>
               <SuggestionListItemSubtitle>

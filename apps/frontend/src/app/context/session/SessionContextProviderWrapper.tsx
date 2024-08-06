@@ -11,7 +11,9 @@ export const SessionContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const [session, setSession] = useState(
-    JSON.parse(localStorage.getItem(SESSION_ITEM_NAME) || "null") as Token | null
+    JSON.parse(
+      localStorage.getItem(SESSION_ITEM_NAME) || 'null',
+    ) as Token | null,
   );
 
   const setAndPersistSession = (newSession: Token | null) => {

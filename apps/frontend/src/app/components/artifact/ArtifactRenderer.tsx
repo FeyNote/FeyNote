@@ -105,23 +105,21 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { session } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
 
-  const [title, setTitle] = useState(t("generic.untitled"));
-  const [theme, setTheme] = useState<ArtifactTheme>("modern");
-  const [type, setType] = useState<ArtifactType>("tiptap");
+  const [title, setTitle] = useState(t('generic.untitled'));
+  const [theme, setTheme] = useState<ArtifactTheme>('modern');
+  const [type, setType] = useState<ArtifactType>('tiptap');
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
 
   const { yManager } = useContext(YManagerContext);
-  const yArtifact = yManager.connectArtifact(
-    props.artifactId,
-  );
+  const yArtifact = yManager.connectArtifact(props.artifactId);
 
   // We must preserve the original map between renders
   // because tiptap exists outside of React's render cycle
   const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
   useEffect(() => {
     yManager.getOutgoingEdges(props.artifactId).then((edges) => {
-      console.log("edges", edges);
+      console.log('edges', edges);
       for (const edge of edges) {
         const key = getKnownArtifactReferenceKey(
           edge.targetArtifactId,
@@ -136,7 +134,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
           isBroken: false, // TODO: what the hell do we do about this
         });
       }
-      console.log("knownReferences", knownReferences);
+      console.log('knownReferences', knownReferences);
     });
   }, [props.artifactId]);
 
@@ -198,10 +196,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   // };
 
   const setMetaProp = (metaPropName: string, value: any) => {
-    (yArtifact.doc.getMap(ARTIFACT_META_KEY) as any).set(
-      metaPropName,
-      value,
-    );
+    (yArtifact.doc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
   };
 
   const renderEditor = () => {

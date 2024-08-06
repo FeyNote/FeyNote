@@ -8,7 +8,12 @@ import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
 import { EditorContent } from '@tiptap/react';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import { ARTIFACT_TIPTAP_BODY_KEY, getMetaFromYArtifact, getTextForJSONContent, getTiptapContentFromYjsDoc } from '@feynote/shared-utils';
+import {
+  ARTIFACT_TIPTAP_BODY_KEY,
+  getMetaFromYArtifact,
+  getTextForJSONContent,
+  getTiptapContentFromYjsDoc,
+} from '@feynote/shared-utils';
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -102,7 +107,16 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     throw new Error('referencePreviewContainer not defined in index.html!');
 
   const artifactMeta = getMetaFromYArtifact(props.yProvider.document);
-  const artifactText = useMemo(() => getTextForJSONContent(getTiptapContentFromYjsDoc(props.yProvider.document, ARTIFACT_TIPTAP_BODY_KEY)), []);
+  const artifactText = useMemo(
+    () =>
+      getTextForJSONContent(
+        getTiptapContentFromYjsDoc(
+          props.yProvider.document,
+          ARTIFACT_TIPTAP_BODY_KEY,
+        ),
+      ),
+    [],
+  );
 
   // We portal because styling does not play well with editor instances inside of each other
   return createPortal(

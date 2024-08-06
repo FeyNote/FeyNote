@@ -1,4 +1,4 @@
-import { Doc, encodeStateAsUpdate } from "yjs";
+import { Doc, encodeStateAsUpdate } from 'yjs';
 
 export function generateEmptyManifest() {
   const manifest = new Doc();

@@ -6,5 +6,5 @@ import { getArtifactById } from './getArtifactById';
 export const router = trpcRouter({
   createArtifact,
   deleteArtifact,
-  getArtifactById
+  getArtifactById,
 });

@@ -2,10 +2,7 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { ArtifactEditorApplyTemplate } from '../editor/ArtifactEditor';
 import { useEffect, useMemo, useReducer } from 'react';
-import {
-  Array as YArray,
-  Map as YMap,
-} from 'yjs';
+import { Array as YArray, Map as YMap } from 'yjs';
 import {
   IonCard,
   IonCol,
@@ -239,8 +236,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     if (!docData.config.has('dayOfWeekNames')) {
       docData.config.set('dayOfWeekNames', new YArray());
     }
-    const dayOfWeekNames: YArray<string> =
-      docData.config.get('dayOfWeekNames');
+    const dayOfWeekNames: YArray<string> = docData.config.get('dayOfWeekNames');
 
     yDoc.transact(() => {
       const daysInWeek = docData.config.get('daysInWeek') || 1;
@@ -262,8 +258,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     });
   };
   const getDayOfWeekName = (idx: number) => {
-    const dayOfWeekNames: YArray<string> =
-      docData.config.get('dayOfWeekNames');
+    const dayOfWeekNames: YArray<string> = docData.config.get('dayOfWeekNames');
     if (!dayOfWeekNames) return '';
 
     return dayOfWeekNames.get(idx);
