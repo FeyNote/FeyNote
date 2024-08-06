@@ -19,8 +19,9 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         },
         data: {
           yManifestBin: yBin,
-        }
+        },
       });
+      break;
     }
 
     case SupportedDocumentType.Artifact: {
@@ -50,6 +51,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         oldYBinB64: artifact.yBin.toString('base64'),
         newYBinB64: yBin.toString('base64'),
       });
+      break;
     }
   }
 }

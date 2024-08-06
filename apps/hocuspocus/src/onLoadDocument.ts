@@ -8,9 +8,9 @@ import { SupportedDocumentType } from './SupportedDocumentType';
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   const [type, identifier] = splitDocumentName(args.documentName);
 
-  switch(type) {
+  switch (type) {
     case SupportedDocumentType.Artifact: {
-      let artifact = await prisma.artifact.findUnique({
+      const artifact = await prisma.artifact.findUnique({
         where: {
           id: identifier,
         },
@@ -33,33 +33,21 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
 
       Y.applyUpdate(args.document, artifact.yBin);
       return args.document;
-
-      // const newDoc = new Y.Doc();
-      // await prisma.artifact.create({
-      //   data: {
-      //     id: identifier,
-      //     userId: args.context.userId,
-      //     yBin:
-      //   }
-      //
-      // });
-      //
-      // return args.document;
     }
 
     // TODO: remove this since we don't want to do manifest using ydoc
     case SupportedDocumentType.Manifest: {
       const user = await prisma.user.findUnique({
         where: {
-          id: identifier
+          id: identifier,
         },
         select: {
           yManifestBin: true,
-        }
+        },
       });
 
       if (!user) {
-        console.error("User not found");
+        console.error('User not found');
         throw new Error();
       }
 

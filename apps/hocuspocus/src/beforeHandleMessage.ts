@@ -1,7 +1,5 @@
 import { beforeHandleMessagePayload } from '@hocuspocus/server';
 
-import { yArtifactMetaSchema } from '@feynote/api-services';
-import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 
@@ -12,9 +10,10 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
     case SupportedDocumentType.Manifest: {
       if (identifier !== args.context.userId) {
         // Users can only connect to their own manifests
-        console.error("User not authorized for manifest");
+        console.error('User not authorized for manifest');
         throw new Error();
       }
+      break;
     }
 
     case SupportedDocumentType.Artifact: {
@@ -30,6 +29,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
       // yArtifactMetaSchema.parse(artifactMeta);
 
       // TODO: validate entire yDoc schema
+      break;
     }
   }
 }

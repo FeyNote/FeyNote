@@ -1,10 +1,27 @@
-import { HocuspocusProvider, HocuspocusProviderWebsocket } from '@hocuspocus/provider';
+import {
+  HocuspocusProvider,
+  HocuspocusProviderWebsocket,
+} from '@hocuspocus/provider';
 import { getApiUrls } from '../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc, decodeUpdate, type YEvent } from 'yjs';
-import MiniSearch, { type Options, type Query, type SearchResult } from 'minisearch';
+import MiniSearch, {
+  type Options,
+  type Query,
+  type SearchResult,
+} from 'minisearch';
 import { openDB, deleteDB, wrap, unwrap, IDBPDatabase } from 'idb';
-import { ARTIFACT_META_KEY, ARTIFACT_TIPTAP_BODY_KEY, ArtifactTheme, ArtifactType, getJSONContentMapById, getMetaFromYArtifact, getReferencesFromJSONContent, getTextForJSONContent, getTiptapContentFromYjsDoc } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  ArtifactTheme,
+  ArtifactType,
+  getJSONContentMapById,
+  getMetaFromYArtifact,
+  getReferencesFromJSONContent,
+  getTextForJSONContent,
+  getTiptapContentFromYjsDoc,
+} from '@feynote/shared-utils';
 import { trpc } from '../../utils/trpc';
 import { t } from 'i18next';
 import { TRPCClientError } from '@trpc/client';
@@ -13,8 +30,8 @@ const ENABLE_VERBOSE_SYNC_LOGGING = true;
 const ENABLE_VERBOSE_INDEX_LOGGING = true;
 
 /**
-  * Abitrary integers to represent important version numbers
-  */
+ * Abitrary integers to represent important version numbers
+ */
 const SIGNIFICANT_VERSION_CODES = {
   CREATED_LOCALLY: -201000,
 } as const;
@@ -22,18 +39,18 @@ const SIGNIFICANT_VERSION_CODES = {
 const MANIFEST_SYNC_INTERVAL_MS = 60 * 1000;
 const ARTIFACT_SYNC_TIMEOUT_MS = 5000;
 /**
-  * The amount of debounce time before saving the search index to disk.
-  * Time re-extends by this amount every time a change is made to the index.
-  */
+ * The amount of debounce time before saving the search index to disk.
+ * Time re-extends by this amount every time a change is made to the index.
+ */
 const SEARCH_DB_SAVE_TIMEOUT_MS = 10 * 1000;
 /**
-  * The maximum allowable float time that the search index won't be saved to disk.
-  * Effectively a cap for SEARCH_DB_SAVE_TIMEOUT_MS.
-  */
+ * The maximum allowable float time that the search index won't be saved to disk.
+ * Effectively a cap for SEARCH_DB_SAVE_TIMEOUT_MS.
+ */
 const SEARCH_DB_SAVE_MAX_TIMEOUT_MS = 2 * 60 * 1000;
 /**
-  * How many artifacts to sync at once
-  */
+ * How many artifacts to sync at once
+ */
 const SYNC_BATCH_SIZE = 5;
 
 const getTiptapIdsFromYEvent = (yEvent: YEvent<any>) => {
@@ -41,14 +58,14 @@ const getTiptapIdsFromYEvent = (yEvent: YEvent<any>) => {
   const getIdsFromChangeTarget = (node: any): string[] => {
     const ids: string[] = [];
 
-    if (node.getAttribute?.("id")) {
-      ids.push(node.getAttribute?.("id"));
+    if (node.getAttribute?.('id')) {
+      ids.push(node.getAttribute?.('id'));
     }
 
     if (node.parent) ids.push(...getIdsFromChangeTarget(node.parent));
 
     return ids;
-  }
+  };
 
   // From yjs delta format, we grab all ids up the tree stored as attributes by tiptap
   const getIdsFromDelta = (delta: any): string[] => {
@@ -56,29 +73,34 @@ const getTiptapIdsFromYEvent = (yEvent: YEvent<any>) => {
 
     if (!delta.content) return ids;
 
-    for (const content of delta.content?.getContent()) {
-      ids.push(content._map?.get("id")?.content.getContent()[0]);
+    const yContents = delta.content?.getContent();
+    if (!yContents) return ids;
+
+    for (const content of yContents) {
+      ids.push(content._map?.get('id')?.content.getContent()[0]);
 
       if (content.parent) ids.push(...getIdsFromDelta(content.parent));
     }
 
     return ids;
-  }
+  };
 
   // I don't completely understand why, but sometimes when
   // tiptap updates the ID for an existing node to a different ID,
   // the id gets put in this yEvent keys map
-  const directId = yEvent.changes.keys.get("id")?.oldValue;
+  const directId = yEvent.changes.keys.get('id')?.oldValue;
 
   // Delta captures any added or removed nodes
-  const deltaAddRemoveIds = [...yEvent.changes.added, ...yEvent.changes.deleted].map(getIdsFromDelta).flat();
+  const deltaAddRemoveIds = [...yEvent.changes.added, ...yEvent.changes.deleted]
+    .map(getIdsFromDelta)
+    .flat();
 
   // The change target must be used to cover when edits inside of a node are made, since
   // delta records only relative positions of edits
   const changeTargetIds = getIdsFromChangeTarget(yEvent.target);
 
   return [directId, ...changeTargetIds, ...deltaAddRemoveIds];
-}
+};
 
 interface YConnection {
   doc: Doc;
@@ -107,7 +129,7 @@ class ConnectionTrackingManager {
 export const SearchWildcard: typeof MiniSearch.wildcard = MiniSearch.wildcard;
 
 class SyncManager {
-  private syncing: boolean = false;
+  private syncing = false;
   private syncInterval: NodeJS.Timeout;
 
   constructor(
@@ -129,13 +151,13 @@ class SyncManager {
 
   private async syncManifest(): Promise<void> {
     if (this.syncing) {
-      console.log("Sync already in progress");
+      console.log('Sync already in progress');
       return;
     }
 
-    performance.mark("startSync");
+    performance.mark('startSync');
 
-    console.log("Syncing!");
+    console.log('Syncing!');
     this.syncing = true;
 
     await this.searchManager.onReady();
@@ -144,36 +166,42 @@ class SyncManager {
       const latestManifest = await trpc.user.syncManifest.query();
 
       // ==== Update Artifact References ====
-      const localEdges = await this.manifestDb.getAll("edges");
-      console.log("sync localEdges", localEdges, latestManifest.edges);
+      const localEdges = await this.manifestDb.getAll('edges');
+      console.log('sync localEdges', localEdges, latestManifest.edges);
       const localEdgeIds = new Set(localEdges.map((edge) => edge.id));
-      const remoteEdgeIds = new Set(latestManifest.edges.map((edge) => `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`));
+      const remoteEdgeIds = new Set(
+        latestManifest.edges.map(
+          (edge) =>
+            `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`,
+        ),
+      );
 
       for (const edge of latestManifest.edges) {
         const edgeId = `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`;
         if (localEdgeIds.has(edgeId)) {
-          await this.manifestDb.put("edges", {
+          await this.manifestDb.put('edges', {
             ...edge,
-            targetArtifactBlockId: edge.targetArtifactBlockId || "",
-            id: edgeId
+            targetArtifactBlockId: edge.targetArtifactBlockId || '',
+            id: edgeId,
           });
         } else {
-          await this.manifestDb.add("edges", {
+          await this.manifestDb.add('edges', {
             ...edge,
-            targetArtifactBlockId: edge.targetArtifactBlockId || "",
-            id: edgeId
+            targetArtifactBlockId: edge.targetArtifactBlockId || '',
+            id: edgeId,
           });
         }
       }
 
       for (const edgeId of localEdgeIds) {
         if (!remoteEdgeIds.has(edgeId)) {
-          await this.manifestDb.delete("edges", edgeId);
+          await this.manifestDb.delete('edges', edgeId);
         }
       }
 
       // ==== Update Artifacts ====
-      const localArtifactVersionsRecords = await this.manifestDb.getAll("artifactVersions");
+      const localArtifactVersionsRecords =
+        await this.manifestDb.getAll('artifactVersions');
       const localArtifactVersions: Record<string, number> = {};
       for (const record of localArtifactVersionsRecords) {
         localArtifactVersions[record.artifactId] = record.version;
@@ -181,74 +209,103 @@ class SyncManager {
 
       const needsSync = new Set<string>();
 
-      for (const [artifactId, version] of Object.entries(latestManifest.artifactVersions)) {
+      for (const [artifactId, version] of Object.entries(
+        latestManifest.artifactVersions,
+      )) {
         if (!localArtifactVersions[artifactId]) {
           // Exists on server, but does not exist on client
-          await this.manifestDb.add("artifactVersions", {
-            artifactId,
-            version
-          });
-          needsSync.add(artifactId);
-          if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Adding ${artifactId} to sync queue because it's not present locally`);
-        } else if (localArtifactVersions[artifactId] !== version) {
-          // Exists on server, but versions do not match
-          await this.manifestDb.put("artifactVersions", {
+          await this.manifestDb.add('artifactVersions', {
             artifactId,
             version,
           });
           needsSync.add(artifactId);
-          if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Adding ${artifactId} to sync queue because the local version does not match the server version`);
+          if (ENABLE_VERBOSE_SYNC_LOGGING)
+            console.log(
+              `Adding ${artifactId} to sync queue because it's not present locally`,
+            );
+        } else if (localArtifactVersions[artifactId] !== version) {
+          // Exists on server, but versions do not match
+          await this.manifestDb.put('artifactVersions', {
+            artifactId,
+            version,
+          });
+          needsSync.add(artifactId);
+          if (ENABLE_VERBOSE_SYNC_LOGGING)
+            console.log(
+              `Adding ${artifactId} to sync queue because the local version does not match the server version`,
+            );
         }
       }
 
       const searchIndexKnownArtifactIds = this.searchManager.getKnownIndexIds();
-      for (const [artifactId] of Object.entries(latestManifest.artifactVersions)) {
+      for (const [artifactId] of Object.entries(
+        latestManifest.artifactVersions,
+      )) {
         if (!searchIndexKnownArtifactIds.has(artifactId)) {
           // Exists on server but not in local search index
           needsSync.add(artifactId);
-          if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Adding ${artifactId} to sync queue because it's missing in local search index`);
+          if (ENABLE_VERBOSE_SYNC_LOGGING)
+            console.log(
+              `Adding ${artifactId} to sync queue because it's missing in local search index`,
+            );
         }
       }
       for (const artifactId of searchIndexKnownArtifactIds.keys()) {
-        if (!latestManifest.artifactVersions[artifactId] && localArtifactVersions[artifactId] !== SIGNIFICANT_VERSION_CODES.CREATED_LOCALLY) {
+        if (
+          !latestManifest.artifactVersions[artifactId] &&
+          localArtifactVersions[artifactId] !==
+            SIGNIFICANT_VERSION_CODES.CREATED_LOCALLY
+        ) {
           // Exists in local search index but not on server, and is not waiting to be created on the server
           await this.searchManager.unindexArtifact(artifactId);
-          if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Deindexing ${artifactId} because it's not on the manifest`);
+          if (ENABLE_VERBOSE_SYNC_LOGGING)
+            console.log(
+              `Deindexing ${artifactId} because it's not on the manifest`,
+            );
         }
       }
 
-      for (const [artifactId, version] of Object.entries(localArtifactVersions)) {
+      for (const [artifactId, version] of Object.entries(
+        localArtifactVersions,
+      )) {
         if (!latestManifest.artifactVersions[artifactId]) {
           // Exists on client, but does not exist on server
 
           // If artifact was not created locally & therefore awaiting a sync, we can nuke it locally
           if (version !== SIGNIFICANT_VERSION_CODES.CREATED_LOCALLY) {
             // TODO: we should probably clean up any open connections and potentially idb storage of y artifact
-            await this.manifestDb.delete("artifactVersions", artifactId);
+            await this.manifestDb.delete('artifactVersions', artifactId);
             await this.searchManager.unindexArtifact(artifactId);
-            if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Deleting ${artifactId} because it's not on the manifest`);
+            if (ENABLE_VERBOSE_SYNC_LOGGING)
+              console.log(
+                `Deleting ${artifactId} because it's not on the manifest`,
+              );
             return;
           }
 
           try {
-            if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Creating ${artifactId} because it's marked as created locally`);
+            if (ENABLE_VERBOSE_SYNC_LOGGING)
+              console.log(
+                `Creating ${artifactId} because it's marked as created locally`,
+              );
             await trpc.artifact.createArtifact.mutate({
               id: artifactId,
             });
             // We mark the artifact as no longer "created locally" and therefore synced
-            await this.manifestDb.put("artifactVersions", {
+            await this.manifestDb.put('artifactVersions', {
               artifactId,
               version: 1,
             });
             needsSync.add(artifactId);
-          } catch(e) {
-            if (ENABLE_VERBOSE_SYNC_LOGGING) console.log(`Failed to create ${artifactId} on the server`);
+          } catch (e) {
+            if (ENABLE_VERBOSE_SYNC_LOGGING)
+              console.log(`Failed to create ${artifactId} on the server`);
             // TODO: report to sentry
             if (e instanceof TRPCClientError) {
               const statusCode = e.data?.httpStatus || 500;
               if (statusCode === 409) {
                 // Mr. Stark I don't feel so good...
-                alert("critical sync error");
+                alert('critical sync error');
                 // await this.manifestDb.delete("artifactVersions", artifactId);
               }
             }
@@ -259,7 +316,8 @@ class SyncManager {
       }
 
       for (const id of needsSync) {
-        if (this.connectionTrackingManager.isOpen(this.getDocName(id))) needsSync.delete(id);
+        if (this.connectionTrackingManager.isOpen(this.getDocName(id)))
+          needsSync.delete(id);
       }
 
       if (needsSync.size) {
@@ -290,7 +348,7 @@ class SyncManager {
           const _cleanupFns = await Promise.all(
             batch.map((artifactId) => {
               return this.sync(artifactId, ws);
-            })
+            }),
           );
           cleanupFns.push(..._cleanupFns);
         }
@@ -300,24 +358,25 @@ class SyncManager {
         ws.destroy();
       }
 
-      performance.mark("endSync");
-      const measure = performance.measure(
-        "syncTime",
-        "startSync",
-        "endSync"
+      performance.mark('endSync');
+      const measure = performance.measure('syncTime', 'startSync', 'endSync');
+      console.log(
+        `Syncing completed in ${measure.duration}ms. ${needsSync.size} items attempted.`,
       );
-      console.log(`Syncing completed in ${measure.duration}ms. ${needsSync.size} items attempted.`);
-    } catch(e) {
-      console.error("Sync failed", e);
+    } catch (e) {
+      console.error('Sync failed', e);
     }
 
     this.syncing = false;
   }
 
-  private async sync(artifactId: string, ws: HocuspocusProviderWebsocket): Promise<(() => Promise<void>) | undefined> {
+  private async sync(
+    artifactId: string,
+    ws: HocuspocusProviderWebsocket,
+  ): Promise<(() => Promise<void>) | undefined> {
     const docName = this.getDocName(artifactId);
     if (this.connectionTrackingManager.isOpen(docName)) return;
-    console.log("Syncing", docName);
+    console.log('Syncing', docName);
     this.connectionTrackingManager.open(docName);
     const doc = new Doc();
     const indexeddbProvider = new IndexeddbPersistence(docName, doc);
@@ -338,23 +397,29 @@ class SyncManager {
       const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
 
       if (!this.searchManager.getKnownIndexIds().has(artifactId)) {
-        await this.searchManager.indexPartialArtifact(artifactId, doc, "all");
+        await this.searchManager.indexPartialArtifact(artifactId, doc, 'all');
       } else {
-        await this.searchManager.indexPartialArtifact(artifactId, doc, changedIds);
+        await this.searchManager.indexPartialArtifact(
+          artifactId,
+          doc,
+          changedIds,
+        );
       }
     };
     // TODO: this observeDeep call likely picks up every single applied change even from our own IndexeddbPersistence provider
     // not just incoming changes from the HocuspocusProvider
-    doc.getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY).observeDeep(docObserveListener);
+    doc
+      .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
+      .observeDeep(docObserveListener);
     doc.getMap(ARTIFACT_META_KEY).observeDeep(metaObserveListener);
 
     const idbSyncP = new Promise<void>((resolve) => {
-      indexeddbProvider.on("synced", () => {
+      indexeddbProvider.on('synced', () => {
         resolve();
       });
     });
     const ttpSyncP = new Promise<void>((resolve) => {
-      tiptapCollabProvider.on("synced", () => {
+      tiptapCollabProvider.on('synced', () => {
         resolve();
       });
     });
@@ -366,26 +431,30 @@ class SyncManager {
 
     const result = await Promise.race([
       timeout,
-      Promise.all([idbSyncP, ttpSyncP])
+      Promise.all([idbSyncP, ttpSyncP]),
     ]);
 
     if (result === false) {
-      console.error(`Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`);
+      console.error(
+        `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
+      );
     }
 
     return async () => {
-      doc.getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY).unobserveDeep(docObserveListener);
+      doc
+        .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
+        .unobserveDeep(docObserveListener);
       doc.getMap(ARTIFACT_META_KEY).unobserveDeep(metaObserveListener);
       tiptapCollabProvider.destroy();
       await indexeddbProvider.destroy();
       this.connectionTrackingManager.close(docName);
-    }
+    };
   }
 
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
-    const record = await this.manifestDb.get("artifactVersions", artifactId);
+    const record = await this.manifestDb.get('artifactVersions', artifactId);
     if (record && record.version > 0) {
-      await this.manifestDb.put("artifactVersions", {
+      await this.manifestDb.put('artifactVersions', {
         artifactId,
         version: record.version + 1,
       });
@@ -399,50 +468,58 @@ class SyncManager {
 
 class SearchManager {
   private miniSearch: MiniSearch;
-  private knownBlockIdsByArtifactId = new Map<string, Set<string | undefined>>();
+  private knownBlockIdsByArtifactId = new Map<
+    string,
+    Set<string | undefined>
+  >();
   private miniSearchOptions = {
-    fields: ["text"],
-    storeFields: ["artifactId", "blockId", "artifactTitle", "previewText"],
+    fields: ['text'],
+    storeFields: ['artifactId', 'blockId', 'artifactTitle', 'previewText'],
   } satisfies Options;
   private initPromise = this.populateFromLocalDb();
   private saveTimeout: NodeJS.Timeout | undefined;
   private maxSaveTimeout: NodeJS.Timeout | undefined;
 
-  constructor(
-    private manifestDb: IDBPDatabase,
-  ) {
+  constructor(private manifestDb: IDBPDatabase) {
     this.miniSearch = new MiniSearch(this.miniSearchOptions);
   }
 
   search(text: Query): SearchResult[] {
-    return Array.from(this.miniSearch.search(text, {
-      prefix: true,
-    }));
+    return Array.from(
+      this.miniSearch.search(text, {
+        prefix: true,
+      }),
+    );
   }
 
   async populateFromLocalDb() {
-    performance.mark("startIndexLoad");
+    performance.mark('startIndexLoad');
 
-    const indexRecord = await this.manifestDb.get("searchIndex", "index");
+    const indexRecord = await this.manifestDb.get('searchIndex', 'index');
 
     if (!indexRecord) return;
 
     try {
       // TODO: This takes a while in Chrome, but
-      this.miniSearch = await MiniSearch.loadJSONAsync(indexRecord.value, this.miniSearchOptions);
+      this.miniSearch = await MiniSearch.loadJSONAsync(
+        indexRecord.value,
+        this.miniSearchOptions,
+      );
 
       this.repopulateKnownIds();
-    } catch(e) {
-      console.error("Failed to load MiniSearch index from local DB", e);
+    } catch (e) {
+      console.error('Failed to load MiniSearch index from local DB', e);
     }
 
-    performance.mark("endIndexLoad");
+    performance.mark('endIndexLoad');
     const measure = performance.measure(
-      "indexLoadTime",
-      "startIndexLoad",
-      "endIndexLoad"
+      'indexLoadTime',
+      'startIndexLoad',
+      'endIndexLoad',
     );
-    console.log(`Loading index took ${measure.duration}ms. ${this.knownBlockIdsByArtifactId.size} artifacts loaded.`);
+    console.log(
+      `Loading index took ${measure.duration}ms. ${this.knownBlockIdsByArtifactId.size} artifacts loaded.`,
+    );
   }
 
   repopulateKnownIds() {
@@ -450,9 +527,15 @@ class SearchManager {
 
     this.knownBlockIdsByArtifactId = new Map();
     for (const storedField of storedFields) {
-      const existing = this.knownBlockIdsByArtifactId.get(storedField.artifactId);
+      const existing = this.knownBlockIdsByArtifactId.get(
+        storedField.artifactId,
+      );
       if (existing) existing.add(storedField.blockId);
-      else this.knownBlockIdsByArtifactId.set(storedField.artifactId, new Set([storedField.blockId]));
+      else
+        this.knownBlockIdsByArtifactId.set(
+          storedField.artifactId,
+          new Set([storedField.blockId]),
+        );
     }
   }
 
@@ -465,16 +548,16 @@ class SearchManager {
   }
 
   /**
-    * Helps get around the fact that _storedFields is a protected property
-    * and we don't want to have a ts-ignore floating everywhere
-    */
+   * Helps get around the fact that _storedFields is a protected property
+   * and we don't want to have a ts-expect-error floating everywhere
+   */
   private getStoredFields(): IterableIterator<{
-    artifactId: string,
-    blockId: string | undefined,
-    previewText: string,
-    artifactTitle: string | undefined,
+    artifactId: string;
+    blockId: string | undefined;
+    previewText: string;
+    artifactTitle: string | undefined;
   }> {
-    // @ts-ignore
+    // @ts-expect-error _storedFields is a protected property
     return this.miniSearch._storedFields.values();
   }
 
@@ -486,7 +569,9 @@ class SearchManager {
     return this.knownBlockIdsByArtifactId;
   }
 
-  getKnownIdsForArtifact(artifactId: string): ReadonlySet<string | undefined> | undefined {
+  getKnownIdsForArtifact(
+    artifactId: string,
+  ): ReadonlySet<string | undefined> | undefined {
     return this.knownBlockIdsByArtifactId.get(artifactId);
   }
 
@@ -496,7 +581,9 @@ class SearchManager {
     const blockIds = this.knownBlockIdsByArtifactId.get(artifactId);
     if (!blockIds) return;
 
-    const indexIds = [...blockIds].map((blockId) => this.getIndexId(artifactId, blockId));
+    const indexIds = [...blockIds].map((blockId) =>
+      this.getIndexId(artifactId, blockId),
+    );
     this.miniSearch.discardAll(indexIds);
     this.knownBlockIdsByArtifactId.delete(artifactId);
 
@@ -504,19 +591,26 @@ class SearchManager {
   }
 
   /**
-    * Indexes the artifact title. Indexes/deindexes blockIds passed accordingly.
-    * Passed blockIds can be blockIds that have been added or removed.
-    *
-    * Note: Still not particularly efficient, so reduce calls where possible
-    * Avoid using "all" for blockIds if possible, since it must cause a full re-index for that artifact
-    */
-  async indexPartialArtifact(artifactId: string, doc: Doc, blockIds: string[] | "all"): Promise<void> {
+   * Indexes the artifact title. Indexes/deindexes blockIds passed accordingly.
+   * Passed blockIds can be blockIds that have been added or removed.
+   *
+   * Note: Still not particularly efficient, so reduce calls where possible
+   * Avoid using "all" for blockIds if possible, since it must cause a full re-index for that artifact
+   */
+  async indexPartialArtifact(
+    artifactId: string,
+    doc: Doc,
+    blockIds: string[] | 'all',
+  ): Promise<void> {
     await this.initPromise;
 
-    const artifactJsonContent = getTiptapContentFromYjsDoc(doc, ARTIFACT_TIPTAP_BODY_KEY);
+    const artifactJsonContent = getTiptapContentFromYjsDoc(
+      doc,
+      ARTIFACT_TIPTAP_BODY_KEY,
+    );
     const jsonContentById = getJSONContentMapById(artifactJsonContent);
 
-    if (blockIds === "all") {
+    if (blockIds === 'all') {
       // We have to unindex because we don't know what _doesn't_ exist in the artifact
       await this.unindexArtifact(artifactId);
       blockIds = Object.keys(jsonContentById);
@@ -561,7 +655,10 @@ class SearchManager {
       }
     }
 
-    if (ENABLE_VERBOSE_INDEX_LOGGING) console.log(`Updating search index for ${artifactId}, ${blockIds.length} blocks to update`);
+    if (ENABLE_VERBOSE_INDEX_LOGGING)
+      console.log(
+        `Updating search index for ${artifactId}, ${blockIds.length} blocks to update`,
+      );
 
     for (const blockId of blockIds) {
       const blockIndexId = this.getIndexId(artifactId, blockId);
@@ -613,15 +710,15 @@ class SearchManager {
     clearTimeout(this.saveTimeout);
     clearTimeout(this.maxSaveTimeout);
 
-    if (await this.manifestDb.get("searchIndex", "index")) {
-      await this.manifestDb.put("searchIndex", {
-        id: "index",
-        value: JSON.stringify(this.miniSearch)
+    if (await this.manifestDb.get('searchIndex', 'index')) {
+      await this.manifestDb.put('searchIndex', {
+        id: 'index',
+        value: JSON.stringify(this.miniSearch),
       });
     } else {
-      await this.manifestDb.add("searchIndex", {
-        id: "index",
-        value: JSON.stringify(this.miniSearch)
+      await this.manifestDb.add('searchIndex', {
+        id: 'index',
+        value: JSON.stringify(this.miniSearch),
       });
     }
   }
@@ -634,26 +731,24 @@ class SearchManager {
 }
 
 interface EdgeIdentifier {
-  artifactId: string,
-  artifactBlockId: string,
-  targetArtifactId: string,
-  targetArtifactBlockId: string | undefined,
+  artifactId: string;
+  artifactBlockId: string;
+  targetArtifactId: string;
+  targetArtifactBlockId: string | undefined;
 }
 
 interface Edge extends EdgeIdentifier {
-  referenceText: string,
+  referenceText: string;
 }
 
 class EdgeManager {
-  constructor(
-    private manifestDb: IDBPDatabase,
-  ) {}
+  constructor(private manifestDb: IDBPDatabase) {}
 
   getEdgeId(edge: {
-    artifactId: string,
-    artifactBlockId: string
-    targetArtifactId: string,
-    targetArtifactBlockId: string | undefined,
+    artifactId: string;
+    artifactBlockId: string;
+    targetArtifactId: string;
+    targetArtifactBlockId: string | undefined;
   }): string {
     return `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`;
   }
@@ -661,14 +756,18 @@ class EdgeManager {
   async getEdge(identifier: EdgeIdentifier): Promise<Edge | undefined> {
     const edgeId = this.getEdgeId(identifier);
 
-    const edge = await this.manifestDb.get("edges", edgeId);
+    const edge = await this.manifestDb.get('edges', edgeId);
 
     return edge;
   }
 
   async getOutgoingEdges(artifactId: string): Promise<Edge[]> {
-    const edges = await this.manifestDb.getAllFromIndex("edges", "artifactId", artifactId);
-    console.log("getting", edges);
+    const edges = await this.manifestDb.getAllFromIndex(
+      'edges',
+      'artifactId',
+      artifactId,
+    );
+    console.log('getting', edges);
 
     return edges;
   }
@@ -676,16 +775,16 @@ class EdgeManager {
   async upsertEdge(edge: Edge): Promise<void> {
     const id = this.getEdgeId(edge);
 
-    if (await this.manifestDb.get("edges", id)) {
-      await this.manifestDb.put("edges", edge, id);
+    if (await this.manifestDb.get('edges', id)) {
+      await this.manifestDb.put('edges', edge, id);
     } else {
-      await this.manifestDb.add("edges", edge, id);
+      await this.manifestDb.add('edges', edge, id);
     }
   }
 
   async deleteEdge(edge: EdgeIdentifier): Promise<void> {
     const id = this.getEdgeId(edge);
-    await this.manifestDb.delete("edges", id);
+    await this.manifestDb.delete('edges', id);
   }
 
   async updateEdgesReferenceText(
@@ -695,9 +794,17 @@ class EdgeManager {
   ): Promise<void> {
     let edges;
     if (targetArtifactBlockId) {
-      edges = await this.manifestDb.getAllFromIndex("edges", "targetArtifactId, targetArtifactBlockId", [targetArtifactId, targetArtifactBlockId]);
+      edges = await this.manifestDb.getAllFromIndex(
+        'edges',
+        'targetArtifactId, targetArtifactBlockId',
+        [targetArtifactId, targetArtifactBlockId],
+      );
     } else {
-      edges = await this.manifestDb.getAllFromIndex("edges", "targetArtifactId", [targetArtifactId]);
+      edges = await this.manifestDb.getAllFromIndex(
+        'edges',
+        'targetArtifactId',
+        [targetArtifactId],
+      );
     }
 
     for (const edge of edges) {
@@ -707,12 +814,19 @@ class EdgeManager {
         referenceText,
       };
 
-      await this.manifestDb.put("edges", updatedEdge, id);
+      await this.manifestDb.put('edges', updatedEdge, id);
     }
   }
 
-  async updateEdgesForYDoc(artifactId: string, doc: Doc, updatedBlockIds: string[]): Promise<void> {
-    const artifactJsonContent = getTiptapContentFromYjsDoc(doc, ARTIFACT_TIPTAP_BODY_KEY);
+  async updateEdgesForYDoc(
+    artifactId: string,
+    doc: Doc,
+    updatedBlockIds: string[],
+  ): Promise<void> {
+    const artifactJsonContent = getTiptapContentFromYjsDoc(
+      doc,
+      ARTIFACT_TIPTAP_BODY_KEY,
+    );
     const jsonContentById = getJSONContentMapById(artifactJsonContent);
 
     // ==== Update Incoming References ====
@@ -730,11 +844,7 @@ class EdgeManager {
 
       const text = getTextForJSONContent(jsonContent);
 
-      await this.updateEdgesReferenceText(
-        artifactId,
-        updatedBlockId,
-        text,
-      );
+      await this.updateEdgesReferenceText(artifactId, updatedBlockId, text);
     }
 
     // TODO: We currently don't update outgoing references locally, and instead
@@ -764,7 +874,7 @@ export class YManager {
     private userId: string,
     private token: string,
     private manifestDb: IDBPDatabase,
-    onReady: () => void
+    onReady: () => void,
   ) {
     this.ws = new HocuspocusProviderWebsocket({
       url: getApiUrls().hocuspocus,
@@ -774,7 +884,12 @@ export class YManager {
     });
 
     this.searchManager = new SearchManager(this.manifestDb);
-    this.syncManager = new SyncManager(this.manifestDb, this.searchManager, this.connectionTrackingManager, this.token);
+    this.syncManager = new SyncManager(
+      this.manifestDb,
+      this.searchManager,
+      this.connectionTrackingManager,
+      this.token,
+    );
     this.edgeManager = new EdgeManager(this.manifestDb);
 
     // TODO: evaluate whether we want to signal readiness later (once search index initialized?)
@@ -784,27 +899,41 @@ export class YManager {
   connectArtifact(artifactId: string): YConnection {
     const docName = `artifact:${artifactId}`;
     this.connectionTrackingManager.open(docName);
-    const existingConnection = this.openArtifacts.find((openArtifact) => openArtifact.artifactId === artifactId);
+    const existingConnection = this.openArtifacts.find(
+      (openArtifact) => openArtifact.artifactId === artifactId,
+    );
     if (existingConnection) {
       return existingConnection.connection;
     }
 
     const newConnection = {
       artifactId,
-      connection: this.createConnection(docName)
-    }
+      connection: this.createConnection(docName),
+    };
 
-    newConnection.connection.doc.getMap(ARTIFACT_META_KEY).observeDeep(async () => {
-      await this.searchManager.indexPartialArtifact(artifactId, newConnection.connection.doc, []);
-      await this.syncManager.incrementLocalArtifactVersion(artifactId);
-    });
+    newConnection.connection.doc
+      .getMap(ARTIFACT_META_KEY)
+      .observeDeep(async () => {
+        await this.searchManager.indexPartialArtifact(
+          artifactId,
+          newConnection.connection.doc,
+          [],
+        );
+        await this.syncManager.incrementLocalArtifactVersion(artifactId);
+      });
 
-    newConnection.connection.doc.getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY).observeDeep(async (yEvents) => {
-      const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
+    newConnection.connection.doc
+      .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
+      .observeDeep(async (yEvents) => {
+        const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
 
-      await this.searchManager.indexPartialArtifact(artifactId, newConnection.connection.doc, changedIds);
-      await this.syncManager.incrementLocalArtifactVersion(artifactId);
-    });
+        await this.searchManager.indexPartialArtifact(
+          artifactId,
+          newConnection.connection.doc,
+          changedIds,
+        );
+        await this.syncManager.incrementLocalArtifactVersion(artifactId);
+      });
 
     this.openArtifacts.push(newConnection);
 
@@ -834,37 +963,41 @@ export class YManager {
 
     const idbSyncListener = () => {
       connection.indexeddbProviderSynced = true;
-    }
-    indexeddbProvider.on("sync", idbSyncListener);
+    };
+    indexeddbProvider.on('sync', idbSyncListener);
 
     const wsSyncListener = () => {
       connection.tiptapCollabProviderSynced = true;
-    }
-    tiptapCollabProvider.on("sync", wsSyncListener);
+    };
+    tiptapCollabProvider.on('sync', wsSyncListener);
 
     return connection;
   }
 
   async isArtifactOnManifest(artifactId: string): Promise<boolean> {
-    const entry = await this.manifestDb.getFromIndex("artifactVersions", "artifactId", artifactId);
+    const entry = await this.manifestDb.getFromIndex(
+      'artifactVersions',
+      'artifactId',
+      artifactId,
+    );
 
     return !!entry;
   }
 
   async createArtifact(params: {
-    title: string,
-    type: ArtifactType,
-    theme: ArtifactTheme,
+    title: string;
+    type: ArtifactType;
+    theme: ArtifactTheme;
   }): Promise<string> {
     const id = crypto.randomUUID();
 
     const conn = this.connectArtifact(id);
     const yMeta = conn.doc.getMap(ARTIFACT_META_KEY);
-    yMeta.set("title", params.title);
-    yMeta.set("type", params.type);
-    yMeta.set("theme", params.theme);
+    yMeta.set('title', params.title);
+    yMeta.set('type', params.type);
+    yMeta.set('theme', params.theme);
 
-    this.manifestDb.add("artifactVersions", {
+    this.manifestDb.add('artifactVersions', {
       artifactId: id,
       version: SIGNIFICANT_VERSION_CODES.CREATED_LOCALLY,
     });
@@ -880,19 +1013,17 @@ export class YManager {
   }
 
   /**
-    * This method is labelled as async so that we have the potential for async behaviors later
-    */
+   * This method is labelled as async so that we have the potential for async behaviors later
+   */
   async search(text: Query): Promise<SearchResult[]> {
     return this.searchManager.search(text);
   }
 
   /**
-    * Gets all edges from this artifactId pointing outwards to other artifacts
-    */
+   * Gets all edges from this artifactId pointing outwards to other artifacts
+   */
   async getOutgoingEdges(artifactId: string): Promise<Edge[]> {
-    return this.edgeManager.getOutgoingEdges(
-      artifactId,
-    );
+    return this.edgeManager.getOutgoingEdges(artifactId);
   }
 
   // TODO: we don't currently disconnect from artifacts... ever. We probably want to reconsider that.
@@ -914,4 +1045,3 @@ export class YManager {
   //   this.openArtifacts.splice(0);
   // }
 }
-
