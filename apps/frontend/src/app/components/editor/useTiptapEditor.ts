@@ -94,17 +94,17 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       document: args.yDoc || args.yProvider.document,
       field: ARTIFACT_TIPTAP_BODY_KEY,
     }),
-    // ...(args.yProvider
-    //   ? [
-    //       CollaborationCursor.configure({
-    //         provider: args.yProvider,
-    //         user: {
-    //           name: session?.email || 'Anonymous',
-    //           color: '#f783ac', // TODO: randomize color with a preference setting
-    //         },
-    //       }),
-    //     ]
-    //   : []),
+    ...(args.yProvider
+      ? [
+          CollaborationCursor.configure({
+            provider: args.yProvider,
+            user: {
+              name: session?.email || 'Anonymous',
+              color: '#f783ac', // TODO: randomize color with a preference setting
+            },
+          }),
+        ]
+      : []),
     CommandsExtension,
     ArtifactReferencesExtension.configure({
       knownReferences: args.knownReferences,
