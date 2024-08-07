@@ -27,21 +27,21 @@ export const getArtifacts = authenticatedProcedure
     // We truncate text before sending to the client
     // since users could have thousands of artifacts with
     // very sizable contents
-    // artifacts.forEach((artifact) => {
-    //   const text = artifact.text
-    //     .split(/\n/)
-    //     .map((line) => line.trim())
-    //     .filter((line) => line)
-    //     .join('\n')
-    //     .replace(/\n/g, ' ');
-    //
-    //   let truncatedText = text.substring(0, PREVIEW_TEXT_LENGTH);
-    //   if (text.length > PREVIEW_TEXT_LENGTH) {
-    //     truncatedText += '...';
-    //   }
-    //
-    //   artifact.text = truncatedText;
-    // });
+    artifacts.forEach((artifact) => {
+      const text = artifact.text
+        .split(/\n/)
+        .map((line) => line.trim())
+        .filter((line) => line)
+        .join('\n')
+        .replace(/\n/g, ' ');
+
+      let truncatedText = text.substring(0, PREVIEW_TEXT_LENGTH);
+      if (text.length > PREVIEW_TEXT_LENGTH) {
+        truncatedText += '...';
+      }
+
+      artifact.text = truncatedText;
+    });
 
     return artifacts as ArtifactDetail[];
   });

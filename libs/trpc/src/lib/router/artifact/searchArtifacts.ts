@@ -9,7 +9,6 @@ export const searchArtifacts = authenticatedProcedure
     z.object({
       query: z.string(),
       limit: z.number().min(1).max(100).optional(),
-      withEmbeddings: z.boolean().optional(),
       isTemplate: z.boolean().optional(),
       isPinned: z.boolean().optional(),
     }),
@@ -19,7 +18,6 @@ export const searchArtifacts = authenticatedProcedure
     const resultArtifactIds = await searchProvider.searchArtifacts(
       ctx.session.userId,
       input.query,
-      input.withEmbeddings ?? true,
     );
 
     const artifacts = await prisma.artifact.findMany({
