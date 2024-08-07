@@ -1,29 +1,40 @@
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import {
+  HocuspocusProviderWebsocket,
+  TiptapCollabProvider,
+} from '@hocuspocus/provider';
 import { getApiUrls } from '../../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import * as Y from 'yjs';
 
 class ArtifactCollaborationManager {
-  connection?: {
-    artifactId: string;
-    token: string;
-    yjsDoc: Y.Doc;
-    tiptapCollabProvider: TiptapCollabProvider;
-    indexeddbProvider: IndexeddbPersistence;
-  };
+  private token = 'anonymous';
+
+  private ws = new HocuspocusProviderWebsocket({
+    url: '/hocuspocus',
+    delay: 1000,
+    minDelay: 1000,
+    maxDelay: 10000,
+  });
+
+  private connectionByArtifactId = new Map<
+    string,
+    {
+      artifactId: string;
+      token: string;
+      yjsDoc: Y.Doc;
+      tiptapCollabProvider: TiptapCollabProvider;
+      indexeddbProvider: IndexeddbPersistence;
+    }
+  >();
 
   get(artifactId: string, token = 'anonymous') {
-    if (
-      artifactId === this.connection?.artifactId &&
-      token === this.connection?.token
-    ) {
-      return this.connection;
+    if (token !== this.token) {
+      this.disconnectAll();
+      this.connectionByArtifactId.clear();
     }
 
-    if (this.connection) {
-      this.connection.indexeddbProvider.destroy();
-      this.connection.tiptapCollabProvider.destroy();
-    }
+    const existingConnection = this.connectionByArtifactId.get(artifactId);
+    if (existingConnection) return existingConnection;
 
     const yjsDoc = new Y.Doc();
     const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
@@ -32,15 +43,10 @@ class ArtifactCollaborationManager {
       baseUrl: getApiUrls().hocuspocus,
       document: yjsDoc,
       token,
-      // websocketProvider: new HocuspocusProviderWebsocket({
-      //   url: '/hocuspocus',
-      //   delay: 1000,
-      //   minDelay: 1000,
-      //   maxDelay: 10000,
-      // })
+      websocketProvider: this.ws,
     });
 
-    this.connection = {
+    const connection = {
       artifactId,
       token,
       yjsDoc,
@@ -48,11 +54,21 @@ class ArtifactCollaborationManager {
       indexeddbProvider,
     };
 
-    return this.connection;
+    this.connectionByArtifactId.set(artifactId, connection);
+
+    return connection;
+  }
+
+  disconnectAll() {
+    this.connectionByArtifactId.forEach((connection) => {
+      connection.indexeddbProvider.destroy();
+      connection.indexeddbProvider.destroy();
+    });
   }
 
   destroy() {
-    this.connection?.tiptapCollabProvider.destroy();
+    this.disconnectAll();
+    this.ws.destroy();
   }
 }
 
