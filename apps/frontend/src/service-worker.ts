@@ -1,12 +1,12 @@
 /* eslint-disable no-restricted-globals */
 
-import { openDB, deleteDB, wrap, unwrap, IDBPDatabase } from 'idb';
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
-import { superjson, trpc } from './utils/trpc';
+import { superjson } from './utils/trpc';
 import { SearchManager } from './utils/SearchManager';
 import { applyUpdate, Doc } from 'yjs';
+import { manifestDbP, ObjectStoreName } from './utils/localDb';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
@@ -21,36 +21,6 @@ self.addEventListener('install', () => {
 
 self.addEventListener('activate', () => {
   console.log('Service Worker activated');
-});
-
-enum ObjectStoreName {
-  Artifacts = 'artifacts',
-  ArtifactVersions = 'artifactVersions',
-  SearchIndex = 'searchIndex',
-}
-
-const manifestDbP = openDB(`manifest`, undefined, {
-  upgrade: (db) => {
-    console.log('Manifest DB version is:', db.version);
-
-    db.createObjectStore(ObjectStoreName.Artifacts, {
-      keyPath: 'id',
-    });
-
-    const artifactVersionsObjectStore = db.createObjectStore(
-      ObjectStoreName.ArtifactVersions,
-      {
-        keyPath: 'artifactId',
-      },
-    );
-    artifactVersionsObjectStore.createIndex('version', 'version', {
-      unique: false,
-    });
-
-    db.createObjectStore(ObjectStoreName.SearchIndex, {
-      keyPath: 'id',
-    });
-  },
 });
 
 const searchManagerP = manifestDbP.then(
