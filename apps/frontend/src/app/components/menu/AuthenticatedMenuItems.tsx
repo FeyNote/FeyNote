@@ -13,13 +13,13 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../../utils/trpc';
-import { ArtifactSummary } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { add } from 'ionicons/icons';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
 import { useLocation } from 'react-router-dom';
+import type { ArtifactDetail } from '@feynote/prisma/types';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -54,12 +54,12 @@ export const AuthenticatedMenuItems: React.FC = () => {
    * Re-render this component whenever navigation changes
    */
   const location = useLocation();
-  const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactSummary[]>([]);
+  const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDetail[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
     PINNED_ARTIFACTS_LIMIT_DEFAULT,
   );
   const [recentlyUpdatedArtifacts, setRecentlyUpdatedArtifacts] = useState<
-    ArtifactSummary[]
+    ArtifactDetail[]
   >([]);
   const [recentlyUpdatedArtifactsLimit, setRecentlyUpdatedArtifactsLimit] =
     useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);

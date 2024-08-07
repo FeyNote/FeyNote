@@ -6,7 +6,6 @@ export * from './lib/error';
 export * from './lib/artifacts/createArtifactRevision';
 export * from './lib/artifacts/getArtifactsForUserId';
 export * from './lib/artifacts/getArtifactDetailById';
-export * from './lib/artifacts/getArtifactSummariesByIds';
 export * from './lib/artifacts/updateArtifactContentReferenceText';
 export * from './lib/artifacts/updateArtifactTitleReferenceText';
 export * from './lib/artifacts/updateArtifactOutgoingReferences';

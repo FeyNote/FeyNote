@@ -16,7 +16,7 @@ import {
 import { close, documentText, documents } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { t } from 'i18next';
-import { ArtifactDetail, ArtifactSummary } from '@feynote/prisma/types';
+import { ArtifactDetail } from '@feynote/prisma/types';
 import { useEffect, useState } from 'react';
 import { RootTemplate } from './rootTemplates/rootTemplates.types';
 import { rootTemplates } from './rootTemplates/rootTemplates';
@@ -44,15 +44,15 @@ export const SelectTemplateModal: React.FC<SelectTemplateModalProps> = (
   const [presentAlert] = useIonAlert();
   const [searchText, setSearchText] = useState('');
 
-  const [artifactTemplates, setArtifactTemplates] = useState<ArtifactSummary[]>(
+  const [artifactTemplates, setArtifactTemplates] = useState<ArtifactDetail[]>(
     [],
   );
 
   const [rootTemplateResults, setRootTemplateResults] =
     useState<RootTemplate[]>(rootTemplates);
-  const [templateResults, setTemplateResults] = useState<ArtifactSummary[]>([]);
+  const [templateResults, setTemplateResults] = useState<ArtifactDetail[]>([]);
   const [nonTemplateResults, setNonTemplateResults] = useState<
-    ArtifactSummary[]
+    ArtifactDetail[]
   >([]);
 
   useEffect(() => {

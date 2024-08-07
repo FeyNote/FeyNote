@@ -1,4 +1,4 @@
-import { ArtifactSummary } from '@feynote/prisma/types';
+import { ArtifactDetail } from '@feynote/prisma/types';
 import {
   IonCard,
   IonCardContent,
@@ -15,7 +15,7 @@ const IonArtifactCard = styled(IonCard)`
 `;
 
 interface Props {
-  artifact: ArtifactSummary;
+  artifact: ArtifactDetail;
 }
 
 export const ArtifactCard: React.FC<Props> = ({ artifact }) => {

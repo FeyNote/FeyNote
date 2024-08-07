@@ -59,6 +59,20 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         targetArtifactBlockId: true,
       },
     },
+    artfactFiles: {
+      select: {
+        id: true,
+        fileId: true,
+        order: true,
+        file: {
+          select: {
+            filename: true,
+            storageKey: true,
+            mimetype: true,
+          },
+        },
+      },
+    },
   },
 });
 
