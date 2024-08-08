@@ -19,7 +19,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
 import { useLocation } from 'react-router-dom';
-import type { ArtifactDetail } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/prisma/types';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -54,12 +54,12 @@ export const AuthenticatedMenuItems: React.FC = () => {
    * Re-render this component whenever navigation changes
    */
   const location = useLocation();
-  const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDetail[]>([]);
+  const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDTO[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
     PINNED_ARTIFACTS_LIMIT_DEFAULT,
   );
   const [recentlyUpdatedArtifacts, setRecentlyUpdatedArtifacts] = useState<
-    ArtifactDetail[]
+    ArtifactDTO[]
   >([]);
   const [recentlyUpdatedArtifactsLimit, setRecentlyUpdatedArtifactsLimit] =
     useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);

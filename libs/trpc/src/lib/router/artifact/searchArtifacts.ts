@@ -1,8 +1,9 @@
 import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
-import { artifactDetail, type ArtifactDetail } from '@feynote/prisma/types';
+import { artifactDetail, type ArtifactDTO } from '@feynote/prisma/types';
 import { prisma } from '@feynote/prisma/client';
+import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
 export const searchArtifacts = authenticatedProcedure
   .input(
@@ -32,12 +33,14 @@ export const searchArtifacts = authenticatedProcedure
       artifacts.map((artifact) => [artifact.id, artifact]),
     );
 
-    const results: ArtifactDetail[] = [];
+    const results: ArtifactDTO[] = [];
     for (const resultArtifactId of resultArtifactIds) {
       if (results.length >= limit) break;
 
       const artifact = artifactsById.get(resultArtifactId);
-      if (artifact) results.push(artifact as ArtifactDetail);
+      if (artifact) {
+        results.push(artifactDetailToArtifactDTO(artifact));
+      }
     }
 
     return results;

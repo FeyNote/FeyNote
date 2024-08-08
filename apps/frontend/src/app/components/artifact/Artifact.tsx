@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import {
   IonButton,
   IonButtons,
@@ -36,7 +36,7 @@ export const Artifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { eventManager } = useContext(EventContext);
-  const [artifact, setArtifact] = useState<ArtifactDetail>();
+  const [artifact, setArtifact] = useState<ArtifactDTO>();
   const router = useIonRouter();
   const searchParams = useMemo(
     () => new URLSearchParams(router.routeInfo.search),

@@ -2,8 +2,7 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail, type ArtifactDetail } from '@feynote/prisma/types';
-
-const PREVIEW_TEXT_LENGTH = 150;
+import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
 export const getArtifacts = authenticatedProcedure
   .input(
@@ -24,24 +23,10 @@ export const getArtifacts = authenticatedProcedure
       ...artifactDetail,
     });
 
-    // We truncate text before sending to the client
-    // since users could have thousands of artifacts with
-    // very sizable contents
-    artifacts.forEach((artifact) => {
-      const text = artifact.text
-        .split(/\n/)
-        .map((line) => line.trim())
-        .filter((line) => line)
-        .join('\n')
-        .replace(/\n/g, ' ');
+    const results = [];
+    for (const artifact of artifacts) {
+      results.push(artifactDetailToArtifactDTO(artifact as ArtifactDetail));
+    }
 
-      let truncatedText = text.substring(0, PREVIEW_TEXT_LENGTH);
-      if (text.length > PREVIEW_TEXT_LENGTH) {
-        truncatedText += '...';
-      }
-
-      artifact.text = truncatedText;
-    });
-
-    return artifacts as ArtifactDetail[];
+    return results;
   });

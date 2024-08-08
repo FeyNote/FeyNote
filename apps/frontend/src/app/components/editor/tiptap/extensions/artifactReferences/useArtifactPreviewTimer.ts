@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { useIonToast } from '@ionic/react';
 import { handleTRPCErrors } from '../../../../../../utils/handleTRPCErrors';
 import { useRef, useState } from 'react';
@@ -21,7 +21,7 @@ export const useArtifactPreviewTimer = (
   isBroken: boolean,
 ) => {
   const [presentToast] = useIonToast();
-  const [artifact, setArtifact] = useState<ArtifactDetail>();
+  const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [showPreview, setShowPreview] = useState(false);
 
   const loadArtifact = async () => {

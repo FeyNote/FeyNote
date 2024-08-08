@@ -16,7 +16,7 @@ import {
 import { close, documentText, documents } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { t } from 'i18next';
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { useEffect, useState } from 'react';
 import { RootTemplate } from './rootTemplates/rootTemplates.types';
 import { rootTemplates } from './rootTemplates/rootTemplates';
@@ -25,7 +25,7 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 type SelectTemplateResult =
   | {
       type: 'artifact';
-      artifactTemplate: ArtifactDetail;
+      artifactTemplate: ArtifactDTO;
     }
   | {
       type: 'rootTemplate';
@@ -44,16 +44,14 @@ export const SelectTemplateModal: React.FC<SelectTemplateModalProps> = (
   const [presentAlert] = useIonAlert();
   const [searchText, setSearchText] = useState('');
 
-  const [artifactTemplates, setArtifactTemplates] = useState<ArtifactDetail[]>(
-    [],
-  );
+  const [artifactTemplates, setArtifactTemplates] = useState<ArtifactDTO[]>([]);
 
   const [rootTemplateResults, setRootTemplateResults] =
     useState<RootTemplate[]>(rootTemplates);
-  const [templateResults, setTemplateResults] = useState<ArtifactDetail[]>([]);
-  const [nonTemplateResults, setNonTemplateResults] = useState<
-    ArtifactDetail[]
-  >([]);
+  const [templateResults, setTemplateResults] = useState<ArtifactDTO[]>([]);
+  const [nonTemplateResults, setNonTemplateResults] = useState<ArtifactDTO[]>(
+    [],
+  );
 
   useEffect(() => {
     trpc.artifact.getArtifacts

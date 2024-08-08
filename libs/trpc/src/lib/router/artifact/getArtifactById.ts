@@ -1,7 +1,9 @@
-import { getArtifactDetailById } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
+import { prisma } from '@feynote/prisma/client';
+import { artifactDetail } from '@feynote/prisma/types';
+import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
 export const getArtifactById = authenticatedProcedure
   .input(
@@ -10,7 +12,12 @@ export const getArtifactById = authenticatedProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const artifact = await getArtifactDetailById(input.id);
+    const artifact = await prisma.artifact.findUniqueOrThrow({
+      where: {
+        id: input.id,
+      },
+      ...artifactDetail,
+    });
 
     if (artifact.userId !== ctx.session.userId) {
       throw new TRPCError({
@@ -19,5 +26,5 @@ export const getArtifactById = authenticatedProcedure
       });
     }
 
-    return artifact;
+    return artifactDetailToArtifactDTO(artifact);
   });

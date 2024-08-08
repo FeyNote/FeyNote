@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useRef } from 'react';
@@ -48,7 +48,7 @@ const Header = styled.h4`
 `;
 
 interface Props {
-  artifact: ArtifactDetail;
+  artifact: ArtifactDTO;
   artifactBlockId?: string;
   previewTarget: HTMLElement;
   onClick?: () => void;
@@ -120,7 +120,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       onClick={() => props.onClick?.()}
     >
       <Header>{props.artifact.title}</Header>
-      {props.artifact.text.trim().length ? (
+      {props.artifact.previewText.trim().length ? (
         <ArtifactEditorContainer>
           <ArtifactEditorStyles data-theme={props.artifact.theme}>
             <EditorContent editor={editor}></EditorContent>

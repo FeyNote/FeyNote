@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   IonCheckbox,
@@ -91,7 +91,7 @@ const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
 `;
 
 interface Props {
-  artifact: ArtifactDetail;
+  artifact: ArtifactDTO;
   reload: () => void;
   scrollToBlockId?: string;
 }
@@ -220,7 +220,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     setArtifactTemplate(null);
   };
 
-  const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
+  const applyArtifactTemplate = (artifactTemplate: ArtifactDTO) => {
     const templateYDoc = new Y.Doc();
     Y.applyUpdate(templateYDoc, artifactTemplate.yBin);
     const templateTiptapBody = getTiptapContentFromYjsDoc(
@@ -241,7 +241,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = async (updates: Partial<ArtifactDetail>) => {
+  const updateArtifact = async (updates: Partial<ArtifactDTO>) => {
     await trpc.artifact.updateArtifact
       .mutate({
         id: props.artifact.id,

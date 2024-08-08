@@ -31,6 +31,7 @@ class ArtifactCollaborationManager {
     if (token !== this.token) {
       this.disconnectAll();
       this.connectionByArtifactId.clear();
+      this.token = token;
     }
 
     const existingConnection = this.connectionByArtifactId.get(artifactId);
@@ -62,7 +63,7 @@ class ArtifactCollaborationManager {
   disconnectAll() {
     this.connectionByArtifactId.forEach((connection) => {
       connection.indexeddbProvider.destroy();
-      connection.indexeddbProvider.destroy();
+      connection.tiptapCollabProvider.destroy();
     });
   }
 

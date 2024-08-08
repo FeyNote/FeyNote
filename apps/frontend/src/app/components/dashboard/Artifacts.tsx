@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { ArtifactCard } from './ArtifactCard';
 import { IonButton, IonLabel, IonListHeader } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,7 @@ const ArtifactCardsContainer = styled.div`
 `;
 
 interface Props {
-  artifacts: ArtifactDetail[];
+  artifacts: ArtifactDTO[];
   title: string;
 }
 

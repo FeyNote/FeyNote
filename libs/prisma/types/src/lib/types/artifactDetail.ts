@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { ArtifactJson } from './artifactJson';
 
 export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
@@ -76,8 +75,4 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   },
 });
 
-type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
-
-export type ArtifactDetail = Omit<_ArtifactDetail, 'json'> & {
-  json: ArtifactJson;
-};
+export type ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
