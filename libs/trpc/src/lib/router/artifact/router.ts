@@ -7,9 +7,11 @@ import { searchArtifactTitles } from './searchArtifactTitles';
 import { updateArtifact } from './updateArtifact';
 import { createArtifact } from './createArtifact';
 import { deleteArtifact } from './deleteArtifact';
+import { getArtifactYBinById } from './getArtifactYBinById';
 
 export const router = trpcRouter({
   getArtifactById,
+  getArtifactYBinById,
   getArtifacts,
   searchArtifacts,
   searchArtifactTitles,

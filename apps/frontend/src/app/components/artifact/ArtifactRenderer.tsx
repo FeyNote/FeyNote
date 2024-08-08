@@ -220,9 +220,18 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     setArtifactTemplate(null);
   };
 
-  const applyArtifactTemplate = (artifactTemplate: ArtifactDTO) => {
+  const applyArtifactTemplate = async (artifactTemplate: ArtifactDTO) => {
+    const response = await trpc.artifact.getArtifactYBinById
+      .query({
+        id: artifactTemplate.id,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+    if (!response) return;
+
     const templateYDoc = new Y.Doc();
-    Y.applyUpdate(templateYDoc, artifactTemplate.yBin);
+    Y.applyUpdate(templateYDoc, response.yBin);
     const templateTiptapBody = getTiptapContentFromYjsDoc(
       templateYDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
