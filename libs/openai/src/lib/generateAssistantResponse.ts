@@ -3,7 +3,6 @@ import {
   ChatCompletionUserMessageParam,
 } from 'openai/resources/chat/completions';
 import { openai } from './openai';
-import { getDocumentContent } from './tools/getDocumentContent';
 import { retrieveMessageContext } from './retrieveMessageContext';
 import { OpenAIModel } from './utils/openAIModels';
 import { SystemMessage } from './utils/SystemMessage';
@@ -23,15 +22,7 @@ export async function generateAssistantResponse(
   const response = openai.beta.chat.completions.runTools({
     model,
     messages,
-    tools: [
-      {
-        type: 'function',
-        function: {
-          function: getDocumentContent,
-          parameters: { type: 'object', properties: {} },
-        },
-      },
-    ],
+    tools: [],
   });
   await response.done();
   const responseMessages = getRecentResponseMessages(response.messages);

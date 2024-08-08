@@ -32,6 +32,9 @@ import { SESSION_ITEM_NAME } from '../../context/session/types';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
+import type { ThreadDTOMessage } from '@feynote/prisma/types';
+import type { ChatCompletionAssistantMessageParam } from 'openai/resources';
+import { OpenAIStreamReader } from './OpenAIStreamReader';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -54,12 +57,6 @@ const SendButtonContainer = styled.div`
 const SendIcon = styled(IonIcon)`
   font-size: 24px;
 `;
-
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: string;
-}
 
 const buildThreadOptionsPopover = ({
   id,
@@ -89,15 +86,10 @@ export const AIThread: React.FC = () => {
   const router = useIonRouter();
   const { id } = useParams<RouteArgs['assistantThread']>();
   const [showLoading, setShowLoading] = useState(true);
-  const [message, setMessage] = useState<string>('');
+  const [query, setQuery] = useState<string>('');
   const [threadTitle, setThreadTitle] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [disableInput, setDisableInput] = useState<boolean>(false);
-  const [tempUserMessage, setTempUserMessage] = useState<ChatMessage | null>(
-    null,
-  );
-  const [tempAssistantMessage, setTempAssistantMessage] =
-    useState<ChatMessage | null>(null);
+  const [messages, setMessages] = useState<ThreadDTOMessage[]>([]);
   const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
     id,
     title: threadTitle || t('assistant.thread.emptyTitle'),
@@ -127,11 +119,11 @@ export const AIThread: React.FC = () => {
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      sendMessage(message);
+      sendMessage(query);
     } else {
       const currentValue = e.currentTarget.value;
-      if (currentValue && currentValue !== message) {
-        setMessage(currentValue);
+      if (currentValue && currentValue !== query) {
+        setQuery(currentValue);
       }
     }
   };
@@ -153,29 +145,42 @@ export const AIThread: React.FC = () => {
       });
       const reader = response.body?.getReader();
       if (!reader) return;
-      const tempMsg = {
-        id: 'temp',
-        role: 'assistant',
-        content: '',
-      };
-      const decoder = new TextDecoder('utf-8');
-      let streaming = true;
-      while (streaming) {
-        const { value, done } = await reader.read();
-        if (done) {
-          streaming = false;
-        }
-        const text = decoder.decode(value, { stream: true });
-        if (text) {
-          tempMsg.content += text;
-          setTempAssistantMessage({
-            ...tempMsg,
-          });
-        }
-      }
-      await getThreadInfo();
-      setTempAssistantMessage(null);
-      setDisableInput(false);
+      const streamReader = new OpenAIStreamReader(reader);
+      streamReader.on('newAssistantMessage', () => {
+        setMessages([
+          ...messages,
+          {
+            id: 'temp',
+            json: {
+              role: 'assistant',
+              content: '',
+            },
+          },
+        ]);
+      });
+      streamReader.on('newAssistantMessageContent', (content: string) => {
+        const lastMessage = messages[messages.length - 1];
+        setMessages([
+          ...messages.slice(0, messages.length - 1),
+          {
+            id: 'temp',
+            json: {
+              role: 'assistant',
+              content: lastMessage.json.content + content,
+            },
+          },
+        ]);
+      });
+      streamReader.on(
+        'newToolCall',
+        (toolcallMessage: ChatCompletionAssistantMessageParam) => {
+          setMessages([...messages, { id: 'temp', json: toolcallMessage }]);
+        },
+      );
+      streamReader.on('finish', async () => {
+        await getThreadInfo();
+        setDisableInput(false);
+      });
     } catch (error) {
       handleTRPCErrors(error, presentToast);
       setDisableInput(false);
@@ -184,16 +189,17 @@ export const AIThread: React.FC = () => {
 
   const sendMessage = async (query: string) => {
     if (!query.trim()) return;
-    const tmpMsg = {
+    const userMessage = {
       id: 'temp',
-      role: 'user',
-      content: query,
-    };
-    setMessage('');
-    setTempUserMessage(tmpMsg);
+      json: {
+        role: 'user',
+        content: query,
+      },
+    } as ThreadDTOMessage;
+    setMessages([...messages, userMessage]);
+    setQuery('');
     setDisableInput(true);
     await createMessage(query);
-    setTempUserMessage(null);
   };
 
   const retryMessage = (messageId: string) => {
@@ -207,9 +213,10 @@ export const AIThread: React.FC = () => {
       retryMessageIndex + 1,
     );
     const retriedUserMessage = remainingMessages.find(
-      (message) => message.role === 'user',
+      (message) => message.json.role === 'user',
     );
-    if (!retriedUserMessage) {
+    const retriedUserQuery = retriedUserMessage?.json.content as string;
+    if (!retriedUserMessage || !retriedUserQuery) {
       return handleGenericError(t('generic.error'), presentToast);
     }
 
@@ -222,7 +229,7 @@ export const AIThread: React.FC = () => {
       })
       .then(() => {
         // Resend User Prompt Previous Message
-        createMessage(retriedUserMessage.content);
+        createMessage(retriedUserQuery);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -254,27 +261,27 @@ export const AIThread: React.FC = () => {
       <IonContent>
         {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>
-          {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
+          {!messages.length ? (
             <div style={{ height: '100%' }}>
               {
-                // TODO https://github.com/RedChickenCo/FeyNote/issues/86
+                // TODO Chat Tutorial https://github.com/RedChickenCo/FeyNote/issues/86
               }
             </div>
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
-              messages={[...messages, tempUserMessage, tempAssistantMessage]}
+              messages={messages}
             />
           )}
           <ChatTextContainer>
             <IonTextarea
               placeholder={t('assistant.thread.input.placeholder')}
-              value={message}
+              value={query}
               onKeyUp={(e) => keyUpHandler(e)}
               disabled={disableInput}
             />
             <SendButtonContainer>
-              <IonButton onClick={() => sendMessage(message)}>
+              <IonButton onClick={() => sendMessage(query)}>
                 <SendIcon color="white" icon={send} />
               </IonButton>
             </SendButtonContainer>

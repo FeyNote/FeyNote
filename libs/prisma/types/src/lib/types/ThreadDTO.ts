@@ -1,15 +1,12 @@
-import { z } from 'zod';
+import { type ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 
-export const ThreadDTOMessageSchema = z.object({
-  id: z.string(),
-  role: z.enum(['function', 'tool', 'assistant', 'user']),
-  content: z.string(),
-});
+export interface ThreadDTOMessage {
+  id: string;
+  json: ChatCompletionMessageParam;
+}
 
-export const ThreadDTOSchema = z.object({
-  id: z.string(),
-  title: z.string().nullish(),
-  messages: z.array(ThreadDTOMessageSchema),
-});
-
-export type ThreadDTO = z.infer<typeof ThreadDTOSchema>;
+export interface ThreadDTO {
+  id: string;
+  title?: string;
+  messages: ThreadDTOMessage[];
+}

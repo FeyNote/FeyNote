@@ -16,9 +16,10 @@ interface Props {
 
 export const AIThreadMenuItem = (props: Props) => {
   const { t } = useTranslation();
-  const previewText = props.thread.messages.length
-    ? props.thread.messages[props.thread.messages.length - 1].content
-    : t('assistant.thread.empty.preview');
+  const previewText =
+    (props.thread.messages.find(
+      (message) => message.json.role === 'assistant' && message.json.content,
+    )?.json.content as string) || t('assistant.thread.empty.preview');
 
   return (
     <IonItem

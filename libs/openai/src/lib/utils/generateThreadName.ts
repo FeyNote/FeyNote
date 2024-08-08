@@ -3,12 +3,11 @@ import { OpenAIModel } from './openAIModels';
 import { systemMessage } from './SystemMessage';
 
 export async function generateThreadName(
-  query: string,
   threadId: string,
 ): Promise<string | undefined | null> {
   const nameGenerationMessages = await generateAssistantResponse(
     systemMessage.nameGeneration,
-    query,
+    'Generate me a name based on my previous conversations',
     threadId,
     OpenAIModel.GPT4_MINI,
   );

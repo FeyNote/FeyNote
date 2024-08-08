@@ -6,6 +6,7 @@ import {
   OpenAIModel,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
+import type { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 
 export async function createMessage(req: Request, res: Response) {
@@ -37,10 +38,6 @@ export async function createMessage(req: Request, res: Response) {
     where: { id: threadId, userId: session.userId },
   });
   if (!thread) return res.status(404).send('Thread not found for the given id');
-  const message = {
-    role: 'user',
-    content: query,
-  };
 
   const stream = await generateAssistantResponseStream(
     systemMessage.ttrpgAssistant,
@@ -48,54 +45,40 @@ export async function createMessage(req: Request, res: Response) {
     threadId,
     OpenAIModel.GPT4,
   );
-  let assistantMessageContent = '';
+
   res.writeHead(200, {
     'Content-Type': 'text/plain',
     'Transfer-Encoding': 'chunked',
   });
 
   for await (const chunk of stream) {
-    const messageChunk = chunk.choices[0]?.delta?.content;
-    if (messageChunk) {
-      assistantMessageContent += messageChunk;
-      res.write(messageChunk);
+    const messageDelta = chunk.choices[0]?.delta;
+    console.log(JSON.stringify(messageDelta));
+    if (messageDelta.content) {
+      res.write(messageDelta.content);
     }
   }
 
-  const assistantMessage = {
-    role: 'assistant',
-    content: assistantMessageContent,
-  };
-  const userMessageCreatedAt = new Date();
-  const assistantMessageCreatedAt = new Date(userMessageCreatedAt);
-  assistantMessageCreatedAt.setMilliseconds(
-    userMessageCreatedAt.getMilliseconds() + 1,
-  );
-  await prisma.message.createMany({
-    data: [
-      {
-        json: message,
-        threadId,
-        createdAt: userMessageCreatedAt,
-      },
-      {
-        json: assistantMessage,
-        threadId,
-        createdAt: assistantMessageCreatedAt,
-      },
-    ],
-  });
+  // Remove the system message
+  const messages = stream.messages.slice(1).map((message) => ({
+    threadId: thread.id,
+    json: message as unknown as Prisma.InputJsonValue,
+  }));
 
-  if (!thread.title) {
-    const title = await generateThreadName(query, threadId);
-    if (title) {
-      await prisma.thread.update({
-        where: { id: threadId },
-        data: {
-          title,
-        },
-      });
-    }
-  }
+  // await prisma.message.createMany({
+  //   data: messages,
+  // });
+  //
+  // if (!thread.title) {
+  //   const title = await generateThreadName(threadId);
+  //   if (title) {
+  //     await prisma.thread.update({
+  //       where: { id: threadId },
+  //       data: {
+  //         title,
+  //       },
+  //     });
+  //   }
+  // }
   res.end();
 }

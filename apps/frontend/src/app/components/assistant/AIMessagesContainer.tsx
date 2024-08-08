@@ -1,9 +1,9 @@
 import { IonButton, IonButtons, IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
-import { starkdown } from 'starkdown';
-import { ChatMessage } from './AIThread';
 import { personCircle, arrowUndoOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
+import { AIMessageRenderer } from './AIMessageRenderer';
+import type { ThreadDTOMessage } from '@feynote/prisma/types';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -53,7 +53,7 @@ const MessageHeader = styled(IonLabel)`
 `;
 
 interface Props {
-  messages: (ChatMessage | null)[];
+  messages: (ThreadDTOMessage | null)[];
   retryMessage: (messageId: string) => void;
 }
 
@@ -66,7 +66,7 @@ export const AIMessagesContainer = (props: Props) => {
         {props.messages
           .filter((message) => !!message)
           .map((message, idx) => {
-            const isUser = message.role === 'user';
+            const isUser = message.json.role === 'user';
             const name = isUser
               ? t('assistant.thread.user.name')
               : t('assistant.thread.assistant.name');
@@ -79,11 +79,7 @@ export const AIMessagesContainer = (props: Props) => {
                 )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: starkdown(message.content),
-                    }}
-                  ></div>
+                  <AIMessageRenderer messageParam={message.json} />
                   {!isUser && (
                     <IonButtons>
                       <IonButton onClick={() => props.retryMessage(message.id)}>

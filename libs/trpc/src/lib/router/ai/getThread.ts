@@ -4,8 +4,8 @@ import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import {
   ThreadDTO,
-  ThreadDTOMessageSchema,
   threadSummary,
+  type ThreadDTOMessage,
 } from '@feynote/prisma/types';
 
 export const getThread = authenticatedProcedure
@@ -26,14 +26,8 @@ export const getThread = authenticatedProcedure
     }
     const threadDTO = {
       id: thread.id,
-      title: thread.title,
-      messages: thread.messages
-        .map((message) => ({
-          id: message.id,
-          role: (message.json as unknown as any).role,
-          content: (message.json as unknown as any).content,
-        }))
-        .filter((json) => ThreadDTOMessageSchema.safeParse(json)),
+      title: thread.title || undefined,
+      messages: thread.messages as unknown as ThreadDTOMessage[],
     };
     return threadDTO satisfies ThreadDTO;
   });
