@@ -92,7 +92,9 @@ const cacheListResponse = async (
   try {
     const response = await fetch(event.request);
 
-    updateListCache(objectStoreName, response.clone());
+    if (response.status >= 200 && response.status < 300) {
+      updateListCache(objectStoreName, response.clone());
+    }
 
     return response;
   } catch (e: any) {
@@ -115,7 +117,9 @@ const cacheSingleResponse = async (
   try {
     const response = await fetch(event.request);
 
-    updateSingleCache(dbName, response.clone());
+    if (response.status >= 200 && response.status < 300) {
+      updateSingleCache(dbName, response.clone());
+    }
 
     return response;
   } catch (e: any) {
