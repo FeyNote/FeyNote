@@ -19,6 +19,8 @@ export const SessionContextProviderWrapper = ({
   }, []);
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
+    await appIdbStorageManager.deleteAllData();
+
     if (newSession) {
       await appIdbStorageManager.setSession(newSession);
     } else {

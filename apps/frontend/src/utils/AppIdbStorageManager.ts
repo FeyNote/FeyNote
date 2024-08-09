@@ -1,3 +1,4 @@
+import { deleteDB } from 'idb';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 
@@ -57,6 +58,28 @@ export class AppIdbStorageManager {
       await store.delete(KVStoreKeys.Session);
     }
     await tx.done;
+  }
+
+  async deleteAllData(): Promise<void> {
+    const manifestDb = await getManifestDb();
+    await manifestDb.clear(ObjectStoreName.KV);
+    await manifestDb.clear(ObjectStoreName.Edges);
+    await manifestDb.clear(ObjectStoreName.Artifacts);
+    await manifestDb.clear(ObjectStoreName.ArtifactVersions);
+    await manifestDb.clear(ObjectStoreName.PendingArtifacts);
+
+    const databases = await indexedDB.databases();
+    for (const database of databases) {
+      if (!database.name) continue;
+      if (database.name.startsWith('artifact:')) {
+        try {
+          await deleteDB(database.name);
+        } catch (e) {
+          console.error('Failed to delete artifact IDB', database.name, e);
+          // TODO: log to sentry
+        }
+      }
+    }
   }
 }
 
