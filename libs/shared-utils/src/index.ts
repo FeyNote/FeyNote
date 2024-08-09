@@ -9,6 +9,7 @@ export * from './lib/tiptap-tools/getJSONContentMapById';
 export * from './lib/tiptap-tools/getReferencesFromJSONContent';
 export * from './lib/tiptap-tools/getTextForJSONContent';
 export * from './lib/tiptap-tools/getTiptapContentFromYjsDoc';
+export * from './lib/tiptap-tools/getTiptapIdsFromYEvent';
 export * from './lib/tiptap-tools/jsonContentForEach';
 export * from './lib/tiptap-tools/patchJsonContentWithReferenceText';
 export * from './lib/tiptap-tools/randomizeJSONContentUUIDs';

@@ -10,12 +10,12 @@ export class AppIdbStorageManager {
     );
     if (record) {
       await manifestDb.put(ObjectStoreName.ArtifactVersions, {
-        artifactId,
+        id: artifactId,
         version: new Date().getTime(),
       });
     } else {
       await manifestDb.add(ObjectStoreName.ArtifactVersions, {
-        artifactId,
+        id: artifactId,
         version: new Date().getTime(),
       });
     }

@@ -52,6 +52,7 @@ import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
+import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -173,6 +174,15 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
     artifactMetaMap.observe(listener);
     return () => artifactMetaMap.unobserve(listener);
+  }, [connection]);
+
+  useEffect(() => {
+    const cleanup = incrementVersionForChangesOnArtifact(
+      props.artifact.id,
+      connection.yjsDoc,
+    );
+
+    return () => cleanup();
   }, [connection]);
 
   const onConnectionStatusChange = ({ status }: { status: string }) => {
