@@ -21,9 +21,9 @@ export const globalServerConfig = {
   },
   hocuspocus: {
     port: parseInt(process.env['HOCUSPOCUS_PORT'] || '8080'),
-    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '5000'),
+    writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
     maxWriteDelayMs: parseInt(
-      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '30000',
+      process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
     ),
     connectionTimeout: parseInt(
       process.env['HOCUSPOCUS_CONNECTION_TIMEOUT'] || '15000',
