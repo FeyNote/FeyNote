@@ -26,6 +26,7 @@ export enum PreferenceNames {
   Language = 'global.language',
   FontSize = 'global.fontSize',
   Theme = 'global.theme',
+  CollaborationColor = 'global.collaborationColor',
   PreferencesSync = 'global.preferencesSync',
 }
 
@@ -36,5 +37,6 @@ export interface AppPreferences {
   [PreferenceNames.Language]: null | SupportedLanguages;
   [PreferenceNames.FontSize]: SupportedFontSize;
   [PreferenceNames.Theme]: AppTheme;
+  [PreferenceNames.CollaborationColor]: string;
   [PreferenceNames.PreferencesSync]: PreferencesSync;
 }
