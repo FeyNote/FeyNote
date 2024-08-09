@@ -1,4 +1,4 @@
-import { IDBPDatabase } from 'idb';
+import { deleteDB, IDBPDatabase } from 'idb';
 import type { SearchManager } from './SearchManager';
 import {
   HocuspocusProvider,
@@ -174,12 +174,16 @@ export class SyncManager {
         if (!latestManifest.artifactVersions[artifactId]) {
           // Exists on client, but does not exist on server
 
-          // TODO: we should probably clean up any open connections and potentially idb storage of y artifact
           await this.manifestDb.delete(
             ObjectStoreName.ArtifactVersions,
             artifactId,
           );
           await this.searchManager.unindexArtifact(artifactId);
+          try {
+            await deleteDB(`artifact:${artifactId}`);
+          } catch (e) {
+            // Do nothing
+          }
           if (ENABLE_VERBOSE_SYNC_LOGGING)
             console.log(
               `Deleting ${artifactId} because it's not on the manifest`,
