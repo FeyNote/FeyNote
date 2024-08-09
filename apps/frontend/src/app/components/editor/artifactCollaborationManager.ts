@@ -38,6 +38,10 @@ class ArtifactCollaborationManager {
     const existingConnection = this.connectionByArtifactId.get(artifactId);
     if (existingConnection) return existingConnection;
 
+    if (this.ws.status !== 'connected') {
+      this.ws.connect();
+    }
+
     const yjsDoc = new Doc();
     const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
     const tiptapCollabProvider = new TiptapCollabProvider({
