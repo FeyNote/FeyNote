@@ -4,10 +4,11 @@ import {
 } from '@hocuspocus/provider';
 import { getApiUrls } from '../../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import * as Y from 'yjs';
+import { Doc } from 'yjs';
+import type { SessionDTO } from '@feynote/shared-utils';
 
 class ArtifactCollaborationManager {
-  private token = 'anonymous';
+  private session: SessionDTO | null = null;
 
   private ws = new HocuspocusProviderWebsocket({
     url: '/hocuspocus',
@@ -20,36 +21,36 @@ class ArtifactCollaborationManager {
     string,
     {
       artifactId: string;
-      token: string;
-      yjsDoc: Y.Doc;
+      session: SessionDTO | null;
+      yjsDoc: Doc;
       tiptapCollabProvider: TiptapCollabProvider;
       indexeddbProvider: IndexeddbPersistence;
     }
   >();
 
-  get(artifactId: string, token = 'anonymous') {
-    if (token !== this.token) {
+  get(artifactId: string, session: SessionDTO | null) {
+    if (session?.token !== this.session?.token) {
       this.disconnectAll();
       this.connectionByArtifactId.clear();
-      this.token = token;
+      this.session = session;
     }
 
     const existingConnection = this.connectionByArtifactId.get(artifactId);
     if (existingConnection) return existingConnection;
 
-    const yjsDoc = new Y.Doc();
+    const yjsDoc = new Doc();
     const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
     const tiptapCollabProvider = new TiptapCollabProvider({
-      name: artifactId,
+      name: `artifact:${artifactId}`,
       baseUrl: getApiUrls().hocuspocus,
       document: yjsDoc,
-      token,
+      token: session?.token || 'anonymous',
       websocketProvider: this.ws,
     });
 
     const connection = {
       artifactId,
-      token,
+      session,
       yjsDoc,
       tiptapCollabProvider,
       indexeddbProvider,

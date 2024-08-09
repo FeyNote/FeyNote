@@ -31,12 +31,12 @@ export const globalServerConfig = {
     throttle: {
       enable: process.env['HOCUSPOCUS_THROTTLE_ENABLE']
         ? coerceBoolean(process.env['HOCUSPOCUS_THROTTLE_ENABLE'])
-        : false,
+        : true,
       connectionsPerMinuteBeforeBan: parseInt(
-        process.env['HOCUSPOCUS_THROTTLE_CPM'] || '30',
+        process.env['HOCUSPOCUS_THROTTLE_CPM'] || '1200',
       ),
       banTimeMinutes: parseInt(
-        process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '5',
+        process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '10',
       ),
     },
     logging: {

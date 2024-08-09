@@ -38,8 +38,8 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
     (args: any) => {
       trpc.user.signInWithGoogle
         .mutate(args)
-        .then((_session) => {
-          setSession(_session);
+        .then((_session) => setSession(_session))
+        .then(() => {
           router.push(routes.dashboard.build());
         })
         .catch((error) => {

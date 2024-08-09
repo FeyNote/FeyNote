@@ -5,8 +5,8 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
 import { superjson } from './utils/trpc';
 import { SearchManager } from './utils/SearchManager';
-import { applyUpdate, Doc } from 'yjs';
-import { manifestDbP, ObjectStoreName } from './utils/localDb';
+import { getManifestDb, ObjectStoreName } from './utils/localDb';
+import { SyncManager } from './utils/SyncManager';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
@@ -15,16 +15,11 @@ precacheAndRoute(self.__WB_MANIFEST);
 (self as any).skipWaiting();
 clientsClaim();
 
-self.addEventListener('install', () => {
-  console.log('Service Worker installed');
-});
-
-self.addEventListener('activate', () => {
-  console.log('Service Worker activated');
-});
-
-const searchManagerP = manifestDbP.then(
+const searchManagerP = getManifestDb().then(
   (manifestDb) => new SearchManager(manifestDb),
+);
+const syncManagerP = Promise.all([getManifestDb(), searchManagerP]).then(
+  ([manifestDb, searchManager]) => new SyncManager(manifestDb, searchManager),
 );
 
 const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
@@ -57,11 +52,11 @@ const updateListCache = async (
   trpcResponse: Response,
 ) => {
   const json = await trpcResponse.json();
-  const deserialized = superjson.deserialize<{ id: string }[]>(
-    json.result.data,
-  );
+  const deserialized = superjson.deserialize<
+    { id: string; updatedAt: string }[]
+  >(json.result.data);
+  const manifestDb = await getManifestDb();
 
-  const manifestDb = await manifestDbP;
   const tx = manifestDb.transaction(objectStoreName, 'readwrite');
   const store = tx.objectStore(objectStoreName);
   await store.clear();
@@ -69,16 +64,6 @@ const updateListCache = async (
     await manifestDb.add(objectStoreName, item);
   }
   await tx.done;
-
-  if (objectStoreName === ObjectStoreName.Artifacts) {
-    const searchManager = await searchManagerP;
-
-    for (const item of deserialized) {
-      const yDoc = new Doc();
-      applyUpdate(yDoc, (item as any).yBin);
-      await searchManager.indexPartialArtifact(item.id, yDoc, 'all');
-    }
-  }
 };
 
 const updateSingleCache = async (
@@ -88,7 +73,7 @@ const updateSingleCache = async (
   const json = await trpcResponse.json();
   const deserialized = superjson.deserialize<{ id: string }>(json.result.data);
 
-  const manifestDb = await manifestDbP;
+  const manifestDb = await getManifestDb();
   const tx = manifestDb.transaction(objectStoreName, 'readwrite');
   const store = tx.objectStore(objectStoreName);
   const exists = await store.count(deserialized.id);
@@ -98,23 +83,16 @@ const updateSingleCache = async (
     await store.add(deserialized);
   }
   await tx.done;
-
-  if (objectStoreName === ObjectStoreName.Artifacts) {
-    const searchManager = await searchManagerP;
-    const yDoc = new Doc();
-    applyUpdate(yDoc, (deserialized as any).yBin);
-    await searchManager.indexPartialArtifact(deserialized.id, yDoc, 'all');
-  }
 };
 
 const cacheListResponse = async (
-  dbName: ObjectStoreName,
+  objectStoreName: ObjectStoreName,
   event: RouteHandlerCallbackOptions,
 ) => {
   try {
     const response = await fetch(event.request);
 
-    updateListCache(dbName, response.clone());
+    updateListCache(objectStoreName, response.clone());
 
     return response;
   } catch (e: any) {
@@ -123,8 +101,8 @@ const cacheListResponse = async (
     // TODO: check response for statuscode
     // since we don't want to eat unauthorized errors
 
-    const manifestDb = await manifestDbP;
-    const cachedItems = await manifestDb.getAll(dbName);
+    const manifestDb = await getManifestDb();
+    const cachedItems = await manifestDb.getAll(objectStoreName);
 
     return encodeCacheResultForTrpc(cachedItems);
   }
@@ -149,12 +127,20 @@ const cacheSingleResponse = async (
     const input = getTrpcInputForEvent<{ id: string }>(event);
     if (!input || !input.id) throw e;
 
-    const manifestDb = await manifestDbP;
+    const manifestDb = await getManifestDb();
     const cachedItem = await manifestDb.get(dbName, input.id);
 
     return encodeCacheResultForTrpc(cachedItem);
   }
 };
+
+self.addEventListener('install', () => {
+  console.log('Service Worker installed');
+});
+
+self.addEventListener('activate', () => {
+  console.log('Service Worker activated');
+});
 
 registerRoute(
   /api\/trpc\/artifact\.getArtifactById/,
@@ -189,7 +175,7 @@ registerRoute(
         searchResults.map((searchResult) => searchResult.artifactId),
       );
 
-      const manifestDb = await manifestDbP;
+      const manifestDb = await getManifestDb();
       const results = [];
       for (const artifactId of artifactIds) {
         const artifact = await manifestDb.get(

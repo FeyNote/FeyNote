@@ -13,6 +13,7 @@ import {
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '../../../../libs/shared-utils/src';
+import { KVStoreKeys, ObjectStoreName } from './localDb';
 
 /**
  * Enables some additional logging which is helpful for debugging
@@ -67,7 +68,10 @@ export class SearchManager {
   async populateFromLocalDb() {
     performance.mark('startIndexLoad');
 
-    const indexRecord = await this.manifestDb.get('searchIndex', 'index');
+    const indexRecord = await this.manifestDb.get(
+      ObjectStoreName.KV,
+      KVStoreKeys.SearchIndex,
+    );
 
     if (!indexRecord) return;
 
@@ -284,14 +288,16 @@ export class SearchManager {
     clearTimeout(this.saveTimeout);
     clearTimeout(this.maxSaveTimeout);
 
-    if (await this.manifestDb.get('searchIndex', 'index')) {
-      await this.manifestDb.put('searchIndex', {
-        id: 'index',
+    if (
+      await this.manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)
+    ) {
+      await this.manifestDb.put(ObjectStoreName.KV, {
+        key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });
     } else {
-      await this.manifestDb.add('searchIndex', {
-        id: 'index',
+      await this.manifestDb.add(ObjectStoreName.KV, {
+        key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });
     }

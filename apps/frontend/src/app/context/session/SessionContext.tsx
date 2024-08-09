@@ -1,9 +1,10 @@
+import type { SessionDTO } from '@feynote/shared-utils';
 import { createContext } from 'react';
-import { SESSION_ITEM_NAME } from './types';
 
-export const SessionContext = createContext({
-  session: localStorage.getItem(SESSION_ITEM_NAME),
-  setSession: (_: string | null) => {
-    // Placeholder
-  },
+export const SessionContext = createContext<{
+  session: SessionDTO | null;
+  setSession: (session: SessionDTO | null) => Promise<void>;
+}>({
+  session: null,
+  setSession: null as any,
 });

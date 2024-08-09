@@ -11,6 +11,7 @@ import { constructYArtifact } from '@feynote/shared-utils';
 export const createArtifact = authenticatedProcedure
   .input(
     z.object({
+      id: z.string().uuid().optional(),
       title: z.string(),
       type: z.nativeEnum(ArtifactType),
       text: z.string(),
@@ -47,6 +48,7 @@ export const createArtifact = authenticatedProcedure
 
     const { id } = await prisma.artifact.create({
       data: {
+        id: input.id,
         title: input.title,
         type: input.type,
         text: input.text,

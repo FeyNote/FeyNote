@@ -1,6 +1,7 @@
-import { ReactNode, useCallback, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { SessionContext } from './SessionContext';
-import { SESSION_ITEM_NAME } from './types';
+import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
+import type { SessionDTO } from '@feynote/shared-utils';
 
 interface Props {
   children: ReactNode;
@@ -9,15 +10,19 @@ interface Props {
 export const SessionContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const [session, setSession] = useState(
-    localStorage.getItem(SESSION_ITEM_NAME),
-  );
+  const [session, setSession] = useState<SessionDTO | null>(null);
 
-  const setAndPersistSession = (newSession: string | null) => {
+  useEffect(() => {
+    appIdbStorageManager.getSession().then((session) => {
+      setSession(session);
+    });
+  }, []);
+
+  const setAndPersistSession = async (newSession: SessionDTO | null) => {
     if (newSession) {
-      localStorage.setItem(SESSION_ITEM_NAME, newSession);
+      await appIdbStorageManager.setSession(newSession);
     } else {
-      localStorage.removeItem(SESSION_ITEM_NAME);
+      await appIdbStorageManager.removeSession();
     }
     setSession(newSession);
   };

@@ -25,6 +25,7 @@ model User {
   ArtifactRevision ArtifactRevision[]
   File             File[]
   threads          Thread[]
+  ArtifactShare    ArtifactShare[]
 }
 
 model Session {
@@ -60,6 +61,7 @@ model Artifact {
   artfactFiles               ArtifactFile[]
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
+  ArtifactShare              ArtifactShare[]
 }
 
 model ArtifactReference {
@@ -112,6 +114,23 @@ model ArtifactRevision {
   @@id([artifactId, revisionId])
 }
 
+model ArtifactShare {
+  id          String              @id @default(uuid()) @db.Uuid
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String              @db.Uuid
+  artifact    Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactId  String              @db.Uuid
+  accessLevel ArtifactAccessLevel
+  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
+}
+
+enum ArtifactAccessLevel {
+  coowner
+  readwrite
+  readonly
+}
+
 enum ArtifactType {
   tiptap
   calendar
@@ -124,7 +143,7 @@ enum ArtifactTheme {
 
 model File {
   id            String         @id @default(uuid()) @db.Uuid
-  userId String @db.Uuid
+  userId        String         @db.Uuid
   user          User           @relation(fields: [userId], references: [id])
   label         String
   mimetype      String

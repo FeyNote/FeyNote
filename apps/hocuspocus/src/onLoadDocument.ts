@@ -2,23 +2,37 @@ import { onLoadDocumentPayload } from '@hocuspocus/server';
 import * as Y from 'yjs';
 
 import { prisma } from '@feynote/prisma/client';
+import { splitDocumentName } from './splitDocumentName';
+import { SupportedDocumentType } from './SupportedDocumentType';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
-  const artifact = await prisma.artifact.findUnique({
-    where: {
-      id: args.documentName,
-      userId: args.context.userId, // TODO: Impl sharing permission check here
-    },
-    select: {
-      yBin: true,
-    },
-  });
+  try {
+    const [type, identifier] = splitDocumentName(args.documentName);
 
-  if (!artifact) {
-    throw new Error();
+    switch (type) {
+      case SupportedDocumentType.Artifact: {
+        const artifact = await prisma.artifact.findUnique({
+          where: {
+            id: identifier,
+            userId: args.context.userId, // TODO: Impl sharing permission check here
+          },
+          select: {
+            yBin: true,
+          },
+        });
+
+        if (!artifact) {
+          throw new Error();
+        }
+
+        Y.applyUpdate(args.document, artifact.yBin);
+
+        return args.document;
+      }
+    }
+  } catch (e) {
+    console.error(e);
+
+    throw e;
   }
-
-  Y.applyUpdate(args.document, artifact.yBin);
-
-  return args.document;
 }

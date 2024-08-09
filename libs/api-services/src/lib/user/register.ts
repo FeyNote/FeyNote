@@ -1,3 +1,4 @@
+import type { SessionDTO } from '@feynote/shared-utils';
 import { UserAlreadyExistError } from '../error';
 import { generateSession } from '../session/generateSession';
 import { generatePasswordHashAndSalt } from './generatePasswordHashAndSalt';
@@ -14,7 +15,7 @@ export const register = async (email: string, password: string) => {
 
   const { hash, salt, version } = await generatePasswordHashAndSalt(password);
 
-  const token = await prisma.$transaction(async (tx) => {
+  const session = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
         passwordHash: hash,
@@ -26,8 +27,12 @@ export const register = async (email: string, password: string) => {
 
     const session = await generateSession(user.id, tx);
 
-    return session.token;
+    return session;
   });
 
-  return token;
+  return {
+    token: session.token,
+    userId: session.userId,
+    email,
+  } satisfies SessionDTO;
 };
