@@ -50,7 +50,7 @@ const startDayOfWeekForMonth = (
   if (findYear === 0 && findMonth === 0) return calendarStartDayOfWeek;
 
   let year = 1;
-  let lastYear = 0;
+  let lastMonthYear = 0;
   let month = 1;
   let lastMonth = 0;
   if (month >= monthsInYear) {
@@ -64,7 +64,9 @@ const startDayOfWeekForMonth = (
 
     // Must avoid year 0 being considered as leap year!
     const leapDays =
-      leapInLastMonth && lastYear && lastYear % leapInLastMonth === 0 ? 1 : 0;
+      leapInLastMonth && lastMonthYear && lastMonthYear % leapInLastMonth === 0
+        ? 1
+        : 0;
     /**
      * The difference between last month's dayOfWeek and this month's dayOfWeek
      */
@@ -83,10 +85,10 @@ const startDayOfWeekForMonth = (
     }
 
     lastMonth = month;
+    lastMonthYear = year;
     month++;
     if (month >= monthsInYear) {
       month = 0;
-      lastYear = year;
       year++;
     }
   }
