@@ -3,6 +3,10 @@ import { getJSONContentDiff } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
 
+// We must operate in batches, because Prisma/SQL has a maximum bound parameter limit of 32767.
+// Given we have 3 parameters per batch entry, that's around 10k per batch (nice round number).
+const MAX_BATCH_SIZE = 10000;
+
 /**
  * Updates all of the stored artifact content reference text for the given artifact.
  * Content reference text is used for other artifacts to the content within this one.
@@ -29,18 +33,33 @@ export async function updateArtifactContentReferenceText(
   // We cannot perform an update call with an empty set of values
   if (!sqlValues.length) return;
 
-  await tx.$queryRaw`
-    UPDATE "ArtifactReference" AS ar SET
-      "referenceText" = c."referenceText"
-    FROM (VALUES
-      ${Prisma.join(
-        // SECURITY: We must use Prisma.join to prevent SQL injection
-        sqlValues,
-      )}
-    ) as c("targetArtifactId", "targetArtifactBlockId", "referenceText")
-    WHERE
-      c."targetArtifactId" = ar."targetArtifactId"
-      AND
-      c."targetArtifactBlockId" = ar."targetArtifactBlockId"
-  `;
+  // We must operate in batches, because Prisma/SQL has a maximum bound parameter limit of 32767.
+  const batches = sqlValues.reduce((acc, value) => {
+    const previousBatch = acc.at(-1);
+    if (previousBatch && previousBatch.length < MAX_BATCH_SIZE) {
+      previousBatch.push(value);
+    } else {
+      const newBatch = [value];
+      acc.push(newBatch);
+    }
+
+    return acc;
+  }, [] as Prisma.Sql[][]);
+
+  for (const batch of batches) {
+    await tx.$queryRaw`
+      UPDATE "ArtifactReference" AS ar SET
+        "referenceText" = c."referenceText"
+      FROM (VALUES
+        ${Prisma.join(
+          // SECURITY: We must use Prisma.join to prevent SQL injection
+          batch,
+        )}
+      ) as c("targetArtifactId", "targetArtifactBlockId", "referenceText")
+      WHERE
+        c."targetArtifactId" = ar."targetArtifactId"
+        AND
+        c."targetArtifactBlockId" = ar."targetArtifactBlockId"
+    `;
+  }
 }
