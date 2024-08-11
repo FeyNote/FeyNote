@@ -47,7 +47,7 @@ import {
 } from '@feynote/shared-utils';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import * as Y from 'yjs';
+import { Doc as YDoc, applyUpdate } from 'yjs';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
@@ -231,8 +231,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       });
     if (!response) return;
 
-    const templateYDoc = new Y.Doc();
-    Y.applyUpdate(templateYDoc, response.yBin);
+    const templateYDoc = new YDoc();
+    applyUpdate(templateYDoc, response.yBin);
     const templateTiptapBody = getTiptapContentFromYjsDoc(
       templateYDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
@@ -288,6 +288,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
           theme={theme}
           applyTemplateRef={editorApplyTemplateRef}
           knownReferences={knownReferences}
+          incomingArtifactReferences={props.artifact.incomingArtifactReferences}
           yjsProvider={connection.tiptapCollabProvider}
           onReady={() => setEditorReady(true)}
         />

@@ -1,5 +1,5 @@
 import { onLoadDocumentPayload } from '@hocuspocus/server';
-import * as Y from 'yjs';
+import { applyUpdate } from 'yjs';
 
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
@@ -25,7 +25,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           throw new Error();
         }
 
-        Y.applyUpdate(args.document, artifact.yBin);
+        applyUpdate(args.document, artifact.yBin);
 
         return args.document;
       }

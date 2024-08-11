@@ -1,9 +1,10 @@
 import styled from 'styled-components';
-import { DocData } from './ArtifactCalendar';
 import { useMemo, useState } from 'react';
-import * as Y from 'yjs';
+import { Array as YArray } from 'yjs';
 import { IonButton } from '@ionic/react';
-import type { TypedArray } from 'yjs-types';
+import type { TypedArray, TypedMap } from 'yjs-types';
+import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { YCalendarConfig } from '@feynote/shared-utils';
 
 const CalendarBody = styled.div``;
 
@@ -29,22 +30,17 @@ const CalendarDay = styled.div`
   height: 75px;
 `;
 
-interface Props {
-  docData: DocData;
-}
-
 const startDayOfWeekForMonth = (
-  docData: DocData,
+  configMap: TypedMap<Partial<YCalendarConfig>>,
   findYear: number,
   findMonth: number,
-) => {
+): number => {
   if (findYear < 0 || findMonth < 0) throw new Error();
-  const calendarStartDayOfWeek =
-    docData.config.get('calendarStartDayOfWeek') || 0;
-  const daysInWeek = docData.config.get('daysInWeek') || 1;
-  const monthsInYear = docData.config.get('monthsInYear') || 1;
-  const daysInMonthList = docData.config.get('daysInMonth') || new Y.Array();
-  const leapInMonthList = docData.config.get('leapInMonth') || new Y.Array();
+  const calendarStartDayOfWeek = configMap.get('calendarStartDayOfWeek') || 0;
+  const daysInWeek = configMap.get('daysInWeek') || 1;
+  const monthsInYear = configMap.get('monthsInYear') || 1;
+  const daysInMonthList = configMap.get('daysInMonth') || new YArray();
+  const leapInMonthList = configMap.get('leapInMonth') || new YArray();
 
   let dayOfWeek = calendarStartDayOfWeek;
   if (findYear === 0 && findMonth === 0) return calendarStartDayOfWeek;
@@ -96,9 +92,16 @@ const startDayOfWeekForMonth = (
   return dayOfWeek;
 };
 
+type IncomingArtifactReference = ArtifactDTO['incomingArtifactReferences'][0];
+
+interface Props {
+  configMap: TypedMap<Partial<YCalendarConfig>>;
+  incomingArtifactReferences: IncomingArtifactReference[];
+}
+
 export const CalendarRenderer: React.FC<Props> = (props) => {
   const [center, setCenter] = useState<string>(
-    props.docData.config.get('center') ||
+    props.configMap.get('center') ||
       `${new Date().getFullYear()}.${new Date().getMonth() + 1}.${new Date().getDate().toFixed()}`,
   );
   const centerParts = center.split('.');
@@ -106,27 +109,48 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
   const centerMonth = parseInt(centerParts[1]);
   const centerDay = parseInt(centerParts[1]);
 
+  const knownReferencesByDay = useMemo(
+    () =>
+      props.incomingArtifactReferences.reduce<
+        Record<string, IncomingArtifactReference[]>
+      >((knownReferencesByDay, incomingReference) => {
+        if (!incomingReference.targetArtifactBlockId)
+          return knownReferencesByDay;
+
+        const blockId = incomingReference.targetArtifactBlockId;
+        if (blockId.includes('-')) {
+          const [start, end] = blockId.split('-');
+          // TODO: add support for date ranges
+        } else {
+          knownReferencesByDay[blockId] ||= [];
+          knownReferencesByDay[blockId].push(incomingReference);
+        }
+
+        return knownReferencesByDay;
+      }, {}),
+    [props.incomingArtifactReferences],
+  );
+
   const startDayOfMonth = useMemo(() => {
-    return startDayOfWeekForMonth(props.docData, centerYear, centerMonth);
+    return startDayOfWeekForMonth(props.configMap, centerYear, centerMonth);
   }, [centerYear, centerMonth]); // TODO: Missing deps here
 
   const dayOfWeekNames =
-    props.docData.config.get('dayOfWeekNames') ||
-    (new Y.Array() as TypedArray<string>);
+    props.configMap.get('dayOfWeekNames') ||
+    (new YArray() as TypedArray<string>);
   const monthNames =
-    props.docData.config.get('monthNames') ||
-    (new Y.Array() as TypedArray<string>);
-  const daysInWeek = props.docData.config.get('daysInWeek') || 1;
+    props.configMap.get('monthNames') || (new YArray() as TypedArray<string>);
+  const daysInWeek = props.configMap.get('daysInWeek') || 1;
   const daysInMonth =
-    props.docData.config.get('daysInMonth')?.get(centerMonth - 1) || 1;
+    props.configMap.get('daysInMonth')?.get(centerMonth - 1) || 1;
   const leapInMonth =
-    props.docData.config.get('leapInMonth')?.get(centerMonth - 1) || 0;
-  const monthsInYear = props.docData.config.get('monthsInYear') || 1;
+    props.configMap.get('leapInMonth')?.get(centerMonth - 1) || 0;
+  const monthsInYear = props.configMap.get('monthsInYear') || 1;
   const firstWeekNumDays = daysInWeek - startDayOfMonth;
   const weekCount =
     1 + Math.ceil((daysInMonth - firstWeekNumDays) / daysInWeek);
 
-  const moveCenter = (dir: number) => {
+  const moveCenter = (dir: number): void => {
     let newCenterYear = centerYear;
     let newCenterMonth = centerMonth + dir;
 
@@ -140,6 +164,37 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     }
 
     setCenter(`${newCenterYear}.${newCenterMonth}.${centerDay}`);
+  };
+
+  const getDayNumber = (
+    weekIdx: number,
+    dayIdx: number,
+  ): number | undefined => {
+    const num = -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
+
+    const leapDays = centerYear % leapInMonth === 0 ? 1 : 0;
+
+    if (num < 1) return undefined;
+    if (num > daysInMonth + leapDays) return undefined;
+    return -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
+  };
+
+  const renderDay = (weekIdx: number, dayIdx: number): JSX.Element => {
+    const dayNumber = getDayNumber(weekIdx, dayIdx);
+    if (!dayNumber) return <></>;
+
+    const references =
+      knownReferencesByDay[`${centerYear}.${centerMonth}.${centerDay}`] || [];
+
+    return (
+      <>
+        <div>{dayNumber}</div>
+
+        {references.map((reference) => (
+          <div>{reference.artifact.title}</div>
+        ))}
+      </>
+    );
   };
 
   return (
@@ -158,16 +213,7 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
         <CalendarWeek key={weekIdx}>
           {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
             <CalendarDay key={`${weekIdx}.${dayIdx}`}>
-              {(() => {
-                const num =
-                  -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
-
-                const leapDays = centerYear % leapInMonth === 0 ? 1 : 0;
-
-                if (num < 1) return '';
-                if (num > daysInMonth + leapDays) return '';
-                return -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
-              })()}
+              {renderDay(weekIdx, dayIdx)}
             </CalendarDay>
           ))}
         </CalendarWeek>

@@ -5,6 +5,7 @@ import { t } from 'i18next';
 import { trpc } from '../../../../../../utils/trpc';
 import { EventContext } from '../../../../../context/events/EventContext';
 import { EventName } from '../../../../../context/events/EventName';
+import type { ArtifactDTO } from '@feynote/prisma/types';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -71,7 +72,7 @@ export interface ReferenceItem {
   artifactId: string;
   artifactBlockId: string | undefined;
   referenceText: string;
-  artifact: any;
+  artifact: ArtifactDTO;
 }
 
 interface Props {
@@ -180,6 +181,8 @@ export class ReferencesList extends Component<Props, State> {
     }
 
     const item = this.props.items[index];
+
+    console.log('type is', item.artifact.type);
 
     if (item) {
       this.props.command({

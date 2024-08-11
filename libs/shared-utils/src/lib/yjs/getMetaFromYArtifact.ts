@@ -1,9 +1,9 @@
-import * as Y from 'yjs';
+import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
 import { YArtifactMetaSchema } from './YArtifactMetaSchema';
 import type { ArtifactTheme, ArtifactType } from '@prisma/client';
 
-export const getMetaFromYArtifact = (yArtifact: Y.Doc) => {
+export const getMetaFromYArtifact = (yArtifact: YDoc) => {
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
 
   const artifactMeta = {

@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { ArtifactUpdateQueueItem } from './ArtifactUpdateQueueItem';
-import * as Y from 'yjs';
+import { Doc as YDoc, applyUpdate } from 'yjs';
 import {
   updateArtifactTitleReferenceText,
   updateArtifactContentReferenceText,
@@ -27,13 +27,13 @@ export const artifactUpdateQueueWorker = new Worker<
     try {
       console.log(`Processing job ${args.id}`);
 
-      const oldYjsDoc = new Y.Doc();
+      const oldYjsDoc = new YDoc();
       const oldYBin = Buffer.from(args.data.oldYBinB64, 'base64');
-      Y.applyUpdate(oldYjsDoc, oldYBin);
+      applyUpdate(oldYjsDoc, oldYBin);
 
-      const newYjsDoc = new Y.Doc();
+      const newYjsDoc = new YDoc();
       const newYBin = Buffer.from(args.data.newYBinB64, 'base64');
-      Y.applyUpdate(newYjsDoc, newYBin);
+      applyUpdate(newYjsDoc, newYBin);
 
       const oldJSONContent = getTiptapContentFromYjsDoc(
         oldYjsDoc,

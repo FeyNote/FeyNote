@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useArtifactEditor } from '../../../useTiptapEditor';
-import * as Y from 'yjs';
+import { Doc as YDoc, applyUpdate } from 'yjs';
 import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
 import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
 import { EditorContent } from '@tiptap/react';
@@ -59,9 +59,9 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
   const yDoc = useMemo(() => {
-    const yDoc = new Y.Doc();
+    const yDoc = new YDoc();
 
-    Y.applyUpdate(yDoc, props.artifactYBin);
+    applyUpdate(yDoc, props.artifactYBin);
 
     return yDoc;
   }, [props.artifact]);
