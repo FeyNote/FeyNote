@@ -1,4 +1,10 @@
-import { Component } from 'react';
+import {
+  forwardRef,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import styled from 'styled-components';
 import { MdHorizontalRule } from 'react-icons/md';
 import { t } from 'i18next';
@@ -6,6 +12,7 @@ import { trpc } from '../../../../../../utils/trpc';
 import { EventContext } from '../../../../../context/events/EventContext';
 import { EventName } from '../../../../../context/events/EventName';
 import type { ArtifactDTO } from '@feynote/prisma/types';
+import { capitalize } from '@feynote/shared-utils';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -81,72 +88,57 @@ interface Props {
   command: (...args: any) => void;
 }
 
-interface State {
-  selectedIndex: number;
-  creatingItem: boolean;
-}
+export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
+  const { eventManager } = useContext(EventContext);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [creatingItem, setCreatingItem] = useState(false);
 
-export class ReferencesList extends Component<Props, State> {
-  static contextType = EventContext;
-  state = {
-    selectedIndex: 0,
-    creatingItem: false,
+  // We always add 1 to the number of items since there's a "create" button
+  const itemCount = props.items.length + 1;
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [props.items]);
+
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }: { event: KeyboardEvent }) => {
+      if (event.key === 'ArrowUp') {
+        upHandler();
+        return true;
+      }
+
+      if (event.key === 'ArrowDown') {
+        downHandler();
+        return true;
+      }
+
+      if (event.key === 'Enter') {
+        enterHandler();
+        return true;
+      }
+
+      return false;
+    },
+  }));
+
+  const upHandler = () => {
+    setSelectedIndex((selectedIndex + itemCount - 1) % itemCount);
   };
 
-  componentDidUpdate(oldProps: Props) {
-    if (this.props.items !== oldProps.items) {
-      this.setState({
-        selectedIndex: 0,
-      });
-    }
-  }
+  const downHandler = () => {
+    setSelectedIndex((selectedIndex + 1) % itemCount);
+  };
 
-  onKeyDown({ event }: { event: KeyboardEvent }) {
-    if (event.key === 'ArrowUp') {
-      this.upHandler();
-      return true;
-    }
+  const enterHandler = () => {
+    selectItem(selectedIndex);
+  };
 
-    if (event.key === 'ArrowDown') {
-      this.downHandler();
-      return true;
-    }
+  const createItem = () => {
+    if (creatingItem) return;
 
-    if (event.key === 'Enter') {
-      this.enterHandler();
-      return true;
-    }
+    setCreatingItem(true);
 
-    return false;
-  }
-
-  upHandler() {
-    this.setState({
-      selectedIndex:
-        (this.state.selectedIndex + this.props.items.length - 1) %
-        this.props.items.length,
-    });
-  }
-
-  downHandler() {
-    this.setState({
-      selectedIndex: (this.state.selectedIndex + 1) % this.props.items.length,
-    });
-  }
-
-  enterHandler() {
-    this.selectItem(this.state.selectedIndex);
-  }
-
-  createItem() {
-    if (this.state.creatingItem) return;
-
-    this.setState({
-      creatingItem: true,
-    });
-
-    const title =
-      this.props.query.charAt(0).toUpperCase() + this.props.query.slice(1);
+    const title = capitalize(props.query);
     trpc.artifact.createArtifact
       .mutate({
         title,
@@ -160,88 +152,102 @@ export class ReferencesList extends Component<Props, State> {
         artifactTemplateId: null,
       })
       .then((artifact) => {
-        this.props.command({
+        props.command({
           artifactId: artifact.id,
           artifactBlockId: undefined,
           referenceText: title,
         });
 
-        // Hacky/glitchy way of getting context inside of a class component as recommended here:
-        // https://legacy.reactjs.org/docs/context.html
-        (this.context as any).eventManager.broadcast([
-          EventName.ArtifactCreated,
-        ]);
+        eventManager.broadcast([EventName.ArtifactCreated]);
       });
-  }
+  };
 
-  selectItem(index: number) {
-    if (!this.props.items.length) {
-      this.createItem();
+  const selectItem = (index: number) => {
+    if (!props.items.length) {
+      createItem();
       return;
     }
 
-    const item = this.props.items[index];
+    const item = props.items[index];
 
     console.log('type is', item.artifact.type);
 
     if (item) {
-      this.props.command({
+      props.command({
         artifactId: item.artifactId,
         artifactBlockId: item.artifactBlockId,
         referenceText: item.referenceText,
       });
     }
-  }
+  };
 
-  render() {
-    const { items } = this.props;
-    return (
-      <SuggestionListContainer>
-        {items.map((item, index) => {
-          return (
-            <SuggestionListItem
-              $selected={index === this.state.selectedIndex}
-              key={index}
-              onClick={() => this.selectItem(index)}
-            >
-              <SuggestionListItemIcon>
-                <MdHorizontalRule size={18} />
-              </SuggestionListItemIcon>
-              <SuggestionListItemText>
-                <SuggestionListItemTitle>
-                  {item.referenceText}
-                </SuggestionListItemTitle>
-                <SuggestionListItemSubtitle>
-                  {item.artifactBlockId
-                    ? t('editor.referenceMenu.artifactBlock', {
-                        title: item.artifact.title,
-                      })
-                    : t('editor.referenceMenu.artifact')}
-                </SuggestionListItemSubtitle>
-              </SuggestionListItemText>
-            </SuggestionListItem>
-          );
-        })}
-        {items.length === 0 && (
+  return (
+    <SuggestionListContainer>
+      {props.items.map((item, index) => {
+        return (
           <SuggestionListItem
-            $selected={this.state.selectedIndex === 0}
-            key={0}
-            onClick={() => this.createItem()}
+            $selected={index === selectedIndex}
+            key={item.artifactId + item.artifactBlockId}
+            onClick={() => selectItem(index)}
           >
             <SuggestionListItemIcon>
               <MdHorizontalRule size={18} />
             </SuggestionListItemIcon>
             <SuggestionListItemText>
               <SuggestionListItemTitle>
-                {t('editor.referenceMenu.noItems.title')}
+                {item.referenceText}
               </SuggestionListItemTitle>
               <SuggestionListItemSubtitle>
-                {t('editor.referenceMenu.noItems.subtitle')}
+                {item.artifactBlockId
+                  ? t('editor.referenceMenu.artifactBlock', {
+                      title: item.artifact.title,
+                    })
+                  : t('editor.referenceMenu.artifact')}
               </SuggestionListItemSubtitle>
             </SuggestionListItemText>
           </SuggestionListItem>
-        )}
-      </SuggestionListContainer>
-    );
-  }
-}
+        );
+      })}
+      {props.items.length === 0 && (
+        <SuggestionListItem
+          $selected={selectedIndex === 0}
+          onClick={() => createItem()}
+        >
+          <SuggestionListItemIcon>
+            <MdHorizontalRule size={18} />
+          </SuggestionListItemIcon>
+          <SuggestionListItemText>
+            <SuggestionListItemTitle>
+              {t('editor.referenceMenu.noItems.title', {
+                title: props.query,
+              })}
+            </SuggestionListItemTitle>
+            <SuggestionListItemSubtitle>
+              {t('editor.referenceMenu.noItems.subtitle')}
+            </SuggestionListItemSubtitle>
+          </SuggestionListItemText>
+        </SuggestionListItem>
+      )}
+      {props.items.length !== 0 && props.query.trim().length && (
+        <SuggestionListItem
+          $selected={selectedIndex === props.items.length}
+          onClick={() => createItem()}
+        >
+          <SuggestionListItemIcon>
+            <MdHorizontalRule size={18} />
+          </SuggestionListItemIcon>
+          <SuggestionListItemText>
+            <SuggestionListItemTitle>
+              {t('editor.referenceMenu.create.title', {
+                title: props.query,
+              })}
+            </SuggestionListItemTitle>
+            <SuggestionListItemSubtitle>
+              {t('editor.referenceMenu.create.subtitle')}
+            </SuggestionListItemSubtitle>
+          </SuggestionListItemText>
+        </SuggestionListItem>
+      )}
+    </SuggestionListContainer>
+  );
+});

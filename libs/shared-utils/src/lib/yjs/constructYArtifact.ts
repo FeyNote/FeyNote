@@ -18,7 +18,6 @@ export const constructYArtifact = (meta: YArtifactMetaSchema) => {
       break;
     }
     case 'calendar': {
-      console.log('going');
       const calendarMap = yArtifact.getMap('calendar');
       const configMap = new YMap();
       calendarMap.set('config', configMap);
