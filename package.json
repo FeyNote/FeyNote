@@ -133,7 +133,8 @@
     "tsx": "^4.7.2",
     "typescript": "^5.5.2",
     "vite": "^5.2.10",
-    "vite-plugin-pwa": "^0.20.0"
+    "vite-plugin-pwa": "^0.20.0",
+    "yjs-types": "^0.0.1"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"

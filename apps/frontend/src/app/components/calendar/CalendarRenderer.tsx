@@ -3,6 +3,7 @@ import { DocData } from './ArtifactCalendar';
 import { useMemo, useState } from 'react';
 import * as Y from 'yjs';
 import { IonButton } from '@ionic/react';
+import type { TypedArray } from 'yjs-types';
 
 const CalendarBody = styled.div``;
 
@@ -38,13 +39,12 @@ const startDayOfWeekForMonth = (
   findMonth: number,
 ) => {
   if (findYear < 0 || findMonth < 0) throw new Error();
-  const calendarStartDayOfWeek: number = docData.config.get(
-    'calendarStartDayOfWeek',
-  );
-  const daysInWeek: number = docData.config.get('daysInWeek');
-  const monthsInYear: number = docData.config.get('monthsInYear');
-  const daysInMonthList: Y.Array<number> = docData.config.get('daysInMonth');
-  const leapInMonthList: Y.Array<number> = docData.config.get('leapInMonth');
+  const calendarStartDayOfWeek =
+    docData.config.get('calendarStartDayOfWeek') || 0;
+  const daysInWeek = docData.config.get('daysInWeek') || 1;
+  const monthsInYear = docData.config.get('monthsInYear') || 1;
+  const daysInMonthList = docData.config.get('daysInMonth') || new Y.Array();
+  const leapInMonthList = docData.config.get('leapInMonth') || new Y.Array();
 
   let dayOfWeek = calendarStartDayOfWeek;
   if (findYear === 0 && findMonth === 0) return calendarStartDayOfWeek;
@@ -110,17 +110,18 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     return startDayOfWeekForMonth(props.docData, centerYear, centerMonth);
   }, [centerYear, centerMonth]); // TODO: Missing deps here
 
-  const dayOfWeekNames: Y.Array<string> =
-    props.docData.config.get('dayOfWeekNames');
-  const monthNames: Y.Array<string> = props.docData.config.get('monthNames');
-  const daysInWeek: number = props.docData.config.get('daysInWeek');
-  const daysInMonth: number = props.docData.config
-    .get('daysInMonth')
-    .get(centerMonth - 1);
-  const leapInMonth: number = props.docData.config
-    .get('leapInMonth')
-    .get(centerMonth - 1);
-  const monthsInYear: number = props.docData.config.get('monthsInYear');
+  const dayOfWeekNames =
+    props.docData.config.get('dayOfWeekNames') ||
+    (new Y.Array() as TypedArray<string>);
+  const monthNames =
+    props.docData.config.get('monthNames') ||
+    (new Y.Array() as TypedArray<string>);
+  const daysInWeek = props.docData.config.get('daysInWeek') || 1;
+  const daysInMonth =
+    props.docData.config.get('daysInMonth')?.get(centerMonth - 1) || 1;
+  const leapInMonth =
+    props.docData.config.get('leapInMonth')?.get(centerMonth - 1) || 0;
+  const monthsInYear = props.docData.config.get('monthsInYear') || 1;
   const firstWeekNumDays = daysInWeek - startDayOfMonth;
   const weekCount =
     1 + Math.ceil((daysInMonth - firstWeekNumDays) / daysInWeek);
@@ -150,13 +151,13 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
       </MonthSwitcher>
       <DayTitlesContainer>
         {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
-          <DayTitle>{dayOfWeekNames.get(dayIdx) as any}</DayTitle>
+          <DayTitle key={dayIdx}>{dayOfWeekNames.get(dayIdx)}</DayTitle>
         ))}
       </DayTitlesContainer>
       {new Array(weekCount || 1).fill(0).map((_, weekIdx) => (
         <CalendarWeek key={weekIdx}>
           {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
-            <CalendarDay>
+            <CalendarDay key={`${weekIdx}.${dayIdx}`}>
               {(() => {
                 const num =
                   -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
