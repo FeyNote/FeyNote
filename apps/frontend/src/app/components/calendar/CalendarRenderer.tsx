@@ -1,15 +1,11 @@
 import styled from 'styled-components';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Array as YArray } from 'yjs';
 import { IonButton } from '@ionic/react';
 import type { TypedArray, TypedMap } from 'yjs-types';
-import type { ArtifactDTO } from '@feynote/prisma/types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
-import {
-  dashDelimitedDateSpecifier,
-  periodDelimitedDateSpecifier,
-  slashDelimitedDateSpecifier,
-} from './calendarDateSpecifierRegex';
+import { ymdToDatestamp } from './ymdToDatestamp';
+import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
 
 const CalendarBody = styled.div``;
 
@@ -35,97 +31,14 @@ const CalendarDay = styled.div`
   height: 75px;
 `;
 
-const startDayOfWeekForMonth = (
-  configMap: TypedMap<Partial<YCalendarConfig>>,
-  findYear: number,
-  findMonth: number,
-): number => {
-  if (findYear < 0 || findMonth < 0) throw new Error();
-  const calendarStartDayOfWeek = configMap.get('calendarStartDayOfWeek') || 0;
-  const daysInWeek = configMap.get('daysInWeek') || 1;
-  const monthsInYear = configMap.get('monthsInYear') || 1;
-  const daysInMonthList = configMap.get('daysInMonth') || new YArray();
-  const leapInMonthList = configMap.get('leapInMonth') || new YArray();
-
-  let dayOfWeek = calendarStartDayOfWeek;
-  if (findYear === 0 && findMonth === 0) return calendarStartDayOfWeek;
-
-  let year = 1;
-  let lastMonthYear = 0;
-  let month = 1;
-  let lastMonth = 0;
-  if (month >= monthsInYear) {
-    month = 0;
-    year++;
-  }
-
-  while (year <= findYear) {
-    const daysInLastMonth = daysInMonthList.get(lastMonth);
-    const leapInLastMonth = leapInMonthList.get(lastMonth);
-
-    // Must avoid year 0 being considered as leap year!
-    const leapDays =
-      leapInLastMonth && lastMonthYear && lastMonthYear % leapInLastMonth === 0
-        ? 1
-        : 0;
-    /**
-     * The difference between last month's dayOfWeek and this month's dayOfWeek
-     */
-    const dayOfWeekDiff = (daysInLastMonth + leapDays) % daysInWeek;
-
-    dayOfWeek = dayOfWeek + dayOfWeekDiff;
-    if (dayOfWeek < 0) {
-      dayOfWeek = daysInWeek + dayOfWeek;
-    }
-    if (dayOfWeek > daysInWeek - 1) {
-      dayOfWeek = dayOfWeek - daysInWeek;
-    }
-
-    if (year >= findYear && month >= findMonth - 1) {
-      break;
-    }
-
-    lastMonth = month;
-    lastMonthYear = year;
-    month++;
-    if (month >= monthsInYear) {
-      month = 0;
-      year++;
-    }
-  }
-
-  return dayOfWeek;
-};
-
-const getYMDFromReference = (reference: IncomingArtifactReference) => {
-  const date = reference.targetArtifactDate;
-  if (!date) return;
-
-  if (
-    date.match(dashDelimitedDateSpecifier) ||
-    date.match(periodDelimitedDateSpecifier) ||
-    date.match(slashDelimitedDateSpecifier)
-  ) {
-    const [year, month, day] = date.split(/[-/.]/);
-    const result = {
-      year: parseInt(year),
-      month: parseInt(month),
-      day: parseInt(day),
-    };
-    if (!result.year || !result.month || !result.day) return;
-    return result;
-  }
-};
-
-const ymdToDatestamp = (ymd: { year: number; month: number; day: number }) => {
-  return `${ymd.year}.${ymd.month}.${ymd.day}`;
-};
-
-type IncomingArtifactReference = ArtifactDTO['incomingArtifactReferences'][0];
-
 interface Props {
+  renderDay: (renderInfo: {
+    day: number | undefined;
+    datestamp: string | undefined;
+    dayIdx: number;
+    weekIdx: number;
+  }) => ReactNode;
   configMap: TypedMap<Partial<YCalendarConfig>>;
-  incomingArtifactReferences: IncomingArtifactReference[];
 }
 
 export const CalendarRenderer: React.FC<Props> = (props) => {
@@ -138,37 +51,8 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
   const centerMonth = parseInt(centerParts[1]);
   const centerDay = parseInt(centerParts[1]);
 
-  const knownReferencesByDay = useMemo(
-    () =>
-      props.incomingArtifactReferences.reduce<
-        Record<string, IncomingArtifactReference[]>
-      >((knownReferencesByDay, incomingReference) => {
-        if (!incomingReference.targetArtifactDate) {
-          // TODO: we probably want to consider displaying references that don't have dates below the calendar
-          return knownReferencesByDay;
-        }
-
-        const date = incomingReference.targetArtifactDate;
-        if (date.includes('<>')) {
-          const [start, end] = date.split('-');
-          // TODO: add support for date ranges
-        } else {
-          const ymd = getYMDFromReference(incomingReference);
-          if (!ymd) return knownReferencesByDay;
-          const datestamp = ymdToDatestamp(ymd);
-          knownReferencesByDay[datestamp] ||= [];
-          knownReferencesByDay[datestamp].push(incomingReference);
-        }
-
-        return knownReferencesByDay;
-      }, {}),
-    [props.incomingArtifactReferences],
-  );
-
-  console.log(knownReferencesByDay);
-
   const startDayOfMonth = useMemo(() => {
-    return startDayOfWeekForMonth(props.configMap, centerYear, centerMonth);
+    return getStartDayOfWeekForMonth(props.configMap, centerYear, centerMonth);
   }, [centerYear, centerMonth]); // TODO: Missing deps here
 
   const dayOfWeekNames =
@@ -215,26 +99,24 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     return -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
   };
 
-  const renderDay = (weekIdx: number, dayIdx: number): JSX.Element => {
+  const renderDay = (weekIdx: number, dayIdx: number): ReactNode => {
     const dayNumber = getDayNumber(weekIdx, dayIdx);
-    if (!dayNumber) return <></>;
 
-    const datestamp = ymdToDatestamp({
-      year: centerYear,
-      month: centerMonth,
+    const datestamp =
+      dayNumber !== undefined
+        ? ymdToDatestamp({
+            year: centerYear,
+            month: centerMonth,
+            day: dayNumber,
+          })
+        : undefined;
+
+    return props.renderDay({
       day: dayNumber,
+      datestamp,
+      weekIdx,
+      dayIdx,
     });
-    const references = knownReferencesByDay[datestamp] || [];
-
-    return (
-      <>
-        <div>{dayNumber}</div>
-
-        {references.map((reference) => (
-          <div key={reference.id}>{reference.artifact.title}</div>
-        ))}
-      </>
-    );
   };
 
   return (
