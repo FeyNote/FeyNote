@@ -207,15 +207,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     };
   }, [connection]);
 
-  // useEffect(() => {
-  //   if (connectionStatus !== ConnectionStatus.Connected) {
-  //     window.onbeforeunload = () => true;
-  //   }
-  //   return () => {
-  //     window.onbeforeunload = null;
-  //   };
-  // }, [connectionStatus]);
-
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const applyRootTemplate = (rootTemplate: RootTemplate) => {
@@ -306,13 +297,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   return (
     <IonGrid>
-      {
-        // TODO: After numerous battles with react, we need to come up with a better way of doing this
-        // (<Prompt
-        //   when={connectionStatus !== ConnectionStatus.Connected}
-        //   message={t('generic.unsavedChanges')}
-        // />)
-      }
       <IonRow>
         <IonCol size="12" sizeXl="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
