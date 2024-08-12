@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from 'openai/resources';
 import { starkdown } from 'starkdown';
-import { tiptapToolCallBuilder } from '@feynote/openai';
+import { tiptapToolCallBuilder } from '@feynote/shared-utils';
 import { AIFCEditor } from './AIFCEditor';
 
 interface Props {

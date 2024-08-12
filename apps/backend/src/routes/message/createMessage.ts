@@ -6,6 +6,7 @@ import {
   OpenAIModel,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
+import { StreamDelimiter, StreamReplacement } from '@feynote/shared-utils';
 import type { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 
@@ -47,16 +48,15 @@ export async function createMessage(req: Request, res: Response) {
   );
 
   res.writeHead(200, {
-    'Content-Type': 'text/plain',
+    'Content-Type': 'application/json',
     'Transfer-Encoding': 'chunked',
   });
 
   for await (const chunk of stream) {
     const messageDelta = chunk.choices[0]?.delta;
-    console.log(JSON.stringify(messageDelta));
-    if (messageDelta.content) {
-      res.write(messageDelta.content);
-    }
+    const messageStr = JSON.stringify(messageDelta);
+    messageStr.replace(RegExp(StreamDelimiter, 'g'), StreamReplacement);
+    res.write(JSON.stringify(messageDelta) + StreamDelimiter);
   }
 
   // Remove the system message
@@ -64,6 +64,8 @@ export async function createMessage(req: Request, res: Response) {
     threadId: thread.id,
     json: message as unknown as Prisma.InputJsonValue,
   }));
+
+  console.log(JSON.stringify(messages));
 
   // await prisma.message.createMany({
   //   data: messages,

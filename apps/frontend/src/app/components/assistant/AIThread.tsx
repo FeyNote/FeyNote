@@ -26,7 +26,7 @@ import {
   handleTRPCErrors,
 } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SESSION_ITEM_NAME } from '../../context/session/types';
 import styled from 'styled-components';
@@ -90,6 +90,9 @@ export const AIThread: React.FC = () => {
   const [threadTitle, setThreadTitle] = useState<string | null>(null);
   const [disableInput, setDisableInput] = useState<boolean>(false);
   const [messages, setMessages] = useState<ThreadDTOMessage[]>([]);
+  const [streamReader, setStreamReader] = useState<OpenAIStreamReader | null>(
+    null,
+  );
   const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
     id,
     title: threadTitle || t('assistant.thread.emptyTitle'),
@@ -128,6 +131,67 @@ export const AIThread: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (!streamReader) return;
+    const newAssistantMessageHandler = () => {
+      console.log('New assistant message');
+      setMessages([
+        ...messages,
+        {
+          id: 'temp',
+          json: {
+            role: 'assistant',
+            content: '',
+          },
+        },
+      ]);
+    };
+    const newAssistantMessageContentHandler = (content: string) => {
+      console.log('Adding on string to message;', content);
+      const lastAssistantMessage = [...messages]
+        .reverse()
+        .find((message) => message.json.role === 'assistant');
+      if (!lastAssistantMessage) return console.log('Ahhh');
+      setMessages([
+        ...messages.slice(0, messages.length - 1),
+        {
+          id: 'temp',
+          json: {
+            role: 'assistant',
+            content: lastAssistantMessage.json.content + content,
+          },
+        },
+      ]);
+    };
+    const newToolCallsHandler = (
+      toolcallMessage: ChatCompletionAssistantMessageParam,
+    ) => {
+      console.log('New tool call message;', toolcallMessage);
+      setMessages([...messages, { id: 'temp', json: toolcallMessage }]);
+    };
+    const finishHandler = async () => {
+      console.log('Finished!');
+      await getThreadInfo();
+      setDisableInput(false);
+    };
+    streamReader.on('newAssistantMessage', newAssistantMessageHandler);
+    streamReader.on(
+      'newAssistantMessageContent',
+      newAssistantMessageContentHandler,
+    );
+    streamReader.on('newToolCalls', newToolCallsHandler);
+    streamReader.on('finish', finishHandler);
+    return () => {
+      streamReader.off('newAssistantMessage', newAssistantMessageHandler);
+      streamReader.off(
+        'newAssistantMessageContent',
+        newAssistantMessageContentHandler,
+      );
+      streamReader.off('newToolCalls', newToolCallsHandler);
+      streamReader.off('finish', finishHandler);
+    };
+  }, [streamReader, messages]);
+
   const createMessage = async (query: string) => {
     const token = localStorage.getItem(SESSION_ITEM_NAME);
     const body = JSON.stringify({
@@ -146,41 +210,7 @@ export const AIThread: React.FC = () => {
       const reader = response.body?.getReader();
       if (!reader) return;
       const streamReader = new OpenAIStreamReader(reader);
-      streamReader.on('newAssistantMessage', () => {
-        setMessages([
-          ...messages,
-          {
-            id: 'temp',
-            json: {
-              role: 'assistant',
-              content: '',
-            },
-          },
-        ]);
-      });
-      streamReader.on('newAssistantMessageContent', (content: string) => {
-        const lastMessage = messages[messages.length - 1];
-        setMessages([
-          ...messages.slice(0, messages.length - 1),
-          {
-            id: 'temp',
-            json: {
-              role: 'assistant',
-              content: lastMessage.json.content + content,
-            },
-          },
-        ]);
-      });
-      streamReader.on(
-        'newToolCall',
-        (toolcallMessage: ChatCompletionAssistantMessageParam) => {
-          setMessages([...messages, { id: 'temp', json: toolcallMessage }]);
-        },
-      );
-      streamReader.on('finish', async () => {
-        await getThreadInfo();
-        setDisableInput(false);
-      });
+      setStreamReader(streamReader);
     } catch (error) {
       handleTRPCErrors(error, presentToast);
       setDisableInput(false);

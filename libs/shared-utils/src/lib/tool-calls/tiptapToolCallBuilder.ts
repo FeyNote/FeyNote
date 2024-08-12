@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageToolCall } from 'openai/resources';
-import type { Generated5eMonster } from './generateMonster/5e/generate5eMonsterToolDefinition';
-import { convert5eMonsterToTipTap } from './generateMonster/5e/convert5eMonsterToTipTap';
+import type { Generated5eMonster } from './tools/generate5eMonster';
+import { convert5eMonsterToTipTap } from './converters/convert5eMonsterToTipTap';
 
 export enum FunctionName {
   Generate5eMonster = 'generate5eMonster',

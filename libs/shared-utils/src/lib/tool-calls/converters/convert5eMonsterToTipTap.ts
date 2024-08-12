@@ -1,4 +1,4 @@
-import type { Generated5eMonster } from './generate5eMonsterToolDefinition';
+import type { Generated5eMonster } from '../tools/generate5eMonster';
 
 export const convert5eMonsterToTipTap = (
   generatedMonster: Generated5eMonster,
@@ -255,7 +255,7 @@ export const convert5eMonsterToTipTap = (
     { type: 'horizontalRule' },
     {
       type: 'paragraph',
-      content: generatedMonster.abilities.flatMap((ability, idx) => {
+      content: (generatedMonster.abilities || []).flatMap((ability, idx) => {
         const content: unknown[] = [];
         if (!idx) {
           content.push({ type: 'hardBreak' });
@@ -315,7 +315,7 @@ export const convert5eMonsterToTipTap = (
     },
     {
       type: 'paragraph',
-      content: generatedMonster.reactions.flatMap((reaction, idx) => {
+      content: (generatedMonster.reactions || []).flatMap((reaction, idx) => {
         const content: unknown[] = [];
         if (idx) {
           content.push({ type: 'hardBreak' });
@@ -343,10 +343,12 @@ export const convert5eMonsterToTipTap = (
       content: [
         {
           type: 'text',
-          text: generatedMonster.legendaryActions.ruleset,
+          text: (generatedMonster.legendaryActions || { ruleset: '' }).ruleset,
         },
         { type: 'hardBreak' },
-        ...generatedMonster.legendaryActions.actions.flatMap((action, idx) => {
+        ...(
+          generatedMonster.legendaryActions || { actions: [] }
+        ).actions.flatMap((action, idx) => {
           const content: unknown[] = [];
           if (idx) {
             content.push({ type: 'hardBreak' });

@@ -1,5 +1,5 @@
 import type { RunnableToolFunction } from 'openai/lib/RunnableFunction';
-import { FunctionName } from '../../tiptapToolCallBuilder';
+import { FunctionName } from '../tiptapToolCallBuilder';
 
 export interface Generated5eMonster {
   header: {
@@ -20,17 +20,17 @@ export interface Generated5eMonster {
     charisma: string;
   };
   attributes: {
-    skills: string;
-    savingThows: string;
-    damageResistances: string;
-    damageImmunities: string;
-    conditionImmunities: string;
-    damageVulnerabilities: string;
-    senses: string;
-    languages: string;
+    skills?: string;
+    savingThows?: string;
+    damageResistances?: string;
+    damageImmunities?: string;
+    conditionImmunities?: string;
+    damageVulnerabilities?: string;
+    senses?: string;
+    languages?: string;
     cr: string;
   };
-  abilities: [
+  abilities?: [
     {
       name: string;
       frequency: string;
@@ -44,13 +44,13 @@ export interface Generated5eMonster {
       description: string;
     },
   ];
-  reactions: [
+  reactions?: [
     {
       name: string;
       description: string;
     },
   ];
-  legendaryActions: {
+  legendaryActions?: {
     ruleset: string;
     actions: [
       {
@@ -62,7 +62,7 @@ export interface Generated5eMonster {
   };
 }
 
-export const generate5eMonsterToolDefinition =
+export const generate5eMonster =
   (): RunnableToolFunction<Generated5eMonster> => {
     return {
       type: 'function',
@@ -80,6 +80,7 @@ export const generate5eMonsterToolDefinition =
         `;
         },
         parameters: {
+          required: ['header', 'general', 'stats', 'attributes.cr', 'actions'],
           type: 'object',
           properties: {
             header: {

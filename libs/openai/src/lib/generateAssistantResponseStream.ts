@@ -5,7 +5,7 @@ import {
 import { openai } from './openai';
 import { retrieveMessageContext } from './retrieveMessageContext';
 import { OpenAIModel } from './utils/openAIModels';
-import { generate5eMonsterToolDefinition } from './tools/generateMonster/5e/generate5eMonsterToolDefinition';
+import { generate5eMonster } from '@feynote/shared-utils';
 
 export async function generateAssistantResponseStream(
   systemMessage: ChatCompletionSystemMessageParam,
@@ -23,7 +23,7 @@ export async function generateAssistantResponseStream(
     model,
     messages,
     stream: true,
-    tools: [generate5eMonsterToolDefinition()],
+    tools: [generate5eMonster()],
   });
 
   return response;
