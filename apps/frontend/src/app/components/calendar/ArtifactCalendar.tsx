@@ -11,6 +11,8 @@ import type { YCalendarMap } from '@feynote/shared-utils';
 import { CalendarConfig } from './CalendarConfig';
 import { getYMDFromReference } from './getYMDFromReference';
 import { ymdToDatestamp } from './ymdToDatestamp';
+import { renderFullsizeCalendar } from './renderFullsizeCalendar';
+import type { CalendarRenderArgs } from './CalendarRenderArgs';
 
 type IncomingArtifactReference = ArtifactDTO['incomingArtifactReferences'][0];
 
@@ -76,20 +78,11 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
     [props.incomingArtifactReferences],
   );
 
-  const renderDay = (renderInfo: { day?: number; datestamp?: string }) => {
-    if (!renderInfo.day || !renderInfo.datestamp) return <></>;
-
-    const references = knownReferencesByDay[renderInfo.datestamp] || [];
-
-    return (
-      <>
-        <div>{renderInfo.day}</div>
-
-        {references.map((reference) => (
-          <div key={reference.id}>{reference.artifact.title}</div>
-        ))}
-      </>
-    );
+  const renderCalendar = (args: CalendarRenderArgs) => {
+    return renderFullsizeCalendar({
+      ...args,
+      knownReferencesByDay,
+    });
   };
 
   if (!configMap) return;
@@ -101,7 +94,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
       <br />
       <br />
 
-      <CalendarRenderer renderDay={renderDay} configMap={configMap} />
+      <CalendarRenderer renderCalendar={renderCalendar} configMap={configMap} />
     </IonCard>
   );
 };

@@ -1,43 +1,13 @@
-import styled from 'styled-components';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Array as YArray } from 'yjs';
-import { IonButton } from '@ionic/react';
 import type { TypedArray, TypedMap } from 'yjs-types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
-
-const CalendarBody = styled.div``;
-
-const MonthSwitcher = styled.div``;
-
-const DayTitlesContainer = styled.div`
-  display: flex;
-`;
-
-const DayTitle = styled.div`
-  width: 75px;
-  overflow: hidden;
-  text-wrap: nowrap;
-`;
-
-const CalendarWeek = styled.div`
-  display: flex;
-`;
-
-const CalendarDay = styled.div`
-  border: 1px solid gray;
-  width: 75px;
-  height: 75px;
-`;
+import type { CalendarRenderArgs } from './CalendarRenderArgs';
 
 interface Props {
-  renderDay: (renderInfo: {
-    day: number | undefined;
-    datestamp: string | undefined;
-    dayIdx: number;
-    weekIdx: number;
-  }) => ReactNode;
+  renderCalendar: (args: CalendarRenderArgs) => ReactNode;
   configMap: TypedMap<Partial<YCalendarConfig>>;
 }
 
@@ -99,7 +69,7 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     return -startDayOfMonth + (weekIdx * daysInWeek + (dayIdx + 1));
   };
 
-  const renderDay = (weekIdx: number, dayIdx: number): ReactNode => {
+  const getDayInfo = (weekIdx: number, dayIdx: number) => {
     const dayNumber = getDayNumber(weekIdx, dayIdx);
 
     const datestamp =
@@ -111,35 +81,23 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
           })
         : undefined;
 
-    return props.renderDay({
+    if (!dayNumber || !datestamp) return;
+
+    return {
       day: dayNumber,
       datestamp,
-      weekIdx,
-      dayIdx,
-    });
+    };
   };
 
-  return (
-    <CalendarBody>
-      <MonthSwitcher>
-        <IonButton onClick={() => moveCenter(-1)}>&lt;</IonButton>
-        {centerYear} {monthNames.get(centerMonth - 1)}
-        <IonButton onClick={() => moveCenter(1)}>&gt;</IonButton>
-      </MonthSwitcher>
-      <DayTitlesContainer>
-        {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
-          <DayTitle key={dayIdx}>{dayOfWeekNames.get(dayIdx)}</DayTitle>
-        ))}
-      </DayTitlesContainer>
-      {new Array(weekCount || 1).fill(0).map((_, weekIdx) => (
-        <CalendarWeek key={weekIdx}>
-          {new Array(daysInWeek || 1).fill(0).map((_, dayIdx) => (
-            <CalendarDay key={`${weekIdx}.${dayIdx}`}>
-              {renderDay(weekIdx, dayIdx)}
-            </CalendarDay>
-          ))}
-        </CalendarWeek>
-      ))}
-    </CalendarBody>
-  );
+  return props.renderCalendar({
+    moveCenter,
+    centerYear,
+    centerMonth,
+    centerDay,
+    dayOfWeekNames,
+    monthNames,
+    daysInWeek,
+    weekCount,
+    getDayInfo,
+  });
 };
