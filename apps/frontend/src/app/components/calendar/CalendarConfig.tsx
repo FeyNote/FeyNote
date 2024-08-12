@@ -10,6 +10,7 @@ import {
 } from '@ionic/react';
 import type { TypedMap } from 'yjs-types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Must be bounded since this can cause major performance issues
@@ -19,7 +20,12 @@ const MAX_MONTHS_IN_YEAR = 24;
 /**
  * Must be bounded since this can cause major performance issues
  */
-const MAX_DAYS_IN_YEAR = 1000;
+const MAX_DAYS_IN_MONTH = 60;
+
+/**
+ * Bounded for sanity, we could probably remove this
+ */
+const MAX_LEAP = 10;
 
 /**
  * Must be bounded since this can cause major performance issues
@@ -32,14 +38,8 @@ interface Props {
 }
 
 export const CalendarConfig: React.FC<Props> = (props) => {
-  const onDaysInYearChange = (value: string) => {
-    if (!value.length) return;
+  const { t } = useTranslation();
 
-    props.configMap.set(
-      'daysInYear',
-      Math.min(parseInt(value), MAX_DAYS_IN_YEAR),
-    );
-  };
   const onDaysInWeekChange = (value: string) => {
     if (!value.length) return;
 
@@ -198,19 +198,13 @@ export const CalendarConfig: React.FC<Props> = (props) => {
       <IonItem>
         <IonInput
           labelPlacement="stacked"
-          label={'Days in year'}
-          onIonInput={(event) => onDaysInYearChange(event.detail.value || '0')}
-          debounce={200}
-          value={props.configMap.get('daysInYear') || ''}
-        />
-      </IonItem>
-      <IonItem>
-        <IonInput
-          labelPlacement="stacked"
-          label={'Months in year'}
+          label={t('calendar.monthsInYear')}
           onIonInput={(event) =>
             onMonthsInYearChange(event.detail.value || '0')
           }
+          min={1}
+          max={MAX_MONTHS_IN_YEAR}
+          type="number"
           debounce={200}
           value={props.configMap.get('monthsInYear') || ''}
         />
@@ -229,7 +223,9 @@ export const CalendarConfig: React.FC<Props> = (props) => {
                 <IonItem>
                   <IonInput
                     labelPlacement="stacked"
-                    label={`Name for month ${idx + 1}`}
+                    label={t('calendar.nameForMonth', {
+                      number: idx + 1,
+                    })}
                     onIonInput={(event) =>
                       onMonthNameChange(idx, event.detail.value || '')
                     }
@@ -242,10 +238,13 @@ export const CalendarConfig: React.FC<Props> = (props) => {
                 <IonItem key={idx}>
                   <IonInput
                     labelPlacement="stacked"
-                    label={`Days`}
+                    label={t('calendar.month.days')}
                     onIonInput={(event) =>
                       onDaysInMonthChange(idx, event.detail.value || '')
                     }
+                    min={1}
+                    max={MAX_DAYS_IN_MONTH}
+                    type="number"
                     debounce={200}
                     value={getDaysInMonth(idx)}
                   />
@@ -255,7 +254,10 @@ export const CalendarConfig: React.FC<Props> = (props) => {
                 <IonItem key={idx}>
                   <IonInput
                     labelPlacement="stacked"
-                    label={`Leap/Y`}
+                    label={t('calendar.month.leap')}
+                    min={0}
+                    max={MAX_LEAP}
+                    type="number"
                     onIonInput={(event) =>
                       onLeapInMonthChange(idx, event.detail.value || '')
                     }
@@ -270,8 +272,11 @@ export const CalendarConfig: React.FC<Props> = (props) => {
       <IonItem>
         <IonInput
           labelPlacement="stacked"
-          label={'Days in week'}
+          label={t('calendar.daysInWeek')}
           onIonInput={(event) => onDaysInWeekChange(event.detail.value || '0')}
+          min={1}
+          max={MAX_DAYS_IN_WEEK}
+          type="number"
           debounce={200}
           value={props.configMap.get('daysInWeek') || ''}
         />
@@ -284,7 +289,9 @@ export const CalendarConfig: React.FC<Props> = (props) => {
           <IonItem key={idx}>
             <IonInput
               labelPlacement="stacked"
-              label={`Name for day of week ${idx + 1}`}
+              label={t('calendar.nameForDay', {
+                number: idx + 1,
+              })}
               onIonInput={(event) =>
                 onDayOfWeekNameChange(idx, event.detail.value || '')
               }

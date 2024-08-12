@@ -125,6 +125,13 @@
   "editor.referenceMenu.create.title": "Create \"{{title}}\"",
   "editor.referenceMenu.create.subtitle": "Click to create",
 
+  "calendar.monthsInYear": "Number of months in a year",
+  "calendar.nameForMonth": "Name for month {{number}}",
+  "calendar.month.days": "Days",
+  "calendar.month.leap": "Leap/Y",
+  "calendar.daysInWeek": "Number of days in a week",
+  "calendar.nameForDay": "Name for day of week {{number}}",
+
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
 
