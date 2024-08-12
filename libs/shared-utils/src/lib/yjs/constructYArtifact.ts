@@ -9,6 +9,7 @@ export const constructYArtifact = (meta: YArtifactMetaSchema) => {
 
   artifactMetaYMap.set('title', meta.title);
   artifactMetaYMap.set('theme', meta.theme);
+  artifactMetaYMap.set('type', meta.type);
 
   return yArtifact;
 };
