@@ -6,6 +6,7 @@ export interface ReferencesFromJSONContentResult {
   artifactBlockId: string;
   targetArtifactId: string;
   targetArtifactBlockId?: string;
+  targetArtifactDate?: string;
   referenceText: string;
 }
 
@@ -20,6 +21,7 @@ export const getReferencesFromJSONContent = (
         artifactBlockId: getIdForJSONContentUnsafe(element),
         targetArtifactId: element.attrs?.['artifactId'],
         targetArtifactBlockId: element.attrs?.['artifactBlockId'],
+        targetArtifactDate: element.attrs?.['artifactDate'],
         referenceText: element.attrs?.['referenceText'],
       });
     }

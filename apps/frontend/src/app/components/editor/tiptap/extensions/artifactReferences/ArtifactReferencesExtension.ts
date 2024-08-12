@@ -7,6 +7,7 @@ import { KnownArtifactReference } from './KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
+import { t } from 'i18next';
 
 export type ReferencePluginOptions = MentionOptions & {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -46,8 +47,33 @@ export const ArtifactReferencesExtension =
           },
         },
 
+        artifactDate: {
+          default: null,
+          parseHTML: (element) => element.getAttribute('data-artifact-date'),
+          renderHTML: (attributes) => {
+            if (!attributes.artifactDate) {
+              return {};
+            }
+
+            return {
+              'data-artifact-date': attributes.artifactDate,
+            };
+          },
+        },
+
         referenceText: {
-          default: 'Reference',
+          default: t('editor.emptyReference'),
+          parseHTML: (element) =>
+            element.getAttribute('data-artifact-reference-text'),
+          renderHTML: (attributes) => {
+            if (!attributes.referenceText) {
+              return {};
+            }
+
+            return {
+              'data-artifact-reference-text': attributes.referenceText,
+            };
+          },
         },
       };
     },

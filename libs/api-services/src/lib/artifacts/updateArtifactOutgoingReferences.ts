@@ -48,7 +48,8 @@ export async function updateArtifactOutgoingReferences(
         : undefined,
 
       targetArtifactId: reference.targetArtifactId,
-      targetArtifactBlockId: reference.targetArtifactBlockId!,
+      targetArtifactBlockId: reference.targetArtifactBlockId,
+      targetArtifactDate: reference.targetArtifactDate,
 
       // We trust the referenceText passed to us from the client.
       // Looking the reference text up here is very costly -- Instead, we should:

@@ -13,6 +13,7 @@ import { EventContext } from '../../../../../context/events/EventContext';
 import { EventName } from '../../../../../context/events/EventName';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { capitalize } from '@feynote/shared-utils';
+import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -92,6 +93,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const { eventManager } = useContext(EventContext);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [creatingItem, setCreatingItem] = useState(false);
+  const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
 
   // We always add 1 to the number of items since there's a "create" button
   const itemCount = props.items.length + 1;
@@ -168,85 +170,110 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       return;
     }
 
-    const item = props.items[index];
+    const item = props.items.at(index);
+    if (!item) return;
 
-    console.log('type is', item.artifact.type);
+    if (item.artifact.type === 'calendar') {
+      setCreatingItem(true);
+      setCalendarSelectInfo(item);
 
-    if (item) {
-      props.command({
-        artifactId: item.artifactId,
-        artifactBlockId: item.artifactBlockId,
-        referenceText: item.referenceText,
-      });
+      return;
     }
+
+    props.command({
+      artifactId: item.artifactId,
+      artifactBlockId: item.artifactBlockId,
+      referenceText: item.referenceText,
+    });
+  };
+
+  const onCalendarSubmit = (date: string) => {
+    if (!calendarSelectInfo) return;
+
+    props.command({
+      artifactId: calendarSelectInfo.artifactId,
+      artifactDate: date,
+      referenceText: `${calendarSelectInfo.referenceText} ${date}`,
+    });
   };
 
   return (
     <SuggestionListContainer>
-      {props.items.map((item, index) => {
-        return (
-          <SuggestionListItem
-            $selected={index === selectedIndex}
-            key={item.artifactId + item.artifactBlockId}
-            onClick={() => selectItem(index)}
-          >
-            <SuggestionListItemIcon>
-              <MdHorizontalRule size={18} />
-            </SuggestionListItemIcon>
-            <SuggestionListItemText>
-              <SuggestionListItemTitle>
-                {item.referenceText}
-              </SuggestionListItemTitle>
-              <SuggestionListItemSubtitle>
-                {item.artifactBlockId
-                  ? t('editor.referenceMenu.artifactBlock', {
-                      title: item.artifact.title,
-                    })
-                  : t('editor.referenceMenu.artifact')}
-              </SuggestionListItemSubtitle>
-            </SuggestionListItemText>
-          </SuggestionListItem>
-        );
-      })}
-      {props.items.length === 0 && (
-        <SuggestionListItem
-          $selected={selectedIndex === 0}
-          onClick={() => createItem()}
-        >
-          <SuggestionListItemIcon>
-            <MdHorizontalRule size={18} />
-          </SuggestionListItemIcon>
-          <SuggestionListItemText>
-            <SuggestionListItemTitle>
-              {t('editor.referenceMenu.noItems.title', {
-                title: props.query,
-              })}
-            </SuggestionListItemTitle>
-            <SuggestionListItemSubtitle>
-              {t('editor.referenceMenu.noItems.subtitle')}
-            </SuggestionListItemSubtitle>
-          </SuggestionListItemText>
-        </SuggestionListItem>
+      {!calendarSelectInfo && (
+        <div>
+          {props.items.map((item, index) => {
+            return (
+              <SuggestionListItem
+                $selected={index === selectedIndex}
+                key={item.artifactId + item.artifactBlockId}
+                onClick={() => selectItem(index)}
+              >
+                <SuggestionListItemIcon>
+                  <MdHorizontalRule size={18} />
+                </SuggestionListItemIcon>
+                <SuggestionListItemText>
+                  <SuggestionListItemTitle>
+                    {item.referenceText}
+                  </SuggestionListItemTitle>
+                  <SuggestionListItemSubtitle>
+                    {item.artifactBlockId
+                      ? t('editor.referenceMenu.artifactBlock', {
+                          title: item.artifact.title,
+                        })
+                      : t('editor.referenceMenu.artifact')}
+                  </SuggestionListItemSubtitle>
+                </SuggestionListItemText>
+              </SuggestionListItem>
+            );
+          })}
+          {props.items.length === 0 && (
+            <SuggestionListItem
+              $selected={selectedIndex === 0}
+              onClick={() => createItem()}
+            >
+              <SuggestionListItemIcon>
+                <MdHorizontalRule size={18} />
+              </SuggestionListItemIcon>
+              <SuggestionListItemText>
+                <SuggestionListItemTitle>
+                  {t('editor.referenceMenu.noItems.title', {
+                    title: props.query,
+                  })}
+                </SuggestionListItemTitle>
+                <SuggestionListItemSubtitle>
+                  {t('editor.referenceMenu.noItems.subtitle')}
+                </SuggestionListItemSubtitle>
+              </SuggestionListItemText>
+            </SuggestionListItem>
+          )}
+          {props.items.length !== 0 && props.query.trim().length && (
+            <SuggestionListItem
+              $selected={selectedIndex === props.items.length}
+              onClick={() => createItem()}
+            >
+              <SuggestionListItemIcon>
+                <MdHorizontalRule size={18} />
+              </SuggestionListItemIcon>
+              <SuggestionListItemText>
+                <SuggestionListItemTitle>
+                  {t('editor.referenceMenu.create.title', {
+                    title: props.query,
+                  })}
+                </SuggestionListItemTitle>
+                <SuggestionListItemSubtitle>
+                  {t('editor.referenceMenu.create.subtitle')}
+                </SuggestionListItemSubtitle>
+              </SuggestionListItemText>
+            </SuggestionListItem>
+          )}
+        </div>
       )}
-      {props.items.length !== 0 && props.query.trim().length && (
-        <SuggestionListItem
-          $selected={selectedIndex === props.items.length}
-          onClick={() => createItem()}
-        >
-          <SuggestionListItemIcon>
-            <MdHorizontalRule size={18} />
-          </SuggestionListItemIcon>
-          <SuggestionListItemText>
-            <SuggestionListItemTitle>
-              {t('editor.referenceMenu.create.title', {
-                title: props.query,
-              })}
-            </SuggestionListItemTitle>
-            <SuggestionListItemSubtitle>
-              {t('editor.referenceMenu.create.subtitle')}
-            </SuggestionListItemSubtitle>
-          </SuggestionListItemText>
-        </SuggestionListItem>
+      {calendarSelectInfo && (
+        <CalendarSelectDate
+          artifactId={calendarSelectInfo.artifactId}
+          artifact={calendarSelectInfo.artifact}
+          onSubmit={onCalendarSubmit}
+        />
       )}
     </SuggestionListContainer>
   );

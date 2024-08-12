@@ -5,6 +5,11 @@ import { IonButton } from '@ionic/react';
 import type { TypedArray, TypedMap } from 'yjs-types';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
+import {
+  dashDelimitedDateSpecifier,
+  periodDelimitedDateSpecifier,
+  slashDelimitedDateSpecifier,
+} from './calendarDateSpecifierRegex';
 
 const CalendarBody = styled.div``;
 
@@ -92,6 +97,30 @@ const startDayOfWeekForMonth = (
   return dayOfWeek;
 };
 
+const getYMDFromReference = (reference: IncomingArtifactReference) => {
+  const date = reference.targetArtifactDate;
+  if (!date) return;
+
+  if (
+    date.match(dashDelimitedDateSpecifier) ||
+    date.match(periodDelimitedDateSpecifier) ||
+    date.match(slashDelimitedDateSpecifier)
+  ) {
+    const [year, month, day] = date.split(/[-/.]/);
+    const result = {
+      year: parseInt(year),
+      month: parseInt(month),
+      day: parseInt(day),
+    };
+    if (!result.year || !result.month || !result.day) return;
+    return result;
+  }
+};
+
+const ymdToDatestamp = (ymd: { year: number; month: number; day: number }) => {
+  return `${ymd.year}.${ymd.month}.${ymd.day}`;
+};
+
 type IncomingArtifactReference = ArtifactDTO['incomingArtifactReferences'][0];
 
 interface Props {
@@ -114,22 +143,29 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
       props.incomingArtifactReferences.reduce<
         Record<string, IncomingArtifactReference[]>
       >((knownReferencesByDay, incomingReference) => {
-        if (!incomingReference.targetArtifactBlockId)
+        if (!incomingReference.targetArtifactDate) {
+          // TODO: we probably want to consider displaying references that don't have dates below the calendar
           return knownReferencesByDay;
+        }
 
-        const blockId = incomingReference.targetArtifactBlockId;
-        if (blockId.includes('-')) {
-          const [start, end] = blockId.split('-');
+        const date = incomingReference.targetArtifactDate;
+        if (date.includes('<>')) {
+          const [start, end] = date.split('-');
           // TODO: add support for date ranges
         } else {
-          knownReferencesByDay[blockId] ||= [];
-          knownReferencesByDay[blockId].push(incomingReference);
+          const ymd = getYMDFromReference(incomingReference);
+          if (!ymd) return knownReferencesByDay;
+          const datestamp = ymdToDatestamp(ymd);
+          knownReferencesByDay[datestamp] ||= [];
+          knownReferencesByDay[datestamp].push(incomingReference);
         }
 
         return knownReferencesByDay;
       }, {}),
     [props.incomingArtifactReferences],
   );
+
+  console.log(knownReferencesByDay);
 
   const startDayOfMonth = useMemo(() => {
     return startDayOfWeekForMonth(props.configMap, centerYear, centerMonth);
@@ -183,15 +219,19 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     const dayNumber = getDayNumber(weekIdx, dayIdx);
     if (!dayNumber) return <></>;
 
-    const references =
-      knownReferencesByDay[`${centerYear}.${centerMonth}.${centerDay}`] || [];
+    const datestamp = ymdToDatestamp({
+      year: centerYear,
+      month: centerMonth,
+      day: dayNumber,
+    });
+    const references = knownReferencesByDay[datestamp] || [];
 
     return (
       <>
         <div>{dayNumber}</div>
 
         {references.map((reference) => (
-          <div>{reference.artifact.title}</div>
+          <div key={reference.id}>{reference.artifact.title}</div>
         ))}
       </>
     );
