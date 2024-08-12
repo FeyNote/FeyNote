@@ -23,7 +23,7 @@ import { useContext, useMemo, useState } from 'react';
 import { filterOutline, add, documentText, calendar } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
-import { ArtifactSummary } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { routes } from '../../routes';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
@@ -53,7 +53,7 @@ export const Dashboard: React.FC = () => {
   const [presentToast] = useIonToast();
   const { eventManager } = useContext(EventContext);
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const [artifacts, setArtifacts] = useState<ArtifactSummary[]>([]);
+  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),

@@ -6,6 +6,7 @@ import {
   SupportedLanguages,
 } from '@feynote/shared-utils';
 import {
+  IonAvatar,
   IonButtons,
   IonContent,
   IonHeader,
@@ -27,6 +28,7 @@ import { useContext, useMemo } from 'react';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { isLargeEnoughForSplitPane } from '../../../utils/isLargeEnoughForSplitPane';
+import { getRandomColor } from '../../../utils/getRandomColor';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -52,6 +54,18 @@ const fontSizeToI18n = {
   [SupportedFontSize.PX22]: 'settings.fontSize.px22',
   [SupportedFontSize.PX24]: 'settings.fontSize.px24',
 } satisfies Record<SupportedFontSize, string>;
+
+const colorOptions = {
+  '#1abc9c': 'settings.collaborationColor.turquoise',
+  '#2ecc71': 'settings.collaborationColor.emerald',
+  '#3498db': 'settings.collaborationColor.skyblue',
+  '#9b59b6': 'settings.collaborationColor.purple',
+  '#f1c40f': 'settings.collaborationColor.yellow',
+  '#f39c12': 'settings.collaborationColor.orange',
+  '#d35400': 'settings.collaborationColor.darkorange',
+  '#e74c3c': 'settings.collaborationColor.red',
+  '#c0392b': 'settings.collaborationColor.darkred',
+};
 
 export const Settings: React.FC = () => {
   const [presentAlert] = useIonAlert();
@@ -128,6 +142,12 @@ export const Settings: React.FC = () => {
       ],
     });
   };
+
+  const collaborationColorValue = Object.keys(colorOptions).includes(
+    getPreference(PreferenceNames.CollaborationColor),
+  )
+    ? getPreference(PreferenceNames.CollaborationColor)
+    : 'random';
 
   return (
     <IonPage id="main">
@@ -217,6 +237,32 @@ export const Settings: React.FC = () => {
                 >
                   {t(fontSizeToI18n[fontSize])}
                 </FontSizeSelectOption>
+              ))}
+            </IonSelect>
+          </IonItem>
+          <IonItem>
+            <IonSelect
+              label={t('settings.collaborationColor')}
+              labelPlacement="stacked"
+              value={collaborationColorValue}
+              onIonChange={(event) => {
+                let value = event.detail.value;
+                if (value === 'random') {
+                  value = getRandomColor();
+                }
+                setPreference(PreferenceNames.CollaborationColor, value);
+              }}
+              interfaceOptions={{
+                cssClass: 'color-select-popover',
+              }}
+            >
+              <IonSelectOption value={'random'}>
+                {t('settings.collaborationColor.random')}
+              </IonSelectOption>
+              {Object.entries(colorOptions).map(([color, i18nCode]) => (
+                <IonSelectOption value={color} key={color}>
+                  {t(i18nCode)}
+                </IonSelectOption>
               ))}
             </IonSelect>
           </IonItem>

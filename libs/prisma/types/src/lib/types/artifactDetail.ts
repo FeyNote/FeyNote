@@ -1,5 +1,4 @@
 import { Prisma } from '@prisma/client';
-import { ArtifactJson } from './artifactJson';
 
 export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
   select: {
@@ -23,8 +22,6 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
       },
     },
     text: true,
-    json: true,
-    yBin: true,
     templatedArtifacts: {
       select: {
         id: true,
@@ -59,11 +56,21 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         targetArtifactBlockId: true,
       },
     },
+    artfactFiles: {
+      select: {
+        id: true,
+        fileId: true,
+        order: true,
+        file: {
+          select: {
+            filename: true,
+            storageKey: true,
+            mimetype: true,
+          },
+        },
+      },
+    },
   },
 });
 
-type _ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;
-
-export type ArtifactDetail = Omit<_ArtifactDetail, 'json'> & {
-  json: ArtifactJson;
-};
+export type ArtifactDetail = Prisma.ArtifactGetPayload<typeof artifactDetail>;

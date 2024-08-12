@@ -8,6 +8,7 @@ import { onStoreDocument } from './onStoreDocument';
 import { onLoadDocument } from './onLoadDocument';
 import { beforeHandleMessage } from './beforeHandleMessage';
 import { onAuthenticate } from './onAuthenticate';
+import { onConnect } from './onConnect';
 
 const extensions: Extension[] = [];
 
@@ -40,6 +41,7 @@ const server = Server.configure({
   debounce: globalServerConfig.hocuspocus.writeDelayMs,
   maxDebounce: globalServerConfig.hocuspocus.maxWriteDelayMs,
   timeout: globalServerConfig.hocuspocus.connectionTimeout,
+  onConnect,
   onAuthenticate,
   beforeHandleMessage,
   onLoadDocument,

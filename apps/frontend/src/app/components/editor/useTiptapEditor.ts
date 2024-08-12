@@ -22,7 +22,10 @@ import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import LinkExtension from '@tiptap/extension-link';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
-import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
+import {
+  ARTIFACT_TIPTAP_BODY_KEY,
+  PreferenceNames,
+} from '@feynote/shared-utils';
 import * as Y from 'yjs';
 
 import { IndentationExtension } from './tiptap/extensions/indentation/IndentationExtension';
@@ -38,6 +41,9 @@ import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
 import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 import { TableExtension } from './tiptap/extensions/table/TableExtension';
 import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolatingContainerBackspaceExtension';
+import { useContext, useEffect, useMemo } from 'react';
+import { SessionContext } from '../../context/session/SessionContext';
+import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 
 type DocArgOptions =
   | {
@@ -57,6 +63,18 @@ type UseArtifactEditorArgs = {
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
+  const { session } = useContext(SessionContext);
+  const { getPreference } = useContext(PreferencesContext);
+
+  const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
+
+  const collaborationUser = useMemo(
+    () => ({
+      name: session ? session.email : t('generic.anonymous'),
+      color: preferredUserColor,
+    }),
+    [],
+  );
 
   const extensions = [
     DocumentExtension,
@@ -95,10 +113,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       ? [
           CollaborationCursor.configure({
             provider: args.yjsProvider,
-            user: {
-              name: 'Cyndi Lauper',
-              color: '#f783ac',
-            },
+            user: collaborationUser,
           }),
         ]
       : []),
@@ -121,11 +136,20 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     IsolatingContainerBackspaceExtension,
   ];
 
-  return useEditor({
+  const editor = useEditor({
     editable: args.editable,
     extensions,
     onCreate: () => {
       args.onReady?.();
     },
   });
+
+  useEffect(() => {
+    editor?.commands.updateUser({
+      name: session ? session.email : t('generic.anonymous'),
+      color: preferredUserColor,
+    });
+  }, [session?.email, preferredUserColor]);
+
+  return editor;
 };

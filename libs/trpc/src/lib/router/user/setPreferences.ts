@@ -19,6 +19,7 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.Language]: z.nativeEnum(SupportedLanguages).nullable(),
       [PreferenceNames.FontSize]: z.nativeEnum(SupportedFontSize),
       [PreferenceNames.Theme]: z.nativeEnum(AppTheme),
+      [PreferenceNames.CollaborationColor]: z.string().length(7),
       [PreferenceNames.PreferencesSync]: z.nativeEnum(PreferencesSync),
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

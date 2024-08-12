@@ -151,17 +151,8 @@ export class TypeSense implements SearchProvider {
     await this.deleteBlocksByArtifactIds(artifactIds);
   }
 
-  async searchArtifacts(
-    userId: string,
-    query: string,
-    withEmbeddings?: boolean,
-  ) {
-    const query_by = withEmbeddings
-      ? 'fullTextEmbedding,fullText'
-      : 'title,fullText';
-    const vector_query = withEmbeddings
-      ? 'fullTextEmbedding:([], distance_threshold:.75)'
-      : undefined;
+  async searchArtifacts(userId: string, query: string) {
+    const query_by = 'title,fullText';
 
     const results = await this.client
       .collections(Indexes.Artifact)
@@ -170,7 +161,6 @@ export class TypeSense implements SearchProvider {
         q: query,
         query_by,
         prefix: false,
-        vector_query,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
@@ -283,17 +273,6 @@ export class TypeSense implements SearchProvider {
           name: 'fullText',
           type: 'string',
           optional: false,
-        },
-        {
-          name: 'fullTextEmbedding',
-          type: 'float[]',
-          embed: {
-            from: ['fullText'],
-            model_config: {
-              model_name: 'openai/text-embedding-3-large',
-              api_key: globalServerConfig.openai.apiKey,
-            },
-          },
         },
       ],
     });

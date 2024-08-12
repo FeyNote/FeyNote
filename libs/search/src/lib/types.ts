@@ -19,11 +19,7 @@ export interface SearchProvider {
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
   indexBlocks: (artifact: IndexableArtifact) => Promise<void>;
   deleteArtifacts: (artifactIds: string[]) => Promise<void>;
-  searchArtifacts: (
-    userId: string,
-    query: string,
-    withEmbeddings?: boolean,
-  ) => Promise<string[]>;
+  searchArtifacts: (userId: string, query: string) => Promise<string[]>;
   searchArtifactTitles: (userId: string, query: string) => Promise<string[]>;
   searchArtifactBlocks: (
     userId: string,

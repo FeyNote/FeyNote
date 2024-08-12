@@ -1,7 +1,7 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useArtifactEditor } from '../../../useTiptapEditor';
 import * as Y from 'yjs';
@@ -48,7 +48,8 @@ const Header = styled.h4`
 `;
 
 interface Props {
-  artifact: ArtifactDetail;
+  artifact: ArtifactDTO;
+  artifactYBin: Uint8Array;
   artifactBlockId?: string;
   previewTarget: HTMLElement;
   onClick?: () => void;
@@ -60,7 +61,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const yDoc = useMemo(() => {
     const yDoc = new Y.Doc();
 
-    Y.applyUpdate(yDoc, props.artifact.yBin);
+    Y.applyUpdate(yDoc, props.artifactYBin);
 
     return yDoc;
   }, [props.artifact]);
@@ -120,7 +121,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       onClick={() => props.onClick?.()}
     >
       <Header>{props.artifact.title}</Header>
-      {props.artifact.text.trim().length ? (
+      {props.artifact.previewText.trim().length ? (
         <ArtifactEditorContainer>
           <ArtifactEditorStyles data-theme={props.artifact.theme}>
             <EditorContent editor={editor}></EditorContent>

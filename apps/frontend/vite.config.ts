@@ -50,6 +50,7 @@ export default defineConfig({
       filename: 'service-worker.ts',
       devOptions: {
         enabled: true,
+        type: 'module',
       },
       manifest: {
         name: 'FeyNote - Tabletop Note Keeper',

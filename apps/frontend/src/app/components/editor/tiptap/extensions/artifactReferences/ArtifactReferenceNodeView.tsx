@@ -32,11 +32,17 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     link += `?blockId=${artifactBlockId}`;
   }
 
-  const { artifact, showPreview, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(
-      props.node.attrs.artifactId,
-      knownReference?.isBroken ?? false,
-    );
+  const {
+    artifact,
+    artifactYBin,
+    showPreview,
+    onMouseOver,
+    onMouseOut,
+    close,
+  } = useArtifactPreviewTimer(
+    props.node.attrs.artifactId,
+    knownReference?.isBroken ?? false,
+  );
 
   return (
     <StyledNodeViewWrapper>
@@ -52,10 +58,11 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         >
           {knownReference?.referenceText || props.node.attrs.referenceText}
         </IonRouterLink>
-        {showPreview && artifact && ref.current && (
+        {showPreview && artifact && artifactYBin && ref.current && (
           <ArtifactReferencePreview
             onClick={() => (router.push(link, 'forward', 'push'), close())}
             artifact={artifact}
+            artifactYBin={artifactYBin}
             artifactBlockId={props.node.attrs.artifactBlockId || undefined}
             previewTarget={ref.current}
           />
