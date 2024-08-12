@@ -51,8 +51,8 @@ export const Login: React.FC = () => {
         email,
         password,
       })
-      .then((_session) => {
-        setSession(_session);
+      .then((_session) => setSession(_session))
+      .then(() => {
         router.push(routes.dashboard.build());
       })
       .catch((error) => {

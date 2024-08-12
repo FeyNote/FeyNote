@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { useContext, useEffect, useRef, useState } from 'react';
 import {
   IonCheckbox,
@@ -52,6 +52,7 @@ import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
+import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -91,7 +92,7 @@ const ConnectionStatusIcon = styled.div<{ $status: ConnectionStatus }>`
 `;
 
 interface Props {
-  artifact: ArtifactDetail;
+  artifact: ArtifactDTO;
   reload: () => void;
   scrollToBlockId?: string;
 }
@@ -160,7 +161,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   const connection = artifactCollaborationManager.get(
     props.artifact.id,
-    session || undefined,
+    session,
   );
   useEffect(() => {
     const artifactMetaMap = connection.yjsDoc.getMap('artifactMeta');
@@ -173,6 +174,15 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
     artifactMetaMap.observe(listener);
     return () => artifactMetaMap.unobserve(listener);
+  }, [connection]);
+
+  useEffect(() => {
+    const cleanup = incrementVersionForChangesOnArtifact(
+      props.artifact.id,
+      connection.yjsDoc,
+    );
+
+    return () => cleanup();
   }, [connection]);
 
   const onConnectionStatusChange = ({ status }: { status: string }) => {
@@ -197,15 +207,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     };
   }, [connection]);
 
-  // useEffect(() => {
-  //   if (connectionStatus !== ConnectionStatus.Connected) {
-  //     window.onbeforeunload = () => true;
-  //   }
-  //   return () => {
-  //     window.onbeforeunload = null;
-  //   };
-  // }, [connectionStatus]);
-
   const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
 
   const applyRootTemplate = (rootTemplate: RootTemplate) => {
@@ -220,9 +221,18 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     setArtifactTemplate(null);
   };
 
-  const applyArtifactTemplate = (artifactTemplate: ArtifactDetail) => {
+  const applyArtifactTemplate = async (artifactTemplate: ArtifactDTO) => {
+    const response = await trpc.artifact.getArtifactYBinById
+      .query({
+        id: artifactTemplate.id,
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+    if (!response) return;
+
     const templateYDoc = new Y.Doc();
-    Y.applyUpdate(templateYDoc, artifactTemplate.yBin);
+    Y.applyUpdate(templateYDoc, response.yBin);
     const templateTiptapBody = getTiptapContentFromYjsDoc(
       templateYDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
@@ -241,7 +251,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = async (updates: Partial<ArtifactDetail>) => {
+  const updateArtifact = async (updates: Partial<ArtifactDTO>) => {
     await trpc.artifact.updateArtifact
       .mutate({
         id: props.artifact.id,
@@ -287,13 +297,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
 
   return (
     <IonGrid>
-      {
-        // TODO: After numerous battles with react, we need to come up with a better way of doing this
-        // (<Prompt
-        //   when={connectionStatus !== ConnectionStatus.Connected}
-        //   message={t('generic.unsavedChanges')}
-        // />)
-      }
       <IonRow>
         <IonCol size="12" sizeXl="9">
           <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">

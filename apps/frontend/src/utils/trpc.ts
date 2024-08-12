@@ -1,8 +1,8 @@
 import type { AppRouter } from '@feynote/trpc';
 import { createTRPCProxyClient, httpLink } from '@trpc/client';
 import superjson from 'superjson';
-import { SESSION_ITEM_NAME } from '../app/context/session/types';
 import { getApiUrls } from './getApiUrls';
+import { appIdbStorageManager } from './AppIdbStorageManager';
 
 /**
  * SuperJson doesn't serialize Buffers to UInt8Array. Browsers don't have
@@ -17,15 +17,17 @@ superjson.registerCustom<Uint8Array, number[]>(
   'buffer',
 );
 
+export { superjson };
+
 export const trpc = createTRPCProxyClient<AppRouter>({
   transformer: superjson,
   links: [
     httpLink({
       url: getApiUrls().trpc,
-      headers: () => {
-        const token = localStorage.getItem(SESSION_ITEM_NAME);
+      headers: async () => {
+        const session = await appIdbStorageManager.getSession();
         return {
-          Authorization: token ? `Bearer ${token}` : undefined,
+          Authorization: session?.token ? `Bearer ${session.token}` : undefined,
         };
       },
     }),

@@ -16,10 +16,9 @@ export const login = publicProcedure
     }),
   )
   .mutation(async ({ input }) => {
-    const { email, password } = input;
     try {
-      const sessionToken = await services.login(email, password);
-      return sessionToken;
+      const session = await services.login(input.email, input.password);
+      return session;
     } catch (e) {
       if (e instanceof UserNoPasswordError) {
         throw new TRPCError({

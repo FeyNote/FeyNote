@@ -2,7 +2,6 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail } from '@feynote/prisma/types';
 import { enqueueArtifactUpdate } from '@feynote/queue';
 
 export const updateArtifact = authenticatedProcedure
@@ -20,7 +19,11 @@ export const updateArtifact = authenticatedProcedure
       where: {
         id: input.id,
       },
-      ...artifactDetail,
+      select: {
+        id: true,
+        userId: true,
+        yBin: true,
+      },
     });
 
     if (!artifact || artifact.userId !== ctx.session.userId) {

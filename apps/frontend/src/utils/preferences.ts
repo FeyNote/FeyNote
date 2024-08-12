@@ -6,7 +6,8 @@ import {
   SupportedFontSize,
 } from '@feynote/shared-utils';
 import { trpc } from './trpc';
-import { SESSION_ITEM_NAME } from '../app/context/session/types';
+import { appIdbStorageManager } from './AppIdbStorageManager';
+import { getRandomColor } from './getRandomColor';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
 
@@ -19,6 +20,7 @@ export class PreferencesService {
     [PreferenceNames.Language]: null,
     [PreferenceNames.FontSize]: SupportedFontSize.X1_0,
     [PreferenceNames.Theme]: AppTheme.Default,
+    [PreferenceNames.CollaborationColor]: getRandomColor(),
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
   };
   initialLoading: Promise<void>;
@@ -43,7 +45,8 @@ export class PreferencesService {
       return;
 
     // Do not sync remote preferences if not logged in
-    if (!localStorage.getItem(SESSION_ITEM_NAME)) return;
+    const session = await appIdbStorageManager.getSession();
+    if (!session) return;
     await trpc.user.setPreferences.mutate(this.preferences).catch(() => {
       // Do nothing
     });
@@ -96,7 +99,8 @@ export class PreferencesService {
       return;
 
     // Do not sync remote preferences if not logged in
-    if (!localStorage.getItem(SESSION_ITEM_NAME)) return;
+    const session = await appIdbStorageManager.getSession();
+    if (!session) return;
     return trpc.user.getPreferences
       .query()
       .catch(() => {

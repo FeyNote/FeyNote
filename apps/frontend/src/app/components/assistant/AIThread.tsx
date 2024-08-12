@@ -28,13 +28,13 @@ import {
 import { trpc } from '../../../utils/trpc';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SESSION_ITEM_NAME } from '../../context/session/types';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import type { ThreadDTOMessage } from '@feynote/prisma/types';
 import type { ChatCompletionAssistantMessageParam } from 'openai/resources';
 import { OpenAIStreamReader } from './OpenAIStreamReader';
+import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -193,7 +193,7 @@ export const AIThread: React.FC = () => {
   }, [streamReader, messages]);
 
   const createMessage = async (query: string) => {
-    const token = localStorage.getItem(SESSION_ITEM_NAME);
+    const session = await appIdbStorageManager.getSession();
     const body = JSON.stringify({
       threadId: id,
       query,
@@ -202,7 +202,7 @@ export const AIThread: React.FC = () => {
       const response = await fetch('/api/message/', {
         method: 'POST',
         headers: {
-          Authorization: token ? `Bearer ${token}` : '',
+          Authorization: session?.token ? `Bearer ${session.token}` : '',
           'Content-Type': 'application/json',
         },
         body,

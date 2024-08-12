@@ -1,4 +1,4 @@
-import { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/prisma/types';
 import { useIonToast } from '@ionic/react';
 import { handleTRPCErrors } from '../../../../../../utils/handleTRPCErrors';
 import { useRef, useState } from 'react';
@@ -21,7 +21,9 @@ export const useArtifactPreviewTimer = (
   isBroken: boolean,
 ) => {
   const [presentToast] = useIonToast();
-  const [artifact, setArtifact] = useState<ArtifactDetail>();
+  const loadingPRef = useRef<Promise<unknown>>();
+  const [artifact, setArtifact] = useState<ArtifactDTO>();
+  const [artifactYBin, setArtifactYBin] = useState<Uint8Array>();
   const [showPreview, setShowPreview] = useState(false);
 
   const loadArtifact = async () => {
@@ -40,12 +42,34 @@ export const useArtifactPreviewTimer = (
     setArtifact(_artifact);
   };
 
+  const loadArtifactYBin = async () => {
+    if (isBroken) return;
+    if (artifactYBin) return;
+
+    const _artifactYBin = await trpc.artifact.getArtifactYBinById
+      .query({
+        id: artifactId,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e, presentToast);
+      });
+    if (!_artifactYBin) return;
+
+    setArtifactYBin(_artifactYBin.yBin);
+  };
+
+  const load = async () => {
+    if (loadingPRef.current) return loadingPRef.current;
+
+    loadingPRef.current = Promise.all([loadArtifact(), loadArtifactYBin()]);
+  };
+
   const hoverTimeoutRef = useRef<NodeJS.Timeout>();
   const onMouseOver = () => {
-    loadArtifact();
+    load();
     clearTimeout(hoverTimeoutRef.current);
     hoverTimeoutRef.current = setTimeout(async () => {
-      await loadArtifact();
+      await load();
 
       setShowPreview(true);
     }, OPEN_TIMEOUT);
@@ -65,6 +89,7 @@ export const useArtifactPreviewTimer = (
 
   return {
     artifact,
+    artifactYBin,
     showPreview,
     onMouseOver,
     onMouseOut,
