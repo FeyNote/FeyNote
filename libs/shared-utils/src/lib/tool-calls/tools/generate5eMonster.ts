@@ -272,7 +272,7 @@ export const generate5eMonster =
                       cost: {
                         type: 'string',
                         description:
-                          'The cost in actions it takes to perform this legendary action',
+                          'Any cost that should be stated outside of the usual action cost',
                       },
                       description: {
                         type: 'string',

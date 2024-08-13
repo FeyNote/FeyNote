@@ -6,6 +6,7 @@ import { openai } from './openai';
 import { retrieveMessageContext } from './retrieveMessageContext';
 import { OpenAIModel } from './utils/openAIModels';
 import { SystemMessage } from './utils/SystemMessage';
+import { generate5eMonster } from '@feynote/shared-utils';
 
 export async function generateAssistantResponse(
   systemMessage: SystemMessage,
@@ -22,7 +23,7 @@ export async function generateAssistantResponse(
   const response = openai.beta.chat.completions.runTools({
     model,
     messages,
-    tools: [],
+    tools: [generate5eMonster()],
   });
   await response.done();
   const responseMessages = getRecentResponseMessages(response.messages);

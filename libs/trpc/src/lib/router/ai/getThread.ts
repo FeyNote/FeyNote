@@ -27,7 +27,10 @@ export const getThread = authenticatedProcedure
     const threadDTO = {
       id: thread.id,
       title: thread.title || undefined,
-      messages: thread.messages as unknown as ThreadDTOMessage[],
+      messages: (thread.messages as unknown as ThreadDTOMessage[]).filter(
+        (message) =>
+          message.json.role === 'user' || message.json.role === 'assistant',
+      ),
     };
     return threadDTO satisfies ThreadDTO;
   });

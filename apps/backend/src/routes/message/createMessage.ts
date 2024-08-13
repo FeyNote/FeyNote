@@ -59,28 +59,30 @@ export async function createMessage(req: Request, res: Response) {
     res.write(JSON.stringify(messageDelta) + StreamDelimiter);
   }
 
+  let createdAt = new Date();
   // Remove the system message
-  const messages = stream.messages.slice(1).map((message) => ({
+  const messages = stream.messages.slice(1).map((message, idx) => ({
     threadId: thread.id,
     json: message as unknown as Prisma.InputJsonValue,
+    createdAt: new Date(createdAt.getTime() + idx),
   }));
 
-  console.log(JSON.stringify(messages));
+  console.log('formatted openai messages', JSON.stringify(messages));
 
-  // await prisma.message.createMany({
-  //   data: messages,
-  // });
-  //
-  // if (!thread.title) {
-  //   const title = await generateThreadName(threadId);
-  //   if (title) {
-  //     await prisma.thread.update({
-  //       where: { id: threadId },
-  //       data: {
-  //         title,
-  //       },
-  //     });
-  //   }
-  // }
+  await prisma.message.createMany({
+    data: messages,
+  });
+
+  if (!thread.title) {
+    const title = await generateThreadName(threadId);
+    if (title) {
+      await prisma.thread.update({
+        where: { id: threadId },
+        data: {
+          title,
+        },
+      });
+    }
+  }
   res.end();
 }

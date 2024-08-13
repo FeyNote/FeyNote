@@ -1,6 +1,5 @@
 import { prisma } from '@feynote/prisma/client';
 import { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
-import { assertJsonIsChatCompletion } from './utils/assertJsonIsChatCompletion';
 
 export async function retrieveMessageContext(
   threadId: string,
@@ -16,16 +15,8 @@ export async function retrieveMessageContext(
     },
   });
 
-  const context = messages
-    .filter((message) => {
-      try {
-        assertJsonIsChatCompletion(message.json);
-      } catch (e) {
-        // Ignore Messages that don't match Chat Completion Schema
-        return false;
-      }
-      return true;
-    })
-    .map((message) => message.json as unknown as ChatCompletionMessageParam);
+  const context = messages.map(
+    (message) => message.json as unknown as ChatCompletionMessageParam,
+  );
   return context;
 }
