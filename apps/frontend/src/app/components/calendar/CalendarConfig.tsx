@@ -1,16 +1,42 @@
 import { Doc as YDoc } from 'yjs';
 import { Array as YArray } from 'yjs';
 import {
+  IonButton,
   IonCol,
   IonGrid,
+  IonIcon,
   IonInput,
   IonItem,
   IonList,
+  IonRadio,
+  IonRadioGroup,
   IonRow,
 } from '@ionic/react';
+import { settings, chevronExpand } from 'ionicons/icons';
 import type { TypedMap } from 'yjs-types';
-import type { YCalendarConfig } from '@feynote/shared-utils';
+import {
+  generateGregorianMondayCalendarConfig,
+  generateGregorianSundayCalendarConfig,
+  generateSessionCalendarConfig,
+  type YCalendarConfig,
+} from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
+import { useState, type MutableRefObject } from 'react';
+import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
+
+const calendarPresetToConfigBuilder = {
+  'gregorian-sunday': generateGregorianSundayCalendarConfig,
+  'gregorian-monday': generateGregorianMondayCalendarConfig,
+  session: generateSessionCalendarConfig,
+  custom: generateGregorianSundayCalendarConfig,
+} satisfies Record<YCalendarConfig['calendarPreset'], () => YCalendarConfig>;
+
+const calendarPresetToI18N = {
+  'gregorian-sunday': 'calendar.preset.gregorianSunday',
+  'gregorian-monday': 'calendar.preset.gregorianMonday',
+  session: 'calendar.preset.session',
+  custom: 'calendar.preset.custom',
+} satisfies Record<YCalendarConfig['calendarPreset'], string>;
 
 /**
  * Must be bounded since this can cause major performance issues
@@ -35,10 +61,13 @@ const MAX_DAYS_IN_WEEK = 14;
 interface Props {
   yDoc: YDoc;
   configMap: TypedMap<Partial<YCalendarConfig>>;
+  setCenterRef: MutableRefObject<(center: string) => void | undefined>;
 }
 
 export const CalendarConfig: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const [showSettings, setShowSettings] = useState(false);
+  // const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const onDaysInWeekChange = (value: string) => {
     if (!value.length) return;
@@ -192,8 +221,67 @@ export const CalendarConfig: React.FC<Props> = (props) => {
 
     return dayOfWeekNames.get(idx);
   };
+  const onDefaultCenterChange = (value: string | null) => {
+    props.configMap.set('defaultCenter', value);
 
-  return (
+    props.setCenterRef.current?.(value || getCurrentGregorianDatestamp());
+  };
+
+  const getCalendarPreset = () => {
+    const calendarPreset = props.configMap.get('calendarPreset');
+    return calendarPreset || 'custom';
+  };
+  const calendarPresetChange = (value: YCalendarConfig['calendarPreset']) => {
+    props.configMap.set('calendarPreset', value);
+
+    // When switching to a custom settings calendar, we want to let the user customize the options of the
+    // calendar they've already selected, therefore we don't apply default
+    // options.
+    if (value === 'custom') return;
+
+    const calendarConfig = calendarPresetToConfigBuilder[value]();
+    for (const [key, value] of Object.entries(calendarConfig)) {
+      props.configMap.set(key as keyof typeof calendarConfig, value);
+    }
+
+    props.setCenterRef.current?.(
+      calendarConfig.defaultCenter || getCurrentGregorianDatestamp(),
+    );
+  };
+
+  const basicSettings = (
+    <>
+      <IonRadioGroup
+        value={getCalendarPreset()}
+        onIonChange={(event) => calendarPresetChange(event.detail.value)}
+      >
+        {Object.entries(calendarPresetToI18N).map(([presetName, i18nTitle]) => (
+          <IonItem key={presetName} lines="none">
+            <IonRadio justify="start" labelPlacement="end" value={presetName}>
+              {t(i18nTitle)}
+            </IonRadio>
+          </IonItem>
+        ))}
+      </IonRadioGroup>
+    </>
+  );
+  // {getCalendarPreset() === "custom" && (
+  //   <IonList>
+  //     <IonItem lines="none">
+  //       <IonButton
+  //         fill="clear"
+  //         style={{ marginLeft: "auto", marginRight: "auto" }}
+  //         onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+  //       >
+  //         <IonIcon slot="start" icon={settings} />
+  //         {t('calendar.advanced')}
+  //         <IonIcon slot="end" icon={chevronExpand} />
+  //       </IonButton>
+  //     </IonItem>
+  //   </IonList>
+  // )}
+
+  const advancedSettings = (
     <IonList>
       <IonItem>
         <IonInput
@@ -300,6 +388,32 @@ export const CalendarConfig: React.FC<Props> = (props) => {
             />
           </IonItem>
         ))}
+      <IonItem>
+        <IonInput
+          labelPlacement="stacked"
+          label={t('calendar.defaultCenter')}
+          onIonInput={(event) =>
+            onDefaultCenterChange(event.detail.value || null)
+          }
+          type="text"
+          debounce={200}
+          value={props.configMap.get('defaultCenter') || ''}
+        />
+      </IonItem>
     </IonList>
+  );
+
+  return (
+    <>
+      <IonButton
+        className="ion-float-end"
+        fill="clear"
+        onClick={() => setShowSettings(!showSettings)}
+      >
+        <IonIcon slot="icon-only" icon={settings} />
+      </IonButton>
+      {showSettings && basicSettings}
+      {showSettings && getCalendarPreset() === 'custom' && advancedSettings}
+    </>
   );
 };

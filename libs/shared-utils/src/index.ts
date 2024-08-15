@@ -1,4 +1,6 @@
-export * from './lib/calendar/DEFAULT_CALENDAR_CONFIG';
+export * from './lib/calendar/generateGregorianSundayCalendarConfig';
+export * from './lib/calendar/generateGregorianMondayCalendarConfig';
+export * from './lib/calendar/generateSessionCalendarConfig';
 export * from './lib/calendar/YCalendarConfig';
 export * from './lib/calendar/YCalendarMap';
 export * from './lib/validation/validateEmail';

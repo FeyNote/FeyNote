@@ -1,11 +1,15 @@
 import { TypedArray } from 'yjs-types';
 
 export interface YCalendarConfig {
+  calendarPreset:
+    | 'gregorian-monday'
+    | 'gregorian-sunday'
+    | 'session'
+    | 'custom';
   calendarStartDayOfWeek: number; // Zero-indexed
-  daysInYear: number;
   daysInWeek: number;
   monthsInYear: number;
-  center: string;
+  defaultCenter: string | null;
   daysInMonth: TypedArray<number>;
   leapInMonth: TypedArray<number>;
   monthNames: TypedArray<string>;

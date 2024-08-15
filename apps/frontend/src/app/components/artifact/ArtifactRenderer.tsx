@@ -286,10 +286,11 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       return (
         <ArtifactCalendar
           theme={theme}
+          editable={true}
           applyTemplateRef={editorApplyTemplateRef}
           knownReferences={knownReferences}
           incomingArtifactReferences={props.artifact.incomingArtifactReferences}
-          yjsProvider={connection.tiptapCollabProvider}
+          y={connection.tiptapCollabProvider}
           onReady={() => setEditorReady(true)}
         />
       );

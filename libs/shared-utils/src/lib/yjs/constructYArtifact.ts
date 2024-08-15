@@ -1,7 +1,7 @@
 import { Doc as YDoc, Map as YMap } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
 import { YArtifactMetaSchema } from './YArtifactMetaSchema';
-import { DEFAULT_CALENDAR_CONFIG } from '../calendar/DEFAULT_CALENDAR_CONFIG';
+import { generateGregorianSundayCalendarConfig } from '../calendar/generateGregorianSundayCalendarConfig';
 
 export const constructYArtifact = (meta: YArtifactMetaSchema) => {
   const yArtifact = new YDoc();
@@ -21,7 +21,9 @@ export const constructYArtifact = (meta: YArtifactMetaSchema) => {
       const calendarMap = yArtifact.getMap('calendar');
       const configMap = new YMap();
       calendarMap.set('config', configMap);
-      for (const [key, value] of Object.entries(DEFAULT_CALENDAR_CONFIG)) {
+      for (const [key, value] of Object.entries(
+        generateGregorianSundayCalendarConfig(),
+      )) {
         configMap.set(key, value);
       }
       break;

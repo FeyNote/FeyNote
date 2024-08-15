@@ -131,6 +131,10 @@
   "calendar.month.leap": "Leap/Y",
   "calendar.daysInWeek": "Number of days in a week",
   "calendar.nameForDay": "Name for day of week {{number}}",
+  "calendar.preset.gregorianSunday": "Gregorian (Start Week on Sunday)",
+  "calendar.preset.gregorianMonday": "Gregorian (Start Week on Monday)",
+  "calendar.preset.session": "Session Calendar",
+  "calendar.preset.custom": "Custom Calendar System",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",

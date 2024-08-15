@@ -19,10 +19,6 @@ const StyledBoundedFloatingWindow = styled(BoundedFloatingWindow)`
   background: var(--ion-background-color);
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.3);
   padding: 10px;
-
-  .bn-editor {
-    padding-inline-start: 10px;
-  }
 `;
 
 const Header = styled.h4`

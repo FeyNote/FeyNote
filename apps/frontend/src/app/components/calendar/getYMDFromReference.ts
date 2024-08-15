@@ -2,6 +2,7 @@ import type { ArtifactDTO } from '@feynote/prisma/types';
 import {
   dashDelimitedDateSpecifier,
   periodDelimitedDateSpecifier,
+  poundDaySpecifier,
   slashDelimitedDateSpecifier,
 } from './calendarDateSpecifierRegex';
 
@@ -10,6 +11,16 @@ export const getYMDFromReference = (
 ) => {
   const date = reference.targetArtifactDate;
   if (!date) return;
+
+  if (date.match(poundDaySpecifier)) {
+    const [_, day] = date.split(/#/);
+
+    return {
+      year: 1,
+      month: 1,
+      day: parseInt(day),
+    };
+  }
 
   if (
     date.match(dashDelimitedDateSpecifier) ||

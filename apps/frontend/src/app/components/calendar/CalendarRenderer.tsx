@@ -1,25 +1,57 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+  type MutableRefObject,
+} from 'react';
 import { Array as YArray } from 'yjs';
 import type { TypedArray, TypedMap } from 'yjs-types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
 import type { CalendarRenderArgs } from './CalendarRenderArgs';
+import type { ArtifactDTO } from '@feynote/prisma/types';
+import { renderFullsizeCalendar } from './renderFullsizeCalendar';
+import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
 
 interface Props {
-  renderCalendar: (args: CalendarRenderArgs) => ReactNode;
+  options:
+    | {
+        type: 'fullsize';
+        knownReferencesByDay: Record<
+          string,
+          ArtifactDTO['incomingArtifactReferences']
+        >;
+      }
+    | {
+        type: 'mini';
+      };
   configMap: TypedMap<Partial<YCalendarConfig>>;
+  setCenterRef?: MutableRefObject<(center: string) => void | undefined>;
 }
 
 export const CalendarRenderer: React.FC<Props> = (props) => {
   const [center, setCenter] = useState<string>(
-    props.configMap.get('center') ||
-      `${new Date().getFullYear()}.${new Date().getMonth() + 1}.${new Date().getDate().toFixed()}`,
+    props.configMap.get('defaultCenter') || getCurrentGregorianDatestamp(),
   );
+  if (props.setCenterRef) {
+    props.setCenterRef.current = setCenter;
+  }
   const centerParts = center.split('.');
   const centerYear = parseInt(centerParts[0]);
   const centerMonth = parseInt(centerParts[1]);
   const centerDay = parseInt(centerParts[1]);
+  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
+
+  useEffect(() => {
+    const listener = () => {
+      triggerRerender();
+    };
+
+    props.configMap.observeDeep(listener);
+    return () => props.configMap.unobserveDeep(listener);
+  }, [_rerenderReducerValue]);
 
   const startDayOfMonth = useMemo(() => {
     return getStartDayOfWeekForMonth(props.configMap, centerYear, centerMonth);
@@ -89,7 +121,29 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     };
   };
 
-  return props.renderCalendar({
+  const renderCalendar = (args: CalendarRenderArgs) => {
+    switch (props.options.type) {
+      case 'fullsize': {
+        return renderFullsizeCalendar({
+          ...args,
+          knownReferencesByDay: props.options.knownReferencesByDay,
+        });
+      }
+      case 'mini': {
+        // TODO: mini calendar impl
+        return renderFullsizeCalendar({
+          ...args,
+          knownReferencesByDay: {},
+        });
+      }
+    }
+
+    throw new Error(
+      `Invalid render type passed ${(props.options as any).type}`,
+    );
+  };
+
+  return renderCalendar({
     moveCenter,
     centerYear,
     centerMonth,
