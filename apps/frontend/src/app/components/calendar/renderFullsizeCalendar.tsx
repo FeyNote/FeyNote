@@ -3,8 +3,22 @@ import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
 import type { CalendarRenderArgs } from './CalendarRenderArgs';
 import { chevronBack, chevronForward } from 'ionicons/icons';
+import { Link } from 'react-router-dom';
+import { routes } from '../../routes';
 
-const CalendarBody = styled.div``;
+const CalendarContainer = styled.div``;
+
+const CalendarBodyContainer = styled.div`
+  overflow-x: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 16px;
+`;
+
+const CalendarBody = styled.div`
+  min-width: 650px;
+  max-width: 900px;
+`;
 
 const MonthSwitcher = styled.div`
   display: flex;
@@ -27,19 +41,28 @@ const DayTitlesContainer = styled.div`
 `;
 
 const DayTitle = styled.div`
-  width: 75px;
+  flex-basis: 100%;
   overflow: hidden;
   text-wrap: nowrap;
+  text-align: center;
 `;
 
 const CalendarWeek = styled.div`
   display: flex;
 `;
 
-const CalendarDay = styled.div`
+const CalendarDayContainer = styled.div`
+  flex-basis: 100%;
   border: 1px solid gray;
-  width: 75px;
-  height: 75px;
+`;
+
+const CalendarDay = styled.div`
+  padding: 4px;
+  min-height: 120px;
+`;
+
+const CalendarItem = styled.div`
+  font-size: 0.8rem;
 `;
 
 interface FullsizeCalendarArgs extends CalendarRenderArgs {
@@ -57,13 +80,22 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
     const references = args.knownReferencesByDay[dayInfo.datestamp] || [];
 
     return (
-      <>
+      <CalendarDay>
         <div>{dayInfo.day}</div>
 
         {references.map((reference) => (
-          <div key={reference.id}>{reference.artifact.title}</div>
+          <CalendarItem>
+            <Link
+              key={reference.id}
+              to={routes.artifact.build({
+                id: reference.artifactId,
+              })}
+            >
+              {reference.artifact.title}
+            </Link>
+          </CalendarItem>
         ))}
-      </>
+      </CalendarDay>
     );
   };
 
@@ -76,7 +108,7 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
       </NextBackButton>
       <MonthYearName>
-        {args.centerYear} {args.monthNames.get(args.centerMonth - 1)}
+        {args.monthNames.get(args.centerMonth - 1)} {args.centerYear}
       </MonthYearName>
       <NextBackButton fill="clear" onClick={() => args.moveCenter(1)}>
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
@@ -85,22 +117,28 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
   );
 
   return (
-    <CalendarBody>
+    <CalendarContainer>
       {showSwitcher && switcher}
-      <DayTitlesContainer>
-        {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
-          <DayTitle key={dayIdx}>{args.dayOfWeekNames.get(dayIdx)}</DayTitle>
-        ))}
-      </DayTitlesContainer>
-      {new Array(args.weekCount || 1).fill(0).map((_, weekIdx) => (
-        <CalendarWeek key={weekIdx}>
-          {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
-            <CalendarDay key={`${weekIdx}.${dayIdx}`}>
-              {renderDay(weekIdx, dayIdx)}
-            </CalendarDay>
+      <CalendarBodyContainer>
+        <CalendarBody>
+          <DayTitlesContainer>
+            {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+              <DayTitle key={dayIdx}>
+                {args.dayOfWeekNames.get(dayIdx)}
+              </DayTitle>
+            ))}
+          </DayTitlesContainer>
+          {new Array(args.weekCount || 1).fill(0).map((_, weekIdx) => (
+            <CalendarWeek key={weekIdx}>
+              {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+                <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
+                  {renderDay(weekIdx, dayIdx)}
+                </CalendarDayContainer>
+              ))}
+            </CalendarWeek>
           ))}
-        </CalendarWeek>
-      ))}
-    </CalendarBody>
+        </CalendarBody>
+      </CalendarBodyContainer>
+    </CalendarContainer>
   );
 };

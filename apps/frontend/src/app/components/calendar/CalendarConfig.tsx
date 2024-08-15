@@ -72,6 +72,19 @@ const SettingsContainer = styled.div<{
   ${(props) => (props.$open ? 'box-shadow: 1px 1px 7px rgba(0,0,0,0.3);' : '')}
 `;
 
+const SettingsButton = styled(IonButton)<{
+  $showSettings: boolean;
+}>`
+  ${(props) =>
+    props.$showSettings
+      ? ''
+      : `
+    position: absolute;
+    top: 0;
+    right: 0;
+  `}
+`;
+
 const SettingsOptions = styled.div`
   position: relative;
   padding: 10px;
@@ -425,13 +438,13 @@ export const CalendarConfig: React.FC<Props> = (props) => {
   return (
     <SettingsContainer $open={showSettings}>
       <SettingsButtonContainer>
-        <IonButton
-          className={showSettings ? '' : 'ion-float-end'}
+        <SettingsButton
+          $showSettings={showSettings}
           fill="clear"
           onClick={() => setShowSettings(!showSettings)}
         >
           <IonIcon slot="icon-only" icon={settings} />
-        </IonButton>
+        </SettingsButton>
       </SettingsButtonContainer>
       {showSettings && (
         <SettingsOptions>
