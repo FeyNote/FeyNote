@@ -16,11 +16,12 @@ const StyledNodeViewWrapper = styled(NodeViewWrapper)`
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const router = useIonRouter();
 
-  const { artifactId, artifactBlockId } = props.node.attrs;
+  const { artifactId, artifactBlockId, artifactDate } = props.node.attrs;
 
   const key = getKnownArtifactReferenceKey(
     artifactId,
     artifactBlockId || undefined,
+    artifactDate || undefined,
   );
   const ref = useRef<HTMLSpanElement>(null);
 

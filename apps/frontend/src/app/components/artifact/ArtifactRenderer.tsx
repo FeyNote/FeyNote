@@ -147,12 +147,14 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       const key = getKnownArtifactReferenceKey(
         reference.targetArtifactId,
         reference.targetArtifactBlockId || undefined,
+        reference.targetArtifactDate || undefined,
       );
 
       knownReferences.set(key, {
         artifactBlockId: reference.artifactBlockId,
         targetArtifactId: reference.targetArtifactId,
         targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
+        targetArtifactDate: reference.targetArtifactDate || undefined,
         referenceText: reference.referenceText,
         isBroken: !reference.referenceTargetArtifactId,
       });

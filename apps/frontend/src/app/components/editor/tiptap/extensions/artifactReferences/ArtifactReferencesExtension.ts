@@ -99,6 +99,7 @@ export const ArtifactReferencesExtension =
       const key = getKnownArtifactReferenceKey(
         node.attrs.artifactId,
         node.attrs.artifactBlockId || undefined,
+        node.attrs.artifactDate || undefined,
       );
       const knownReference = this.knownReferences?.get(key);
 
@@ -115,6 +116,7 @@ export const ArtifactReferencesExtension =
       const key = getKnownArtifactReferenceKey(
         node.attrs.artifactId,
         node.attrs.artifactBlockId || undefined,
+        node.attrs.artifactDate || undefined,
       );
       const knownReference = this.knownReferences?.get(key);
 
