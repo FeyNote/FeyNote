@@ -3,7 +3,7 @@ import type { YCalendarConfig } from './YCalendarConfig';
 
 export const generateSessionCalendarConfig = (): YCalendarConfig => {
   return {
-    calendarPreset: 'session',
+    preset: 'session',
     calendarStartDayOfWeek: 0, // Zero-indexed
     daysInWeek: 6,
     monthsInYear: 1,

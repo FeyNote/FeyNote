@@ -7,6 +7,7 @@ import {
   IonIcon,
   IonInput,
   IonItem,
+  IonLabel,
   IonList,
   IonRadio,
   IonRadioGroup,
@@ -23,20 +24,27 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useState, type MutableRefObject } from 'react';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
+import styled from 'styled-components';
 
 const calendarPresetToConfigBuilder = {
   'gregorian-sunday': generateGregorianSundayCalendarConfig,
   'gregorian-monday': generateGregorianMondayCalendarConfig,
   session: generateSessionCalendarConfig,
   custom: generateGregorianSundayCalendarConfig,
-} satisfies Record<YCalendarConfig['calendarPreset'], () => YCalendarConfig>;
+} satisfies Record<YCalendarConfig['preset'], () => YCalendarConfig>;
 
 const calendarPresetToI18N = {
-  'gregorian-sunday': 'calendar.preset.gregorianSunday',
-  'gregorian-monday': 'calendar.preset.gregorianMonday',
-  session: 'calendar.preset.session',
-  custom: 'calendar.preset.custom',
-} satisfies Record<YCalendarConfig['calendarPreset'], string>;
+  'gregorian-sunday': [
+    'calendar.preset.gregorianSunday',
+    'calendar.preset.gregorianSunday.subtext',
+  ],
+  'gregorian-monday': [
+    'calendar.preset.gregorianMonday',
+    'calendar.preset.gregorianMonday.subtext',
+  ],
+  session: ['calendar.preset.session', 'calendar.preset.session.subtext'],
+  custom: ['calendar.preset.custom', 'calendar.preset.custom.subtext'],
+} satisfies Record<YCalendarConfig['preset'], [string, string]>;
 
 /**
  * Must be bounded since this can cause major performance issues
@@ -58,16 +66,31 @@ const MAX_LEAP = 10;
  */
 const MAX_DAYS_IN_WEEK = 14;
 
+const SettingsContainer = styled.div<{
+  $open: boolean;
+}>`
+  ${(props) => (props.$open ? 'box-shadow: 1px 1px 7px rgba(0,0,0,0.3);' : '')}
+`;
+
+const SettingsOptions = styled.div`
+  position: relative;
+  padding: 10px;
+  margin-bottom: 16px;
+`;
+
+const SettingsButtonContainer = styled.div`
+  text-align: right;
+`;
+
 interface Props {
   yDoc: YDoc;
   configMap: TypedMap<Partial<YCalendarConfig>>;
-  setCenterRef: MutableRefObject<(center: string) => void | undefined>;
+  setCenterRef: MutableRefObject<((center: string) => void) | undefined>;
 }
 
 export const CalendarConfig: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [showSettings, setShowSettings] = useState(false);
-  // const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const onDaysInWeekChange = (value: string) => {
     if (!value.length) return;
@@ -227,12 +250,12 @@ export const CalendarConfig: React.FC<Props> = (props) => {
     props.setCenterRef.current?.(value || getCurrentGregorianDatestamp());
   };
 
-  const getCalendarPreset = () => {
-    const calendarPreset = props.configMap.get('calendarPreset');
+  const getPreset = () => {
+    const calendarPreset = props.configMap.get('preset');
     return calendarPreset || 'custom';
   };
-  const calendarPresetChange = (value: YCalendarConfig['calendarPreset']) => {
-    props.configMap.set('calendarPreset', value);
+  const presetChange = (value: YCalendarConfig['preset']) => {
+    props.configMap.set('preset', value);
 
     // When switching to a custom settings calendar, we want to let the user customize the options of the
     // calendar they've already selected, therefore we don't apply default
@@ -250,36 +273,31 @@ export const CalendarConfig: React.FC<Props> = (props) => {
   };
 
   const basicSettings = (
-    <>
+    <div>
+      <IonItem lines="none">
+        <IonLabel>
+          <p>{t('calendar.preset.warning')}</p>
+        </IonLabel>
+      </IonItem>
       <IonRadioGroup
-        value={getCalendarPreset()}
-        onIonChange={(event) => calendarPresetChange(event.detail.value)}
+        value={getPreset()}
+        onIonChange={(event) => presetChange(event.detail.value)}
       >
-        {Object.entries(calendarPresetToI18N).map(([presetName, i18nTitle]) => (
-          <IonItem key={presetName} lines="none">
-            <IonRadio justify="start" labelPlacement="end" value={presetName}>
-              {t(i18nTitle)}
-            </IonRadio>
-          </IonItem>
-        ))}
+        {Object.entries(calendarPresetToI18N).map(
+          ([presetName, [i18nTitle, i18nSubtext]]) => (
+            <IonItem key={presetName} lines="none">
+              <IonRadio justify="start" labelPlacement="end" value={presetName}>
+                <IonLabel>
+                  {t(i18nTitle)}
+                  <p>{t(i18nSubtext)}</p>
+                </IonLabel>
+              </IonRadio>
+            </IonItem>
+          ),
+        )}
       </IonRadioGroup>
-    </>
+    </div>
   );
-  // {getCalendarPreset() === "custom" && (
-  //   <IonList>
-  //     <IonItem lines="none">
-  //       <IonButton
-  //         fill="clear"
-  //         style={{ marginLeft: "auto", marginRight: "auto" }}
-  //         onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-  //       >
-  //         <IonIcon slot="start" icon={settings} />
-  //         {t('calendar.advanced')}
-  //         <IonIcon slot="end" icon={chevronExpand} />
-  //       </IonButton>
-  //     </IonItem>
-  //   </IonList>
-  // )}
 
   const advancedSettings = (
     <IonList>
@@ -400,20 +418,27 @@ export const CalendarConfig: React.FC<Props> = (props) => {
           value={props.configMap.get('defaultCenter') || ''}
         />
       </IonItem>
+      <br />
     </IonList>
   );
 
   return (
-    <>
-      <IonButton
-        className="ion-float-end"
-        fill="clear"
-        onClick={() => setShowSettings(!showSettings)}
-      >
-        <IonIcon slot="icon-only" icon={settings} />
-      </IonButton>
-      {showSettings && basicSettings}
-      {showSettings && getCalendarPreset() === 'custom' && advancedSettings}
-    </>
+    <SettingsContainer $open={showSettings}>
+      <SettingsButtonContainer>
+        <IonButton
+          className={showSettings ? '' : 'ion-float-end'}
+          fill="clear"
+          onClick={() => setShowSettings(!showSettings)}
+        >
+          <IonIcon slot="icon-only" icon={settings} />
+        </IonButton>
+      </SettingsButtonContainer>
+      {showSettings && (
+        <SettingsOptions>
+          {basicSettings}
+          {getPreset() === 'custom' && advancedSettings}
+        </SettingsOptions>
+      )}
+    </SettingsContainer>
   );
 };

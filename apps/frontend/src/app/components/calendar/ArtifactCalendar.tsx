@@ -87,9 +87,6 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
         />
       )}
 
-      <br />
-      <br />
-
       <CalendarRenderer
         options={{
           type: 'fullsize',

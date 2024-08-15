@@ -3,7 +3,7 @@ import type { YCalendarConfig } from './YCalendarConfig';
 
 export const generateGregorianSundayCalendarConfig = (): YCalendarConfig => {
   return {
-    calendarPreset: 'gregorian-sunday',
+    preset: 'gregorian-sunday',
     calendarStartDayOfWeek: 0, // Zero-indexed
     daysInWeek: 7,
     monthsInYear: 12,

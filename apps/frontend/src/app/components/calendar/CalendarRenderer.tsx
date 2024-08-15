@@ -28,7 +28,7 @@ interface Props {
         type: 'mini';
       };
   configMap: TypedMap<Partial<YCalendarConfig>>;
-  setCenterRef?: MutableRefObject<(center: string) => void | undefined>;
+  setCenterRef?: MutableRefObject<((center: string) => void) | undefined>;
 }
 
 export const CalendarRenderer: React.FC<Props> = (props) => {
