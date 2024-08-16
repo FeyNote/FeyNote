@@ -97,14 +97,18 @@ export class TypeSense implements SearchProvider {
       });
     }
 
-    await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+    if (deleteBlocks.length) {
+      await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+    }
 
-    await this.client
-      .collections(Indexes.Block)
-      .documents()
-      .import(upsertBlocks, {
-        action: 'upsert',
-      });
+    if (upsertBlocks.length) {
+      await this.client
+        .collections(Indexes.Block)
+        .documents()
+        .import(upsertBlocks, {
+          action: 'upsert',
+        });
+    }
   }
 
   /**
