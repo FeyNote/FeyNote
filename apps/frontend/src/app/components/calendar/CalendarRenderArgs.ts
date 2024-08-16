@@ -13,4 +13,6 @@ export interface CalendarRenderArgs {
     weekIdx: number,
     dayIdx: number,
   ) => { day: number; datestamp: string } | undefined;
+  selectedDate?: string;
+  onDayClicked?: (date: string) => void;
 }

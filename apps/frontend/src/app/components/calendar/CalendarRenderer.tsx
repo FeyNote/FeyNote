@@ -14,26 +14,28 @@ import type { CalendarRenderArgs } from './CalendarRenderArgs';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { renderFullsizeCalendar } from './renderFullsizeCalendar';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
+import { specifierToDatestamp } from './specifierToDatestamp';
+import { renderMiniCalendar } from './renderMiniCalendar';
 
 interface Props {
-  options:
-    | {
-        type: 'fullsize';
-        knownReferencesByDay: Record<
-          string,
-          ArtifactDTO['incomingArtifactReferences']
-        >;
-      }
-    | {
-        type: 'mini';
-      };
+  viewType: 'fullsize' | 'mini';
+  knownReferencesByDay: Record<
+    string,
+    ArtifactDTO['incomingArtifactReferences']
+  >;
   configMap: TypedMap<Partial<YCalendarConfig>>;
   setCenterRef?: MutableRefObject<((center: string) => void) | undefined>;
+  centerDate?: string;
+  selectedDate?: string;
+  onDayClicked?: (date: string) => void;
 }
 
 export const CalendarRenderer: React.FC<Props> = (props) => {
+  const initialCenterDate = specifierToDatestamp(props.centerDate || '');
   const [center, setCenter] = useState<string>(
-    props.configMap.get('defaultCenter') || getCurrentGregorianDatestamp(),
+    initialCenterDate ||
+      props.configMap.get('defaultCenter') ||
+      getCurrentGregorianDatestamp(),
   );
   if (props.setCenterRef) {
     props.setCenterRef.current = setCenter;
@@ -122,25 +124,19 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
   };
 
   const renderCalendar = (args: CalendarRenderArgs) => {
-    switch (props.options.type) {
+    switch (props.viewType) {
       case 'fullsize': {
         return renderFullsizeCalendar({
           ...args,
-          knownReferencesByDay: props.options.knownReferencesByDay,
+          knownReferencesByDay: props.knownReferencesByDay,
         });
       }
       case 'mini': {
-        // TODO: mini calendar impl
-        return renderFullsizeCalendar({
-          ...args,
-          knownReferencesByDay: {},
-        });
+        return renderMiniCalendar(args);
       }
     }
 
-    throw new Error(
-      `Invalid render type passed ${(props.options as any).type}`,
-    );
+    throw new Error(`Invalid render type passed ${props.viewType}`);
   };
 
   return renderCalendar({
@@ -153,5 +149,7 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     daysInWeek,
     weekCount,
     getDayInfo,
+    onDayClicked: props.onDayClicked,
+    selectedDate: props.selectedDate,
   });
 };

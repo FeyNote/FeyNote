@@ -141,6 +141,10 @@
   "calendar.preset.custom": "Custom Calendar System",
   "calendar.preset.custom.subtext": "Completely custom calendar to match your fantasy world",
   "calendar.preset.warning": "Note: Changing these options may affect your existing references to this calendar",
+  "calendar.selectDate.label": "Select or type a date",
+  "calendar.selectDate.submit": "Create calendar reference",
+  "calendar.selectDate.placeholder.gregorian": "YYYY.MM.DD",
+  "calendar.selectDate.placeholder.session": "#5",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",

@@ -3,6 +3,10 @@ import { getReferencesFromJSONContent } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
 
+/**
+ * Update (re-create) all references where this artifact points to another artifact
+ * In this case, title reference text is used for other artifacts to reference this one directly.
+ */
 export async function updateArtifactOutgoingReferences(
   artifactId: string,
   jsonContent: JSONContent,

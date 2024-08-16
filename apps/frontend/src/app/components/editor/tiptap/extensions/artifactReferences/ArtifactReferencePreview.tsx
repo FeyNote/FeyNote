@@ -1,14 +1,13 @@
 import { ArtifactDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
-import { useTranslation } from 'react-i18next';
 import { useMemo } from 'react';
-import { useArtifactEditor } from '../../../useTiptapEditor';
 import { Doc as YDoc, applyUpdate } from 'yjs';
-import { ArtifactEditorContainer } from '../../../ArtifactEditorContainer';
-import { ArtifactEditorStyles } from '../../../ArtifactEditorStyles';
-import { EditorContent } from '@tiptap/react';
-import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
+import { getMetaFromYArtifact } from '@feynote/shared-utils';
+import { TiptapPreview } from '../../../TiptapPreview';
+import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
+import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
+import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -30,13 +29,12 @@ interface Props {
   artifact: ArtifactDTO;
   artifactYBin: Uint8Array;
   artifactBlockId?: string;
+  artifactDate?: string;
   previewTarget: HTMLElement;
   onClick?: () => void;
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
-  const { t } = useTranslation();
-
   const yDoc = useMemo(() => {
     const yDoc = new YDoc();
 
@@ -45,14 +43,10 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     return yDoc;
   }, [props.artifact]);
 
-  const editor = useArtifactEditor({
-    editable: false,
-    knownReferences: new Map(), // TODO: Update this
-    yjsProvider: undefined,
-    yDoc,
-  });
+  const artifactMeta = getMetaFromYArtifact(yDoc);
 
-  useScrollBlockIntoView(props.artifactBlockId, [editor]);
+  useScrollBlockIntoView(props.artifactBlockId, []);
+  useScrollDateIntoView(props.artifactDate, []);
 
   return (
     <StyledBoundedFloatingWindow
@@ -63,14 +57,18 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       onClick={() => props.onClick?.()}
     >
       <Header>{props.artifact.title}</Header>
-      {props.artifact.previewText.trim().length ? (
-        <ArtifactEditorContainer>
-          <ArtifactEditorStyles data-theme={props.artifact.theme}>
-            <EditorContent editor={editor}></EditorContent>
-          </ArtifactEditorStyles>
-        </ArtifactEditorContainer>
-      ) : (
-        <span>{t('artifactReferencePreview.noContent')}</span>
+      {artifactMeta.type === 'tiptap' && (
+        <TiptapPreview yDoc={yDoc} previewText={props.artifact.previewText} />
+      )}
+      {artifactMeta.type === 'calendar' && (
+        <ArtifactCalendar
+          y={yDoc}
+          knownReferences={new Map()}
+          incomingArtifactReferences={props.artifact.incomingArtifactReferences}
+          centerDate={props.artifactDate}
+          editable={false}
+          viewType="fullsize"
+        />
       )}
     </StyledBoundedFloatingWindow>
   );

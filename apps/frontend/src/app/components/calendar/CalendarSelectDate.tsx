@@ -59,6 +59,7 @@ export const CalendarSelectDate: React.FC<Props> = (props) => {
       {yDoc && !configMap && t('calendar.uninitialized')}
       {configMap && (
         <CalendarSelectDateInput
+          yDoc={yDoc}
           configMap={configMap}
           onSubmit={props.onSubmit}
         />

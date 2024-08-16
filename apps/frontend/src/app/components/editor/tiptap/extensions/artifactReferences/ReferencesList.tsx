@@ -193,7 +193,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     props.command({
       artifactId: calendarSelectInfo.artifactId,
       artifactDate: date,
-      referenceText: `${calendarSelectInfo.referenceText} ${date}`,
+      referenceText: calendarSelectInfo.referenceText,
     });
   };
 

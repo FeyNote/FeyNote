@@ -32,6 +32,9 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   if (artifactBlockId) {
     link += `?blockId=${artifactBlockId}`;
   }
+  if (artifactDate) {
+    link += `?date=${artifactDate}`;
+  }
 
   const {
     artifact,
@@ -45,6 +48,12 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     knownReference?.isBroken ?? false,
   );
 
+  let referenceText =
+    knownReference?.referenceText || props.node.attrs.referenceText;
+  if (props.node.attrs.artifactDate) {
+    referenceText += ` ${props.node.attrs.artifactDate}`;
+  }
+
   return (
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
@@ -57,7 +66,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
           routerLink={knownReference?.isBroken ? undefined : link}
           onClick={() => close()}
         >
-          {knownReference?.referenceText || props.node.attrs.referenceText}
+          {referenceText}
         </IonRouterLink>
         {showPreview && artifact && artifactYBin && ref.current && (
           <ArtifactReferencePreview
@@ -65,6 +74,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
             artifact={artifact}
             artifactYBin={artifactYBin}
             artifactBlockId={props.node.attrs.artifactBlockId || undefined}
+            artifactDate={props.node.attrs.artifactDate || undefined}
             previewTarget={ref.current}
           />
         )}

@@ -6,14 +6,9 @@ import {
   slashDelimitedDateSpecifier,
 } from './calendarDateSpecifierRegex';
 
-export const getYMDFromReference = (
-  reference: ArtifactDTO['incomingArtifactReferences'][0],
-) => {
-  const date = reference.targetArtifactDate;
-  if (!date) return;
-
-  if (date.match(poundDaySpecifier)) {
-    const [_, day] = date.split(/#/);
+export const getYMDFromSpecifier = (specifier: string) => {
+  if (specifier.match(poundDaySpecifier)) {
+    const [_, day] = specifier.split(/#/);
 
     return {
       year: 1,
@@ -23,11 +18,11 @@ export const getYMDFromReference = (
   }
 
   if (
-    date.match(dashDelimitedDateSpecifier) ||
-    date.match(periodDelimitedDateSpecifier) ||
-    date.match(slashDelimitedDateSpecifier)
+    specifier.match(dashDelimitedDateSpecifier) ||
+    specifier.match(periodDelimitedDateSpecifier) ||
+    specifier.match(slashDelimitedDateSpecifier)
   ) {
-    const [year, month, day] = date.split(/[-/.]/);
+    const [year, month, day] = specifier.split(/[-/.]/);
     const result = {
       year: parseInt(year),
       month: parseInt(month),

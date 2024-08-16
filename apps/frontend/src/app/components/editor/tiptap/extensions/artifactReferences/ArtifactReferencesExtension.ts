@@ -103,13 +103,19 @@ export const ArtifactReferencesExtension =
       );
       const knownReference = this.knownReferences?.get(key);
 
+      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+
+      if (node.attrs.artifactDate) {
+        displayText += ` ${node.attrs.artifactDate}`;
+      }
+
       return [
         'a',
         mergeAttributes(
           { href: routes.artifact.build({ id: node.attrs.artifactId }) },
           options.HTMLAttributes,
         ),
-        `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`,
+        displayText,
       ];
     },
     renderText({ options, node }) {
@@ -120,6 +126,12 @@ export const ArtifactReferencesExtension =
       );
       const knownReference = this.knownReferences?.get(key);
 
-      return `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+
+      if (node.attrs.artifactDate) {
+        displayText += ` ${node.attrs.artifactDate}`;
+      }
+
+      return displayText;
     },
   });

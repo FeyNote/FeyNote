@@ -1,28 +1,36 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import type { ArtifactTheme } from '@prisma/client';
 import { ArtifactEditorApplyTemplate } from '../editor/ArtifactEditor';
-import { useEffect, useMemo, useReducer, useRef } from 'react';
-import { IonCard } from '@ionic/react';
+import {
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  type MutableRefObject,
+} from 'react';
 import { CalendarRenderer } from './CalendarRenderer';
 import type { TypedMap } from 'yjs-types';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import type { YCalendarMap } from '@feynote/shared-utils';
-import { getYMDFromReference } from './getYMDFromReference';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { CalendarConfig } from './CalendarConfig';
+import { getYMDFromSpecifier } from './getYMDFromSpecifier';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
   incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
   y: YDoc | TiptapCollabProvider;
-  theme: ArtifactTheme;
   applyTemplateRef?: React.MutableRefObject<
     ArtifactEditorApplyTemplate | undefined
   >;
+  centerDate?: string;
   editable: boolean;
+  viewType: 'fullsize' | 'mini';
   onReady?: () => void;
+  setCenterRef?: MutableRefObject<((center: string) => void) | undefined>;
+  selectedDate?: string;
+  onDayClicked?: (date: string) => void;
 }
 
 export const ArtifactCalendar: React.FC<Props> = (props) => {
@@ -45,8 +53,12 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
   }, [calendarMap]);
 
   useEffect(() => {
-    props.onReady?.();
-  }, []);
+    if (configMap) {
+      setTimeout(() => {
+        props.onReady?.();
+      });
+    }
+  }, [configMap]);
 
   const knownReferencesByDay = useMemo(
     () =>
@@ -63,7 +75,7 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
           const [start, end] = date.split('-');
           // TODO: add support for date ranges
         } else {
-          const ymd = getYMDFromReference(incomingReference);
+          const ymd = getYMDFromSpecifier(incomingReference.targetArtifactDate);
           if (!ymd) return knownReferencesByDay;
           const datestamp = ymdToDatestamp(ymd);
           knownReferencesByDay[datestamp] ||= [];
@@ -78,23 +90,24 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
   if (!configMap) return;
 
   return (
-    <IonCard>
+    <>
       {props.editable && (
         <CalendarConfig
           yDoc={yDoc}
           configMap={configMap}
-          setCenterRef={setCenterRef}
+          setCenterRef={props.setCenterRef || setCenterRef}
         />
       )}
 
       <CalendarRenderer
-        options={{
-          type: 'fullsize',
-          knownReferencesByDay,
-        }}
+        viewType={props.viewType}
+        knownReferencesByDay={knownReferencesByDay}
+        centerDate={props.centerDate}
         configMap={configMap}
-        setCenterRef={setCenterRef}
+        setCenterRef={props.setCenterRef || setCenterRef}
+        selectedDate={props.selectedDate}
+        onDayClicked={props.onDayClicked}
       />
-    </IonCard>
+    </>
   );
 };
