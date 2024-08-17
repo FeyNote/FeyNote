@@ -164,7 +164,6 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        prefix: false,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
@@ -185,7 +184,6 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        prefix: false,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,

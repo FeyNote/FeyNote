@@ -1,8 +1,5 @@
 import { prisma } from '@feynote/prisma/client';
-import {
-  getReferencesFromJSONContent,
-  type ReferencesFromJSONContentResult,
-} from '@feynote/shared-utils';
+import { getReferencesFromJSONContent } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
 
