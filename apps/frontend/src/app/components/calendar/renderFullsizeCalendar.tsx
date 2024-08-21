@@ -84,7 +84,7 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
         <div>{dayInfo.day}</div>
 
         {references.map((reference) => (
-          <CalendarItem>
+          <CalendarItem key={reference.id}>
             <Link
               key={reference.id}
               to={routes.artifact.build({

@@ -307,7 +307,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     <IonGrid>
       <IonRow>
         <IonCol size="12" sizeXl="9">
-          <div className="ion-margin-start ion-margin-end ion-padding-start ion-padding-end">
+          <div>
             <IonItem>
               <IonInput
                 placeholder={t('artifactRenderer.title.placeholder')}

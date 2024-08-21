@@ -43,6 +43,7 @@ import { isLargeEnoughForSplitPane } from '../utils/isLargeEnoughForSplitPane';
 import styled from 'styled-components';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { GlobalSearchContextProviderWrapper } from './context/globalSearch/GlobalSearchContextProviderWrapper';
+import { PaneControlContextProviderWrapper } from './context/paneControl/PaneControlContextProviderWrapper';
 
 const StyledSplitPane = styled(IonSplitPane)`
   --side-width: 250px;
@@ -65,74 +66,46 @@ export function App() {
     <Suspense fallback="">
       <IonApp>
         <IonReactRouter>
-          <SessionContextProviderWrapper>
-            <PreferencesContextProviderWrapper>
-              <GlobalSearchContextProviderWrapper>
-                <PreferencesContext.Consumer>
-                  {(preferencesContext) => (
-                    <StyledSplitPane
-                      when={
-                        preferencesContext.getPreference(
-                          PreferenceNames.EnableSplitPane,
-                        ) && isLargeEnoughForSplitPane()
-                      }
-                      contentId="main"
-                    >
-                      <Menu />
-                      <IonRouterOutlet id="main" animated={false}>
-                        <Route
-                          exact
-                          path={routes.home.route}
-                          component={Home}
-                        />
-                        <Route
-                          exact
-                          path={routes.login.route}
-                          component={Login}
-                        />
-                        <Route
-                          exact
-                          path={routes.register.route}
-                          component={Register}
-                        />
-                        <Route
-                          exact
-                          path={routes.dashboard.route}
-                          component={Dashboard}
-                        />
-                        <Route
-                          exact
-                          path={routes.artifact.route}
-                          component={Artifact}
-                        />
-                        <Route
-                          exact
-                          path={routes.newArtifact.route}
-                          component={NewArtifact}
-                        />
-                        <Route
-                          exact
-                          path={routes.settings.route}
-                          component={Settings}
-                        />
-                        <Route
-                          exact
-                          path={routes.assistant.route}
-                          component={AIThreadsList}
-                        />
-                        <Route
-                          exact
-                          path={routes.assistantThread.route}
-                          component={AIThread}
-                        />
-                        <Route component={NotFound} />
-                      </IonRouterOutlet>
-                    </StyledSplitPane>
-                  )}
-                </PreferencesContext.Consumer>
-              </GlobalSearchContextProviderWrapper>
-            </PreferencesContextProviderWrapper>
-          </SessionContextProviderWrapper>
+          <PaneControlContextProviderWrapper>
+            <SessionContextProviderWrapper>
+              <PreferencesContextProviderWrapper>
+                <GlobalSearchContextProviderWrapper>
+                  <PreferencesContext.Consumer>
+                    {(preferencesContext) => (
+                      <StyledSplitPane
+                        when={
+                          preferencesContext.getPreference(
+                            PreferenceNames.EnableSplitPane,
+                          ) && isLargeEnoughForSplitPane()
+                        }
+                        contentId="main"
+                      >
+                        <Menu />
+                        <IonRouterOutlet id="main" animated={false}>
+                          <Route
+                            exact
+                            path={routes.home.route}
+                            component={Home}
+                          />
+                          <Route
+                            exact
+                            path={routes.login.route}
+                            component={Login}
+                          />
+                          <Route
+                            exact
+                            path={routes.register.route}
+                            component={Register}
+                          />
+                          <Route component={NotFound} />
+                        </IonRouterOutlet>
+                      </StyledSplitPane>
+                    )}
+                  </PreferencesContext.Consumer>
+                </GlobalSearchContextProviderWrapper>
+              </PreferencesContextProviderWrapper>
+            </SessionContextProviderWrapper>
+          </PaneControlContextProviderWrapper>
         </IonReactRouter>
       </IonApp>
     </Suspense>

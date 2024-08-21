@@ -39,11 +39,11 @@ export const handleTRPCErrors = (
   const handler = handlerMap?.[errorCode];
   if (typeof handler === 'string') {
     presentToast(_presentToast, handler);
-    return;
+    return errorCode;
   }
   if (typeof handler === 'function') {
     handler();
-    return;
+    return errorCode;
   }
 
   // Re-route to login page
@@ -59,8 +59,10 @@ export const handleTRPCErrors = (
 
   if (defaultErrorMessages[errorCode]) {
     presentToast(_presentToast, defaultErrorMessages[errorCode]);
-    return;
+    return errorCode;
   }
 
   presentToast(_presentToast, defaultErrorMessages[500]);
+
+  return errorCode;
 };

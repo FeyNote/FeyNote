@@ -20,6 +20,10 @@ import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
 import { useLocation } from 'react-router-dom';
 import type { ArtifactDTO } from '@feynote/prisma/types';
+import { PaneControlContext } from '../../context/paneControl/PaneControlContext';
+import { Artifact } from '../artifact/Artifact';
+import { Dashboard } from '../dashboard/Dashboard';
+import { Settings } from '../settings/Settings';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -50,6 +54,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
   const { t } = useTranslation();
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
+  const { openInNewTab, push } = useContext(PaneControlContext);
   /**
    * Re-render this component whenever navigation changes
    */
@@ -145,7 +150,16 @@ export const AuthenticatedMenuItems: React.FC = () => {
     <>
       <IonCard>
         <IonMenuToggle autoHide={false}>
-          <IonItem routerLink={routes.dashboard.build()}>
+          <IonItem
+            onClick={() =>
+              push(undefined, {
+                title: t('menu.dashboard'),
+                component: <Dashboard />,
+                navigationEventId: crypto.randomUUID(),
+              })
+            }
+            button
+          >
             <IonLabel>{t('menu.dashboard')}</IonLabel>
           </IonItem>
         </IonMenuToggle>
@@ -165,7 +179,14 @@ export const AuthenticatedMenuItems: React.FC = () => {
               .map((pinnedArtifact) => (
                 <CompactIonItem
                   key={pinnedArtifact.id}
-                  routerLink={routes.artifact.build({ id: pinnedArtifact.id })}
+                  onClick={() =>
+                    push(undefined, {
+                      title: pinnedArtifact.title,
+                      component: <Artifact id={pinnedArtifact.id} />,
+                      navigationEventId: crypto.randomUUID(),
+                    })
+                  }
+                  button
                 >
                   {pinnedArtifact.title}
                 </CompactIonItem>
@@ -190,9 +211,14 @@ export const AuthenticatedMenuItems: React.FC = () => {
               .map((recentlyUpdatedArtifact) => (
                 <CompactIonItem
                   key={recentlyUpdatedArtifact.id}
-                  routerLink={routes.artifact.build({
-                    id: recentlyUpdatedArtifact.id,
-                  })}
+                  onClick={() =>
+                    push(undefined, {
+                      title: recentlyUpdatedArtifact.title,
+                      component: <Artifact id={recentlyUpdatedArtifact.id} />,
+                      navigationEventId: crypto.randomUUID(),
+                    })
+                  }
+                  button
                 >
                   {recentlyUpdatedArtifact.title}
                 </CompactIonItem>
@@ -209,7 +235,16 @@ export const AuthenticatedMenuItems: React.FC = () => {
 
       <IonCard>
         <IonMenuToggle autoHide={false}>
-          <IonItem routerLink={routes.settings.build()}>
+          <IonItem
+            onClick={() =>
+              openInNewTab({
+                title: t('menu.settings'),
+                component: <Settings />,
+                navigationEventId: crypto.randomUUID(),
+              })
+            }
+            button
+          >
             <IonLabel>{t('menu.settings')}</IonLabel>
           </IonItem>
         </IonMenuToggle>

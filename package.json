@@ -63,6 +63,7 @@
     "debounce": "^2.1.0",
     "dedent": "^1.5.3",
     "express": "^4.19.2",
+    "flexlayout-react": "^0.7.15",
     "google-auth-library": "^9.8.0",
     "i18next": "^23.11.2",
     "idb": "^8.0.0",

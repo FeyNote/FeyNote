@@ -31,6 +31,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { useProgressBar } from '../../../utils/useProgressBar';
 import type { ArtifactType } from '@prisma/client';
+import { PaneNav } from '../pane/PaneNav';
 
 const GridContainer = styled.div`
   display: grid;
@@ -127,16 +128,9 @@ export const Dashboard: React.FC = () => {
 
   return (
     <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('dashboard.title')}</IonTitle>
-          {ProgressBar}
-        </IonToolbar>
-      </IonHeader>
+      <PaneNav title={t('dashboard.title')} />
       <IonContent>
+        {ProgressBar}
         <GridContainer>
           <GridRowSearchbar className="ion-align-items-center">
             <IonSearchbar

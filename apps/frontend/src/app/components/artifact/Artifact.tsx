@@ -20,19 +20,24 @@ import {
 import { options, add, documentText, calendar } from 'ionicons/icons';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useContext, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { RouteArgs, routes } from '../../routes';
 import { useParams } from 'react-router-dom';
 import { t } from 'i18next';
-import { ArtifactDeleteButton } from './ArtifactDeleteButton';
 import { useProgressBar } from '../../../utils/useProgressBar';
 import type { ArtifactType } from '@prisma/client';
 import { EventName } from '../../context/events/EventName';
 import { EventContext } from '../../context/events/EventContext';
+import { PaneNav } from '../pane/PaneNav';
+import { ArtifactContextMenu } from './ArtifactContextMenu';
 
-export const Artifact: React.FC = () => {
-  const { id } = useParams<RouteArgs['artifact']>();
+interface Props {
+  id: string;
+}
+
+export const Artifact: React.FC<Props> = (props) => {
+  // const { id } = useParams<RouteArgs['artifact']>();
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { eventManager } = useContext(EventContext);
@@ -47,7 +52,7 @@ export const Artifact: React.FC = () => {
     const progress = startProgressBar();
     trpc.artifact.getArtifactById
       .query({
-        id,
+        id: props.id,
       })
       .then((_artifact) => {
         setArtifact(_artifact);
@@ -60,9 +65,9 @@ export const Artifact: React.FC = () => {
       });
   };
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
     load();
-  });
+  }, []);
 
   const newArtifact = async (type: ArtifactType) => {
     const artifact = await trpc.artifact.createArtifact.mutate({
@@ -83,24 +88,13 @@ export const Artifact: React.FC = () => {
   };
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>
-            {t('artifact.title')}: {artifact?.title}
-          </IonTitle>
-          <IonButtons slot="end">
-            <IonButton id="artifact-popover-trigger">
-              <IonIcon slot="icon-only" icon={options} />
-            </IonButton>
-          </IonButtons>
-          {ProgressBar}
-        </IonToolbar>
-      </IonHeader>
+    <IonPage>
+      <PaneNav
+        title={artifact?.title || ''}
+        popoverContents={<ArtifactContextMenu artifactId={props.id} />}
+      />
       <IonContent className="ion-padding">
+        {ProgressBar}
         {artifact && (
           <ArtifactRenderer
             artifact={artifact}
@@ -110,11 +104,6 @@ export const Artifact: React.FC = () => {
           />
         )}
       </IonContent>
-      <IonPopover trigger="artifact-popover-trigger" triggerAction="click">
-        <IonContent class="ion-padding">
-          {artifact && <ArtifactDeleteButton artifactId={artifact.id} />}
-        </IonContent>
-      </IonPopover>
       <IonFab slot="fixed" vertical="bottom" horizontal="end">
         <IonFabButton>
           <IonIcon icon={add} />
