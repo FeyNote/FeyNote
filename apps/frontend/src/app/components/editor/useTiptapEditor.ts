@@ -26,7 +26,7 @@ import {
   ARTIFACT_TIPTAP_BODY_KEY,
   PreferenceNames,
 } from '@feynote/shared-utils';
-import * as Y from 'yjs';
+import { Doc as YDoc } from 'yjs';
 
 import { IndentationExtension } from './tiptap/extensions/indentation/IndentationExtension';
 import { ArtifactReferencesExtension } from './tiptap/extensions/artifactReferences/ArtifactReferencesExtension';
@@ -52,7 +52,7 @@ type DocArgOptions =
     }
   | {
       yjsProvider: undefined;
-      yDoc: Y.Doc;
+      yDoc: YDoc;
     };
 
 type UseArtifactEditorArgs = {

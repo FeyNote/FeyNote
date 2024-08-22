@@ -3,6 +3,10 @@ import { getReferencesFromJSONContent } from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
 
+/**
+ * Update (re-create) all references where this artifact points to another artifact
+ * In this case, title reference text is used for other artifacts to reference this one directly.
+ */
 export async function updateArtifactOutgoingReferences(
   artifactId: string,
   jsonContent: JSONContent,
@@ -48,7 +52,8 @@ export async function updateArtifactOutgoingReferences(
         : undefined,
 
       targetArtifactId: reference.targetArtifactId,
-      targetArtifactBlockId: reference.targetArtifactBlockId!,
+      targetArtifactBlockId: reference.targetArtifactBlockId,
+      targetArtifactDate: reference.targetArtifactDate,
 
       // We trust the referenceText passed to us from the client.
       // Looking the reference text up here is very costly -- Instead, we should:

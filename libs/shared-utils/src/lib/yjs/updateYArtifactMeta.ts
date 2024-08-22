@@ -1,9 +1,9 @@
-import * as Y from 'yjs';
+import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
 import { YArtifactMetaSchema } from './YArtifactMetaSchema';
 
 export const updateYArtifactMeta = (
-  yArtifact: Y.Doc,
+  yArtifact: YDoc,
   meta: YArtifactMetaSchema,
 ) => {
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);

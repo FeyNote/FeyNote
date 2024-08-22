@@ -47,12 +47,13 @@ import {
 } from '@feynote/shared-utils';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import * as Y from 'yjs';
+import { Doc as YDoc, applyUpdate } from 'yjs';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
+import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -95,6 +96,7 @@ interface Props {
   artifact: ArtifactDTO;
   reload: () => void;
   scrollToBlockId?: string;
+  scrollToDate?: string;
 }
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
@@ -138,6 +140,7 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   );
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
+  useScrollDateIntoView(props.scrollToDate, [editorReady]);
 
   // We must preserve the original map between renders
   // because tiptap exists outside of React's render cycle
@@ -147,12 +150,14 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       const key = getKnownArtifactReferenceKey(
         reference.targetArtifactId,
         reference.targetArtifactBlockId || undefined,
+        reference.targetArtifactDate || undefined,
       );
 
       knownReferences.set(key, {
         artifactBlockId: reference.artifactBlockId,
         targetArtifactId: reference.targetArtifactId,
         targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
+        targetArtifactDate: reference.targetArtifactDate || undefined,
         referenceText: reference.referenceText,
         isBroken: !reference.referenceTargetArtifactId,
       });
@@ -231,8 +236,8 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
       });
     if (!response) return;
 
-    const templateYDoc = new Y.Doc();
-    Y.applyUpdate(templateYDoc, response.yBin);
+    const templateYDoc = new YDoc();
+    applyUpdate(templateYDoc, response.yBin);
     const templateTiptapBody = getTiptapContentFromYjsDoc(
       templateYDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
@@ -285,10 +290,13 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     if (props.artifact.type === 'calendar') {
       return (
         <ArtifactCalendar
-          theme={theme}
+          viewType="fullsize"
+          editable={true}
+          centerDate={props.scrollToDate}
           applyTemplateRef={editorApplyTemplateRef}
           knownReferences={knownReferences}
-          yjsProvider={connection.tiptapCollabProvider}
+          incomingArtifactReferences={props.artifact.incomingArtifactReferences}
+          y={connection.tiptapCollabProvider}
           onReady={() => setEditorReady(true)}
         />
       );

@@ -7,6 +7,7 @@ import { KnownArtifactReference } from './KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
+import { t } from 'i18next';
 
 export type ReferencePluginOptions = MentionOptions & {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -46,8 +47,33 @@ export const ArtifactReferencesExtension =
           },
         },
 
+        artifactDate: {
+          default: null,
+          parseHTML: (element) => element.getAttribute('data-artifact-date'),
+          renderHTML: (attributes) => {
+            if (!attributes.artifactDate) {
+              return {};
+            }
+
+            return {
+              'data-artifact-date': attributes.artifactDate,
+            };
+          },
+        },
+
         referenceText: {
-          default: 'Reference',
+          default: t('editor.emptyReference'),
+          parseHTML: (element) =>
+            element.getAttribute('data-artifact-reference-text'),
+          renderHTML: (attributes) => {
+            if (!attributes.referenceText) {
+              return {};
+            }
+
+            return {
+              'data-artifact-reference-text': attributes.referenceText,
+            };
+          },
         },
       };
     },
@@ -73,8 +99,15 @@ export const ArtifactReferencesExtension =
       const key = getKnownArtifactReferenceKey(
         node.attrs.artifactId,
         node.attrs.artifactBlockId || undefined,
+        node.attrs.artifactDate || undefined,
       );
       const knownReference = this.knownReferences?.get(key);
+
+      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+
+      if (node.attrs.artifactDate) {
+        displayText += ` ${node.attrs.artifactDate}`;
+      }
 
       return [
         'a',
@@ -82,16 +115,23 @@ export const ArtifactReferencesExtension =
           { href: routes.artifact.build({ id: node.attrs.artifactId }) },
           options.HTMLAttributes,
         ),
-        `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`,
+        displayText,
       ];
     },
     renderText({ options, node }) {
       const key = getKnownArtifactReferenceKey(
         node.attrs.artifactId,
         node.attrs.artifactBlockId || undefined,
+        node.attrs.artifactDate || undefined,
       );
       const knownReference = this.knownReferences?.get(key);
 
-      return `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+
+      if (node.attrs.artifactDate) {
+        displayText += ` ${node.attrs.artifactDate}`;
+      }
+
+      return displayText;
     },
   });

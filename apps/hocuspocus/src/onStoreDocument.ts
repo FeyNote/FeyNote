@@ -1,4 +1,4 @@
-import * as Y from 'yjs';
+import { encodeStateAsUpdate } from 'yjs';
 import { onStoreDocumentPayload } from '@hocuspocus/server';
 
 import { prisma } from '@feynote/prisma/client';
@@ -30,7 +30,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
 
         if (!artifact) throw new Error();
 
-        const yBin = Buffer.from(Y.encodeStateAsUpdate(args.document));
+        const yBin = Buffer.from(encodeStateAsUpdate(args.document));
 
         const tiptapBody = getTiptapContentFromYjsDoc(
           args.document,

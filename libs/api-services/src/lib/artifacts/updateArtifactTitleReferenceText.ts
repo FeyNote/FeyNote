@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 
 /**
  * Updates the artifact title reference text
- * Title reference text is used for other artifacts to reference this one directly.
+ * In this case, title reference text is used for other artifacts to reference this one directly.
  */
 export async function updateArtifactTitleReferenceText(
   artifactId: string,

@@ -65,6 +65,7 @@
     "google-auth-library": "^9.8.0",
     "i18next": "^23.11.2",
     "idb": "^8.0.0",
+    "ionicons": "^7.4.0",
     "minisearch": "^7.1.0",
     "openai": "^4.33.0",
     "react": "18.3.1",
@@ -133,7 +134,8 @@
     "tsx": "^4.7.2",
     "typescript": "^5.5.2",
     "vite": "^5.2.10",
-    "vite-plugin-pwa": "^0.20.0"
+    "vite-plugin-pwa": "^0.20.0",
+    "yjs-types": "^0.0.1"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"

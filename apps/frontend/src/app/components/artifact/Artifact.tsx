@@ -106,6 +106,7 @@ export const Artifact: React.FC = () => {
             artifact={artifact}
             reload={load}
             scrollToBlockId={searchParams.get('blockId') || undefined}
+            scrollToDate={searchParams.get('date') || undefined}
           />
         )}
       </IonContent>

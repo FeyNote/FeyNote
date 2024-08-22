@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { specifierToDatestamp } from './specifierToDatestamp';
 
-export const useScrollBlockIntoView = (
-  blockId: string | undefined,
+export const useScrollDateIntoView = (
+  date: string | undefined,
   dependencies: any[],
 ) => {
   const scrollExecutedRef = useRef(false);
@@ -10,9 +11,13 @@ export const useScrollBlockIntoView = (
     // We only want to execute the scroll once, so we don't repeatedly scroll the user
     if (scrollExecutedRef.current) return;
     // Focusing a blockId is optional
-    if (!blockId) return;
+    if (!date) return;
 
-    const el = document.querySelector(`[data-id="${blockId}"]`);
+    const datestamp = specifierToDatestamp(date);
+    // We cannot focus invalid datestamps
+    if (!datestamp) return;
+
+    const el = document.querySelector(`[data-date="${datestamp}"]`);
     if (el) {
       el.scrollIntoView({
         behavior: 'instant',
@@ -21,5 +26,5 @@ export const useScrollBlockIntoView = (
       });
       scrollExecutedRef.current = true;
     }
-  }, [blockId, ...dependencies]);
+  }, [date, ...dependencies]);
 };
