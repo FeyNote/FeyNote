@@ -25,7 +25,7 @@ import { useProgressBar } from '../../../utils/useProgressBar';
 import type { ArtifactType } from '@prisma/client';
 import { PaneNav } from '../pane/PaneNav';
 import { Artifact } from '../artifact/Artifact';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
 
 const GridContainer = styled.div`

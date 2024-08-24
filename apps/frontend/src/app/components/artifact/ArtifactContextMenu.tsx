@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useArtifactDelete } from './useArtifactDelete';
 import { useContext } from 'react';
-import { PaneControlContext } from '../../context/paneControl/PaneControlContext';
 import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 const ContextMenuContainer = styled.div`
   border: 1px solid gray;
@@ -23,8 +23,7 @@ interface Props {
 
 export const ArtifactContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { pane, openInVerticalSplit, openInHorizontalSplit, openInNewTab } =
-    useContext(PaneContext);
+  const { pane, navigate } = useContext(PaneContext);
 
   const { deleteArtifact } = useArtifactDelete(props.artifactId);
 
@@ -38,14 +37,18 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
     <ContextMenuContainer>
       <ContextMenuGroup>
         <ContextMenuItem
-          onClick={() => openInHorizontalSplit(pane.currentView)}
+          onClick={() => navigate(pane.currentView, PaneTransition.HSplit)}
         >
           {t('contextMenu.splitRight')}
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => openInVerticalSplit(pane.currentView)}>
+        <ContextMenuItem
+          onClick={() => navigate(pane.currentView, PaneTransition.VSplit)}
+        >
           {t('contextMenu.splitDown')}
         </ContextMenuItem>
-        <ContextMenuItem onClick={() => openInNewTab(pane.currentView)}>
+        <ContextMenuItem
+          onClick={() => navigate(pane.currentView, PaneTransition.NewTab)}
+        >
           {t('contextMenu.duplicateTab')}
         </ContextMenuItem>
       </ContextMenuGroup>

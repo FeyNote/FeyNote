@@ -14,7 +14,7 @@ import { trpc } from '../../../utils/trpc';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { AIThreadsList } from './AIThreadsList';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 interface Props {
   id: string;

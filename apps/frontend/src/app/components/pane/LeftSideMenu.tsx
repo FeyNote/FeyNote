@@ -17,9 +17,9 @@ import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import {
-  PaneControlContext,
+  GlobalPaneContext,
   PaneTransition,
-} from '../../context/paneControl/PaneControlContext';
+} from '../../context/globalPane/GlobalPaneContext';
 import { Artifact } from '../artifact/Artifact';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Settings } from '../settings/Settings';
@@ -65,7 +65,8 @@ export const LeftSideMenu: React.FC = () => {
   const { t } = useTranslation();
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
-  const { navigate, get } = useContext(PaneControlContext);
+  const { navigate, getPaneById } = useContext(GlobalPaneContext);
+  const currentPane = getPaneById(undefined);
   const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDTO[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
     PINNED_ARTIFACTS_LIMIT_DEFAULT,
@@ -125,7 +126,7 @@ export const LeftSideMenu: React.FC = () => {
 
   useEffect(() => {
     loadDebouncerRef.current.call();
-  }, [get(undefined)]);
+  }, [currentPane.currentView.navigationEventId]);
 
   useEffect(() => {
     const handler = (event: EventName) => {

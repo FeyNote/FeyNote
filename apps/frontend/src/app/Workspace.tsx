@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import { PaneControlContext } from './context/paneControl/PaneControlContext';
+import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
@@ -145,7 +145,7 @@ const MainGrid = styled.div<{
 `;
 
 export const Workspace: React.FC = () => {
-  const { model } = useContext(PaneControlContext);
+  const { _model } = useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
@@ -164,7 +164,7 @@ export const Workspace: React.FC = () => {
       </Menu>
       <DockContainer>
         <Layout
-          model={model}
+          model={_model}
           factory={(arg) => <Pane id={arg.getId()} />}
           titleFactory={(arg) => <PaneTitle id={arg.getId()} />}
         />

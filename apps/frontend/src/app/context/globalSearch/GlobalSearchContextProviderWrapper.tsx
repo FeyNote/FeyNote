@@ -27,9 +27,9 @@ import { SessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
-  PaneControlContext,
+  GlobalPaneContext,
   PaneTransition,
-} from '../paneControl/PaneControlContext';
+} from '../globalPane/GlobalPaneContext';
 import { Artifact } from '../../components/artifact/Artifact';
 
 const SearchContainer = styled.div`
@@ -83,7 +83,7 @@ const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
 export const GlobalSearchContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const { navigate } = useContext(PaneControlContext);
+  const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');

@@ -2,22 +2,22 @@ import { createContext } from 'react';
 import type {
   PaneTracker,
   PaneTransition,
-} from '../paneControl/PaneControlContext';
+} from '../globalPane/GlobalPaneContext';
 
 export interface PaneContextData {
-  back: () => void;
-  forward: () => void;
+  navigateHistoryBack: () => void;
+  navigateHistoryForward: () => void;
   navigate: (component: React.ReactNode, transition: PaneTransition) => void;
   pane: PaneTracker;
-  isFocused: boolean;
+  isPaneFocused: boolean;
 }
 
 export const PaneContext = createContext<PaneContextData>({
   // We cast null to any so that any usage of this context without initialization blows up in
   // catastrophic fashion
-  back: null as any,
-  forward: null as any,
+  navigateHistoryForward: null as any,
+  navigateHistoryBack: null as any,
   navigate: null as any,
   pane: null as any,
-  isFocused: null as any,
+  isPaneFocused: null as any,
 });

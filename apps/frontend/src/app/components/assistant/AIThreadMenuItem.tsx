@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { AIThread } from './AIThread';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 const PreviewText = styled.p`
   overflow: hidden;

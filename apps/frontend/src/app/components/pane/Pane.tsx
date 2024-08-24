@@ -1,5 +1,5 @@
 import { useContext, useMemo } from 'react';
-import { PaneControlContext } from '../../context/paneControl/PaneControlContext';
+import { GlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import {
   PaneContext,
   type PaneContextData,
@@ -25,26 +25,33 @@ interface Props {
 }
 
 export const Pane: React.FC<Props> = (props) => {
-  const { back, forward, get, navigate, focus, focusedPaneId } =
-    useContext(PaneControlContext);
+  const {
+    navigateHistoryBack,
+    navigateHistoryForward,
+    getPaneById,
+    navigate,
+    setFocusedPaneId,
+    focusedPaneId,
+  } = useContext(GlobalPaneContext);
 
-  const pane = get(props.id);
+  const pane = getPaneById(props.id);
+  const isPaneFocused = pane.id === focusedPaneId;
 
   const contextValue = useMemo<PaneContextData>(
     () => ({
-      back: () => back(props.id),
-      forward: () => forward(props.id),
+      navigateHistoryBack: () => navigateHistoryBack(props.id),
+      navigateHistoryForward: () => navigateHistoryForward(props.id),
       navigate: (transition, historyNode) =>
         navigate(props.id, transition, historyNode),
       pane,
-      isFocused: pane.id === focusedPaneId,
+      isPaneFocused,
     }),
-    [props.id, focusedPaneId],
+    [props.id, isPaneFocused],
   );
 
   const onPaneClicked = () => {
-    if (props.id !== focusedPaneId) {
-      focus(props.id);
+    if (!isPaneFocused) {
+      setFocusedPaneId(props.id);
     }
   };
 

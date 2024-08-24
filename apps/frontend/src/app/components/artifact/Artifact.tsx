@@ -20,7 +20,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactContextMenu } from './ArtifactContextMenu';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 interface Props {
   id: string;

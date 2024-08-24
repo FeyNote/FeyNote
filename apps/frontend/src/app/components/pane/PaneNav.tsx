@@ -31,7 +31,8 @@ interface Props {
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
-  const { back, forward, pane } = useContext(PaneContext);
+  const { navigateHistoryBack, navigateHistoryForward, pane } =
+    useContext(PaneContext);
   const { getPaneTitle, setPaneTitle } = useContext(PaneTitleContext);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export const PaneNav: React.FC<Props> = (props) => {
     <NavContainer>
       <NavGroup style={{ textAlign: 'left' }}>
         <IonButton
-          onClick={() => back()}
+          onClick={() => navigateHistoryBack()}
           disabled={!pane.history.length}
           size="small"
           fill="clear"
@@ -52,7 +53,7 @@ export const PaneNav: React.FC<Props> = (props) => {
           <IonIcon icon={arrowBack} slot="icon-only" />
         </IonButton>
         <IonButton
-          onClick={() => forward()}
+          onClick={() => navigateHistoryForward()}
           disabled={!pane.forwardHistory.length}
           size="small"
           fill="clear"

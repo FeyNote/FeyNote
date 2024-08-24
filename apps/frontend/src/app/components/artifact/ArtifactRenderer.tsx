@@ -53,7 +53,7 @@ import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVe
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { Artifact } from './Artifact';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 enum ConnectionStatus {
   Connected = 'connected',

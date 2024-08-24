@@ -19,7 +19,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { Artifact } from './Artifact';
-import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();

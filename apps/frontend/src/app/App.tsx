@@ -25,7 +25,7 @@ import './i18n';
 import { PreferencesContextProviderWrapper } from './context/preferences/PreferencesContextProviderWrapper';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { GlobalSearchContextProviderWrapper } from './context/globalSearch/GlobalSearchContextProviderWrapper';
-import { PaneControlContextProviderWrapper } from './context/paneControl/PaneControlContextProviderWrapper';
+import { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPaneContextProviderWrapper';
 import { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 import { Workspace } from './Workspace';
 import { PaneTitleContextProviderWrapper } from './context/paneTitle/PaneTitleContextProviderWrapper';
@@ -46,7 +46,7 @@ export function App() {
   return (
     <Suspense fallback="">
       <IonApp>
-        <PaneControlContextProviderWrapper>
+        <GlobalPaneContextProviderWrapper>
           <PaneTitleContextProviderWrapper>
             <SidemenuContextProviderWrapper>
               <SessionContextProviderWrapper>
@@ -58,7 +58,7 @@ export function App() {
               </SessionContextProviderWrapper>
             </SidemenuContextProviderWrapper>
           </PaneTitleContextProviderWrapper>
-        </PaneControlContextProviderWrapper>
+        </GlobalPaneContextProviderWrapper>
       </IonApp>
     </Suspense>
   );

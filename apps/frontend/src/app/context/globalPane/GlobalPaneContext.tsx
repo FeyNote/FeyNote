@@ -40,21 +40,21 @@ export type PaneTracker = {
   currentView: HistoryNode;
 };
 
-interface PaneControlContextData {
+interface GlobalPaneContextData {
   panes: ReadonlyMap<string, PaneTracker>;
   /**
    * Move the desired view back in history
    */
-  back: (paneId: string | undefined) => void;
+  navigateHistoryBack: (paneId: string | undefined) => void;
   /**
    * Move the desired view forward in history
    */
-  forward: (paneId: string | undefined) => void;
-  get: (paneId: string | undefined) => PaneTracker;
+  navigateHistoryForward: (paneId: string | undefined) => void;
+  getPaneById: (paneId: string | undefined) => PaneTracker;
   /**
    * Marks the specified pane as focused (but does not "focus" in a traditional browser sense)
    */
-  focus: (paneId: string) => void;
+  setFocusedPaneId: (paneId: string) => void;
   /**
    * The currently user-focused pane (not necessarily tracking browser "focus")
    */
@@ -71,18 +71,18 @@ interface PaneControlContextData {
    * DO NOT INTERACT WITH THIS DIRECTLY IN YOUR COMPONENTS.
    * All interaction with this model should occur using PaneControl. This model is present here simply to render FlexLayout.
    */
-  model: Model;
+  _model: Model;
 }
 
-export const PaneControlContext = createContext<PaneControlContextData>({
+export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   // We cast null to any so that any usage of this context without initialization blows up in
   // catastrophic fashion
   panes: null as any,
-  back: null as any,
-  forward: null as any,
+  navigateHistoryBack: null as any,
+  navigateHistoryForward: null as any,
   navigate: null as any,
-  get: null as any,
-  model: null as any,
-  focus: null as any,
+  getPaneById: null as any,
+  _model: null as any,
+  setFocusedPaneId: null as any,
   focusedPaneId: null as any,
 });

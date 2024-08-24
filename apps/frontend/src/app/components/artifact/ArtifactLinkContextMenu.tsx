@@ -2,10 +2,7 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useArtifactDelete } from './useArtifactDelete';
 import { useContext } from 'react';
-import {
-  PaneControlContext,
-  PaneTransition,
-} from '../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
 
 const ContextMenuContainer = styled.div`
@@ -26,13 +23,13 @@ interface Props {
 
 export const ArtifactLinkContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { pane, back, navigate } = useContext(PaneContext);
+  const { pane, navigateHistoryBack, navigate } = useContext(PaneContext);
 
   const { deleteArtifact } = useArtifactDelete(props.artifactId);
 
   const onDeleteArtifactClicked = () => {
     deleteArtifact().then(() => {
-      back();
+      navigateHistoryBack();
     });
   };
 

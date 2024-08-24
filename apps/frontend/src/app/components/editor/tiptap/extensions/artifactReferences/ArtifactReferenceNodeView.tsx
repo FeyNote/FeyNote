@@ -8,7 +8,7 @@ import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
 import { PaneContext } from '../../../../../context/pane/PaneContext';
 import { Artifact } from '../../../../artifact/Artifact';
-import { PaneTransition } from '../../../../../context/paneControl/PaneControlContext';
+import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 
 const StyledNodeViewWrapper = styled(NodeViewWrapper)`
   display: inline;

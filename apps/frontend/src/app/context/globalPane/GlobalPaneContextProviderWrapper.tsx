@@ -1,10 +1,10 @@
 import { ReactNode, useMemo, useReducer, useRef, useState } from 'react';
 import {
-  PaneControlContext,
+  GlobalPaneContext,
   PaneTransition,
   type HistoryNode,
   type PaneTracker,
-} from './PaneControlContext';
+} from './GlobalPaneContext';
 import { Actions, DockLocation, Model } from 'flexlayout-react';
 import { Dashboard } from '../../components/dashboard/Dashboard';
 
@@ -12,7 +12,7 @@ interface Props {
   children: ReactNode;
 }
 
-export const PaneControlContextProviderWrapper = ({
+export const GlobalPaneContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
@@ -69,7 +69,7 @@ export const PaneControlContextProviderWrapper = ({
     [],
   );
 
-  const back = (paneId = focusedPaneId) => {
+  const navigateHistoryBack = (paneId = focusedPaneId) => {
     const pane = panes.get(paneId);
     if (!pane)
       throw new Error(`Pane with id ${paneId} not present in pane list`);
@@ -83,7 +83,7 @@ export const PaneControlContextProviderWrapper = ({
     triggerRerender();
   };
 
-  const forward = (paneId = focusedPaneId) => {
+  const navigateHistoryForward = (paneId = focusedPaneId) => {
     const pane = panes.get(paneId);
     if (!pane)
       throw new Error(`Pane with id ${paneId} not present in pane list`);
@@ -100,7 +100,7 @@ export const PaneControlContextProviderWrapper = ({
     triggerRerender();
   };
 
-  const get = (paneId = focusedPaneId) => {
+  const getPaneById = (paneId = focusedPaneId) => {
     const pane = panes.get(paneId);
     if (!pane)
       throw new Error(`Pane with id ${paneId} not present in pane list`);
@@ -181,27 +181,23 @@ export const PaneControlContextProviderWrapper = ({
     triggerRerender();
   };
 
-  const focus = (paneId: string) => {
-    setFocusedPaneId(paneId);
-  };
-
   const value = useMemo(
     () => ({
       panes,
-      back,
-      forward,
+      navigateHistoryBack,
+      navigateHistoryForward,
       navigate,
-      get,
-      focus,
+      getPaneById,
+      setFocusedPaneId,
       focusedPaneId,
-      model,
+      _model: model,
     }),
     [_rerenderReducerValue, model],
   );
 
   return (
-    <PaneControlContext.Provider value={value}>
+    <GlobalPaneContext.Provider value={value}>
       {children}
-    </PaneControlContext.Provider>
+    </GlobalPaneContext.Provider>
   );
 };
