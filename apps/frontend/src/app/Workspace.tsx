@@ -6,10 +6,11 @@ import { PaneControlContext } from './context/paneControl/PaneControlContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
-import { SidemenuContext } from './context/sidemenu/SidemenuContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
-import { AuthenticatedMenuItems } from './components/pane/AuthenticatedMenuItems';
+import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
+import { PaneTitle } from './components/pane/PaneTitle';
+import { RightSideMenu } from './components/pane/RightSideMenu';
 
 const MENU_SIZE_PX = '240';
 
@@ -144,7 +145,7 @@ const MainGrid = styled.div<{
 `;
 
 export const Workspace: React.FC = () => {
-  const { get, model } = useContext(PaneControlContext);
+  const { model } = useContext(PaneControlContext);
   const { getPreference } = useContext(PreferencesContext);
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
@@ -154,20 +155,18 @@ export const Workspace: React.FC = () => {
     getPreference(PreferenceNames.StartRightPaneOpen),
   );
 
-  const { contents: rightMenuContents } = useContext(SidemenuContext);
-
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
       <Menu $side="left">
         <MenuInner>
-          <AuthenticatedMenuItems />
+          <LeftSideMenu />
         </MenuInner>
       </Menu>
       <DockContainer>
         <Layout
           model={model}
           factory={(arg) => <Pane id={arg.getId()} />}
-          titleFactory={(arg) => get(arg.getId()).currentView.title}
+          titleFactory={(arg) => <PaneTitle id={arg.getId()} />}
         />
         <IonButton
           style={{ position: 'absolute', left: 0 }}
@@ -191,7 +190,9 @@ export const Workspace: React.FC = () => {
         </IonButton>
       </DockContainer>
       <Menu $side="right">
-        <MenuInner>{rightMenuContents}</MenuInner>
+        <MenuInner>
+          <RightSideMenu />
+        </MenuInner>
       </Menu>
     </MainGrid>
   );

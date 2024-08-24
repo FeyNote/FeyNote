@@ -28,6 +28,7 @@ import { GlobalSearchContextProviderWrapper } from './context/globalSearch/Globa
 import { PaneControlContextProviderWrapper } from './context/paneControl/PaneControlContextProviderWrapper';
 import { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 import { Workspace } from './Workspace';
+import { PaneTitleContextProviderWrapper } from './context/paneTitle/PaneTitleContextProviderWrapper';
 
 const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
 
@@ -46,15 +47,17 @@ export function App() {
     <Suspense fallback="">
       <IonApp>
         <PaneControlContextProviderWrapper>
-          <SidemenuContextProviderWrapper>
-            <SessionContextProviderWrapper>
-              <PreferencesContextProviderWrapper>
-                <GlobalSearchContextProviderWrapper>
-                  <Workspace />
-                </GlobalSearchContextProviderWrapper>
-              </PreferencesContextProviderWrapper>
-            </SessionContextProviderWrapper>
-          </SidemenuContextProviderWrapper>
+          <PaneTitleContextProviderWrapper>
+            <SidemenuContextProviderWrapper>
+              <SessionContextProviderWrapper>
+                <PreferencesContextProviderWrapper>
+                  <GlobalSearchContextProviderWrapper>
+                    <Workspace />
+                  </GlobalSearchContextProviderWrapper>
+                </PreferencesContextProviderWrapper>
+              </SessionContextProviderWrapper>
+            </SidemenuContextProviderWrapper>
+          </PaneTitleContextProviderWrapper>
         </PaneControlContextProviderWrapper>
       </IonApp>
     </Suspense>

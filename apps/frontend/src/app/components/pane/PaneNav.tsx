@@ -1,8 +1,9 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { IonButton, IonContent, IonIcon, IonPopover } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
+import { PaneTitleContext } from '../../context/paneTitle/PaneTitleContext';
 
 const NavContainer = styled.div`
   display: flex;
@@ -30,7 +31,14 @@ interface Props {
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
-  const { back, forward, push, pane } = useContext(PaneContext);
+  const { back, forward, pane } = useContext(PaneContext);
+  const { getPaneTitle, setPaneTitle } = useContext(PaneTitleContext);
+
+  useEffect(() => {
+    if (props.title !== getPaneTitle(pane.id)) {
+      setPaneTitle(pane.id, props.title);
+    }
+  }, [props.title, pane]);
 
   return (
     <NavContainer>

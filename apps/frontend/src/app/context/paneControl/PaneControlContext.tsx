@@ -29,7 +29,6 @@ export enum PaneTransition {
 }
 
 export interface HistoryNode {
-  title: string;
   component: React.ReactNode;
   navigationEventId: string;
 }

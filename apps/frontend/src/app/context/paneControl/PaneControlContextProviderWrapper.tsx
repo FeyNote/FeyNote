@@ -7,7 +7,6 @@ import {
 } from './PaneControlContext';
 import { Actions, DockLocation, Model } from 'flexlayout-react';
 import { Dashboard } from '../../components/dashboard/Dashboard';
-import { useTranslation } from 'react-i18next';
 
 interface Props {
   children: ReactNode;
@@ -17,14 +16,12 @@ export const PaneControlContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
-  const { t } = useTranslation();
   const defaultPanes = new Map<string, PaneTracker>([
     [
       'default',
       {
         id: 'default',
         currentView: {
-          title: t('menu.dashboard'),
           component: <Dashboard />,
           navigationEventId: crypto.randomUUID(),
         },
@@ -122,7 +119,6 @@ export const PaneControlContextProviderWrapper = ({
     if (!tabset) throw new Error('Active tabset not found');
 
     const historyNode = {
-      title: '',
       component,
       navigationEventId: crypto.randomUUID(),
     } satisfies HistoryNode;
@@ -187,8 +183,6 @@ export const PaneControlContextProviderWrapper = ({
 
   const focus = (paneId: string) => {
     setFocusedPaneId(paneId);
-
-    triggerRerender();
   };
 
   const value = useMemo(

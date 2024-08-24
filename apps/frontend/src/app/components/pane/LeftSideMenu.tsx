@@ -61,7 +61,7 @@ const RECENT_ARTIFACTS_LIMIT_INC = 10;
  */
 const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
-export const AuthenticatedMenuItems: React.FC = () => {
+export const LeftSideMenu: React.FC = () => {
   const { t } = useTranslation();
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);

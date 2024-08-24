@@ -42,8 +42,14 @@ export const Pane: React.FC<Props> = (props) => {
     [props.id, focusedPaneId],
   );
 
+  const onPaneClicked = () => {
+    if (props.id !== focusedPaneId) {
+      focus(props.id);
+    }
+  };
+
   return (
-    <PaneContainer onClick={() => focus(props.id)}>
+    <PaneContainer onClick={onPaneClicked}>
       <PaneContext.Provider value={contextValue}>
         <ComponentWrapper key={pane.currentView.navigationEventId}>
           {pane.currentView.component}
