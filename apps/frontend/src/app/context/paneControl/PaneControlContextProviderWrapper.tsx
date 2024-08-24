@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useReducer, useRef, useState } from 'react';
 import {
   PaneControlContext,
+  PaneTransition,
   type HistoryNode,
   type PaneTracker,
 } from './PaneControlContext';
@@ -47,6 +48,7 @@ export const PaneControlContextProviderWrapper = ({
           tabDragSpeed: 0.2,
           tabSetMinWidth: 200,
           tabSetEnableMaximize: false,
+          tabSetTabStripHeight: 36,
         },
         borders: [],
         layout: {
@@ -101,20 +103,6 @@ export const PaneControlContextProviderWrapper = ({
     triggerRerender();
   };
 
-  const push = (paneId = focusedPaneId, historyNode: HistoryNode) => {
-    const pane = panes.get(paneId);
-    if (!pane)
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
-    pane.history.push(pane.currentView);
-    pane.currentView = historyNode;
-    pane.forwardHistory.splice(0, pane.forwardHistory.length);
-
-    console.log(pane.history);
-
-    triggerRerender();
-  };
-  console.log('rendering');
-
   const get = (paneId = focusedPaneId) => {
     const pane = panes.get(paneId);
     if (!pane)
@@ -122,75 +110,100 @@ export const PaneControlContextProviderWrapper = ({
     return pane;
   };
 
-  console.log(model);
-
-  const newTab = (
-    relativeNodeId = focusedPaneId,
-    historyNode: HistoryNode,
-    location: DockLocation,
+  const navigate = (
+    paneId = focusedPaneId,
+    component: React.ReactNode,
+    transition: PaneTransition,
   ) => {
-    const tabset = model.getNodeById(relativeNodeId)?.getParent();
+    const pane = panes.get(paneId);
+    if (!pane)
+      throw new Error(`Pane with id ${paneId} not present in pane list`);
+    const tabset = model.getNodeById(paneId)?.getParent();
     if (!tabset) throw new Error('Active tabset not found');
 
-    const id = crypto.randomUUID();
+    const historyNode = {
+      title: '',
+      component,
+      navigationEventId: crypto.randomUUID(),
+    } satisfies HistoryNode;
 
-    panes.set(id, {
-      id,
-      forwardHistory: [],
-      history: [],
-      currentView: historyNode,
-    });
-    model.doAction(
-      Actions.addNode(
-        {
+    switch (transition) {
+      case PaneTransition.Push: {
+        pane.history.push(pane.currentView);
+        pane.currentView = historyNode;
+        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+
+        break;
+      }
+      case PaneTransition.Replace: {
+        pane.currentView = historyNode;
+        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+
+        break;
+      }
+      case PaneTransition.Reset: {
+        pane.currentView = historyNode;
+        pane.history.splice(0, pane.history.length);
+        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+
+        break;
+      }
+      case PaneTransition.NewTab:
+      case PaneTransition.VSplit:
+      case PaneTransition.HSplit: {
+        const transitionToDockLocation = {
+          [PaneTransition.NewTab]: DockLocation.CENTER,
+          [PaneTransition.VSplit]: DockLocation.BOTTOM,
+          [PaneTransition.HSplit]: DockLocation.RIGHT,
+        };
+        const id = crypto.randomUUID();
+
+        panes.set(id, {
           id,
-          type: 'tab',
-          component: id,
-        },
-        tabset.getId(),
-        location,
-        -1,
-        true,
-      ),
-    );
+          forwardHistory: [],
+          history: [],
+          currentView: historyNode,
+        });
+        model.doAction(
+          Actions.addNode(
+            {
+              id,
+              type: 'tab',
+              component: id,
+            },
+            tabset.getId(),
+            transitionToDockLocation[transition],
+            -1,
+            true,
+          ),
+        );
 
-    return id;
-  };
+        break;
+      }
+    }
 
-  const openInNewTab = (paneId = focusedPaneId, historyNode: HistoryNode) => {
-    return newTab(paneId, historyNode, DockLocation.CENTER);
-  };
-
-  const openInVerticalSplit = (
-    paneId = focusedPaneId,
-    historyNode: HistoryNode,
-  ) => {
-    return newTab(paneId, historyNode, DockLocation.BOTTOM);
-  };
-
-  const openInHorizontalSplit = (
-    paneId = focusedPaneId,
-    historyNode: HistoryNode,
-  ) => {
-    return newTab(paneId, historyNode, DockLocation.RIGHT);
+    triggerRerender();
   };
 
   const focus = (paneId: string) => {
     setFocusedPaneId(paneId);
+
+    triggerRerender();
   };
 
-  const value = {
-    panes,
-    back,
-    forward,
-    push,
-    get,
-    openInNewTab,
-    openInVerticalSplit,
-    openInHorizontalSplit,
-    focus,
-    model,
-  };
+  const value = useMemo(
+    () => ({
+      panes,
+      back,
+      forward,
+      navigate,
+      get,
+      focus,
+      focusedPaneId,
+      model,
+    }),
+    [_rerenderReducerValue, model],
+  );
 
   return (
     <PaneControlContext.Provider value={value}>

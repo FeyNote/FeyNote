@@ -1,6 +1,6 @@
 import type { TypedArray } from 'yjs-types';
 
-export interface CalendarRenderArgs {
+export interface CalendarRenderProps {
   moveCenter: (direction: -1 | 1) => void;
   centerYear: number;
   centerMonth: number;

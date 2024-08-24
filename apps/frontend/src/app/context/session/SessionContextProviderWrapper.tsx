@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { SessionContext } from './SessionContext';
+import { SessionContext, type SessionContextData } from './SessionContext';
 import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
+import { Auth } from '../../components/auth/Auth';
 
 interface Props {
   children: ReactNode;
@@ -29,11 +30,21 @@ export const SessionContextProviderWrapper = ({
     setSession(newSession);
   };
 
-  const value = useMemo(() => {
-    return { session, setSession: setAndPersistSession };
-  }, [session]);
+  const value = useMemo(
+    () => ({
+      session,
+      setSession: setAndPersistSession,
+    }),
+    [session],
+  );
+
+  if (!value.session) {
+    return <Auth />;
+  }
 
   return (
-    <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
+    <SessionContext.Provider value={value as SessionContextData}>
+      {children}
+    </SessionContext.Provider>
   );
 };

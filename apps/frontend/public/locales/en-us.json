@@ -68,7 +68,8 @@
   "settings.collaborationColor.darkorange": "Dark Orange",
   "settings.collaborationColor.red": "Red",
   "settings.collaborationColor.darkred": "Dark Red",
-  "settings.sideMenu": "Always Show Sidebar",
+  "settings.leftSideMenu": "Start with left menu open",
+  "settings.rightSideMenu": "Start with right menu open",
   "settings.account": "Account Settings",
   "settings.email": "Account Email",
   "settings.password": "Account Password",
@@ -124,6 +125,8 @@
   "editor.referenceMenu.searching.subtitle": "Search results will appear when you pause typing",
   "editor.referenceMenu.create.title": "Create \"{{title}}\"",
   "editor.referenceMenu.create.subtitle": "Click to create",
+
+  "globalSearch.loggedOut": "You're not logged in. Please login to search.",
 
   "calendar.monthsInYear": "Number of months in a year",
   "calendar.nameForMonth": "Name for month {{number}}",
@@ -197,6 +200,7 @@
   "assistant.thread.delete.confirmation": "Are you sure you'd like to delete this thread?",
 
   "generic.error": "I'm sorry something went wrong, please try again.",
+  "generic.connectionError": "A network connectivity error occurred",
   "generic.unsavedChanges": "You have unsaved changes! If you leave this page, you will lose any modifications in-progress.",
   "generic.anonymous": "Anonymous",
   "generic.untitled": "Untitled",

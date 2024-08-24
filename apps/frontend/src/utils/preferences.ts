@@ -16,7 +16,8 @@ export class PreferencesService {
   preferences: AppPreferences = {
     preferencesVersion: 0,
 
-    [PreferenceNames.EnableSplitPane]: true,
+    [PreferenceNames.StartLeftPaneOpen]: false,
+    [PreferenceNames.StartRightPaneOpen]: window.innerWidth > 700,
     [PreferenceNames.Language]: null,
     [PreferenceNames.FontSize]: SupportedFontSize.X1_0,
     [PreferenceNames.Theme]: AppTheme.Default,

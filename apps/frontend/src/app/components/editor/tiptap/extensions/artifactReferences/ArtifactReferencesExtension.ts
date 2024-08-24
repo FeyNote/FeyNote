@@ -2,7 +2,6 @@ import Mention, { MentionOptions } from '@tiptap/extension-mention';
 import { getReferenceSuggestions } from './getReferenceSuggestions';
 import { renderReferenceList } from './renderReferenceList';
 import { mergeAttributes } from '@tiptap/core';
-import { routes } from '../../../../../routes';
 import { KnownArtifactReference } from './KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { ReactNodeViewRenderer } from '@tiptap/react';
@@ -109,14 +108,7 @@ export const ArtifactReferencesExtension =
         displayText += ` ${node.attrs.artifactDate}`;
       }
 
-      return [
-        'a',
-        mergeAttributes(
-          { href: routes.artifact.build({ id: node.attrs.artifactId }) },
-          options.HTMLAttributes,
-        ),
-        displayText,
-      ];
+      return ['span', mergeAttributes({}, options.HTMLAttributes), displayText];
     },
     renderText({ options, node }) {
       const key = getKnownArtifactReferenceKey(

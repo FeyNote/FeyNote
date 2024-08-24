@@ -13,13 +13,11 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  useIonRouter,
   useIonToast,
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { search } from 'ionicons/icons';
-import { routes } from '../../routes';
 import { trpc } from '../../../utils/trpc';
 import { EventName } from '../events/EventName';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
@@ -28,6 +26,11 @@ import { useProgressBar } from '../../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
+import {
+  PaneControlContext,
+  PaneTransition,
+} from '../paneControl/PaneControlContext';
+import { Artifact } from '../../components/artifact/Artifact';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -80,7 +83,7 @@ const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
 export const GlobalSearchContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const router = useIonRouter();
+  const { navigate } = useContext(PaneControlContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');
@@ -116,7 +119,7 @@ export const GlobalSearchContextProviderWrapper = ({
       artifactTemplateId: null,
     });
 
-    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
+    navigate(undefined, <Artifact id={artifact.id} />, PaneTransition.Push);
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };
@@ -178,6 +181,13 @@ export const GlobalSearchContextProviderWrapper = ({
     };
   }, [searchText]);
 
+  const value = useMemo(
+    () => ({
+      trigger,
+    }),
+    [],
+  );
+
   const searchUI = (
     <>
       {ProgressBar}
@@ -202,10 +212,14 @@ export const GlobalSearchContextProviderWrapper = ({
                 .map((searchResult) => (
                   <IonItem
                     key={searchResult.id}
-                    routerLink={routes.artifact.build({
-                      id: searchResult.id,
-                    })}
-                    onClick={hide}
+                    onClick={() => {
+                      navigate(
+                        undefined,
+                        <Artifact id={searchResult.id} />,
+                        PaneTransition.Push,
+                      );
+                      hide();
+                    }}
                   >
                     <IonLabel>
                       {searchResult.title}
@@ -252,7 +266,7 @@ export const GlobalSearchContextProviderWrapper = ({
         ) : (
           <SearchResultsContainer>
             <IonItem>
-              <IonLabel>You're not logged in.</IonLabel>
+              <IonLabel>{t('globalSearch.loggedOut')}</IonLabel>
             </IonItem>
           </SearchResultsContainer>
         )}
@@ -262,7 +276,7 @@ export const GlobalSearchContextProviderWrapper = ({
 
   return (
     <>
-      <GlobalSearchContext.Provider value={{ trigger }}>
+      <GlobalSearchContext.Provider value={value}>
         {children}
       </GlobalSearchContext.Provider>
       {show ? searchUI : false}

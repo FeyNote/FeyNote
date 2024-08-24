@@ -6,27 +6,38 @@ import {
   IonLabel,
   IonList,
   IonListHeader,
-  IonMenuToggle,
 } from '@ionic/react';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
-import { routes } from '../../routes';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../../utils/trpc';
 import styled from 'styled-components';
-import { add } from 'ionicons/icons';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
-import { useLocation } from 'react-router-dom';
 import type { ArtifactDTO } from '@feynote/prisma/types';
-import { PaneControlContext } from '../../context/paneControl/PaneControlContext';
+import {
+  PaneControlContext,
+  PaneTransition,
+} from '../../context/paneControl/PaneControlContext';
 import { Artifact } from '../artifact/Artifact';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Settings } from '../settings/Settings';
+import { home, logOut, pin, settings, telescope } from 'ionicons/icons';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
+  font-size: 0.875rem;
+`;
+
+const NowrapIonLabel = styled(IonLabel)`
+  text-wrap: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+`;
+
+const ShowMoreButtonText = styled.span`
+  font-size: 0.75rem;
 `;
 
 /**
@@ -54,11 +65,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
   const { t } = useTranslation();
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
-  const { openInNewTab, push } = useContext(PaneControlContext);
-  /**
-   * Re-render this component whenever navigation changes
-   */
-  const location = useLocation();
+  const { navigate, get } = useContext(PaneControlContext);
   const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDTO[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
     PINNED_ARTIFACTS_LIMIT_DEFAULT,
@@ -118,7 +125,7 @@ export const AuthenticatedMenuItems: React.FC = () => {
 
   useEffect(() => {
     loadDebouncerRef.current.call();
-  }, [location]);
+  }, [get(undefined)]);
 
   useEffect(() => {
     const handler = (event: EventName) => {
@@ -149,30 +156,25 @@ export const AuthenticatedMenuItems: React.FC = () => {
   return (
     <>
       <IonCard>
-        <IonMenuToggle autoHide={false}>
-          <IonItem
-            onClick={() =>
-              push(undefined, {
-                title: t('menu.dashboard'),
-                component: <Dashboard />,
-                navigationEventId: crypto.randomUUID(),
-              })
-            }
-            button
-          >
-            <IonLabel>{t('menu.dashboard')}</IonLabel>
-          </IonItem>
-        </IonMenuToggle>
+        <CompactIonItem
+          onClick={() =>
+            navigate(undefined, <Dashboard />, PaneTransition.Push)
+          }
+          button
+        >
+          <IonIcon icon={home} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.dashboard')}</IonLabel>
+        </CompactIonItem>
       </IonCard>
 
       {!!pinnedArtifacts.length && (
         <IonCard>
           <IonList>
             <IonListHeader>
+              <IonIcon icon={pin} />
+              &nbsp;&nbsp;
               <IonLabel>{t('menu.pinned')}</IonLabel>
-              <IonButton size="small">
-                <IonIcon icon={add} slot="icon-only" />
-              </IonButton>
             </IonListHeader>
             {pinnedArtifacts
               .slice(0, pinnedArtifactsLimit)
@@ -180,20 +182,20 @@ export const AuthenticatedMenuItems: React.FC = () => {
                 <CompactIonItem
                   key={pinnedArtifact.id}
                   onClick={() =>
-                    push(undefined, {
-                      title: pinnedArtifact.title,
-                      component: <Artifact id={pinnedArtifact.id} />,
-                      navigationEventId: crypto.randomUUID(),
-                    })
+                    navigate(
+                      undefined,
+                      <Artifact id={pinnedArtifact.id} />,
+                      PaneTransition.Push,
+                    )
                   }
                   button
                 >
-                  {pinnedArtifact.title}
+                  <NowrapIonLabel>{pinnedArtifact.title}</NowrapIonLabel>
                 </CompactIonItem>
               ))}
             {pinnedArtifacts.length > pinnedArtifactsLimit && (
               <IonButton onClick={showMorePinned} fill="clear" size="small">
-                {t('menu.more')}
+                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
               </IonButton>
             )}
           </IonList>
@@ -204,6 +206,8 @@ export const AuthenticatedMenuItems: React.FC = () => {
         <IonCard>
           <IonList>
             <IonListHeader>
+              <IonIcon icon={telescope} />
+              &nbsp;&nbsp;
               <IonLabel>{t('menu.recentlyUpdated')}</IonLabel>
             </IonListHeader>
             {recentlyUpdatedArtifacts
@@ -212,21 +216,23 @@ export const AuthenticatedMenuItems: React.FC = () => {
                 <CompactIonItem
                   key={recentlyUpdatedArtifact.id}
                   onClick={() =>
-                    push(undefined, {
-                      title: recentlyUpdatedArtifact.title,
-                      component: <Artifact id={recentlyUpdatedArtifact.id} />,
-                      navigationEventId: crypto.randomUUID(),
-                    })
+                    navigate(
+                      undefined,
+                      <Artifact id={recentlyUpdatedArtifact.id} />,
+                      PaneTransition.Push,
+                    )
                   }
                   button
                 >
-                  {recentlyUpdatedArtifact.title}
+                  <NowrapIonLabel>
+                    {recentlyUpdatedArtifact.title}
+                  </NowrapIonLabel>
                 </CompactIonItem>
               ))}
             {recentlyUpdatedArtifacts.length >
               recentlyUpdatedArtifactsLimit && (
               <IonButton onClick={showMoreRecent} fill="clear" size="small">
-                {t('menu.more')}
+                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
               </IonButton>
             )}
           </IonList>
@@ -234,25 +240,19 @@ export const AuthenticatedMenuItems: React.FC = () => {
       )}
 
       <IonCard>
-        <IonMenuToggle autoHide={false}>
-          <IonItem
-            onClick={() =>
-              openInNewTab({
-                title: t('menu.settings'),
-                component: <Settings />,
-                navigationEventId: crypto.randomUUID(),
-              })
-            }
-            button
-          >
-            <IonLabel>{t('menu.settings')}</IonLabel>
-          </IonItem>
-        </IonMenuToggle>
-        <IonMenuToggle autoHide={false}>
-          <IonItem onClick={signOut} routerLink={routes.login.build()}>
-            <IonLabel>{t('menu.signOut')}</IonLabel>
-          </IonItem>
-        </IonMenuToggle>
+        <CompactIonItem
+          onClick={() => navigate(undefined, <Settings />, PaneTransition.Push)}
+          button
+        >
+          <IonIcon icon={settings} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.settings')}</IonLabel>
+        </CompactIonItem>
+        <CompactIonItem onClick={signOut} button>
+          <IonIcon icon={logOut} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.signOut')}</IonLabel>
+        </CompactIonItem>
       </IonCard>
     </>
   );

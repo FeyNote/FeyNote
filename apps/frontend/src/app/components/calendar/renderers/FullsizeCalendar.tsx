@@ -1,7 +1,12 @@
+import type { ArtifactDTO } from '@feynote/prisma/types';
 import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
-import type { CalendarRenderArgs } from './CalendarRenderArgs';
+import type { CalendarRenderProps } from './CalendarRenderProps';
 import { chevronBack, chevronForward } from 'ionicons/icons';
+import { useContext } from 'react';
+import { PaneContext } from '../../../context/pane/PaneContext';
+import { Artifact } from '../../artifact/Artifact';
+import { PaneTransition } from '../../../context/paneControl/PaneControlContext';
 
 const CalendarContainer = styled.div``;
 
@@ -13,7 +18,8 @@ const CalendarBodyContainer = styled.div`
 `;
 
 const CalendarBody = styled.div`
-  max-width: 400px;
+  min-width: 650px;
+  max-width: 900px;
 `;
 
 const MonthSwitcher = styled.div`
@@ -28,6 +34,7 @@ const NextBackButton = styled(IonButton)`
 `;
 
 const MonthYearName = styled.div`
+  min-width: 150px;
   text-align: center;
 `;
 
@@ -40,7 +47,6 @@ const DayTitle = styled.div`
   overflow: hidden;
   text-wrap: nowrap;
   text-align: center;
-  font-size: 0.6rem;
 `;
 
 const CalendarWeek = styled.div`
@@ -49,81 +55,70 @@ const CalendarWeek = styled.div`
 
 const CalendarDayContainer = styled.div`
   flex-basis: 100%;
-  width: 40px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  user-select: none;
-`;
-
-const CalendarDay = styled.button<{
-  $selected: boolean;
-}>`
-  width: 30px;
-  height: 30px;
   border: 1px solid gray;
-  background: transparent;
-  color: inherit;
-  border-radius: 100%;
-  cursor: pointer;
-
-  ${(props) =>
-    props.$selected
-      ? `
-    background: var(--ion-color-primary);
-    border: 1px solid var(--ion-color-primary);
-    color: white;
-  `
-      : ''}
-
-  &:hover {
-    background: rgba(var(--ion-background-color-rgb), 0.5);
-
-    ${(props) =>
-      props.$selected
-        ? `
-      background: var(--ion-color-primary);
-    `
-        : ''}
-  }
 `;
 
-export const renderMiniCalendar = (args: CalendarRenderArgs) => {
+const CalendarDay = styled.div`
+  padding: 4px;
+  min-height: 120px;
+`;
+
+const CalendarItem = styled.div`
+  font-size: 0.8rem;
+`;
+
+interface FullsizeCalendarProps extends CalendarRenderProps {
+  knownReferencesByDay: Record<
+    string,
+    ArtifactDTO['incomingArtifactReferences']
+  >;
+}
+
+export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
+  const { navigate } = useContext(PaneContext);
+
   const renderDay = (weekIdx: number, dayIdx: number) => {
-    const dayInfo = args.getDayInfo(weekIdx, dayIdx);
+    const dayInfo = props.getDayInfo(weekIdx, dayIdx);
     if (!dayInfo) return <></>;
 
+    const references = props.knownReferencesByDay[dayInfo.datestamp] || [];
+
     return (
-      <CalendarDay
-        data-date={dayInfo.datestamp}
-        $selected={dayInfo.datestamp === args.selectedDate}
-        onClick={() => args.onDayClicked?.(dayInfo.datestamp)}
-      >
+      <CalendarDay data-date={dayInfo.datestamp}>
         <div>{dayInfo.day}</div>
+
+        {references.map((reference) => (
+          <CalendarItem key={reference.id}>
+            <a
+              key={reference.id}
+              href=""
+              onClick={() =>
+                navigate(
+                  <Artifact id={reference.artifactId} />,
+                  PaneTransition.Push,
+                )
+              }
+            >
+              {reference.artifact.title}
+            </a>
+          </CalendarItem>
+        ))}
       </CalendarDay>
     );
   };
 
   // For session calendars we don't want to show the pagination switcher since it doesn't make sense.
   // To allow users to have this behavior themselves, we don't show the switcher when their calendar has the following config:
-  const showSwitcher = args.monthNames.length !== 1 || args.centerYear !== 1;
+  const showSwitcher = props.monthNames.length !== 1 || props.centerYear !== 1;
   const switcher = (
     <MonthSwitcher>
-      <NextBackButton
-        size="small"
-        fill="clear"
-        onClick={() => args.moveCenter(-1)}
-      >
+      <NextBackButton fill="clear" onClick={() => props.moveCenter(-1)}>
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
       </NextBackButton>
       <MonthYearName>
-        {args.monthNames.get(args.centerMonth - 1)} {args.centerYear}
+        {props.monthNames.get(props.centerMonth - 1)} {props.centerYear}
       </MonthYearName>
-      <NextBackButton
-        size="small"
-        fill="clear"
-        onClick={() => args.moveCenter(1)}
-      >
+      <NextBackButton fill="clear" onClick={() => props.moveCenter(1)}>
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
       </NextBackButton>
     </MonthSwitcher>
@@ -135,15 +130,15 @@ export const renderMiniCalendar = (args: CalendarRenderArgs) => {
       <CalendarBodyContainer>
         <CalendarBody>
           <DayTitlesContainer>
-            {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+            {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
               <DayTitle key={dayIdx}>
-                {args.dayOfWeekNames.get(dayIdx)}
+                {props.dayOfWeekNames.get(dayIdx)}
               </DayTitle>
             ))}
           </DayTitlesContainer>
-          {new Array(args.weekCount || 1).fill(0).map((_, weekIdx) => (
+          {new Array(props.weekCount || 1).fill(0).map((_, weekIdx) => (
             <CalendarWeek key={weekIdx}>
-              {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+              {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
                 <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
                   {renderDay(weekIdx, dayIdx)}
                 </CalendarDayContainer>

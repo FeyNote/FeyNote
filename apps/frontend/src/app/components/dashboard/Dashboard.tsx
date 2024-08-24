@@ -1,30 +1,22 @@
 import {
   IonButton,
-  IonButtons,
   IonCol,
   IonContent,
   IonFab,
   IonFabButton,
   IonFabList,
-  IonHeader,
   IonIcon,
-  IonMenuButton,
   IonPage,
   IonSearchbar,
-  IonTitle,
-  IonToolbar,
-  useIonRouter,
   useIonToast,
-  useIonViewWillEnter,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { filterOutline, add, documentText, calendar } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDTO } from '@feynote/prisma/types';
-import { routes } from '../../routes';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { EventContext } from '../../context/events/EventContext';
@@ -32,6 +24,9 @@ import { EventName } from '../../context/events/EventName';
 import { useProgressBar } from '../../../utils/useProgressBar';
 import type { ArtifactType } from '@prisma/client';
 import { PaneNav } from '../pane/PaneNav';
+import { Artifact } from '../artifact/Artifact';
+import { PaneTransition } from '../../context/paneControl/PaneControlContext';
+import { PaneContext } from '../../context/pane/PaneContext';
 
 const GridContainer = styled.div`
   display: grid;
@@ -51,6 +46,7 @@ const GridRowArtifacts = styled.div`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
+  const { navigate } = useContext(PaneContext);
   const [presentToast] = useIonToast();
   const { eventManager } = useContext(EventContext);
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -60,7 +56,6 @@ export const Dashboard: React.FC = () => {
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts],
   );
-  const router = useIonRouter();
 
   const getUserArtifacts = () => {
     const progress = startProgressBar();
@@ -77,9 +72,9 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
     getUserArtifacts();
-  });
+  }, []);
 
   const handleSearchInput = (e: Event) => {
     let query = '';
@@ -121,13 +116,13 @@ export const Dashboard: React.FC = () => {
       artifactTemplateId: null,
     });
 
-    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
+    navigate(<Artifact id={artifact.id} />, PaneTransition.Push);
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };
 
   return (
-    <IonPage id="main">
+    <IonPage>
       <PaneNav title={t('dashboard.title')} />
       <IonContent>
         {ProgressBar}

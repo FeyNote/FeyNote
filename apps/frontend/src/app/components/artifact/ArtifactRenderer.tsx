@@ -29,11 +29,8 @@ import {
   SelectTemplateModal,
   SelectTemplateModalProps,
 } from './SelectTemplateModal';
-import { routes } from '../../routes';
-import type { ArtifactTheme } from '@prisma/client';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import styled from 'styled-components';
-import { Prompt } from 'react-router-dom';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
@@ -54,6 +51,9 @@ import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { Artifact } from './Artifact';
+import { PaneTransition } from '../../context/paneControl/PaneControlContext';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -101,6 +101,7 @@ interface Props {
 
 export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { navigate } = useContext(PaneContext);
   const [presentToast] = useIonToast();
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,
@@ -393,7 +394,9 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               {props.artifact.templatedArtifacts.map((el) => (
                 <IonItem
                   key={el.id}
-                  routerLink={routes.artifact.build({ id: el.id })}
+                  onClick={() =>
+                    navigate(<Artifact id={el.id} />, PaneTransition.Push)
+                  }
                   button
                 >
                   <IonLabel>{el.title}</IonLabel>
@@ -435,7 +438,12 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
               {props.artifact.incomingArtifactReferences.map((el) => (
                 <IonItem
                   key={el.id}
-                  routerLink={routes.artifact.build({ id: el.artifactId })}
+                  onClick={() =>
+                    navigate(
+                      <Artifact id={el.artifactId} />,
+                      PaneTransition.Push,
+                    )
+                  }
                   button
                 >
                   <IonLabel>{el.artifact.title}</IonLabel>

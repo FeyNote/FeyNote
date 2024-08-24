@@ -1,5 +1,4 @@
-import { useContext, useState } from 'react';
-import { IonButton } from '@ionic/react';
+import { useContext, useMemo } from 'react';
 import { PaneControlContext } from '../../context/paneControl/PaneControlContext';
 import {
   PaneContext,
@@ -26,30 +25,22 @@ interface Props {
 }
 
 export const Pane: React.FC<Props> = (props) => {
-  const {
-    back,
-    forward,
-    get,
-    push,
-    focus,
-    openInNewTab,
-    openInVerticalSplit,
-    openInHorizontalSplit,
-  } = useContext(PaneControlContext);
+  const { back, forward, get, navigate, focus, focusedPaneId } =
+    useContext(PaneControlContext);
 
   const pane = get(props.id);
 
-  const contextValue = {
-    back: () => back(props.id),
-    forward: () => forward(props.id),
-    push: (historyNode) => push(props.id, historyNode),
-    openInNewTab: (historyNode) => openInNewTab(props.id, historyNode),
-    openInVerticalSplit: (historyNode) =>
-      openInVerticalSplit(props.id, historyNode),
-    openInHorizontalSplit: (historyNode) =>
-      openInHorizontalSplit(props.id, historyNode),
-    pane,
-  } satisfies PaneContextData;
+  const contextValue = useMemo<PaneContextData>(
+    () => ({
+      back: () => back(props.id),
+      forward: () => forward(props.id),
+      navigate: (transition, historyNode) =>
+        navigate(props.id, transition, historyNode),
+      pane,
+      isFocused: pane.id === focusedPaneId,
+    }),
+    [props.id, focusedPaneId],
+  );
 
   return (
     <PaneContainer onClick={() => focus(props.id)}>

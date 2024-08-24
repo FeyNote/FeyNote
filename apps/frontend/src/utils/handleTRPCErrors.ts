@@ -1,7 +1,7 @@
 import { UseIonToastResult } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
-import { routes } from '../app/routes';
+import { t } from 'i18next';
 
 const presentToast = (_presentToast: UseIonToastResult[0], message: string) => {
   _presentToast({
@@ -46,15 +46,14 @@ export const handleTRPCErrors = (
     return errorCode;
   }
 
-  // Re-route to login page
-  // TODO: show modal instead (need global context or to change this handler to component so we can access modal hooks)
   if (errorCode === 401) {
-    window.location.href = routes.login.build();
+    // TODO: convert this handler into a custom hook so that we can use session context and invalidate session here
   }
 
   const defaultErrorMessages = {
-    0: 'A network connectivity error occurred',
-    500: 'Oops, something went wrong, please try again.',
+    // TODO: use hooks for these rather than global import
+    0: t('generic.connectionError'),
+    500: t('generic.error'),
   } as Record<number, string>;
 
   if (defaultErrorMessages[errorCode]) {

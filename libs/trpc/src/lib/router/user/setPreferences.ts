@@ -15,7 +15,8 @@ export const setPreferences = authenticatedProcedure
     z.object({
       preferencesVersion: z.number().min(0),
 
-      [PreferenceNames.EnableSplitPane]: z.boolean(),
+      [PreferenceNames.StartLeftPaneOpen]: z.boolean(),
+      [PreferenceNames.StartRightPaneOpen]: z.boolean(),
       [PreferenceNames.Language]: z.nativeEnum(SupportedLanguages).nullable(),
       [PreferenceNames.FontSize]: z.nativeEnum(SupportedFontSize),
       [PreferenceNames.Theme]: z.nativeEnum(AppTheme),

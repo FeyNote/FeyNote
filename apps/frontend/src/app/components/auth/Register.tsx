@@ -10,10 +10,8 @@ import {
   IonItem,
   IonMenuButton,
   IonPage,
-  IonRouterLink,
   IonTitle,
   IonToolbar,
-  useIonRouter,
   useIonToast,
 } from '@ionic/react';
 import React, { useState, useContext } from 'react';
@@ -29,11 +27,14 @@ import { validateEmail, validatePassword } from '@feynote/shared-utils';
 import { getIonInputClassNames } from './input';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 
-export const Register: React.FC = () => {
+interface Props {
+  setAuthType: (authType: 'register' | 'login') => void;
+}
+
+export const Register: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [email, setEmail] = useState('');
@@ -48,7 +49,6 @@ export const Register: React.FC = () => {
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { setSession } = useContext(SessionContext);
-  const router = useIonRouter();
 
   const submitRegister = () => {
     setIsLoading(true);
@@ -58,9 +58,6 @@ export const Register: React.FC = () => {
         password,
       })
       .then((_session) => setSession(_session))
-      .then(() => {
-        router.push(routes.dashboard.build());
-      })
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
           409: 'This user has already been registered.',
@@ -102,7 +99,7 @@ export const Register: React.FC = () => {
     isLoading || !emailIsValid || !passwordIsValid || !confirmPasswordIsValid;
 
   return (
-    <IonPage id="main">
+    <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
@@ -185,9 +182,9 @@ export const Register: React.FC = () => {
               <CenteredIonText>
                 <sub>
                   {t('auth.register.subtext.text')}{' '}
-                  <IonRouterLink routerLink={routes.login.build()}>
+                  <a href="" onClick={() => props.setAuthType('register')}>
                     {t('auth.register.subtext.link')}
-                  </IonRouterLink>
+                  </a>
                 </sub>
               </CenteredIonText>
             </IonItem>
