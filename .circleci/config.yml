@@ -10,7 +10,7 @@ commands:
             - dependency-cache-
       - run:
           name: install-deps
-          command: 'npm install'
+          command: 'npm ci'
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
