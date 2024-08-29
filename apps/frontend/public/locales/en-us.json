@@ -22,8 +22,7 @@
   "auth.login.field.password.error": "Passwords must be greater than 8 characters long",
   "auth.login.button.login": "Login",
   "auth.login.button.forgot": "Forgot",
-  "auth.login.forgot.text": "To register for an account click",
-  "auth.login.forgot.link": "here!",
+  "auth.login.switchToRegister": "Don't have an account yet? Click to register",
 
   "auth.register.title": "Register",
   "auth.register.card.title": "Welcome to FeyNote!",
@@ -37,9 +36,9 @@
   "auth.register.field.confirmPassword.label": "Confirm Password",
   "auth.register.field.confirmPassword.placeholder": "Confirm your password",
   "auth.register.field.confirmPassword.error": "Passwords must match",
+  "auth.register.conflict": "An account with that email already exists",
   "auth.register.button.register": "Register",
-  "auth.register.subtext.text": "Already have an account?",
-  "auth.register.subtext.link": "Login here!",
+  "auth.register.switchToLogin": "Already have an account? Click to login",
 
   "settings.title": "Settings",
   "settings.interface": "Interface Settings",

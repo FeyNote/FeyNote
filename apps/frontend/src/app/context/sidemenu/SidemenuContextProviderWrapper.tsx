@@ -19,7 +19,7 @@ export const SidemenuContextProviderWrapper: React.FC<Props> = (props) => {
     () => ({
       contents,
       setContents,
-      paneId,
+      sidemenuCurrentPaneId: paneId,
     }),
     [contents, paneId],
   );

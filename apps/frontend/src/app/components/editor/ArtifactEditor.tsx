@@ -1,4 +1,4 @@
-import { MutableRefObject } from 'react';
+import { memo, MutableRefObject } from 'react';
 import type { ArtifactTheme } from '@prisma/client';
 import { EditorContent } from '@tiptap/react';
 import { JSONContent } from '@tiptap/core';
@@ -9,31 +9,36 @@ import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/K
 import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { DragHandle } from './tiptap/extensions/globalDragHandle/DragHandle';
+import { Doc as YDoc } from 'yjs';
 
-export type ArtifactEditorApplyTemplate = (
-  template: string | JSONContent,
-) => void;
+export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
-interface Props {
-  knownReferences: Map<string, KnownArtifactReference>;
-  yjsProvider: TiptapCollabProvider;
+type DocArgOptions =
+  | {
+      yjsProvider: TiptapCollabProvider;
+      yDoc: undefined;
+    }
+  | {
+      yjsProvider: undefined;
+      yDoc: YDoc;
+    };
+
+type Props = {
   theme: ArtifactTheme;
-  applyTemplateRef?: MutableRefObject<ArtifactEditorApplyTemplate | undefined>;
+  setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
+  editable: boolean;
+  knownReferences: Map<string, KnownArtifactReference>;
   onReady?: () => void;
-}
+} & DocArgOptions;
 
-export const ArtifactEditor: React.FC<Props> = (props) => {
+export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const editor = useArtifactEditor({
-    editable: true,
-    knownReferences: props.knownReferences,
-    yjsProvider: props.yjsProvider,
-    yDoc: undefined,
-    onReady: props.onReady,
+    ...props,
   });
 
-  if (props.applyTemplateRef) {
-    props.applyTemplateRef.current = (template) => {
-      editor?.commands.setContent(template);
+  if (props.setContentRef) {
+    props.setContentRef.current = (content) => {
+      editor?.commands.setContent(content);
     };
   }
 
@@ -45,4 +50,4 @@ export const ArtifactEditor: React.FC<Props> = (props) => {
       </ArtifactEditorStyles>
     </ArtifactEditorContainer>
   );
-};
+});

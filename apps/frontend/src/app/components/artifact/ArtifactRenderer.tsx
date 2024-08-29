@@ -1,59 +1,20 @@
 import { ArtifactDTO } from '@feynote/prisma/types';
-import { useContext, useEffect, useRef, useState } from 'react';
-import {
-  IonCheckbox,
-  IonCol,
-  IonGrid,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonListHeader,
-  IonRow,
-  IonSelect,
-  IonSelectOption,
-  useIonAlert,
-  useIonModal,
-  useIonToast,
-} from '@ionic/react';
-import { chevronForward } from 'ionicons/icons';
+import { memo, useContext, useEffect, useState } from 'react';
+import { IonInput, IonItem } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import {
-  ArtifactEditor,
-  ArtifactEditorApplyTemplate,
-} from '../editor/ArtifactEditor';
-import { InfoButton } from '../info/InfoButton';
-import { rootTemplatesById } from './rootTemplates/rootTemplates';
-import { RootTemplate } from './rootTemplates/rootTemplates.types';
-import {
-  SelectTemplateModal,
-  SelectTemplateModalProps,
-} from './SelectTemplateModal';
-import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
+import { ArtifactEditor } from '../editor/ArtifactEditor';
 import styled from 'styled-components';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
-import {
-  ARTIFACT_META_KEY,
-  ARTIFACT_TIPTAP_BODY_KEY,
-  getMetaFromYArtifact,
-  getTiptapContentFromYjsDoc,
-  randomizeJSONContentUUIDs,
-} from '@feynote/shared-utils';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { Doc as YDoc, applyUpdate } from 'yjs';
+import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { Artifact } from './Artifact';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 enum ConnectionStatus {
   Connected = 'connected',
@@ -99,10 +60,9 @@ interface Props {
   scrollToDate?: string;
 }
 
-export const ArtifactRenderer: React.FC<Props> = (props) => {
+export const ArtifactRenderer: React.FC<Props> = memo((props) => {
+  console.log('rendering');
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
-  const [presentToast] = useIonToast();
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,
   );
@@ -111,34 +71,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   const { eventManager } = useContext(EventContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
-  const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
-  const [isTemplate, setIsTemplate] = useState(props.artifact.isTemplate);
-  const [artifactTemplate, setArtifactTemplate] = useState(
-    props.artifact.artifactTemplate,
-  );
-  const [rootTemplateId, setRootTemplateId] = useState(
-    props.artifact.rootTemplateId,
-  );
-  const rootTemplate = rootTemplateId
-    ? rootTemplatesById[rootTemplateId]
-    : null;
-  const [presentSelectTemplateModal, dismissSelectTemplateModal] = useIonModal(
-    SelectTemplateModal,
-    {
-      enableOverrideWarning: true,
-      dismiss: (result) => {
-        dismissSelectTemplateModal();
-        if (result) {
-          if (result.type === 'artifact') {
-            applyArtifactTemplate(result.artifactTemplate);
-          }
-          if (result.type === 'rootTemplate') {
-            applyRootTemplate(rootTemplatesById[result.rootTemplateId]);
-          }
-        }
-      },
-    } satisfies SelectTemplateModalProps,
-  );
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
@@ -213,43 +145,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     };
   }, [connection]);
 
-  const editorApplyTemplateRef = useRef<ArtifactEditorApplyTemplate>();
-
-  const applyRootTemplate = (rootTemplate: RootTemplate) => {
-    if ('markdown' in rootTemplate) {
-      editorApplyTemplateRef.current?.(t(rootTemplate.markdown));
-    } else {
-      // TODO: This will need to localize rootTemplate.blocks by doing a deep-dive (move to util)
-      editorApplyTemplateRef.current?.(rootTemplate.jsonContent);
-    }
-
-    setRootTemplateId(rootTemplate.id);
-    setArtifactTemplate(null);
-  };
-
-  const applyArtifactTemplate = async (artifactTemplate: ArtifactDTO) => {
-    const response = await trpc.artifact.getArtifactYBinById
-      .query({
-        id: artifactTemplate.id,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-    if (!response) return;
-
-    const templateYDoc = new YDoc();
-    applyUpdate(templateYDoc, response.yBin);
-    const templateTiptapBody = getTiptapContentFromYjsDoc(
-      templateYDoc,
-      ARTIFACT_TIPTAP_BODY_KEY,
-    );
-    randomizeJSONContentUUIDs(templateTiptapBody);
-    editorApplyTemplateRef.current?.(templateTiptapBody);
-
-    setArtifactTemplate(artifactTemplate);
-    setRootTemplateId(null);
-  };
-
   const setMetaProp = (metaPropName: string, value: any) => {
     (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
       metaPropName,
@@ -257,32 +152,15 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = async (updates: Partial<ArtifactDTO>) => {
-    await trpc.artifact.updateArtifact
-      .mutate({
-        id: props.artifact.id,
-        isPinned,
-        isTemplate,
-        rootTemplateId,
-        artifactTemplateId: artifactTemplate?.id || null,
-        ...updates,
-      })
-      .then(() => {
-        props.reload();
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-  };
-
   const renderEditor = () => {
     if (props.artifact.type === 'tiptap') {
       return (
         <ArtifactEditor
+          editable={true}
           theme={theme}
-          applyTemplateRef={editorApplyTemplateRef}
           knownReferences={knownReferences}
           yjsProvider={connection.tiptapCollabProvider}
+          yDoc={undefined}
           onReady={() => setEditorReady(true)}
         />
       );
@@ -294,7 +172,6 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
           viewType="fullsize"
           editable={true}
           centerDate={props.scrollToDate}
-          applyTemplateRef={editorApplyTemplateRef}
           knownReferences={knownReferences}
           incomingArtifactReferences={props.artifact.incomingArtifactReferences}
           y={connection.tiptapCollabProvider}
@@ -305,155 +182,27 @@ export const ArtifactRenderer: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonGrid>
-      <IonRow>
-        <IonCol size="12" sizeXl="9">
-          <div>
-            <IonItem>
-              <IonInput
-                placeholder={t('artifactRenderer.title.placeholder')}
-                label={t('artifactRenderer.title.label')}
-                labelPlacement="stacked"
-                value={title}
-                onIonInput={(event) => {
-                  setMetaProp('title', event.target.value || '');
-                  eventManager.broadcast([EventName.ArtifactTitleUpdated]);
-                }}
-                type="text"
-              ></IonInput>
-            </IonItem>
-            <div>{renderEditor()}</div>
-            {editorReady && (
-              <ConnectionStatusContainer>
-                <ConnectionStatusIcon $status={connectionStatus} />
-                <div>{t(connectionStatusToI18n[connectionStatus])}</div>
-              </ConnectionStatusContainer>
-            )}
-          </div>
-        </IonCol>
-        <IonCol size="12" sizeXl="3">
-          <IonItem onClick={() => presentSelectTemplateModal()} button>
-            <IonLabel>
-              <h3>{t('artifactRenderer.selectTemplate')}</h3>
-              {rootTemplate && <p>{t(rootTemplate.title)}</p>}
-              {artifactTemplate && <p>{artifactTemplate.title}</p>}
-              {!rootTemplate && !artifactTemplate && (
-                <p>{t('artifactRenderer.selectTemplate.none')}</p>
-              )}
-            </IonLabel>
-            <IonIcon slot="end" icon={chevronForward} size="small" />
-          </IonItem>
-          <br />
-          <IonItem>
-            <IonCheckbox
-              labelPlacement="end"
-              justify="start"
-              checked={isPinned}
-              onIonChange={async (event) => {
-                setIsPinned(event.target.checked);
-                await updateArtifact({
-                  isPinned: event.target.checked,
-                });
-                eventManager.broadcast([EventName.ArtifactPinned]);
-              }}
-            >
-              {t('artifactRenderer.isPinned')}
-            </IonCheckbox>
-            <InfoButton
-              slot="end"
-              message={t('artifactRenderer.isPinned.help')}
-            />
-          </IonItem>
-          <IonItem>
-            <IonCheckbox
-              labelPlacement="end"
-              justify="start"
-              checked={isTemplate}
-              onIonChange={(event) => {
-                setIsTemplate(event.target.checked);
-                updateArtifact({
-                  isTemplate: event.target.checked,
-                });
-              }}
-            >
-              {t('artifactRenderer.isTemplate')}
-            </IonCheckbox>
-            <InfoButton
-              slot="end"
-              message={t('artifactRenderer.isTemplate.help')}
-            />
-          </IonItem>
-          {!!props.artifact.templatedArtifacts.length && (
-            <>
-              <IonListHeader>
-                {t('artifactRenderer.templatedArtifacts')}
-                <InfoButton
-                  message={t('artifactRenderer.templatedArtifacts.help')}
-                />
-              </IonListHeader>
-              {props.artifact.templatedArtifacts.map((el) => (
-                <IonItem
-                  key={el.id}
-                  onClick={() =>
-                    navigate(<Artifact id={el.id} />, PaneTransition.Push)
-                  }
-                  button
-                >
-                  <IonLabel>{el.title}</IonLabel>
-                  <IonIcon slot="end" icon={chevronForward} />
-                </IonItem>
-              ))}
-            </>
-          )}
-          <IonItem>
-            <IonSelect
-              label={t('artifactRenderer.theme')}
-              labelPlacement="fixed"
-              value={theme}
-              onIonChange={(e) => {
-                setMetaProp('theme', e.detail.value);
-              }}
-            >
-              {Object.keys(artifactThemeTitleI18nByName).map((el) => (
-                <IonSelectOption key={el} value={el}>
-                  {t(
-                    artifactThemeTitleI18nByName[
-                      el as keyof typeof artifactThemeTitleI18nByName
-                    ],
-                  )}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
-          {!!props.artifact.incomingArtifactReferences.length && (
-            <>
-              <IonListHeader>
-                {t('artifactRenderer.incomingArtifactReferences')}
-                <InfoButton
-                  message={t(
-                    'artifactRenderer.incomingArtifactReferences.help',
-                  )}
-                />
-              </IonListHeader>
-              {props.artifact.incomingArtifactReferences.map((el) => (
-                <IonItem
-                  key={el.id}
-                  onClick={() =>
-                    navigate(
-                      <Artifact id={el.artifactId} />,
-                      PaneTransition.Push,
-                    )
-                  }
-                  button
-                >
-                  <IonLabel>{el.artifact.title}</IonLabel>
-                  <IonIcon slot="end" icon={chevronForward} />
-                </IonItem>
-              ))}
-            </>
-          )}
-        </IonCol>
-      </IonRow>
-    </IonGrid>
+    <>
+      <IonItem>
+        <IonInput
+          placeholder={t('artifactRenderer.title.placeholder')}
+          label={t('artifactRenderer.title.label')}
+          labelPlacement="stacked"
+          value={title}
+          onIonInput={(event) => {
+            setMetaProp('title', event.target.value || '');
+            eventManager.broadcast([EventName.ArtifactTitleUpdated]);
+          }}
+          type="text"
+        ></IonInput>
+      </IonItem>
+      <div>{renderEditor()}</div>
+      {editorReady && (
+        <ConnectionStatusContainer>
+          <ConnectionStatusIcon $status={connectionStatus} />
+          <div>{t(connectionStatusToI18n[connectionStatus])}</div>
+        </ConnectionStatusContainer>
+      )}
+    </>
   );
-};
+});

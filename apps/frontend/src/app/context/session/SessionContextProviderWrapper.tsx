@@ -39,7 +39,11 @@ export const SessionContextProviderWrapper = ({
   );
 
   if (!value.session) {
-    return <Auth />;
+    return (
+      <SessionContext.Provider value={value as SessionContextData}>
+        <Auth />
+      </SessionContext.Provider>
+    );
   }
 
   return (

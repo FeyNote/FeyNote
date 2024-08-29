@@ -2,15 +2,30 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
+import {
+  GlobalPaneContext,
+  PaneTransition,
+} from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import { IonButton } from '@ionic/react';
+import {
+  IonButton,
+  IonFab,
+  IonFabButton,
+  IonFabList,
+  IonIcon,
+} from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { PaneTitle } from './components/pane/PaneTitle';
 import { RightSideMenu } from './components/pane/RightSideMenu';
+import { add, calendar, documentText } from 'ionicons/icons';
+import type { ArtifactType } from '@prisma/client';
+import { trpc } from '../utils/trpc';
+import { Artifact } from './components/artifact/Artifact';
+import { EventName } from './context/events/EventName';
+import { EventContext } from './context/events/EventContext';
 
 const MENU_SIZE_PX = '240';
 
@@ -145,8 +160,9 @@ const MainGrid = styled.div<{
 `;
 
 export const Workspace: React.FC = () => {
-  const { _model } = useContext(GlobalPaneContext);
+  const { _model, navigate } = useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
+  const { eventManager } = useContext(EventContext);
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
     getPreference(PreferenceNames.StartLeftPaneOpen),
@@ -154,6 +170,24 @@ export const Workspace: React.FC = () => {
   const [rightMenuOpen, setRightMenuOpen] = useState(
     getPreference(PreferenceNames.StartRightPaneOpen),
   );
+
+  const newArtifact = async (type: ArtifactType) => {
+    const artifact = await trpc.artifact.createArtifact.mutate({
+      title: 'Untitled',
+      type,
+      theme: 'default',
+      isPinned: false,
+      isTemplate: false,
+      text: '',
+      json: {},
+      rootTemplateId: null,
+      artifactTemplateId: null,
+    });
+
+    navigate(undefined, <Artifact id={artifact.id} />, PaneTransition.Push);
+
+    eventManager.broadcast([EventName.ArtifactCreated]);
+  };
 
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
@@ -194,6 +228,19 @@ export const Workspace: React.FC = () => {
           <RightSideMenu />
         </MenuInner>
       </Menu>
+      <IonFab slot="fixed" vertical="bottom" horizontal="end">
+        <IonFabButton>
+          <IonIcon icon={add} />
+        </IonFabButton>
+        <IonFabList side="top">
+          <IonFabButton onClick={() => newArtifact('tiptap')}>
+            <IonIcon icon={documentText}></IonIcon>
+          </IonFabButton>
+          <IonFabButton onClick={() => newArtifact('calendar')}>
+            <IonIcon icon={calendar}></IonIcon>
+          </IonFabButton>
+        </IonFabList>
+      </IonFab>
     </MainGrid>
   );
 };

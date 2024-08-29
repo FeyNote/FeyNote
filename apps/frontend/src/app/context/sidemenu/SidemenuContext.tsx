@@ -1,12 +1,9 @@
 import { createContext } from 'react';
 
 export interface SidemenuContextData {
-  setContents: (
-    content: React.ReactNode,
-    paneId: string,
-    navigationEventId: string,
-  ) => void;
+  setContents: (content: React.ReactNode, paneId: string) => void;
   contents: React.ReactNode;
+  sidemenuCurrentPaneId: string | undefined;
 }
 
 export const SidemenuContext = createContext<SidemenuContextData>({
@@ -14,4 +11,5 @@ export const SidemenuContext = createContext<SidemenuContextData>({
   // catastrophic fashion
   setContents: null as any,
   contents: null as any,
+  sidemenuCurrentPaneId: null as any,
 });

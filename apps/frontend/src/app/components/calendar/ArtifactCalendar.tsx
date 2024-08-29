@@ -1,8 +1,8 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { ArtifactEditorApplyTemplate } from '../editor/ArtifactEditor';
 import {
+  memo,
   useEffect,
   useMemo,
   useReducer,
@@ -21,9 +21,6 @@ interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
   incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
   y: YDoc | TiptapCollabProvider;
-  applyTemplateRef?: React.MutableRefObject<
-    ArtifactEditorApplyTemplate | undefined
-  >;
   centerDate?: string;
   editable: boolean;
   viewType: 'fullsize' | 'mini';
@@ -33,7 +30,7 @@ interface Props {
   onDayClicked?: (date: string) => void;
 }
 
-export const ArtifactCalendar: React.FC<Props> = (props) => {
+export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
   const setCenterRef = useRef<(center: string) => void>();
@@ -110,4 +107,4 @@ export const ArtifactCalendar: React.FC<Props> = (props) => {
       />
     </>
   );
-};
+});

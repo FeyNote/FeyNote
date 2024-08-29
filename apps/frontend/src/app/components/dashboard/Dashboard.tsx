@@ -27,6 +27,8 @@ import { PaneNav } from '../pane/PaneNav';
 import { Artifact } from '../artifact/Artifact';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
+import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { DashboardRightSideMenu } from './DashboardSideMenu';
 
 const GridContainer = styled.div`
   display: grid;
@@ -46,7 +48,8 @@ const GridRowArtifacts = styled.div`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate, isPaneFocused, pane } = useContext(PaneContext);
+  const { setContents } = useContext(SidemenuContext);
   const [presentToast] = useIonToast();
   const { eventManager } = useContext(EventContext);
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -75,6 +78,12 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     getUserArtifacts();
   }, []);
+
+  useEffect(() => {
+    if (isPaneFocused) {
+      setContents(<DashboardRightSideMenu artifacts={artifacts} />, pane.id);
+    }
+  }, [artifacts, isPaneFocused]);
 
   const handleSearchInput = (e: Event) => {
     let query = '';

@@ -29,6 +29,7 @@ import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -60,7 +61,7 @@ export const Register: React.FC<Props> = (props) => {
       .then((_session) => setSession(_session))
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
-          409: 'This user has already been registered.',
+          409: t('auth.register.conflict'),
         });
       })
       .finally(() => {
@@ -181,10 +182,11 @@ export const Register: React.FC<Props> = (props) => {
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
-                  {t('auth.register.subtext.text')}{' '}
-                  <a href="" onClick={() => props.setAuthType('register')}>
-                    {t('auth.register.subtext.link')}
-                  </a>
+                  <ToggleAuthTypeButton
+                    onClick={() => props.setAuthType('login')}
+                  >
+                    {t('auth.register.switchToLogin')}
+                  </ToggleAuthTypeButton>
                 </sub>
               </CenteredIonText>
             </IonItem>

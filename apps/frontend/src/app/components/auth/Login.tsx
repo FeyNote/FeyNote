@@ -28,6 +28,7 @@ import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -137,10 +138,11 @@ export const Login: React.FC<Props> = (props) => {
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
-                  {t('auth.login.forgot.text')}{' '}
-                  <a href="" onClick={() => props.setAuthType('login')}>
-                    {t('auth.register.subtext.link')}
-                  </a>
+                  <ToggleAuthTypeButton
+                    onClick={() => props.setAuthType('register')}
+                  >
+                    {t('auth.login.switchToRegister')}
+                  </ToggleAuthTypeButton>
                 </sub>
               </CenteredIonText>
             </IonItem>
