@@ -24,6 +24,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { Artifact } from './Artifact';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -134,7 +135,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             <IonItem
               key={el.id}
               onClick={() =>
-                navigate(<Artifact id={el.artifactId} />, PaneTransition.Push)
+                navigate(
+                  PaneableComponent.Artifact,
+                  { id: el.artifactId },
+                  PaneTransition.Push,
+                )
               }
               button
             >

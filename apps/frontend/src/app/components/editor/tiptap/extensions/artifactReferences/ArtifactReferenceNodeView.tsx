@@ -7,8 +7,8 @@ import { useContext, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
 import { PaneContext } from '../../../../../context/pane/PaneContext';
-import { Artifact } from '../../../../artifact/Artifact';
 import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
 
 const StyledNodeViewWrapper = styled(NodeViewWrapper)`
   display: inline;
@@ -33,11 +33,12 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     if (knownReference?.isBroken) return;
 
     navigate(
-      <Artifact
-        id={props.node.attrs.artifactId}
-        focusBlockId={artifactBlockId || undefined}
-        focusDate={artifactDate || undefined}
-      />,
+      PaneableComponent.Artifact,
+      {
+        id: props.node.attrs.artifactId,
+        focusBlockId: artifactBlockId || undefined,
+        focusDate: artifactDate || undefined,
+      },
       PaneTransition.Push,
     );
   };

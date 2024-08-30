@@ -24,6 +24,7 @@ import { Artifact } from '../artifact/Artifact';
 import { Dashboard } from '../dashboard/Dashboard';
 import { Settings } from '../settings/Settings';
 import { home, logOut, pin, settings, telescope } from 'ionicons/icons';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -159,7 +160,12 @@ export const LeftSideMenu: React.FC = () => {
       <IonCard>
         <CompactIonItem
           onClick={() =>
-            navigate(undefined, <Dashboard />, PaneTransition.Push)
+            navigate(
+              undefined,
+              PaneableComponent.Dashboard,
+              {},
+              PaneTransition.Push,
+            )
           }
           button
         >
@@ -185,7 +191,8 @@ export const LeftSideMenu: React.FC = () => {
                   onClick={() =>
                     navigate(
                       undefined,
-                      <Artifact id={pinnedArtifact.id} />,
+                      PaneableComponent.Artifact,
+                      { id: pinnedArtifact.id },
                       PaneTransition.Push,
                     )
                   }
@@ -219,7 +226,8 @@ export const LeftSideMenu: React.FC = () => {
                   onClick={() =>
                     navigate(
                       undefined,
-                      <Artifact id={recentlyUpdatedArtifact.id} />,
+                      PaneableComponent.Artifact,
+                      { id: recentlyUpdatedArtifact.id },
                       PaneTransition.Push,
                     )
                   }
@@ -242,7 +250,14 @@ export const LeftSideMenu: React.FC = () => {
 
       <IonCard>
         <CompactIonItem
-          onClick={() => navigate(undefined, <Settings />, PaneTransition.Push)}
+          onClick={() =>
+            navigate(
+              undefined,
+              PaneableComponent.Settings,
+              {},
+              PaneTransition.Push,
+            )
+          }
           button
         >
           <IonIcon icon={settings} size="small" />

@@ -31,6 +31,7 @@ import {
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
 import { Artifact } from '../../components/artifact/Artifact';
+import { PaneableComponent } from '../globalPane/PaneableComponent';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -119,7 +120,14 @@ export const GlobalSearchContextProviderWrapper = ({
       artifactTemplateId: null,
     });
 
-    navigate(undefined, <Artifact id={artifact.id} />, PaneTransition.Push);
+    navigate(
+      undefined, // Open in currently focused pane rather than in specific pane
+      PaneableComponent.Artifact,
+      {
+        id: artifact.id,
+      },
+      PaneTransition.Push,
+    );
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };
@@ -214,8 +222,9 @@ export const GlobalSearchContextProviderWrapper = ({
                     key={searchResult.id}
                     onClick={() => {
                       navigate(
-                        undefined,
-                        <Artifact id={searchResult.id} />,
+                        undefined, // Open in currently focused pane rather than in specific pane
+                        PaneableComponent.Artifact,
+                        { id: searchResult.id },
                         PaneTransition.Push,
                       );
                       hide();

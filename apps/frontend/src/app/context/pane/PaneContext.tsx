@@ -1,13 +1,21 @@
-import { createContext } from 'react';
+import { createContext, type ComponentProps } from 'react';
 import type {
   PaneTracker,
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
+import type {
+  PaneableComponent,
+  paneableComponentNameToComponent,
+} from '../globalPane/PaneableComponent';
 
 export interface PaneContextData {
   navigateHistoryBack: () => void;
   navigateHistoryForward: () => void;
-  navigate: (component: React.ReactNode, transition: PaneTransition) => void;
+  navigate: <T extends PaneableComponent>(
+    component: T,
+    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
+    transition: PaneTransition,
+  ) => void;
   pane: PaneTracker;
   isPaneFocused: boolean;
 }

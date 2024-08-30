@@ -1,12 +1,15 @@
-import { ReactNode, useMemo, useReducer, useRef, useState } from 'react';
+import { ReactNode, useMemo, useState, type ComponentProps } from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
   type HistoryNode,
   type PaneTracker,
 } from './GlobalPaneContext';
-import { Actions, DockLocation, Model } from 'flexlayout-react';
-import { Dashboard } from '../../components/dashboard/Dashboard';
+import { Actions, DockLocation, Model, type TabNode } from 'flexlayout-react';
+import {
+  PaneableComponent,
+  type paneableComponentNameToComponent,
+} from './PaneableComponent';
 
 interface Props {
   children: ReactNode;
@@ -15,132 +18,201 @@ interface Props {
 export const GlobalPaneContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
-  const defaultPanes = new Map<string, PaneTracker>([
-    [
-      'default',
-      {
-        id: 'default',
-        currentView: {
-          component: <Dashboard />,
-          navigationEventId: crypto.randomUUID(),
-        },
-        history: [],
-        forwardHistory: [],
+  const model = useMemo(() => {
+    const savedLayoutStr = localStorage.getItem('savedLayout');
+    if (savedLayoutStr) {
+      const savedLayout = JSON.parse(savedLayoutStr);
+      return Model.fromJson(savedLayout);
+    }
+
+    return Model.fromJson({
+      global: {
+        tabEnableRename: false,
+        tabEnableFloat: false,
+        tabDragSpeed: 0.2,
+        tabSetMinWidth: 200,
+        tabSetEnableMaximize: false,
+        tabSetTabStripHeight: 36,
       },
-    ],
-  ]);
-  const panesRef = useRef<Map<string, PaneTracker>>(defaultPanes);
-  const panes = panesRef.current;
+      borders: [],
+      layout: {
+        type: 'row',
+        weight: 100,
+        children: [
+          {
+            type: 'tabset',
+            weight: 50,
+            children: [
+              {
+                id: 'default',
+                type: 'tab',
+                config: {
+                  component: PaneableComponent.Dashboard,
+                  props: {},
+                  navigationEventId: crypto.randomUUID(),
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+  }, []);
+
+  const saveLayout = () => {
+    localStorage.setItem('savedLayout', JSON.stringify(model.toJson()));
+  };
+
+  const getFirstTab = (): TabNode => {
+    let found: TabNode | null = null;
+    model.visitNodes((node) => {
+      if (found) return;
+
+      if (node.getType() === 'tab') {
+        found = node as TabNode;
+      }
+    });
+
+    if (!found) throw new Error('Could not find any tab in view...');
+    return found;
+  };
+
   const [focusedPaneId, setFocusedPaneId] = useState<string>(
-    [...panes.keys()][0],
+    getFirstTab().getId(),
   );
 
-  const model = useMemo(
-    () =>
-      Model.fromJson({
-        global: {
-          tabEnableRename: false,
-          tabEnableFloat: false,
-          tabDragSpeed: 0.2,
-          tabSetMinWidth: 200,
-          tabSetEnableMaximize: false,
-          tabSetTabStripHeight: 36,
-        },
-        borders: [],
-        layout: {
-          type: 'row',
-          weight: 100,
-          children: [
-            {
-              type: 'tabset',
-              weight: 50,
-              children: [
-                {
-                  id: 'default',
-                  type: 'tab',
-                  component: 'default',
-                },
-              ],
-            },
-          ],
-        },
-      }),
-    [],
-  );
+  const getPaneById = (paneId = focusedPaneId): PaneTracker => {
+    const tabNode = model.getNodeById(paneId) as TabNode | undefined;
+    if (!tabNode || tabNode.getType() !== 'tab')
+      throw new Error(`Pane with id ${paneId} not present in pane list`);
+
+    let currentView = tabNode.getConfig() as HistoryNode | undefined;
+    const extraData = tabNode.getExtraData();
+    const history = extraData.history || [];
+    const forwardHistory = extraData.forwardHistory || [];
+    extraData.history = history;
+    extraData.forwardHistory = forwardHistory;
+
+    currentView = currentView || {
+      component: PaneableComponent.Dashboard,
+      props: {},
+      navigationEventId: crypto.randomUUID(),
+    };
+
+    return {
+      id: tabNode.getId(),
+      currentView,
+      history,
+      forwardHistory,
+    };
+  };
 
   const navigateHistoryBack = (paneId = focusedPaneId) => {
-    const pane = panes.get(paneId);
-    if (!pane)
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
-    const canGoBack = pane.history.length > 0;
+    const pane = getPaneById(paneId);
+
+    const canGoBack = !!pane.history?.length;
     if (!canGoBack) return;
 
-    const currentView = pane.currentView;
+    pane.forwardHistory.push(pane.currentView);
     pane.currentView = pane.history.splice(pane.history.length - 1, 1)[0];
-    pane.forwardHistory.push(currentView);
 
-    triggerRerender();
+    model.doAction(
+      Actions.updateNodeAttributes(paneId, {
+        config: pane.currentView,
+        extraData: {
+          forwardHistory: pane.forwardHistory,
+          history: pane.history,
+        },
+      }),
+    );
+
+    saveLayout();
   };
 
   const navigateHistoryForward = (paneId = focusedPaneId) => {
-    const pane = panes.get(paneId);
-    if (!pane)
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
-    const canGoForward = pane.forwardHistory.length > 0;
+    const pane = getPaneById(paneId);
+
+    const canGoForward = !!pane.forwardHistory?.length;
     if (!canGoForward) return;
 
-    const currentView = pane.currentView;
+    pane.history.push(pane.currentView);
     pane.currentView = pane.forwardHistory.splice(
-      pane.history.length - 1,
+      pane.forwardHistory.length - 1,
       1,
     )[0];
-    pane.history.push(currentView);
 
-    triggerRerender();
+    model.doAction(
+      Actions.updateNodeAttributes(paneId, {
+        config: pane.currentView,
+        extraData: {
+          forwardHistory: pane.forwardHistory,
+          history: pane.history,
+        },
+      }),
+    );
+
+    saveLayout();
   };
 
-  const getPaneById = (paneId = focusedPaneId) => {
-    const pane = panes.get(paneId);
-    if (!pane)
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
-    return pane;
-  };
-
-  const navigate = (
+  const navigate = <T extends PaneableComponent>(
     paneId = focusedPaneId,
-    component: React.ReactNode,
+    component: T,
+    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
   ) => {
-    const pane = panes.get(paneId);
-    if (!pane)
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
+    const { currentView, history, forwardHistory } = getPaneById(paneId);
     const tabset = model.getNodeById(paneId)?.getParent();
     if (!tabset) throw new Error('Active tabset not found');
 
     const historyNode = {
       component,
+      // We really don't want to type enforce props as it now just gets dumped into FlexLayout state
+      props: props as any,
       navigationEventId: crypto.randomUUID(),
     } satisfies HistoryNode;
 
     switch (transition) {
       case PaneTransition.Push: {
-        pane.history.push(pane.currentView);
-        pane.currentView = historyNode;
-        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+        history.push(currentView);
+        forwardHistory.splice(0, forwardHistory.length);
+        model.doAction(
+          Actions.updateNodeAttributes(paneId, {
+            config: historyNode,
+            extraData: {
+              forwardHistory,
+              history,
+            },
+          }),
+        );
 
         break;
       }
       case PaneTransition.Replace: {
-        pane.currentView = historyNode;
-        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+        forwardHistory.splice(0, forwardHistory.length);
+        model.doAction(
+          Actions.updateNodeAttributes(paneId, {
+            config: historyNode,
+            extraData: {
+              forwardHistory,
+              history,
+            },
+          }),
+        );
 
         break;
       }
       case PaneTransition.Reset: {
-        pane.currentView = historyNode;
-        pane.history.splice(0, pane.history.length);
-        pane.forwardHistory.splice(0, pane.forwardHistory.length);
+        history.splice(0, history.length);
+        forwardHistory.splice(0, forwardHistory.length);
+        model.doAction(
+          Actions.updateNodeAttributes(paneId, {
+            config: historyNode,
+            extraData: {
+              forwardHistory,
+              history,
+            },
+          }),
+        );
 
         break;
       }
@@ -154,18 +226,17 @@ export const GlobalPaneContextProviderWrapper = ({
         };
         const id = crypto.randomUUID();
 
-        panes.set(id, {
-          id,
-          forwardHistory: [],
-          history: [],
-          currentView: historyNode,
-        });
         model.doAction(
           Actions.addNode(
             {
               id,
               type: 'tab',
               component: id,
+              config: {
+                component,
+                props,
+                navigationEventId: crypto.randomUUID(),
+              },
             },
             tabset.getId(),
             transitionToDockLocation[transition],
@@ -178,12 +249,11 @@ export const GlobalPaneContextProviderWrapper = ({
       }
     }
 
-    triggerRerender();
+    saveLayout();
   };
 
   const value = useMemo(
     () => ({
-      panes,
       navigateHistoryBack,
       navigateHistoryForward,
       navigate,
@@ -192,7 +262,7 @@ export const GlobalPaneContextProviderWrapper = ({
       focusedPaneId,
       _model: model,
     }),
-    [_rerenderReducerValue, model],
+    [model, focusedPaneId],
   );
 
   return (

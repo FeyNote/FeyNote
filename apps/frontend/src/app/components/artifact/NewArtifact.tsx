@@ -18,8 +18,8 @@ import { useContext } from 'react';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { Artifact } from './Artifact';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
@@ -46,7 +46,11 @@ export const NewArtifact: React.FC = () => {
       .then((response) => {
         // We navigate to the created artifact but replace it in the browser history, so that
         // user does not get navigated back to this "create" page when pressing back.
-        navigate(<Artifact id={response.id} />, PaneTransition.Replace);
+        navigate(
+          PaneableComponent.Artifact,
+          { id: response.id },
+          PaneTransition.Replace,
+        );
 
         eventManager.broadcast([EventName.ArtifactCreated]);
       })

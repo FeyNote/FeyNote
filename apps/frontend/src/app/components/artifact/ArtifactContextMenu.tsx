@@ -38,21 +38,33 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       <ContextMenuGroup>
         <ContextMenuItem
           onClick={() =>
-            navigate(pane.currentView.component, PaneTransition.HSplit)
+            navigate(
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.HSplit,
+            )
           }
         >
           {t('contextMenu.splitRight')}
         </ContextMenuItem>
         <ContextMenuItem
           onClick={() =>
-            navigate(pane.currentView.component, PaneTransition.VSplit)
+            navigate(
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.VSplit,
+            )
           }
         >
           {t('contextMenu.splitDown')}
         </ContextMenuItem>
         <ContextMenuItem
           onClick={() =>
-            navigate(pane.currentView.component, PaneTransition.NewTab)
+            navigate(
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.NewTab,
+            )
           }
         >
           {t('contextMenu.duplicateTab')}

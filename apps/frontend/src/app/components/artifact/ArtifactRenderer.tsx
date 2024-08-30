@@ -61,7 +61,6 @@ interface Props {
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
-  console.log('rendering');
   const { t } = useTranslation();
   const [connectionStatus, setConnectionStatus] = useState(
     ConnectionStatus.Disconnected,

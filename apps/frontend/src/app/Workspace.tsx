@@ -26,6 +26,7 @@ import { trpc } from '../utils/trpc';
 import { Artifact } from './components/artifact/Artifact';
 import { EventName } from './context/events/EventName';
 import { EventContext } from './context/events/EventContext';
+import { PaneableComponent } from './context/globalPane/PaneableComponent';
 
 const MENU_SIZE_PX = '240';
 
@@ -184,7 +185,14 @@ export const Workspace: React.FC = () => {
       artifactTemplateId: null,
     });
 
-    navigate(undefined, <Artifact id={artifact.id} />, PaneTransition.Push);
+    navigate(
+      undefined, // Navigate within current focused pane rather than specific pane
+      PaneableComponent.Artifact,
+      {
+        id: artifact.id,
+      },
+      PaneTransition.Push,
+    );
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };

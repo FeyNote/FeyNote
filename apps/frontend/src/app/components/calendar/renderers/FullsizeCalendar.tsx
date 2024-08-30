@@ -5,8 +5,8 @@ import type { CalendarRenderProps } from './CalendarRenderProps';
 import { chevronBack, chevronForward } from 'ionicons/icons';
 import { useContext } from 'react';
 import { PaneContext } from '../../../context/pane/PaneContext';
-import { Artifact } from '../../artifact/Artifact';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 
 const CalendarContainer = styled.div``;
 
@@ -94,7 +94,8 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
               href=""
               onClick={() =>
                 navigate(
-                  <Artifact id={reference.artifactId} />,
+                  PaneableComponent.Artifact,
+                  { id: reference.artifactId },
                   PaneTransition.Push,
                 )
               }

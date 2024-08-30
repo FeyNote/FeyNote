@@ -20,6 +20,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { AIThread } from './AIThread';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneNav } from '../pane/PaneNav';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();
@@ -48,7 +49,11 @@ export const AIThreadsList: React.FC = () => {
     trpc.ai.createThread
       .mutate({})
       .then((thread) => {
-        navigate(<AIThread id={thread.id} />, PaneTransition.Push);
+        navigate(
+          PaneableComponent.AIThread,
+          { id: thread.id },
+          PaneTransition.Push,
+        );
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

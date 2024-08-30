@@ -5,8 +5,8 @@ import { ThreadDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { AIThread } from './AIThread';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const PreviewText = styled.p`
   overflow: hidden;
@@ -29,7 +29,11 @@ export const AIThreadMenuItem = (props: Props) => {
     <IonItem
       button
       onClick={() =>
-        navigate(<AIThread id={props.thread.id} />, PaneTransition.Push)
+        navigate(
+          PaneableComponent.AIThread,
+          { id: props.thread.id },
+          PaneTransition.Push,
+        )
       }
       detail
     >

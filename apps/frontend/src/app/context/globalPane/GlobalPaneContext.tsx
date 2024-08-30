@@ -1,5 +1,9 @@
 import type { Model } from 'flexlayout-react';
-import { createContext } from 'react';
+import { createContext, type ComponentProps } from 'react';
+import type {
+  PaneableComponent,
+  paneableComponentNameToComponent,
+} from './PaneableComponent';
 
 export enum PaneTransition {
   /**
@@ -29,7 +33,8 @@ export enum PaneTransition {
 }
 
 export interface HistoryNode {
-  component: React.ReactNode;
+  component: PaneableComponent;
+  props: Record<string, string>;
   navigationEventId: string;
 }
 
@@ -41,7 +46,6 @@ export type PaneTracker = {
 };
 
 interface GlobalPaneContextData {
-  panes: ReadonlyMap<string, PaneTracker>;
   /**
    * Move the desired view back in history
    */
@@ -62,9 +66,10 @@ interface GlobalPaneContextData {
   /**
    * Open a component within a pane/tabset with the desired transition
    */
-  navigate: (
+  navigate: <T extends PaneableComponent>(
     paneId: string | undefined,
-    component: React.ReactNode,
+    component: T,
+    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
   ) => void;
   /**
@@ -77,7 +82,6 @@ interface GlobalPaneContextData {
 export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   // We cast null to any so that any usage of this context without initialization blows up in
   // catastrophic fashion
-  panes: null as any,
   navigateHistoryBack: null as any,
   navigateHistoryForward: null as any,
   navigate: null as any,

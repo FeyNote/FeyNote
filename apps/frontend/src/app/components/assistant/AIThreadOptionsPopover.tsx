@@ -1,9 +1,7 @@
 import {
-  IonContent,
   IonIcon,
   IonItem,
   IonLabel,
-  IonList,
   useIonAlert,
   useIonToast,
 } from '@ionic/react';
@@ -13,8 +11,8 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { AIThreadsList } from './AIThreadsList';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   id: string;
@@ -82,7 +80,11 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
                 id: props.id,
               });
 
-              navigate(<AIThreadsList />, PaneTransition.Replace);
+              navigate(
+                PaneableComponent.AIThreadsList,
+                {},
+                PaneTransition.Replace,
+              );
             } catch (error) {
               handleTRPCErrors(error, presentToast);
             }

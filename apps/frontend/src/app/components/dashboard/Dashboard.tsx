@@ -29,6 +29,7 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { DashboardRightSideMenu } from './DashboardSideMenu';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const GridContainer = styled.div`
   display: grid;
@@ -125,7 +126,11 @@ export const Dashboard: React.FC = () => {
       artifactTemplateId: null,
     });
 
-    navigate(<Artifact id={artifact.id} />, PaneTransition.Push);
+    navigate(
+      PaneableComponent.Artifact,
+      { id: artifact.id },
+      PaneTransition.Push,
+    );
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };

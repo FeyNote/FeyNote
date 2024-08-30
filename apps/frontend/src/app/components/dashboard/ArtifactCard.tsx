@@ -10,8 +10,8 @@ import styled from 'styled-components';
 import { storageKeyToImageUrl } from '../../../utils/storageKeyToImageUrl';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { Artifact } from '../artifact/Artifact';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const IonArtifactCard = styled(IonCard)`
   width: min(300px, 100%);
@@ -32,7 +32,11 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
   return (
     <IonArtifactCard
       onClick={() =>
-        navigate(<Artifact id={artifact.id} />, PaneTransition.Push)
+        navigate(
+          PaneableComponent.Artifact,
+          { id: artifact.id },
+          PaneTransition.Push,
+        )
       }
       button
     >

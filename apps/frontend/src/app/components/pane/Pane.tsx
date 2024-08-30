@@ -5,6 +5,7 @@ import {
   type PaneContextData,
 } from '../../context/pane/PaneContext';
 import styled from 'styled-components';
+import { paneableComponentNameToComponent } from '../../context/globalPane/PaneableComponent';
 
 const PaneContainer = styled.div`
   height: 100%;
@@ -41,8 +42,8 @@ export const Pane: React.FC<Props> = (props) => {
     () => ({
       navigateHistoryBack: () => navigateHistoryBack(props.id),
       navigateHistoryForward: () => navigateHistoryForward(props.id),
-      navigate: (transition, historyNode) =>
-        navigate(props.id, transition, historyNode),
+      navigate: (componentName, componentProps, transition) =>
+        navigate(props.id, componentName, componentProps, transition),
       pane,
       isPaneFocused,
     }),
@@ -55,11 +56,15 @@ export const Pane: React.FC<Props> = (props) => {
     }
   };
 
+  const DisplayComponent =
+    paneableComponentNameToComponent[pane.currentView.component];
+
   return (
     <PaneContainer onClick={onPaneClicked}>
       <PaneContext.Provider value={contextValue}>
         <ComponentWrapper key={pane.currentView.navigationEventId}>
-          {pane.currentView.component}
+          {/** Cast to any since we have no good way of generic-typing props stored in FlexLayout config and having them spit out here */}
+          <DisplayComponent {...(pane.currentView.props as any)} />
         </ComponentWrapper>
       </PaneContext.Provider>
     </PaneContainer>
