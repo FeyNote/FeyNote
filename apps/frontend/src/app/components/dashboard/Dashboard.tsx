@@ -54,6 +54,7 @@ export const Dashboard: React.FC = () => {
   const [presentToast] = useIonToast();
   const { eventManager } = useContext(EventContext);
   const { startProgressBar, ProgressBar } = useProgressBar();
+  const [loading, setLoading] = useState(true);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
@@ -62,6 +63,7 @@ export const Dashboard: React.FC = () => {
   );
 
   const getUserArtifacts = () => {
+    setLoading(true);
     const progress = startProgressBar();
     trpc.artifact.getArtifacts
       .query({})
@@ -72,6 +74,7 @@ export const Dashboard: React.FC = () => {
         handleTRPCErrors(error, presentToast);
       })
       .finally(() => {
+        setLoading(false);
         progress.dismiss();
       });
   };
@@ -161,12 +164,13 @@ export const Dashboard: React.FC = () => {
                   artifacts={pinnedArtifacts}
                 />
               )}
-              {artifacts.length ? (
+              {!!artifacts.length && (
                 <Artifacts
                   title={t('dashboard.items.header')}
                   artifacts={artifacts}
                 />
-              ) : (
+              )}
+              {!pinnedArtifacts.length && !artifacts.length && !loading && (
                 <NullState
                   title={t('dashboard.noArtifacts.title')}
                   message={t('dashboard.noArtifacts.message')}
