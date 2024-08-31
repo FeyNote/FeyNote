@@ -1,10 +1,4 @@
-import {
-  ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentProps,
-} from 'react';
+import { ReactNode, useEffect, useMemo, type ComponentProps } from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -308,6 +302,23 @@ export const GlobalPaneContextProviderWrapper = ({
     }
   };
 
+  useEffect(() => {
+    const listener = (event: PopStateEvent) => {
+      if (!event.state?.layout) return;
+      localStorage.setItem('savedLayout', JSON.stringify(event.state.layout));
+      // This is the best way we have for now to handle native browser back
+      // While this does work, it's slower than natively manipulating the state of the panes.
+      // For now, encourage users to use in-app navigation techniques instead of browser back/forward (though they do work).
+      window.location.reload();
+    };
+
+    window.addEventListener('popstate', listener);
+
+    return () => {
+      window.removeEventListener('popstate', listener);
+    };
+  }, [model]);
+
   const renamePane = (paneId: string, name: string) => {
     model.doAction(Actions.renameTab(paneId, name));
   };
@@ -321,6 +332,21 @@ export const GlobalPaneContextProviderWrapper = ({
 
   const onModelChangeListener = (model: Model, action: Action) => {
     localStorage.setItem('savedLayout', JSON.stringify(model.toJson()));
+
+    if (
+      [
+        Actions.DELETE_TAB,
+        Actions.ADD_NODE,
+        Actions.UPDATE_NODE_ATTRIBUTES,
+      ].includes(action.type)
+    ) {
+      window.history.pushState(
+        {
+          layout: model.toJson(),
+        },
+        '',
+      );
+    }
   };
 
   const value = useMemo(
