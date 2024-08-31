@@ -1,11 +1,24 @@
-import { ReactNode, useMemo, useState, type ComponentProps } from 'react';
+import {
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+} from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
   type HistoryNode,
   type PaneTracker,
 } from './GlobalPaneContext';
-import { Actions, DockLocation, Model, type TabNode } from 'flexlayout-react';
+import {
+  Actions,
+  DockLocation,
+  Model,
+  type IGlobalAttributes,
+  type TabNode,
+  type TabSetNode,
+} from 'flexlayout-react';
 import {
   PaneableComponent,
   type paneableComponentNameToComponent,
@@ -19,21 +32,24 @@ export const GlobalPaneContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const model = useMemo(() => {
+    const global = {
+      tabEnableRename: false,
+      tabEnableFloat: false,
+      tabDragSpeed: 0.2,
+      tabSetMinWidth: 200,
+      tabSetEnableMaximize: false,
+      tabSetTabStripHeight: 36,
+    } satisfies IGlobalAttributes;
+
     const savedLayoutStr = localStorage.getItem('savedLayout');
     if (savedLayoutStr) {
       const savedLayout = JSON.parse(savedLayoutStr);
+      savedLayout.global = global;
       return Model.fromJson(savedLayout);
     }
 
     return Model.fromJson({
-      global: {
-        tabEnableRename: false,
-        tabEnableFloat: false,
-        tabDragSpeed: 0.2,
-        tabSetMinWidth: 200,
-        tabSetEnableMaximize: false,
-        tabSetTabStripHeight: 36,
-      },
+      global,
       borders: [],
       layout: {
         type: 'row',
@@ -77,11 +93,28 @@ export const GlobalPaneContextProviderWrapper = ({
     return found;
   };
 
-  const [focusedPaneId, setFocusedPaneId] = useState<string>(
-    getFirstTab().getId(),
-  );
+  const getFocusedPaneId = () => {
+    return (
+      model.getActiveTabset()?.getSelectedNode()?.getId() ||
+      getFirstTab().getId()
+    );
+  };
 
-  const getPaneById = (paneId = focusedPaneId): PaneTracker => {
+  const getSelectedTabForTabset = (
+    tabsetId: string = model.getFirstTabSet().getId(),
+  ) => {
+    const tabset = model.getNodeById(tabsetId) as TabSetNode | undefined;
+    if (!tabset) throw new Error('tabset not found');
+    if (tabset.getType() !== 'tabset') throw new Error('not a tabset');
+    const selectedTabNode = tabset.getSelectedNode() as TabNode;
+    if (!selectedTabNode) throw new Error('no selected tab node');
+    if (selectedTabNode.getType() !== 'tab')
+      throw new Error('selected tab node is not a tab...');
+
+    return selectedTabNode;
+  };
+
+  const getPaneById = (paneId = getFocusedPaneId()): PaneTracker => {
     const tabNode = model.getNodeById(paneId) as TabNode | undefined;
     if (!tabNode || tabNode.getType() !== 'tab')
       throw new Error(`Pane with id ${paneId} not present in pane list`);
@@ -107,7 +140,7 @@ export const GlobalPaneContextProviderWrapper = ({
     };
   };
 
-  const navigateHistoryBack = (paneId = focusedPaneId) => {
+  const navigateHistoryBack = (paneId = getFocusedPaneId()) => {
     const pane = getPaneById(paneId);
 
     const canGoBack = !!pane.history?.length;
@@ -129,7 +162,7 @@ export const GlobalPaneContextProviderWrapper = ({
     saveLayout();
   };
 
-  const navigateHistoryForward = (paneId = focusedPaneId) => {
+  const navigateHistoryForward = (paneId = getFocusedPaneId()) => {
     const pane = getPaneById(paneId);
 
     const canGoForward = !!pane.forwardHistory?.length;
@@ -155,7 +188,7 @@ export const GlobalPaneContextProviderWrapper = ({
   };
 
   const navigate = <T extends PaneableComponent>(
-    paneId = focusedPaneId,
+    paneId = getFocusedPaneId(),
     component: T,
     props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
@@ -252,17 +285,22 @@ export const GlobalPaneContextProviderWrapper = ({
     saveLayout();
   };
 
+  const renamePane = (paneId: string, name: string) => {
+    model.doAction(Actions.renameTab(paneId, name));
+  };
+
   const value = useMemo(
     () => ({
       navigateHistoryBack,
       navigateHistoryForward,
       navigate,
       getPaneById,
-      setFocusedPaneId,
-      focusedPaneId,
+      renamePane,
+      getFocusedPaneId,
+      getSelectedTabForTabset,
       _model: model,
     }),
-    [model, focusedPaneId],
+    [model],
   );
 
   return (

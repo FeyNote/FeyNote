@@ -4,6 +4,6 @@ interface Props {
   artifacts: ArtifactDTO[];
 }
 
-export const DashboardRightSideMenu: React.FC<Props> = (props) => {
-  return <>{props.artifacts.length} artifacts!</>;
+export const DashboardRightSideMenu: React.FC<Props> = () => {
+  return <></>;
 };

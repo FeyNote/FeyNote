@@ -3,7 +3,6 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { IonButton, IonContent, IonIcon, IonPopover } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
-import { PaneTitleContext } from '../../context/paneTitle/PaneTitleContext';
 
 const NavContainer = styled.div`
   display: flex;
@@ -31,15 +30,14 @@ interface Props {
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
-  const { navigateHistoryBack, navigateHistoryForward, pane } =
+  const { navigateHistoryBack, navigateHistoryForward, pane, renamePane } =
     useContext(PaneContext);
-  const { getPaneTitle, setPaneTitle } = useContext(PaneTitleContext);
 
   useEffect(() => {
-    if (props.title !== getPaneTitle(pane.id)) {
-      setPaneTitle(pane.id, props.title);
-    }
-  }, [props.title, pane]);
+    // TODO: this causes an extra render each time that panenav is initialized
+    // It would be nice for us to check if the pane _needs_ to be re-rendered first
+    renamePane(props.title);
+  }, [props.title]);
 
   return (
     <NavContainer>

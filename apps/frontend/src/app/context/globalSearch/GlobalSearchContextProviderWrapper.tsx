@@ -30,7 +30,6 @@ import {
   GlobalPaneContext,
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
-import { Artifact } from '../../components/artifact/Artifact';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
 
 const SearchContainer = styled.div`

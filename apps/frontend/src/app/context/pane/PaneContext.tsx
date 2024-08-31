@@ -16,6 +16,7 @@ export interface PaneContextData {
     props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
   ) => void;
+  renamePane: (name: string) => void;
   pane: PaneTracker;
   isPaneFocused: boolean;
 }
@@ -26,6 +27,7 @@ export const PaneContext = createContext<PaneContextData>({
   navigateHistoryForward: null as any,
   navigateHistoryBack: null as any,
   navigate: null as any,
+  renamePane: null as any,
   pane: null as any,
   isPaneFocused: null as any,
 });

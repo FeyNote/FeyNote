@@ -17,9 +17,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
-import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 import { PaneNav } from '../pane/PaneNav';
+import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 
 const ChatContainer = styled.div`
   padding: 8px;

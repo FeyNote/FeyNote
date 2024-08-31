@@ -10,6 +10,7 @@ import { ArtifactContextMenu } from './ArtifactContextMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
+import { createPortal } from 'react-dom';
 
 interface Props {
   id: string;
@@ -21,8 +22,8 @@ export const Artifact: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
-  const { pane, isPaneFocused } = useContext(PaneContext);
-  const { setContents } = useContext(SidemenuContext);
+  const { isPaneFocused } = useContext(PaneContext);
+  const { sidemenuContentRef } = useContext(SidemenuContext);
 
   const load = () => {
     const progress = startProgressBar();
@@ -45,15 +46,6 @@ export const Artifact: React.FC<Props> = (props) => {
     load();
   }, []);
 
-  useEffect(() => {
-    if (artifact && isPaneFocused) {
-      setContents(
-        <ArtifactRightSidemenu artifact={artifact} reload={load} />,
-        pane.id,
-      );
-    }
-  }, [artifact, isPaneFocused]);
-
   return (
     <IonPage>
       <PaneNav
@@ -71,6 +63,17 @@ export const Artifact: React.FC<Props> = (props) => {
           />
         )}
       </IonContent>
+      {artifact &&
+        isPaneFocused &&
+        sidemenuContentRef.current &&
+        createPortal(
+          <ArtifactRightSidemenu
+            key={artifact.id}
+            artifact={artifact}
+            reload={load}
+          />,
+          sidemenuContentRef.current,
+        )}
     </IonPage>
   );
 };

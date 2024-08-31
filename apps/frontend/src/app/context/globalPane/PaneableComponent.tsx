@@ -19,3 +19,14 @@ export const paneableComponentNameToComponent = {
   [PaneableComponent.AIThread]: AIThread,
   [PaneableComponent.AIThreadsList]: AIThreadsList,
 } satisfies Record<PaneableComponent, React.FC<any>>;
+
+/**
+ * A mapping from components to the default title if the component is not rendered yet (therefore not able to provide it's own title to the pane manager yet)
+ */
+export const paneableComponentNameToDefaultI18nTitle = {
+  [PaneableComponent.Dashboard]: 'dashboard.title',
+  [PaneableComponent.Settings]: 'settings.title',
+  [PaneableComponent.Artifact]: 'artifact.title',
+  [PaneableComponent.AIThread]: 'assistant.title',
+  [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
+} satisfies Record<PaneableComponent, string>;

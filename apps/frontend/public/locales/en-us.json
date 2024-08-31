@@ -186,6 +186,7 @@
   "assistant.title": "Assistant",
   "assistant.thread.rename": "Rename Thread",
   "assistant.thread.delete": "Delete Thread",
+  "assistant.thread.unknownTitle": "AI Thread",
   "assistant.thread.emptyTitle": "Untitled",
   "assistant.threads.nullState.title": "No Message Threads",
   "assistant.threads.nullState.message": "Click on the plus button to create a new thread!",

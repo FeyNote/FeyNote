@@ -18,15 +18,14 @@ import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
-import { PaneTitle } from './components/pane/PaneTitle';
 import { RightSideMenu } from './components/pane/RightSideMenu';
 import { add, calendar, documentText } from 'ionicons/icons';
 import type { ArtifactType } from '@prisma/client';
 import { trpc } from '../utils/trpc';
-import { Artifact } from './components/artifact/Artifact';
 import { EventName } from './context/events/EventName';
 import { EventContext } from './context/events/EventContext';
 import { PaneableComponent } from './context/globalPane/PaneableComponent';
+import { NewPaneButton } from './components/pane/NewPaneButton';
 
 const MENU_SIZE_PX = '240';
 
@@ -54,20 +53,33 @@ const DockContainer = styled.div`
     background: var(--ion-card-background);
   }
 
+  .flexlayout__tabset_tabbar_inner {
+    flex-grow: 0;
+  }
+
   .flexlayout__tabset_tabbar_inner_tab_container {
     // Must override styling that FlexLayout adds directly to the element dynamically with JS
     width: 100% !important;
+    position: relative;
   }
 
   .flexlayout__tab_button {
     position: relative;
     display: grid;
     grid-template-columns: auto 16px;
-    margin-left: 6px;
-    margin-right: 6px;
+    margin-left: 0;
+    margin-right: 0;
     border-radius: 6px 6px 0 0;
     max-width: 200px;
     white-space: nowrap;
+
+    &:first-child {
+      margin-left: 6px;
+    }
+
+    &:hover {
+      background-color: var(--color-tab-unselected-background);
+    }
 
     .flexlayout__tab_button_content {
       display: block;
@@ -107,6 +119,10 @@ const DockContainer = styled.div`
     &::after {
       right: calc(var(--tab-curve) * -2);
       clip-path: inset(50% 50% 0 calc(var(--tab-curve) * -1));
+    }
+
+    &:hover {
+      background-color: var(--color-tab-selected-background);
     }
   }
 
@@ -208,7 +224,12 @@ export const Workspace: React.FC = () => {
         <Layout
           model={_model}
           factory={(arg) => <Pane id={arg.getId()} />}
-          titleFactory={(arg) => <PaneTitle id={arg.getId()} />}
+          onRenderTabSet={(node, { buttons }) => {
+            if (node.getType() !== 'tabset') return;
+            buttons.push(
+              <NewPaneButton key="newpanebutton" tabsetId={node.getId()} />,
+            );
+          }}
         />
         <IonButton
           style={{ position: 'absolute', left: 0 }}

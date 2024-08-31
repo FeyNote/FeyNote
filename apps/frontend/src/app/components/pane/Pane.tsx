@@ -31,12 +31,12 @@ export const Pane: React.FC<Props> = (props) => {
     navigateHistoryForward,
     getPaneById,
     navigate,
-    setFocusedPaneId,
-    focusedPaneId,
+    getFocusedPaneId,
+    renamePane,
   } = useContext(GlobalPaneContext);
 
   const pane = getPaneById(props.id);
-  const isPaneFocused = pane.id === focusedPaneId;
+  const isPaneFocused = pane.id === getFocusedPaneId();
 
   const contextValue = useMemo<PaneContextData>(
     () => ({
@@ -44,23 +44,18 @@ export const Pane: React.FC<Props> = (props) => {
       navigateHistoryForward: () => navigateHistoryForward(props.id),
       navigate: (componentName, componentProps, transition) =>
         navigate(props.id, componentName, componentProps, transition),
+      renamePane: (name: string) => renamePane(props.id, name),
       pane,
       isPaneFocused,
     }),
     [props.id, isPaneFocused],
   );
 
-  const onPaneClicked = () => {
-    if (!isPaneFocused) {
-      setFocusedPaneId(props.id);
-    }
-  };
-
   const DisplayComponent =
     paneableComponentNameToComponent[pane.currentView.component];
 
   return (
-    <PaneContainer onClick={onPaneClicked}>
+    <PaneContainer>
       <PaneContext.Provider value={contextValue}>
         <ComponentWrapper key={pane.currentView.navigationEventId}>
           {/** Cast to any since we have no good way of generic-typing props stored in FlexLayout config and having them spit out here */}

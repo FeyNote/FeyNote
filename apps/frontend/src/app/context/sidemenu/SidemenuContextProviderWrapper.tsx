@@ -1,27 +1,18 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { SidemenuContext } from './SidemenuContext';
-import { EmptySideMenu } from '../../components/pane/EmptySideMenu';
 
 interface Props {
   children: React.ReactNode;
 }
 
 export const SidemenuContextProviderWrapper: React.FC<Props> = (props) => {
-  const [contents, _setContents] = useState<React.ReactNode>(<EmptySideMenu />);
-  const [paneId, setPaneId] = useState<string>();
-
-  const setContents = (contents: React.ReactNode, paneId: string) => {
-    _setContents(contents);
-    setPaneId(paneId);
-  };
+  const sidemenuContentRef = useRef<HTMLDivElement>(null);
 
   const value = useMemo(
     () => ({
-      contents,
-      setContents,
-      sidemenuCurrentPaneId: paneId,
+      sidemenuContentRef,
     }),
-    [contents, paneId],
+    [],
   );
 
   return (

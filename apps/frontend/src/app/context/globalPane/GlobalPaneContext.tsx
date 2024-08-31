@@ -56,13 +56,17 @@ interface GlobalPaneContextData {
   navigateHistoryForward: (paneId: string | undefined) => void;
   getPaneById: (paneId: string | undefined) => PaneTracker;
   /**
-   * Marks the specified pane as focused (but does not "focus" in a traditional browser sense)
+   * Changes the title of the pane displayed in the tab bar
    */
-  setFocusedPaneId: (paneId: string) => void;
+  renamePane: (paneId: string, name: string) => void;
   /**
-   * The currently user-focused pane (not necessarily tracking browser "focus")
+   * A method to fetch the paneid we currently consider has the user's focus within it
    */
-  focusedPaneId: string;
+  getFocusedPaneId(): string;
+  /**
+   * Will return the selected pane of the tabset provided (or the first tabset if no tabsetid provided)
+   */
+  getSelectedTabForTabset: (tabsetId?: string) => void;
   /**
    * Open a component within a pane/tabset with the desired transition
    */
@@ -86,7 +90,8 @@ export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   navigateHistoryForward: null as any,
   navigate: null as any,
   getPaneById: null as any,
+  getFocusedPaneId: null as any,
+  renamePane: null as any,
+  getSelectedTabForTabset: null as any,
   _model: null as any,
-  setFocusedPaneId: null as any,
-  focusedPaneId: null as any,
 });

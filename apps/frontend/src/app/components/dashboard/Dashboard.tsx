@@ -21,6 +21,7 @@ import { PaneNav } from '../pane/PaneNav';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { DashboardRightSideMenu } from './DashboardSideMenu';
+import { createPortal } from 'react-dom';
 
 const GridContainer = styled.div`
   display: grid;
@@ -40,8 +41,8 @@ const GridRowArtifacts = styled.div`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { isPaneFocused, pane } = useContext(PaneContext);
-  const { setContents } = useContext(SidemenuContext);
+  const { isPaneFocused } = useContext(PaneContext);
+  const { sidemenuContentRef } = useContext(SidemenuContext);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [loading, setLoading] = useState(true);
@@ -72,12 +73,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     getUserArtifacts();
   }, []);
-
-  useEffect(() => {
-    if (isPaneFocused) {
-      setContents(<DashboardRightSideMenu artifacts={artifacts} />, pane.id);
-    }
-  }, [artifacts, isPaneFocused]);
 
   const handleSearchInput = (e: Event) => {
     let query = '';
@@ -115,7 +110,7 @@ export const Dashboard: React.FC = () => {
           <GridRowSearchbar className="ion-align-items-center">
             <IonSearchbar
               style={{ padding: 0 }}
-              debounce={300}
+              debounce={250}
               value={searchText}
               onIonInput={(e) => handleSearchInput(e)}
               placeholder={t('dashboard.searchbar.placeholder')}
@@ -149,6 +144,12 @@ export const Dashboard: React.FC = () => {
           </GridRowArtifacts>
         </GridContainer>
       </IonContent>
+      {isPaneFocused &&
+        sidemenuContentRef.current &&
+        createPortal(
+          <DashboardRightSideMenu artifacts={artifacts} />,
+          sidemenuContentRef.current,
+        )}
     </IonPage>
   );
 };
