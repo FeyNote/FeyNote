@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { memo, useContext, useMemo } from 'react';
 import { GlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import {
   PaneContext,
@@ -23,9 +23,10 @@ const ComponentWrapper = styled.div`
 
 interface Props {
   id: string;
+  navigationEventId: string;
 }
 
-export const Pane: React.FC<Props> = (props) => {
+export const Pane: React.FC<Props> = memo((props) => {
   const {
     navigateHistoryBack,
     navigateHistoryForward,
@@ -64,4 +65,4 @@ export const Pane: React.FC<Props> = (props) => {
       </PaneContext.Provider>
     </PaneContainer>
   );
-};
+});

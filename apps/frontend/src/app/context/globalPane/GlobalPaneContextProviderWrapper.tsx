@@ -15,14 +15,17 @@ import {
   Actions,
   DockLocation,
   Model,
+  type Action,
   type IGlobalAttributes,
   type TabNode,
   type TabSetNode,
 } from 'flexlayout-react';
 import {
   PaneableComponent,
+  paneableComponentNameToDefaultI18nTitle,
   type paneableComponentNameToComponent,
 } from './PaneableComponent';
+import { t } from 'i18next';
 
 interface Props {
   children: ReactNode;
@@ -41,6 +44,7 @@ export const GlobalPaneContextProviderWrapper = ({
       tabSetTabStripHeight: 36,
     } satisfies IGlobalAttributes;
 
+    // TODO: move this to a idb KVstore
     const savedLayoutStr = localStorage.getItem('savedLayout');
     if (savedLayoutStr) {
       const savedLayout = JSON.parse(savedLayoutStr);
@@ -62,6 +66,7 @@ export const GlobalPaneContextProviderWrapper = ({
               {
                 id: 'default',
                 type: 'tab',
+                name: t('dashboard.title'),
                 config: {
                   component: PaneableComponent.Dashboard,
                   props: {},
@@ -75,12 +80,8 @@ export const GlobalPaneContextProviderWrapper = ({
     });
   }, []);
 
-  const saveLayout = () => {
-    localStorage.setItem('savedLayout', JSON.stringify(model.toJson()));
-  };
-
   const getFirstTab = (): TabNode => {
-    let found: TabNode | null = null;
+    let found: TabNode | undefined = undefined;
     model.visitNodes((node) => {
       if (found) return;
 
@@ -89,7 +90,34 @@ export const GlobalPaneContextProviderWrapper = ({
       }
     });
 
-    if (!found) throw new Error('Could not find any tab in view...');
+    if (!found) {
+      // If there's no active pane, we need to create one for many of the assumptions throughout the app (things operate as if there's always at least one tab open!)
+      const id = crypto.randomUUID();
+      found = model.doAction(
+        Actions.addNode(
+          {
+            id,
+            type: 'tab',
+            component: id,
+            name: t(
+              paneableComponentNameToDefaultI18nTitle[
+                PaneableComponent.Dashboard
+              ],
+            ),
+            config: {
+              component: PaneableComponent.Dashboard,
+              props: {},
+              navigationEventId: crypto.randomUUID(),
+            },
+          },
+          (model.getActiveTabset() || model.getFirstTabSet()).getId(),
+          DockLocation.CENTER,
+          -1,
+          true,
+        ),
+      ) as TabNode;
+    }
+
     return found;
   };
 
@@ -158,8 +186,6 @@ export const GlobalPaneContextProviderWrapper = ({
         },
       }),
     );
-
-    saveLayout();
   };
 
   const navigateHistoryForward = (paneId = getFocusedPaneId()) => {
@@ -183,8 +209,6 @@ export const GlobalPaneContextProviderWrapper = ({
         },
       }),
     );
-
-    saveLayout();
   };
 
   const navigate = <T extends PaneableComponent>(
@@ -265,6 +289,7 @@ export const GlobalPaneContextProviderWrapper = ({
               id,
               type: 'tab',
               component: id,
+              name: t(paneableComponentNameToDefaultI18nTitle[component]),
               config: {
                 component,
                 props,
@@ -281,12 +306,21 @@ export const GlobalPaneContextProviderWrapper = ({
         break;
       }
     }
-
-    saveLayout();
   };
 
   const renamePane = (paneId: string, name: string) => {
     model.doAction(Actions.renameTab(paneId, name));
+  };
+
+  const onActionListener = (action: Action) => {
+    // Placeholder for now, but can be used to cancel actions
+    // or react to actions
+
+    return action;
+  };
+
+  const onModelChangeListener = (model: Model, action: Action) => {
+    localStorage.setItem('savedLayout', JSON.stringify(model.toJson()));
   };
 
   const value = useMemo(
@@ -299,6 +333,8 @@ export const GlobalPaneContextProviderWrapper = ({
       getFocusedPaneId,
       getSelectedTabForTabset,
       _model: model,
+      _onActionListener: onActionListener,
+      _onModelChangeListener: onModelChangeListener,
     }),
     [model],
   );

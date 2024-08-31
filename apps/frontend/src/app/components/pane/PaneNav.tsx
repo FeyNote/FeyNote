@@ -34,8 +34,7 @@ export const PaneNav: React.FC<Props> = (props) => {
     useContext(PaneContext);
 
   useEffect(() => {
-    // TODO: this causes an extra render each time that panenav is initialized
-    // It would be nice for us to check if the pane _needs_ to be re-rendered first
+    // Since pane itself is memoized, this does not cause re-render of entire pane, but rather just the tab title itself
     renamePane(props.title);
   }, [props.title]);
 

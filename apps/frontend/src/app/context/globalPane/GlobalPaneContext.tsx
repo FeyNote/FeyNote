@@ -1,4 +1,4 @@
-import type { Model } from 'flexlayout-react';
+import type { Action, Model } from 'flexlayout-react';
 import { createContext, type ComponentProps } from 'react';
 import type {
   PaneableComponent,
@@ -81,6 +81,12 @@ interface GlobalPaneContextData {
    * All interaction with this model should occur using PaneControl. This model is present here simply to render FlexLayout.
    */
   _model: Model;
+  /**
+   * DO NOT INTERACT WITH THIS DIRECTLY IN YOUR COMPONENTS.
+   * All interaction with this model should occur using PaneControl. This method is present here simply to render FlexLayout.
+   */
+  _onActionListener: (action: Action) => Action | undefined;
+  _onModelChangeListener: (model: Model, action: Action) => void;
 }
 
 export const GlobalPaneContext = createContext<GlobalPaneContextData>({
@@ -94,4 +100,6 @@ export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   renamePane: null as any,
   getSelectedTabForTabset: null as any,
   _model: null as any,
+  _onActionListener: null as any,
+  _onModelChangeListener: null as any,
 });

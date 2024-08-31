@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import { Layout } from 'flexlayout-react';
+import { Actions, Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import {
   GlobalPaneContext,
@@ -48,9 +48,16 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tabset_tabbar_outer_top {
-    padding-left: 30px;
-    padding-right: 30px;
     background: var(--ion-card-background);
+  }
+
+  .flexlayout__tabset .flexlayout__tabset_tabbar_outer_top {
+    padding-right: 30px;
+  }
+
+  .flexlayout__tabset:first-child .flexlayout__tabset_tabbar_outer_top {
+    padding-left: 30px;
+    padding-right: 0;
   }
 
   .flexlayout__tabset_tabbar_inner {
@@ -126,6 +133,14 @@ const DockContainer = styled.div`
     }
   }
 
+  .flexlayout__tab_button--unselected {
+    background-color: rgba(var(--ion-background-color-rgb), 0.5);
+  }
+
+  .flexlayout__tab_button_trailing {
+    visibility: visible;
+  }
+
   .flexlayout__tab_button_overflow {
     display: none;
   }
@@ -177,7 +192,8 @@ const MainGrid = styled.div<{
 `;
 
 export const Workspace: React.FC = () => {
-  const { _model, navigate } = useContext(GlobalPaneContext);
+  const { _model, navigate, _onActionListener, _onModelChangeListener } =
+    useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
   const { eventManager } = useContext(EventContext);
 
@@ -223,13 +239,20 @@ export const Workspace: React.FC = () => {
       <DockContainer>
         <Layout
           model={_model}
-          factory={(arg) => <Pane id={arg.getId()} />}
+          factory={(arg) => (
+            <Pane
+              id={arg.getId()}
+              navigationEventId={arg.getConfig().navigationEventId}
+            />
+          )}
           onRenderTabSet={(node, { buttons }) => {
             if (node.getType() !== 'tabset') return;
             buttons.push(
               <NewPaneButton key="newpanebutton" tabsetId={node.getId()} />,
             );
           }}
+          onAction={_onActionListener}
+          onModelChange={_onModelChangeListener}
         />
         <IonButton
           style={{ position: 'absolute', left: 0 }}

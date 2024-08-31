@@ -1,25 +1,46 @@
 import { IonButton, IonIcon } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { useContext } from 'react';
+import { GlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import {
-  GlobalPaneContext,
-  PaneTransition,
-} from '../../context/globalPane/GlobalPaneContext';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+  PaneableComponent,
+  paneableComponentNameToDefaultI18nTitle,
+} from '../../context/globalPane/PaneableComponent';
+import { Actions, DockLocation } from 'flexlayout-react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   tabsetId: string;
 }
 
 export const NewPaneButton: React.FC<Props> = (props) => {
-  const { navigate, getSelectedTabForTabset } = useContext(GlobalPaneContext);
+  const { _model } = useContext(GlobalPaneContext);
+  const { t } = useTranslation();
 
   const newTab = () => {
-    navigate(
-      getSelectedTabForTabset(props.tabsetId).getId(),
-      PaneableComponent.Dashboard,
-      {},
-      PaneTransition.NewTab,
+    const id = crypto.randomUUID();
+    _model.doAction(
+      Actions.addNode(
+        {
+          id,
+          type: 'tab',
+          component: id,
+          name: t(
+            paneableComponentNameToDefaultI18nTitle[
+              PaneableComponent.Dashboard
+            ],
+          ),
+          config: {
+            component: PaneableComponent.Dashboard,
+            props: {},
+            navigationEventId: crypto.randomUUID(),
+          },
+        },
+        props.tabsetId,
+        DockLocation.CENTER,
+        -1,
+        true,
+      ),
     );
   };
 
