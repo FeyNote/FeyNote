@@ -64,14 +64,16 @@ export const PaneNav: React.FC<Props> = (props) => {
           id={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}
           size="small"
           fill="clear"
+          disabled={!props.popoverContents}
         >
           <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
         </IonButton>
         <IonPopover
           trigger={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}
           triggerAction="click"
+          dismissOnSelect={true}
         >
-          <IonContent class="ion-padding">{props.popoverContents}</IonContent>
+          <IonContent>{props.popoverContents}</IonContent>
         </IonPopover>
       </NavGroup>
     </NavContainer>

@@ -29,9 +29,15 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const options = props.extension.options as ReferencePluginOptions;
   const knownReference = options.knownReferences.get(key);
 
-  const linkClicked = () => {
+  const linkClicked = (
+    event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
+  ) => {
     if (knownReference?.isBroken) return;
 
+    let paneTransition = PaneTransition.Push;
+    if (event.metaKey || event.ctrlKey) {
+      paneTransition = PaneTransition.NewTab;
+    }
     navigate(
       PaneableComponent.Artifact,
       {
@@ -39,7 +45,8 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         focusBlockId: artifactBlockId || undefined,
         focusDate: artifactDate || undefined,
       },
-      PaneTransition.Push,
+      paneTransition,
+      !(event.metaKey || event.ctrlKey),
     );
   };
 
@@ -69,10 +76,22 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <a onClick={() => (linkClicked(), close())}>{referenceText}</a>
+        <a
+          href=""
+          onClick={(event) => (
+            event.preventDefault(),
+            event.stopPropagation(),
+            linkClicked(event),
+            close()
+          )}
+        >
+          {referenceText}
+        </a>
         {showPreview && artifact && artifactYBin && ref.current && (
           <ArtifactReferencePreview
-            onClick={() => (linkClicked(), close())}
+            onClick={(event) => (
+              event.stopPropagation(), linkClicked(event), close()
+            )}
             artifact={artifact}
             artifactYBin={artifactYBin}
             artifactBlockId={props.node.attrs.artifactBlockId || undefined}

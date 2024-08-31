@@ -32,19 +32,19 @@ export const Pane: React.FC<Props> = memo((props) => {
     navigateHistoryForward,
     getPaneById,
     navigate,
-    getFocusedPaneId,
+    focusedPaneId,
     renamePane,
   } = useContext(GlobalPaneContext);
 
   const pane = getPaneById(props.id);
-  const isPaneFocused = pane.id === getFocusedPaneId();
+  const isPaneFocused = pane.id === focusedPaneId;
 
   const contextValue = useMemo<PaneContextData>(
     () => ({
       navigateHistoryBack: () => navigateHistoryBack(props.id),
       navigateHistoryForward: () => navigateHistoryForward(props.id),
-      navigate: (componentName, componentProps, transition) =>
-        navigate(props.id, componentName, componentProps, transition),
+      navigate: (componentName, componentProps, transition, select) =>
+        navigate(props.id, componentName, componentProps, transition, select),
       renamePane: (name: string) => renamePane(props.id, name),
       pane,
       isPaneFocused,

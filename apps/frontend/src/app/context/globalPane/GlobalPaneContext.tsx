@@ -60,9 +60,9 @@ interface GlobalPaneContextData {
    */
   renamePane: (paneId: string, name: string) => void;
   /**
-   * A method to fetch the paneid we currently consider has the user's focus within it
+   * The paneid we currently consider has the user's focus within it
    */
-  getFocusedPaneId(): string;
+  focusedPaneId: string;
   /**
    * Will return the selected pane of the tabset provided (or the first tabset if no tabsetid provided)
    */
@@ -75,6 +75,7 @@ interface GlobalPaneContextData {
     component: T,
     props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
+    select?: boolean,
   ) => void;
   /**
    * DO NOT INTERACT WITH THIS DIRECTLY IN YOUR COMPONENTS.
@@ -96,7 +97,7 @@ export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   navigateHistoryForward: null as any,
   navigate: null as any,
   getPaneById: null as any,
-  getFocusedPaneId: null as any,
+  focusedPaneId: null as any,
   renamePane: null as any,
   getSelectedTabForTabset: null as any,
   _model: null as any,

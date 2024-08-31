@@ -31,7 +31,7 @@ interface Props {
   artifactBlockId?: string;
   artifactDate?: string;
   previewTarget: HTMLElement;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
@@ -54,7 +54,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       width={PREVIEW_WIDTH_PX}
       minHeight={PREVIEW_MIN_HEIGHT_PX}
       maxHeight={PREVIEW_MAX_HEIGHT_PX}
-      onClick={() => props.onClick?.()}
+      onClick={(event) => props.onClick?.(event)}
     >
       <Header>{props.artifact.title}</Header>
       {artifactMeta.type === 'tiptap' && (

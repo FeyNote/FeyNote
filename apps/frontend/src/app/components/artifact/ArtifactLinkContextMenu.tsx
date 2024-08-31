@@ -1,21 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
 import { useArtifactDelete } from './useArtifactDelete';
 import { useContext } from 'react';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
-
-const ContextMenuContainer = styled.div`
-  border: 1px solid gray;
-`;
-
-const ContextMenuGroup = styled.div`
-  border: 1px solid gray;
-`;
-
-const ContextMenuItem = styled.div`
-  height: 40px;
-`;
+import {
+  ContextMenuContainer,
+  ContextMenuGroup,
+  ContextMenuGroupDivider,
+  ContextMenuItem,
+} from '../contextMenu/sharedComponents';
 
 interface Props {
   artifactId: string;
@@ -25,10 +18,10 @@ export const ArtifactLinkContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { pane, navigateHistoryBack, navigate } = useContext(PaneContext);
 
-  const { deleteArtifact } = useArtifactDelete(props.artifactId);
+  const { deleteArtifact } = useArtifactDelete();
 
   const onDeleteArtifactClicked = () => {
-    deleteArtifact().then(() => {
+    deleteArtifact(props.artifactId).then(() => {
       navigateHistoryBack();
     });
   };
@@ -70,6 +63,7 @@ export const ArtifactLinkContextMenu: React.FC<Props> = (props) => {
           {t('contextMenu.duplicateTab')}
         </ContextMenuItem>
       </ContextMenuGroup>
+      <ContextMenuGroupDivider />
       <ContextMenuGroup>
         <ContextMenuItem onClick={onDeleteArtifactClicked}>
           {t('generic.delete')}

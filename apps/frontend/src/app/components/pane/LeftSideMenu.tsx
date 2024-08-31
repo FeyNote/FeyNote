@@ -20,9 +20,6 @@ import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { Artifact } from '../artifact/Artifact';
-import { Dashboard } from '../dashboard/Dashboard';
-import { Settings } from '../settings/Settings';
 import { home, logOut, pin, settings, telescope } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
@@ -159,12 +156,15 @@ export const LeftSideMenu: React.FC = () => {
     <>
       <IonCard>
         <CompactIonItem
-          onClick={() =>
+          onClick={(event) =>
             navigate(
               undefined,
               PaneableComponent.Dashboard,
               {},
-              PaneTransition.Push,
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
             )
           }
           button
@@ -188,12 +188,15 @@ export const LeftSideMenu: React.FC = () => {
               .map((pinnedArtifact) => (
                 <CompactIonItem
                   key={pinnedArtifact.id}
-                  onClick={() =>
+                  onClick={(event) =>
                     navigate(
                       undefined,
                       PaneableComponent.Artifact,
                       { id: pinnedArtifact.id },
-                      PaneTransition.Push,
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   button
@@ -223,12 +226,15 @@ export const LeftSideMenu: React.FC = () => {
               .map((recentlyUpdatedArtifact) => (
                 <CompactIonItem
                   key={recentlyUpdatedArtifact.id}
-                  onClick={() =>
+                  onClick={(event) =>
                     navigate(
                       undefined,
                       PaneableComponent.Artifact,
                       { id: recentlyUpdatedArtifact.id },
-                      PaneTransition.Push,
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   button
@@ -250,12 +256,15 @@ export const LeftSideMenu: React.FC = () => {
 
       <IonCard>
         <CompactIonItem
-          onClick={() =>
+          onClick={(event) =>
             navigate(
               undefined,
               PaneableComponent.Settings,
               {},
-              PaneTransition.Push,
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
             )
           }
           button

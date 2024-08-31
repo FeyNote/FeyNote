@@ -32,7 +32,7 @@ interface Props {
   width: number;
   minHeight: number;
   maxHeight: number;
-  onClick?: () => void;
+  onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const BoundedFloatingWindow: React.FC<Props> = (props) => {
@@ -82,7 +82,7 @@ export const BoundedFloatingWindow: React.FC<Props> = (props) => {
       $width={props.width}
       $minHeight={props.minHeight}
       $maxHeight={props.maxHeight}
-      onClick={() => props.onClick?.()}
+      onClick={(event) => props.onClick?.(event)}
     >
       {props.children}
     </Container>,

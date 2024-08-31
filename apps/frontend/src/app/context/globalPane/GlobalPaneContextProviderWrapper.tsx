@@ -1,4 +1,10 @@
-import { ReactNode, useEffect, useMemo, type ComponentProps } from 'react';
+import {
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+} from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -121,6 +127,7 @@ export const GlobalPaneContextProviderWrapper = ({
       getFirstTab().getId()
     );
   };
+  const [focusedPaneId, setFocusedPaneId] = useState(getFocusedPaneId());
 
   const getSelectedTabForTabset = (
     tabsetId: string = model.getFirstTabSet().getId(),
@@ -210,6 +217,7 @@ export const GlobalPaneContextProviderWrapper = ({
     component: T,
     props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
+    select = true,
   ) => {
     const { currentView, history, forwardHistory } = getPaneById(paneId);
     const tabset = model.getNodeById(paneId)?.getParent();
@@ -293,7 +301,7 @@ export const GlobalPaneContextProviderWrapper = ({
             tabset.getId(),
             transitionToDockLocation[transition],
             -1,
-            true,
+            select,
           ),
         );
 
@@ -347,6 +355,10 @@ export const GlobalPaneContextProviderWrapper = ({
         '',
       );
     }
+
+    if (action.type === Actions.SET_ACTIVE_TABSET) {
+      setFocusedPaneId(getFocusedPaneId());
+    }
   };
 
   const value = useMemo(
@@ -356,13 +368,13 @@ export const GlobalPaneContextProviderWrapper = ({
       navigate,
       getPaneById,
       renamePane,
-      getFocusedPaneId,
+      focusedPaneId,
       getSelectedTabForTabset,
       _model: model,
       _onActionListener: onActionListener,
       _onModelChangeListener: onModelChangeListener,
     }),
-    [model],
+    [model, focusedPaneId],
   );
 
   return (

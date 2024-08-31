@@ -3,14 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
-export const useArtifactDelete = (artifactId: string | undefined) => {
+export const useArtifactDelete = () => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
 
-  const _deleteArtifact = () => {
-    if (!artifactId) return Promise.reject();
-
+  const _deleteArtifact = (artifactId: string) => {
     return new Promise<void>((resolve, reject) => {
       trpc.artifact.deleteArtifact
         .mutate({
@@ -27,9 +25,7 @@ export const useArtifactDelete = (artifactId: string | undefined) => {
     });
   };
 
-  const deleteArtifact = () => {
-    if (!artifactId) return Promise.reject();
-
+  const deleteArtifact = (artifactId: string) => {
     return new Promise<void>((resolve, reject) => {
       presentAlert({
         header: t('artifactDelete.header'),
@@ -46,7 +42,7 @@ export const useArtifactDelete = (artifactId: string | undefined) => {
             text: t('generic.delete'),
             role: 'confirm',
             handler: () => {
-              resolve(_deleteArtifact());
+              resolve(_deleteArtifact(artifactId));
             },
           },
         ],

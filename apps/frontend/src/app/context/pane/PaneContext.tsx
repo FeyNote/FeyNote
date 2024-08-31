@@ -15,6 +15,7 @@ export interface PaneContextData {
     component: T,
     props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
     transition: PaneTransition,
+    select?: boolean,
   ) => void;
   renamePane: (name: string) => void;
   pane: PaneTracker;
