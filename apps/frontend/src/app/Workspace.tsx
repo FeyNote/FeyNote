@@ -201,10 +201,10 @@ export const Workspace: React.FC = () => {
   const [presentToast] = useIonToast();
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
-    getPreference(PreferenceNames.StartLeftPaneOpen),
+    getPreference(PreferenceNames.LeftPaneStartOpen),
   );
   const [rightMenuOpen, setRightMenuOpen] = useState(
-    getPreference(PreferenceNames.StartRightPaneOpen),
+    getPreference(PreferenceNames.RightPaneStartOpen),
   );
 
   const newArtifact = (type: ArtifactType) => {

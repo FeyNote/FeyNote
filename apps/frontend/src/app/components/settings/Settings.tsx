@@ -159,10 +159,10 @@ export const Settings: React.FC = () => {
             </IonListHeader>
             <IonItem>
               <IonToggle
-                checked={getPreference(PreferenceNames.StartLeftPaneOpen)}
+                checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(
-                    PreferenceNames.StartLeftPaneOpen,
+                    PreferenceNames.LeftPaneStartOpen,
                     event.detail.checked,
                   )
                 }
@@ -172,10 +172,55 @@ export const Settings: React.FC = () => {
             </IonItem>
             <IonItem>
               <IonToggle
-                checked={getPreference(PreferenceNames.StartRightPaneOpen)}
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowPinnedArtifacts,
+                )}
                 onIonChange={(event) =>
                   setPreference(
-                    PreferenceNames.StartRightPaneOpen,
+                    PreferenceNames.LeftPaneShowPinnedArtifacts,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.leftSideMenuShowPinnedArtifacts')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowRecentArtifacts,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneShowRecentArtifacts,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.leftSideMenuShowRecentArtifacts')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowRecentThreads,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneShowRecentThreads,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.leftSideMenuShowRecentThreads')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.RightPaneStartOpen,
                     event.detail.checked,
                   )
                 }

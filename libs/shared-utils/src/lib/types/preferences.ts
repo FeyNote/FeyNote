@@ -22,8 +22,11 @@ export enum PreferencesSync {
 }
 
 export enum PreferenceNames {
-  StartLeftPaneOpen = 'global.startLeftPaneOpen',
-  StartRightPaneOpen = 'global.startRightPaneOpen',
+  LeftPaneStartOpen = 'leftPane.startOpen',
+  LeftPaneShowPinnedArtifacts = 'leftPane.showPinnedArtifacts',
+  LeftPaneShowRecentArtifacts = 'leftPane.showRecentArtifacts',
+  LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
+  RightPaneStartOpen = 'rightPane.startOpen',
   Language = 'global.language',
   FontSize = 'global.fontSize',
   Theme = 'global.theme',
@@ -34,8 +37,11 @@ export enum PreferenceNames {
 export interface AppPreferences {
   preferencesVersion: number;
 
-  [PreferenceNames.StartLeftPaneOpen]: boolean;
-  [PreferenceNames.StartRightPaneOpen]: boolean;
+  [PreferenceNames.LeftPaneStartOpen]: boolean;
+  [PreferenceNames.LeftPaneShowPinnedArtifacts]: boolean;
+  [PreferenceNames.LeftPaneShowRecentArtifacts]: boolean;
+  [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
+  [PreferenceNames.RightPaneStartOpen]: boolean;
   [PreferenceNames.Language]: null | SupportedLanguages;
   [PreferenceNames.FontSize]: SupportedFontSize;
   [PreferenceNames.Theme]: AppTheme;

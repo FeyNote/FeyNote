@@ -14,7 +14,7 @@ import { trpc } from '../../../utils/trpc';
 import styled from 'styled-components';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
-import { ImmediateDebouncer } from '@feynote/shared-utils';
+import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
 import type { ArtifactDTO, ThreadDTO } from '@feynote/prisma/types';
 import {
   GlobalPaneContext,
@@ -29,6 +29,7 @@ import {
   telescope,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -72,6 +73,7 @@ const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
 export const LeftSideMenu: React.FC = () => {
   const { t } = useTranslation();
+  const { getPreference } = useContext(PreferencesContext);
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
@@ -213,127 +215,130 @@ export const LeftSideMenu: React.FC = () => {
         </CompactIonItem>
       </IonCard>
 
-      {!!pinnedArtifacts.length && (
-        <IonCard>
-          <IonList>
-            <IonListHeader lines="full">
-              <IonIcon icon={pin} />
-              &nbsp;&nbsp;
-              <IonLabel>{t('menu.pinned')}</IonLabel>
-            </IonListHeader>
-            {pinnedArtifacts
-              .slice(0, pinnedArtifactsLimit)
-              .map((pinnedArtifact) => (
-                <CompactIonItem
-                  lines="none"
-                  key={pinnedArtifact.id}
-                  onClick={(event) =>
-                    navigate(
-                      undefined,
-                      PaneableComponent.Artifact,
-                      { id: pinnedArtifact.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  button
-                >
-                  <NowrapIonLabel>{pinnedArtifact.title}</NowrapIonLabel>
-                </CompactIonItem>
-              ))}
-            {pinnedArtifacts.length > pinnedArtifactsLimit && (
-              <IonButton onClick={showMorePinned} fill="clear" size="small">
-                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-              </IonButton>
-            )}
-          </IonList>
-        </IonCard>
-      )}
+      {!!pinnedArtifacts.length &&
+        getPreference(PreferenceNames.LeftPaneShowPinnedArtifacts) && (
+          <IonCard>
+            <IonList>
+              <IonListHeader lines="full">
+                <IonIcon icon={pin} />
+                &nbsp;&nbsp;
+                <IonLabel>{t('menu.pinned')}</IonLabel>
+              </IonListHeader>
+              {pinnedArtifacts
+                .slice(0, pinnedArtifactsLimit)
+                .map((pinnedArtifact) => (
+                  <CompactIonItem
+                    lines="none"
+                    key={pinnedArtifact.id}
+                    onClick={(event) =>
+                      navigate(
+                        undefined,
+                        PaneableComponent.Artifact,
+                        { id: pinnedArtifact.id },
+                        event.metaKey || event.ctrlKey
+                          ? PaneTransition.NewTab
+                          : PaneTransition.Push,
+                        !(event.metaKey || event.ctrlKey),
+                      )
+                    }
+                    button
+                  >
+                    <NowrapIonLabel>{pinnedArtifact.title}</NowrapIonLabel>
+                  </CompactIonItem>
+                ))}
+              {pinnedArtifacts.length > pinnedArtifactsLimit && (
+                <IonButton onClick={showMorePinned} fill="clear" size="small">
+                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
+                </IonButton>
+              )}
+            </IonList>
+          </IonCard>
+        )}
 
-      {!!recentlyUpdatedArtifacts.length && (
-        <IonCard>
-          <IonList>
-            <IonListHeader lines="full">
-              <IonIcon icon={telescope} />
-              &nbsp;&nbsp;
-              <IonLabel>{t('menu.recentlyUpdatedArtifacts')}</IonLabel>
-            </IonListHeader>
-            {recentlyUpdatedArtifacts
-              .slice(0, recentlyUpdatedArtifactsLimit)
-              .map((recentlyUpdatedArtifact) => (
-                <CompactIonItem
-                  lines="none"
-                  key={recentlyUpdatedArtifact.id}
-                  onClick={(event) =>
-                    navigate(
-                      undefined,
-                      PaneableComponent.Artifact,
-                      { id: recentlyUpdatedArtifact.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  button
-                >
-                  <NowrapIonLabel>
-                    {recentlyUpdatedArtifact.title}
-                  </NowrapIonLabel>
-                </CompactIonItem>
-              ))}
-            {recentlyUpdatedArtifacts.length >
-              recentlyUpdatedArtifactsLimit && (
-              <IonButton onClick={showMoreRecent} fill="clear" size="small">
-                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-              </IonButton>
-            )}
-          </IonList>
-        </IonCard>
-      )}
+      {!!recentlyUpdatedArtifacts.length &&
+        getPreference(PreferenceNames.LeftPaneShowRecentArtifacts) && (
+          <IonCard>
+            <IonList>
+              <IonListHeader lines="full">
+                <IonIcon icon={telescope} />
+                &nbsp;&nbsp;
+                <IonLabel>{t('menu.recentlyUpdatedArtifacts')}</IonLabel>
+              </IonListHeader>
+              {recentlyUpdatedArtifacts
+                .slice(0, recentlyUpdatedArtifactsLimit)
+                .map((recentlyUpdatedArtifact) => (
+                  <CompactIonItem
+                    lines="none"
+                    key={recentlyUpdatedArtifact.id}
+                    onClick={(event) =>
+                      navigate(
+                        undefined,
+                        PaneableComponent.Artifact,
+                        { id: recentlyUpdatedArtifact.id },
+                        event.metaKey || event.ctrlKey
+                          ? PaneTransition.NewTab
+                          : PaneTransition.Push,
+                        !(event.metaKey || event.ctrlKey),
+                      )
+                    }
+                    button
+                  >
+                    <NowrapIonLabel>
+                      {recentlyUpdatedArtifact.title}
+                    </NowrapIonLabel>
+                  </CompactIonItem>
+                ))}
+              {recentlyUpdatedArtifacts.length >
+                recentlyUpdatedArtifactsLimit && (
+                <IonButton onClick={showMoreRecent} fill="clear" size="small">
+                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
+                </IonButton>
+              )}
+            </IonList>
+          </IonCard>
+        )}
 
-      {!!recentlyUpdatedThreads.length && (
-        <IonCard>
-          <IonList>
-            <IonListHeader lines="full">
-              <IonIcon icon={chatboxEllipses} />
-              &nbsp;&nbsp;
-              <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
-            </IonListHeader>
-            {recentlyUpdatedThreads
-              .slice(0, recentlyUpdatedThreadsLimit)
-              .map((recentlyUpdatedThread) => (
-                <CompactIonItem
-                  lines="none"
-                  key={recentlyUpdatedThread.id}
-                  onClick={(event) =>
-                    navigate(
-                      undefined,
-                      PaneableComponent.AIThread,
-                      { id: recentlyUpdatedThread.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  button
-                >
-                  <NowrapIonLabel>
-                    {recentlyUpdatedThread.title || t('generic.untitled')}
-                  </NowrapIonLabel>
-                </CompactIonItem>
-              ))}
-            {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
-              <IonButton onClick={showMoreThreads} fill="clear" size="small">
-                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-              </IonButton>
-            )}
-          </IonList>
-        </IonCard>
-      )}
+      {!!recentlyUpdatedThreads.length &&
+        getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (
+          <IonCard>
+            <IonList>
+              <IonListHeader lines="full">
+                <IonIcon icon={chatboxEllipses} />
+                &nbsp;&nbsp;
+                <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
+              </IonListHeader>
+              {recentlyUpdatedThreads
+                .slice(0, recentlyUpdatedThreadsLimit)
+                .map((recentlyUpdatedThread) => (
+                  <CompactIonItem
+                    lines="none"
+                    key={recentlyUpdatedThread.id}
+                    onClick={(event) =>
+                      navigate(
+                        undefined,
+                        PaneableComponent.AIThread,
+                        { id: recentlyUpdatedThread.id },
+                        event.metaKey || event.ctrlKey
+                          ? PaneTransition.NewTab
+                          : PaneTransition.Push,
+                        !(event.metaKey || event.ctrlKey),
+                      )
+                    }
+                    button
+                  >
+                    <NowrapIonLabel>
+                      {recentlyUpdatedThread.title || t('generic.untitled')}
+                    </NowrapIonLabel>
+                  </CompactIonItem>
+                ))}
+              {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
+                <IonButton onClick={showMoreThreads} fill="clear" size="small">
+                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
+                </IonButton>
+              )}
+            </IonList>
+          </IonCard>
+        )}
 
       <IonCard>
         <CompactIonItem
