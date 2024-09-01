@@ -24,6 +24,14 @@ export const ArtifactEditorStyles = styled.div`
     outline: none;
   }
 
+  .artifactTitle {
+    --background: transparent;
+    --color: var(--sheet-h1-color);
+    --ion-font-family: var(--sheet-h1-font-family);
+    font-size: 2.1rem;
+    padding-top: 10px;
+  }
+
   h1 {
     margin-top: 20px;
     margin-bottom: 10px;

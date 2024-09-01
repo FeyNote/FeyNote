@@ -74,7 +74,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   return (
     <ArtifactEditorContainer>
       <ArtifactEditorStyles data-theme={theme}>
-        <IonItem lines="none">
+        <IonItem lines="none" className="artifactTitle">
           <IonInput
             disabled={!props.editable}
             placeholder={t('artifactRenderer.title.placeholder')}
