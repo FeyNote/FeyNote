@@ -356,7 +356,10 @@ export const GlobalPaneContextProviderWrapper = ({
       );
     }
 
-    if (action.type === Actions.SET_ACTIVE_TABSET) {
+    if (
+      action.type === Actions.SET_ACTIVE_TABSET ||
+      action.type === Actions.SELECT_TAB
+    ) {
       setFocusedPaneId(getFocusedPaneId());
     }
   };
