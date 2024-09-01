@@ -80,8 +80,7 @@ const SettingsButton = styled(IonButton)<{
       ? ''
       : `
     position: absolute;
-    top: 0;
-    right: 0;
+    right: 16px;
   `}
 `;
 

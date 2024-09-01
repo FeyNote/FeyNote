@@ -20,6 +20,8 @@ const CalendarBodyContainer = styled.div`
 const CalendarBody = styled.div`
   min-width: 650px;
   max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const MonthSwitcher = styled.div`

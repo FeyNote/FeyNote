@@ -22,6 +22,14 @@ const NavTitle = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  color: var(--ion-text-color);
+  opacity: 0;
+  transition: 0.1s;
+
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 interface Props {

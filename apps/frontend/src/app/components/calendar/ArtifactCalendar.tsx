@@ -3,19 +3,30 @@ import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import {
   memo,
+  useContext,
   useEffect,
   useMemo,
   useReducer,
   useRef,
+  useState,
   type MutableRefObject,
 } from 'react';
 import { CalendarRenderer } from './CalendarRenderer';
 import type { TypedMap } from 'yjs-types';
 import type { ArtifactDTO } from '@feynote/prisma/types';
-import type { YCalendarMap } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  getMetaFromYArtifact,
+  type YCalendarMap,
+} from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { CalendarConfig } from './CalendarConfig';
 import { getYMDFromSpecifier } from './getYMDFromSpecifier';
+import type { ArtifactTheme } from '@prisma/client';
+import { EventContext } from '../../context/events/EventContext';
+import { useTranslation } from 'react-i18next';
+import { IonInput, IonItem } from '@ionic/react';
+import { EventName } from '../../context/events/EventName';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -28,12 +39,17 @@ interface Props {
   setCenterRef?: MutableRefObject<((center: string) => void) | undefined>;
   selectedDate?: string;
   onDayClicked?: (date: string) => void;
+  onTitleChange?: (title: string) => void;
 }
 
 export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
   const setCenterRef = useRef<(center: string) => void>();
+  const [title, setTitle] = useState('');
+  const [theme, setTheme] = useState<ArtifactTheme>('default');
+  const { eventManager } = useContext(EventContext);
+  const { t } = useTranslation();
 
   const calendarMap = useMemo(() => {
     return yDoc.getMap('calendar') as TypedMap<Partial<YCalendarMap>>;
@@ -56,6 +72,24 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
       });
     }
   }, [configMap]);
+
+  useEffect(() => {
+    const artifactMetaMap = yDoc.getMap('artifactMeta');
+
+    const listener = () => {
+      const yArtifactMeta = getMetaFromYArtifact(yDoc);
+      setTitle(yArtifactMeta.title ?? title);
+      setTheme(yArtifactMeta.theme ?? theme);
+    };
+
+    listener();
+    artifactMetaMap.observe(listener);
+    return () => artifactMetaMap.unobserve(listener);
+  }, [yDoc]);
+
+  const setMetaProp = (metaPropName: string, value: any) => {
+    (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
+  };
 
   const knownReferencesByDay = useMemo(
     () =>
@@ -88,6 +122,19 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
 
   return (
     <>
+      <IonItem lines="none">
+        <IonInput
+          disabled={!props.editable}
+          placeholder={t('artifactRenderer.title.placeholder')}
+          value={title}
+          onIonInput={(event) => {
+            setMetaProp('title', event.target.value || '');
+            eventManager.broadcast([EventName.ArtifactTitleUpdated]);
+            props.onTitleChange?.((event.target.value || '').toString());
+          }}
+          type="text"
+        ></IonInput>
+      </IonItem>
       {props.editable && (
         <CalendarConfig
           yDoc={yDoc}

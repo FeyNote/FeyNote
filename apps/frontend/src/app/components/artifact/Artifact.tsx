@@ -11,6 +11,9 @@ import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
+import { EventManager } from '../../context/events/EventManager';
+import { EventContext } from '../../context/events/EventContext';
+import { EventName } from '../../context/events/EventName';
 
 interface Props {
   id: string;
@@ -22,6 +25,7 @@ export const Artifact: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
+  const [title, setTitle] = useState('');
   const { isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
 
@@ -33,6 +37,7 @@ export const Artifact: React.FC<Props> = (props) => {
       })
       .then((_artifact) => {
         setArtifact(_artifact);
+        setTitle(_artifact.title);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -46,10 +51,14 @@ export const Artifact: React.FC<Props> = (props) => {
     load();
   }, []);
 
+  const onTitleChange = (updatedTitle: string) => {
+    setTitle(updatedTitle);
+  };
+
   return (
     <IonPage>
       <PaneNav
-        title={artifact?.title || ''}
+        title={title}
         popoverContents={<ArtifactContextMenu artifactId={props.id} />}
       />
       <IonContent className="ion-padding">
@@ -57,9 +66,9 @@ export const Artifact: React.FC<Props> = (props) => {
         {artifact && (
           <ArtifactRenderer
             artifact={artifact}
-            reload={load}
             scrollToBlockId={props.focusBlockId}
             scrollToDate={props.focusDate}
+            onTitleChange={onTitleChange}
           />
         )}
       </IonContent>

@@ -7,4 +7,5 @@ export const ArtifactEditorContainer = styled(IonCard)`
 
   margin-left: 0;
   margin-right: 0;
+  margin-top: 0;
 `;
