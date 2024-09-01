@@ -17,7 +17,6 @@ import { NullState } from '../info/NullState';
 import { ThreadDTO } from '@feynote/prisma/types';
 import { useProgressBar } from '../../../utils/useProgressBar';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { AIThread } from './AIThread';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';

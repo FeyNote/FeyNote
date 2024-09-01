@@ -4,6 +4,7 @@ export const ThreadDTOMessageSchema = z.object({
   id: z.string(),
   role: z.enum(['function', 'tool', 'assistant', 'user']),
   content: z.string(),
+  createdAt: z.date(),
 });
 
 export const ThreadDTOSchema = z.object({

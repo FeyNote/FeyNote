@@ -15,12 +15,19 @@ import styled from 'styled-components';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer } from '@feynote/shared-utils';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, ThreadDTO } from '@feynote/prisma/types';
 import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { home, logOut, pin, settings, telescope } from 'ionicons/icons';
+import {
+  chatboxEllipses,
+  home,
+  logOut,
+  pin,
+  settings,
+  telescope,
+} from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const CompactIonItem = styled(IonItem)`
@@ -55,6 +62,10 @@ const RECENT_ARTIFACTS_LIMIT_DEFAULT = 5;
  */
 const RECENT_ARTIFACTS_LIMIT_INC = 10;
 /**
+ * How many more recent threads to show when "more" is clicked
+ */
+const RECENT_THREADS_LIMIT_INC = 10;
+/**
  * Reload debounce interval in ms
  */
 const RELOAD_DEBOUNCE_INTERVAL = 5000;
@@ -74,6 +85,11 @@ export const LeftSideMenu: React.FC = () => {
   >([]);
   const [recentlyUpdatedArtifactsLimit, setRecentlyUpdatedArtifactsLimit] =
     useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
+  const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
+    ThreadDTO[]
+  >([]);
+  const [recentlyUpdatedThreadsLimit, setRecentlyUpdatedThreadsLimit] =
+    useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
 
   const showMorePinned = () => {
     setPinnedArtifactsLimit(pinnedArtifactsLimit + PINNED_ARTIFACTS_LIMIT_INC);
@@ -82,6 +98,12 @@ export const LeftSideMenu: React.FC = () => {
   const showMoreRecent = () => {
     setRecentlyUpdatedArtifactsLimit(
       recentlyUpdatedArtifactsLimit + RECENT_ARTIFACTS_LIMIT_INC,
+    );
+  };
+
+  const showMoreThreads = () => {
+    setRecentlyUpdatedThreadsLimit(
+      recentlyUpdatedThreadsLimit + RECENT_THREADS_LIMIT_INC,
     );
   };
 
@@ -102,6 +124,21 @@ export const LeftSideMenu: React.FC = () => {
         setRecentlyUpdatedArtifacts(
           artifacts.sort(
             (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
+          ),
+        );
+      })
+      .catch((e) => {
+        // TODO: Log to sentry
+      });
+
+    trpc.ai.getThreads
+      .query()
+      .then((threads) => {
+        setRecentlyUpdatedThreads(
+          threads.sort(
+            (a, b) =>
+              (b.messages.at(-1)?.createdAt.getTime() || 0) -
+              (a.messages.at(-1)?.createdAt.getTime() || 0),
           ),
         );
       })
@@ -156,6 +193,7 @@ export const LeftSideMenu: React.FC = () => {
     <>
       <IonCard>
         <CompactIonItem
+          lines="none"
           onClick={(event) =>
             navigate(
               undefined,
@@ -178,7 +216,7 @@ export const LeftSideMenu: React.FC = () => {
       {!!pinnedArtifacts.length && (
         <IonCard>
           <IonList>
-            <IonListHeader>
+            <IonListHeader lines="full">
               <IonIcon icon={pin} />
               &nbsp;&nbsp;
               <IonLabel>{t('menu.pinned')}</IonLabel>
@@ -187,6 +225,7 @@ export const LeftSideMenu: React.FC = () => {
               .slice(0, pinnedArtifactsLimit)
               .map((pinnedArtifact) => (
                 <CompactIonItem
+                  lines="none"
                   key={pinnedArtifact.id}
                   onClick={(event) =>
                     navigate(
@@ -216,15 +255,16 @@ export const LeftSideMenu: React.FC = () => {
       {!!recentlyUpdatedArtifacts.length && (
         <IonCard>
           <IonList>
-            <IonListHeader>
+            <IonListHeader lines="full">
               <IonIcon icon={telescope} />
               &nbsp;&nbsp;
-              <IonLabel>{t('menu.recentlyUpdated')}</IonLabel>
+              <IonLabel>{t('menu.recentlyUpdatedArtifacts')}</IonLabel>
             </IonListHeader>
             {recentlyUpdatedArtifacts
               .slice(0, recentlyUpdatedArtifactsLimit)
               .map((recentlyUpdatedArtifact) => (
                 <CompactIonItem
+                  lines="none"
                   key={recentlyUpdatedArtifact.id}
                   onClick={(event) =>
                     navigate(
@@ -254,8 +294,50 @@ export const LeftSideMenu: React.FC = () => {
         </IonCard>
       )}
 
+      {!!recentlyUpdatedThreads.length && (
+        <IonCard>
+          <IonList>
+            <IonListHeader lines="full">
+              <IonIcon icon={chatboxEllipses} />
+              &nbsp;&nbsp;
+              <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
+            </IonListHeader>
+            {recentlyUpdatedThreads
+              .slice(0, recentlyUpdatedThreadsLimit)
+              .map((recentlyUpdatedThread) => (
+                <CompactIonItem
+                  lines="none"
+                  key={recentlyUpdatedThread.id}
+                  onClick={(event) =>
+                    navigate(
+                      undefined,
+                      PaneableComponent.AIThread,
+                      { id: recentlyUpdatedThread.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  <NowrapIonLabel>
+                    {recentlyUpdatedThread.title || t('generic.untitled')}
+                  </NowrapIonLabel>
+                </CompactIonItem>
+              ))}
+            {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
+              <IonButton onClick={showMoreThreads} fill="clear" size="small">
+                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
+              </IonButton>
+            )}
+          </IonList>
+        </IonCard>
+      )}
+
       <IonCard>
         <CompactIonItem
+          lines="none"
           onClick={(event) =>
             navigate(
               undefined,
@@ -273,7 +355,7 @@ export const LeftSideMenu: React.FC = () => {
           &nbsp;&nbsp;
           <IonLabel>{t('menu.settings')}</IonLabel>
         </CompactIonItem>
-        <CompactIonItem onClick={signOut} button>
+        <CompactIonItem lines="none" onClick={signOut} button>
           <IonIcon icon={logOut} size="small" />
           &nbsp;&nbsp;
           <IonLabel>{t('menu.signOut')}</IonLabel>

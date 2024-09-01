@@ -13,19 +13,21 @@ import {
   IonFabButton,
   IonFabList,
   IonIcon,
+  useIonToast,
 } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
-import { add, calendar, documentText } from 'ionicons/icons';
+import { add, calendar, chatboxEllipses, documentText } from 'ionicons/icons';
 import type { ArtifactType } from '@prisma/client';
 import { trpc } from '../utils/trpc';
 import { EventName } from './context/events/EventName';
 import { EventContext } from './context/events/EventContext';
 import { PaneableComponent } from './context/globalPane/PaneableComponent';
 import { NewPaneButton } from './components/pane/NewPaneButton';
+import { handleTRPCErrors } from '../utils/handleTRPCErrors';
 
 const MENU_SIZE_PX = '240';
 
@@ -196,6 +198,7 @@ export const Workspace: React.FC = () => {
     useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
   const { eventManager } = useContext(EventContext);
+  const [presentToast] = useIonToast();
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
     getPreference(PreferenceNames.StartLeftPaneOpen),
@@ -204,29 +207,50 @@ export const Workspace: React.FC = () => {
     getPreference(PreferenceNames.StartRightPaneOpen),
   );
 
-  const newArtifact = async (type: ArtifactType) => {
-    const artifact = await trpc.artifact.createArtifact.mutate({
-      title: 'Untitled',
-      type,
-      theme: 'default',
-      isPinned: false,
-      isTemplate: false,
-      text: '',
-      json: {},
-      rootTemplateId: null,
-      artifactTemplateId: null,
-    });
+  const newArtifact = (type: ArtifactType) => {
+    trpc.artifact.createArtifact
+      .mutate({
+        title: 'Untitled',
+        type,
+        theme: 'default',
+        isPinned: false,
+        isTemplate: false,
+        text: '',
+        json: {},
+        rootTemplateId: null,
+        artifactTemplateId: null,
+      })
+      .then((artifact) => {
+        navigate(
+          undefined, // Navigate within current focused pane rather than specific pane
+          PaneableComponent.Artifact,
+          {
+            id: artifact.id,
+          },
+          PaneTransition.Push,
+        );
 
-    navigate(
-      undefined, // Navigate within current focused pane rather than specific pane
-      PaneableComponent.Artifact,
-      {
-        id: artifact.id,
-      },
-      PaneTransition.Push,
-    );
+        eventManager.broadcast([EventName.ArtifactCreated]);
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
+  };
 
-    eventManager.broadcast([EventName.ArtifactCreated]);
+  const newAIThread = () => {
+    trpc.ai.createThread
+      .mutate({})
+      .then((thread) => {
+        navigate(
+          undefined,
+          PaneableComponent.AIThread,
+          { id: thread.id },
+          PaneTransition.Push,
+        );
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
+      });
   };
 
   return (
@@ -290,6 +314,9 @@ export const Workspace: React.FC = () => {
           </IonFabButton>
           <IonFabButton onClick={() => newArtifact('calendar')}>
             <IonIcon icon={calendar}></IonIcon>
+          </IonFabButton>
+          <IonFabButton onClick={() => newAIThread()}>
+            <IonIcon icon={chatboxEllipses}></IonIcon>
           </IonFabButton>
         </IonFabList>
       </IonFab>

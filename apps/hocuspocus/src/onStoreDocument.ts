@@ -62,6 +62,14 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         });
       }
     }
+
+    args.document.getConnections().forEach((connection) => {
+      connection.sendStateless(
+        JSON.stringify({
+          event: 'docSaved',
+        }),
+      );
+    });
   } catch (e) {
     console.error(e);
 
