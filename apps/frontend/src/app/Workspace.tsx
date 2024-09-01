@@ -155,6 +155,10 @@ const DockContainer = styled.div`
 const Menu = styled.div<{
   $side: 'left' | 'right';
 }>`
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+
   ${(props) =>
     props.$side === 'left'
       ? `

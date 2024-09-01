@@ -25,11 +25,13 @@ import {
   home,
   logOut,
   pin,
+  search,
   settings,
   telescope,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
 
 const CompactIonItem = styled(IonItem)`
   --min-height: 34px;
@@ -77,6 +79,7 @@ export const LeftSideMenu: React.FC = () => {
   const { setSession } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
+  const { trigger: triggerGlobalSearch } = useContext(GlobalSearchContext);
   const currentPane = getPaneById(undefined);
   const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDTO[]>([]);
   const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
@@ -194,6 +197,15 @@ export const LeftSideMenu: React.FC = () => {
   return (
     <>
       <IonCard>
+        <CompactIonItem
+          lines="none"
+          onClick={() => triggerGlobalSearch()}
+          button
+        >
+          <IonIcon icon={search} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.search')}</IonLabel>
+        </CompactIonItem>
         <CompactIonItem
           lines="none"
           onClick={(event) =>
