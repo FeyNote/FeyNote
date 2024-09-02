@@ -2,7 +2,6 @@ import {
   IonButton,
   IonCard,
   IonIcon,
-  IonItem,
   IonLabel,
   IonList,
   IonListHeader,
@@ -32,17 +31,8 @@ import {
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
-
-const CompactIonItem = styled(IonItem)`
-  --min-height: 34px;
-  font-size: 0.875rem;
-`;
-
-const NowrapIonLabel = styled(IonLabel)`
-  text-wrap: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-`;
+import { CompactIonItem } from '../CompactIonItem';
+import { NowrapIonLabel } from '../NowrapIonLabel';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;

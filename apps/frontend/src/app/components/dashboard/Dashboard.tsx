@@ -1,17 +1,21 @@
 import {
-  IonButton,
-  IonCol,
+  IonCard,
+  IonCardTitle,
   IonContent,
   IonIcon,
   IonPage,
-  IonSearchbar,
   useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { filterOutline, documentText } from 'ionicons/icons';
-import { Artifacts } from './Artifacts';
+import {
+  documentText,
+  gitNetwork,
+  pin,
+  pricetag,
+  telescope,
+} from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
@@ -22,39 +26,51 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { DashboardRightSideMenu } from './DashboardSideMenu';
 import { createPortal } from 'react-dom';
+import { CompactIonItem } from '../CompactIonItem';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-rows: 58px auto;
-  height: calc(100% - 4px);
-`;
-
-const GridRowSearchbar = styled.div`
+const FlexContainer = styled.div`
   display: flex;
-  padding-top: 8px;
-  padding-left: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 `;
 
-const GridRowArtifacts = styled.div`
-  overflow-y: auto;
+const CardTitle = styled(IonCardTitle)`
+  padding: 8px;
+  display: flex;
+  align-items: center;
+`;
+
+const Card = styled(IonCard)`
+  width: 300px;
+  padding: 8px;
+`;
+
+const CardNullState = styled(NullState)`
+  padding-top: 24px;
 `;
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { isPaneFocused } = useContext(PaneContext);
+  const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const [loading, setLoading] = useState(true);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
-  const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts],
   );
+  const recentArtifacts = useMemo(
+    () =>
+      artifacts
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, 10),
+    [artifacts],
+  );
 
   const getUserArtifacts = () => {
-    setLoading(true);
     const progress = startProgressBar();
     trpc.artifact.getArtifacts
       .query({})
@@ -65,7 +81,6 @@ export const Dashboard: React.FC = () => {
         handleTRPCErrors(error, presentToast);
       })
       .finally(() => {
-        setLoading(false);
         progress.dismiss();
       });
   };
@@ -74,75 +89,91 @@ export const Dashboard: React.FC = () => {
     getUserArtifacts();
   }, []);
 
-  const handleSearchInput = (e: Event) => {
-    let query = '';
-    const target = e.target as HTMLIonSearchbarElement;
-    if (target) query = target.value || '';
-    setSearchText(query);
-
-    if (!query) {
-      getUserArtifacts();
-      return;
-    }
-
-    const progress = startProgressBar();
-    trpc.artifact.searchArtifacts
-      .query({
-        query,
-      })
-      .then((_artifacts) => {
-        setArtifacts(_artifacts);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        progress.dismiss();
-      });
-  };
-
   return (
     <IonPage>
       <PaneNav title={t('dashboard.title')} />
       <IonContent>
         {ProgressBar}
-        <GridContainer>
-          <GridRowSearchbar className="ion-align-items-center">
-            <IonSearchbar
-              style={{ padding: 0 }}
-              debounce={250}
-              value={searchText}
-              onIonInput={(e) => handleSearchInput(e)}
-              placeholder={t('dashboard.searchbar.placeholder')}
-            ></IonSearchbar>
-            <IonButton fill="clear">
-              <IonIcon slot="icon-only" icon={filterOutline}></IonIcon>
-            </IonButton>
-          </GridRowSearchbar>
-          <GridRowArtifacts>
-            <IonCol>
-              {!!pinnedArtifacts.length && (
-                <Artifacts
-                  title={t('dashboard.pinnedItems.header')}
-                  artifacts={pinnedArtifacts}
-                />
-              )}
-              {!!artifacts.length && (
-                <Artifacts
-                  title={t('dashboard.items.header')}
-                  artifacts={artifacts}
-                />
-              )}
-              {!pinnedArtifacts.length && !artifacts.length && !loading && (
-                <NullState
-                  title={t('dashboard.noArtifacts.title')}
-                  message={t('dashboard.noArtifacts.message')}
-                  icon={documentText}
-                />
-              )}
-            </IonCol>
-          </GridRowArtifacts>
-        </GridContainer>
+        <FlexContainer>
+          <Card>
+            <CardTitle>
+              <IonIcon icon={pin} />
+              &nbsp;{t('dashboard.pinned.title')}
+            </CardTitle>
+            {pinnedArtifacts.map((pinnedArtifact) => (
+              <CompactIonItem
+                lines="none"
+                key={pinnedArtifact.id}
+                onClick={(event) =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: pinnedArtifact.id },
+                    event.metaKey || event.ctrlKey
+                      ? PaneTransition.NewTab
+                      : PaneTransition.Push,
+                    !(event.metaKey || event.ctrlKey),
+                  )
+                }
+                button
+              >
+                {pinnedArtifact.title}
+              </CompactIonItem>
+            ))}
+            {!pinnedArtifacts.length && (
+              <CardNullState
+                title={t('dashboard.noPinned.title')}
+                message={t('dashboard.noPinned.message')}
+                icon={documentText}
+              />
+            )}
+          </Card>
+          <Card>
+            <CardTitle>
+              <IonIcon icon={telescope} />
+              &nbsp;{t('dashboard.recents.title')}
+            </CardTitle>
+            {recentArtifacts.map((recentArtifact) => (
+              <CompactIonItem
+                lines="none"
+                key={recentArtifact.id}
+                onClick={(event) =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: recentArtifact.id },
+                    event.metaKey || event.ctrlKey
+                      ? PaneTransition.NewTab
+                      : PaneTransition.Push,
+                    !(event.metaKey || event.ctrlKey),
+                  )
+                }
+                button
+              >
+                {recentArtifact.title}
+              </CompactIonItem>
+            ))}
+            {!recentArtifacts.length && (
+              <CardNullState
+                title={t('dashboard.noRecents.title')}
+                message={t('dashboard.noRecents.message')}
+                icon={documentText}
+              />
+            )}
+          </Card>
+          <Card>
+            <CardTitle>
+              <IonIcon icon={gitNetwork} />
+              &nbsp;{t('dashboard.graph.title')}
+            </CardTitle>
+            [ Graph view here ]
+          </Card>
+          <Card>
+            <CardTitle>
+              <IonIcon icon={pricetag} />
+              &nbsp;{t('dashboard.tags.title')}
+            </CardTitle>
+            [ Tag list here ]
+          </Card>
+        </FlexContainer>
       </IonContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
