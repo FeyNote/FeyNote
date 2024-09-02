@@ -115,7 +115,15 @@ export const ArtifactEditorStyles = styled.div`
   th,
   tr,
   td {
-    border: 1px solid transparent;
+    --fallback-color: 0, 0, 0;
+    border: 1px solid
+      rgba(var(--ion-text-color-rgb, var(--fallback-color)), 0.4);
+  }
+
+  th,
+  td {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   ul,
@@ -155,14 +163,6 @@ export const ArtifactEditorStyles = styled.div`
 
     ul[data-type='taskList'] {
       margin: 0;
-    }
-  }
-
-  .ProseMirror-focused {
-    th,
-    tr,
-    td {
-      border: 1px solid rgba(0, 0, 0, 0.1);
     }
   }
 
