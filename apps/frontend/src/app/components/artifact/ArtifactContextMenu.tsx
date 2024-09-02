@@ -9,6 +9,7 @@ import {
   ContextMenuGroupDivider,
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   artifactId: string;
@@ -22,7 +23,7 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
 
   const onDeleteArtifactClicked = () => {
     deleteArtifact(props.artifactId).then(() => {
-      // TODO: navigate pane
+      navigate(PaneableComponent.Dashboard, {}, PaneTransition.Replace);
     });
   };
 
