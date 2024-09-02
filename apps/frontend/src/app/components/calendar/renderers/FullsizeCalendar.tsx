@@ -108,13 +108,18 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
             <a
               key={reference.id}
               href=""
-              onClick={() =>
+              onClick={(event) => (
+                event.preventDefault(),
+                event.stopPropagation(),
                 navigate(
                   PaneableComponent.Artifact,
                   { id: reference.artifactId },
-                  PaneTransition.Push,
+                  event.metaKey || event.ctrlKey
+                    ? PaneTransition.NewTab
+                    : PaneTransition.Push,
+                  !(event.metaKey || event.ctrlKey),
                 )
-              }
+              )}
             >
               {reference.artifact.title}
             </a>
