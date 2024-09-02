@@ -168,7 +168,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               }
               button
             >
-              <IonLabel>{el.artifact.title}</IonLabel>
+              <NowrapIonLabel>{el.artifact.title}</NowrapIonLabel>
             </CompactIonItem>
           ))}
         </IonCard>
