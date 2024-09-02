@@ -50,7 +50,7 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tabset_tabbar_outer_top {
-    background: var(--ion-card-background);
+    background: var(--ion-card-background, #ffffff);
   }
 
   .flexlayout__tabset .flexlayout__tabset_tabbar_outer_top {
@@ -165,10 +165,10 @@ const Menu = styled.div<{
   ${(props) =>
     props.$side === 'left'
       ? `
-    border-right: 1px solid var(--ion-card-background);
+    border-right: 1px solid var(--ion-card-background, #dddddd);
   `
       : `
-    border-left: 1px solid var(--ion-card-background);
+    border-left: 1px solid var(--ion-card-background, #dddddd);
   `}
 `;
 

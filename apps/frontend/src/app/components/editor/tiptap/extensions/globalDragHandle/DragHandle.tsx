@@ -7,7 +7,7 @@ const Handle = styled.div`
   vertical-align: center;
   justify-content: center;
 
-  background: var(--ion-card-background);
+  background: var(--ion-card-background, #ffffff);
   color: var(--ion-text-color, #000000);
   border-radius: 4px;
 `;
