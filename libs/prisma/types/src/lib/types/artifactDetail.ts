@@ -40,6 +40,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         targetArtifactBlockId: true,
         referenceTargetArtifactId: true,
         referenceText: true,
+        targetArtifactDate: true,
       },
     },
     incomingArtifactReferences: {
@@ -54,6 +55,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         artifactBlockId: true,
         targetArtifactId: true,
         targetArtifactBlockId: true,
+        targetArtifactDate: true,
       },
     },
     artfactFiles: {

@@ -10,10 +10,8 @@ import {
   IonItem,
   IonMenuButton,
   IonPage,
-  IonRouterLink,
   IonTitle,
   IonToolbar,
-  useIonRouter,
   useIonToast,
 } from '@ionic/react';
 import {
@@ -28,11 +26,15 @@ import { trpc } from '../../../utils/trpc';
 import { useContext, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
-import { routes } from '../../routes';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 
-export const Login: React.FC = () => {
+interface Props {
+  setAuthType: (authType: 'register' | 'login') => void;
+}
+
+export const Login: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [email, setEmail] = useState('');
@@ -42,7 +44,6 @@ export const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { setSession } = useContext(SessionContext);
-  const router = useIonRouter();
 
   const submitLogin = () => {
     setIsLoading(true);
@@ -52,9 +53,6 @@ export const Login: React.FC = () => {
         password,
       })
       .then((_session) => setSession(_session))
-      .then(() => {
-        router.push(routes.dashboard.build());
-      })
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
           400: 'The email or password you submited is incorrect.',
@@ -140,10 +138,11 @@ export const Login: React.FC = () => {
             <IonItem lines="none">
               <CenteredIonText>
                 <sub>
-                  {t('auth.login.forgot.text')}{' '}
-                  <IonRouterLink routerLink={routes.register.build()}>
-                    {t('auth.login.forgot.link')}
-                  </IonRouterLink>
+                  <ToggleAuthTypeButton
+                    onClick={() => props.setAuthType('register')}
+                  >
+                    {t('auth.login.switchToRegister')}
+                  </ToggleAuthTypeButton>
                 </sub>
               </CenteredIonText>
             </IonItem>

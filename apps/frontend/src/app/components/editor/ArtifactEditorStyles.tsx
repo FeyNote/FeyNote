@@ -24,6 +24,14 @@ export const ArtifactEditorStyles = styled.div`
     outline: none;
   }
 
+  .artifactTitle {
+    --background: transparent;
+    --color: var(--sheet-h1-color);
+    --ion-font-family: var(--sheet-h1-font-family);
+    font-size: 2.1rem;
+    padding-top: 10px;
+  }
+
   h1 {
     margin-top: 20px;
     margin-bottom: 10px;
@@ -170,17 +178,20 @@ export const ArtifactEditorStyles = styled.div`
       padding-bottom: 16px;
     }
 
-    p {
-      text-indent: 18px;
-    }
+    // Enable this to display things book-style
+    &.ident-first {
+      p {
+        text-indent: 18px;
+      }
 
-    h1 + p,
-    h2 + p,
-    h3 + p,
-    h4 + p,
-    h5 + p,
-    h6 + p {
-      text-indent: 0;
+      h1 + p,
+      h2 + p,
+      h3 + p,
+      h4 + p,
+      h5 + p,
+      h6 + p {
+        text-indent: 0;
+      }
     }
 
     background: url('/assets/parchment-background.jpg');

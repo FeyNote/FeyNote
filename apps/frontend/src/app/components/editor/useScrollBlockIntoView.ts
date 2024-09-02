@@ -14,7 +14,11 @@ export const useScrollBlockIntoView = (
 
     const el = document.querySelector(`[data-id="${blockId}"]`);
     if (el) {
-      el.scrollIntoView();
+      el.scrollIntoView({
+        behavior: 'instant',
+        block: 'center',
+        inline: 'center',
+      });
       scrollExecutedRef.current = true;
     }
   }, [blockId, ...dependencies]);

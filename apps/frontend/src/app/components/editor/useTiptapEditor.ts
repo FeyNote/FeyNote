@@ -6,6 +6,7 @@ import OrderedListExtension from '@tiptap/extension-ordered-list';
 import BulletListExtension from '@tiptap/extension-bullet-list';
 import TaskListExtension from '@tiptap/extension-task-list';
 import TaskItemExtension from '@tiptap/extension-task-item';
+import ListKeymap from '@tiptap/extension-list-keymap';
 import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
@@ -26,7 +27,7 @@ import {
   ARTIFACT_TIPTAP_BODY_KEY,
   PreferenceNames,
 } from '@feynote/shared-utils';
-import * as Y from 'yjs';
+import { Doc as YDoc } from 'yjs';
 
 import { IndentationExtension } from './tiptap/extensions/indentation/IndentationExtension';
 import { ArtifactReferencesExtension } from './tiptap/extensions/artifactReferences/ArtifactReferencesExtension';
@@ -38,7 +39,6 @@ import { useTranslation } from 'react-i18next';
 import { MonsterStatblockExtension } from './tiptap/extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
 import { SpellSheetExtension } from './tiptap/extensions/statsheet/spellSheet/SpellSheetExtension';
 import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
-import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 import { TableExtension } from './tiptap/extensions/table/TableExtension';
 import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolatingContainerBackspaceExtension';
 import { useContext, useEffect, useMemo } from 'react';
@@ -52,7 +52,7 @@ type DocArgOptions =
     }
   | {
       yjsProvider: undefined;
-      yDoc: Y.Doc;
+      yDoc: YDoc;
     };
 
 type UseArtifactEditorArgs = {
@@ -90,6 +90,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     TaskItemExtension.configure({
       nested: true,
     }),
+    ListKeymap,
     HardBreakExtension,
     BoldExtension,
     ItalicExtension,
@@ -104,7 +105,6 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     TableHeaderExtension,
     TableCellExtension,
     IndentationExtension,
-    GlobalDragHandleExtension,
     Collaboration.configure({
       document: args.yDoc || args.yjsProvider.document,
       field: ARTIFACT_TIPTAP_BODY_KEY,

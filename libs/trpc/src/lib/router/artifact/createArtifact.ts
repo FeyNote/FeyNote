@@ -5,7 +5,7 @@ import { enqueueArtifactUpdate } from '@feynote/queue';
 import { artifactJsonSchema } from '@feynote/prisma/types';
 import { TRPCError } from '@trpc/server';
 import { ArtifactTheme, ArtifactType } from '@prisma/client';
-import * as Y from 'yjs';
+import { encodeStateAsUpdate } from 'yjs';
 import { constructYArtifact } from '@feynote/shared-utils';
 
 export const createArtifact = authenticatedProcedure
@@ -45,7 +45,7 @@ export const createArtifact = authenticatedProcedure
       theme: input.theme,
       type: input.type,
     });
-    const yBin = Buffer.from(Y.encodeStateAsUpdate(yDoc));
+    const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 
     const { id } = await prisma.artifact.create({
       data: {

@@ -97,14 +97,18 @@ export class TypeSense implements SearchProvider {
       });
     }
 
-    await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+    if (deleteBlocks.length) {
+      await this.deleteBlocksByIds(deleteBlocks.map((el) => el.id));
+    }
 
-    await this.client
-      .collections(Indexes.Block)
-      .documents()
-      .import(upsertBlocks, {
-        action: 'upsert',
-      });
+    if (upsertBlocks.length) {
+      await this.client
+        .collections(Indexes.Block)
+        .documents()
+        .import(upsertBlocks, {
+          action: 'upsert',
+        });
+    }
   }
 
   /**
@@ -160,7 +164,6 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        prefix: false,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
@@ -181,7 +184,6 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        prefix: false,
         filter_by: `userId:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,

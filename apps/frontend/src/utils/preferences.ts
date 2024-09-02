@@ -11,12 +11,21 @@ import { getRandomColor } from './getRandomColor';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
 
+const LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 700;
+const RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 1300;
+
 export class PreferencesService {
   // Preference defaults - user preferences loaded locally will override
   preferences: AppPreferences = {
     preferencesVersion: 0,
 
-    [PreferenceNames.EnableSplitPane]: true,
+    [PreferenceNames.LeftPaneStartOpen]:
+      window.innerWidth >= RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX,
+    [PreferenceNames.LeftPaneShowPinnedArtifacts]: true,
+    [PreferenceNames.LeftPaneShowRecentArtifacts]: true,
+    [PreferenceNames.LeftPaneShowRecentThreads]: true,
+    [PreferenceNames.RightPaneStartOpen]:
+      window.innerWidth >= LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX,
     [PreferenceNames.Language]: null,
     [PreferenceNames.FontSize]: SupportedFontSize.X1_0,
     [PreferenceNames.Theme]: AppTheme.Default,
@@ -76,6 +85,11 @@ export class PreferencesService {
 
     // We do not want to sync preferencesSync itself since that would cause issues with the user setting a local value to disable this feature
     delete mutatedPreferences[PreferenceNames.PreferencesSync];
+
+    // These are screen-size dependent and syncing these preferences would
+    // cause issues on smaller devices
+    delete mutatedPreferences[PreferenceNames.LeftPaneStartOpen];
+    delete mutatedPreferences[PreferenceNames.RightPaneStartOpen];
 
     return mutatedPreferences;
   }

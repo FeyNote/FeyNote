@@ -13,13 +13,11 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  useIonRouter,
   useIonToast,
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { search } from 'ionicons/icons';
-import { routes } from '../../routes';
 import { trpc } from '../../../utils/trpc';
 import { EventName } from '../events/EventName';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
@@ -28,6 +26,11 @@ import { useProgressBar } from '../../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
+import {
+  GlobalPaneContext,
+  PaneTransition,
+} from '../globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../globalPane/PaneableComponent';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -36,10 +39,15 @@ const SearchContainer = styled.div`
   z-index: 3;
 
   width: min(450px, 97%);
-  background-color: var(--ion-background-color, #fffff);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
 
   transform: translateX(-50%);
+`;
+
+const FloatingSearchContainer = styled.div`
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  background-color: var(--ion-card-background, #ffffff);
+  border-radius: 7px;
+  overflow: hidden;
 `;
 
 const SearchResultsContainer = styled.div`
@@ -48,9 +56,11 @@ const SearchResultsContainer = styled.div`
 `;
 
 const SearchInput = styled(IonInput)`
-  --background: var(--ion-background-color, #ffffff);
+  --background: transparent;
   --padding-start: 10px;
   --padding-end: 10px;
+  --padding-top: 20px;
+  --padding-bottom: 20px;
 `;
 
 const Backdrop = styled(IonBackdrop)`
@@ -80,7 +90,7 @@ const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
 export const GlobalSearchContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const router = useIonRouter();
+  const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');
@@ -116,7 +126,14 @@ export const GlobalSearchContextProviderWrapper = ({
       artifactTemplateId: null,
     });
 
-    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
+    navigate(
+      undefined, // Open in currently focused pane rather than in specific pane
+      PaneableComponent.Artifact,
+      {
+        id: artifact.id,
+      },
+      PaneTransition.Push,
+    );
 
     eventManager.broadcast([EventName.ArtifactCreated]);
   };
@@ -178,6 +195,13 @@ export const GlobalSearchContextProviderWrapper = ({
     };
   }, [searchText]);
 
+  const value = useMemo(
+    () => ({
+      trigger,
+    }),
+    [],
+  );
+
   const searchUI = (
     <>
       {ProgressBar}
@@ -185,74 +209,91 @@ export const GlobalSearchContextProviderWrapper = ({
       <SearchContainer>
         {session ? (
           <>
-            <SearchInput
-              ref={inputRef}
-              onIonInput={(event) => setSearchText(event.detail.value || '')}
-              value={searchText}
-              label="Global Search"
-              labelPlacement="stacked"
-              placeholder="Search for any text within your collection"
-            >
-              <IonIcon slot="start" icon={search} aria-hidden="true"></IonIcon>
-            </SearchInput>
+            <h1>{t('globalSearch.title')}</h1>
 
-            <SearchResultsContainer>
-              {searchResults
-                .slice(0, SEARCH_RESULT_LIMIT)
-                .map((searchResult) => (
+            <FloatingSearchContainer>
+              <SearchInput
+                ref={inputRef}
+                onIonInput={(event) => setSearchText(event.detail.value || '')}
+                value={searchText}
+                placeholder={t('globalSearch.placeholder')}
+              >
+                <IonIcon
+                  slot="start"
+                  icon={search}
+                  aria-hidden="true"
+                ></IonIcon>
+              </SearchInput>
+
+              <SearchResultsContainer>
+                {searchResults
+                  .slice(0, SEARCH_RESULT_LIMIT)
+                  .map((searchResult) => (
+                    <IonItem
+                      lines="none"
+                      key={searchResult.id}
+                      onClick={() => {
+                        navigate(
+                          undefined, // Open in currently focused pane rather than in specific pane
+                          PaneableComponent.Artifact,
+                          { id: searchResult.id },
+                          PaneTransition.Push,
+                        );
+                        hide();
+                      }}
+                      button
+                    >
+                      <IonLabel>
+                        {searchResult.title}
+                        <p>
+                          {searchResult.previewText.substring(
+                            0,
+                            SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
+                          ) || t('artifact.title')}
+                        </p>
+                      </IonLabel>
+                    </IonItem>
+                  ))}
+                {!!searchText.length && searchText === searchedText && (
                   <IonItem
-                    key={searchResult.id}
-                    routerLink={routes.artifact.build({
-                      id: searchResult.id,
-                    })}
-                    onClick={hide}
+                    lines="none"
+                    onClick={() => (create(), hide())}
+                    button
                   >
                     <IonLabel>
-                      {searchResult.title}
+                      {t(
+                        searchResults.length
+                          ? 'editor.referenceMenu.create.title'
+                          : 'editor.referenceMenu.noItems.title',
+                        { title: searchText },
+                      )}
                       <p>
-                        {searchResult.previewText.substring(
-                          0,
-                          SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
+                        {t(
+                          searchResults.length
+                            ? 'editor.referenceMenu.create.subtitle'
+                            : 'editor.referenceMenu.noItems.subtitle',
                         )}
                       </p>
                     </IonLabel>
                   </IonItem>
-                ))}
-              {!!searchText.length && searchText === searchedText && (
-                <IonItem onClick={() => (create(), hide())} button>
-                  <IonLabel>
-                    {t(
-                      searchResults.length
-                        ? 'editor.referenceMenu.create.title'
-                        : 'editor.referenceMenu.noItems.title',
-                      { title: searchText },
-                    )}
-                    <p>
-                      {t(
-                        searchResults.length
-                          ? 'editor.referenceMenu.create.subtitle'
-                          : 'editor.referenceMenu.noItems.subtitle',
-                      )}
-                    </p>
-                  </IonLabel>
-                </IonItem>
-              )}
-              {!searchResults.length &&
-                !!searchText.length &&
-                searchText !== searchedText && (
-                  <IonItem>
-                    <IonLabel>
-                      {t('editor.referenceMenu.searching.title')}
-                      <p>{t('editor.referenceMenu.searching.subtitle')}</p>
-                    </IonLabel>
-                  </IonItem>
                 )}
-            </SearchResultsContainer>
+                {!searchResults.length &&
+                  !!searchText.length &&
+                  searchText !== searchedText && (
+                    <IonItem lines="none">
+                      <IonLabel>
+                        {t('editor.referenceMenu.searching.title')}
+                        <p>{t('editor.referenceMenu.searching.subtitle')}</p>
+                      </IonLabel>
+                    </IonItem>
+                  )}
+              </SearchResultsContainer>
+            </FloatingSearchContainer>
           </>
         ) : (
           <SearchResultsContainer>
             <IonItem>
-              <IonLabel>You're not logged in.</IonLabel>
+              <IonLabel>{t('globalSearch.loggedOut')}</IonLabel>
             </IonItem>
           </SearchResultsContainer>
         )}
@@ -262,7 +303,7 @@ export const GlobalSearchContextProviderWrapper = ({
 
   return (
     <>
-      <GlobalSearchContext.Provider value={{ trigger }}>
+      <GlobalSearchContext.Provider value={value}>
         {children}
       </GlobalSearchContext.Provider>
       {show ? searchUI : false}

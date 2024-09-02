@@ -1,9 +1,14 @@
 import { onLoadDocumentPayload } from '@hocuspocus/server';
-import * as Y from 'yjs';
+import { applyUpdate } from 'yjs';
+import type { TypedMap } from 'yjs-types';
 
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
+import {
+  ARTIFACT_META_KEY,
+  type YArtifactMetaSchema,
+} from '@feynote/shared-utils';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
@@ -17,6 +22,9 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
             userId: args.context.userId, // TODO: Impl sharing permission check here
           },
           select: {
+            title: true,
+            theme: true,
+            type: true,
             yBin: true,
           },
         });
@@ -25,7 +33,17 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           throw new Error();
         }
 
-        Y.applyUpdate(args.document, artifact.yBin);
+        applyUpdate(args.document, artifact.yBin);
+
+        const artifactMetaMap = args.document.getMap(
+          ARTIFACT_META_KEY,
+        ) as TypedMap<Partial<YArtifactMetaSchema>>;
+        if (!artifactMetaMap.get('title'))
+          artifactMetaMap.set('title', artifact.title);
+        if (!artifactMetaMap.get('theme'))
+          artifactMetaMap.set('theme', artifact.theme);
+        if (!artifactMetaMap.get('type'))
+          artifactMetaMap.set('type', artifact.type);
 
         return args.document;
       }

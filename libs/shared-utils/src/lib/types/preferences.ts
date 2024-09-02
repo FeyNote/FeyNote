@@ -22,7 +22,11 @@ export enum PreferencesSync {
 }
 
 export enum PreferenceNames {
-  EnableSplitPane = 'global.enableSplitPane',
+  LeftPaneStartOpen = 'leftPane.startOpen',
+  LeftPaneShowPinnedArtifacts = 'leftPane.showPinnedArtifacts',
+  LeftPaneShowRecentArtifacts = 'leftPane.showRecentArtifacts',
+  LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
+  RightPaneStartOpen = 'rightPane.startOpen',
   Language = 'global.language',
   FontSize = 'global.fontSize',
   Theme = 'global.theme',
@@ -33,7 +37,11 @@ export enum PreferenceNames {
 export interface AppPreferences {
   preferencesVersion: number;
 
-  [PreferenceNames.EnableSplitPane]: boolean;
+  [PreferenceNames.LeftPaneStartOpen]: boolean;
+  [PreferenceNames.LeftPaneShowPinnedArtifacts]: boolean;
+  [PreferenceNames.LeftPaneShowRecentArtifacts]: boolean;
+  [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
+  [PreferenceNames.RightPaneStartOpen]: boolean;
   [PreferenceNames.Language]: null | SupportedLanguages;
   [PreferenceNames.FontSize]: SupportedFontSize;
   [PreferenceNames.Theme]: AppTheme;

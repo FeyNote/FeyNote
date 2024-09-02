@@ -6,29 +6,26 @@ import {
   SupportedLanguages,
 } from '@feynote/shared-utils';
 import {
-  IonAvatar,
-  IonButtons,
+  IonCard,
   IonContent,
-  IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonListHeader,
-  IonMenuButton,
   IonPage,
   IonSelect,
   IonSelectOption,
-  IonTitle,
   IonToggle,
-  IonToolbar,
   useIonAlert,
 } from '@ionic/react';
 import { t } from 'i18next';
 import { useContext, useMemo } from 'react';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
-import { isLargeEnoughForSplitPane } from '../../../utils/isLargeEnoughForSplitPane';
 import { getRandomColor } from '../../../utils/getRandomColor';
+import { PaneNav } from '../pane/PaneNav';
+import { person, tv } from 'ionicons/icons';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -150,146 +147,206 @@ export const Settings: React.FC = () => {
     : 'random';
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('settings.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <IonList>
-          <IonListHeader>{t('settings.interface')}</IonListHeader>
-          {isLargeEnoughForSplitPane() && (
+    <IonPage>
+      <PaneNav title={t('settings.title')} />
+      <IonContent>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={tv} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.interface')}
+            </IonListHeader>
             <IonItem>
               <IonToggle
-                checked={getPreference(PreferenceNames.EnableSplitPane)}
+                checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(
-                    PreferenceNames.EnableSplitPane,
+                    PreferenceNames.LeftPaneStartOpen,
                     event.detail.checked,
                   )
                 }
               >
-                {t('settings.sideMenu')}
+                {t('settings.leftSideMenu')}
               </IonToggle>
             </IonItem>
-          )}
-          <IonItem>
-            <IonSelect
-              label={t('settings.language')}
-              labelPlacement="stacked"
-              value={getPreference(PreferenceNames.Language) || 'navigator'}
-              onIonChange={(event) =>
-                setPreference(
-                  PreferenceNames.Language,
-                  event.detail.value === 'navigator'
-                    ? null
-                    : event.detail.value,
-                )
-              }
-            >
-              <IonSelectOption value={'navigator'} key={'navigator'}>
-                {t('settings.language.default')}
-              </IonSelectOption>
-              {languageOptions.map((languageOption) => (
-                <IonSelectOption
-                  value={languageOption[0]}
-                  key={languageOption[0]}
-                >
-                  {languageOption[1]}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonSelect
-              label={t('settings.theme')}
-              labelPlacement="stacked"
-              value={getPreference(PreferenceNames.Theme)}
-              onIonChange={(event) =>
-                setPreference(PreferenceNames.Theme, event.detail.value)
-              }
-            >
-              {Object.values(AppTheme).map((theme) => (
-                <IonSelectOption value={theme} key={theme}>
-                  {t(themeToI18n[theme])}
-                </IonSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonSelect
-              label={t('settings.fontSize')}
-              labelPlacement="stacked"
-              value={getPreference(PreferenceNames.FontSize)}
-              onIonChange={(event) =>
-                setPreference(PreferenceNames.FontSize, event.detail.value)
-              }
-            >
-              {Object.values(SupportedFontSize).map((fontSize) => (
-                <FontSizeSelectOption
-                  value={fontSize}
-                  key={fontSize}
-                  $fontSize={fontSize}
-                >
-                  {t(fontSizeToI18n[fontSize])}
-                </FontSizeSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
-          <IonItem>
-            <IonSelect
-              label={t('settings.collaborationColor')}
-              labelPlacement="stacked"
-              value={collaborationColorValue}
-              onIonChange={(event) => {
-                let value = event.detail.value;
-                if (value === 'random') {
-                  value = getRandomColor();
+            <IonItem>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowPinnedArtifacts,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneShowPinnedArtifacts,
+                    event.detail.checked,
+                  )
                 }
-                setPreference(PreferenceNames.CollaborationColor, value);
-              }}
-              interfaceOptions={{
-                cssClass: 'color-select-popover',
-              }}
-            >
-              <IonSelectOption value={'random'}>
-                {t('settings.collaborationColor.random')}
-              </IonSelectOption>
-              {Object.entries(colorOptions).map(([color, i18nCode]) => (
-                <IonSelectOption value={color} key={color}>
-                  {t(i18nCode)}
+              >
+                {t('settings.leftSideMenuShowPinnedArtifacts')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowRecentArtifacts,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneShowRecentArtifacts,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.leftSideMenuShowRecentArtifacts')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneShowRecentThreads,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneShowRecentThreads,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.leftSideMenuShowRecentThreads')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.RightPaneStartOpen,
+                    event.detail.checked,
+                  )
+                }
+              >
+                {t('settings.rightSideMenu')}
+              </IonToggle>
+            </IonItem>
+            <IonItem>
+              <IonSelect
+                label={t('settings.language')}
+                labelPlacement="stacked"
+                value={getPreference(PreferenceNames.Language) || 'navigator'}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.Language,
+                    event.detail.value === 'navigator'
+                      ? null
+                      : event.detail.value,
+                  )
+                }
+              >
+                <IonSelectOption value={'navigator'} key={'navigator'}>
+                  {t('settings.language.default')}
                 </IonSelectOption>
-              ))}
-            </IonSelect>
-          </IonItem>
-        </IonList>
-        <br />
-        <IonList>
-          <IonListHeader>{t('settings.account')}</IonListHeader>
-          <IonItem button>
-            <IonLabel>{t('settings.email')}</IonLabel>
-          </IonItem>
-          <IonItem button>
-            <IonLabel>{t('settings.password')}</IonLabel>
-          </IonItem>
-          <IonItem>
-            <IonToggle
-              checked={
-                getPreference(PreferenceNames.PreferencesSync) ===
-                PreferencesSync.Enabled
-              }
-              onIonChange={(event) =>
-                togglePreferencesSync(event.detail.checked)
-              }
-            >
-              {t('settings.preferencesSync')}
-            </IonToggle>
-          </IonItem>
-        </IonList>
+                {languageOptions.map((languageOption) => (
+                  <IonSelectOption
+                    value={languageOption[0]}
+                    key={languageOption[0]}
+                  >
+                    {languageOption[1]}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonItem>
+              <IonSelect
+                label={t('settings.theme')}
+                labelPlacement="stacked"
+                value={getPreference(PreferenceNames.Theme)}
+                onIonChange={(event) =>
+                  setPreference(PreferenceNames.Theme, event.detail.value)
+                }
+              >
+                {Object.values(AppTheme).map((theme) => (
+                  <IonSelectOption value={theme} key={theme}>
+                    {t(themeToI18n[theme])}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonItem>
+              <IonSelect
+                label={t('settings.fontSize')}
+                labelPlacement="stacked"
+                value={getPreference(PreferenceNames.FontSize)}
+                onIonChange={(event) =>
+                  setPreference(PreferenceNames.FontSize, event.detail.value)
+                }
+              >
+                {Object.values(SupportedFontSize).map((fontSize) => (
+                  <FontSizeSelectOption
+                    value={fontSize}
+                    key={fontSize}
+                    $fontSize={fontSize}
+                  >
+                    {t(fontSizeToI18n[fontSize])}
+                  </FontSizeSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonItem>
+              <IonSelect
+                label={t('settings.collaborationColor')}
+                labelPlacement="stacked"
+                value={collaborationColorValue}
+                onIonChange={(event) => {
+                  let value = event.detail.value;
+                  if (value === 'random') {
+                    value = getRandomColor();
+                  }
+                  setPreference(PreferenceNames.CollaborationColor, value);
+                }}
+                interfaceOptions={{
+                  cssClass: 'color-select-popover',
+                }}
+              >
+                <IonSelectOption value={'random'}>
+                  {t('settings.collaborationColor.random')}
+                </IonSelectOption>
+                {Object.entries(colorOptions).map(([color, i18nCode]) => (
+                  <IonSelectOption value={color} key={color}>
+                    {t(i18nCode)}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+          </IonList>
+        </IonCard>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={person} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.account')}
+            </IonListHeader>
+            <IonItem button>
+              <IonLabel>{t('settings.email')}</IonLabel>
+            </IonItem>
+            <IonItem button>
+              <IonLabel>{t('settings.password')}</IonLabel>
+            </IonItem>
+            <IonItem>
+              <IonToggle
+                checked={
+                  getPreference(PreferenceNames.PreferencesSync) ===
+                  PreferencesSync.Enabled
+                }
+                onIonChange={(event) =>
+                  togglePreferencesSync(event.detail.checked)
+                }
+              >
+                {t('settings.preferencesSync')}
+              </IonToggle>
+            </IonItem>
+          </IonList>
+        </IonCard>
       </IonContent>
     </IonPage>
   );

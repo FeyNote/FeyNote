@@ -1,34 +1,22 @@
 import {
-  IonBackButton,
   IonButton,
-  IonButtons,
   IonContent,
-  IonHeader,
   IonIcon,
-  IonMenuButton,
   IonPage,
   IonTextarea,
-  IonTitle,
-  IonToolbar,
-  UseIonRouterResult,
-  useIonPopover,
-  useIonRouter,
-  useIonViewWillEnter,
-  useIonViewWillLeave,
 } from '@ionic/react';
-import { send, ellipsisVertical } from 'ionicons/icons';
-import { useParams } from 'react-router-dom';
-import { RouteArgs, routes } from '../../routes';
-import { trpc } from '../../../utils/trpc';
-import { useContext, useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
-import { AIMessagesContainer } from './AIMessagesContainer';
-import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
+import { send } from 'ionicons/icons';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { FunctionName } from '@feynote/shared-utils';
 import type { Message } from 'ai';
+import { trpc } from '../../../utils/trpc';
+import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import { AIMessagesContainer } from './AIMessagesContainer';
+import { PaneNav } from '../pane/PaneNav';
+import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -52,76 +40,55 @@ const SendIcon = styled(IonIcon)`
   font-size: 24px;
 `;
 
-const buildThreadOptionsPopover = ({
-  id,
-  title,
-  setTitle,
-  router,
-}: {
+export interface ChatMessage {
   id: string;
-  title: string;
-  setTitle: (title: string) => void;
-  router: UseIonRouterResult;
-  dismiss: any;
-}) => {
-  return (
-    <AIThreadOptionsPopover
-      id={id}
-      title={title}
-      router={router}
-      setTitle={setTitle}
-    />
-  );
-};
+  content: string;
+  role: string;
+}
 
-export const AIThread: React.FC = () => {
+interface Props {
+  id: string;
+}
+
+export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const router = useIonRouter();
-  const { id } = useParams<RouteArgs['assistantThread']>();
   const [title, setTitle] = useState<string | null>(null);
-  const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
-    id,
-    title: title || t('assistant.thread.emptyTitle'),
-    setTitle,
-    router,
-  });
+  const [isLoading, setIsLoading] = useState(true);
   const { session } = useContext(SessionContext);
-  const { messages, setMessages, input, setInput, append, isLoading } = useChat(
-    {
-      api: '/api/message/',
-      headers: {
-        Authorization: session?.token ? `Bearer ${session.token}` : '',
-        'Content-Type': 'application/json',
-      },
-      generateId: () => {
-        return crypto.randomUUID();
-      },
-      body: {
-        threadId: id,
-      },
-      maxToolRoundtrips: 5,
-      onFinish: async (message, options) => {
-        if (
-          options.finishReason === 'stop' ||
-          options.finishReason === 'tool-calls'
-        ) {
-          await trpc.ai.saveMessage.mutate({
-            threadId: id,
-            message,
-          });
-        }
-        if (options.finishReason === 'stop') {
-          if (!title) {
-            await trpc.ai.createThreadTitle.mutate({
-              id,
-            });
-
-            await getThreadInfo();
-          }
-        }
-      },
+  const { messages, setMessages, input, setInput, append } = useChat({
+    api: '/api/message/',
+    headers: {
+      Authorization: session?.token ? `Bearer ${session.token}` : '',
+      'Content-Type': 'application/json',
     },
-  );
+    generateId: () => {
+      return crypto.randomUUID();
+    },
+    body: {
+      threadId: props.id,
+    },
+    maxToolRoundtrips: 5,
+    onFinish: async (message, options) => {
+      if (
+        options.finishReason === 'stop' ||
+        options.finishReason === 'tool-calls'
+      ) {
+        await trpc.ai.saveMessage.mutate({
+          threadId: props.id,
+          message,
+        });
+      }
+      if (options.finishReason === 'stop') {
+        if (!title) {
+          await trpc.ai.createThreadTitle.mutate({
+            id: props.id,
+          });
+
+          await getThreadInfo();
+        }
+      }
+    },
+  });
 
   const messagesToRender = useMemo(() => {
     return messages.filter((message) => {
@@ -136,17 +103,9 @@ export const AIThread: React.FC = () => {
     });
   }, [messages]);
 
-  useIonViewWillEnter(() => {
-    getThreadInfo();
-  });
-
-  useIonViewWillLeave(() => {
-    dismiss();
-  });
-
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
-      id,
+      id: props.id,
     });
     const threadMessages = threadDTO.messages.map((message) => ({
       ...message.json,
@@ -155,6 +114,11 @@ export const AIThread: React.FC = () => {
     setMessages(threadMessages);
     setTitle(threadDTO.title || null);
   };
+
+  useEffect(() => {
+    setIsLoading(true);
+    getThreadInfo().then(() => setIsLoading(false));
+  }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -170,7 +134,7 @@ export const AIThread: React.FC = () => {
       role: 'user',
     } as Message;
     const response = await trpc.ai.saveMessage.mutate({
-      threadId: id,
+      threadId: props.id,
       message,
     });
     append({
@@ -183,33 +147,24 @@ export const AIThread: React.FC = () => {
   const retryMessage = async (messageId: string) => {
     const userMessage = await trpc.ai.deleteMessageUntil.mutate({
       id: messageId,
-      threadId: id,
+      threadId: props.id,
     });
     await getThreadInfo();
     setInput(userMessage);
   };
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <>
-              <IonBackButton defaultHref={routes.assistant.build()} />
-              <IonMenuButton></IonMenuButton>
-            </>
-          </IonButtons>
-          <IonTitle>{title || t('assistant.thread.emptyTitle')}</IonTitle>
-          <IonButtons slot="end">
-            <IonButton
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={(event: any) => present({ event })}
-            >
-              <IonIcon icon={ellipsisVertical} />
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+    <IonPage>
+      <PaneNav
+        title={title || t('assistant.thread.emptyTitle')}
+        popoverContents={
+          <AIThreadOptionsPopover
+            id={props.id}
+            title={title || t('assistant.thread.emptyTitle')}
+            setTitle={setTitle}
+          />
+        }
+      />
       <IonContent>
         <ChatContainer>
           {!messages.length ? (

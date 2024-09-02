@@ -1,36 +1,32 @@
 import {
-  IonButtons,
   IonContent,
   IonFab,
   IonFabButton,
-  IonHeader,
   IonIcon,
   IonList,
-  IonMenuButton,
   IonPage,
-  IonTitle,
-  IonToolbar,
   useIonToast,
-  useIonViewWillEnter,
-  useIonRouter,
 } from '@ionic/react';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
-import { routes } from '../../routes';
 import { ThreadDTO } from '@feynote/prisma/types';
 import { useProgressBar } from '../../../utils/useProgressBar';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneNav } from '../pane/PaneNav';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 export const AIThreadsList: React.FC = () => {
-  const router = useIonRouter();
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [threads, setThreads] = useState<ThreadDTO[]>([]);
   const { startProgressBar, ProgressBar } = useProgressBar();
+  const { navigate } = useContext(PaneContext);
 
   const getUserThreads = () => {
     const progress = startProgressBar();
@@ -52,7 +48,11 @@ export const AIThreadsList: React.FC = () => {
     trpc.ai.createThread
       .mutate({})
       .then((thread) => {
-        router.push(routes.assistantThread.build({ id: thread.id }));
+        navigate(
+          PaneableComponent.AIThread,
+          { id: thread.id },
+          PaneTransition.Push,
+        );
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
@@ -62,20 +62,13 @@ export const AIThreadsList: React.FC = () => {
       });
   };
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
     getUserThreads();
-  });
+  }, []);
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('assistant.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+    <IonPage>
+      <PaneNav title={t('assistant.title')} />
       <IonContent className="ion-padding">
         {ProgressBar}
         {!threads.length ? (

@@ -78,6 +78,7 @@ model ArtifactReference {
   // Target artifact may not actually exist
   targetArtifactId      String  @db.Uuid
   targetArtifactBlockId String? @db.Uuid
+  targetArtifactDate    String?
 
   referenceText String
 

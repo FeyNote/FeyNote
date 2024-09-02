@@ -1,10 +1,7 @@
 export const getKnownArtifactReferenceKey = (
   targetArtifactId: string,
   targetArtifactBlockId?: string,
+  targetArtifactDate?: string,
 ) => {
-  const key = targetArtifactBlockId
-    ? `${targetArtifactId}.${targetArtifactBlockId}`
-    : targetArtifactId;
-
-  return key;
+  return `${targetArtifactId}.${targetArtifactBlockId}.${targetArtifactDate}`;
 };

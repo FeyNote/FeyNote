@@ -1,8 +1,7 @@
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { trpc } from '../../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { useIonRouter, useIonToast } from '@ionic/react';
-import { routes } from '../../routes';
+import { useIonToast } from '@ionic/react';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 
 interface Props {
@@ -17,7 +16,6 @@ const getGoogleRef = () => {
 export const SignInWithGoogle: React.FC<Props> = (props) => {
   const [presentToast] = useIonToast();
   const { setSession } = useContext(SessionContext);
-  const router = useIonRouter();
   const buttonRef = useRef<HTMLDivElement>();
 
   const triggerGoogleButtonRender = useCallback(() => {
@@ -39,14 +37,11 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
       trpc.user.signInWithGoogle
         .mutate(args)
         .then((_session) => setSession(_session))
-        .then(() => {
-          router.push(routes.dashboard.build());
-        })
         .catch((error) => {
           handleTRPCErrors(error, presentToast);
         });
     },
-    [router, presentToast, setSession],
+    [presentToast, setSession],
   );
 
   const buttonRefHook = useCallback(
