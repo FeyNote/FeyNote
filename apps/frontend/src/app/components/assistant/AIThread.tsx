@@ -225,21 +225,19 @@ export const AIThread: React.FC = () => {
               disableRetry={isLoading}
             />
           )}
-          <form onSubmit={submitUserQuery}>
-            <ChatTextContainer>
-              <IonTextarea
-                placeholder={t('assistant.thread.input.placeholder')}
-                value={input}
-                disabled={isLoading}
-                onKeyUp={keyUpHandler}
-              />
-              <SendButtonContainer>
-                <button type="submit">
-                  <SendIcon color="white" icon={send} />
-                </button>
-              </SendButtonContainer>
-            </ChatTextContainer>
-          </form>
+          <ChatTextContainer>
+            <IonTextarea
+              placeholder={t('assistant.thread.input.placeholder')}
+              value={input}
+              disabled={isLoading}
+              onKeyUp={keyUpHandler}
+            />
+            <SendButtonContainer>
+              <IonButton onClick={() => submitUserQuery()}>
+                <SendIcon color="white" icon={send} />
+              </IonButton>
+            </SendButtonContainer>
+          </ChatTextContainer>
         </ChatContainer>
       </IonContent>
     </IonPage>
