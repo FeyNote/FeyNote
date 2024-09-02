@@ -39,7 +39,6 @@ import { useTranslation } from 'react-i18next';
 import { MonsterStatblockExtension } from './tiptap/extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
 import { SpellSheetExtension } from './tiptap/extensions/statsheet/spellSheet/SpellSheetExtension';
 import { TTRPGNoteExtension } from './tiptap/extensions/ttrpgNote/TTRPGNote';
-import { GlobalDragHandleExtension } from './tiptap/extensions/globalDragHandle/GlobalDragHandleExtension';
 import { TableExtension } from './tiptap/extensions/table/TableExtension';
 import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolatingContainerBackspaceExtension';
 import { useContext, useEffect, useMemo } from 'react';
@@ -106,7 +105,6 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     TableHeaderExtension,
     TableCellExtension,
     IndentationExtension,
-    GlobalDragHandleExtension,
     Collaboration.configure({
       document: args.yDoc || args.yjsProvider.document,
       field: ARTIFACT_TIPTAP_BODY_KEY,

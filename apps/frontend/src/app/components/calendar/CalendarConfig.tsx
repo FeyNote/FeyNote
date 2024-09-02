@@ -75,13 +75,14 @@ const SettingsContainer = styled.div<{
 const SettingsButton = styled(IonButton)<{
   $showSettings: boolean;
 }>`
+  color: var(--editor-button-color);
+
   ${(props) =>
     props.$showSettings
       ? ''
       : `
     position: absolute;
-    top: 0;
-    right: 0;
+    right: 16px;
   `}
 `;
 

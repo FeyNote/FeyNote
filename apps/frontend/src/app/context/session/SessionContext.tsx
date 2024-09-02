@@ -1,10 +1,12 @@
 import type { SessionDTO } from '@feynote/shared-utils';
 import { createContext } from 'react';
 
-export const SessionContext = createContext<{
-  session: SessionDTO | null;
+export interface SessionContextData {
+  session: SessionDTO;
   setSession: (session: SessionDTO | null) => Promise<void>;
-}>({
-  session: null,
+}
+
+export const SessionContext = createContext<SessionContextData>({
+  session: null as any,
   setSession: null as any,
 });

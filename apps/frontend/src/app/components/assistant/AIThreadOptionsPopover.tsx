@@ -1,24 +1,22 @@
 import {
-  IonContent,
   IonIcon,
   IonItem,
   IonLabel,
-  IonList,
-  UseIonRouterResult,
   useIonAlert,
   useIonToast,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { pencil, trashBin } from 'ionicons/icons';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { routes } from '../../routes';
 import { trpc } from '../../../utils/trpc';
-import styled from 'styled-components';
+import { useContext } from 'react';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   id: string;
   title: string;
-  router: UseIonRouterResult;
   setTitle: (title: string) => void;
 }
 
@@ -26,6 +24,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
+  const { navigate } = useContext(PaneContext);
 
   const triggerRenameThreadAlert = async () => {
     presentAlert({
@@ -80,7 +79,12 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
               await trpc.ai.deleteThread.mutate({
                 id: props.id,
               });
-              props.router.push(routes.assistant.build());
+
+              navigate(
+                PaneableComponent.AIThreadsList,
+                {},
+                PaneTransition.Replace,
+              );
             } catch (error) {
               handleTRPCErrors(error, presentToast);
             }
@@ -91,7 +95,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonContent>
+    <>
       <IonItem button onClick={triggerRenameThreadAlert}>
         <IonLabel>{t('assistant.thread.rename')}</IonLabel>
         <IonIcon slot="start" size="small" icon={pencil} />
@@ -100,6 +104,6 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
         <IonLabel>{t('assistant.thread.delete')}</IonLabel>
         <IonIcon slot="start" size="small" icon={trashBin} />
       </IonItem>
-    </IonContent>
+    </>
   );
 };

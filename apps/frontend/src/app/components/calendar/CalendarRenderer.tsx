@@ -10,12 +10,11 @@ import type { TypedArray, TypedMap } from 'yjs-types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
-import type { CalendarRenderArgs } from './CalendarRenderArgs';
 import type { ArtifactDTO } from '@feynote/prisma/types';
-import { renderFullsizeCalendar } from './renderFullsizeCalendar';
+import { FullsizeCalendar } from './renderers/FullsizeCalendar';
+import { MiniCalendar } from './renderers/MiniCalendar';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
 import { specifierToDatestamp } from './specifierToDatestamp';
-import { renderMiniCalendar } from './renderMiniCalendar';
 
 interface Props {
   viewType: 'fullsize' | 'mini';
@@ -123,23 +122,7 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     };
   };
 
-  const renderCalendar = (args: CalendarRenderArgs) => {
-    switch (props.viewType) {
-      case 'fullsize': {
-        return renderFullsizeCalendar({
-          ...args,
-          knownReferencesByDay: props.knownReferencesByDay,
-        });
-      }
-      case 'mini': {
-        return renderMiniCalendar(args);
-      }
-    }
-
-    throw new Error(`Invalid render type passed ${props.viewType}`);
-  };
-
-  return renderCalendar({
+  const renderProps = {
     moveCenter,
     centerYear,
     centerMonth,
@@ -151,5 +134,18 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     getDayInfo,
     onDayClicked: props.onDayClicked,
     selectedDate: props.selectedDate,
-  });
+    knownReferencesByDay: props.knownReferencesByDay,
+  };
+
+  switch (props.viewType) {
+    case 'fullsize': {
+      return <FullsizeCalendar {...renderProps} />;
+    }
+    case 'mini': {
+      return <MiniCalendar {...renderProps} />;
+    }
+    default: {
+      throw new Error(`Invalid render type passed ${props.viewType}`);
+    }
+  }
 };

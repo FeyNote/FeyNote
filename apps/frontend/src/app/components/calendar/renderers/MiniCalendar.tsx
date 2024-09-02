@@ -1,7 +1,7 @@
 import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
-import type { CalendarRenderArgs } from './CalendarRenderArgs';
 import { chevronBack, chevronForward } from 'ionicons/icons';
+import type { CalendarRenderProps } from './CalendarRenderProps';
 
 const CalendarContainer = styled.div``;
 
@@ -77,7 +77,7 @@ const CalendarDay = styled.button<{
       : ''}
 
   &:hover {
-    background: rgba(var(--ion-background-color-rgb), 0.5);
+    background: rgba(var(--ion-background-color-rgb, rgb(255, 255, 255)), 0.5);
 
     ${(props) =>
       props.$selected
@@ -88,16 +88,16 @@ const CalendarDay = styled.button<{
   }
 `;
 
-export const renderMiniCalendar = (args: CalendarRenderArgs) => {
+export const MiniCalendar: React.FC<CalendarRenderProps> = (props) => {
   const renderDay = (weekIdx: number, dayIdx: number) => {
-    const dayInfo = args.getDayInfo(weekIdx, dayIdx);
+    const dayInfo = props.getDayInfo(weekIdx, dayIdx);
     if (!dayInfo) return <></>;
 
     return (
       <CalendarDay
         data-date={dayInfo.datestamp}
-        $selected={dayInfo.datestamp === args.selectedDate}
-        onClick={() => args.onDayClicked?.(dayInfo.datestamp)}
+        $selected={dayInfo.datestamp === props.selectedDate}
+        onClick={() => props.onDayClicked?.(dayInfo.datestamp)}
       >
         <div>{dayInfo.day}</div>
       </CalendarDay>
@@ -106,23 +106,23 @@ export const renderMiniCalendar = (args: CalendarRenderArgs) => {
 
   // For session calendars we don't want to show the pagination switcher since it doesn't make sense.
   // To allow users to have this behavior themselves, we don't show the switcher when their calendar has the following config:
-  const showSwitcher = args.monthNames.length !== 1 || args.centerYear !== 1;
+  const showSwitcher = props.monthNames.length !== 1 || props.centerYear !== 1;
   const switcher = (
     <MonthSwitcher>
       <NextBackButton
         size="small"
         fill="clear"
-        onClick={() => args.moveCenter(-1)}
+        onClick={() => props.moveCenter(-1)}
       >
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
       </NextBackButton>
       <MonthYearName>
-        {args.monthNames.get(args.centerMonth - 1)} {args.centerYear}
+        {props.monthNames.get(props.centerMonth - 1)} {props.centerYear}
       </MonthYearName>
       <NextBackButton
         size="small"
         fill="clear"
-        onClick={() => args.moveCenter(1)}
+        onClick={() => props.moveCenter(1)}
       >
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
       </NextBackButton>
@@ -135,15 +135,15 @@ export const renderMiniCalendar = (args: CalendarRenderArgs) => {
       <CalendarBodyContainer>
         <CalendarBody>
           <DayTitlesContainer>
-            {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+            {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
               <DayTitle key={dayIdx}>
-                {args.dayOfWeekNames.get(dayIdx)}
+                {props.dayOfWeekNames.get(dayIdx)}
               </DayTitle>
             ))}
           </DayTitlesContainer>
-          {new Array(args.weekCount || 1).fill(0).map((_, weekIdx) => (
+          {new Array(props.weekCount || 1).fill(0).map((_, weekIdx) => (
             <CalendarWeek key={weekIdx}>
-              {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+              {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
                 <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
                   {renderDay(weekIdx, dayIdx)}
                 </CalendarDayContainer>

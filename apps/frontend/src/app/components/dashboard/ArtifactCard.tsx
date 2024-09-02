@@ -6,9 +6,12 @@ import {
   IonCardSubtitle,
   IonCardTitle,
 } from '@ionic/react';
-import { routes } from '../../routes';
 import styled from 'styled-components';
 import { storageKeyToImageUrl } from '../../../utils/storageKeyToImageUrl';
+import { useContext } from 'react';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const IonArtifactCard = styled(IonCard)`
   width: min(300px, 100%);
@@ -19,6 +22,8 @@ interface Props {
 }
 
 export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
+  const { navigate } = useContext(PaneContext);
+
   const primaryArtifactImage = artifact.artfactFiles
     .filter((artifactFile) => artifactFile.file.mimetype.startsWith('image/'))
     .sort((a, b) => a.order - b.order)
@@ -26,9 +31,13 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
 
   return (
     <IonArtifactCard
-      routerLink={routes.artifact.build({
-        id: artifact.id,
-      })}
+      onClick={() =>
+        navigate(
+          PaneableComponent.Artifact,
+          { id: artifact.id },
+          PaneTransition.Push,
+        )
+      }
       button
     >
       {primaryArtifactImage && (

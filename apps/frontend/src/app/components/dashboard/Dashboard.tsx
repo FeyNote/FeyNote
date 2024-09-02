@@ -1,41 +1,32 @@
 import {
   IonButton,
-  IonButtons,
   IonCol,
   IonContent,
-  IonFab,
-  IonFabButton,
-  IonFabList,
-  IonHeader,
   IonIcon,
-  IonMenuButton,
   IonPage,
   IonSearchbar,
-  IonTitle,
-  IonToolbar,
-  useIonRouter,
   useIonToast,
-  useIonViewWillEnter,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useContext, useMemo, useState } from 'react';
-import { filterOutline, add, documentText, calendar } from 'ionicons/icons';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { filterOutline, documentText } from 'ionicons/icons';
 import { Artifacts } from './Artifacts';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDTO } from '@feynote/prisma/types';
-import { routes } from '../../routes';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
-import { EventContext } from '../../context/events/EventContext';
-import { EventName } from '../../context/events/EventName';
 import { useProgressBar } from '../../../utils/useProgressBar';
-import type { ArtifactType } from '@prisma/client';
+import { PaneNav } from '../pane/PaneNav';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { DashboardRightSideMenu } from './DashboardSideMenu';
+import { createPortal } from 'react-dom';
 
 const GridContainer = styled.div`
   display: grid;
   grid-template-rows: 58px auto;
-  height: 100%;
+  height: calc(100% - 4px);
 `;
 
 const GridRowSearchbar = styled.div`
@@ -50,18 +41,20 @@ const GridRowArtifacts = styled.div`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
+  const { isPaneFocused } = useContext(PaneContext);
+  const { sidemenuContentRef } = useContext(SidemenuContext);
   const [presentToast] = useIonToast();
-  const { eventManager } = useContext(EventContext);
   const { startProgressBar, ProgressBar } = useProgressBar();
+  const [loading, setLoading] = useState(true);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts],
   );
-  const router = useIonRouter();
 
   const getUserArtifacts = () => {
+    setLoading(true);
     const progress = startProgressBar();
     trpc.artifact.getArtifacts
       .query({})
@@ -72,13 +65,14 @@ export const Dashboard: React.FC = () => {
         handleTRPCErrors(error, presentToast);
       })
       .finally(() => {
+        setLoading(false);
         progress.dismiss();
       });
   };
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
     getUserArtifacts();
-  });
+  }, []);
 
   const handleSearchInput = (e: Event) => {
     let query = '';
@@ -107,41 +101,16 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  const newArtifact = async (type: ArtifactType) => {
-    const artifact = await trpc.artifact.createArtifact.mutate({
-      title: 'Untitled',
-      type,
-      theme: 'default',
-      isPinned: false,
-      isTemplate: false,
-      text: '',
-      json: {},
-      rootTemplateId: null,
-      artifactTemplateId: null,
-    });
-
-    router.push(routes.artifact.build({ id: artifact.id }), 'forward');
-
-    eventManager.broadcast([EventName.ArtifactCreated]);
-  };
-
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('dashboard.title')}</IonTitle>
-          {ProgressBar}
-        </IonToolbar>
-      </IonHeader>
+    <IonPage>
+      <PaneNav title={t('dashboard.title')} />
       <IonContent>
+        {ProgressBar}
         <GridContainer>
           <GridRowSearchbar className="ion-align-items-center">
             <IonSearchbar
               style={{ padding: 0 }}
-              debounce={300}
+              debounce={250}
               value={searchText}
               onIonInput={(e) => handleSearchInput(e)}
               placeholder={t('dashboard.searchbar.placeholder')}
@@ -158,12 +127,13 @@ export const Dashboard: React.FC = () => {
                   artifacts={pinnedArtifacts}
                 />
               )}
-              {artifacts.length ? (
+              {!!artifacts.length && (
                 <Artifacts
                   title={t('dashboard.items.header')}
                   artifacts={artifacts}
                 />
-              ) : (
+              )}
+              {!pinnedArtifacts.length && !artifacts.length && !loading && (
                 <NullState
                   title={t('dashboard.noArtifacts.title')}
                   message={t('dashboard.noArtifacts.message')}
@@ -174,19 +144,12 @@ export const Dashboard: React.FC = () => {
           </GridRowArtifacts>
         </GridContainer>
       </IonContent>
-      <IonFab slot="fixed" vertical="bottom" horizontal="end">
-        <IonFabButton>
-          <IonIcon icon={add} />
-        </IonFabButton>
-        <IonFabList side="top">
-          <IonFabButton onClick={() => newArtifact('tiptap')}>
-            <IonIcon icon={documentText}></IonIcon>
-          </IonFabButton>
-          <IonFabButton onClick={() => newArtifact('calendar')}>
-            <IonIcon icon={calendar}></IonIcon>
-          </IonFabButton>
-        </IonFabList>
-      </IonFab>
+      {isPaneFocused &&
+        sidemenuContentRef.current &&
+        createPortal(
+          <DashboardRightSideMenu artifacts={artifacts} />,
+          sidemenuContentRef.current,
+        )}
     </IonPage>
   );
 };

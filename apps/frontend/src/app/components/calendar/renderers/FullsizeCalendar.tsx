@@ -1,10 +1,12 @@
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
-import type { CalendarRenderArgs } from './CalendarRenderArgs';
+import type { CalendarRenderProps } from './CalendarRenderProps';
 import { chevronBack, chevronForward } from 'ionicons/icons';
-import { Link } from 'react-router-dom';
-import { routes } from '../../routes';
+import { useContext } from 'react';
+import { PaneContext } from '../../../context/pane/PaneContext';
+import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 
 const CalendarContainer = styled.div``;
 
@@ -18,6 +20,8 @@ const CalendarBodyContainer = styled.div`
 const CalendarBody = styled.div`
   min-width: 650px;
   max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
 const MonthSwitcher = styled.div`
@@ -29,6 +33,8 @@ const MonthSwitcher = styled.div`
 const NextBackButton = styled(IonButton)`
   margin-left: 16px;
   margin-right: 16px;
+
+  color: var(--editor-button-color);
 `;
 
 const MonthYearName = styled.div`
@@ -49,11 +55,23 @@ const DayTitle = styled.div`
 
 const CalendarWeek = styled.div`
   display: flex;
+
+  border-left: 1px solid var(--day-border-color);
+  border-right: 1px solid var(--day-border-color);
+  border-bottom: 1px solid var(--day-border-color);
+
+  &:first-child {
+    border-top: 1px solid var(--day-border-color);
+  }
 `;
 
 const CalendarDayContainer = styled.div`
   flex-basis: 100%;
-  border: 1px solid gray;
+  border-right: 1px solid var(--day-border-color);
+
+  &:last-child {
+    border-right: none;
+  }
 `;
 
 const CalendarDay = styled.div`
@@ -65,34 +83,41 @@ const CalendarItem = styled.div`
   font-size: 0.8rem;
 `;
 
-interface FullsizeCalendarArgs extends CalendarRenderArgs {
+interface FullsizeCalendarProps extends CalendarRenderProps {
   knownReferencesByDay: Record<
     string,
     ArtifactDTO['incomingArtifactReferences']
   >;
 }
 
-export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
+export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
+  const { navigate } = useContext(PaneContext);
+
   const renderDay = (weekIdx: number, dayIdx: number) => {
-    const dayInfo = args.getDayInfo(weekIdx, dayIdx);
+    const dayInfo = props.getDayInfo(weekIdx, dayIdx);
     if (!dayInfo) return <></>;
 
-    const references = args.knownReferencesByDay[dayInfo.datestamp] || [];
+    const references = props.knownReferencesByDay[dayInfo.datestamp] || [];
 
     return (
       <CalendarDay data-date={dayInfo.datestamp}>
         <div>{dayInfo.day}</div>
 
         {references.map((reference) => (
-          <CalendarItem>
-            <Link
+          <CalendarItem key={reference.id}>
+            <a
               key={reference.id}
-              to={routes.artifact.build({
-                id: reference.artifactId,
-              })}
+              href=""
+              onClick={() =>
+                navigate(
+                  PaneableComponent.Artifact,
+                  { id: reference.artifactId },
+                  PaneTransition.Push,
+                )
+              }
             >
               {reference.artifact.title}
-            </Link>
+            </a>
           </CalendarItem>
         ))}
       </CalendarDay>
@@ -101,16 +126,16 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
 
   // For session calendars we don't want to show the pagination switcher since it doesn't make sense.
   // To allow users to have this behavior themselves, we don't show the switcher when their calendar has the following config:
-  const showSwitcher = args.monthNames.length !== 1 || args.centerYear !== 1;
+  const showSwitcher = props.monthNames.length !== 1 || props.centerYear !== 1;
   const switcher = (
     <MonthSwitcher>
-      <NextBackButton fill="clear" onClick={() => args.moveCenter(-1)}>
+      <NextBackButton fill="clear" onClick={() => props.moveCenter(-1)}>
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
       </NextBackButton>
       <MonthYearName>
-        {args.monthNames.get(args.centerMonth - 1)} {args.centerYear}
+        {props.monthNames.get(props.centerMonth - 1)} {props.centerYear}
       </MonthYearName>
-      <NextBackButton fill="clear" onClick={() => args.moveCenter(1)}>
+      <NextBackButton fill="clear" onClick={() => props.moveCenter(1)}>
         <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
       </NextBackButton>
     </MonthSwitcher>
@@ -122,21 +147,23 @@ export const renderFullsizeCalendar = (args: FullsizeCalendarArgs) => {
       <CalendarBodyContainer>
         <CalendarBody>
           <DayTitlesContainer>
-            {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+            {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
               <DayTitle key={dayIdx}>
-                {args.dayOfWeekNames.get(dayIdx)}
+                {props.dayOfWeekNames.get(dayIdx)}
               </DayTitle>
             ))}
           </DayTitlesContainer>
-          {new Array(args.weekCount || 1).fill(0).map((_, weekIdx) => (
-            <CalendarWeek key={weekIdx}>
-              {new Array(args.daysInWeek || 1).fill(0).map((_, dayIdx) => (
-                <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
-                  {renderDay(weekIdx, dayIdx)}
-                </CalendarDayContainer>
-              ))}
-            </CalendarWeek>
-          ))}
+          <div>
+            {new Array(props.weekCount || 1).fill(0).map((_, weekIdx) => (
+              <CalendarWeek key={weekIdx}>
+                {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+                  <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
+                    {renderDay(weekIdx, dayIdx)}
+                  </CalendarDayContainer>
+                ))}
+              </CalendarWeek>
+            ))}
+          </div>
         </CalendarBody>
       </CalendarBodyContainer>
     </CalendarContainer>

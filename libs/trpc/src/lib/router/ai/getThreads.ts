@@ -21,6 +21,7 @@ export const getThreads = authenticatedProcedure.query(
           id: message.id,
           role: (message.json as unknown as any).role,
           content: (message.json as unknown as any).content,
+          createdAt: message.createdAt,
         }))
         .filter((json) => ThreadDTOMessageSchema.safeParse(json)),
     }));

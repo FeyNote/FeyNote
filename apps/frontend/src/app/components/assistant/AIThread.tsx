@@ -1,37 +1,25 @@
 import {
-  IonBackButton,
   IonButton,
-  IonButtons,
   IonContent,
-  IonHeader,
   IonIcon,
-  IonMenuButton,
   IonPage,
   IonProgressBar,
   IonTextarea,
-  IonTitle,
-  IonToolbar,
-  UseIonRouterResult,
-  useIonPopover,
-  useIonRouter,
   useIonToast,
-  useIonViewWillEnter,
-  useIonViewWillLeave,
 } from '@ionic/react';
-import { send, ellipsisVertical } from 'ionicons/icons';
-import { useParams } from 'react-router-dom';
-import { RouteArgs, routes } from '../../routes';
+import { send } from 'ionicons/icons';
 import {
   handleGenericError,
   handleTRPCErrors,
 } from '../../../utils/handleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
-import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
+import { PaneNav } from '../pane/PaneNav';
+import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -61,33 +49,13 @@ export interface ChatMessage {
   role: string;
 }
 
-const buildThreadOptionsPopover = ({
-  id,
-  title,
-  setTitle,
-  router,
-}: {
+interface Props {
   id: string;
-  title: string;
-  setTitle: (title: string) => void;
-  router: UseIonRouterResult;
-  dismiss: any;
-}) => {
-  return (
-    <AIThreadOptionsPopover
-      id={id}
-      title={title}
-      router={router}
-      setTitle={setTitle}
-    />
-  );
-};
+}
 
-export const AIThread: React.FC = () => {
+export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
-  const router = useIonRouter();
-  const { id } = useParams<RouteArgs['assistantThread']>();
   const [showLoading, setShowLoading] = useState(true);
   const [message, setMessage] = useState<string>('');
   const [threadTitle, setThreadTitle] = useState<string | null>(null);
@@ -98,25 +66,17 @@ export const AIThread: React.FC = () => {
   );
   const [tempAssistantMessage, setTempAssistantMessage] =
     useState<ChatMessage | null>(null);
-  const [present, dismiss] = useIonPopover(buildThreadOptionsPopover, {
-    id,
-    title: threadTitle || t('assistant.thread.emptyTitle'),
-    setTitle: setThreadTitle,
-    router,
-  });
 
-  useIonViewWillEnter(() => {
+  useEffect(() => {
+    setShowLoading(true);
+
     getThreadInfo().then(() => setShowLoading(false));
-  });
-
-  useIonViewWillLeave(() => {
-    dismiss();
-  });
+  }, []);
 
   const getThreadInfo = async () => {
     try {
       const threadDTO = await trpc.ai.getThread.query({
-        id,
+        id: props.id,
       });
       setMessages(threadDTO.messages);
       setThreadTitle(threadDTO.title || null);
@@ -139,7 +99,7 @@ export const AIThread: React.FC = () => {
   const createMessage = async (query: string) => {
     const session = await appIdbStorageManager.getSession();
     const body = JSON.stringify({
-      threadId: id,
+      threadId: props.id,
       query,
     });
     try {
@@ -218,7 +178,7 @@ export const AIThread: React.FC = () => {
     trpc.ai.deleteMessagesSince
       .mutate({
         messageId: retriedUserMessage.id,
-        threadId: id,
+        threadId: props.id,
       })
       .then(() => {
         // Resend User Prompt Previous Message
@@ -231,26 +191,17 @@ export const AIThread: React.FC = () => {
   };
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <>
-              <IonBackButton defaultHref={routes.assistant.build()} />
-              <IonMenuButton></IonMenuButton>
-            </>
-          </IonButtons>
-          <IonTitle>{threadTitle || t('assistant.thread.emptyTitle')}</IonTitle>
-          <IonButtons slot="end">
-            <IonButton
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={(event: any) => present({ event })}
-            >
-              <IonIcon icon={ellipsisVertical} />
-            </IonButton>
-          </IonButtons>
-        </IonToolbar>
-      </IonHeader>
+    <IonPage>
+      <PaneNav
+        title={threadTitle || t('assistant.thread.emptyTitle')}
+        popoverContents={
+          <AIThreadOptionsPopover
+            id={props.id}
+            title={threadTitle || t('assistant.thread.emptyTitle')}
+            setTitle={setThreadTitle}
+          />
+        }
+      />
       <IonContent>
         {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>

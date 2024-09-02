@@ -1,20 +1,21 @@
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
-import { routes } from '../../../../../routes';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
-import { IonRouterLink, useIonRouter } from '@ionic/react';
 import type { ReferencePluginOptions } from './ArtifactReferencesExtension';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
-import { useRef } from 'react';
+import { useContext, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
+import { PaneContext } from '../../../../../context/pane/PaneContext';
+import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
 
 const StyledNodeViewWrapper = styled(NodeViewWrapper)`
   display: inline;
 `;
 
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
-  const router = useIonRouter();
+  const { navigate } = useContext(PaneContext);
 
   const { artifactId, artifactBlockId, artifactDate } = props.node.attrs;
 
@@ -28,13 +29,26 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const options = props.extension.options as ReferencePluginOptions;
   const knownReference = options.knownReferences.get(key);
 
-  let link = routes.artifact.build({ id: props.node.attrs.artifactId });
-  if (artifactBlockId) {
-    link += `?blockId=${artifactBlockId}`;
-  }
-  if (artifactDate) {
-    link += `?date=${artifactDate}`;
-  }
+  const linkClicked = (
+    event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
+  ) => {
+    if (knownReference?.isBroken) return;
+
+    let paneTransition = PaneTransition.Push;
+    if (event.metaKey || event.ctrlKey) {
+      paneTransition = PaneTransition.NewTab;
+    }
+    navigate(
+      PaneableComponent.Artifact,
+      {
+        id: props.node.attrs.artifactId,
+        focusBlockId: artifactBlockId || undefined,
+        focusDate: artifactDate || undefined,
+      },
+      paneTransition,
+      !(event.metaKey || event.ctrlKey),
+    );
+  };
 
   const {
     artifact,
@@ -62,15 +76,22 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <IonRouterLink
-          routerLink={knownReference?.isBroken ? undefined : link}
-          onClick={() => close()}
+        <a
+          href=""
+          onClick={(event) => (
+            event.preventDefault(),
+            event.stopPropagation(),
+            linkClicked(event),
+            close()
+          )}
         >
           {referenceText}
-        </IonRouterLink>
+        </a>
         {showPreview && artifact && artifactYBin && ref.current && (
           <ArtifactReferencePreview
-            onClick={() => (router.push(link, 'forward', 'push'), close())}
+            onClick={(event) => (
+              event.stopPropagation(), linkClicked(event), close()
+            )}
             artifact={artifact}
             artifactYBin={artifactYBin}
             artifactBlockId={props.node.attrs.artifactBlockId || undefined}

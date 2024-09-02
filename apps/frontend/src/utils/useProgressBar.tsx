@@ -1,5 +1,10 @@
 import { IonProgressBar } from '@ionic/react';
 import { useEffect, useReducer } from 'react';
+import styled from 'styled-components';
+
+const ProgressBarPlaceholder = styled.div`
+  height: 4px;
+`;
 
 export const useProgressBar = () => {
   const [progress, updateProgress] = useReducer(
@@ -33,7 +38,7 @@ export const useProgressBar = () => {
   const ProgressBar = progress ? (
     <IonProgressBar value={progress}></IonProgressBar>
   ) : (
-    <></>
+    <ProgressBarPlaceholder></ProgressBarPlaceholder>
   );
 
   useEffect(() => {
