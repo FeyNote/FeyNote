@@ -129,7 +129,7 @@ export const ArtifactEditorStyles = styled.div`
   ul,
   ol {
     padding: 0 1rem;
-    margin: 1.25rem 1rem 1.25rem 0.4rem;
+    margin-left: 0.4rem;
 
     li p {
       margin-top: 0.25em;
