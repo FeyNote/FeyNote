@@ -77,7 +77,7 @@ const CalendarDay = styled.button<{
       : ''}
 
   &:hover {
-    background: rgba(var(--ion-background-color-rgb), 0.5);
+    background: rgba(var(--ion-background-color-rgb, rgb(255, 255, 255)), 0.5);
 
     ${(props) =>
       props.$selected

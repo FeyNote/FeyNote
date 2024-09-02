@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import { Actions, Layout } from 'flexlayout-react';
+import { Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import {
   GlobalPaneContext,
@@ -36,11 +36,11 @@ const DockContainer = styled.div`
   height: 100%;
 
   .flexlayout__layout {
-    --color-text: var(--ion-text-color);
-    --color-background: var(--ion-background-color);
-    --color-base: var(--ion-background-color);
-    --color-tab-selected-background: var(--ion-background-color);
-    --color-tabset-background-selected: var(--ion-background-color);
+    --color-text: var(--ion-text-color, #000000);
+    --color-background: var(--ion-background-color, #ffffff);
+    --color-base: var(--ion-background-color, #ffffff);
+    --color-tab-selected-background: var(--ion-background-color, #ffffff);
+    --color-tabset-background-selected: var(--ion-background-color, #ffffff);
     --color-1: var(--ion-background-color-step-100);
     --color-2: var(--ion-background-color-step-200);
     --color-3: var(--ion-background-color-step-300);
@@ -104,8 +104,8 @@ const DockContainer = styled.div`
   .flexlayout__tab_button--selected {
     --tab-curve: 10px;
     --tab-outline-width: 0;
-    --tab-outline-color: var(--ion-background-color);
-    --tab-background-active: var(--ion-background-color);
+    --tab-outline-color: var(--ion-background-color, #ffffff);
+    --tab-background-active: var(--ion-background-color, #ffffff);
 
     &::before,
     &::after {
@@ -136,7 +136,10 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tab_button--unselected {
-    background-color: rgba(var(--ion-background-color-rgb), 0.5);
+    background-color: rgba(
+      var(--ion-background-color-rgb, rgb(255, 255, 255)),
+      0.5
+    );
   }
 
   .flexlayout__tab_button_trailing {

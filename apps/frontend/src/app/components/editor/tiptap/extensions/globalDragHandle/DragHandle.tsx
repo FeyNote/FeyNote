@@ -8,7 +8,7 @@ const Handle = styled.div`
   justify-content: center;
 
   background: var(--ion-card-background);
-  color: var(--ion-text-color);
+  color: var(--ion-text-color, #000000);
   border-radius: 4px;
 `;
 

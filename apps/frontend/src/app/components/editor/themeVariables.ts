@@ -1,18 +1,18 @@
 export const themeVariables = {
   default: `
-    --sheet-text-color: var(--ion-text-color);
+    --sheet-text-color: var(--ion-text-color, #000000);
     --sheet-font-family: var(--ion-font-family);
     --sheet-h1-color: inherit;
     --sheet-h1-font-family: var(--ion-font-family);
-    --sheet-h2-color: var(--ion-text-color);
+    --sheet-h2-color: var(--ion-text-color, #000000);
     --sheet-h2-font-family: var(--ion-font-family);
-    --sheet-h3-color: var(--ion-text-color);
+    --sheet-h3-color: var(--ion-text-color, #000000);
     --sheet-h3-font-family: var(--ion-font-family);
-    --sheet-h4-color: var(--ion-text-color);
+    --sheet-h4-color: var(--ion-text-color, #000000);
     --sheet-h4-font-family: var(--ion-font-family);
-    --sheet-h5-color: var(--ion-text-color);
+    --sheet-h5-color: var(--ion-text-color, #000000);
     --sheet-h5-font-family: var(--ion-font-family);
-    --sheet-h6-color: var(--ion-text-color);
+    --sheet-h6-color: var(--ion-text-color, #000000);
     --sheet-h6-font-family: var(--ion-font-family);
     --sheet-placeholder-color: rgba(255,255,255,0.7);
   `,

@@ -9,8 +9,8 @@ const NavContainer = styled.div`
   align-items: center;
   justify-content: space-between;
   height: 40px;
-  background: var(--ion-background-color);
-  color: var(--ion-text-color);
+  background: var(--ion-background-color, #ffffff);
+  color: var(--ion-text-color, #000000);
 `;
 
 const NavGroup = styled.div`
@@ -23,7 +23,7 @@ const NavTitle = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
 
-  color: var(--ion-text-color);
+  color: var(--ion-text-color, #000000);
   opacity: 0;
   transition: 0.1s;
 

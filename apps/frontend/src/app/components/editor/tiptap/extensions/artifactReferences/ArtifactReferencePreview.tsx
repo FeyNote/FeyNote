@@ -15,7 +15,7 @@ const PREVIEW_MAX_HEIGHT_PX = 300;
 
 const StyledBoundedFloatingWindow = styled(BoundedFloatingWindow)`
   overflow-y: auto;
-  background: var(--ion-background-color);
+  background: var(--ion-background-color, #ffffff);
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.3);
   padding: 10px;
 `;

@@ -230,7 +230,7 @@ export const LeftSideMenu: React.FC = () => {
       {!!pinnedArtifacts.length &&
         getPreference(PreferenceNames.LeftPaneShowPinnedArtifacts) && (
           <IonCard>
-            <IonList>
+            <IonList class="ion-no-padding">
               <IonListHeader lines="full">
                 <IonIcon icon={pin} />
                 &nbsp;&nbsp;
@@ -259,7 +259,12 @@ export const LeftSideMenu: React.FC = () => {
                   </CompactIonItem>
                 ))}
               {pinnedArtifacts.length > pinnedArtifactsLimit && (
-                <IonButton onClick={showMorePinned} fill="clear" size="small">
+                <IonButton
+                  onClick={showMorePinned}
+                  fill="clear"
+                  size="small"
+                  expand="full"
+                >
                   <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
                 </IonButton>
               )}
@@ -270,7 +275,7 @@ export const LeftSideMenu: React.FC = () => {
       {!!recentlyUpdatedArtifacts.length &&
         getPreference(PreferenceNames.LeftPaneShowRecentArtifacts) && (
           <IonCard>
-            <IonList>
+            <IonList class="ion-no-padding">
               <IonListHeader lines="full">
                 <IonIcon icon={telescope} />
                 &nbsp;&nbsp;
@@ -302,7 +307,12 @@ export const LeftSideMenu: React.FC = () => {
                 ))}
               {recentlyUpdatedArtifacts.length >
                 recentlyUpdatedArtifactsLimit && (
-                <IonButton onClick={showMoreRecent} fill="clear" size="small">
+                <IonButton
+                  onClick={showMoreRecent}
+                  fill="clear"
+                  size="small"
+                  expand="full"
+                >
                   <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
                 </IonButton>
               )}
@@ -313,7 +323,7 @@ export const LeftSideMenu: React.FC = () => {
       {!!recentlyUpdatedThreads.length &&
         getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (
           <IonCard>
-            <IonList>
+            <IonList class="ion-no-padding">
               <IonListHeader lines="full">
                 <IonIcon icon={chatboxEllipses} />
                 &nbsp;&nbsp;
@@ -344,7 +354,12 @@ export const LeftSideMenu: React.FC = () => {
                   </CompactIonItem>
                 ))}
               {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
-                <IonButton onClick={showMoreThreads} fill="clear" size="small">
+                <IonButton
+                  onClick={showMoreThreads}
+                  fill="clear"
+                  size="small"
+                  expand="full"
+                >
                   <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
                 </IonButton>
               )}
