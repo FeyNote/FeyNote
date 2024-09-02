@@ -98,8 +98,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     GapcursorExtension,
     LinkExtension,
     TableExtension.configure({
-      resizable: true,
-      allowTableNodeSelection: true,
+      resizable: false,
+      allowTableNodeSelection: false,
     }),
     TableRowExtension,
     TableHeaderExtension,
