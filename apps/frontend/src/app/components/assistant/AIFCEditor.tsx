@@ -5,7 +5,14 @@ import { useArtifactEditor } from '../editor/useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
 import { useEffect } from 'react';
 import { tiptapToolCallBuilder } from '@feynote/shared-utils';
+import { copyOutline } from 'ionicons/icons';
 import type { ToolInvocation } from 'ai';
+import { IonButton, IonButtons, IonIcon } from '@ionic/react';
+import styled from 'styled-components';
+
+const PaddedEditor = styled(EditorContent)`
+  max-width: min-content;
+`;
 
 interface Props {
   toolInvocation: ToolInvocation;
@@ -28,11 +35,28 @@ export const AIFCEditor: React.FC<Props> = ({ toolInvocation }) => {
     }
   }, [editor, toolInvocation]);
 
+  const copyEditorContent = () => {
+    const editorHtml = editor?.getHTML();
+    if (!editorHtml) return;
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': editorHtml,
+      }),
+    ]);
+  };
+
   return (
-    <ArtifactEditorContainer>
-      <ArtifactEditorStyles data-theme="classic">
-        <EditorContent editor={editor}></EditorContent>
-      </ArtifactEditorStyles>
-    </ArtifactEditorContainer>
+    <>
+      <ArtifactEditorContainer>
+        <ArtifactEditorStyles data-theme="classic">
+          <PaddedEditor editor={editor}></PaddedEditor>
+        </ArtifactEditorStyles>
+      </ArtifactEditorContainer>
+      <IonButtons>
+        <IonButton onClick={() => copyEditorContent()}>
+          <IonIcon slot="icon-only" icon={copyOutline} />
+        </IonButton>
+      </IonButtons>
+    </>
   );
 };
