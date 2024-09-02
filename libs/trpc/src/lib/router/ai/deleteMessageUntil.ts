@@ -3,10 +3,10 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
-export const deleteMessagesSince = authenticatedProcedure
+export const deleteMessageUntil = authenticatedProcedure
   .input(
     z.object({
-      messageId: z.string(),
+      id: z.string(),
       threadId: z.string(),
     }),
   )
@@ -25,11 +25,11 @@ export const deleteMessagesSince = authenticatedProcedure
         createdAt: 'desc',
       },
     });
-    const messageToDeleteIndex = messages.findIndex(
-      (message) => message.id === input.messageId,
+    const messageIndex = messages.findIndex(
+      (message) => message.id === input.id,
     );
     const messageIdsToDelete = messages
-      .slice(0, messageToDeleteIndex + 1)
+      .slice(0, messageIndex + 1)
       .map((message) => message.id);
     await prisma.message.deleteMany({
       where: {
@@ -38,4 +38,6 @@ export const deleteMessagesSince = authenticatedProcedure
         },
       },
     });
+    const userMessage = messages[messageIndex];
+    return (userMessage.json as any).content || '';
   });

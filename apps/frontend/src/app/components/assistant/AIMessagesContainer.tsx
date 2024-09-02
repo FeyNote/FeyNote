@@ -1,9 +1,9 @@
-import { IonButton, IonButtons, IonIcon, IonLabel } from '@ionic/react';
+import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
-import { personCircle, arrowUndoOutline } from 'ionicons/icons';
+import { personCircle } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { AIMessageRenderer } from './AIMessageRenderer';
-import type { ThreadDTOMessage } from '@feynote/prisma/types';
+import type { Message } from 'ai';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -53,25 +53,25 @@ const MessageHeader = styled(IonLabel)`
 `;
 
 interface Props {
-  messages: (ThreadDTOMessage | null)[];
+  messages: Message[];
   retryMessage: (messageId: string) => void;
+  disableRetry: boolean;
 }
 
 export const AIMessagesContainer = (props: Props) => {
   const { t } = useTranslation();
-  // TODO: Markdown to HTML Conversion https://github.com/RedChickenCo/FeyNote/issues/82
   return (
     <Scroller>
       <ScrollerContent>
         {props.messages
           .filter((message) => !!message)
-          .map((message, idx) => {
-            const isUser = message.json.role === 'user';
+          .map((message) => {
+            const isUser = message.role === 'user';
             const name = isUser
               ? t('assistant.thread.user.name')
               : t('assistant.thread.assistant.name');
             return (
-              <MessageContainer key={message.id + idx}>
+              <MessageContainer key={message.id}>
                 {isUser ? (
                   <UserIcon icon={personCircle} />
                 ) : (
@@ -79,14 +79,11 @@ export const AIMessagesContainer = (props: Props) => {
                 )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>
-                  <AIMessageRenderer messageParam={message.json} />
-                  {!isUser && (
-                    <IonButtons>
-                      <IonButton onClick={() => props.retryMessage(message.id)}>
-                        <IonIcon icon={arrowUndoOutline} />
-                      </IonButton>
-                    </IonButtons>
-                  )}
+                  <AIMessageRenderer
+                    message={message}
+                    retryMessage={props.retryMessage}
+                    disableRetry={props.disableRetry}
+                  />
                 </FlexColumn>
               </MessageContainer>
             );

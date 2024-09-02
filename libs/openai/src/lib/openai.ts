@@ -1,6 +1,7 @@
 import { globalServerConfig } from '@feynote/config';
-import OpenAI from 'openai';
+import { createOpenAI } from '@ai-sdk/openai';
 
-export const openai = new OpenAI({
+export const openai = createOpenAI({
+  compatibility: 'strict', // strict mode, enable when using the OpenAI API
   apiKey: globalServerConfig.openai.apiKey,
 });

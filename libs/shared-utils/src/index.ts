@@ -17,7 +17,6 @@ export * from './lib/tiptap-tools/patchJsonContentWithReferenceText';
 export * from './lib/tiptap-tools/randomizeJSONContentUUIDs';
 export * from './lib/tool-calls/tools/generate5eMonster';
 export * from './lib/tool-calls/tiptapToolCallBuilder';
-export * from './lib/tool-calls/streamDelimiter';
 export * from './lib/ARTIFACT_META_KEY';
 export * from './lib/yjs/constructYArtifact';
 export * from './lib/yjs/getMetaFromYArtifact';

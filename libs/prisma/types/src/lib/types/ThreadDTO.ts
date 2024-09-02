@@ -1,8 +1,8 @@
-import { type ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+import type { Message } from 'ai';
 
 export interface ThreadDTOMessage {
   id: string;
-  json: ChatCompletionMessageParam;
+  json: Message;
 }
 
 export interface ThreadDTO {

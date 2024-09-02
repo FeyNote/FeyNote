@@ -1,14 +1,12 @@
 import { isSessionExpired } from '@feynote/api-services';
 import {
-  generateThreadName,
-  generateAssistantResponseStream,
   systemMessage,
-  OpenAIModel,
+  Model,
+  generateAssistantStreamText,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
-import { StreamDelimiter, StreamReplacement } from '@feynote/shared-utils';
-import type { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
+import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';
 
 export async function createMessage(req: Request, res: Response) {
   let token = req.headers.authorization;
@@ -27,62 +25,33 @@ export async function createMessage(req: Request, res: Response) {
       .send('Session not found or expired with the provided token');
   }
 
-  const query = req.body['query'];
-  const threadId = req.body['threadId'];
-  if (!query || !threadId) {
+  const requestMessages = req.body['messages'];
+  if (!requestMessages || !requestMessages.length) {
     return res
       .status(404)
-      .send('"threadId" and "query" are required body arguments');
+      .send('"messages" property is required in the request body');
   }
 
-  const thread = await prisma.thread.findFirst({
-    where: { id: threadId, userId: session.userId },
-  });
-  if (!thread) return res.status(404).send('Thread not found for the given id');
-
-  const stream = await generateAssistantResponseStream(
+  const messages = convertToCoreMessages([
     systemMessage.ttrpgAssistant,
-    query,
-    threadId,
-    OpenAIModel.GPT4,
+    ...requestMessages,
+  ]);
+  const stream = await generateAssistantStreamText(messages, Model.GPT4);
+
+  const data = new StreamData();
+  streamToResponse(
+    stream.toAIStream({
+      onFinal() {
+        data.close();
+      },
+    }),
+    res,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Transfer-Encoding': 'chunked',
+      },
+    },
+    data,
   );
-
-  res.writeHead(200, {
-    'Content-Type': 'application/json',
-    'Transfer-Encoding': 'chunked',
-  });
-
-  for await (const chunk of stream) {
-    const messageDelta = chunk.choices[0]?.delta;
-    const messageStr = JSON.stringify(messageDelta);
-    messageStr.replace(RegExp(StreamDelimiter, 'g'), StreamReplacement);
-    res.write(JSON.stringify(messageDelta) + StreamDelimiter);
-  }
-
-  let createdAt = new Date();
-  // Remove the system message
-  const messages = stream.messages.slice(1).map((message, idx) => ({
-    threadId: thread.id,
-    json: message as unknown as Prisma.InputJsonValue,
-    createdAt: new Date(createdAt.getTime() + idx),
-  }));
-
-  console.log('formatted openai messages', JSON.stringify(messages));
-
-  await prisma.message.createMany({
-    data: messages,
-  });
-
-  if (!thread.title) {
-    const title = await generateThreadName(threadId);
-    if (title) {
-      await prisma.thread.update({
-        where: { id: threadId },
-        data: {
-          title,
-        },
-      });
-    }
-  }
-  res.end();
 }

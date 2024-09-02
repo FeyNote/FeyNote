@@ -1,38 +1,65 @@
-import type { ChatCompletionMessageParam } from 'openai/resources';
 import { starkdown } from 'starkdown';
-import { tiptapToolCallBuilder } from '@feynote/shared-utils';
 import { AIFCEditor } from './AIFCEditor';
+import type { Message } from 'ai';
+import { useMemo } from 'react';
+import { FunctionName } from '@feynote/shared-utils';
+import { IonButton, IonButtons, IonIcon } from '@ionic/react';
+import { arrowUndoOutline } from 'ionicons/icons';
+import styled from 'styled-components';
+
+const MessageContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
 
 interface Props {
-  messageParam: ChatCompletionMessageParam;
+  message: Message;
+  retryMessage: (messageId: string) => void;
+  disableRetry: boolean;
 }
 
-export const AIMessageRenderer = ({ messageParam }: Props) => {
-  if (messageParam.role === 'user')
-    return (
-      <div
-        dangerouslySetInnerHTML={{
-          __html: starkdown(messageParam.content as string),
-        }}
-      ></div>
+export const AIMessageRenderer = ({
+  disableRetry,
+  message,
+  retryMessage,
+}: Props) => {
+  const toolInvocationsToDisplay = useMemo(() => {
+    if (!message.toolInvocations) return null;
+    return message.toolInvocations.filter((invocation) =>
+      Object.values<string>(FunctionName).includes(invocation.toolName),
     );
-  if (messageParam.role === 'assistant' && messageParam.tool_calls) {
-    const tiptapContent = messageParam.tool_calls.map((call) =>
-      tiptapToolCallBuilder(call.function),
-    );
+  }, [message]);
+  if (toolInvocationsToDisplay) {
     return (
       <>
-        {tiptapContent.map((content, idx) => (
-          <AIFCEditor key={idx} content={content} />
-        ))}
+        {toolInvocationsToDisplay.map((toolInvocation) => {
+          return (
+            <AIFCEditor
+              key={toolInvocation.toolCallId}
+              toolInvocation={toolInvocation}
+            />
+          );
+        })}
       </>
     );
   }
   return (
-    <div
-      dangerouslySetInnerHTML={{
-        __html: starkdown(messageParam.content || ''),
-      }}
-    ></div>
+    <MessageContainer>
+      <div
+        dangerouslySetInnerHTML={{
+          __html: starkdown(message.content || ''),
+        }}
+      ></div>
+      {message.role === 'user' && (
+        <IonButtons>
+          <IonButton
+            disabled={disableRetry}
+            onClick={() => retryMessage(message.id)}
+          >
+            <IonIcon icon={arrowUndoOutline} />
+          </IonButton>
+        </IonButtons>
+      )}
+    </MessageContainer>
   );
 };

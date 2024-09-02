@@ -1,13 +1,17 @@
-import type { ChatCompletionMessageToolCall } from 'openai/resources';
-import type { Generated5eMonster } from './tools/generate5eMonster';
+import {
+  Generate5eMonsterSchema,
+  type Generate5eMonsterParams,
+} from './tools/generate5eMonster';
 import { convert5eMonsterToTipTap } from './converters/convert5eMonsterToTipTap';
+import { parse } from 'best-effort-json-parser';
+import type { ToolInvocation } from 'ai';
 
 export enum FunctionName {
   Generate5eMonster = 'generate5eMonster',
 }
 
 interface FunctionNameToToolCallResult {
-  [FunctionName.Generate5eMonster]: Generated5eMonster;
+  [FunctionName.Generate5eMonster]: Generate5eMonsterParams;
 }
 
 interface FunctionNameToBuildResult {
@@ -22,13 +26,9 @@ const generatorFnsByFunctionName = {
   ) => FunctionNameToBuildResult[key];
 };
 
-export const tiptapToolCallBuilder = (
-  func: ChatCompletionMessageToolCall.Function,
-) => {
-  const tiptapContent = build(
-    func.name as FunctionName,
-    JSON.parse(func.arguments),
-  );
+export const tiptapToolCallBuilder = (invocation: ToolInvocation) => {
+  const fncName = invocation.toolName as FunctionName;
+  const tiptapContent = build(fncName, invocation.args);
   return tiptapContent;
 };
 
