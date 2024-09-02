@@ -33,6 +33,8 @@ const MonthSwitcher = styled.div`
 const NextBackButton = styled(IonButton)`
   margin-left: 16px;
   margin-right: 16px;
+
+  color: var(--editor-button-color);
 `;
 
 const MonthYearName = styled.div`
@@ -53,11 +55,23 @@ const DayTitle = styled.div`
 
 const CalendarWeek = styled.div`
   display: flex;
+
+  border-left: 1px solid var(--day-border-color);
+  border-right: 1px solid var(--day-border-color);
+  border-bottom: 1px solid var(--day-border-color);
+
+  &:first-child {
+    border-top: 1px solid var(--day-border-color);
+  }
 `;
 
 const CalendarDayContainer = styled.div`
   flex-basis: 100%;
-  border: 1px solid gray;
+  border-right: 1px solid var(--day-border-color);
+
+  &:last-child {
+    border-right: none;
+  }
 `;
 
 const CalendarDay = styled.div`
@@ -139,15 +153,17 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
               </DayTitle>
             ))}
           </DayTitlesContainer>
-          {new Array(props.weekCount || 1).fill(0).map((_, weekIdx) => (
-            <CalendarWeek key={weekIdx}>
-              {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
-                <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
-                  {renderDay(weekIdx, dayIdx)}
-                </CalendarDayContainer>
-              ))}
-            </CalendarWeek>
-          ))}
+          <div>
+            {new Array(props.weekCount || 1).fill(0).map((_, weekIdx) => (
+              <CalendarWeek key={weekIdx}>
+                {new Array(props.daysInWeek || 1).fill(0).map((_, dayIdx) => (
+                  <CalendarDayContainer key={`${weekIdx}.${dayIdx}`}>
+                    {renderDay(weekIdx, dayIdx)}
+                  </CalendarDayContainer>
+                ))}
+              </CalendarWeek>
+            ))}
+          </div>
         </CalendarBody>
       </CalendarBodyContainer>
     </CalendarContainer>

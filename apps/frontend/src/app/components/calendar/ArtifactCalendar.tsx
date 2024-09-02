@@ -27,6 +27,7 @@ import { EventContext } from '../../context/events/EventContext';
 import { useTranslation } from 'react-i18next';
 import { IonInput, IonItem } from '@ionic/react';
 import { EventName } from '../../context/events/EventName';
+import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -121,8 +122,8 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   if (!configMap) return;
 
   return (
-    <>
-      <IonItem lines="none">
+    <ArtifactCalendarStyles data-theme={theme}>
+      <IonItem lines="none" className="artifactTitle">
         <IonInput
           disabled={!props.editable}
           placeholder={t('artifactRenderer.title.placeholder')}
@@ -152,6 +153,6 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
         selectedDate={props.selectedDate}
         onDayClicked={props.onDayClicked}
       />
-    </>
+    </ArtifactCalendarStyles>
   );
 });
