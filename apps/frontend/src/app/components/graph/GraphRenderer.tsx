@@ -2,6 +2,7 @@ import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import {
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -46,6 +47,8 @@ const NODE_RADIUS = 8;
 
 interface Props {
   artifacts: ArtifactDTO[];
+  overrideHeight?: number;
+  overrideWidth?: number;
 }
 
 export const GraphRenderer: React.FC<Props> = (props) => {
@@ -143,30 +146,33 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   // add ring just for highlighted nodes
   const paintRing = useCallback(
     (node: any, ctx: CanvasRenderingContext2D) => {
-      const TEXT_APPROX_HEIGHT = 2.5;
+      // const TEXT_APPROX_HEIGHT = 2.5;
 
       ctx.beginPath();
       ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
       if (highlightNodes.has(node) || !hoverNode) {
         ctx.fillStyle = _isDarkMode ? '#888888' : '#555555';
       } else {
-        ctx.fillStyle = _isDarkMode ? '#444444' : '#aaaaaa';
+        ctx.fillStyle = _isDarkMode ? '#333333' : '#aaaaaa';
       }
       ctx.fill();
 
       if (highlightNodes.has(node) || !hoverNode) {
         ctx.fillStyle = _isDarkMode ? '#ffffff' : '#000000';
       } else {
-        ctx.fillStyle = _isDarkMode ? '#aaaaaa' : '#777777';
+        ctx.fillStyle = _isDarkMode ? '#666666' : '#777777';
       }
-      ctx.fillText(
-        node.name,
-        node.x + NODE_RADIUS,
-        node.y + TEXT_APPROX_HEIGHT,
-      );
+      ctx.textAlign = 'center';
+      ctx.fillText(node.name, node.x, node.y + NODE_RADIUS * 3);
     },
     [hoverNode],
   );
+
+  useEffect(() => {
+    forceGraphRef.current?.d3Force('link')?.distance(() => 100);
+    forceGraphRef.current?.d3Force('charge')?.distanceMax(200);
+    forceGraphRef.current?.d3Force('charge')?.strength(-250);
+  }, []);
 
   return (
     <GraphContainer ref={graphContainerRef} $nodeHovered={!!hoverNode}>
@@ -190,8 +196,9 @@ export const GraphRenderer: React.FC<Props> = (props) => {
         onNodeHover={handleNodeHover}
         onNodeClick={handleNodeClick}
         onLinkHover={handleLinkHover}
-        width={graphContainerRef.current?.offsetWidth}
-        height={graphContainerRef.current?.offsetHeight}
+        nodeLabel={() => ''}
+        width={props.overrideWidth || graphContainerRef.current?.offsetWidth}
+        height={props.overrideHeight || graphContainerRef.current?.offsetHeight}
       />
     </GraphContainer>
   );

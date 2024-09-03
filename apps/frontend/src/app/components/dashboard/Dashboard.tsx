@@ -210,7 +210,7 @@ export const Dashboard: React.FC = () => {
                 </CardTitleButton>
               </CardTitle>
               {artifacts.length ? (
-                <GraphRenderer artifacts={artifacts} />
+                <GraphRenderer artifacts={artifacts} overrideHeight={400} />
               ) : (
                 <CardNullState
                   size="small"
