@@ -96,6 +96,8 @@
   "dashboard.noPinnedArtifacts.message": "Pin an artifact using the side menu in the artifact view",
   "dashboard.noGraph.title": "Graph Empty",
   "dashboard.noGraph.message": "Create an artifact to see it in the graph!",
+  "dashboard.noRecentThreads.title": "No Threads",
+  "dashboard.noRecentThreads.message": "Click the plus button in the bottom right corner to create one!",
 
   "graph.title": "Graph",
   "graph.nullState.title": "No Artifacts",

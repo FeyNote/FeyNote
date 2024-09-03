@@ -52,6 +52,7 @@ const Card = styled(IonCard)`
 
 const CardNullState = styled(NullState)`
   padding-top: 24px;
+  padding-bottom: 24px;
 `;
 
 const CardTitleButton = styled(IonButton)`
