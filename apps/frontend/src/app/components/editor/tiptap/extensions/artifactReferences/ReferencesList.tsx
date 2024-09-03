@@ -18,7 +18,7 @@ import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
   max-height: 450px;
-  background-color: var(--ion-card-background);
+  background-color: var(--ion-card-background, #ffffff);
   border-radius: 4px;
   box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
   color: var(--ion-text-color, #000000);
@@ -37,10 +37,10 @@ const SuggestionListItem = styled.button<{
   border-radius: 4px;
 
   color: var(--ion-text-color, #000000);
-  background-color: var(--ion-card-background);
+  background-color: var(--ion-card-background, #ffffff);
   ${(props) =>
     props.$selected
-      ? `background-color: var(--ion-background-color, #ffffff);`
+      ? `background-color: var(--ion-background-color, #dddddd);`
       : ``}
   width: 100%;
   min-height: 52px;
@@ -49,7 +49,7 @@ const SuggestionListItem = styled.button<{
   padding-bottom: 6px;
 
   &:hover {
-    background-color: var(--ion-background-color, #ffffff);
+    background-color: var(--ion-background-color, #dddddd);
   }
 `;
 

@@ -2,8 +2,6 @@ import {
   IonCard,
   IonCheckbox,
   IonIcon,
-  IonItem,
-  IonLabel,
   IonListHeader,
   IonSelect,
   IonSelectOption,
@@ -24,19 +22,9 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import styled from 'styled-components';
 import { cog, link } from 'ionicons/icons';
-
-const CompactIonItem = styled(IonItem)`
-  --min-height: 34px;
-  font-size: 0.875rem;
-`;
-
-const NowrapIonLabel = styled(IonLabel)`
-  text-wrap: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-`;
+import { CompactIonItem } from '../CompactIonItem';
+import { NowrapIonLabel } from '../NowrapIonLabel';
 
 interface Props {
   artifact: ArtifactDTO;

@@ -2,7 +2,6 @@ import {
   IonButton,
   IonCard,
   IonIcon,
-  IonItem,
   IonLabel,
   IonList,
   IonListHeader,
@@ -22,6 +21,7 @@ import {
 } from '../../context/globalPane/GlobalPaneContext';
 import {
   chatboxEllipses,
+  gitNetwork,
   home,
   logOut,
   pin,
@@ -32,17 +32,8 @@ import {
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
-
-const CompactIonItem = styled(IonItem)`
-  --min-height: 34px;
-  font-size: 0.875rem;
-`;
-
-const NowrapIonLabel = styled(IonLabel)`
-  text-wrap: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-`;
+import { CompactIonItem } from '../CompactIonItem';
+import { NowrapIonLabel } from '../NowrapIonLabel';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
@@ -224,6 +215,25 @@ export const LeftSideMenu: React.FC = () => {
           <IonIcon icon={home} size="small" />
           &nbsp;&nbsp;
           <IonLabel>{t('menu.dashboard')}</IonLabel>
+        </CompactIonItem>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
+              PaneableComponent.Graph,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={gitNetwork} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.graph')}</IonLabel>
         </CompactIonItem>
       </IonCard>
 

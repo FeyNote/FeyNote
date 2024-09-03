@@ -5,26 +5,36 @@ const Container = styled.div`
   text-align: center;
 `;
 
-const Header = styled.h2`
-  font-size: 1.5rem;
+const Header = styled.h2<{
+  $size: 'small' | 'large';
+}>`
+  font-size: ${(props) => (props.$size === 'large' ? '1.5rem' : '1.1rem')};
   margin-top: 8px;
   margin-bottom: 8px;
 `;
 
 interface Props {
-  icon: string;
+  size?: 'small' | 'large';
+  icon?: string;
   title: string;
   message?: string;
   className?: string;
 }
 
 export const NullState = (props: Props) => {
+  const size = props.size || 'large';
+
   return (
     <Container className={props.className}>
-      <IonIcon icon={props.icon} size="large" />
+      {!!props.icon && (
+        <IonIcon
+          icon={props.icon}
+          size={size === 'large' ? 'large' : undefined}
+        />
+      )}
       <br />
       <div>
-        <Header>{props.title}</Header>
+        <Header $size={size}>{props.title}</Header>
         {props.message && <span>{props.message}</span>}
       </div>
     </Container>

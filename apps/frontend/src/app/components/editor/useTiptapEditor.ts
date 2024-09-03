@@ -6,7 +6,6 @@ import OrderedListExtension from '@tiptap/extension-ordered-list';
 import BulletListExtension from '@tiptap/extension-bullet-list';
 import TaskListExtension from '@tiptap/extension-task-list';
 import TaskItemExtension from '@tiptap/extension-task-item';
-import ListKeymap from '@tiptap/extension-list-keymap';
 import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
@@ -90,7 +89,6 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     TaskItemExtension.configure({
       nested: true,
     }),
-    ListKeymap,
     HardBreakExtension,
     BoldExtension,
     ItalicExtension,
@@ -98,8 +96,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     GapcursorExtension,
     LinkExtension,
     TableExtension.configure({
-      resizable: true,
-      allowTableNodeSelection: true,
+      resizable: false,
+      allowTableNodeSelection: false,
     }),
     TableRowExtension,
     TableHeaderExtension,

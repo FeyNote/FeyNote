@@ -1,19 +1,24 @@
 import {
   IonButton,
-  IonCol,
+  IonCard,
+  IonCardTitle,
   IonContent,
   IonIcon,
   IonPage,
-  IonSearchbar,
   useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { filterOutline, documentText } from 'ionicons/icons';
-import { Artifacts } from './Artifacts';
+import {
+  chatboxEllipses,
+  expand,
+  gitNetwork,
+  pin,
+  telescope,
+} from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO, type ThreadDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useProgressBar } from '../../../utils/useProgressBar';
@@ -22,127 +27,257 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { DashboardRightSideMenu } from './DashboardSideMenu';
 import { createPortal } from 'react-dom';
+import { CompactIonItem } from '../CompactIonItem';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { GraphRenderer } from '../graph/GraphRenderer';
 
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-rows: 58px auto;
-  height: calc(100% - 4px);
-`;
-
-const GridRowSearchbar = styled.div`
+const FlexContainer = styled.div`
   display: flex;
-  padding-top: 8px;
-  padding-left: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
 `;
 
-const GridRowArtifacts = styled.div`
-  overflow-y: auto;
+const CardTitle = styled(IonCardTitle)`
+  padding: 8px;
+  display: flex;
+  align-items: center;
+`;
+
+const Card = styled(IonCard)`
+  width: 350px;
+  max-height: 400px;
+  padding: 8px;
+`;
+
+const CardNullState = styled(NullState)`
+  padding-top: 24px;
+`;
+
+const CardTitleButton = styled(IonButton)`
+  margin-left: auto;
 `;
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { isPaneFocused } = useContext(PaneContext);
+  const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const [loading, setLoading] = useState(true);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
-  const [searchText, setSearchText] = useState('');
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
     [artifacts],
   );
+  const recentArtifacts = useMemo(
+    () =>
+      artifacts
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        .slice(0, 10),
+    [artifacts],
+  );
+  const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
+    ThreadDTO[]
+  >([]);
 
-  const getUserArtifacts = () => {
-    setLoading(true);
-    const progress = startProgressBar();
-    trpc.artifact.getArtifacts
+  const getUserArtifacts = async () => {
+    await trpc.artifact.getArtifacts
       .query({})
       .then((_artifacts) => {
         setArtifacts(_artifacts);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
+      });
+  };
+
+  const getUserThreads = async () => {
+    trpc.ai.getThreads
+      .query()
+      .then((threads) => {
+        setRecentlyUpdatedThreads(
+          threads.sort(
+            (a, b) =>
+              (b.messages.at(-1)?.createdAt.getTime() || 0) -
+              (a.messages.at(-1)?.createdAt.getTime() || 0),
+          ),
+        );
       })
-      .finally(() => {
-        setLoading(false);
-        progress.dismiss();
+      .catch((error) => {
+        handleTRPCErrors(error, presentToast);
       });
   };
 
   useEffect(() => {
-    getUserArtifacts();
-  }, []);
-
-  const handleSearchInput = (e: Event) => {
-    let query = '';
-    const target = e.target as HTMLIonSearchbarElement;
-    if (target) query = target.value || '';
-    setSearchText(query);
-
-    if (!query) {
-      getUserArtifacts();
-      return;
-    }
-
     const progress = startProgressBar();
-    trpc.artifact.searchArtifacts
-      .query({
-        query,
-      })
-      .then((_artifacts) => {
-        setArtifacts(_artifacts);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        progress.dismiss();
-      });
-  };
+    Promise.allSettled([getUserArtifacts(), getUserThreads()]).then(() => {
+      progress.dismiss();
+      setInitialLoadComplete(true);
+    });
+  }, []);
 
   return (
     <IonPage>
       <PaneNav title={t('dashboard.title')} />
       <IonContent>
         {ProgressBar}
-        <GridContainer>
-          <GridRowSearchbar className="ion-align-items-center">
-            <IonSearchbar
-              style={{ padding: 0 }}
-              debounce={250}
-              value={searchText}
-              onIonInput={(e) => handleSearchInput(e)}
-              placeholder={t('dashboard.searchbar.placeholder')}
-            ></IonSearchbar>
-            <IonButton fill="clear">
-              <IonIcon slot="icon-only" icon={filterOutline}></IonIcon>
-            </IonButton>
-          </GridRowSearchbar>
-          <GridRowArtifacts>
-            <IonCol>
-              {!!pinnedArtifacts.length && (
-                <Artifacts
-                  title={t('dashboard.pinnedItems.header')}
-                  artifacts={pinnedArtifacts}
+        {initialLoadComplete && (
+          <FlexContainer>
+            <Card>
+              <CardTitle>
+                <IonIcon icon={pin} />
+                &nbsp;{t('dashboard.pinned.title')}
+              </CardTitle>
+              {pinnedArtifacts.map((pinnedArtifact) => (
+                <CompactIonItem
+                  lines="none"
+                  key={pinnedArtifact.id}
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.Artifact,
+                      { id: pinnedArtifact.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  {pinnedArtifact.title}
+                </CompactIonItem>
+              ))}
+              {!pinnedArtifacts.length && (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noPinnedArtifacts.title')}
+                  message={t('dashboard.noPinnedArtifacts.message')}
                 />
               )}
-              {!!artifacts.length && (
-                <Artifacts
-                  title={t('dashboard.items.header')}
-                  artifacts={artifacts}
+            </Card>
+            <Card>
+              <CardTitle>
+                <IonIcon icon={telescope} />
+                &nbsp;{t('dashboard.recents.title')}
+              </CardTitle>
+              {recentArtifacts.map((recentArtifact) => (
+                <CompactIonItem
+                  lines="none"
+                  key={recentArtifact.id}
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.Artifact,
+                      { id: recentArtifact.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  {recentArtifact.title}
+                </CompactIonItem>
+              ))}
+              {!recentArtifacts.length && (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noRecentArtifacts.title')}
+                  message={t('dashboard.noRecentArtifacts.message')}
                 />
               )}
-              {!pinnedArtifacts.length && !artifacts.length && !loading && (
-                <NullState
-                  title={t('dashboard.noArtifacts.title')}
-                  message={t('dashboard.noArtifacts.message')}
-                  icon={documentText}
+            </Card>
+            <Card>
+              <CardTitle>
+                <IonIcon icon={gitNetwork} />
+                &nbsp;{t('dashboard.graph.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.Graph,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
+              </CardTitle>
+              {artifacts.length ? (
+                <GraphRenderer artifacts={artifacts} />
+              ) : (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noGraph.title')}
+                  message={t('dashboard.noGraph.message')}
                 />
               )}
-            </IonCol>
-          </GridRowArtifacts>
-        </GridContainer>
+            </Card>
+            {
+              // <Card>
+              //   <CardTitle>
+              //     <IonIcon icon={pricetag} />
+              //     &nbsp;{t('dashboard.tags.title')}
+              //   </CardTitle>
+              //   [Coming soon!]
+              // </Card>
+            }
+            <Card>
+              <CardTitle>
+                <IonIcon icon={chatboxEllipses} />
+                &nbsp;{t('dashboard.aiThreads.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.AIThreadsList,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
+              </CardTitle>
+              {recentlyUpdatedThreads.map((recentThread) => (
+                <CompactIonItem
+                  lines="none"
+                  key={recentThread.id}
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.AIThread,
+                      { id: recentThread.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  {recentThread.title}
+                </CompactIonItem>
+              ))}
+              {!recentlyUpdatedThreads.length && (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noRecentThreads.title')}
+                  message={t('dashboard.noRecentThreads.message')}
+                />
+              )}
+            </Card>
+          </FlexContainer>
+        )}
       </IonContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&

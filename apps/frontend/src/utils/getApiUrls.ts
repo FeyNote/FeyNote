@@ -22,7 +22,9 @@ export const getApiUrls = () => {
     return apiUrlsByEnv.development;
   }
 
-  const hostName = window.location.host;
+  // We reference self here so that we're service-worker compatible
+  // eslint-disable-next-line no-restricted-globals
+  const hostName = self.location.host;
   if (hostName in apiUrlsByEnv) {
     return apiUrlsByEnv[hostName as keyof typeof apiUrlsByEnv];
   }

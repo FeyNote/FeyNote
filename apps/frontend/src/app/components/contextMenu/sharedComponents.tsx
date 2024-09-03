@@ -19,10 +19,10 @@ export const ContextMenuItem = styled.button`
   margin-bottom: 2px;
 
   &:hover {
-    background: var(--ion-card-background);
+    background: var(--ion-card-background, #dddddd);
   }
 `;
 
 export const ContextMenuGroupDivider = styled.div`
-  border-bottom: 1px solid var(--ion-card-background);
+  border-bottom: 1px solid var(--ion-card-background, #dddddd);
 `;
