@@ -26,8 +26,6 @@ export const AIFCEditor: React.FC<Props> = (props) => {
 
   const editor = useArtifactEditor({
     editable: false,
-    knownReferences: new Map(), // TODO: Update this
-    yjsProvider: undefined,
     yDoc,
   });
 

@@ -1,6 +1,6 @@
-import { convertToCoreMessages, generateText, type CoreMessage } from 'ai';
+import { generateText, type CoreMessage } from 'ai';
 import type { Model } from './utils/Model';
-import { openai } from '@ai-sdk/openai';
+import { openai } from './openai';
 
 export async function generateAssistantText(
   messages: CoreMessage[],
