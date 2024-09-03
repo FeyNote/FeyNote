@@ -1,9 +1,5 @@
-import {
-  Generate5eMonsterSchema,
-  type Generate5eMonsterParams,
-} from './tools/generate5eMonster';
+import { type Generate5eMonsterParams } from './tools/generate5eMonster';
 import { convert5eMonsterToTipTap } from './converters/convert5eMonsterToTipTap';
-import { parse } from 'best-effort-json-parser';
 import type { ToolInvocation } from 'ai';
 
 export enum FunctionName {
