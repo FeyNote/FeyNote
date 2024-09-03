@@ -86,6 +86,7 @@
 
   "dashboard.title": "Dashboard",
   "dashboard.recents.title": "Recent Artifacts",
+  "dashboard.aiThreads.title": "Recent Threads",
   "dashboard.pinned.title": "Pinned Artifacts",
   "dashboard.graph.title": "Graph",
   "dashboard.tags.title": "Tags",
