@@ -84,8 +84,8 @@ export const GraphRenderer: React.FC<Props> = (props) => {
     }
 
     for (const link of graphData.links) {
-      const sourceNode = nodesById[link.source as any];
-      const targetNode = nodesById[link.target as any];
+      const sourceNode = nodesById[link.source];
+      const targetNode = nodesById[link.target];
       if (!sourceNode || !targetNode) {
         continue;
       }

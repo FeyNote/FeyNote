@@ -73,7 +73,7 @@ export const Dashboard: React.FC = () => {
   const recentArtifacts = useMemo(
     () =>
       artifacts
-        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
         .slice(0, 10),
     [artifacts],
   );
