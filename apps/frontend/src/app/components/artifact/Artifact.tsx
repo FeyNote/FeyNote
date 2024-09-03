@@ -11,9 +11,11 @@ import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import { EventManager } from '../../context/events/EventManager';
-import { EventContext } from '../../context/events/EventContext';
-import { EventName } from '../../context/events/EventName';
+import styled from 'styled-components';
+
+const BottomSpacer = styled.div`
+  height: 100px;
+`;
 
 interface Props {
   id: string;
@@ -71,6 +73,7 @@ export const Artifact: React.FC<Props> = (props) => {
             onTitleChange={onTitleChange}
           />
         )}
+        <BottomSpacer />
       </IonContent>
       {artifact &&
         isPaneFocused &&
