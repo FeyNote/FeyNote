@@ -3,7 +3,7 @@ import { ArtifactEditorStyles } from '../editor/ArtifactEditorStyles';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { useArtifactEditor } from '../editor/useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { tiptapToolCallBuilder } from '@feynote/shared-utils';
 import { copyOutline } from 'ionicons/icons';
 import type { ToolInvocation } from 'ai';
@@ -16,34 +16,29 @@ const PaddedEditor = styled(EditorContent)`
 
 interface Props {
   toolInvocation: ToolInvocation;
+  copy: (html: string) => void;
 }
 
-export const AIFCEditor: React.FC<Props> = ({ toolInvocation }) => {
+export const AIFCEditor: React.FC<Props> = (props) => {
+  const yDoc = useMemo(() => {
+    return new YDoc();
+  }, []);
+
   const editor = useArtifactEditor({
     editable: false,
-    knownReferences: new Map(),
+    knownReferences: new Map(), // TODO: Update this
     yjsProvider: undefined,
-    yDoc: new YDoc(),
+    yDoc,
   });
 
   useEffect(() => {
     try {
-      const content = tiptapToolCallBuilder(toolInvocation);
+      const content = tiptapToolCallBuilder(props.toolInvocation);
       editor?.commands.setContent(content);
     } catch (e) {
       console.log(e);
     }
-  }, [editor, toolInvocation]);
-
-  const copyEditorContent = () => {
-    const editorHtml = editor?.getHTML();
-    if (!editorHtml) return;
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': editorHtml,
-      }),
-    ]);
-  };
+  }, [editor, props.toolInvocation]);
 
   return (
     <>
@@ -52,11 +47,13 @@ export const AIFCEditor: React.FC<Props> = ({ toolInvocation }) => {
           <PaddedEditor editor={editor}></PaddedEditor>
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
-      <IonButtons>
-        <IonButton onClick={() => copyEditorContent()}>
-          <IonIcon slot="icon-only" icon={copyOutline} />
-        </IonButton>
-      </IonButtons>
+      {editor && (
+        <IonButtons>
+          <IonButton size="small" onClick={() => props.copy(editor.getHTML())}>
+            <IonIcon icon={copyOutline} />
+          </IonButton>
+        </IonButtons>
+      )}
     </>
   );
 };

@@ -145,6 +145,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   });
 
   useEffect(() => {
+    // Command is dependent on yjs provider being instantiated
+    if (!args.yjsProvider) return;
     editor?.commands.updateUser({
       name: session ? session.email : t('generic.anonymous'),
       color: preferredUserColor,

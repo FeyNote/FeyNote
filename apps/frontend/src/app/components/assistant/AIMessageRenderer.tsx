@@ -4,13 +4,7 @@ import type { Message } from 'ai';
 import { useMemo } from 'react';
 import { FunctionName } from '@feynote/shared-utils';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
-import { arrowUndoOutline } from 'ionicons/icons';
-import styled from 'styled-components';
-
-const MessageContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
+import { arrowUndoOutline, copyOutline } from 'ionicons/icons';
 
 interface Props {
   message: Message;
@@ -23,12 +17,25 @@ export const AIMessageRenderer = ({
   message,
   retryMessage,
 }: Props) => {
+  const messageHTML = useMemo(() => {
+    return starkdown(message.content || '');
+  }, [message.content]);
+
   const toolInvocationsToDisplay = useMemo(() => {
     if (!message.toolInvocations) return null;
     return message.toolInvocations.filter((invocation) =>
       Object.values<string>(FunctionName).includes(invocation.toolName),
     );
   }, [message]);
+
+  const copyHTMLToClipboard = (html: string) => {
+    navigator.clipboard.write([
+      new ClipboardItem({
+        'text/html': html,
+      }),
+    ]);
+  };
+
   if (toolInvocationsToDisplay) {
     return (
       <>
@@ -37,29 +44,38 @@ export const AIMessageRenderer = ({
             <AIFCEditor
               key={toolInvocation.toolCallId}
               toolInvocation={toolInvocation}
+              copy={copyHTMLToClipboard}
             />
           );
         })}
       </>
     );
   }
+
   return (
-    <MessageContainer>
+    <>
       <div
         dangerouslySetInnerHTML={{
-          __html: starkdown(message.content || ''),
+          __html: messageHTML,
         }}
       ></div>
-      {message.role === 'user' && (
-        <IonButtons>
+      <IonButtons>
+        <IonButton
+          size="small"
+          onClick={() => copyHTMLToClipboard(messageHTML)}
+        >
+          <IonIcon icon={copyOutline} />
+        </IonButton>
+        {message.role === 'user' && (
           <IonButton
             disabled={disableRetry}
+            size="small"
             onClick={() => retryMessage(message.id)}
           >
             <IonIcon icon={arrowUndoOutline} />
           </IonButton>
-        </IonButtons>
-      )}
-    </MessageContainer>
+        )}
+      </IonButtons>
+    </>
   );
 };
