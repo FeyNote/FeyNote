@@ -146,8 +146,6 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   // add ring just for highlighted nodes
   const paintRing = useCallback(
     (node: any, ctx: CanvasRenderingContext2D) => {
-      // const TEXT_APPROX_HEIGHT = 2.5;
-
       ctx.beginPath();
       ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
       if (highlightNodes.has(node) || !hoverNode) {
