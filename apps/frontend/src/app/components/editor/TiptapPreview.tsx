@@ -24,7 +24,7 @@ export const TiptapPreview: React.FC<Props> = (props) => {
   });
 
   const showEditor =
-    props.previewText !== undefined && !props.previewText.trim().length;
+    props.previewText !== undefined && props.previewText.trim().length;
   return showEditor ? (
     <ArtifactEditorContainer>
       <ArtifactEditorStyles data-theme={artifactMeta.theme}>
