@@ -58,7 +58,6 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "ai": "^3.3.11",
-    "best-effort-json-parser": "^1.1.2",
     "body-parser": "^1.20.2",
     "bullmq": "^5.7.15",
     "cors": "^2.8.5",
