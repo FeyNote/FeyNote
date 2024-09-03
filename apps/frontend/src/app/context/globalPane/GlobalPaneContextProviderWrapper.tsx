@@ -358,7 +358,9 @@ export const GlobalPaneContextProviderWrapper = ({
 
     if (
       action.type === Actions.SET_ACTIVE_TABSET ||
-      action.type === Actions.SELECT_TAB
+      action.type === Actions.SELECT_TAB ||
+      action.type === Actions.DELETE_TAB ||
+      action.type === Actions.DELETE_TABSET
     ) {
       setFocusedPaneId(getFocusedPaneId());
     }

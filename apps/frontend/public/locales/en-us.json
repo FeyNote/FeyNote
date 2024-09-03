@@ -4,6 +4,7 @@
   "menu.login": "Login",
   "menu.search": "Search",
   "menu.dashboard": "Dashboard",
+  "menu.graph": "Graph",
   "menu.assistant": "Assistant",
   "menu.pinned": "Pinned Artifacts",
   "menu.recentlyUpdatedArtifacts": "Recent Artifacts",
@@ -92,6 +93,8 @@
   "dashboard.noRecents.message": "Click the plus button in the bottom right corner to create one!",
   "dashboard.noPinned.title": "No Pinned Artifacts",
   "dashboard.noPinned.message": "Pin an artifact using the side menu in the artifact view",
+
+  "graph.title": "Graph",
 
   "newArtifact.title": "New Artifact",
   "artifact.title": "Artifact",

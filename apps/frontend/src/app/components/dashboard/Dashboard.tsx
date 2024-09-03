@@ -1,4 +1,5 @@
 import {
+  IonButton,
   IonCard,
   IonCardTitle,
   IonContent,
@@ -11,6 +12,7 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import {
   documentText,
+  expand,
   gitNetwork,
   pin,
   pricetag,
@@ -29,6 +31,8 @@ import { createPortal } from 'react-dom';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { Graph } from '../graph/Graph';
+import { GraphRenderer } from '../graph/GraphRenderer';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -44,11 +48,16 @@ const CardTitle = styled(IonCardTitle)`
 
 const Card = styled(IonCard)`
   width: 300px;
+  max-height: 400px;
   padding: 8px;
 `;
 
 const CardNullState = styled(NullState)`
   padding-top: 24px;
+`;
+
+const CardTitleButton = styled(IonButton)`
+  margin-left: auto;
 `;
 
 export const Dashboard: React.FC = () => {
@@ -163,8 +172,24 @@ export const Dashboard: React.FC = () => {
             <CardTitle>
               <IonIcon icon={gitNetwork} />
               &nbsp;{t('dashboard.graph.title')}
+              <CardTitleButton
+                onClick={(event) =>
+                  navigate(
+                    PaneableComponent.Graph,
+                    {},
+                    event.metaKey || event.ctrlKey
+                      ? PaneTransition.NewTab
+                      : PaneTransition.Push,
+                    !(event.metaKey || event.ctrlKey),
+                  )
+                }
+                size="small"
+                fill="clear"
+              >
+                <IonIcon icon={expand} size="small" />
+              </CardTitleButton>
             </CardTitle>
-            [ Graph view here ]
+            <GraphRenderer />
           </Card>
           <Card>
             <CardTitle>

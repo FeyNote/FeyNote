@@ -21,6 +21,7 @@ import {
 } from '../../context/globalPane/GlobalPaneContext';
 import {
   chatboxEllipses,
+  gitNetwork,
   home,
   logOut,
   pin,
@@ -214,6 +215,25 @@ export const LeftSideMenu: React.FC = () => {
           <IonIcon icon={home} size="small" />
           &nbsp;&nbsp;
           <IonLabel>{t('menu.dashboard')}</IonLabel>
+        </CompactIonItem>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
+              PaneableComponent.Graph,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={gitNetwork} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.graph')}</IonLabel>
         </CompactIonItem>
       </IonCard>
 

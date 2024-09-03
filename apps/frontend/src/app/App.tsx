@@ -1,5 +1,3 @@
-import { Suspense } from 'react';
-
 /* Ionic */
 import { IonApp } from '@ionic/react';
 import '@ionic/react/css/core.css';
@@ -29,7 +27,7 @@ import { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPan
 import { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 import { Workspace } from './Workspace';
 
-const SW_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
+const SW_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
 
 setupIonicReact();
 export function App() {
@@ -43,21 +41,19 @@ export function App() {
   });
 
   return (
-    <Suspense fallback="">
-      <IonApp>
-        <GlobalPaneContextProviderWrapper>
-          <SidemenuContextProviderWrapper>
+    <IonApp>
+      <GlobalPaneContextProviderWrapper>
+        <SidemenuContextProviderWrapper>
+          <PreferencesContextProviderWrapper>
             <SessionContextProviderWrapper>
-              <PreferencesContextProviderWrapper>
-                <GlobalSearchContextProviderWrapper>
-                  <Workspace />
-                </GlobalSearchContextProviderWrapper>
-              </PreferencesContextProviderWrapper>
+              <GlobalSearchContextProviderWrapper>
+                <Workspace />
+              </GlobalSearchContextProviderWrapper>
             </SessionContextProviderWrapper>
-          </SidemenuContextProviderWrapper>
-        </GlobalPaneContextProviderWrapper>
-      </IonApp>
-    </Suspense>
+          </PreferencesContextProviderWrapper>
+        </SidemenuContextProviderWrapper>
+      </GlobalPaneContextProviderWrapper>
+    </IonApp>
   );
 }
 
