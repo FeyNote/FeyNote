@@ -12,8 +12,6 @@ import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import {
   chatboxEllipses,
-  chatbubbleEllipses,
-  documentText,
   expand,
   gitNetwork,
   pin,
@@ -47,7 +45,7 @@ const CardTitle = styled(IonCardTitle)`
 `;
 
 const Card = styled(IonCard)`
-  width: 300px;
+  width: 350px;
   max-height: 400px;
   padding: 8px;
 `;
@@ -152,9 +150,9 @@ export const Dashboard: React.FC = () => {
               ))}
               {!pinnedArtifacts.length && (
                 <CardNullState
-                  title={t('dashboard.noPinned.title')}
-                  message={t('dashboard.noPinned.message')}
-                  icon={documentText}
+                  size="small"
+                  title={t('dashboard.noPinnedArtifacts.title')}
+                  message={t('dashboard.noPinnedArtifacts.message')}
                 />
               )}
             </Card>
@@ -184,9 +182,9 @@ export const Dashboard: React.FC = () => {
               ))}
               {!recentArtifacts.length && (
                 <CardNullState
-                  title={t('dashboard.noRecents.title')}
-                  message={t('dashboard.noRecents.message')}
-                  icon={documentText}
+                  size="small"
+                  title={t('dashboard.noRecentArtifacts.title')}
+                  message={t('dashboard.noRecentArtifacts.message')}
                 />
               )}
             </Card>
@@ -211,7 +209,15 @@ export const Dashboard: React.FC = () => {
                   <IonIcon icon={expand} size="small" />
                 </CardTitleButton>
               </CardTitle>
-              <GraphRenderer />
+              {artifacts.length ? (
+                <GraphRenderer artifacts={artifacts} />
+              ) : (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noGraph.title')}
+                  message={t('dashboard.noGraph.message')}
+                />
+              )}
             </Card>
             {
               // <Card>
@@ -264,9 +270,9 @@ export const Dashboard: React.FC = () => {
               ))}
               {!recentlyUpdatedThreads.length && (
                 <CardNullState
+                  size="small"
                   title={t('dashboard.noRecentThreads.title')}
                   message={t('dashboard.noRecentThreads.message')}
-                  icon={chatbubbleEllipses}
                 />
               )}
             </Card>

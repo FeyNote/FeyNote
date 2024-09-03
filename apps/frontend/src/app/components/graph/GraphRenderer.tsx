@@ -1,17 +1,13 @@
-import { useIonToast } from '@ionic/react';
 import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
 import {
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
   type ComponentProps,
 } from 'react';
 import { ArtifactDTO } from '@feynote/prisma/types';
-import { trpc } from '../../../utils/trpc';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { isDarkMode } from '../../../utils/isDarkMode';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -48,32 +44,19 @@ type FeynoteForceGraphData = NonNullable<
  */
 const NODE_RADIUS = 8;
 
-export const GraphRenderer: React.FC = () => {
-  const [presentToast] = useIonToast();
+interface Props {
+  artifacts: ArtifactDTO[];
+}
+
+export const GraphRenderer: React.FC<Props> = (props) => {
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const forceGraphRef =
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>();
   const { navigate } = useContext(PaneContext);
-  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
   const _isDarkMode = isDarkMode();
-
-  const load = () => {
-    trpc.artifact.getArtifacts
-      .query({})
-      .then((_artifacts) => {
-        setArtifacts(_artifacts);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
 
   const graphData = useMemo(() => {
     const nodesById: Record<string, FeynoteGraphNode> = {};
@@ -82,7 +65,7 @@ export const GraphRenderer: React.FC = () => {
       links: [],
     } satisfies FeynoteForceGraphData as FeynoteForceGraphData;
 
-    for (const artifact of artifacts) {
+    for (const artifact of props.artifacts) {
       const node = {
         id: artifact.id,
         name: artifact.title,
@@ -113,7 +96,7 @@ export const GraphRenderer: React.FC = () => {
     }
 
     return graphData;
-  }, [artifacts]);
+  }, [props.artifacts]);
 
   const updateHighlight = () => {
     setHighlightNodes(highlightNodes);
