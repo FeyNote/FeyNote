@@ -17,6 +17,7 @@ COPY prisma prisma
 
 RUN npx prisma generate
 
+ENV NX_NO_CLOUD=true
 RUN npx nx run-many -t build
 
 # Include version build arg within the container env
