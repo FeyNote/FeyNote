@@ -13,6 +13,7 @@ import styled from 'styled-components';
 
 const StyledEditorContent = styled(EditorContent)`
   max-width: min-content;
+  min-width: 400px;
 `;
 
 interface Props {
