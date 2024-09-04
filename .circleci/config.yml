@@ -73,7 +73,7 @@ jobs:
       - install-dependencies
       - run:
           name: build-frontend
-          command: npx nx build frontend
+          command: npx nx build frontend --skip-nx-cache
       - run:
           name: move-frontend-build
           command: mv dist/apps/frontend ./www
