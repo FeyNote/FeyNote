@@ -1,7 +1,7 @@
 import { isSessionExpired } from '@feynote/api-services';
 import {
   systemMessage,
-  Model,
+  AIModel,
   generateAssistantStreamText,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
@@ -36,7 +36,7 @@ export async function createMessage(req: Request, res: Response) {
     systemMessage.ttrpgAssistant,
     ...requestMessages,
   ]);
-  const stream = await generateAssistantStreamText(messages, Model.GPT4);
+  const stream = await generateAssistantStreamText(messages, AIModel.GPT4);
 
   const data = new StreamData();
   streamToResponse(

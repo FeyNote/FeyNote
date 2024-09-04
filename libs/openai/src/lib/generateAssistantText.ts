@@ -1,10 +1,10 @@
 import { generateText, type CoreMessage } from 'ai';
-import type { Model } from './utils/Model';
+import type { AIModel } from './utils/AIModel';
 import { openai } from './openai';
 
 export async function generateAssistantText(
   messages: CoreMessage[],
-  model: Model,
+  model: AIModel,
 ) {
   const { text } = await generateText({
     model: openai(model),

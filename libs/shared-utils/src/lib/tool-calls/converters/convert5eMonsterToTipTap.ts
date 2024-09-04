@@ -15,14 +15,14 @@ export const convert5eMonsterToTipTap = (
           content: [{ type: 'text', text: generatedMonster.header.name }],
         });
       }
-      if (generatedMonster.header.allignment) {
+      if (generatedMonster.header.alignment) {
         tiptapContent.push({
           type: 'paragraph',
           content: [
             {
               type: 'text',
               marks: [{ type: 'italic' }],
-              text: generatedMonster.header.allignment,
+              text: generatedMonster.header.alignment,
             },
           ],
         });

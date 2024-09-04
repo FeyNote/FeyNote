@@ -65,6 +65,9 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
+  const knownReferences = useMemo(() => {
+    return args.knownReferences ? args.knownReferences : new Map();
+  }, [args.knownReferences]);
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
@@ -118,13 +121,9 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
         ]
       : []),
     CommandsExtension,
-    ...(args.knownReferences
-      ? [
-          ArtifactReferencesExtension.configure({
-            knownReferences: args.knownReferences,
-          }),
-        ]
-      : []),
+    ArtifactReferencesExtension.configure({
+      knownReferences,
+    }),
     PlaceholderExtension.configure({
       placeholder: args.editable
         ? t('editor.placeholder')

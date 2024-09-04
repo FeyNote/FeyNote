@@ -1,5 +1,5 @@
 import { openai } from './openai';
-import { Model } from './utils/Model';
+import { AIModel } from './utils/AIModel';
 import { streamText, type CoreMessage } from 'ai';
 import { FunctionName, Generate5eMonsterTool } from '@feynote/shared-utils';
 
@@ -9,7 +9,7 @@ const tools = {
 
 export async function generateAssistantStreamText(
   messages: CoreMessage[],
-  model: Model,
+  model: AIModel,
 ): ReturnType<typeof streamText<typeof tools>> {
   const stream = await streamText({
     model: openai(model),

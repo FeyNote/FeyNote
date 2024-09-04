@@ -4,7 +4,7 @@ import { tool } from 'ai';
 export const Generate5eMonsterSchema = z.object({
   header: z.object({
     name: z.string().describe('The name of the generated monster'),
-    allignment: z.string().describe('The allignment of the generated monster'),
+    alignment: z.string().describe('The allignment of the generated monster'),
   }),
   general: z.object({
     armorClass: z.string().describe('The Armor Class of the generated monster'),

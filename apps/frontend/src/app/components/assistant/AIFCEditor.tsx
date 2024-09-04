@@ -8,15 +8,15 @@ import { tiptapToolCallBuilder } from '@feynote/shared-utils';
 import { copyOutline } from 'ionicons/icons';
 import type { ToolInvocation } from 'ai';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
+import { copyToClipboard } from '../../../utils/copyToClipboard';
 import styled from 'styled-components';
 
-const PaddedEditor = styled(EditorContent)`
+const StyledEditorContent = styled(EditorContent)`
   max-width: min-content;
 `;
 
 interface Props {
   toolInvocation: ToolInvocation;
-  copy: (html: string) => void;
 }
 
 export const AIFCEditor: React.FC<Props> = (props) => {
@@ -42,12 +42,15 @@ export const AIFCEditor: React.FC<Props> = (props) => {
     <>
       <ArtifactEditorContainer>
         <ArtifactEditorStyles data-theme="classic">
-          <PaddedEditor editor={editor}></PaddedEditor>
+          <StyledEditorContent editor={editor}></StyledEditorContent>
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
       {editor && (
         <IonButtons>
-          <IonButton size="small" onClick={() => props.copy(editor.getHTML())}>
+          <IonButton
+            size="small"
+            onClick={() => copyToClipboard({ html: editor.getHTML() })}
+          >
             <IonIcon icon={copyOutline} />
           </IonButton>
         </IonButtons>

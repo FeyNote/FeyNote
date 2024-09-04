@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { FunctionName } from '@feynote/shared-utils';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
 import { arrowUndoOutline, copyOutline } from 'ionicons/icons';
+import { copyToClipboard } from '../../../utils/copyToClipboard';
 
 interface Props {
   message: Message;
@@ -28,14 +29,6 @@ export const AIMessageRenderer = ({
     );
   }, [message]);
 
-  const copyHTMLToClipboard = (html: string) => {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': html,
-      }),
-    ]);
-  };
-
   if (toolInvocationsToDisplay) {
     return (
       <>
@@ -44,7 +37,6 @@ export const AIMessageRenderer = ({
             <AIFCEditor
               key={toolInvocation.toolCallId}
               toolInvocation={toolInvocation}
-              copy={copyHTMLToClipboard}
             />
           );
         })}
@@ -62,7 +54,9 @@ export const AIMessageRenderer = ({
       <IonButtons>
         <IonButton
           size="small"
-          onClick={() => copyHTMLToClipboard(messageHTML)}
+          onClick={() =>
+            copyToClipboard({ html: messageHTML, plaintext: message.content })
+          }
         >
           <IonIcon icon={copyOutline} />
         </IonButton>

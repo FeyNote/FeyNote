@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
-import { generateAssistantText, Model, systemMessage } from '@feynote/openai';
+import { generateAssistantText, AIModel, systemMessage } from '@feynote/openai';
 import { threadSummary } from '@feynote/prisma/types';
 import type { CoreMessage } from 'ai';
 
@@ -27,7 +27,7 @@ export const createThreadTitle = authenticatedProcedure
     ) as CoreMessage[];
     messages = [systemMessage.nameGeneration, ...messages];
 
-    const title = await generateAssistantText(messages, Model.GPT4_MINI);
+    const title = await generateAssistantText(messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
       where: { id: thread.id },
       data: {
