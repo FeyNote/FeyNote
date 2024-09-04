@@ -1,16 +1,13 @@
-import { z } from 'zod';
+import type { Message } from 'ai';
 
-export const ThreadDTOMessageSchema = z.object({
-  id: z.string(),
-  role: z.enum(['function', 'tool', 'assistant', 'user']),
-  content: z.string(),
-  createdAt: z.date(),
-});
+export interface ThreadDTOMessage {
+  id: string;
+  json: Message;
+  createdAt: Date;
+}
 
-export const ThreadDTOSchema = z.object({
-  id: z.string(),
-  title: z.string().nullish(),
-  messages: z.array(ThreadDTOMessageSchema),
-});
-
-export type ThreadDTO = z.infer<typeof ThreadDTOSchema>;
+export interface ThreadDTO {
+  id: string;
+  title?: string;
+  messages: ThreadDTOMessage[];
+}

@@ -3,21 +3,18 @@ import {
   IonContent,
   IonIcon,
   IonPage,
-  IonProgressBar,
   IonTextarea,
-  useIonToast,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
-import {
-  handleGenericError,
-  handleTRPCErrors,
-} from '../../../utils/handleTRPCErrors';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useChat } from 'ai/react';
+import { SessionContext } from '../../context/session/SessionContext';
+import { FunctionName } from '@feynote/shared-utils';
+import type { Message } from 'ai';
 import { trpc } from '../../../utils/trpc';
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
-import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 
@@ -55,177 +52,143 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
-  const [showLoading, setShowLoading] = useState(true);
-  const [message, setMessage] = useState<string>('');
-  const [threadTitle, setThreadTitle] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [disableInput, setDisableInput] = useState<boolean>(false);
-  const [tempUserMessage, setTempUserMessage] = useState<ChatMessage | null>(
-    null,
-  );
-  const [tempAssistantMessage, setTempAssistantMessage] =
-    useState<ChatMessage | null>(null);
+  const [title, setTitle] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { session } = useContext(SessionContext);
+  const { messages, setMessages, input, setInput, append } = useChat({
+    api: '/api/message/',
+    headers: {
+      Authorization: session?.token ? `Bearer ${session.token}` : '',
+      'Content-Type': 'application/json',
+    },
+    generateId: () => {
+      return crypto.randomUUID();
+    },
+    body: {
+      threadId: props.id,
+    },
+    maxToolRoundtrips: 5,
+    onFinish: async (message, options) => {
+      if (
+        options.finishReason === 'stop' ||
+        options.finishReason === 'tool-calls'
+      ) {
+        await trpc.ai.saveMessage.mutate({
+          threadId: props.id,
+          message,
+        });
+      }
+      if (options.finishReason === 'stop') {
+        if (!title) {
+          await trpc.ai.createThreadTitle.mutate({
+            id: props.id,
+          });
 
-  useEffect(() => {
-    setShowLoading(true);
+          await getThreadInfo();
+        }
+      }
+    },
+  });
 
-    getThreadInfo().then(() => setShowLoading(false));
-  }, []);
+  const messagesToRender = useMemo(() => {
+    return messages.filter((message) => {
+      const containsDisplayableToolCall =
+        message.toolInvocations &&
+        message.toolInvocations.find((toolCall) => {
+          return Object.values<string>(FunctionName).includes(
+            toolCall.toolName,
+          );
+        });
+      return message.content || containsDisplayableToolCall;
+    });
+  }, [messages]);
 
   const getThreadInfo = async () => {
-    try {
-      const threadDTO = await trpc.ai.getThread.query({
-        id: props.id,
-      });
-      setMessages(threadDTO.messages);
-      setThreadTitle(threadDTO.title || null);
-    } catch (error) {
-      handleTRPCErrors(error, presentToast);
-    }
+    const threadDTO = await trpc.ai.getThread.query({
+      id: props.id,
+    });
+    const threadMessages = threadDTO.messages.map((message) => ({
+      ...message.json,
+      id: message.id,
+    }));
+    setMessages(threadMessages);
+    setTitle(threadDTO.title || null);
   };
+
+  useEffect(() => {
+    setIsLoading(true);
+    getThreadInfo().then(() => setIsLoading(false));
+  }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      sendMessage(message);
+      submitUserQuery();
     } else {
-      const currentValue = e.currentTarget.value;
-      if (currentValue && currentValue !== message) {
-        setMessage(currentValue);
-      }
+      setInput(e.currentTarget.value || '');
     }
   };
 
-  const createMessage = async (query: string) => {
-    const session = await appIdbStorageManager.getSession();
-    const body = JSON.stringify({
-      threadId: props.id,
-      query,
-    });
-    try {
-      const response = await fetch('/api/message/', {
-        method: 'POST',
-        headers: {
-          Authorization: session?.token ? `Bearer ${session.token}` : '',
-          'Content-Type': 'application/json',
-        },
-        body,
-      });
-      const reader = response.body?.getReader();
-      if (!reader) return;
-      const tempMsg = {
-        id: 'temp',
-        role: 'assistant',
-        content: '',
-      };
-      const decoder = new TextDecoder('utf-8');
-      let streaming = true;
-      while (streaming) {
-        const { value, done } = await reader.read();
-        if (done) {
-          streaming = false;
-        }
-        const text = decoder.decode(value, { stream: true });
-        if (text) {
-          tempMsg.content += text;
-          setTempAssistantMessage({
-            ...tempMsg,
-          });
-        }
-      }
-      await getThreadInfo();
-      setTempAssistantMessage(null);
-      setDisableInput(false);
-    } catch (error) {
-      handleTRPCErrors(error, presentToast);
-      setDisableInput(false);
-    }
-  };
-
-  const sendMessage = async (query: string) => {
-    if (!query.trim()) return;
-    const tmpMsg = {
-      id: 'temp',
+  const submitUserQuery = async () => {
+    const message = {
+      content: input,
       role: 'user',
-      content: query,
-    };
-    setMessage('');
-    setTempUserMessage(tmpMsg);
-    setDisableInput(true);
-    await createMessage(query);
-    setTempUserMessage(null);
+    } as Message;
+    const response = await trpc.ai.saveMessage.mutate({
+      threadId: props.id,
+      message,
+    });
+    append({
+      ...message,
+      id: response.id,
+    });
+    setInput('');
   };
 
-  const retryMessage = (messageId: string) => {
-    // Delete Previous Message
-    const messageCopyOrderByRecent = [...messages].reverse();
-    const retryMessageIndex = messageCopyOrderByRecent.findIndex(
-      (message) => message.id === messageId,
-    );
-    // Remove all messages sent since retry
-    const remainingMessages = messageCopyOrderByRecent.slice(
-      retryMessageIndex + 1,
-    );
-    const retriedUserMessage = remainingMessages.find(
-      (message) => message.role === 'user',
-    );
-    if (!retriedUserMessage) {
-      return handleGenericError(t('generic.error'), presentToast);
-    }
-
-    setMessages(remainingMessages.reverse());
-
-    trpc.ai.deleteMessagesSince
-      .mutate({
-        messageId: retriedUserMessage.id,
-        threadId: props.id,
-      })
-      .then(() => {
-        // Resend User Prompt Previous Message
-        createMessage(retriedUserMessage.content);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-        getThreadInfo();
-      });
+  const retryMessage = async (messageId: string) => {
+    const userMessage = await trpc.ai.deleteMessageUntil.mutate({
+      id: messageId,
+      threadId: props.id,
+    });
+    await getThreadInfo();
+    setInput(userMessage);
   };
 
   return (
     <IonPage>
       <PaneNav
-        title={threadTitle || t('assistant.thread.emptyTitle')}
+        title={title || t('assistant.thread.emptyTitle')}
         popoverContents={
           <AIThreadOptionsPopover
             id={props.id}
-            title={threadTitle || t('assistant.thread.emptyTitle')}
-            setTitle={setThreadTitle}
+            title={title || t('assistant.thread.emptyTitle')}
+            setTitle={setTitle}
           />
         }
       />
       <IonContent>
-        {showLoading && <IonProgressBar type="indeterminate" />}
         <ChatContainer>
-          {!messages.length && !tempUserMessage && !tempAssistantMessage ? (
+          {!messages.length ? (
             <div style={{ height: '100%' }}>
               {
-                // TODO https://github.com/RedChickenCo/FeyNote/issues/86
+                // TODO Chat Tutorial https://github.com/RedChickenCo/FeyNote/issues/86
               }
             </div>
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
-              messages={[...messages, tempUserMessage, tempAssistantMessage]}
+              messages={messagesToRender}
+              disableRetry={isLoading}
             />
           )}
           <ChatTextContainer>
             <IonTextarea
               placeholder={t('assistant.thread.input.placeholder')}
-              value={message}
-              onKeyUp={(e) => keyUpHandler(e)}
-              disabled={disableInput}
+              value={input}
+              disabled={isLoading}
+              onKeyUp={keyUpHandler}
             />
             <SendButtonContainer>
-              <IonButton onClick={() => sendMessage(message)}>
+              <IonButton onClick={() => submitUserQuery()}>
                 <SendIcon color="white" icon={send} />
               </IonButton>
             </SendButtonContainer>

@@ -47,16 +47,16 @@ import { PreferencesContext } from '../../context/preferences/PreferencesContext
 type DocArgOptions =
   | {
       yjsProvider: TiptapCollabProvider;
-      yDoc: undefined;
+      yDoc?: undefined;
     }
   | {
-      yjsProvider: undefined;
+      yjsProvider?: undefined;
       yDoc: YDoc;
     };
 
 type UseArtifactEditorArgs = {
   editable: boolean;
-  knownReferences: Map<string, KnownArtifactReference>;
+  knownReferences?: Map<string, KnownArtifactReference>;
   onReady?: () => void;
 } & DocArgOptions;
 
@@ -64,6 +64,9 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
+  const knownReferences = useMemo(() => {
+    return args.knownReferences ? args.knownReferences : new Map();
+  }, [args.knownReferences]);
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
@@ -117,7 +120,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       : []),
     CommandsExtension,
     ArtifactReferencesExtension.configure({
-      knownReferences: args.knownReferences,
+      knownReferences,
     }),
     PlaceholderExtension.configure({
       placeholder: args.editable
@@ -143,6 +146,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   });
 
   useEffect(() => {
+    // "updateUser" command is dependent on yjs provider being instantiated
+    if (!args.yjsProvider) return;
     editor?.commands.updateUser({
       name: session ? session.email : t('generic.anonymous'),
       color: preferredUserColor,

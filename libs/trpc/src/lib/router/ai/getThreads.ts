@@ -1,7 +1,7 @@
 import {
   ThreadDTO,
-  ThreadDTOMessageSchema,
   threadSummary,
+  type ThreadDTOMessage,
 } from '@feynote/prisma/types';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
@@ -16,15 +16,9 @@ export const getThreads = authenticatedProcedure.query(
     const threadDTOs = threads.map((thread) => ({
       id: thread.id,
       title: thread.title || undefined,
-      messages: thread.messages
-        .map((message) => ({
-          id: message.id,
-          role: (message.json as unknown as any).role,
-          content: (message.json as unknown as any).content,
-          createdAt: message.createdAt,
-        }))
-        .filter((json) => ThreadDTOMessageSchema.safeParse(json)),
+      messages: thread.messages as unknown as ThreadDTOMessage[],
     }));
+
     return threadDTOs satisfies ThreadDTO[];
   },
 );

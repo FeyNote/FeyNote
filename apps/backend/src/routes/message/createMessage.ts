@@ -1,12 +1,12 @@
 import { isSessionExpired } from '@feynote/api-services';
 import {
-  generateThreadName,
-  generateAssistantResponseStream,
   systemMessage,
-  OpenAIModel,
+  AIModel,
+  generateAssistantStreamText,
 } from '@feynote/openai';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
+import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';
 
 export async function createMessage(req: Request, res: Response) {
   let token = req.headers.authorization;
@@ -25,77 +25,33 @@ export async function createMessage(req: Request, res: Response) {
       .send('Session not found or expired with the provided token');
   }
 
-  const query = req.body['query'];
-  const threadId = req.body['threadId'];
-  if (!query || !threadId) {
+  const requestMessages = req.body['messages'];
+  if (!requestMessages || !requestMessages.length) {
     return res
       .status(404)
-      .send('"threadId" and "query" are required body arguments');
+      .send('"messages" property is required in the request body');
   }
 
-  const thread = await prisma.thread.findFirst({
-    where: { id: threadId, userId: session.userId },
-  });
-  if (!thread) return res.status(404).send('Thread not found for the given id');
-  const message = {
-    role: 'user',
-    content: query,
-  };
-
-  const stream = await generateAssistantResponseStream(
+  const messages = convertToCoreMessages([
     systemMessage.ttrpgAssistant,
-    query,
-    threadId,
-    OpenAIModel.GPT4,
-  );
-  let assistantMessageContent = '';
-  res.writeHead(200, {
-    'Content-Type': 'text/plain',
-    'Transfer-Encoding': 'chunked',
-  });
+    ...requestMessages,
+  ]);
+  const stream = await generateAssistantStreamText(messages, AIModel.GPT4);
 
-  for await (const chunk of stream) {
-    const messageChunk = chunk.choices[0]?.delta?.content;
-    if (messageChunk) {
-      assistantMessageContent += messageChunk;
-      res.write(messageChunk);
-    }
-  }
-
-  const assistantMessage = {
-    role: 'assistant',
-    content: assistantMessageContent,
-  };
-  const userMessageCreatedAt = new Date();
-  const assistantMessageCreatedAt = new Date(userMessageCreatedAt);
-  assistantMessageCreatedAt.setMilliseconds(
-    userMessageCreatedAt.getMilliseconds() + 1,
-  );
-  await prisma.message.createMany({
-    data: [
-      {
-        json: message,
-        threadId,
-        createdAt: userMessageCreatedAt,
+  const data = new StreamData();
+  streamToResponse(
+    stream.toAIStream({
+      onFinal() {
+        data.close();
       },
-      {
-        json: assistantMessage,
-        threadId,
-        createdAt: assistantMessageCreatedAt,
+    }),
+    res,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'Transfer-Encoding': 'chunked',
       },
-    ],
-  });
-
-  if (!thread.title) {
-    const title = await generateThreadName(query, threadId);
-    if (title) {
-      await prisma.thread.update({
-        where: { id: threadId },
-        data: {
-          title,
-        },
-      });
-    }
-  }
-  res.end();
+    },
+    data,
+  );
 }
