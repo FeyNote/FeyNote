@@ -42,7 +42,6 @@ export const TableExtension = Table.extend({
             columnResizing({
               handleWidth: this.options.handleWidth,
               cellMinWidth: this.options.cellMinWidth,
-              // @ts-expect-error incorrect type https://github.com/ueberdosis/tiptap/blob/b0198eb14b98db5ca691bd9bfe698ffaddbc4ded/packages/extension-table/src/table.ts#L253
               View: this.options.View,
               lastColumnResizable: this.options.lastColumnResizable,
             }),
