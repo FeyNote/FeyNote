@@ -1,4 +1,4 @@
-import { ChatCompletionSystemMessageParam } from 'openai/resources/chat/completions';
+import type { Message } from 'ai';
 
 const NAME_GENERATION_MESSAGE = `Your whole purpose is to look at the content of the thread of messages provided, and reply with
 a name you think that best describes this conversation. Reply must only contain a singular name and nothing more. Try to make the name descriptive but fun.`;
@@ -8,7 +8,7 @@ Try to sound like someone who is energetic and really into ttrpg games. Above al
 
 export type SystemMessage = {
   content: typeof NAME_GENERATION_MESSAGE | typeof TTRPG_ASSISTANT_MESSAGE;
-  role: ChatCompletionSystemMessageParam['role'];
+  role: Message['role'];
 };
 
 export const systemMessage = {
