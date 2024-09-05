@@ -9,7 +9,7 @@
   "private": true,
   "dependencies": {
     "@ai-sdk/openai": "^0.0.45",
-    "@aws-sdk/client-ses": "^3.556.0",
+    "@aws-sdk/client-ses": "^3.645.0",
     "@hocuspocus/extension-database": "2.13.5",
     "@hocuspocus/extension-logger": "2.13.5",
     "@hocuspocus/extension-redis": "2.13.5",
