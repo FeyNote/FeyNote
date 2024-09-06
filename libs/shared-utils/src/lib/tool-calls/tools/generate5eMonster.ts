@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { tool } from 'ai';
 
-export const Generate5eMonsterSchema = z.object({
+const Generate5eMonsterSchema = z.object({
   header: z.object({
     name: z.string().describe('The name of the generated monster'),
     alignment: z.string().describe('The allignment of the generated monster'),

@@ -1,10 +1,21 @@
 import { openai } from './openai';
 import { AIModel } from './utils/AIModel';
 import { streamText, type CoreMessage } from 'ai';
-import { FunctionName, Generate5eMonsterTool } from '@feynote/shared-utils';
+import {
+  FunctionName,
+  Generate5eItemTool,
+  Generate5eSpellTool,
+  Generate5eMonsterTool,
+  Generate5eWeaponTool,
+  Generate5eObjectTool,
+} from '@feynote/shared-utils';
 
 const tools = {
   [FunctionName.Generate5eMonster]: Generate5eMonsterTool,
+  [FunctionName.Generate5eObject]: Generate5eObjectTool,
+  // [FunctionName.Generate5eItem]: Generate5eItemTool,
+  // [FunctionName.Generate5eSpell]: Generate5eSpellTool,
+  // [FunctionName.Generate5eWeapon]: Generate5eWeaponTool,
 };
 
 export async function generateAssistantStreamText(
