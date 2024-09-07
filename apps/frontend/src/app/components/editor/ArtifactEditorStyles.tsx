@@ -24,6 +24,10 @@ export const ArtifactEditorStyles = styled.div`
     outline: none;
   }
 
+  .ProseMirror-gapcursor:after {
+    border-top: 1px solid var(--sheet-text-color);
+  }
+
   .artifactTitle {
     --background: transparent;
     --color: var(--sheet-h1-color);
@@ -115,9 +119,7 @@ export const ArtifactEditorStyles = styled.div`
   th,
   tr,
   td {
-    --fallback-color: 0, 0, 0;
-    border: 1px solid
-      rgba(var(--ion-text-color-rgb, var(--fallback-color)), 0.4);
+    border: 1px solid var(--sheet-text-color);
   }
 
   th,
