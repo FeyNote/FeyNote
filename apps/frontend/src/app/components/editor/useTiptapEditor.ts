@@ -9,6 +9,7 @@ import TaskItemExtension from '@tiptap/extension-task-item';
 import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
+import StrikeExtension from '@tiptap/extension-strike';
 import DropcursorExtension from '@tiptap/extension-dropcursor';
 import GapcursorExtension from '@tiptap/extension-gapcursor';
 import TableRowExtension from '@tiptap/extension-table-row';
@@ -95,6 +96,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     HardBreakExtension,
     BoldExtension,
     ItalicExtension,
+    StrikeExtension,
     DropcursorExtension,
     GapcursorExtension,
     LinkExtension,
