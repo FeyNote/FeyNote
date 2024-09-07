@@ -169,31 +169,6 @@ export const ArtifactEditorStyles = styled.div`
   &[data-theme='classic'] {
     ${themeVariables.classic}
 
-    // We don't have any padding at the top of the editor, and
-    // paragraphs don't have any padding in classic mode
-    p:first-child {
-      padding-top: 16px;
-    }
-    p:last-child {
-      padding-bottom: 16px;
-    }
-
-    // Enable this to display things book-style
-    &.ident-first {
-      p {
-        text-indent: 18px;
-      }
-
-      h1 + p,
-      h2 + p,
-      h3 + p,
-      h4 + p,
-      h5 + p,
-      h6 + p {
-        text-indent: 0;
-      }
-    }
-
     background: url('/assets/parchment-background.jpg');
     background-color: #eee5ce;
     .dark & {
