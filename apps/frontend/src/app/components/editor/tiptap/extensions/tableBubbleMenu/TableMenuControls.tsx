@@ -11,46 +11,12 @@ import {
   RiLayoutRowFill,
   RiTableFill,
 } from 'react-icons/ri';
-import styled from 'styled-components';
-
-const MenuControlsContainer = styled.div`
-  display: flex;
-  background: var(--ion-background-color);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
-  padding: 2px 5px;
-  border-radius: 4px;
-`;
-
-const MenuButton = styled.button<{
-  $active?: boolean;
-}>`
-  background: ${(props) =>
-    props.$active
-      ? `var(--ion-background-color-step-150)`
-      : `var(--ion-background-color, #ffffff)`};
-  color: var(--ion-text-color, #eeeeee);
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 1.15rem;
-
-  &:hover {
-    background: var(--ion-background-color-step-100);
-  }
-
-  &:disabled {
-    color: #999999;
-  }
-
-  svg {
-    vertical-align: middle;
-  }
-`;
-
-const MenuDivider = styled.div`
-  border-right: 1px solid var(--ion-text-color, #eeeeee);
-  margin-left: 4px;
-  margin-right: 4px;
-`;
+import {
+  MenuButton,
+  MenuControlsContainer,
+  MenuDivider,
+} from '../BubbleMenuControlStyles';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   editor: Editor;
@@ -61,10 +27,12 @@ interface Props {
  * (add or delete columns or rows, merge cells, etc.).
  */
 export const TableMenuControls: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
+
   return (
     <MenuControlsContainer>
       <MenuButton
-        title={'Insert column before'}
+        title={t('editor.tableBubbleMenu.insertColBefore')}
         onClick={() => props.editor.chain().focus().addColumnBefore().run()}
         disabled={!props.editor.can().addColumnBefore()}
       >
@@ -72,7 +40,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Insert column after'}
+        title={t('editor.tableBubbleMenu.insertColAfter')}
         onClick={() => props.editor.chain().focus().addColumnAfter().run()}
         disabled={!props.editor.can().addColumnAfter()}
       >
@@ -80,7 +48,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Delete column'}
+        title={t('editor.tableBubbleMenu.deleteCol')}
         onClick={() => props.editor.chain().focus().deleteColumn().run()}
         disabled={!props.editor.can().deleteColumn()}
       >
@@ -90,7 +58,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       <MenuDivider />
 
       <MenuButton
-        title={'Insert row above'}
+        title={t('editor.tableBubbleMenu.insertRowAbove')}
         onClick={() => props.editor.chain().focus().addRowBefore().run()}
         disabled={!props.editor.can().addRowBefore()}
       >
@@ -98,7 +66,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Insert row below'}
+        title={t('editor.tableBubbleMenu.insertRowBelow')}
         onClick={() => props.editor.chain().focus().addRowAfter().run()}
         disabled={!props.editor.can().addRowAfter()}
       >
@@ -106,7 +74,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Delete row'}
+        title={t('editor.tableBubbleMenu.deleteRow')}
         onClick={() => props.editor.chain().focus().deleteRow().run()}
         disabled={!props.editor.can().deleteRow()}
       >
@@ -116,7 +84,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       <MenuDivider />
 
       <MenuButton
-        title={'Toggle header row'}
+        title={t('editor.tableBubbleMenu.toggleHeaderRow')}
         onClick={() => props.editor.chain().focus().toggleHeaderRow().run()}
         disabled={!props.editor.can().toggleHeaderRow()}
       >
@@ -124,7 +92,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Toggle header column'}
+        title={t('editor.tableBubbleMenu.toggleHeaderCol')}
         onClick={() => props.editor.chain().focus().toggleHeaderColumn().run()}
         disabled={!props.editor.can().toggleHeaderColumn()}
       >
@@ -132,7 +100,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       </MenuButton>
 
       <MenuButton
-        title={'Toggle header cell'}
+        title={t('editor.tableBubbleMenu.toggleHeaderCell')}
         onClick={() => props.editor.chain().focus().toggleHeaderCell().run()}
         disabled={!props.editor.can().toggleHeaderCell()}
         $active={props.editor.isActive('tableHeader') ?? false}
@@ -143,7 +111,7 @@ export const TableMenuControls: React.FC<Props> = (props) => {
       <MenuDivider />
 
       <MenuButton
-        title={'Delete table'}
+        title={t('editor.tableBubbleMenu.deleteTable')}
         onClick={() => props.editor.chain().focus().deleteTable().run()}
         disabled={!props.editor.can().deleteTable()}
       >

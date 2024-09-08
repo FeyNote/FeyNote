@@ -10,6 +10,8 @@ import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
 import ItalicExtension from '@tiptap/extension-italic';
 import StrikeExtension from '@tiptap/extension-strike';
+import UnderlineExtension from '@tiptap/extension-underline';
+import TextAlignExtension from '@tiptap/extension-text-align';
 import DropcursorExtension from '@tiptap/extension-dropcursor';
 import GapcursorExtension from '@tiptap/extension-gapcursor';
 import TableRowExtension from '@tiptap/extension-table-row';
@@ -97,6 +99,11 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     BoldExtension,
     ItalicExtension,
     StrikeExtension,
+    UnderlineExtension,
+    TextAlignExtension.configure({
+      types: ['heading', 'paragraph'],
+      alignments: ['left', 'center', 'right'],
+    }),
     DropcursorExtension,
     GapcursorExtension,
     LinkExtension,

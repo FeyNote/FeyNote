@@ -15,6 +15,7 @@ import { IonInput, IonItem } from '@ionic/react';
 import { EventName } from '../../context/events/EventName';
 import { useTranslation } from 'react-i18next';
 import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
+import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -88,6 +89,11 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
           ></IonInput>
         </IonItem>
         <EditorContent editor={editor}></EditorContent>
+        {editor && (
+          <BubbleMenu editor={editor}>
+            <ArtifactBubbleMenuControls editor={editor} />
+          </BubbleMenu>
+        )}
         {editor && <TableBubbleMenu editor={editor} />}
       </ArtifactEditorStyles>
     </ArtifactEditorContainer>
