@@ -60,10 +60,18 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return () => cleanup();
   }, [connection]);
 
+  // Purely for visual purposes. Permissioning occurs on the server, but we need to update the editor UI to be read/write
+  const isEditable =
+    props.artifact.userId === session.userId ||
+    props.artifact.artifactShares.some(
+      (share) =>
+        share.userId === session.userId && share.accessLevel === 'readwrite',
+    );
+
   if (props.artifact.type === 'tiptap') {
     return (
       <ArtifactEditor
-        editable={true}
+        editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         yjsProvider={connection.tiptapCollabProvider}
@@ -76,7 +84,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (props.artifact.type === 'calendar') {
     return (
       <ArtifactCalendar
-        editable={true}
+        editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         y={connection.tiptapCollabProvider}
