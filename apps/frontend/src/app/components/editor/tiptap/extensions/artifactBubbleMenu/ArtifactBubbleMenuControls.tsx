@@ -5,19 +5,42 @@ import {
   RiAlignLeft,
   RiAlignRight,
   RiBold,
+  RiH1,
+  RiH2,
+  RiH3,
+  RiH4,
+  RiH5,
+  RiH6,
   RiItalic,
   RiLink,
   RiListCheck2,
   RiListOrdered,
   RiListUnordered,
   RiStrikethrough,
+  RiText,
   RiUnderline,
 } from 'react-icons/ri';
 import {
   MenuButton,
+  MenuButtonText,
   MenuControlsContainer,
   MenuDivider,
 } from '../BubbleMenuControlStyles';
+import { useState } from 'react';
+import styled from 'styled-components';
+
+const BlockMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  background: var(--ion-background-color-step-250, #ffffff);
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  color: var(--ion-text-color, #000000);
+  font-size: 1.1rem;
+  padding: 3px;
+`;
 
 interface Props {
   editor: Editor;
@@ -29,9 +52,147 @@ interface Props {
  */
 export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const [showBlockMenu, setShowBlockMenu] = useState(false);
+
+  const getBlockIcon = () => {
+    if (props.editor.isActive('orderedList')) {
+      return <RiListOrdered />;
+    }
+    if (props.editor.isActive('bulletList')) {
+      return <RiListUnordered />;
+    }
+    if (props.editor.isActive('taskList')) {
+      return <RiListCheck2 />;
+    }
+    if (props.editor.isActive('paragraph')) {
+      return <RiText />;
+    }
+    if (props.editor.isActive('heading', { level: 1 })) {
+      return <RiH1 />;
+    }
+    if (props.editor.isActive('heading', { level: 2 })) {
+      return <RiH2 />;
+    }
+    if (props.editor.isActive('heading', { level: 3 })) {
+      return <RiH3 />;
+    }
+    if (props.editor.isActive('heading', { level: 4 })) {
+      return <RiH4 />;
+    }
+    if (props.editor.isActive('heading', { level: 5 })) {
+      return <RiH5 />;
+    }
+    if (props.editor.isActive('heading', { level: 6 })) {
+      return <RiH6 />;
+    }
+    return null;
+  };
+
+  const blockIcon = getBlockIcon();
 
   return (
-    <MenuControlsContainer>
+    <MenuControlsContainer onMouseLeave={() => setShowBlockMenu(false)}>
+      <MenuButton
+        title={t('editor.bubbleMenu.blockStyle')}
+        onClick={() => setShowBlockMenu(!showBlockMenu)}
+        disabled={!blockIcon}
+      >
+        {blockIcon || <RiText />}
+      </MenuButton>
+      {showBlockMenu && (
+        <BlockMenu>
+          <MenuButton
+            onClick={() => {
+              const chain = props.editor.chain().focus();
+              if (props.editor.isActive('bulletList')) {
+                chain.toggleBulletList();
+              }
+              if (props.editor.isActive('orderedList')) {
+                chain.toggleOrderedList();
+              }
+              if (props.editor.isActive('taskList')) {
+                chain.toggleTaskList();
+              }
+              chain.setParagraph().run();
+              setShowBlockMenu(false);
+            }}
+          >
+            <RiText />
+            <MenuButtonText>{t('editor.bubbleMenu.paragraph')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().setHeading({ level: 1 }).run(),
+              setShowBlockMenu(false)
+            )}
+          >
+            <RiH1 />
+            <MenuButtonText>{t('editor.bubbleMenu.h1')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().setHeading({ level: 2 }).run(),
+              setShowBlockMenu(false)
+            )}
+          >
+            <RiH2 />
+            <MenuButtonText>{t('editor.bubbleMenu.h2')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().setHeading({ level: 3 }).run(),
+              setShowBlockMenu(false)
+            )}
+          >
+            <RiH3 />
+            <MenuButtonText>{t('editor.bubbleMenu.h3')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().setHeading({ level: 4 }).run(),
+              setShowBlockMenu(false)
+            )}
+          >
+            <RiH4 />
+            <MenuButtonText>{t('editor.bubbleMenu.h4')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().toggleOrderedList().run(),
+              setShowBlockMenu(false)
+            )}
+            title={t('editor.bubbleMenu.numberedList.shortcut')}
+          >
+            <RiListOrdered />
+            <MenuButtonText>
+              {t('editor.bubbleMenu.numberedList')}
+            </MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().toggleBulletList().run(),
+              setShowBlockMenu(false)
+            )}
+            title={t('editor.bubbleMenu.bulletList.shortcut')}
+          >
+            <RiListUnordered />
+            <MenuButtonText>{t('editor.bubbleMenu.bulletList')}</MenuButtonText>
+          </MenuButton>
+          <MenuButton
+            onClick={() => (
+              props.editor.chain().focus().toggleTaskList().run(),
+              setShowBlockMenu(false)
+            )}
+            title={t('editor.bubbleMenu.taskList.shortcut')}
+          >
+            <RiListCheck2 />
+            <MenuButtonText>{t('editor.bubbleMenu.taskList')}</MenuButtonText>
+          </MenuButton>
+        </BlockMenu>
+      )}
+
+      <MenuDivider />
+
       <MenuButton
         title={t('editor.bubbleMenu.bold')}
         onClick={() => props.editor.chain().focus().toggleBold().run()}
@@ -97,35 +258,6 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
         $active={props.editor.isActive({ textAlign: 'right' })}
       >
         <RiAlignRight />
-      </MenuButton>
-
-      <MenuDivider />
-
-      <MenuButton
-        title={t('editor.bubbleMenu.numberedList')}
-        onClick={() => props.editor.chain().focus().toggleOrderedList().run()}
-        disabled={!props.editor.can().toggleOrderedList()}
-        $active={props.editor.isActive('orderedList')}
-      >
-        <RiListOrdered />
-      </MenuButton>
-
-      <MenuButton
-        title={t('editor.bubbleMenu.bulletList')}
-        onClick={() => props.editor.chain().focus().toggleBulletList().run()}
-        disabled={!props.editor.can().toggleBulletList()}
-        $active={props.editor.isActive('bulletList')}
-      >
-        <RiListUnordered />
-      </MenuButton>
-
-      <MenuButton
-        title={t('editor.bubbleMenu.todoList')}
-        onClick={() => props.editor.chain().focus().toggleTaskList().run()}
-        disabled={!props.editor.can().toggleTaskList()}
-        $active={props.editor.isActive('taskList')}
-      >
-        <RiListCheck2 />
       </MenuButton>
 
       <MenuDivider />
