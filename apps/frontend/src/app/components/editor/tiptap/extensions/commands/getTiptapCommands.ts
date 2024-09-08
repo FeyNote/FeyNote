@@ -29,6 +29,76 @@ export const getTiptapCommands = ({
 }) => {
   const commands = [
     {
+      title: t('editor.commandMenu.hr'),
+      keywords: ['hr', '-'],
+      subtitle: t('editor.commandMenu.hr.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: MdHorizontalRule,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setHorizontalRule().run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.table'),
+      keywords: [],
+      subtitle: t('editor.commandMenu.table.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: LuTable,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.monster'),
+      keywords: ['stats'],
+      subtitle: t('editor.commandMenu.monster.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: GiMonsterGrasp,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setMonsterStatblock().run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.wideMonster'),
+      keywords: ['stats'],
+      subtitle: t('editor.commandMenu.wideMonster.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: GiMonsterGrasp,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setMonsterStatblock(true)
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.spell'),
+      keywords: [],
+      subtitle: t('editor.commandMenu.spell.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: RxMagicWand,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setSpellSheet().run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.note'),
+      keywords: [],
+      subtitle: t('editor.commandMenu.note.subtitle'),
+      visible: !editor.isActive('table'),
+      icon: CgNotes,
+      command: ({ editor, range }: CommandArgs) => {
+        editor.chain().focus().deleteRange(range).setTTRPGNote().run();
+      },
+    },
+    {
       title: t('editor.commandMenu.h1'),
       keywords: ['h1', 'header'],
       subtitle: t('editor.commandMenu.h1.subtitle'),
@@ -116,76 +186,6 @@ export const getTiptapCommands = ({
           .deleteRange(range)
           .setHeading({ level: 6 })
           .run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.hr'),
-      keywords: ['hr', '-'],
-      subtitle: t('editor.commandMenu.hr.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: MdHorizontalRule,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).setHorizontalRule().run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.table'),
-      keywords: [],
-      subtitle: t('editor.commandMenu.table.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: LuTable,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
-          .run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.table'),
-      keywords: ['stats'],
-      subtitle: t('editor.commandMenu.table.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: GiMonsterGrasp,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).setMonsterStatblock().run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.monster'),
-      keywords: ['stats'],
-      subtitle: t('editor.commandMenu.monster.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: GiMonsterGrasp,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setMonsterStatblock(true)
-          .run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.spell'),
-      keywords: [],
-      subtitle: t('editor.commandMenu.spell.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: RxMagicWand,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).setSpellSheet().run();
-      },
-    },
-    {
-      title: t('editor.commandMenu.note'),
-      keywords: [],
-      subtitle: t('editor.commandMenu.note.subtitle'),
-      visible: !editor.isActive('table'),
-      icon: CgNotes,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).setTTRPGNote().run();
       },
     },
   ];
