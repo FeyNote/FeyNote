@@ -156,6 +156,8 @@
   "editor.bubbleMenu.alignLeft": "Align Left (Ctrl+Shift+L or CMD+Shift+L)",
   "editor.bubbleMenu.alignCenter": "Align Center (Ctrl+Shift+E or CMD+Shift+E)",
   "editor.bubbleMenu.alignRight": "Align Right (Ctrl+Shift+R or CMD+Shift+R)",
+  "editor.bubbleMenu.outdent": "Outdent (Shift+Tab)",
+  "editor.bubbleMenu.indent": "Indent (Tab)",
   "editor.bubbleMenu.setLink": "Link/Unlink URL",
   "editor.tableBubbleMenu.insertColBefore": "Insert column before",
   "editor.tableBubbleMenu.insertColAfter": "Insert column after",

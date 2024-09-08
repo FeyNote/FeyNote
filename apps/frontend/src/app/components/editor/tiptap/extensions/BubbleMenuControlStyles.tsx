@@ -5,7 +5,7 @@ export const MenuControlsContainer = styled.div`
   position: relative;
   background: var(--ion-background-color-step-250, #ffffff);
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
-  padding: 2px 5px;
+  padding: 2px 3px;
   border-radius: 4px;
 `;
 

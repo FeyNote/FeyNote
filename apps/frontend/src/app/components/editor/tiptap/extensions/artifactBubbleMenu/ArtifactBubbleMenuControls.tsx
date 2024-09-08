@@ -11,6 +11,8 @@ import {
   RiH4,
   RiH5,
   RiH6,
+  RiIndentDecrease,
+  RiIndentIncrease,
   RiItalic,
   RiLink,
   RiListCheck2,
@@ -258,6 +260,22 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
         $active={props.editor.isActive({ textAlign: 'right' })}
       >
         <RiAlignRight />
+      </MenuButton>
+
+      <MenuDivider />
+
+      <MenuButton
+        title={t('editor.bubbleMenu.outdent')}
+        onClick={() => props.editor.chain().focus().outdent().run()}
+      >
+        <RiIndentDecrease />
+      </MenuButton>
+
+      <MenuButton
+        title={t('editor.bubbleMenu.indent')}
+        onClick={() => props.editor.chain().focus().indent().run()}
+      >
+        <RiIndentIncrease />
       </MenuButton>
 
       <MenuDivider />
