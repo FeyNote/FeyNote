@@ -3,6 +3,25 @@ import { Suggestion } from '@tiptap/suggestion';
 import { getTiptapCommands } from './getTiptapCommands';
 import { renderCommandList } from './renderCommandList';
 
+// We do this to prevent a hanging / from triggering the mention menu
+// anytime the user navigates close to it. An object is necessary here so that we can pass by reference
+const commandMenuOptsRef = {
+  enableCommandMenu: false,
+};
+window.addEventListener('keydown', (event) => {
+  if (event.key === '/') {
+    commandMenuOptsRef.enableCommandMenu = true;
+  }
+  if (event.key === 'Escape') {
+    commandMenuOptsRef.enableCommandMenu = false;
+  }
+});
+window.addEventListener('mouseup', () => {
+  setTimeout(() => {
+    commandMenuOptsRef.enableCommandMenu = false;
+  });
+});
+
 export const CommandsExtension = Extension.create({
   name: 'customCommands',
 
@@ -30,7 +49,8 @@ export const CommandsExtension = Extension.create({
 }).configure({
   suggestion: {
     items: getTiptapCommands,
-    render: renderCommandList,
+    render: renderCommandList(commandMenuOptsRef),
     allowSpaces: true,
+    allow: () => commandMenuOptsRef.enableCommandMenu,
   },
 });

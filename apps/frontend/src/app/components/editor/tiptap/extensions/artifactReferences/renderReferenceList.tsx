@@ -5,46 +5,53 @@ import { ReferencesList } from './ReferencesList';
 import { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { ReferenceListItem } from './ReferenceListItem';
 
-export const renderReferenceList = () => {
-  let component: any;
-  let popup: any;
+export const renderReferenceList = (mentionMenuOptsRef: {
+  enableMentionMenu: boolean;
+}) => {
+  return () => {
+    let component: any;
+    let popup: any;
 
-  return {
-    onStart: (props: SuggestionProps<ReferenceListItem>) => {
-      component = new ReactRenderer(ReferencesList, {
-        props,
-        editor: props.editor,
-      });
+    return {
+      onStart: (props: SuggestionProps<ReferenceListItem>) => {
+        component = new ReactRenderer(ReferencesList, {
+          props,
+          editor: props.editor,
+        });
 
-      popup = tippy('body', {
-        getReferenceClientRect: props.clientRect as any,
-        appendTo: () => document.body,
-        content: component.element,
-        showOnCreate: true,
-        interactive: true,
-        trigger: 'manual',
-        placement: 'auto-end',
-      });
-    },
-    onUpdate(props: SuggestionProps<ReferenceListItem>) {
-      component.updateProps(props);
+        popup = tippy('body', {
+          getReferenceClientRect: props.clientRect as any,
+          appendTo: () => document.body,
+          content: component.element,
+          showOnCreate: true,
+          interactive: true,
+          trigger: 'manual',
+          placement: 'auto-end',
+        });
+      },
+      onUpdate(props: SuggestionProps<ReferenceListItem>) {
+        component.updateProps(props);
 
-      popup[0].setProps({
-        getReferenceClientRect: props.clientRect,
-      });
-    },
-    onKeyDown(props: SuggestionKeyDownProps) {
-      if (props.event.key === 'Escape') {
-        popup[0].hide();
+        popup[0].setProps({
+          getReferenceClientRect: props.clientRect,
+        });
+      },
+      onKeyDown(props: SuggestionKeyDownProps) {
+        if (!mentionMenuOptsRef.enableMentionMenu) return;
 
-        return true;
-      }
+        if (props.event.key === 'Escape') {
+          popup[0].hide();
 
-      return component?.ref?.onKeyDown(props);
-    },
-    onExit() {
-      popup[0].destroy();
-      component.destroy();
-    },
+          return true;
+        }
+
+        return component?.ref?.onKeyDown(props);
+      },
+      onExit() {
+        popup[0].destroy();
+        component.destroy();
+        mentionMenuOptsRef.enableMentionMenu = false;
+      },
+    };
   };
 };

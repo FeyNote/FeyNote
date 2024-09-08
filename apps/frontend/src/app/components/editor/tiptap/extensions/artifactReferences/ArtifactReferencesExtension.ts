@@ -12,6 +12,25 @@ export type ReferencePluginOptions = MentionOptions & {
   knownReferences: Map<string, KnownArtifactReference>;
 };
 
+// We do this to prevent a hanging @ from triggering the mention menu
+// anytime the user navigates close to it. An object is necessary here so that we can pass by reference
+const mentionMenuOptsRef = {
+  enableMentionMenu: false,
+};
+window.addEventListener('keydown', (event) => {
+  if (event.key === '@') {
+    mentionMenuOptsRef.enableMentionMenu = true;
+  }
+  if (event.key === 'Escape') {
+    mentionMenuOptsRef.enableMentionMenu = false;
+  }
+});
+window.addEventListener('mouseup', () => {
+  setTimeout(() => {
+    mentionMenuOptsRef.enableMentionMenu = false;
+  });
+});
+
 export const ArtifactReferencesExtension =
   Mention.extend<ReferencePluginOptions>({
     name: 'artifactReference',
@@ -90,9 +109,10 @@ export const ArtifactReferencesExtension =
   }).configure({
     suggestion: {
       items: getReferenceSuggestions,
-      render: renderReferenceList,
+      render: renderReferenceList(mentionMenuOptsRef),
       char: '@',
       allowSpaces: true,
+      allow: () => mentionMenuOptsRef.enableMentionMenu,
     },
     renderHTML({ options, node }) {
       const key = getKnownArtifactReferenceKey(
