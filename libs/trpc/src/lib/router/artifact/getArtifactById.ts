@@ -12,19 +12,26 @@ export const getArtifactById = authenticatedProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const artifact = await prisma.artifact.findUniqueOrThrow({
+    const artifact = await prisma.artifact.findUnique({
       where: {
         id: input.id,
       },
       ...artifactDetail,
     });
 
-    if (artifact.userId !== ctx.session.userId) {
+    const hasAccess =
+      artifact &&
+      (artifact?.userId === ctx.session.userId ||
+        artifact.artifactShares.some(
+          (share) => share.userId === ctx.session.userId,
+        ));
+    if (!hasAccess) {
       throw new TRPCError({
-        message: 'Artifact not visible to current user',
+        message:
+          'Artifact does not exist or is not visible to the current user',
         code: 'FORBIDDEN',
       });
     }
 
-    return artifactDetailToArtifactDTO(artifact);
+    return artifactDetailToArtifactDTO(ctx.session.userId, artifact);
   });

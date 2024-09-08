@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
 
   const getUserArtifacts = async () => {
     await trpc.artifact.getArtifacts
-      .query({})
+      .query()
       .then((_artifacts) => {
         setArtifacts(_artifacts);
       })

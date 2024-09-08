@@ -9,7 +9,7 @@ import { createArtifact } from './createArtifact';
 import { deleteArtifact } from './deleteArtifact';
 import { getArtifactYBinById } from './getArtifactYBinById';
 
-export const router = trpcRouter({
+export const artifactRouter = trpcRouter({
   getArtifactById,
   getArtifactYBinById,
   getArtifacts,

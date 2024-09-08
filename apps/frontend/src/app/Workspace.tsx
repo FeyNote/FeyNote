@@ -220,12 +220,8 @@ export const Workspace: React.FC = () => {
         title: 'Untitled',
         type,
         theme: 'default',
-        isPinned: false,
-        isTemplate: false,
         text: '',
         json: {},
-        rootTemplateId: null,
-        artifactTemplateId: null,
       })
       .then((artifact) => {
         navigate(

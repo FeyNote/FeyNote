@@ -8,7 +8,7 @@ import { deleteThread } from './deleteThread';
 import { saveMessage } from './saveMessage';
 import { createThreadTitle } from './createThreadTitle';
 
-export const router = trpcRouter({
+export const aiRouter = trpcRouter({
   deleteMessageUntil,
   createThreadTitle,
   getThreads,

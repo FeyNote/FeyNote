@@ -39,7 +39,10 @@ export const searchArtifactBlocks = authenticatedProcedure
 
     const artifactsById = artifacts.reduce<Record<string, ArtifactDTO>>(
       (artifactsById, artifact) => {
-        artifactsById[artifact.id] = artifactDetailToArtifactDTO(artifact);
+        artifactsById[artifact.id] = artifactDetailToArtifactDTO(
+          ctx.session.userId,
+          artifact,
+        );
         return artifactsById;
       },
       {},

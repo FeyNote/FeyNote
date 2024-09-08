@@ -4,7 +4,11 @@ import { generateSession } from '../session/generateSession';
 import { generatePasswordHashAndSalt } from './generatePasswordHashAndSalt';
 import { prisma } from '@feynote/prisma/client';
 
-export const register = async (email: string, password: string) => {
+export const register = async (
+  name: string,
+  email: string,
+  password: string,
+) => {
   const existingUser = await prisma.user.findFirst({
     where: { email },
   });
@@ -18,6 +22,7 @@ export const register = async (email: string, password: string) => {
   const session = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
+        name,
         passwordHash: hash,
         passwordSalt: salt,
         passwordVersion: version,

@@ -1,7 +1,9 @@
 import { router, publicProcedure } from '../trpc';
-import { router as userRouter } from './user/router';
-import { router as artifactRouter } from './artifact/router';
-import { router as aiRouter } from './ai/router';
+import { userRouter } from './user/userRouter';
+import { artifactRouter } from './artifact/artifactRouter';
+import { aiRouter } from './ai/aiRouter';
+import { artifactPinRouter } from './artifactPin/artifactPinRouter';
+import { artifactShareRouter } from './artifactShare/artifactShareRouter';
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -11,6 +13,8 @@ export const appRouter = router({
   }),
   user: userRouter,
   artifact: artifactRouter,
+  artifactPin: artifactPinRouter,
+  artifactShare: artifactShareRouter,
   ai: aiRouter,
 });
 

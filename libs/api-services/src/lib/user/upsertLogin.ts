@@ -1,12 +1,13 @@
 import { prisma } from '@feynote/prisma/client';
 import { generateSession } from '../session/generateSession';
 
-export const upsertLogin = async (email: string) => {
+export const upsertLogin = async (name: string, email: string) => {
   const user = await prisma.user.upsert({
     where: {
       email,
     },
     create: {
+      name,
       email,
     },
     update: {},

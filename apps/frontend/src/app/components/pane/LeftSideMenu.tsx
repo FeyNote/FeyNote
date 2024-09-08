@@ -109,7 +109,7 @@ export const LeftSideMenu: React.FC = () => {
 
   const load = () => {
     trpc.artifact.getArtifacts
-      .query({})
+      .query()
       .then((artifacts) => {
         setPinnedArtifacts(
           artifacts
