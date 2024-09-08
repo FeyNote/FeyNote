@@ -11,11 +11,12 @@ import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { EventContext } from '../../context/events/EventContext';
-import { IonInput, IonItem } from '@ionic/react';
+import { IonItem } from '@ionic/react';
 import { EventName } from '../../context/events/EventName';
 import { useTranslation } from 'react-i18next';
 import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
 import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
+import { ArtifactTitleInput } from './ArtifactTitleInput';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -76,7 +77,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
     <ArtifactEditorContainer>
       <ArtifactEditorStyles data-theme={theme}>
         <IonItem lines="none" className="artifactTitle">
-          <IonInput
+          <ArtifactTitleInput
             disabled={!props.editable}
             placeholder={t('artifactRenderer.title.placeholder')}
             value={title}
@@ -86,7 +87,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
               props.onTitleChange?.((event.target.value || '').toString());
             }}
             type="text"
-          ></IonInput>
+          ></ArtifactTitleInput>
         </IonItem>
         <EditorContent editor={editor}></EditorContent>
         {editor && (

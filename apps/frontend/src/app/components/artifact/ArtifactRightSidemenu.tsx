@@ -14,7 +14,7 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
@@ -28,6 +28,7 @@ import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactSharingManagementModal } from './ArtifactSharingManagementModal';
+import { getIsEditable } from '../../../utils/getIsEditable';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -101,6 +102,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         });
     }
   };
+
+  const isEditable = useMemo(
+    () => getIsEditable(props.artifact, session.userId),
+    [props.artifact, session.userId],
+  );
 
   return (
     <>
@@ -194,6 +200,12 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               {t('artifactRenderer.artifactSharedToYou.message', {
                 name: props.artifact.user.name,
               })}
+              <br />
+              {t(
+                isEditable
+                  ? 'artifactRenderer.artifactSharedToYou.readwrite'
+                  : 'artifactRenderer.artifactSharedToYou.readonly',
+              )}
             </IonLabel>
           </CompactIonItem>
         </IonCard>

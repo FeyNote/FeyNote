@@ -129,6 +129,8 @@
   "artifactRenderer.artifactSharedToYou": "Shared Artifact",
   "artifactRenderer.artifactSharedToYou.help": "This artifact doesn't belong to you, but is shared to you from another user. This user could revoke your access at any time.",
   "artifactRenderer.artifactSharedToYou.message": "Shared to you by {{name}}",
+  "artifactRenderer.artifactSharedToYou.readwrite": "You have edit access",
+  "artifactRenderer.artifactSharedToYou.readonly": "You have read-only access.",
   "artifactRenderer.theme": "Theme",
   "artifactReferencePreview.noContent": "No content",
 
