@@ -26,7 +26,7 @@ export const createArtifact = authenticatedProcedure
     });
     const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 
-    const { id } = await prisma.artifact.create({
+    const artifact = await prisma.artifact.create({
       data: {
         id: input.id,
         title: input.title,
@@ -37,11 +37,18 @@ export const createArtifact = authenticatedProcedure
         theme: input.theme,
         yBin,
       },
+      select: {
+        id: true,
+        userId: true,
+      },
     });
 
     await enqueueArtifactUpdate({
-      artifactId: id,
-      userId: ctx.session.userId,
+      artifactId: artifact.id,
+      userId: artifact.userId,
+      triggeredByUserId: ctx.session.userId,
+      oldReadableUserIds: [ctx.session.userId],
+      newReadableUserIds: [ctx.session.userId],
       oldYBinB64: yBin.toString('base64'),
       newYBinB64: yBin.toString('base64'),
     });
@@ -49,6 +56,6 @@ export const createArtifact = authenticatedProcedure
     // We only return ID since we expect frontend to fetch artifact via getArtifactById
     // rather than adding that logic here.
     return {
-      id,
+      id: artifact.id,
     };
   });

@@ -23,12 +23,21 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             id: identifier,
           },
           select: {
+            userId: true,
+            artifactShares: {
+              select: {
+                userId: true,
+              },
+            },
             yBin: true,
             json: true,
           },
         });
 
-        if (!artifact) throw new Error();
+        if (!artifact) {
+          console.error('Attempting to save artifact that does not exist');
+          throw new Error();
+        }
 
         const yBin = Buffer.from(encodeStateAsUpdate(args.document));
 
@@ -56,7 +65,16 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
 
         await enqueueArtifactUpdate({
           artifactId: identifier,
-          userId: args.context.userId,
+          userId: artifact.userId,
+          triggeredByUserId: args.context.userId,
+          oldReadableUserIds: [
+            artifact.userId,
+            ...artifact.artifactShares.map((el) => el.userId),
+          ],
+          newReadableUserIds: [
+            artifact.userId,
+            ...artifact.artifactShares.map((el) => el.userId),
+          ],
           oldYBinB64: artifact.yBin.toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });

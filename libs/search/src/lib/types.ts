@@ -6,11 +6,13 @@ export interface IndexableArtifact {
   oldState: {
     title: string;
     text: string;
+    readableUserIds: string[];
     jsonContent: JSONContent | null;
   };
   newState: {
     title: string;
     text: string;
+    readableUserIds: string[];
     jsonContent: JSONContent | null;
   };
 }
@@ -32,6 +34,7 @@ export interface SearchProvider {
 
 export interface ArtifactIndexDocument {
   userId: string;
+  readableUserIds: string[];
   title: string;
   fullText: string;
   id: string;
@@ -40,6 +43,7 @@ export interface ArtifactIndexDocument {
 export interface BlockIndexDocument {
   id: string;
   userId: string;
+  readableUserIds: string[];
   artifactId: string;
   text: string;
 }

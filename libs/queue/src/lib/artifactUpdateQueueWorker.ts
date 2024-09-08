@@ -78,11 +78,13 @@ export const artifactUpdateQueueWorker = new Worker<
             userId: args.data.userId,
             oldState: {
               title: oldTitle,
+              readableUserIds: args.data.oldReadableUserIds,
               text: getTextForJSONContent(oldJSONContent),
               jsonContent: oldJSONContent,
             },
             newState: {
               title: newTitle,
+              readableUserIds: args.data.newReadableUserIds,
               text: getTextForJSONContent(newJSONContent),
               jsonContent: newJSONContent,
             },

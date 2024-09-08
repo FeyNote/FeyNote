@@ -19,7 +19,6 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         const artifact = await prisma.artifact.findUnique({
           where: {
             id: identifier,
-            userId: args.context.userId, // TODO: Impl sharing permission check here
           },
           select: {
             title: true,
@@ -30,6 +29,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         });
 
         if (!artifact) {
+          console.error('Attempted to load artifact that does not exist!');
           throw new Error();
         }
 
