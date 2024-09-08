@@ -13,15 +13,39 @@ import {
   IonSearchbar,
   IonTitle,
   IonToolbar,
+  useIonAlert,
   useIonToast,
 } from '@ionic/react';
-import { close, person } from 'ionicons/icons';
+import { close, person, trash } from 'ionicons/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { ArtifactSharingAccessLevel } from './ArtifactSharingAccessLevel';
+import { ArtifactSharingLinkAdd } from './ArtifactSharingLinkAdd';
+import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
+import styled from 'styled-components';
+
+const ShareLinkDisplay = styled.div`
+  display: flex;
+  align-items: center;
+
+  a {
+    word-wrap: anywhere;
+  }
+
+  span {
+    white-space: nowrap;
+  }
+`;
+
+const accessLevelToI18n = {
+  coowner: 'artifactSharing.coowner',
+  noaccess: 'artifactSharing.noaccess',
+  readwrite: 'artifactSharing.readwrite',
+  readonly: 'artifactSharing.readonly',
+};
 
 interface Props {
   artifactId: string;
@@ -32,6 +56,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [presentToast] = useIonToast();
+  const [presentAlert] = useIonAlert();
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<{
     id: string;
@@ -146,9 +171,43 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
     await Promise.all([getArtifact(), getKnownUsers()]);
   };
 
+  const onArtifactShareTokenDeleteClicked = async (shareTokenId: string) => {
+    presentAlert({
+      header: t('artifactSharing.links.delete.title'),
+      message: t('artifactSharing.links.delete.message'),
+      buttons: [
+        {
+          text: t('generic.cancel'),
+        },
+        {
+          text: t('generic.delete'),
+          handler: () => {
+            deleteArtifactShareToken(shareTokenId);
+          },
+        },
+      ],
+    });
+  };
+
+  const deleteArtifactShareToken = async (shareTokenId: string) => {
+    await trpc.artifactShareToken.deleteArtifactShareToken
+      .mutate({
+        id: shareTokenId,
+      })
+      .catch((error) => {
+        handleTRPCErrors(presentToast, error);
+      });
+
+    await getArtifact();
+  };
+
   const knownUsersNotSharedTo = knownUsers.filter(
     (el) => !sharedUserIdsToAccessLevel.has(el.id),
   );
+
+  const buildShareUrl = (shareToken: string) => {
+    return `${window.location.origin}/artifact/${props.artifactId}?shareToken=${shareToken}`;
+  };
 
   if (loading || !artifact) return;
 
@@ -173,7 +232,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             <InfoButton message={t('artifactSharing.existing.help')} />
           </IonListHeader>
           {artifact.artifactShares.map((artifactShare) => (
-            <IonItem>
+            <IonItem key={artifactShare.id} lines="none">
               <IonLabel>
                 {knownUserEmailsById.get(artifactShare.userId)}
               </IonLabel>
@@ -198,7 +257,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
               <InfoButton message={t('artifactSharing.knownUsers.help')} />
             </IonListHeader>
             {knownUsersNotSharedTo.map((knownUser) => (
-              <IonItem>
+              <IonItem key={knownUser.id} lines="none">
                 <IonLabel>{knownUser.email}</IonLabel>
                 <ArtifactSharingAccessLevel
                   accessLevel={
@@ -219,7 +278,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             {t('artifactSharing.search')}
             <InfoButton message={t('artifactSharing.search.help')} />
           </IonListHeader>
-          <IonItem>
+          <IonItem lines="none">
             <IonSearchbar
               placeholder={t('artifactSharing.search.placeholder')}
               onIonInput={(event) =>
@@ -229,7 +288,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             ></IonSearchbar>
           </IonItem>
           {!loading && !searching && !!searchText.length && !!searchResult && (
-            <IonItem>
+            <IonItem lines="none">
               <IonLabel>{searchResult.email}</IonLabel>
               <ArtifactSharingAccessLevel
                 accessLevel={
@@ -240,6 +299,56 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
                 }
               />
             </IonItem>
+          )}
+          {!loading && !searching && !!searchText.length && !searchResult && (
+            <IonItem>
+              <IonLabel>{t('artifactSharing.search.noResult')}</IonLabel>
+            </IonItem>
+          )}
+        </IonCard>
+        <IonCard>
+          <IonListHeader>
+            <IonIcon icon={person} size="small" />
+            &nbsp;&nbsp;
+            {t('artifactSharing.links')}
+            <InfoButton message={t('artifactSharing.links.help')} />
+          </IonListHeader>
+          {artifact.artifactShareTokens.map((shareToken) => (
+            <IonItem key={shareToken.id} lines="none">
+              <IonLabel>
+                <ShareLinkDisplay>
+                  <a href={buildShareUrl(shareToken.shareToken)}>
+                    {buildShareUrl(shareToken.shareToken)}
+                  </a>
+                  <span>{t(accessLevelToI18n[shareToken.accessLevel])}</span>
+                  <CopyWithWebshareButton
+                    copyText={buildShareUrl(shareToken.shareToken)}
+                    webshareTitle={artifact.title}
+                    webshareURL={buildShareUrl(shareToken.shareToken)}
+                  />
+                  <IonButton
+                    color="danger"
+                    fill="clear"
+                    onClick={() =>
+                      onArtifactShareTokenDeleteClicked(shareToken.id)
+                    }
+                  >
+                    <IonIcon slot="icon-only" icon={trash} />
+                  </IonButton>
+                </ShareLinkDisplay>
+              </IonLabel>
+            </IonItem>
+          ))}
+          {!loading && !artifact.artifactShareTokens.length && (
+            <IonItem lines="none">
+              <IonLabel>{t('artifactSharing.links.null')}</IonLabel>
+            </IonItem>
+          )}
+          {!loading && (
+            <ArtifactSharingLinkAdd
+              artifactId={props.artifactId}
+              onAdded={() => getArtifact()}
+            />
           )}
         </IonCard>
       </IonContent>

@@ -139,6 +139,7 @@ model ArtifactShare {
 model ArtifactShareToken {
   id          String              @id @default(uuid()) @db.Uuid
   shareToken  String
+  allowAddToAccount  Boolean
   artifact    Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
   artifactId  String              @db.Uuid
   accessLevel ArtifactAccessLevel

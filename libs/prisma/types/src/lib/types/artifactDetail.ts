@@ -63,6 +63,14 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         accessLevel: true,
       },
     },
+    artifactShareTokens: {
+      select: {
+        id: true,
+        shareToken: true,
+        allowAddToAccount: true,
+        accessLevel: true,
+      },
+    },
     artifactPins: {
       select: {
         userId: true,
