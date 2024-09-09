@@ -1,4 +1,4 @@
-import { IonCard, IonCardHeader, IonText } from '@ionic/react';
+import { IonCard, IonCardHeader, IonContent, IonText } from '@ionic/react';
 import styled from 'styled-components';
 import { SignInWithGoogle } from './SignInWithGoogle';
 
@@ -30,4 +30,9 @@ export const SignInWithGoogleButton = styled(SignInWithGoogle)`
   padding-top: 12px;
   display: flex;
   justify-content: center;
+`;
+
+export const IonContentFantasyBackground = styled(IonContent)`
+  --background: url('/assets/czepeku_medusaswake.jpg') top center / cover
+    no-repeat fixed padding-box content-box var(--ion-background-color, #ffffff);
 `;

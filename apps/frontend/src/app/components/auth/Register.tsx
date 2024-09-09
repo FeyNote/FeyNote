@@ -21,6 +21,7 @@ import {
   CenteredIonCardHeader,
   CenteredIonInputContainer,
   CenteredIonText,
+  IonContentFantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { validateEmail, validatePassword } from '@feynote/shared-utils';
@@ -30,6 +31,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
+import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -116,15 +118,8 @@ export const Register: React.FC<Props> = (props) => {
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('auth.register.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContentFantasyBackground>
+        <LogoActionContainer />
         <CenteredIonCard>
           <CenteredIonCardHeader>
             <IonCardTitle>{t('auth.register.card.title')}</IonCardTitle>
@@ -219,7 +214,7 @@ export const Register: React.FC<Props> = (props) => {
             </IonItem>
           </IonCardContent>
         </CenteredIonCard>
-      </IonContent>
+      </IonContentFantasyBackground>
     </IonPage>
   );
 };

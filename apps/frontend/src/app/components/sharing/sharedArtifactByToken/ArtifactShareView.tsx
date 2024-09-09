@@ -1,28 +1,7 @@
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { ReadonlyArtifactViewer } from './ReadonlySimpleArtifact';
 import styled from 'styled-components';
-
-const LogoActionContainer = styled.div`
-  height: 100px;
-  padding-left: 20px;
-  padding-top: 20px;
-`;
-
-const ActionElements = styled.div`
-  display: flex;
-`;
-
-const Logo = styled.a`
-  font-size: 1.1rem;
-  color: var(--ion-text-color, #000000);
-  text-decoration: none;
-`;
+import { LogoActionContainer } from '../../sharedComponents/LogoActionContainer';
 
 const FloatingPresentation = styled.div`
   max-width: max(500px, 75%);
@@ -43,11 +22,7 @@ export const ArtifactShareView: React.FC<Props> = (props) => {
   return (
     <IonPage>
       <IonContent>
-        <LogoActionContainer>
-          <ActionElements>
-            <Logo href="https://feynote.com">FeyNote</Logo>
-          </ActionElements>
-        </LogoActionContainer>
+        <LogoActionContainer></LogoActionContainer>
         <FloatingPresentation>
           <ReadonlyArtifactViewer
             artifactId={props.artifactId}
