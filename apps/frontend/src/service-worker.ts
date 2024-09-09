@@ -165,32 +165,32 @@ registerRoute(
 registerRoute(
   /api\/trpc\/artifact\.searchArtifacts/,
   async (event) => {
-    // try {
-    //   const response = await fetch(event.request);
-    //
-    //   return response;
-    // } catch (e) {
-    const input = getTrpcInputForEvent<{ query: string }>(event);
-    if (!input || !input.query) throw new Error('No query provided');
+    try {
+      const response = await fetch(event.request);
 
-    const searchManager = await searchManagerP;
-    const searchResults = searchManager.search(input.query);
-    const artifactIds = new Set(
-      searchResults.map((searchResult) => searchResult.artifactId),
-    );
+      return response;
+    } catch (e) {
+      const input = getTrpcInputForEvent<{ query: string }>(event);
+      if (!input || !input.query) throw new Error('No query provided');
 
-    const manifestDb = await getManifestDb();
-    const results = [];
-    for (const artifactId of artifactIds) {
-      const artifact = await manifestDb.get(
-        ObjectStoreName.Artifacts,
-        artifactId,
+      const searchManager = await searchManagerP;
+      const searchResults = searchManager.search(input.query);
+      const artifactIds = new Set(
+        searchResults.map((searchResult) => searchResult.artifactId),
       );
-      results.push(artifact);
-    }
 
-    return encodeCacheResultForTrpc(results);
-    // }
+      const manifestDb = await getManifestDb();
+      const results = [];
+      for (const artifactId of artifactIds) {
+        const artifact = await manifestDb.get(
+          ObjectStoreName.Artifacts,
+          artifactId,
+        );
+        results.push(artifact);
+      }
+
+      return encodeCacheResultForTrpc(results);
+    }
   },
   'GET',
 );
