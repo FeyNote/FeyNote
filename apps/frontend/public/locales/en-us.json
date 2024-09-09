@@ -27,6 +27,14 @@
   "auth.login.button.forgot": "Forgot",
   "auth.login.switchToRegister": "Don't have an account yet? Click to register",
 
+  "notFound.title": "Page Not Found",
+  "notFound.message": "The page you requested cannot be found",
+
+  "readonlyArtifactViewer.unauthorized.header": "Critical Fail!",
+  "readonlyArtifactViewer.unauthorized.message": "To view artifacts here you'll either need to have a share link (which includes a secret key!) or be logged in to an account that can view this artifact.",
+  "readonlyArtifactViewer.notFound.header": "Nat 20 For Stealth!",
+  "readonlyArtifactViewer.notFound.message": "The artifact you're looking for either doesn't exist, or the owner of it hasn't made it publicly visible. If this link used to work, the owner of this artifact may have revoked access.",
+
   "auth.register.title": "Register",
   "auth.register.card.title": "Welcome to FeyNote!",
   "auth.register.card.subtitle": "Your dungeon awaits you...",

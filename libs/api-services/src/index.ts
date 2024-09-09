@@ -9,4 +9,5 @@ export * from './lib/artifacts/updateArtifactTitleReferenceText';
 export * from './lib/artifacts/updateArtifactOutgoingReferences';
 export * from './lib/session/isSessionExpired';
 export * from './lib/artifacts/yArtifactMetaSchema';
+export * from './lib/artifacts/hasArtifactAccess';
 export * from './lib/dto/artifactDetailToArtifactDTO';

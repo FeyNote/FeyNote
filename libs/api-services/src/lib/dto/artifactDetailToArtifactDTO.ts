@@ -3,7 +3,7 @@ import type { ArtifactDetail, ArtifactDTO } from '@feynote/prisma/types';
 const PREVIEW_TEXT_LENGTH = 150;
 
 export const artifactDetailToArtifactDTO = (
-  userId: string,
+  userId: string | undefined,
   { text, artifactPins, ...rest }: ArtifactDetail,
 ): ArtifactDTO => {
   return {

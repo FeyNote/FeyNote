@@ -26,6 +26,8 @@ import { GlobalSearchContextProviderWrapper } from './context/globalSearch/Globa
 import { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPaneContextProviderWrapper';
 import { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 import { Workspace } from './Workspace';
+import { ArtifactShareView } from './components/sharing/sharedArtifactByToken/ArtifactShareView';
+import { NotFound } from './NotFound';
 
 const SW_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
 
@@ -40,19 +42,41 @@ export function App() {
     },
   });
 
+  const path = window.location.pathname.split('/').slice(1);
+
+  if (!path.length || path[0] === '') {
+    return (
+      <IonApp>
+        <GlobalPaneContextProviderWrapper>
+          <SidemenuContextProviderWrapper>
+            <PreferencesContextProviderWrapper>
+              <SessionContextProviderWrapper>
+                <GlobalSearchContextProviderWrapper>
+                  <Workspace />
+                </GlobalSearchContextProviderWrapper>
+              </SessionContextProviderWrapper>
+            </PreferencesContextProviderWrapper>
+          </SidemenuContextProviderWrapper>
+        </GlobalPaneContextProviderWrapper>
+      </IonApp>
+    );
+  }
+
+  if (path[0] === 'artifact' && path[1]) {
+    return (
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <ArtifactShareView artifactId={path[1]} />
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    );
+  }
+
   return (
     <IonApp>
-      <GlobalPaneContextProviderWrapper>
-        <SidemenuContextProviderWrapper>
-          <PreferencesContextProviderWrapper>
-            <SessionContextProviderWrapper>
-              <GlobalSearchContextProviderWrapper>
-                <Workspace />
-              </GlobalSearchContextProviderWrapper>
-            </SessionContextProviderWrapper>
-          </PreferencesContextProviderWrapper>
-        </SidemenuContextProviderWrapper>
-      </GlobalPaneContextProviderWrapper>
+      <PreferencesContextProviderWrapper>
+        <NotFound />
+      </PreferencesContextProviderWrapper>
     </IonApp>
   );
 }

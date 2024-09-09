@@ -317,7 +317,10 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             <IonItem key={shareToken.id} lines="none">
               <IonLabel>
                 <ShareLinkDisplay>
-                  <a href={buildShareUrl(shareToken.shareToken)}>
+                  <a
+                    href={buildShareUrl(shareToken.shareToken)}
+                    target="_blank"
+                  >
                     {buildShareUrl(shareToken.shareToken)}
                   </a>
                   <span>{t(accessLevelToI18n[shareToken.accessLevel])}</span>

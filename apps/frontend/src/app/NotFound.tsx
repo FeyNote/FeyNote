@@ -7,9 +7,10 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
-import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const NotFound: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <IonPage>
       <IonHeader>
@@ -17,12 +18,10 @@ export const NotFound: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton></IonMenuButton>
           </IonButtons>
-          <IonTitle>Not Found</IonTitle>
+          <IonTitle>{t('notFound.title')}</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="ion-padding">
-        I'm sorry the route you are on does not exist.
-      </IonContent>
+      <IonContent className="ion-padding">{t('notFound.message')}</IonContent>
     </IonPage>
   );
 };

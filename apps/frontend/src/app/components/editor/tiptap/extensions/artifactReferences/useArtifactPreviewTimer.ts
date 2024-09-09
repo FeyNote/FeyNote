@@ -35,7 +35,14 @@ export const useArtifactPreviewTimer = (
         id: artifactId,
       })
       .catch((e) => {
-        handleTRPCErrors(e, presentToast);
+        handleTRPCErrors(e, presentToast, {
+          401: () => {
+            // Do nothing
+          },
+          404: () => {
+            // Do nothing
+          },
+        });
       });
     if (!_artifact) return;
 
@@ -51,7 +58,14 @@ export const useArtifactPreviewTimer = (
         id: artifactId,
       })
       .catch((e) => {
-        handleTRPCErrors(e, presentToast);
+        handleTRPCErrors(e, presentToast, {
+          401: () => {
+            // Do nothing
+          },
+          404: () => {
+            // Do nothing
+          },
+        });
       });
     if (!_artifactYBin) return;
 

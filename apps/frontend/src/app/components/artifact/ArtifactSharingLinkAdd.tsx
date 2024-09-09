@@ -1,6 +1,5 @@
 import {
   IonButton,
-  IonIcon,
   IonItem,
   IonLabel,
   IonSelect,
@@ -12,7 +11,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { add } from 'ionicons/icons';
 
 interface Props {
   artifactId: string;
