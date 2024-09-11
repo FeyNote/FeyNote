@@ -16,36 +16,43 @@ export const createArtifactShareToken = authenticatedProcedure
       expiresAt: z.date().optional(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
-    const artifact = await prisma.artifact.findUnique({
-      where: {
-        id: input.artifactId,
-        userId: ctx.session.userId,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!artifact) {
-      throw new TRPCError({
-        message: 'Artifact does not exist or is not owned by current user',
-        code: 'FORBIDDEN',
+  .mutation(
+    async ({
+      ctx,
+      input,
+    }): Promise<{
+      id: string;
+    }> => {
+      const artifact = await prisma.artifact.findUnique({
+        where: {
+          id: input.artifactId,
+          userId: ctx.session.userId,
+        },
+        select: {
+          id: true,
+        },
       });
-    }
 
-    const artifactShare = await prisma.artifactShareToken.create({
-      data: {
-        artifactId: input.artifactId,
-        accessLevel: input.accessLevel,
-        shareToken: randomBytes(SHARE_TOKEN_BYTES).toString('hex'),
-        expiresAt: input.expiresAt,
-        allowAddToAccount: input.allowAddToAccount,
-      },
-      select: {
-        id: true,
-      },
-    });
+      if (!artifact) {
+        throw new TRPCError({
+          message: 'Artifact does not exist or is not owned by current user',
+          code: 'FORBIDDEN',
+        });
+      }
 
-    return artifactShare;
-  });
+      const artifactShare = await prisma.artifactShareToken.create({
+        data: {
+          artifactId: input.artifactId,
+          accessLevel: input.accessLevel,
+          shareToken: randomBytes(SHARE_TOKEN_BYTES).toString('hex'),
+          expiresAt: input.expiresAt,
+          allowAddToAccount: input.allowAddToAccount,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      return artifactShare;
+    },
+  );

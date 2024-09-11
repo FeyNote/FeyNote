@@ -2,70 +2,72 @@ import { Manifest } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 
-export const getManifest = authenticatedProcedure.query(async ({ ctx }) => {
-  const artifactsPromise = prisma.artifact.findMany({
-    where: {
-      userId: ctx.session.userId,
-    },
-    select: {
-      id: true,
-      updatedAt: true,
-    },
-  });
+export const getManifest = authenticatedProcedure.query(
+  async ({ ctx }): Promise<Manifest> => {
+    const artifactsPromise = prisma.artifact.findMany({
+      where: {
+        userId: ctx.session.userId,
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+    });
 
-  const artifactSharesPromise = prisma.artifactShare.findMany({
-    where: {
-      userId: ctx.session.userId,
-    },
-    select: {
-      artifact: {
-        select: {
-          id: true,
-          updatedAt: true,
+    const artifactSharesPromise = prisma.artifactShare.findMany({
+      where: {
+        userId: ctx.session.userId,
+      },
+      select: {
+        artifact: {
+          select: {
+            id: true,
+            updatedAt: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  const [artifacts, artifactShares] = await Promise.all([
-    artifactsPromise,
-    artifactSharesPromise,
-  ]);
+    const [artifacts, artifactShares] = await Promise.all([
+      artifactsPromise,
+      artifactSharesPromise,
+    ]);
 
-  const allArtifactIds = artifacts
-    .map((artifact) => artifact.id)
-    .concat(artifactShares.map((artifactShare) => artifactShare.artifact.id));
+    const allArtifactIds = artifacts
+      .map((artifact) => artifact.id)
+      .concat(artifactShares.map((artifactShare) => artifactShare.artifact.id));
 
-  const relationships = await prisma.artifactReference.findMany({
-    where: {
-      artifactId: {
-        in: allArtifactIds,
+    const relationships = await prisma.artifactReference.findMany({
+      where: {
+        artifactId: {
+          in: allArtifactIds,
+        },
+        targetArtifactId: {
+          in: allArtifactIds,
+        },
       },
-      targetArtifactId: {
-        in: allArtifactIds,
+      select: {
+        artifactId: true,
+        artifactBlockId: true,
+        targetArtifactId: true,
+        targetArtifactBlockId: true,
+        referenceText: true,
       },
-    },
-    select: {
-      artifactId: true,
-      artifactBlockId: true,
-      targetArtifactId: true,
-      targetArtifactBlockId: true,
-      referenceText: true,
-    },
-  });
+    });
 
-  const manifest: Manifest = {
-    edges: relationships,
-    artifactVersions: {},
-  };
+    const manifest: Manifest = {
+      edges: relationships,
+      artifactVersions: {},
+    };
 
-  for (const artifact of artifacts) {
-    manifest.artifactVersions[artifact.id] = artifact.updatedAt.getTime();
-  }
-  for (const artifactShare of artifactShares) {
-    manifest.artifactVersions[artifactShare.artifact.id] =
-      artifactShare.artifact.updatedAt.getTime();
-  }
+    for (const artifact of artifacts) {
+      manifest.artifactVersions[artifact.id] = artifact.updatedAt.getTime();
+    }
+    for (const artifactShare of artifactShares) {
+      manifest.artifactVersions[artifactShare.artifact.id] =
+        artifactShare.artifact.updatedAt.getTime();
+    }
 
-  return manifest;
-});
+    return manifest;
+  },
+);

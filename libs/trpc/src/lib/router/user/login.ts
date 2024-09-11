@@ -7,6 +7,7 @@ import {
   UserNotFoundError,
 } from '@feynote/api-services';
 import { TRPCError } from '@trpc/server';
+import { SessionDTO } from '@feynote/shared-utils';
 
 export const login = publicProcedure
   .input(
@@ -15,7 +16,7 @@ export const login = publicProcedure
       password: z.string(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }): Promise<SessionDTO> => {
     try {
       const session = await services.login(input.email, input.password);
       return session;

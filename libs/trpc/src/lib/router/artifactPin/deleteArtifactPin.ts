@@ -8,7 +8,7 @@ export const deleteArtifactPin = authenticatedProcedure
       artifactId: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     await prisma.artifactPin.deleteMany({
       where: {
         artifactId: input.artifactId,

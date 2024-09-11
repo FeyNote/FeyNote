@@ -9,6 +9,6 @@ export const triggerPasswordReset = publicProcedure
       returnUrl: z.string(),
     }),
   )
-  .mutation(({ input }) => {
+  .mutation(({ input }): Promise<void> => {
     return services.triggerPasswordReset(input.email, input.returnUrl);
   });
