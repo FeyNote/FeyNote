@@ -25,9 +25,10 @@ import { getYMDFromSpecifier } from './getYMDFromSpecifier';
 import type { ArtifactTheme } from '@prisma/client';
 import { EventContext } from '../../context/events/EventContext';
 import { useTranslation } from 'react-i18next';
-import { IonInput, IonItem } from '@ionic/react';
+import { IonItem } from '@ionic/react';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
+import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -124,7 +125,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   return (
     <ArtifactCalendarStyles data-theme={theme}>
       <IonItem lines="none" className="artifactTitle">
-        <IonInput
+        <ArtifactTitleInput
           disabled={!props.editable}
           placeholder={t('artifactRenderer.title.placeholder')}
           value={title}
@@ -134,7 +135,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
             props.onTitleChange?.((event.target.value || '').toString());
           }}
           type="text"
-        ></IonInput>
+        ></ArtifactTitleInput>
       </IonItem>
       {props.editable && (
         <CalendarConfig

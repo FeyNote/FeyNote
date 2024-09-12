@@ -1,30 +1,44 @@
-import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail } from '@feynote/prisma/types';
-import { artifactDetailToArtifactDTO } from '@feynote/api-services';
+import { artifactDetail, ArtifactDTO } from '@feynote/prisma/types';
+import {
+  artifactDetailToArtifactDTO,
+  hasArtifactAccess,
+} from '@feynote/api-services';
+import { publicProcedure } from '../../trpc';
 
-export const getArtifactById = authenticatedProcedure
+export const getArtifactById = publicProcedure
   .input(
     z.object({
       id: z.string(),
+      shareToken: z.string().optional(),
     }),
   )
-  .query(async ({ ctx, input }) => {
-    const artifact = await prisma.artifact.findUniqueOrThrow({
+  .query(async ({ ctx, input }): Promise<ArtifactDTO> => {
+    if (!ctx.session && !input.shareToken) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+      });
+    }
+
+    const artifact = await prisma.artifact.findUnique({
       where: {
         id: input.id,
       },
       ...artifactDetail,
     });
 
-    if (artifact.userId !== ctx.session.userId) {
+    if (
+      !artifact ||
+      !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
+    ) {
       throw new TRPCError({
-        message: 'Artifact not visible to current user',
-        code: 'FORBIDDEN',
+        message:
+          'Artifact does not exist or is not visible to the current user',
+        code: 'NOT_FOUND',
       });
     }
 
-    return artifactDetailToArtifactDTO(artifact);
+    return artifactDetailToArtifactDTO(ctx.session?.userId, artifact);
   });

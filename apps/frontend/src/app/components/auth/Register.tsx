@@ -21,6 +21,7 @@ import {
   CenteredIonCardHeader,
   CenteredIonInputContainer,
   CenteredIonText,
+  IonContentFantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { validateEmail, validatePassword } from '@feynote/shared-utils';
@@ -30,6 +31,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
+import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -38,13 +40,16 @@ interface Props {
 export const Register: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [nameIsTouched, setNameIsTouched] = useState(false);
   const [emailIsTouched, setEmailIsTouched] = useState(false);
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [confirmPasswordIsTouched, setConfirmPasswordIsTouched] =
     useState(false);
+  const [nameIsValid, setNameIsValid] = useState(true);
   const [emailIsValid, setEmailIsValid] = useState(true);
   const [passwordIsValid, setPasswordIsValid] = useState(true);
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
@@ -55,6 +60,7 @@ export const Register: React.FC<Props> = (props) => {
     setIsLoading(true);
     trpc.user.register
       .mutate({
+        name,
         email,
         password,
       })
@@ -67,6 +73,13 @@ export const Register: React.FC<Props> = (props) => {
       .finally(() => {
         setIsLoading(false);
       });
+  };
+
+  const nameInputHandler = (value: string) => {
+    const isValid = value.length > 0;
+    setNameIsValid(isValid);
+    setNameIsTouched(true);
+    setName(value);
   };
 
   const emailInputHandler = (value: string) => {
@@ -97,19 +110,16 @@ export const Register: React.FC<Props> = (props) => {
   };
 
   const disableRegisterButton =
-    isLoading || !emailIsValid || !passwordIsValid || !confirmPasswordIsValid;
+    isLoading ||
+    !nameIsValid ||
+    !emailIsValid ||
+    !passwordIsValid ||
+    !confirmPasswordIsValid;
 
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('auth.register.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
+      <IonContentFantasyBackground>
+        <LogoActionContainer />
         <CenteredIonCard>
           <CenteredIonCardHeader>
             <IonCardTitle>{t('auth.register.card.title')}</IonCardTitle>
@@ -119,6 +129,18 @@ export const Register: React.FC<Props> = (props) => {
           </CenteredIonCardHeader>
           <IonCardContent>
             <CenteredIonInputContainer>
+              <IonInput
+                className={getIonInputClassNames(nameIsValid, nameIsTouched)}
+                label={t('auth.register.field.name.label')}
+                type="text"
+                labelPlacement="stacked"
+                placeholder={t('auth.register.field.name.placeholder')}
+                value={name}
+                disabled={isLoading}
+                errorText={t('auth.register.field.name.error')}
+                onIonInput={(e) => nameInputHandler(e.target.value as string)}
+                onIonBlur={() => setNameIsTouched(false)}
+              />
               <IonInput
                 className={getIonInputClassNames(emailIsValid, emailIsTouched)}
                 label={t('auth.register.field.email.label')}
@@ -192,7 +214,7 @@ export const Register: React.FC<Props> = (props) => {
             </IonItem>
           </IonCardContent>
         </CenteredIonCard>
-      </IonContent>
+      </IonContentFantasyBackground>
     </IonPage>
   );
 };

@@ -1,17 +1,11 @@
 import {
   IonButton,
-  IonButtons,
   IonCardContent,
   IonCardSubtitle,
   IonCardTitle,
-  IonContent,
-  IonHeader,
   IonInput,
   IonItem,
-  IonMenuButton,
   IonPage,
-  IonTitle,
-  IonToolbar,
   useIonToast,
 } from '@ionic/react';
 import {
@@ -20,6 +14,7 @@ import {
   CenteredIonCardHeader,
   CenteredIonInputContainer,
   CenteredIonText,
+  IonContentFantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../../utils/trpc';
@@ -29,6 +24,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
+import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -80,16 +76,9 @@ export const Login: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('auth.login.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
+    <IonPage>
+      <IonContentFantasyBackground>
+        <LogoActionContainer />
         <CenteredIonCard>
           <CenteredIonCardHeader>
             <IonCardTitle>{t('auth.login.card.title')}</IonCardTitle>
@@ -148,7 +137,7 @@ export const Login: React.FC<Props> = (props) => {
             </IonItem>
           </IonCardContent>
         </CenteredIonCard>
-      </IonContent>
+      </IonContentFantasyBackground>
     </IonPage>
   );
 };

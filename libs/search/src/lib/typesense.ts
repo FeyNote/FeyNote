@@ -65,8 +65,19 @@ export class TypeSense implements SearchProvider {
       return this.deleteBlocksByArtifactIds([artifact.id]);
     }
 
-    if (!artifact.oldState.jsonContent) {
-      // Artifact never had block content before, so full reindex
+    const oldReadableUserIds = artifact.oldState.readableUserIds.sort((a, b) =>
+      a.localeCompare(b),
+    );
+    const newReadableUserIds = artifact.newState.readableUserIds.sort((a, b) =>
+      a.localeCompare(b),
+    );
+    const sharedUserIdsIdentical = oldReadableUserIds.every(
+      (value, index) => value === newReadableUserIds[index],
+    );
+    if (!artifact.oldState.jsonContent || !sharedUserIdsIdentical) {
+      // Either:
+      // 1. Artifact never had block content before, so full reindex
+      // 2. Sharing changed for the artifact, so full reindex
       return this.reindexBlocks(artifact);
     }
 
@@ -84,6 +95,7 @@ export class TypeSense implements SearchProvider {
           id,
           text: diffItem.oldText,
           userId: artifact.userId,
+          readableUserIds: artifact.oldState.readableUserIds,
           artifactId: artifact.id,
         });
         continue;
@@ -93,6 +105,7 @@ export class TypeSense implements SearchProvider {
         id,
         text: diffItem.newText,
         userId: artifact.userId,
+        readableUserIds: artifact.newState.readableUserIds,
         artifactId: artifact.id,
       });
     }
@@ -130,6 +143,7 @@ export class TypeSense implements SearchProvider {
         id,
         text,
         userId: artifact.userId,
+        readableUserIds: artifact.newState.readableUserIds,
         artifactId: artifact.id,
       } satisfies BlockIndexDocument;
 
@@ -164,7 +178,7 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        filter_by: `userId:=[${userId}]`,
+        filter_by: `readableUserIds:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
       });
@@ -184,7 +198,7 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
-        filter_by: `userId:=[${userId}]`,
+        filter_by: `readableUserIds:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
       });
@@ -209,7 +223,7 @@ export class TypeSense implements SearchProvider {
         q: query,
         query_by: 'text',
         prefix: options?.prefix || false,
-        filter_by: `userId:=[${userId}]`,
+        filter_by: `readableUserIds:=[${userId}]`,
         per_page: 250,
         limit_hits: 250,
       });
@@ -224,6 +238,7 @@ export class TypeSense implements SearchProvider {
   private async createBlockIndex() {
     await this.client.collections().create({
       name: Indexes.Block,
+      enable_nested_fields: true,
       fields: [
         {
           name: 'id',
@@ -234,6 +249,12 @@ export class TypeSense implements SearchProvider {
         {
           name: 'userId',
           type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'readableUserIds',
+          type: 'string[]',
           facet: true,
           optional: false,
         },
@@ -253,6 +274,7 @@ export class TypeSense implements SearchProvider {
   private async createArtifactIndex() {
     await this.client.collections().create({
       name: Indexes.Artifact,
+      enable_nested_fields: true,
       fields: [
         {
           name: 'id',
@@ -263,6 +285,12 @@ export class TypeSense implements SearchProvider {
         {
           name: 'userId',
           type: 'string',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'readableUserIds',
+          type: 'string[]',
           facet: true,
           optional: false,
         },

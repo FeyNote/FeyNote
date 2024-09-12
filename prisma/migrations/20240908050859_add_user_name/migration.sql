@@ -1,0 +1,3 @@
+ALTER TABLE "User" ADD COLUMN "name" TEXT;
+UPDATE "User" SET "name"="email" WHERE "name" IS NULL;
+ALTER TABLE "User" ALTER COLUMN "name" SET NOT NULL;

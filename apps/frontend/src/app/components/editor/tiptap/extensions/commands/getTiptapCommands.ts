@@ -1,14 +1,6 @@
 import { Range } from '@tiptap/core';
 import { Editor } from '@tiptap/react';
 import {
-  RiDeleteColumn,
-  RiDeleteRow,
-  RiInsertColumnLeft,
-  RiInsertColumnRight,
-  RiInsertRowBottom,
-  RiInsertRowTop,
-} from 'react-icons/ri';
-import {
   LuHeading1,
   LuHeading2,
   LuHeading3,
@@ -18,9 +10,10 @@ import {
   LuTable,
 } from 'react-icons/lu';
 import { MdHorizontalRule } from 'react-icons/md';
-import { CgExtensionRemove, CgNotes } from 'react-icons/cg';
+import { CgNotes } from 'react-icons/cg';
 import { RxMagicWand } from 'react-icons/rx';
 import { GiMonsterGrasp } from 'react-icons/gi';
+import { t } from 'i18next';
 
 interface CommandArgs {
   range: Range;
@@ -36,99 +29,9 @@ export const getTiptapCommands = ({
 }) => {
   const commands = [
     {
-      title: 'Heading 1',
-      keywords: ['h1', 'header'],
-      subtitle: 'Used as a grand title',
-      visible: true,
-      icon: LuHeading1,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 1 })
-          .run();
-      },
-    },
-    {
-      title: 'Heading 2',
-      keywords: ['h2', 'header'],
-      subtitle: 'Used for smaller titles',
-      visible: true,
-      icon: LuHeading2,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 2 })
-          .run();
-      },
-    },
-    {
-      title: 'Heading 3',
-      keywords: ['h3', 'header'],
-      subtitle: 'Used for sections',
-      visible: true,
-      icon: LuHeading3,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 3 })
-          .run();
-      },
-    },
-    {
-      title: 'Heading 4',
-      keywords: ['h4', 'header'],
-      subtitle: 'Used for subsections',
-      visible: true,
-      icon: LuHeading4,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 4 })
-          .run();
-      },
-    },
-    {
-      title: 'Heading 5',
-      keywords: ['h5', 'header'],
-      subtitle: 'Used for subsections',
-      visible: true,
-      icon: LuHeading5,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 5 })
-          .run();
-      },
-    },
-    {
-      title: 'Heading 6',
-      keywords: ['h6', 'header'],
-      subtitle: 'Used for subsections',
-      visible: true,
-      icon: LuHeading6,
-      command: ({ editor, range }: CommandArgs) => {
-        editor
-          .chain()
-          .focus()
-          .deleteRange(range)
-          .setHeading({ level: 6 })
-          .run();
-      },
-    },
-    {
-      title: 'Horizontal Rule',
+      title: t('editor.commandMenu.hr'),
       keywords: ['hr', '-'],
-      subtitle: 'Used to divide sections',
+      subtitle: t('editor.commandMenu.hr.subtitle'),
       visible: !editor.isActive('table'),
       icon: MdHorizontalRule,
       command: ({ editor, range }: CommandArgs) => {
@@ -136,9 +39,9 @@ export const getTiptapCommands = ({
       },
     },
     {
-      title: 'Insert Table',
+      title: t('editor.commandMenu.table'),
       keywords: [],
-      subtitle: 'Used for stats, and for other notes',
+      subtitle: t('editor.commandMenu.table.subtitle'),
       visible: !editor.isActive('table'),
       icon: LuTable,
       command: ({ editor, range }: CommandArgs) => {
@@ -151,79 +54,9 @@ export const getTiptapCommands = ({
       },
     },
     {
-      title: 'Delete Table',
-      keywords: [],
-      subtitle: 'Removes the current focused table',
-      visible: editor.isActive('table'),
-      icon: CgExtensionRemove,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).deleteTable().run();
-      },
-    },
-    {
-      title: 'Add Table Row Before',
-      keywords: ['tr'],
-      subtitle: 'Add a row to an existing table before the current row',
-      visible: editor.isActive('table'),
-      icon: RiInsertRowTop,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).addRowBefore().run();
-      },
-    },
-    {
-      title: 'Add Table Row After',
-      keywords: ['tr'],
-      subtitle: 'Add a row to an existing table after the current row',
-      visible: editor.isActive('table'),
-      icon: RiInsertRowBottom,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).addRowAfter().run();
-      },
-    },
-    {
-      title: 'Delete Table Row',
-      keywords: ['tr'],
-      subtitle: 'Removes the current table row',
-      visible: editor.isActive('table'),
-      icon: RiDeleteRow,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).deleteRow().run();
-      },
-    },
-    {
-      title: 'Add Table Column Before',
-      keywords: ['tc'],
-      subtitle: 'Add a column to an existing table before the current column',
-      visible: editor.isActive('table'),
-      icon: RiInsertColumnLeft,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).addColumnBefore().run();
-      },
-    },
-    {
-      title: 'Add Table Column After',
-      keywords: ['tc'],
-      subtitle: 'Add a column to an existing table after the current column',
-      visible: editor.isActive('table'),
-      icon: RiInsertColumnRight,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).addColumnAfter().run();
-      },
-    },
-    {
-      title: 'Delete Table Column',
-      keywords: [],
-      subtitle: 'Removes the current table row',
-      visible: editor.isActive('table'),
-      icon: RiDeleteColumn,
-      command: ({ editor, range }: CommandArgs) => {
-        editor.chain().focus().deleteRange(range).deleteColumn().run();
-      },
-    },
-    {
-      title: 'Insert Monster Statblock',
+      title: t('editor.commandMenu.monster'),
       keywords: ['stats'],
-      subtitle: 'Starts an editable monster statblock',
+      subtitle: t('editor.commandMenu.monster.subtitle'),
       visible: !editor.isActive('table'),
       icon: GiMonsterGrasp,
       command: ({ editor, range }: CommandArgs) => {
@@ -231,9 +64,9 @@ export const getTiptapCommands = ({
       },
     },
     {
-      title: 'Insert Wide Monster Statblock',
+      title: t('editor.commandMenu.wideMonster'),
       keywords: ['stats'],
-      subtitle: 'Starts a double-wide monster statblock',
+      subtitle: t('editor.commandMenu.wideMonster.subtitle'),
       visible: !editor.isActive('table'),
       icon: GiMonsterGrasp,
       command: ({ editor, range }: CommandArgs) => {
@@ -246,9 +79,9 @@ export const getTiptapCommands = ({
       },
     },
     {
-      title: 'Insert Spell',
+      title: t('editor.commandMenu.spell'),
       keywords: [],
-      subtitle: 'Starts an editable spell object',
+      subtitle: t('editor.commandMenu.spell.subtitle'),
       visible: !editor.isActive('table'),
       icon: RxMagicWand,
       command: ({ editor, range }: CommandArgs) => {
@@ -256,13 +89,103 @@ export const getTiptapCommands = ({
       },
     },
     {
-      title: 'Insert Note',
+      title: t('editor.commandMenu.note'),
       keywords: [],
-      subtitle: 'Starts an editable note object',
+      subtitle: t('editor.commandMenu.note.subtitle'),
       visible: !editor.isActive('table'),
       icon: CgNotes,
       command: ({ editor, range }: CommandArgs) => {
         editor.chain().focus().deleteRange(range).setTTRPGNote().run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h1'),
+      keywords: ['h1', 'header'],
+      subtitle: t('editor.commandMenu.h1.subtitle'),
+      visible: true,
+      icon: LuHeading1,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 1 })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h2'),
+      keywords: ['h2', 'header'],
+      subtitle: t('editor.commandMenu.h2.subtitle'),
+      visible: true,
+      icon: LuHeading2,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 2 })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h3'),
+      keywords: ['h3', 'header'],
+      subtitle: t('editor.commandMenu.h3.subtitle'),
+      visible: true,
+      icon: LuHeading3,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 3 })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h4'),
+      keywords: ['h4', 'header'],
+      subtitle: t('editor.commandMenu.h4.subtitle'),
+      visible: true,
+      icon: LuHeading4,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 4 })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h5'),
+      keywords: ['h5', 'header'],
+      subtitle: t('editor.commandMenu.h5.subtitle'),
+      visible: true,
+      icon: LuHeading5,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 5 })
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.h6'),
+      keywords: ['h6', 'header'],
+      subtitle: t('editor.commandMenu.h6.subtitle'),
+      visible: true,
+      icon: LuHeading6,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setHeading({ level: 6 })
+          .run();
       },
     },
   ];

@@ -2,6 +2,9 @@ import { onAuthenticatePayload } from '@hocuspocus/server';
 
 import { isSessionExpired } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
+import { splitDocumentName } from './splitDocumentName';
+import { SupportedDocumentType } from './SupportedDocumentType';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export async function onAuthenticate(args: onAuthenticatePayload) {
   try {
@@ -20,9 +23,57 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       throw new Error();
     }
 
-    return {
+    // This will be available in all future methods!
+    const context = {
       userId: session.userId,
     };
+
+    const [type, identifier] = splitDocumentName(args.documentName);
+
+    switch (type) {
+      case SupportedDocumentType.Artifact: {
+        const artifact = await prisma.artifact.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            userId: true,
+            artifactShares: {
+              select: {
+                userId: true,
+                accessLevel: true,
+              },
+            },
+          },
+        });
+
+        if (!artifact) {
+          console.log(
+            'User attempted to authenticate to an artifact that does not exist',
+          );
+          throw new Error();
+        }
+
+        const artifactShare = artifact.artifactShares.find(
+          (share) => share.userId === context.userId,
+        );
+        if (artifact.userId !== context.userId && !artifactShare) {
+          console.log(
+            'User attempted to connect to artifact that they do not have access to',
+          );
+          throw new Error();
+        }
+
+        if (
+          artifact.userId !== context.userId &&
+          artifactShare?.accessLevel === ArtifactAccessLevel.readonly
+        ) {
+          args.connection.readOnly = true;
+        }
+      }
+    }
+
+    return context;
   } catch (e) {
     console.error(e);
 

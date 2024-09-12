@@ -10,11 +10,9 @@ export const searchArtifacts = authenticatedProcedure
     z.object({
       query: z.string(),
       limit: z.number().min(1).max(100).optional(),
-      isTemplate: z.boolean().optional(),
-      isPinned: z.boolean().optional(),
     }),
   )
-  .query(async ({ input, ctx }) => {
+  .query(async ({ input, ctx }): Promise<ArtifactDTO[]> => {
     const limit = input.limit || 100;
     const resultArtifactIds = await searchProvider.searchArtifacts(
       ctx.session.userId,
@@ -24,8 +22,6 @@ export const searchArtifacts = authenticatedProcedure
     const artifacts = await prisma.artifact.findMany({
       where: {
         id: { in: resultArtifactIds },
-        isTemplate: input.isTemplate,
-        isPinned: input.isPinned,
       },
       ...artifactDetail,
     });
@@ -39,7 +35,7 @@ export const searchArtifacts = authenticatedProcedure
 
       const artifact = artifactsById.get(resultArtifactId);
       if (artifact) {
-        results.push(artifactDetailToArtifactDTO(artifact));
+        results.push(artifactDetailToArtifactDTO(ctx.session.userId, artifact));
       }
     }
 

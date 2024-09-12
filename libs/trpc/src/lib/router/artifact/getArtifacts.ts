@@ -1,32 +1,37 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
-import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, type ArtifactDetail } from '@feynote/prisma/types';
+import { artifactDetail, type ArtifactDTO } from '@feynote/prisma/types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
-export const getArtifacts = authenticatedProcedure
-  .input(
-    z.object({
-      isTemplate: z.boolean().optional(),
-      isPinned: z.boolean().optional(),
-    }),
-  )
-  .query(async ({ input, ctx }) => {
-    const { session } = ctx;
+export const getArtifacts = authenticatedProcedure.query(
+  async ({ ctx }): Promise<ArtifactDTO[]> => {
+    const [ownedArtifacts, sharedArtifacts] = await Promise.all([
+      prisma.artifact.findMany({
+        where: {
+          userId: ctx.session.userId,
+        },
+        ...artifactDetail,
+      }),
+      prisma.artifact.findMany({
+        where: {
+          artifactShares: {
+            some: {
+              userId: ctx.session.userId,
+            },
+          },
+        },
+        ...artifactDetail,
+      }),
+    ]);
 
-    const artifacts = await prisma.artifact.findMany({
-      where: {
-        userId: session.userId,
-        isTemplate: input.isTemplate,
-        isPinned: input.isPinned,
-      },
-      ...artifactDetail,
-    });
+    const artifacts = [...ownedArtifacts, ...sharedArtifacts];
 
-    const results = [];
+    const results = new Map<string, ArtifactDTO>();
     for (const artifact of artifacts) {
-      results.push(artifactDetailToArtifactDTO(artifact as ArtifactDetail));
+      const dto = artifactDetailToArtifactDTO(ctx.session.userId, artifact);
+      results.set(dto.id, dto);
     }
 
-    return results;
-  });
+    return [...results.values()];
+  },
+);

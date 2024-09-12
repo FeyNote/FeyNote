@@ -6,31 +6,10 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
     title: true,
     type: true,
     theme: true,
-    isPinned: true,
-    isTemplate: true,
-    rootTemplateId: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
-    artifactTemplate: {
-      select: {
-        id: true,
-        title: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    },
     text: true,
-    templatedArtifacts: {
-      select: {
-        id: true,
-        title: true,
-        userId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    },
     artifactReferences: {
       select: {
         id: true,
@@ -70,6 +49,36 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
             mimetype: true,
           },
         },
+      },
+    },
+    artifactShares: {
+      select: {
+        id: true,
+        userId: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        accessLevel: true,
+      },
+    },
+    artifactShareTokens: {
+      select: {
+        id: true,
+        shareToken: true,
+        allowAddToAccount: true,
+        accessLevel: true,
+      },
+    },
+    artifactPins: {
+      select: {
+        userId: true,
+      },
+    },
+    user: {
+      select: {
+        name: true,
       },
     },
   },

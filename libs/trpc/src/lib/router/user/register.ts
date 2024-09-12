@@ -3,18 +3,27 @@ import { z } from 'zod';
 import * as services from '@feynote/api-services';
 import { UserAlreadyExistError } from '@feynote/api-services';
 import { TRPCError } from '@trpc/server';
-import { validateEmail, validatePassword } from '@feynote/shared-utils';
+import {
+  SessionDTO,
+  validateEmail,
+  validatePassword,
+} from '@feynote/shared-utils';
 
 export const register = publicProcedure
   .input(
     z.object({
+      name: z.string().min(1).max(200),
       email: z.string().refine(validateEmail),
       password: z.string().refine(validatePassword),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }): Promise<SessionDTO> => {
     try {
-      const session = await services.register(input.email, input.password);
+      const session = await services.register(
+        input.name,
+        input.email,
+        input.password,
+      );
       return session;
     } catch (e) {
       if (e instanceof UserAlreadyExistError) {
