@@ -52,6 +52,9 @@ export default defineConfig({
         enabled: true,
         type: 'module',
       },
+      injectManifest: {
+        globIgnores: ['**\\/node_modules\\/**\\/*', 'index.html'],
+      },
       manifest: {
         name: 'FeyNote - Tabletop Note Keeper',
         short_name: 'FeyNote',
