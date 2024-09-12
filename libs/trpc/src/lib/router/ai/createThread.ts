@@ -8,9 +8,20 @@ export const createThread = authenticatedProcedure
       title: z.string().optional(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
-    const threads = await prisma.thread.create({
-      data: { userId: ctx.session.userId, title: input.title || undefined },
-    });
-    return threads;
-  });
+  .mutation(
+    async ({
+      ctx,
+      input,
+    }): Promise<{
+      id: string;
+      title: string | null;
+      userId: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }> => {
+      const threads = await prisma.thread.create({
+        data: { userId: ctx.session.userId, title: input.title || undefined },
+      });
+      return threads;
+    },
+  );

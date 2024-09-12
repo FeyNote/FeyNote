@@ -29,7 +29,7 @@ export const setPreferences = authenticatedProcedure
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) satisfies z.ZodSchema<AppPreferences, any, any>,
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     await prisma.user.update({
       where: {
         id: ctx.session.userId,

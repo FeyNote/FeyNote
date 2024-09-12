@@ -12,7 +12,7 @@ export const createThreadTitle = authenticatedProcedure
       id: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     const thread = await prisma.thread.findFirst({
       where: { id: input.id, userId: ctx.session.userId },
       ...threadSummary,

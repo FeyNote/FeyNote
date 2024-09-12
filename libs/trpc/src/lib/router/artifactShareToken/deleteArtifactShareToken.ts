@@ -14,7 +14,7 @@ export const deleteArtifactShareToken = authenticatedProcedure
       }),
     ]),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     const artifactShareToken = await prisma.artifactShareToken.findFirst({
       where: {
         id: 'id' in input ? input.id : undefined,

@@ -12,7 +12,7 @@ export const signInWithGoogle = publicProcedure
       credential: z.string(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }): Promise<SessionDTO> => {
     const { clientId, credential } = input;
     const client = new OAuth2Client();
     const ticket = await client.verifyIdToken({

@@ -3,7 +3,11 @@ import { z } from 'zod';
 import * as services from '@feynote/api-services';
 import { UserAlreadyExistError } from '@feynote/api-services';
 import { TRPCError } from '@trpc/server';
-import { validateEmail, validatePassword } from '@feynote/shared-utils';
+import {
+  SessionDTO,
+  validateEmail,
+  validatePassword,
+} from '@feynote/shared-utils';
 
 export const register = publicProcedure
   .input(
@@ -13,7 +17,7 @@ export const register = publicProcedure
       password: z.string().refine(validatePassword),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input }): Promise<SessionDTO> => {
     try {
       const session = await services.register(
         input.name,

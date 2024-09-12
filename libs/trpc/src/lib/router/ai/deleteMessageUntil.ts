@@ -10,7 +10,7 @@ export const deleteMessageUntil = authenticatedProcedure
       threadId: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     const thread = await prisma.thread.findFirst({
       where: { id: input.threadId, userId: ctx.session.userId },
     });

@@ -11,7 +11,7 @@ export const deleteArtifactShare = authenticatedProcedure
       userId: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<string> => {
     const artifact = await prisma.artifact.findUnique({
       where: {
         id: input.artifactId,

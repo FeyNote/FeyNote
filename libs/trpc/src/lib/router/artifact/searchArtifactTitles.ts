@@ -12,7 +12,7 @@ export const searchArtifactTitles = authenticatedProcedure
       limit: z.number().min(1).max(100).optional(),
     }),
   )
-  .query(async ({ input, ctx }) => {
+  .query(async ({ input, ctx }): Promise<ArtifactDTO[]> => {
     const limit = input.limit || 100;
     const resultArtifactIds = await searchProvider.searchArtifactTitles(
       ctx.session.userId,

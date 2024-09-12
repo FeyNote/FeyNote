@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, type ArtifactDetail } from '@feynote/prisma/types';
+import { artifactDetail, ArtifactDTO } from '@feynote/prisma/types';
 import {
   artifactDetailToArtifactDTO,
   hasArtifactAccess,
@@ -15,20 +15,19 @@ export const getArtifactById = publicProcedure
       shareToken: z.string().optional(),
     }),
   )
-  .query(async ({ ctx, input }) => {
+  .query(async ({ ctx, input }): Promise<ArtifactDTO> => {
     if (!ctx.session && !input.shareToken) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
       });
     }
 
-    const _artifact = await prisma.artifact.findUnique({
+    const artifact = await prisma.artifact.findUnique({
       where: {
         id: input.id,
       },
       ...artifactDetail,
     });
-    const artifact = _artifact as ArtifactDetail | undefined;
 
     if (
       !artifact ||

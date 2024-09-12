@@ -9,7 +9,7 @@ export const deleteThread = authenticatedProcedure
       id: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
+  .mutation(async ({ ctx, input }): Promise<void> => {
     const thread = await prisma.thread.delete({
       where: { id: input.id, userId: ctx.session.userId },
     });
