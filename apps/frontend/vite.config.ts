@@ -54,6 +54,7 @@ export default defineConfig({
       },
       injectManifest: {
         maximumFileSizeToCacheInBytes: 4194304, // 2097152 is the default, increased here since our bundle size has grown over the limit
+        globIgnores: ['**\\/node_modules\\/**\\/*', 'index.html'],
       },
       manifest: {
         name: 'FeyNote - Tabletop Note Keeper',
