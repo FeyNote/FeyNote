@@ -48,7 +48,6 @@ export const ArtifactCard: React.FC<Props> = ({ artifact }) => {
       )}
       <IonCardHeader>
         <IonCardTitle>{artifact.title}</IonCardTitle>
-        <IonCardSubtitle>{artifact.artifactTemplate?.title}</IonCardSubtitle>
       </IonCardHeader>
 
       <IonCardContent>{artifact.previewText}</IonCardContent>

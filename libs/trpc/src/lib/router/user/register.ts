@@ -8,13 +8,18 @@ import { validateEmail, validatePassword } from '@feynote/shared-utils';
 export const register = publicProcedure
   .input(
     z.object({
+      name: z.string().min(1).max(200),
       email: z.string().refine(validateEmail),
       password: z.string().refine(validatePassword),
     }),
   )
   .mutation(async ({ input }) => {
     try {
-      const session = await services.register(input.email, input.password);
+      const session = await services.register(
+        input.name,
+        input.email,
+        input.password,
+      );
       return session;
     } catch (e) {
       if (e instanceof UserAlreadyExistError) {

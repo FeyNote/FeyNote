@@ -38,10 +38,6 @@ export const NewArtifact: React.FC = () => {
         json: {},
         text: '',
         theme: 'default',
-        isPinned: false,
-        isTemplate: false,
-        rootTemplateId: null,
-        artifactTemplateId: null,
       })
       .then((response) => {
         // We navigate to the created artifact but replace it in the browser history, so that

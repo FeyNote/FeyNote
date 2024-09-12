@@ -24,7 +24,7 @@ export const Graph: React.FC = () => {
 
   const load = async () => {
     await trpc.artifact.getArtifacts
-      .query({})
+      .query()
       .then((_artifacts) => {
         setArtifacts(_artifacts);
       })

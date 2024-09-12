@@ -2,9 +2,11 @@ import {
   IonCard,
   IonCheckbox,
   IonIcon,
+  IonLabel,
   IonListHeader,
   IonSelect,
   IonSelectOption,
+  useIonModal,
   useIonToast,
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
@@ -12,7 +14,7 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { ArtifactDTO } from '@feynote/prisma/types';
 import { trpc } from '../../../utils/trpc';
 import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
@@ -22,9 +24,11 @@ import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { cog, link } from 'ionicons/icons';
+import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
+import { ArtifactSharingManagementModal } from './ArtifactSharingManagementModal';
+import { getIsEditable } from '../../../utils/getIsEditable';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -34,6 +38,13 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentToast] = useIonToast();
+  const [presentSharingModal, dismissSharingModal] = useIonModal(
+    ArtifactSharingManagementModal,
+    {
+      artifactId: props.artifact.id,
+      dismiss: () => dismissSharingModal(),
+    },
+  );
   const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
   const { eventManager } = useContext(EventContext);
@@ -66,23 +77,36 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     );
   };
 
-  const updateArtifact = async (updates: Partial<ArtifactDTO>) => {
-    await trpc.artifact.updateArtifact
-      .mutate({
-        id: props.artifact.id,
-        isPinned,
-        isTemplate: false,
-        rootTemplateId: null,
-        artifactTemplateId: null,
-        ...updates,
-      })
-      .then(() => {
-        props.reload();
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
+  const updateIsPinned = async (_isPinned: boolean) => {
+    if (_isPinned) {
+      await trpc.artifactPin.createArtifactPin
+        .mutate({
+          artifactId: props.artifact.id,
+        })
+        .then(() => {
+          props.reload();
+        })
+        .catch((error) => {
+          handleTRPCErrors(error, presentToast);
+        });
+    } else {
+      await trpc.artifactPin.deleteArtifactPin
+        .mutate({
+          artifactId: props.artifact.id,
+        })
+        .then(() => {
+          props.reload();
+        })
+        .catch((error) => {
+          handleTRPCErrors(error, presentToast);
+        });
+    }
   };
+
+  const isEditable = useMemo(
+    () => getIsEditable(props.artifact, session.userId),
+    [props.artifact, session.userId],
+  );
 
   return (
     <>
@@ -99,9 +123,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             checked={isPinned}
             onIonChange={async (event) => {
               setIsPinned(event.target.checked);
-              await updateArtifact({
-                isPinned: event.target.checked,
-              });
+              await updateIsPinned(event.target.checked);
               eventManager.broadcast([EventName.ArtifactPinned]);
             }}
           >
@@ -133,6 +155,61 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </IonSelect>
         </CompactIonItem>
       </IonCard>
+      {props.artifact.userId === session.userId && (
+        <IonCard>
+          <IonListHeader>
+            <IonIcon icon={person} size="small" />
+            &nbsp;&nbsp;
+            {t('artifactRenderer.artifactShares')}
+            <InfoButton message={t('artifactRenderer.artifactShares.help')} />
+          </IonListHeader>
+          {props.artifact.artifactShares.map((artifactShare) => (
+            <CompactIonItem
+              lines="none"
+              key={artifactShare.id}
+              onClick={() => presentSharingModal()}
+              button
+            >
+              <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
+            </CompactIonItem>
+          ))}
+          <CompactIonItem
+            lines="none"
+            button
+            detail={true}
+            onClick={() => presentSharingModal()}
+          >
+            <NowrapIonLabel>
+              {t('artifactRenderer.artifactShares.manage')}
+            </NowrapIonLabel>
+          </CompactIonItem>
+        </IonCard>
+      )}
+      {props.artifact.userId !== session.userId && (
+        <IonCard>
+          <IonListHeader>
+            <IonIcon icon={person} size="small" />
+            &nbsp;&nbsp;
+            {t('artifactRenderer.artifactSharedToYou')}
+            <InfoButton
+              message={t('artifactRenderer.artifactSharedToYou.help')}
+            />
+          </IonListHeader>
+          <CompactIonItem lines="none">
+            <IonLabel>
+              {t('artifactRenderer.artifactSharedToYou.message', {
+                name: props.artifact.user.name,
+              })}
+              <br />
+              {t(
+                isEditable
+                  ? 'artifactRenderer.artifactSharedToYou.readwrite'
+                  : 'artifactRenderer.artifactSharedToYou.readonly',
+              )}
+            </IonLabel>
+          </CompactIonItem>
+        </IonCard>
+      )}
       {!!props.artifact.incomingArtifactReferences.length && (
         <IonCard>
           <IonListHeader>

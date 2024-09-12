@@ -1,5 +1,5 @@
 import { ArtifactDTO } from '@feynote/prisma/types';
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
@@ -9,6 +9,7 @@ import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
+import { getIsEditable } from '../../../utils/getIsEditable';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -60,10 +61,16 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return () => cleanup();
   }, [connection]);
 
+  // Purely for visual purposes. Permissioning occurs on the server, but we need to update the editor UI to be read/write
+  const isEditable = useMemo(
+    () => getIsEditable(props.artifact, session.userId),
+    [props.artifact, session.userId],
+  );
+
   if (props.artifact.type === 'tiptap') {
     return (
       <ArtifactEditor
-        editable={true}
+        editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         yjsProvider={connection.tiptapCollabProvider}
@@ -76,7 +83,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (props.artifact.type === 'calendar') {
     return (
       <ArtifactCalendar
-        editable={true}
+        editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         y={connection.tiptapCollabProvider}

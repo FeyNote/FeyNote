@@ -213,7 +213,7 @@ registerRoute(
       return response;
     } catch (e) {
       const input = getTrpcInputForEvent<{ query: string }>(event);
-      if (!input || !input.query) throw e;
+      if (!input || !input.query) throw new Error('No query provided');
 
       const searchManager = await searchManagerP;
       const searchResults = searchManager.search(input.query);

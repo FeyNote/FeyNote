@@ -8,10 +8,6 @@ export const updateArtifact = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
-      isPinned: z.boolean(),
-      isTemplate: z.boolean(),
-      rootTemplateId: z.string().nullable(),
-      artifactTemplateId: z.string().nullable(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -23,6 +19,11 @@ export const updateArtifact = authenticatedProcedure
         id: true,
         userId: true,
         yBin: true,
+        artifactShares: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
 
@@ -33,39 +34,45 @@ export const updateArtifact = authenticatedProcedure
       });
     }
 
-    if (input.artifactTemplateId) {
-      const template = await prisma.artifact.findUnique({
+    await prisma.$transaction(async (tx) => {
+      await prisma.artifact.update({
         where: {
-          id: input.artifactTemplateId,
+          id: input.id,
+        },
+        data: {},
+      });
+
+      const updatedArtifact = await prisma.artifact.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          userId: true,
+          yBin: true,
+          artifactShares: {
+            select: {
+              userId: true,
+            },
+          },
         },
       });
 
-      if (!template || template.userId !== ctx.session.userId) {
-        throw new TRPCError({
-          message:
-            'Passed artifactTemplateId is not owned by the current user, or does not exist',
-          code: 'FORBIDDEN',
-        });
-      }
-    }
-
-    await prisma.artifact.update({
-      where: {
-        id: input.id,
-      },
-      data: {
-        isPinned: input.isPinned,
-        isTemplate: input.isTemplate,
-        rootTemplateId: input.rootTemplateId,
-        artifactTemplateId: input.artifactTemplateId,
-      },
-    });
-
-    await enqueueArtifactUpdate({
-      artifactId: artifact.id,
-      userId: ctx.session.userId,
-      oldYBinB64: artifact.yBin.toString('base64'),
-      newYBinB64: artifact.yBin.toString('base64'),
+      await enqueueArtifactUpdate({
+        artifactId: artifact.id,
+        userId: artifact.userId,
+        triggeredByUserId: ctx.session.userId,
+        oldReadableUserIds: [
+          artifact.userId,
+          ...artifact.artifactShares.map((el) => el.userId),
+        ],
+        newReadableUserIds: [
+          updatedArtifact.userId,
+          ...updatedArtifact.artifactShares.map((el) => el.userId),
+        ],
+        oldYBinB64: artifact.yBin.toString('base64'),
+        newYBinB64: updatedArtifact.yBin.toString('base64'),
+      });
     });
 
     // We do not return the complete artifact, but rather expect that the frontend will

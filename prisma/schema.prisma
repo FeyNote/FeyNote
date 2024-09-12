@@ -14,6 +14,7 @@ model User {
   id               String             @id @default(uuid()) @db.Uuid
   createdAt        DateTime           @default(now()) @db.Timestamptz(6)
   updatedAt        DateTime           @updatedAt @db.Timestamptz(6)
+  name             String
   email            String             @unique
   passwordHash     String?
   passwordSalt     String?
@@ -26,6 +27,7 @@ model User {
   File             File[]
   threads          Thread[]
   ArtifactShare    ArtifactShare[]
+  ArtifactPin      ArtifactPin[]
 }
 
 model Session {
@@ -44,12 +46,6 @@ model Artifact {
   title              String
   type               ArtifactType  @default(tiptap)
   theme              ArtifactTheme @default(default)
-  isPinned           Boolean       @default(false)
-  artifactTemplate   Artifact?     @relation("artifactTemplate", fields: [artifactTemplateId], references: [id], onDelete: SetNull)
-  artifactTemplateId String?       @db.Uuid
-  templatedArtifacts Artifact[]    @relation("artifactTemplate")
-  rootTemplateId     String?
-  isTemplate         Boolean       @default(false)
   user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId             String        @db.Uuid
   text               String
@@ -59,9 +55,21 @@ model Artifact {
   updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
 
   artfactFiles               ArtifactFile[]
-  artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
-  incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
-  ArtifactShare              ArtifactShare[]
+  artifactReferences         ArtifactReference[]  @relation("artifactReferenceSourceArtifact")
+  incomingArtifactReferences ArtifactReference[]  @relation("artifactReferenceTargetArtifact")
+  artifactShares             ArtifactShare[]
+  artifactShareTokens        ArtifactShareToken[]
+  artifactPins               ArtifactPin[]
+}
+
+model ArtifactPin {
+  id String @id @default(uuid()) @db.Uuid
+
+  artifactId String   @db.Uuid
+  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @db.Uuid
 }
 
 model ArtifactReference {
@@ -124,6 +132,20 @@ model ArtifactShare {
   accessLevel ArtifactAccessLevel
   createdAt   DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
+
+  @@unique([artifactId, userId])
+}
+
+model ArtifactShareToken {
+  id          String              @id @default(uuid()) @db.Uuid
+  shareToken  String
+  allowAddToAccount  Boolean
+  artifact    Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactId  String              @db.Uuid
+  accessLevel ArtifactAccessLevel
+  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
+  expiresAt   DateTime?           @db.Timestamptz(6)
 }
 
 enum ArtifactAccessLevel {

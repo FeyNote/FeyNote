@@ -26,7 +26,10 @@ export const signInWithGoogle = publicProcedure
         code: 'BAD_REQUEST',
       });
     }
-    const session = await upsertLogin(payload.email);
+    const session = await upsertLogin(
+      payload.name || payload.email,
+      payload.email,
+    );
     return {
       token: session.token,
       userId: session.userId,
