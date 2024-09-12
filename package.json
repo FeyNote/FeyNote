@@ -60,7 +60,7 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "ai": "^3.3.26",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "bullmq": "^5.12.14",
     "cors": "^2.8.5",
     "debounce": "^2.1.0",
