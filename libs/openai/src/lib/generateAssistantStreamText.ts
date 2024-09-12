@@ -8,8 +8,8 @@ import {
 } from '@feynote/shared-utils';
 
 const tools = {
-  [FunctionName.Generate5eMonster]: Generate5eMonsterTool,
   [FunctionName.Generate5eObject]: Generate5eObjectTool,
+  [FunctionName.Generate5eMonster]: Generate5eMonsterTool,
 };
 
 export async function generateAssistantStreamText(
