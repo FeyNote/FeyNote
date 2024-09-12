@@ -16,13 +16,15 @@ export const monsterStatsheetExtensionStyles = css`
 
     font-family: ScalySansRemake;
 
-    .tableWrapper:first-of-type table {
+    table:first-of-type {
       width: auto !important;
       min-width: 325px !important;
 
       th,
+      tr,
       td {
         text-align: center;
+        border: none;
 
         p {
           margin-top: 0;

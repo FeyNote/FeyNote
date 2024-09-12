@@ -24,6 +24,10 @@ export const ArtifactEditorStyles = styled.div`
     outline: none;
   }
 
+  .ProseMirror-gapcursor:after {
+    border-top: 1px solid var(--sheet-text-color);
+  }
+
   .artifactTitle {
     --background: transparent;
     --color: var(--sheet-h1-color);
@@ -115,9 +119,7 @@ export const ArtifactEditorStyles = styled.div`
   th,
   tr,
   td {
-    --fallback-color: 0, 0, 0;
-    border: 1px solid
-      rgba(var(--ion-text-color-rgb, var(--fallback-color)), 0.4);
+    border: 1px solid var(--sheet-text-color);
   }
 
   th,
@@ -168,31 +170,6 @@ export const ArtifactEditorStyles = styled.div`
 
   &[data-theme='classic'] {
     ${themeVariables.classic}
-
-    // We don't have any padding at the top of the editor, and
-    // paragraphs don't have any padding in classic mode
-    p:first-child {
-      padding-top: 16px;
-    }
-    p:last-child {
-      padding-bottom: 16px;
-    }
-
-    // Enable this to display things book-style
-    &.ident-first {
-      p {
-        text-indent: 18px;
-      }
-
-      h1 + p,
-      h2 + p,
-      h3 + p,
-      h4 + p,
-      h5 + p,
-      h6 + p {
-        text-indent: 0;
-      }
-    }
 
     background: url('/assets/parchment-background.jpg');
     background-color: #eee5ce;
