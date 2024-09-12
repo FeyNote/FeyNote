@@ -65,7 +65,7 @@
     "cors": "^2.8.5",
     "debounce": "^2.1.0",
     "dedent": "^1.5.3",
-    "express": "^4.19.2",
+    "express": "^4.21.0",
     "flexlayout-react": "^0.7.15",
     "google-auth-library": "^9.14.1",
     "i18next": "^23.14.0",
