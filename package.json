@@ -63,6 +63,7 @@
     "axios": "^1.6.0",
     "body-parser": "^1.20.3",
     "bullmq": "^5.12.14",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
     "debounce": "^2.1.0",
     "dedent": "^1.5.3",
