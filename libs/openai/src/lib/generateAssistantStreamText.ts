@@ -1,9 +1,14 @@
 import { openai } from './openai';
 import { AIModel } from './utils/AIModel';
 import { streamText, type CoreMessage } from 'ai';
-import { FunctionName, Generate5eMonsterTool } from '@feynote/shared-utils';
+import {
+  FunctionName,
+  Generate5eMonsterTool,
+  Generate5eObjectTool,
+} from '@feynote/shared-utils';
 
 const tools = {
+  [FunctionName.Generate5eObject]: Generate5eObjectTool,
   [FunctionName.Generate5eMonster]: Generate5eMonsterTool,
 };
 
