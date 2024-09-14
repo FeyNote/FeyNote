@@ -7,17 +7,21 @@ import {
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
+import { setTimeout } from 'timers/promises';
 
-const DEFAULT_PAGE_SIZE = 1000;
-
-export const reindexAllArtifacts = async (
+export const reindexArtifacts = async (
+  userId: string | undefined,
   throwOnError: boolean,
-  pageSize = DEFAULT_PAGE_SIZE,
+  pageSize: number,
+  cooldown: number,
 ) => {
   for (let page = 0; ; page++) {
     console.log('Indexing page', page);
 
     const artifacts = await prisma.artifact.findMany({
+      where: {
+        userId,
+      },
       take: pageSize,
       skip: page * pageSize,
       select: {
@@ -31,6 +35,8 @@ export const reindexAllArtifacts = async (
         yBin: true,
       },
     });
+
+    if (!artifacts.length) break;
 
     for (const artifact of artifacts) {
       try {
@@ -78,6 +84,8 @@ export const reindexAllArtifacts = async (
           console.error(e);
         }
       }
+
+      await setTimeout(cooldown);
     }
   }
 };
