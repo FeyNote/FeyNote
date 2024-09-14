@@ -60,8 +60,10 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "ai": "^3.3.26",
+    "axios": "^1.6.0",
     "body-parser": "^1.20.3",
     "bullmq": "^5.12.14",
+    "commander": "^12.1.0",
     "cors": "^2.8.5",
     "debounce": "^2.1.0",
     "dedent": "^1.5.3",
@@ -93,6 +95,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@nx/esbuild": "19.6.5",
     "@nx/eslint": "19.6.5",
     "@nx/eslint-plugin": "19.6.5",
     "@nx/express": "19.6.5",
@@ -118,6 +121,7 @@
     "@typescript-eslint/parser": "7.18.0",
     "@vitejs/plugin-react": "4.2.1",
     "babel-plugin-styled-components": "2.1.4",
+    "esbuild": "^0.19.2",
     "eslint": "8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "2.29.1",
