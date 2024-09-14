@@ -1,12 +1,16 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable @nx/enforce-module-boundaries */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
-import { superjson } from './utils/trpc';
-import { SearchManager } from './utils/SearchManager';
-import { getManifestDb, ObjectStoreName } from './utils/localDb';
-import { SyncManager } from './utils/SyncManager';
+import { superjson } from '../../../libs/ui/src/utils/trpc';
+import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
+import {
+  getManifestDb,
+  ObjectStoreName,
+} from '../../../libs/ui/src/utils/localDb';
+import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA

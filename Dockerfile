@@ -18,7 +18,7 @@ COPY prisma prisma
 RUN npx prisma generate
 
 ENV NX_NO_CLOUD=true
-RUN npx nx run-many -t build
+RUN npx nx run-many -t build --parallel=8
 
 # Include version build arg within the container env
 ARG APP_VERSION

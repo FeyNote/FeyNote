@@ -34,6 +34,16 @@
     "@nx/vite:test": {
       "cache": true,
       "inputs": ["default", "^production"]
+    },
+    "@nx/next:build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/vite:build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
     }
   },
   "namedInputs": {
@@ -66,6 +76,13 @@
         "style": "styled-components"
       },
       "library": {
+        "style": "styled-components",
+        "linter": "eslint",
+        "unitTestRunner": "none"
+      }
+    },
+    "@nx/next": {
+      "application": {
         "style": "styled-components",
         "linter": "eslint"
       }

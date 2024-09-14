@@ -22,6 +22,16 @@ services:
       - VITE_ENVIRONMENT=development
     depends_on:
       - backend
+  www:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: npx nx serve www
+    depends_on:
+      - backend
   hocuspocus:
     build:
       context: .
