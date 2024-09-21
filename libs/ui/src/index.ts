@@ -12,3 +12,4 @@ export { getManifestDb, ObjectStoreName } from './utils/localDb';
 export { NotFound } from './NotFound';
 export { Workspace } from './Workspace';
 export { initI18Next } from './i18n/initI18Next';
+export { ShareviewApp } from './ShareviewApp';

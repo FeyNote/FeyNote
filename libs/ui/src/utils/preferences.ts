@@ -11,31 +11,32 @@ import { getRandomColor } from './getRandomColor';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
 
-const LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 700;
-const RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 1300;
-
 export class PreferencesService {
   // Preference defaults - user preferences loaded locally will override
   preferences: AppPreferences = {
     preferencesVersion: 0,
 
-    [PreferenceNames.LeftPaneStartOpen]:
-      window.innerWidth >= RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX,
+    [PreferenceNames.LeftPaneStartOpen]: true,
     [PreferenceNames.LeftPaneShowPinnedArtifacts]: true,
     [PreferenceNames.LeftPaneShowRecentArtifacts]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
-    [PreferenceNames.RightPaneStartOpen]:
-      window.innerWidth >= LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX,
+    [PreferenceNames.RightPaneStartOpen]: true,
     [PreferenceNames.Language]: null,
     [PreferenceNames.FontSize]: SupportedFontSize.X1_0,
     [PreferenceNames.Theme]: AppTheme.Default,
     [PreferenceNames.CollaborationColor]: getRandomColor(),
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
   };
-  initialLoading: Promise<void>;
+  initialLoading: Promise<void> | undefined;
 
-  constructor() {
-    this.initialLoading = this.load();
+  constructor() {}
+
+  init() {
+    if (!this.initialLoading) {
+      this.initialLoading = this.load();
+    }
+
+    return this.initialLoading;
   }
 
   async save(localOnly?: boolean) {

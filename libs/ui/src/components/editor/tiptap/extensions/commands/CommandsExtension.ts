@@ -8,22 +8,29 @@ import { renderCommandList } from './renderCommandList';
 const commandMenuOptsRef = {
   enableCommandMenu: false,
 };
-window.addEventListener('keydown', (event) => {
+const keydownListener = (event: KeyboardEvent) => {
   if (event.key === '/') {
     commandMenuOptsRef.enableCommandMenu = true;
   }
   if (event.key === 'Escape') {
     commandMenuOptsRef.enableCommandMenu = false;
   }
-});
-window.addEventListener('mouseup', () => {
+}
+const mouseupListener = () => {
   setTimeout(() => {
     commandMenuOptsRef.enableCommandMenu = false;
   });
-});
+};
 
 export const CommandsExtension = Extension.create({
   name: 'customCommands',
+
+  onCreate() {
+    window.removeEventListener('keydown', keydownListener);
+    window.removeEventListener('mouseup', mouseupListener);
+    window.addEventListener('keydown', keydownListener);
+    window.addEventListener('mouseup', mouseupListener);
+  },
 
   addOptions() {
     return {

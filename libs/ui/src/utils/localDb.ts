@@ -1,4 +1,4 @@
-import { openDB } from 'idb';
+import { IDBPDatabase, openDB } from 'idb';
 
 export enum ObjectStoreName {
   Artifacts = 'artifacts',
@@ -13,53 +13,58 @@ export enum KVStoreKeys {
   SearchIndex = 'searchIndex',
 }
 
-const manifestDbP = openDB(`manifest`, 1, {
-  upgrade: (db, previousVersion, newVersion) => {
-    console.log(
-      `Manifest DB upgrading from ${previousVersion} to ${newVersion}`,
-    );
+const connect = () => {
+  return openDB(`manifest`, 1, {
+    upgrade: (db, previousVersion, newVersion) => {
+      console.log(
+        `Manifest DB upgrading from ${previousVersion} to ${newVersion}`,
+      );
 
-    switch (previousVersion) {
-      case 0: {
-        db.createObjectStore(ObjectStoreName.Artifacts, {
-          keyPath: 'id',
-        });
+      switch (previousVersion) {
+        case 0: {
+          db.createObjectStore(ObjectStoreName.Artifacts, {
+            keyPath: 'id',
+          });
 
-        db.createObjectStore(ObjectStoreName.PendingArtifacts, {
-          keyPath: 'id',
-        });
+          db.createObjectStore(ObjectStoreName.PendingArtifacts, {
+            keyPath: 'id',
+          });
 
-        db.createObjectStore(ObjectStoreName.ArtifactVersions, {
-          keyPath: 'id',
-        });
+          db.createObjectStore(ObjectStoreName.ArtifactVersions, {
+            keyPath: 'id',
+          });
 
-        const edgesDb = db.createObjectStore(ObjectStoreName.Edges, {
-          keyPath: 'id',
-        });
-        edgesDb.createIndex('artifactId', 'artifactId', { unique: false });
-        edgesDb.createIndex(
-          'artifactId, artifactBlockId',
-          ['artifactId', 'artifactBlockId'],
-          { unique: false },
-        );
-        edgesDb.createIndex('targetArtifactId', 'targetArtifactId', {
-          unique: false,
-        });
-        edgesDb.createIndex(
-          'targetArtifactId, targetArtifactBlockId',
-          ['targetArtifactId', 'targetArtifactBlockId'],
-          { unique: false },
-        );
+          const edgesDb = db.createObjectStore(ObjectStoreName.Edges, {
+            keyPath: 'id',
+          });
+          edgesDb.createIndex('artifactId', 'artifactId', { unique: false });
+          edgesDb.createIndex(
+            'artifactId, artifactBlockId',
+            ['artifactId', 'artifactBlockId'],
+            { unique: false },
+          );
+          edgesDb.createIndex('targetArtifactId', 'targetArtifactId', {
+            unique: false,
+          });
+          edgesDb.createIndex(
+            'targetArtifactId, targetArtifactBlockId',
+            ['targetArtifactId', 'targetArtifactBlockId'],
+            { unique: false },
+          );
 
-        db.createObjectStore(ObjectStoreName.KV, {
-          keyPath: 'key',
-        });
+          db.createObjectStore(ObjectStoreName.KV, {
+            keyPath: 'key',
+          });
+        }
       }
-    }
-  },
-});
+    },
+  })
+}
 
+let manifestDbP: Promise<IDBPDatabase> | undefined = undefined;
 export async function getManifestDb() {
+  if (!manifestDbP) manifestDbP = connect();
+
   const manifestDb = await manifestDbP;
   return manifestDb;
 }

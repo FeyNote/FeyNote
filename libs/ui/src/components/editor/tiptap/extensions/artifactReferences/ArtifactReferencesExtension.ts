@@ -17,23 +17,31 @@ export type ReferencePluginOptions = MentionOptions & {
 const mentionMenuOptsRef = {
   enableMentionMenu: false,
 };
-window.addEventListener('keydown', (event) => {
+const keydownListener = (event: KeyboardEvent) => {
   if (event.key === '@') {
     mentionMenuOptsRef.enableMentionMenu = true;
   }
   if (event.key === 'Escape') {
     mentionMenuOptsRef.enableMentionMenu = false;
   }
-});
-window.addEventListener('mouseup', () => {
+};
+const mouseupListener = () => {
   setTimeout(() => {
     mentionMenuOptsRef.enableMentionMenu = false;
   });
-});
+};
 
 export const ArtifactReferencesExtension =
   Mention.extend<ReferencePluginOptions>({
     name: 'artifactReference',
+
+    onCreate() {
+      window.removeEventListener('keydown', keydownListener);
+      window.removeEventListener('mouseup', mouseupListener);
+      window.addEventListener('keydown', keydownListener);
+      window.addEventListener('mouseup', mouseupListener);
+    },
+
     addAttributes() {
       return {
         artifactId: {

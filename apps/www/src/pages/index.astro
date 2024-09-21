@@ -1,0 +1,22 @@
+---
+import {
+  ShareviewApp,
+} from '@feynote/ui';
+
+const { resource, id } = Astro.params;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FeyNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <div id="referencePreviewContainer"></div>
+    <ShareviewApp id="2d37b1e7-49f4-4063-8ba7-adcb99ac4bb2" client:only="react" />
+    <!-- <script type="module" src="/src/main.tsx"></script> -->
+  </body>
+</html>

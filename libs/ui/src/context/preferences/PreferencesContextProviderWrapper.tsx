@@ -25,7 +25,7 @@ export const PreferencesContextProviderWrapper = ({
     let isMounted = true;
     if (!gotInitialLoadEvent.current) {
       // I hate react sometimes
-      preferencesService.initialLoading.then(() => {
+      preferencesService.init().then(() => {
         if (!gotInitialLoadEvent.current && isMounted) {
           triggerRerender();
           gotInitialLoadEvent.current = true;

@@ -9,6 +9,8 @@
   "private": true,
   "dependencies": {
     "@ai-sdk/openai": "^0.0.55",
+    "@astrojs/node": "^8.3.3",
+    "@astrojs/react": "^3.6.2",
     "@aws-sdk/client-ses": "^3.645.0",
     "@floating-ui/react-dom": "^2.1.1",
     "@hocuspocus/extension-database": "2.13.5",
@@ -60,6 +62,7 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "ai": "^3.3.26",
+    "astro": "^4.15.6",
     "body-parser": "^1.20.2",
     "bullmq": "^5.12.14",
     "cors": "^2.8.5",
