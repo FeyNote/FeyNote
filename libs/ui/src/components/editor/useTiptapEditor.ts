@@ -46,6 +46,7 @@ import { IsolatingContainerBackspaceExtension } from './tiptap/extensions/isolat
 import { useContext, useEffect, useMemo } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { BlockGroup } from './tiptap/extensions/BlockGroup';
 
 type DocArgOptions =
   | {
@@ -84,6 +85,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const extensions = [
     DocumentExtension,
     ParagraphExtension,
+    BlockGroup,
     HeadingExtension,
     TextExtension,
     HorizontalRule,

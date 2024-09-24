@@ -1,16 +1,8 @@
-/* eslint-disable no-param-reassign */
-// Sources:
-// https://github.com/ueberdosis/tiptap/issues/1036#issuecomment-981094752
-// https://github.com/django-tiptap/django_tiptap/blob/main/django_tiptap/templates/forms/tiptap_textarea.html#L453-L602
-
-import {
-  CommandProps,
-  Extension,
-  Extensions,
-  isList,
-  KeyboardShortcutCommand,
-} from '@tiptap/core';
-import { TextSelection, Transaction } from 'prosemirror-state';
+import { Extension, KeyboardShortcutCommand } from '@tiptap/core';
+import { Node } from 'prosemirror-model';
+import { TextSelection, Transaction, Selection } from 'prosemirror-state';
+import { findWrapping } from 'prosemirror-transform';
+import { autoJoin } from 'prosemirror-commands';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -21,198 +13,167 @@ declare module '@tiptap/core' {
   }
 }
 
-type IndentOptions = {
-  names: Array<string>;
-  indentRange: number;
-  minIndentLevel: number;
-  maxIndentLevel: number;
-  defaultIndentLevel: number;
-  HTMLAttributes: Record<string, any>;
-};
-export const IndentationExtension = Extension.create<IndentOptions, never>({
+export const IndentationExtension = Extension.create<{}, never>({
   name: 'customIndentation',
-
-  addOptions() {
-    return {
-      names: ['heading', 'paragraph'],
-      indentRange: 1,
-      minIndentLevel: 0,
-      maxIndentLevel: 15,
-      defaultIndentLevel: 0,
-      HTMLAttributes: {},
-    };
-  },
-
-  addGlobalAttributes() {
-    return [
-      {
-        types: this.options.names,
-        attributes: {
-          indent: {
-            default: this.options.defaultIndentLevel,
-            renderHTML: (attributes) => ({
-              'data-depth': attributes.indent.toString(),
-              'data-indented': attributes.indent !== 0,
-            }),
-            parseHTML: (element) =>
-              parseInt(element.getAttribute('data-depth') || '0', 10) ??
-              this.options.defaultIndentLevel,
-          },
-        },
-      },
-    ];
-  },
 
   addCommands(this) {
     return {
-      indent:
-        () =>
-        ({ tr, state, dispatch, editor }: CommandProps) => {
-          const { selection } = state;
-          tr = tr.setSelection(selection);
-          tr = updateIndentLevel(
-            tr,
-            this.options,
-            editor.extensionManager.extensions,
-            'indent',
+      indent: () => {
+        return (tiptapCommandProps) => {
+          const pmCommand = autoJoin(
+            (state, dispatch, view) => {
+              const { selection } = state;
+              let tr = state.tr.setSelection(selection);
+              tr = updateIndentLevel(tr, 'indent');
+              if (tr.docChanged && dispatch) {
+                dispatch(tr);
+                return true;
+              }
+              return false;
+            },
+            ['blockGroup'],
           );
-          if (tr.docChanged && dispatch) {
-            dispatch(tr);
-            return true;
-          }
-          return false;
-        },
-      outdent:
-        () =>
-        ({ tr, state, dispatch, editor }: CommandProps) => {
-          const { selection } = state;
-          tr = tr.setSelection(selection);
-          tr = updateIndentLevel(
-            tr,
-            this.options,
-            editor.extensionManager.extensions,
-            'outdent',
+
+          return pmCommand(
+            tiptapCommandProps.state,
+            tiptapCommandProps.dispatch,
           );
-          if (tr.docChanged && dispatch) {
-            dispatch(tr);
-            return true;
-          }
-          return false;
-        },
+        };
+      },
+      outdent: () => {
+        return (tiptapCommandProps) => {
+          const pmCommand = autoJoin(
+            (state, dispatch, view) => {
+              const { selection } = state;
+              let tr = state.tr.setSelection(selection);
+              tr = updateIndentLevel(tr, 'outdent');
+              if (tr.docChanged && dispatch) {
+                dispatch(tr);
+                return true;
+              }
+              return false;
+            },
+            ['blockGroup'],
+          );
+
+          return pmCommand(
+            tiptapCommandProps.state,
+            tiptapCommandProps.dispatch,
+          );
+        };
+      },
     };
   },
 
   addKeyboardShortcuts() {
     return {
-      Tab: getIndent(),
-      'Shift-Tab': getOutdent(false),
-      Backspace: getOutdent(true),
-      'Mod-]': getIndent(),
-      'Mod-[': getOutdent(false),
+      Tab: keyboardIndentHandler(),
+      'Shift-Tab': keyboardOutdentHandler(),
+      Backspace: keyboardBackspaceHandler(),
+      'Mod-]': keyboardIndentHandler(),
+      'Mod-[': keyboardOutdentHandler(),
     };
-  },
-  onUpdate() {
-    const { editor } = this;
-    if (editor.isActive('listItem')) {
-      const node = editor.state.selection.$head.node();
-      if (node.attrs.indent) {
-        editor.commands.updateAttributes(node.type.name, { indent: 0 });
-      }
-    }
   },
 });
 
-export const clamp = (val: number, min: number, max: number): number => {
-  if (val < min) {
-    return min;
-  }
-  if (val > max) {
-    return max;
-  }
-  return val;
+const getNodeRange = (doc: Node, selection: Selection) => {
+  return doc
+    .resolve(selection.from)
+    .blockRange(doc.resolve(selection.to), (pred) => {
+      // These types cannot be wrapped themselves, so we need to find the nearest parent that can be wrapped. By returning false blockRange will recurse upwards for a parent.
+      return !['listItem', 'bulletList'].includes(pred.type.name);
+    });
 };
 
-function setNodeIndentMarkup(
-  tr: Transaction,
-  pos: number,
-  delta: number,
-  min: number,
-  max: number,
-): Transaction {
-  if (!tr.doc) return tr;
-  const node = tr.doc.nodeAt(pos);
-  if (!node) return tr;
-  const indent = clamp((node.attrs.indent || 0) + delta, min, max);
-  if (indent === node.attrs.indent) return tr;
-  const nodeAttrs = {
-    ...node.attrs,
-    indent,
+function keyboardBackspaceHandler(): KeyboardShortcutCommand {
+  return (args) => {
+    const { editor } = args;
+    const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
+
+    // When cursor is in middle of text, use default backspace behavior
+    if (
+      editor.state.selection.$head.parentOffset > 0 ||
+      editor.state.selection.content().content.size
+    ) {
+      return false;
+    }
+
+    // If we're nested, outdent
+    if (nodeRange && nodeRange.depth !== 0) {
+      return keyboardOutdentHandler()(args);
+    }
+    // If we're at the start of a line with no selection, we join backwards to the nearest textblock
+    if (
+      editor.state.selection.$head.parentOffset === 0 &&
+      !editor.state.selection.content().content.size
+    ) {
+      return editor.chain().joinTextblockBackward().run();
+    }
+
+    // Fall back to normal backspace behavior
+    return false;
   };
-  return tr.setNodeMarkup(pos, node.type, nodeAttrs, node.marks);
 }
 
-type IndentType = 'indent' | 'outdent';
-const updateIndentLevel = (
-  tr: Transaction,
-  options: IndentOptions,
-  extensions: Extensions,
-  type: IndentType,
-): Transaction => {
-  const { doc, selection } = tr;
-  if (!doc || !selection) return tr;
-  if (!(selection instanceof TextSelection)) {
-    return tr;
-  }
-  const { from, to } = selection;
-  doc.nodesBetween(from, to, (node, pos) => {
-    if (options.names.includes(node.type.name)) {
-      tr = setNodeIndentMarkup(
-        tr,
-        pos,
-        options.indentRange * (type === 'indent' ? 1 : -1),
-        options.minIndentLevel,
-        options.maxIndentLevel,
-      );
-      return false;
+function keyboardIndentHandler(): KeyboardShortcutCommand {
+  // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
+  return ({ editor }): true => {
+    if (editor.isActive('listItem')) {
+      editor.chain().focus().sinkListItem('listItem').run();
+      return true;
     }
-    return !isList(node.type.name, extensions);
-  });
-  return tr;
-};
 
-export const getIndent: () => KeyboardShortcutCommand =
-  () =>
-  ({ editor }) => {
-    if (editor.can().sinkListItem('listItem')) {
-      return editor.chain().focus().sinkListItem('listItem').run();
-    }
-    return editor.chain().focus().indent().run();
+    editor.chain().focus().indent().run();
+    return true;
   };
-export const getOutdent: (
-  outdentOnlyAtHead: boolean,
-) => KeyboardShortcutCommand =
-  (outdentOnlyAtHead) =>
-  ({ editor }) => {
-    if (
-      outdentOnlyAtHead &&
-      (editor.state.selection.$head.parentOffset > 0 ||
-        editor.state.selection.content().content.size)
-    ) {
-      return false;
+}
+
+function keyboardOutdentHandler(): KeyboardShortcutCommand {
+  // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
+  return ({ editor }): true => {
+    if (editor.isActive('listItem')) {
+      // List items always take precedence over indentation
+      editor.chain().focus().liftListItem('listItem').run();
+      return true;
     }
-    if (
-      /**
-       * editor.state.selection.$head.parentOffset > 0があるのは
-       * ```
-       * - Hello
-       * |<<ここにカーソル
-       * ```
-       * この状態でBackSpaceを繰り返すとlistItemのtoggleが繰り返されるのを防ぐため
-       */
-      (!outdentOnlyAtHead || editor.state.selection.$head.parentOffset > 0) &&
-      editor.can().liftListItem('listItem')
-    ) {
-      return editor.chain().focus().liftListItem('listItem').run();
+
+    if (!getNodeRange(editor.state.doc, editor.state.selection)?.depth) {
+      // We are not nested, so we do not do anything
+      return true;
     }
-    return editor.chain().focus().outdent().run();
+
+    editor.chain().focus().outdent().run();
+    return true;
   };
+}
+
+function updateIndentLevel(
+  tr: Transaction,
+  type: 'indent' | 'outdent',
+): Transaction {
+  if (!(tr.selection instanceof TextSelection)) {
+    return tr; // No action if it's not a text selection
+  }
+
+  const nodeRange = getNodeRange(tr.doc, tr.selection);
+  if (!nodeRange) throw new Error('Invalid node range');
+
+  if (type === 'indent') {
+    const wrapping = findWrapping(
+      nodeRange,
+      tr.doc.type.schema.nodes.blockGroup,
+    );
+    if (!wrapping) {
+      console.error('Invalid wrapping');
+      return tr;
+    }
+
+    tr = tr.wrap(nodeRange, wrapping);
+  }
+
+  if (type === 'outdent') {
+    tr = tr.lift(nodeRange, Math.max(nodeRange.depth - 1, 0));
+  }
+
+  return tr;
+}
