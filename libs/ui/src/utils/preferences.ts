@@ -11,6 +11,9 @@ import { getRandomColor } from './getRandomColor';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
 
+const LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 700;
+const RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 1300;
+
 export class PreferencesService {
   // Preference defaults - user preferences loaded locally will override
   preferences: AppPreferences = {
@@ -35,6 +38,12 @@ export class PreferencesService {
 
   init() {
     if (!this.initialLoading) {
+      // These preferences must be initialized upon React render since window is not available during SSR
+      this.preferences[PreferenceNames.LeftPaneStartOpen] =
+        window && window.innerWidth >= LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX;
+      this.preferences[PreferenceNames.RightPaneStartOpen] =
+        window && window.innerWidth >= RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX;
+
       this.initialLoading = this.load();
     }
 
