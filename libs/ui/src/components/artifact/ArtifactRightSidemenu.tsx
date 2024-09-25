@@ -108,6 +108,42 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     [props.artifact, session.userId],
   );
 
+  const incomingArtifactReferenceTitles = useMemo(
+    () =>
+      Object.entries(
+        props.artifact.incomingArtifactReferences.reduce<{
+          [key: string]: string;
+        }>((acc, el) => {
+          // We don't want to show self-references in the incoming artifact references list
+          if (el.artifactId === props.artifact.id) return acc;
+
+          acc[el.artifactId] = el.artifact.title;
+          return acc;
+        }, {}),
+      ),
+    [props.artifact],
+  );
+
+  const artifactReferenceTitles = useMemo(
+    () =>
+      Object.entries(
+        props.artifact.artifactReferences.reduce<{ [key: string]: string }>(
+          (acc, el) => {
+            // We don't want to show broken references in the referenced artifact list
+            if (!el.targetArtifact) return acc;
+
+            // We don't want to show self-references in the referenced artifact list
+            if (el.targetArtifactId === props.artifact.id) return acc;
+
+            acc[el.targetArtifactId] = el.targetArtifact.title;
+            return acc;
+          },
+          {},
+        ),
+      ),
+    [props.artifact],
+  );
+
   return (
     <>
       <IonCard>
@@ -210,7 +246,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </CompactIonItem>
         </IonCard>
       )}
-      {!!props.artifact.incomingArtifactReferences.length && (
+      {!!incomingArtifactReferenceTitles.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -220,25 +256,27 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.incomingArtifactReferences.help')}
             />
           </IonListHeader>
-          {props.artifact.incomingArtifactReferences.map((el) => (
-            <CompactIonItem
-              lines="none"
-              key={el.id}
-              onClick={() =>
-                navigate(
-                  PaneableComponent.Artifact,
-                  { id: el.artifactId },
-                  PaneTransition.Push,
-                )
-              }
-              button
-            >
-              <NowrapIonLabel>{el.artifact.title}</NowrapIonLabel>
-            </CompactIonItem>
-          ))}
+          {incomingArtifactReferenceTitles.map(
+            ([otherArtifactId, otherArtifactTitle]) => (
+              <CompactIonItem
+                lines="none"
+                key={otherArtifactId}
+                onClick={() =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: otherArtifactId },
+                    PaneTransition.Push,
+                  )
+                }
+                button
+              >
+                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
+              </CompactIonItem>
+            ),
+          )}
         </IonCard>
       )}
-      {!!props.artifact.artifactReferences.length && (
+      {!!artifactReferenceTitles.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -248,22 +286,24 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.artifactReferences.help')}
             />
           </IonListHeader>
-          {props.artifact.artifactReferences.map((el) => (
-            <CompactIonItem
-              lines="none"
-              key={el.id}
-              onClick={() =>
-                navigate(
-                  PaneableComponent.Artifact,
-                  { id: el.artifactId },
-                  PaneTransition.Push,
-                )
-              }
-              button
-            >
-              <NowrapIonLabel>{el.referenceText}</NowrapIonLabel>
-            </CompactIonItem>
-          ))}
+          {artifactReferenceTitles.map(
+            ([otherArtifactId, otherArtifactTitle]) => (
+              <CompactIonItem
+                lines="none"
+                key={otherArtifactId}
+                onClick={() =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: otherArtifactId },
+                    PaneTransition.Push,
+                  )
+                }
+                button
+              >
+                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
+              </CompactIonItem>
+            ),
+          )}
         </IonCard>
       )}
     </>

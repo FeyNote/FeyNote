@@ -18,6 +18,11 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         targetArtifactId: true,
         targetArtifactBlockId: true,
         referenceTargetArtifactId: true,
+        targetArtifact: {
+          select: {
+            title: true,
+          },
+        },
         referenceText: true,
         targetArtifactDate: true,
       },
