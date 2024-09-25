@@ -11,6 +11,8 @@ import {
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
+import { NetworkFirst } from 'workbox-strategies';
+import { ExpirationPlugin } from 'workbox-expiration';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
@@ -151,13 +153,53 @@ const cacheSingleResponse = async (
   }
 };
 
-self.addEventListener('install', () => {
+const APP_SRC_CACHE_NAME = 'app-asset-cache';
+const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
+self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
+
+  event.waitUntil(
+    caches
+      .delete(APP_SRC_CACHE_NAME)
+      .then(() =>
+        caches
+          .open(APP_SRC_CACHE_NAME)
+          .then((cache) => cache.addAll(APP_SRC_PRECACHE_URLS)),
+      ),
+  );
 });
 
 self.addEventListener('activate', () => {
   console.log('Service Worker activated');
 });
+
+// Index should be cached networkFirst - this way, users will always get the newest application version
+const MAX_OFFLINE_INDEX_AGE_DAYS = 60;
+registerRoute(
+  /(\/index\.html)|\//,
+  new NetworkFirst({
+    cacheName: APP_SRC_CACHE_NAME,
+    plugins: [
+      new ExpirationPlugin({
+        maxAgeSeconds: 60 * 60 * 24 * MAX_OFFLINE_INDEX_AGE_DAYS,
+      }),
+    ],
+  }),
+);
+
+// Language files should always come from network first since they change frequently
+const MAX_LANGUAGE_AGE_DAYS = 30;
+registerRoute(
+  /\/locales\/.*/,
+  new NetworkFirst({
+    cacheName: APP_SRC_CACHE_NAME,
+    plugins: [
+      new ExpirationPlugin({
+        maxAgeSeconds: 60 * 60 * 24 * MAX_LANGUAGE_AGE_DAYS,
+      }),
+    ],
+  }),
+);
 
 registerRoute(
   /api\/trpc\/artifact\.getArtifactById/,
