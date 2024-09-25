@@ -1,0 +1,87 @@
+---
+import GlobalStyles from './GlobalStyles.astro';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FeyNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <GlobalStyles />
+    <style>
+      body {
+        color: white;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .nav .title {
+        font-size: 1.1rem;
+        text-decoration: none;
+      }
+
+      .nav .nav-item {
+        font-size: 1rem;
+        margin-left: 40px;
+        text-decoration: none;
+      }
+
+      .go-to-app {
+        margin-left: auto;
+      }
+
+      .content {
+        max-width: min(700px, 90%);
+        margin-top: 60px;
+        margin-left: auto;
+        margin-right: auto;
+        padding-bottom: 100px;
+      }
+
+      .fantasy-bg {
+        background-position: center center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/czepeku-medusaswake-1120x1645-20240924.jpg");
+      }
+
+      @media (min-width: 1121px) {
+        .fantasy-bg {
+          background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/czepeku-medusaswake-2240x3290-20240924.jpg");
+        }
+      }
+
+      @media (min-width: 2241px) {
+        .fantasy-bg {
+          background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/czepeku-medusaswake-4480x6580-20240924.jpg");
+        }
+      }
+    </style>
+  </head>
+  <body class="fantasy-bg">
+    <div class="nav">
+      <a class="title" href="/">FeyNote</a>
+
+      <a class="nav-item" href="https://discord.gg/Tz8trXrd4C">Discord</a>
+      <a class="nav-item" href="/pricing">Pricing</a>
+      <a class="nav-item" href="/features">Features</a>
+
+      <a class="go-to-app" href="https://app.feynote.com">Go to App</a>
+    </div>
+    <div class="content">
+      <slot />
+    </div>
+  </body>
+</html>
