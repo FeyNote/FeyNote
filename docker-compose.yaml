@@ -6,20 +6,12 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     ports:
       - '80:80'
+      - '8080:8080'
     command: nginx -g 'daemon off;'
     depends_on:
       - frontend
       - backend
-  proxy-www:
-    image: nginx
-    volumes:
-      - ./nginx/default-www.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - '8080:80'
-    command: nginx -g 'daemon off;'
-    depends_on:
       - www
-      - backend
   frontend:
     build:
       context: .
