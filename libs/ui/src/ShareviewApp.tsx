@@ -19,7 +19,7 @@ initI18Next();
 setupIonicReact();
 
 interface Props {
-  id: string
+  id: string;
 }
 export const ShareviewApp: React.FC<Props> = (props) => {
   return (
@@ -28,5 +28,5 @@ export const ShareviewApp: React.FC<Props> = (props) => {
         <ArtifactShareView artifactId={props.id} />
       </PreferencesContextProviderWrapper>
     </IonApp>
-  )
-}
+  );
+};

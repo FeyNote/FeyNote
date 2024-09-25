@@ -19,10 +19,15 @@ const apiUrlsByEnv = {
 
 export const getApiUrls = () => {
   try {
-    if (import.meta.env.MODE === "development" || import.meta.env.VITE_ENVIRONMENT === 'development') {
+    if (
+      import.meta.env.MODE === 'development' ||
+      import.meta.env.VITE_ENVIRONMENT === 'development'
+    ) {
       return apiUrlsByEnv.development;
     }
-  } catch(e) {}
+  } catch (e) {
+    // Do nothing
+  }
 
   // We reference self here so that we're service-worker compatible
   // eslint-disable-next-line no-restricted-globals

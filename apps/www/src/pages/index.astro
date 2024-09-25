@@ -1,22 +1,78 @@
 ---
-import {
-  ShareviewApp,
-} from '@feynote/ui';
-
-const { resource, id } = Astro.params;
+import RootLayout from '../components/RootLayout.astro'
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>FeyNote</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <div id="referencePreviewContainer"></div>
-    <ShareviewApp id="2d37b1e7-49f4-4063-8ba7-adcb99ac4bb2" client:only="react" />
-    <!-- <script type="module" src="/src/main.tsx"></script> -->
-  </body>
-</html>
+<style>
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  .title-section {
+    margin-top: 100px;
+    margin-bottom: 100px;
+  }
+
+  .section {
+    margin-top: 50px;
+  }
+
+  img.preview {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+  }
+</style>
+<RootLayout title="Feynote">
+  <div class="center">
+    <div class="title-section">
+      <h1>Welcome to FeyNote</h1>
+
+      An advanced note-taking app for world-builders and tabletop RPG players.
+
+      <br />
+      <br />
+
+      <a href="https://app.feynote.com" class="go-to-app">Go to App</a>
+    </div>
+
+    <div class="section">
+      <h2>Advanced Editor</h2>
+      <img class="preview" src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg" alt="FeyNote Artifact Editor" />
+
+      FeyNote's editor is very powerful. Embed monsters, spells, items, rollable tables, and more directly into your notes.
+    </div>
+
+    <div class="section">
+      <h2>Sharing and Collaboration</h2>
+      <img class="preview" src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg" alt="FeyNote Sharing Options" />
+
+      FeyNote is built with sharing in mind from the ground up. Live collaborate or share read-only copies with players, the choice is yours!
+    </div>
+
+    <div class="section">
+      <h2>References and Linked Content</h2>
+      <img class="preview" src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg" alt="FeyNote Calendar" />
+
+      You can quickly and easily reference related content between your artifacts, reducing duplication and keeping your references up to date when the content changes.
+    </div>
+
+    <div class="section">
+      <h2>Fantasy Calendars</h2>
+      <img class="preview" src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg" alt="FeyNote Calendar" />
+
+      FeyNote's calendar functionality is extremely flexible. You can specify any fantasy calendar layout you might imagine.<br />
+      Customize the number of months in a year, the number of days in each month, and the names of everything!
+    </div>
+
+    <div class="section">
+      <h2>Graph Visualization</h2>
+      <img class="preview" src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg" alt="FeyNote Graph Visualizer" />
+
+      Visualize the content within your collection in a graph view. Particularly useful for large collections with lots of relationships, the graph view gives you a browsable view of everything in your collection.
+    </div>
+  </div>
+</RootLayout>

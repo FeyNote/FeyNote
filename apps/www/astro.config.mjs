@@ -5,11 +5,16 @@ import node from '@astrojs/node';
 // https://astro.build/config
 export default defineConfig({
   server: {
-    host: true
+    host: true,
   },
   integrations: [react()],
-  output: 'server',
+  output: 'hybrid',
   adapter: node({
     mode: 'standalone',
   }),
+  vite: {
+    ssr: {
+      noExternal: ['path-to-regexp'],
+    },
+  },
 });

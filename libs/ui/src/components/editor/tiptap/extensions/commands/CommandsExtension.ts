@@ -15,7 +15,7 @@ const keydownListener = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
     commandMenuOptsRef.enableCommandMenu = false;
   }
-}
+};
 const mouseupListener = () => {
   setTimeout(() => {
     commandMenuOptsRef.enableCommandMenu = false;

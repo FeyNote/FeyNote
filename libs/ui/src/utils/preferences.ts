@@ -29,7 +29,9 @@ export class PreferencesService {
   };
   initialLoading: Promise<void> | undefined;
 
-  constructor() {}
+  constructor() {
+    // Do nothing
+  }
 
   init() {
     if (!this.initialLoading) {

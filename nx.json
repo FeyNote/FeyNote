@@ -35,12 +35,12 @@
       "cache": true,
       "inputs": ["default", "^production"]
     },
-    "@nx/next:build": {
+    "@nx/vite:build": {
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
     },
-    "@nx/vite:build": {
+    "@nx/esbuild:esbuild": {
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["production", "^production"]
