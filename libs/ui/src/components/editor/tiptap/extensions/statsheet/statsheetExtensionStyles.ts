@@ -12,11 +12,12 @@ export const statsheetExtensionStyles = css`
 
   text-rendering: optimizeLegibility;
   background-color: #f2e5b5;
-  background-image: url('/assets/parchment-background-grayscale.jpg');
+  background-image: url('https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg');
   background-blend-mode: overlay;
   border-style: solid;
   border-width: 7px 6px;
-  border-image: url('/assets/monster-border.png') 14 round;
+  border-image: url('https://static.feynote.com/assets/monster-border-20240925.png')
+    14 round;
   border-image-outset: 0px 2px;
   box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
 
@@ -73,7 +74,7 @@ export const statsheetExtensionStyles = css`
     margin-top: 8px;
     margin-bottom: 8px;
     visibility: visible;
-    background-image: url('/assets/red-triangle.png');
+    background-image: url('https://static.feynote.com/assets/red-triangle-20240925.png');
     background-size: 100% 100%;
     background-color: unset;
     border: none;

@@ -18,7 +18,8 @@ export const ttrpgNoteExtensionStyles = css`
     background-color: #e0e5c1;
     border-style: solid;
     border-width: 1px;
-    border-image: url('/assets/note-border.png') 12 stretch;
+    border-image: url('https://static.feynote.com/assets/note-border-20240925.png')
+      12 stretch;
     border-image-outset: 0;
     border-image-width: 1;
     border-image-width: 11px;

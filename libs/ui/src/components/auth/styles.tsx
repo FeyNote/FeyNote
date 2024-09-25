@@ -33,6 +33,7 @@ export const SignInWithGoogleButton = styled(SignInWithGoogle)`
 `;
 
 export const IonContentFantasyBackground = styled(IonContent)`
-  --background: url('/assets/czepeku_medusaswake.jpg') top center / cover
-    no-repeat fixed padding-box content-box var(--ion-background-color, #ffffff);
+  --background: url('https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg')
+    top center / cover no-repeat fixed padding-box content-box
+    var(--ion-background-color, #ffffff);
 `;

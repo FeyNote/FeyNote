@@ -75,7 +75,7 @@ export const AIMessagesContainer = (props: Props) => {
                 {isUser ? (
                   <UserIcon icon={personCircle} />
                 ) : (
-                  <AILogo src="/assets/feynote_icon.png" />
+                  <AILogo src="https://static.feynote.com/assets/feynote-icon-20240925.png" />
                 )}
                 <FlexColumn>
                   <MessageHeader>{name}</MessageHeader>

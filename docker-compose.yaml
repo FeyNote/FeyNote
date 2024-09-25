@@ -42,6 +42,7 @@ services:
     command: npx nx serve www --skip-nx-cache
     environment:
       - NODE_ENV=development
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
     depends_on:
       - backend
   hocuspocus:

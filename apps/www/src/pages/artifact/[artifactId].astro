@@ -1,29 +1,36 @@
 ---
 import {
   ShareviewApp,
-  trpc,
 } from '@feynote/ui';
+import {
+  prisma
+} from '@feynote/prisma/client';
+
+export const prerender = false;
 
 const { artifactId } = Astro.params;
----
-<script>
-  const artifact = await trpc.artifact.getArtifactById.query({
-    id: artifactId,
-  });
 
-  console.log(artifact);
-</script>
+const artifact = await prisma.artifact.findUnique({
+  where: {
+    id: artifactId,
+  },
+  select: {
+    id: true,
+    title: true,
+  },
+});
+---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>FeyNote</title>
+    <title>{artifact.title} - FeyNote</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="https://static.feynote.com/assets/favicon-20240925.ico" />
   </head>
   <body>
     <div id="root"></div>
     <div id="referencePreviewContainer"></div>
-    <ShareviewApp id={artifactId} client:load="react" />
+    <ShareviewApp id={artifactId} client:only="react" />
   </body>
 </html>

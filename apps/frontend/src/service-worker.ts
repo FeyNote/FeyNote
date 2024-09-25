@@ -16,6 +16,15 @@ cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
 precacheAndRoute(self.__WB_MANIFEST);
 
+const staticAssets = [
+  'https://static.feynote.com/assets/parchment-background-20240925.jpg',
+  'https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg',
+  'https://static.feynote.com/assets/monster-border-20240925.png',
+  'https://static.feynote.com/assets/note-border-20240925.png',
+  'https://static.feynote.com/assets/red-triangle-20240925.png',
+];
+precacheAndRoute(staticAssets);
+
 (self as any).skipWaiting();
 clientsClaim();
 
