@@ -9,7 +9,7 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "astro build --root apps/www"
-      },
+      }
     },
     "serve": {
       "executor": "nx:run-commands",

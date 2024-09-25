@@ -58,8 +58,8 @@ const connect = () => {
         }
       }
     },
-  })
-}
+  });
+};
 
 let manifestDbP: Promise<IDBPDatabase> | undefined = undefined;
 export async function getManifestDb() {
