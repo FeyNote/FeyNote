@@ -40,6 +40,8 @@ export const getReferenceSuggestions = async ({
   }
 
   for (const block of blocks) {
+    if (!block.text.trim() || block.text.trim().startsWith('@')) continue;
+
     suggestionItems.push({
       artifactId: block.artifactId,
       artifactBlockId: block.id,
