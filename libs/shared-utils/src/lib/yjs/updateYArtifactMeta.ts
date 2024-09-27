@@ -11,4 +11,5 @@ export const updateYArtifactMeta = (
   artifactMetaYMap.set('title', meta.title);
   artifactMetaYMap.set('theme', meta.theme);
   artifactMetaYMap.set('type', meta.type);
+  artifactMetaYMap.set('titleBodyMerge', meta.titleBodyMerge);
 };

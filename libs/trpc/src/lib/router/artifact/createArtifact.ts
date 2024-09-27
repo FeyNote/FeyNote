@@ -16,6 +16,7 @@ export const createArtifact = authenticatedProcedure
       text: z.string(),
       json: artifactJsonSchema,
       theme: z.nativeEnum(ArtifactTheme),
+      titleBodyMerge: z.boolean().optional(),
     }),
   )
   .mutation(
@@ -29,6 +30,7 @@ export const createArtifact = authenticatedProcedure
         title: input.title,
         theme: input.theme,
         type: input.type,
+        titleBodyMerge: input.titleBodyMerge ?? true,
       });
       const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 
