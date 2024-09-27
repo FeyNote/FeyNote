@@ -1,18 +1,31 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable @nx/enforce-module-boundaries */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { superjson } from '../../../libs/ui/src/utils/trpc';
+import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
+import {
+  getManifestDb,
+  ObjectStoreName,
+} from '../../../libs/ui/src/utils/localDb';
+import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { superjson } from './utils/trpc';
-import { SearchManager } from './utils/SearchManager';
-import { getManifestDb, ObjectStoreName } from './utils/localDb';
-import { SyncManager } from './utils/SyncManager';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
 precacheAndRoute(self.__WB_MANIFEST);
+
+const staticAssets = [
+  'https://static.feynote.com/assets/parchment-background-20240925.jpg',
+  'https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg',
+  'https://static.feynote.com/assets/monster-border-20240925.png',
+  'https://static.feynote.com/assets/note-border-20240925.png',
+  'https://static.feynote.com/assets/red-triangle-20240925.png',
+];
+precacheAndRoute(staticAssets);
 
 (self as any).skipWaiting();
 clientsClaim();

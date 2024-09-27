@@ -16,18 +16,23 @@ import '@ionic/react/css/display.css';
 import { setupIonicReact } from '@ionic/react';
 
 import '@ionic/react/css/palettes/dark.class.css';
-import './css/global.css';
-import { SessionContextProviderWrapper } from './context/session/SessionContextProviderWrapper';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import '../../../../libs/ui/src/css/global.css';
 
-import './i18n';
-import { PreferencesContextProviderWrapper } from './context/preferences/PreferencesContextProviderWrapper';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { GlobalSearchContextProviderWrapper } from './context/globalSearch/GlobalSearchContextProviderWrapper';
-import { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPaneContextProviderWrapper';
-import { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
-import { Workspace } from './Workspace';
-import { ArtifactShareView } from './components/sharing/sharedArtifactByToken/ArtifactShareView';
-import { NotFound } from './NotFound';
+import {
+  SessionContextProviderWrapper,
+  PreferencesContextProviderWrapper,
+  GlobalSearchContextProviderWrapper,
+  GlobalPaneContextProviderWrapper,
+  SidemenuContextProviderWrapper,
+  ArtifactShareView,
+  NotFound,
+  Workspace,
+  initI18Next,
+} from '@feynote/ui';
+
+initI18Next();
 
 const SW_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
 
