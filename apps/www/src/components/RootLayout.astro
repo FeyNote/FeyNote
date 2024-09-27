@@ -1,5 +1,6 @@
 ---
 import GlobalStyles from './GlobalStyles.astro';
+import GoToAppButton from '../components/GoToAppButton.astro';
 
 const { title } = Astro.props;
 ---
@@ -80,7 +81,9 @@ const { title } = Astro.props;
       <a class="nav-item" href="/pricing">Pricing</a>
       <a class="nav-item" href="/features">Features</a>
 
-      <a class="go-to-app" href="https://app.feynote.com">Go to App</a>
+      <div class="go-to-app">
+        <GoToAppButton />
+      </div>
     </div>
     <div class="content">
       <slot />
