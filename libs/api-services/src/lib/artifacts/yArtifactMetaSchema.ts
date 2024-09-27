@@ -6,4 +6,5 @@ export const yArtifactMetaSchema = z.object({
   title: z.string(),
   theme: z.nativeEnum(ArtifactTheme),
   type: z.nativeEnum(ArtifactType),
+  titleBodyMerge: z.boolean(),
 }) satisfies ZodSchema<YArtifactMetaSchema>;

@@ -42,6 +42,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const yDoc = props.yDoc || props.yjsProvider.document;
   const [title, setTitle] = useState('');
   const [theme, setTheme] = useState<ArtifactTheme>('default');
+  const [titleBodyMerge, setTitleBodyMerge] = useState(true);
   const { eventManager } = useContext(EventContext);
   const { t } = useTranslation();
 
@@ -62,6 +63,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
       const yArtifactMeta = getMetaFromYArtifact(yDoc);
       setTitle(yArtifactMeta.title ?? title);
       setTheme(yArtifactMeta.theme ?? theme);
+      setTitleBodyMerge(yArtifactMeta.titleBodyMerge ?? titleBodyMerge);
     };
 
     listener();
@@ -73,30 +75,37 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
   };
 
+  const titleInput = (
+    <IonItem lines="none" className="artifactTitle">
+      <ArtifactTitleInput
+        disabled={!props.editable}
+        placeholder={t('artifactRenderer.title.placeholder')}
+        value={title}
+        onIonInput={(event) => {
+          setMetaProp('title', event.target.value || '');
+          eventManager.broadcast([EventName.ArtifactTitleUpdated]);
+          props.onTitleChange?.((event.target.value || '').toString());
+        }}
+        type="text"
+      ></ArtifactTitleInput>
+    </IonItem>
+  );
+
   return (
-    <ArtifactEditorContainer>
-      <ArtifactEditorStyles data-theme={theme}>
-        <IonItem lines="none" className="artifactTitle">
-          <ArtifactTitleInput
-            disabled={!props.editable}
-            placeholder={t('artifactRenderer.title.placeholder')}
-            value={title}
-            onIonInput={(event) => {
-              setMetaProp('title', event.target.value || '');
-              eventManager.broadcast([EventName.ArtifactTitleUpdated]);
-              props.onTitleChange?.((event.target.value || '').toString());
-            }}
-            type="text"
-          ></ArtifactTitleInput>
-        </IonItem>
-        <EditorContent editor={editor}></EditorContent>
-        {editor && (
-          <BubbleMenu editor={editor}>
-            <ArtifactBubbleMenuControls editor={editor} />
-          </BubbleMenu>
-        )}
-        {editor && <TableBubbleMenu editor={editor} />}
-      </ArtifactEditorStyles>
-    </ArtifactEditorContainer>
+    <>
+      {!titleBodyMerge && titleInput}
+      <ArtifactEditorContainer>
+        <ArtifactEditorStyles data-theme={theme}>
+          {titleBodyMerge && titleInput}
+          <EditorContent editor={editor}></EditorContent>
+          {editor && (
+            <BubbleMenu editor={editor}>
+              <ArtifactBubbleMenuControls editor={editor} />
+            </BubbleMenu>
+          )}
+          {editor && <TableBubbleMenu editor={editor} />}
+        </ArtifactEditorStyles>
+      </ArtifactEditorContainer>
+    </>
   );
 });
