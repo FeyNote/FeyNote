@@ -67,7 +67,7 @@
     "bullmq": "^5.13.0",
     "commander": "^12.1.0",
     "cors": "^2.8.5",
-    "debounce": "^2.1.0",
+    "debounce": "^2.1.1",
     "dedent": "^1.5.3",
     "express": "^4.21.0",
     "flexlayout-react": "^0.7.15",
