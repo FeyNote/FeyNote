@@ -35,7 +35,7 @@
     "@tiptap/extension-font-family": "2.7.4",
     "@tiptap/extension-gapcursor": "2.7.4",
     "@tiptap/extension-hard-break": "2.7.4",
-    "@tiptap/extension-heading": "2.7.4",
+    "@tiptap/extension-heading": "2.8.0",
     "@tiptap/extension-history": "2.7.4",
     "@tiptap/extension-horizontal-rule": "2.7.4",
     "@tiptap/extension-italic": "2.7.4",
