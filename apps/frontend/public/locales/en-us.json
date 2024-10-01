@@ -171,7 +171,6 @@
   "artifactTheme.classic": "Classic",
 
   "editor.placeholder": "Changes are automatically saved. Use / to bring up the command menu, or @ to reference another artifact",
-  "editor.blockGroup.hidden": "Collapsed Block",
   "editor.placeholder.readOnlyEmpty": "Artifact has no content",
   "editor.emptyReference": "Untitled Reference",
   "editor.referenceMenu.noItems.title": "No results for \"{{title}}\"",
@@ -238,6 +237,12 @@
   "editor.commandMenu.spell.subtitle": "Starts an editable spell/item/feat block",
   "editor.commandMenu.note": "Note",
   "editor.commandMenu.note.subtitle": "Starts an editable stylized floating note insert",
+  "editor.commandMenu.paragraph": "Paragraph",
+  "editor.commandMenu.paragraph.subtitle": "Change current block to a paragraph",
+  "editor.commandMenu.orderedList": "Numbered List",
+  "editor.commandMenu.orderedList.subtitle": "Change current block to a numbered list",
+  "editor.commandMenu.bulletList": "Bulleted List",
+  "editor.commandMenu.bulletList.subtitle": "Change current block to a bulleted list",
 
   "globalSearch.title": "Global Search",
   "globalSearch.loggedOut": "You're not logged in. Please login to search.",

@@ -15,7 +15,7 @@ declare module '@tiptap/core' {
 
 export const MonsterStatblockExtension = Node.create({
   name: 'customMonsterStatblock',
-  content: 'block+',
+  content: '(heading|paragraph|list|horizontalRule|table)+',
   group: 'block',
   defining: true,
   isolating: true,

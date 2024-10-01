@@ -1,4 +1,8 @@
-import { Extension, KeyboardShortcutCommand } from '@tiptap/core';
+import {
+  Extension,
+  findParentNode,
+  KeyboardShortcutCommand,
+} from '@tiptap/core';
 import { Node } from 'prosemirror-model';
 import { TextSelection, Transaction, Selection } from 'prosemirror-state';
 import { findWrapping } from 'prosemirror-transform';
@@ -81,7 +85,13 @@ const getNodeRange = (doc: Node, selection: Selection) => {
     .resolve(selection.from)
     .blockRange(doc.resolve(selection.to), (pred) => {
       // These types cannot be wrapped themselves, so we need to find the nearest parent that can be wrapped. By returning false blockRange will recurse upwards for a parent.
-      return !['listItem', 'bulletList'].includes(pred.type.name);
+      return ![
+        'listItem',
+        'bulletList',
+        'customMonsterStatblock',
+        'customTTRPGNote',
+        'customSpellSheet',
+      ].includes(pred.type.name);
     });
 };
 
@@ -91,17 +101,23 @@ function keyboardBackspaceHandler(): KeyboardShortcutCommand {
     const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
 
     // When cursor is in middle of text, use default backspace behavior
-    if (
-      editor.state.selection.$head.parentOffset > 0 ||
-      editor.state.selection.content().content.size
-    ) {
-      return false;
-    }
+    //if (
+    //  editor.state.selection.$head.parentOffset > 0 ||
+    //  editor.state.selection.content().content.size
+    //) {
+    //  return false;
+    //}
 
-    // If we're nested, outdent
-    if (nodeRange && nodeRange.depth !== 0) {
-      return keyboardOutdentHandler()(args);
-    }
+    // If we're nested and at the beginning of the , outdent
+    //if (
+    //  nodeRange &&
+    //  nodeRange.depth !== 0 && nodeRange.parent.type.name === 'blockGroup' &&
+    //  editor.state.selection.$head.parentOffset === 0 &&
+    //  !editor.state.selection.content().content.size
+    //) {
+    //  return keyboardOutdentHandler()(args);
+    //}
+
     // If we're at the start of a line with no selection, we join backwards to the nearest textblock
     if (
       editor.state.selection.$head.parentOffset === 0 &&
@@ -118,7 +134,7 @@ function keyboardBackspaceHandler(): KeyboardShortcutCommand {
 function keyboardIndentHandler(): KeyboardShortcutCommand {
   // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
   return ({ editor }): true => {
-    if (editor.isActive('listItem')) {
+    if (editor.isActive('listItem') && editor.can().sinkListItem('listItem')) {
       editor.chain().focus().sinkListItem('listItem').run();
       return true;
     }
@@ -131,13 +147,14 @@ function keyboardIndentHandler(): KeyboardShortcutCommand {
 function keyboardOutdentHandler(): KeyboardShortcutCommand {
   // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
   return ({ editor }): true => {
-    if (editor.isActive('listItem')) {
+    const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
+    if (editor.isActive('listItem') && editor.can().liftListItem('listItem')) {
       // List items always take precedence over indentation
       editor.chain().focus().liftListItem('listItem').run();
       return true;
     }
 
-    if (!getNodeRange(editor.state.doc, editor.state.selection)?.depth) {
+    if (!nodeRange?.depth) {
       // We are not nested, so we do not do anything
       return true;
     }
@@ -159,6 +176,8 @@ function updateIndentLevel(
   if (!nodeRange) throw new Error('Invalid node range');
 
   if (type === 'indent') {
+    if (nodeRange.depth > 10) return tr;
+
     const wrapping = findWrapping(
       nodeRange,
       tr.doc.type.schema.nodes.blockGroup,
@@ -172,6 +191,8 @@ function updateIndentLevel(
   }
 
   if (type === 'outdent') {
+    if (nodeRange.depth === 0) return tr;
+
     tr = tr.lift(nodeRange, Math.max(nodeRange.depth - 1, 0));
   }
 
