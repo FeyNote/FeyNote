@@ -100,7 +100,7 @@
     "@babel/preset-react": "^7.14.5",
     "@nx/esbuild": "19.8.2",
     "@nx/eslint": "19.8.2",
-    "@nx/eslint-plugin": "19.8.2",
+    "@nx/eslint-plugin": "19.8.3",
     "@nx/express": "19.8.2",
     "@nx/jest": "19.8.2",
     "@nx/js": "19.8.2",
