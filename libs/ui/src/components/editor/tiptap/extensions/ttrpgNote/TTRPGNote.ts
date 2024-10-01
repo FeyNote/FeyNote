@@ -11,7 +11,7 @@ declare module '@tiptap/core' {
 
 export const TTRPGNoteExtension = Node.create({
   name: 'customTTRPGNote',
-  content: 'block+',
+  content: '(heading|paragraph|list|horizontalRule|table)+',
   group: 'block',
   defining: true,
   isolating: true,

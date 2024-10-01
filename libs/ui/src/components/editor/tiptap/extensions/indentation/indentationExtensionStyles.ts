@@ -1,7 +1,7 @@
 import { css } from 'styled-components';
 
 export const indentationExtensionStyles = css`
-  --blockIndentDepth: 16px;
+  --blockIndentDepth: 30px;
   [data-depth='1'] {
     margin-left: calc(var(--blockIndentDepth) * 1);
   }
@@ -46,5 +46,41 @@ export const indentationExtensionStyles = css`
   }
   [data-depth='15'] {
     margin-left: calc(var(--blockIndentDepth) * 15);
+  }
+
+  [data-content-type='blockGroup'] {
+    margin-left: calc(var(--blockIndentDepth) / 3);
+    padding-left: calc(var(--blockIndentDepth) / 2);
+    border-left: 1px solid lightgray;
+    position: relative;
+    min-height: 20px;
+
+    > button.toggle {
+      position: absolute;
+      left: -2px;
+      bottom: 0;
+      width: 12px;
+      top: 0;
+      background: none;
+
+      outline: none;
+      user-select: none;
+    }
+
+    > span.placeholder {
+      display: none;
+      opacity: 0.5;
+      user-select: none;
+    }
+
+    &.hidden {
+      > div {
+        display: none;
+      }
+
+      > span.placeholder {
+        display: block;
+      }
+    }
   }
 `;

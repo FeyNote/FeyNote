@@ -7,6 +7,8 @@ import {
   LuHeading4,
   LuHeading5,
   LuHeading6,
+  LuList,
+  LuListOrdered,
   LuTable,
 } from 'react-icons/lu';
 import { MdHorizontalRule } from 'react-icons/md';
@@ -186,6 +188,58 @@ export const getTiptapCommands = ({
           .deleteRange(range)
           .setHeading({ level: 6 })
           .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.bulletList'),
+      keywords: ['list', 'bullet', 'unordered', 'ul', '-', '*'],
+      subtitle: t('editor.commandMenu.bulletList.subtitle'),
+      visible: true,
+      icon: LuList,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setParagraph()
+          .toggleBulletList()
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.orderedList'),
+      keywords: ['list', 'numbered', 'ordered', 'ol', '-', '*', '1'],
+      subtitle: t('editor.commandMenu.orderedList.subtitle'),
+      visible: true,
+      icon: LuListOrdered,
+      command: ({ editor, range }: CommandArgs) => {
+        editor
+          .chain()
+          .focus()
+          .deleteRange(range)
+          .setParagraph()
+          .toggleOrderedList()
+          .run();
+      },
+    },
+    {
+      title: t('editor.commandMenu.paragraph'),
+      keywords: ['paragraph', 'p'],
+      subtitle: t('editor.commandMenu.paragraph.subtitle'),
+      visible: true,
+      icon: LuListOrdered,
+      command: ({ editor, range }: CommandArgs) => {
+        const chain = editor.chain().focus().deleteRange(range);
+        if (editor.isActive('bulletList')) {
+          chain.lift('bulletList');
+        }
+        if (editor.isActive('orderedList')) {
+          chain.lift('orderedList');
+        }
+        if (editor.isActive('taskList')) {
+          chain.lift('taskList');
+        }
+        chain.run();
       },
     },
   ];

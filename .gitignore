@@ -45,3 +45,4 @@ Thumbs.db
 
 # Astro
 .astro
+apps/www/.astro
