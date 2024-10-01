@@ -53,12 +53,15 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             id: identifier,
           },
           data: {
-            ...artifactMeta,
+            title: artifactMeta.title,
+            type: artifactMeta.type,
+            theme: artifactMeta.theme,
             text,
             yBin,
             json: {
               ...(artifact.json as any),
               tiptapBody,
+              meta: artifactMeta,
             },
           },
         });

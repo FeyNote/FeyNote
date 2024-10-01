@@ -17,7 +17,11 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
-import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  getMetaFromYArtifact,
+  YArtifactMetaSchema,
+} from '@feynote/shared-utils';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { EventContext } from '../../context/events/EventContext';
@@ -52,6 +56,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [theme, setTheme] = useState(props.artifact.theme);
 
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
+  const [enableTitleBodyMerge, setEnableTitleBodyMerge] = useState(false);
 
   const connection = artifactCollaborationManager.get(
     props.artifact.id,
@@ -64,13 +69,17 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       const yArtifactMeta = getMetaFromYArtifact(connection.yjsDoc);
       setTitle(yArtifactMeta.title ?? title);
       setTheme(yArtifactMeta.theme ?? theme);
+      setEnableTitleBodyMerge(
+        yArtifactMeta.titleBodyMerge ?? enableTitleBodyMerge,
+      );
     };
 
+    listener();
     artifactMetaMap.observe(listener);
     return () => artifactMetaMap.unobserve(listener);
   }, [connection]);
 
-  const setMetaProp = (metaPropName: string, value: any) => {
+  const setMetaProp = (metaPropName: keyof YArtifactMetaSchema, value: any) => {
     (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
       metaPropName,
       value,
@@ -108,6 +117,42 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     [props.artifact, session.userId],
   );
 
+  const incomingArtifactReferenceTitles = useMemo(
+    () =>
+      Object.entries(
+        props.artifact.incomingArtifactReferences.reduce<{
+          [key: string]: string;
+        }>((acc, el) => {
+          // We don't want to show self-references in the incoming artifact references list
+          if (el.artifactId === props.artifact.id) return acc;
+
+          acc[el.artifactId] = el.artifact.title;
+          return acc;
+        }, {}),
+      ),
+    [props.artifact],
+  );
+
+  const artifactReferenceTitles = useMemo(
+    () =>
+      Object.entries(
+        props.artifact.artifactReferences.reduce<{ [key: string]: string }>(
+          (acc, el) => {
+            // We don't want to show broken references in the referenced artifact list
+            if (!el.targetArtifact) return acc;
+
+            // We don't want to show self-references in the referenced artifact list
+            if (el.targetArtifactId === props.artifact.id) return acc;
+
+            acc[el.targetArtifactId] = el.targetArtifact.title;
+            return acc;
+          },
+          {},
+        ),
+      ),
+    [props.artifact],
+  );
+
   return (
     <>
       <IonCard>
@@ -132,6 +177,23 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <InfoButton
             slot="end"
             message={t('artifactRenderer.isPinned.help')}
+          />
+        </CompactIonItem>
+        <CompactIonItem button lines="none">
+          <IonCheckbox
+            labelPlacement="end"
+            justify="start"
+            checked={enableTitleBodyMerge}
+            onIonChange={async (event) => {
+              setEnableTitleBodyMerge(event.target.checked);
+              setMetaProp('titleBodyMerge', event.target.checked);
+            }}
+          >
+            {t('artifactRenderer.titleBodyMerge')}
+          </IonCheckbox>
+          <InfoButton
+            slot="end"
+            message={t('artifactRenderer.titleBodyMerge.help')}
           />
         </CompactIonItem>
         <CompactIonItem lines="none">
@@ -173,6 +235,13 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
             </CompactIonItem>
           ))}
+          {!props.artifact.artifactShares.length && (
+            <CompactIonItem lines="none">
+              <NowrapIonLabel>
+                {t('artifactRenderer.artifactShares.null')}
+              </NowrapIonLabel>
+            </CompactIonItem>
+          )}
           <CompactIonItem
             lines="none"
             button
@@ -210,7 +279,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </CompactIonItem>
         </IonCard>
       )}
-      {!!props.artifact.incomingArtifactReferences.length && (
+      {!!incomingArtifactReferenceTitles.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -220,25 +289,27 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.incomingArtifactReferences.help')}
             />
           </IonListHeader>
-          {props.artifact.incomingArtifactReferences.map((el) => (
-            <CompactIonItem
-              lines="none"
-              key={el.id}
-              onClick={() =>
-                navigate(
-                  PaneableComponent.Artifact,
-                  { id: el.artifactId },
-                  PaneTransition.Push,
-                )
-              }
-              button
-            >
-              <NowrapIonLabel>{el.artifact.title}</NowrapIonLabel>
-            </CompactIonItem>
-          ))}
+          {incomingArtifactReferenceTitles.map(
+            ([otherArtifactId, otherArtifactTitle]) => (
+              <CompactIonItem
+                lines="none"
+                key={otherArtifactId}
+                onClick={() =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: otherArtifactId },
+                    PaneTransition.Push,
+                  )
+                }
+                button
+              >
+                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
+              </CompactIonItem>
+            ),
+          )}
         </IonCard>
       )}
-      {!!props.artifact.artifactReferences.length && (
+      {!!artifactReferenceTitles.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -248,22 +319,24 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.artifactReferences.help')}
             />
           </IonListHeader>
-          {props.artifact.artifactReferences.map((el) => (
-            <CompactIonItem
-              lines="none"
-              key={el.id}
-              onClick={() =>
-                navigate(
-                  PaneableComponent.Artifact,
-                  { id: el.artifactId },
-                  PaneTransition.Push,
-                )
-              }
-              button
-            >
-              <NowrapIonLabel>{el.referenceText}</NowrapIonLabel>
-            </CompactIonItem>
-          ))}
+          {artifactReferenceTitles.map(
+            ([otherArtifactId, otherArtifactTitle]) => (
+              <CompactIonItem
+                lines="none"
+                key={otherArtifactId}
+                onClick={() =>
+                  navigate(
+                    PaneableComponent.Artifact,
+                    { id: otherArtifactId },
+                    PaneTransition.Push,
+                  )
+                }
+                button
+              >
+                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
+              </CompactIonItem>
+            ),
+          )}
         </IonCard>
       )}
     </>

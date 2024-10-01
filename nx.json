@@ -80,12 +80,6 @@
         "linter": "eslint",
         "unitTestRunner": "none"
       }
-    },
-    "@nx/next": {
-      "application": {
-        "style": "styled-components",
-        "linter": "eslint"
-      }
     }
   },
   "useInferencePlugins": false

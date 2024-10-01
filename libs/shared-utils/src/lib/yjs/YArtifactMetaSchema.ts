@@ -4,4 +4,5 @@ export interface YArtifactMetaSchema {
   title: string;
   theme: ArtifactTheme;
   type: ArtifactType;
+  titleBodyMerge: boolean;
 }

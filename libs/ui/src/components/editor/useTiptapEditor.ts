@@ -8,6 +8,8 @@ import TaskListExtension from '@tiptap/extension-task-list';
 import TaskItemExtension from '@tiptap/extension-task-item';
 import HardBreakExtension from '@tiptap/extension-hard-break';
 import BoldExtension from '@tiptap/extension-bold';
+import FontFamilyExtension from '@tiptap/extension-font-family';
+import TextStyleExtension from '@tiptap/extension-text-style';
 import ItalicExtension from '@tiptap/extension-italic';
 import StrikeExtension from '@tiptap/extension-strike';
 import UnderlineExtension from '@tiptap/extension-underline';
@@ -93,6 +95,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     ListItemExtension,
     OrderedListExtension,
     BulletListExtension,
+    TextStyleExtension,
+    FontFamilyExtension,
     TaskListExtension,
     TaskItemExtension.configure({
       nested: true,
