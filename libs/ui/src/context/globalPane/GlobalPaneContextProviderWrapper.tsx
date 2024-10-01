@@ -360,7 +360,10 @@ export const GlobalPaneContextProviderWrapper = ({
       action.type === Actions.SET_ACTIVE_TABSET ||
       action.type === Actions.SELECT_TAB ||
       action.type === Actions.DELETE_TAB ||
-      action.type === Actions.DELETE_TABSET
+      action.type === Actions.DELETE_TABSET ||
+      action.type === Actions.ADD_NODE ||
+      action.type === Actions.MOVE_NODE ||
+      action.type === Actions.ADJUST_SPLIT
     ) {
       setFocusedPaneId(getFocusedPaneId());
     }
