@@ -98,27 +98,8 @@ const getNodeRange = (doc: Node, selection: Selection) => {
 function keyboardBackspaceHandler(): KeyboardShortcutCommand {
   return (args) => {
     const { editor } = args;
-    const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
 
-    // When cursor is in middle of text, use default backspace behavior
-    //if (
-    //  editor.state.selection.$head.parentOffset > 0 ||
-    //  editor.state.selection.content().content.size
-    //) {
-    //  return false;
-    //}
-
-    // If we're nested and at the beginning of the , outdent
-    //if (
-    //  nodeRange &&
-    //  nodeRange.depth !== 0 && nodeRange.parent.type.name === 'blockGroup' &&
-    //  editor.state.selection.$head.parentOffset === 0 &&
-    //  !editor.state.selection.content().content.size
-    //) {
-    //  return keyboardOutdentHandler()(args);
-    //}
-
-    // If we're at the start of a line with no selection, we join backwards to the nearest textblock
+    // If we're at the start of a line with no selection, we join backwards to the nearest textblock to prevent backspace at root from popping in and out of one level of indentation
     if (
       editor.state.selection.$head.parentOffset === 0 &&
       !editor.state.selection.content().content.size
