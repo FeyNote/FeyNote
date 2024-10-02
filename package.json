@@ -11,7 +11,7 @@
     "@ai-sdk/openai": "^0.0.55",
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^3.6.2",
-    "@aws-sdk/client-ses": "^3.645.0",
+    "@aws-sdk/client-ses": "^3.662.0",
     "@floating-ui/react-dom": "^2.1.2",
     "@hocuspocus/extension-database": "2.13.6",
     "@hocuspocus/extension-logger": "2.13.6",
