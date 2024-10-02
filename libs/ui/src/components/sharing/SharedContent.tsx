@@ -24,7 +24,7 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { SessionContext } from '../../context/session/SessionContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { createPortal } from 'react-dom';
-import { SharedContentRightSideMenu } from './SharedContentSideMenu';
+import { SharedContentRightSideMenu } from './SharedContentRightSideMenu';
 
 const Title = styled(IonCardTitle)`
   padding: 8px;

@@ -113,6 +113,7 @@
   "dashboard.noRecentThreads.message": "Click the plus button in the bottom right corner to create one!",
   "dashboard.noSharedContent.title": "No Content Shared With You",
   "dashboard.noSharedContent.message": "Artifacts will show up here if another user shares their content with you",
+  "dashboard.reload": "Refresh Dashboard",
 
   "sharedContent.title": "Shared Content",
   "sharedContent.artifacts.title": "Artifacts Shared With You",
@@ -120,7 +121,7 @@
   "sharedContent.noArtifacts.message": "Artifacts will show up here if another user shares their content with you",
   "sharedContent.unknownUser": "Unknown User",
   "sharedContent.sharedBy": "Shared by:",
-  "sharedContent.reload": "Refresh Page",
+  "sharedContent.reload": "Refresh Content",
 
   "graph.title": "Graph",
   "graph.nullState.title": "No Artifacts",

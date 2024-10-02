@@ -26,7 +26,7 @@ import { useProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { DashboardRightSideMenu } from './DashboardSideMenu';
+import { DashboardRightSideMenu } from './DashboardRightSideMenu';
 import { createPortal } from 'react-dom';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -121,10 +121,14 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  useEffect(() => {
+  const loadWithProgress = async () => {
     const progress = startProgressBar();
-    Promise.allSettled([getUserArtifacts(), getUserThreads()]).then(() => {
-      progress.dismiss();
+    await Promise.allSettled([getUserArtifacts(), getUserThreads()]);
+    progress.dismiss();
+  };
+
+  useEffect(() => {
+    loadWithProgress().then(() => {
       setInitialLoadComplete(true);
     });
   }, []);
@@ -342,7 +346,10 @@ export const Dashboard: React.FC = () => {
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
-          <DashboardRightSideMenu artifacts={artifacts} />,
+          <DashboardRightSideMenu
+            artifacts={artifacts}
+            reload={loadWithProgress}
+          />,
           sidemenuContentRef.current,
         )}
     </IonPage>
