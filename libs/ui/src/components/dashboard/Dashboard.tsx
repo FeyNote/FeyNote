@@ -266,7 +266,7 @@ export const Dashboard: React.FC = () => {
                   }
                   button
                 >
-                  {recentThread.title}
+                  {recentThread.title || t('generic.untitled')}
                 </CompactIonItem>
               ))}
               {!recentlyUpdatedThreads.length && (
