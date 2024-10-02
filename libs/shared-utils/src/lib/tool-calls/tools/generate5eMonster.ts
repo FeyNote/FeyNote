@@ -123,13 +123,13 @@ export const Generate5eMonsterSchema = z.object({
       ),
     languages: z
       .object({
-        name: z.literal('monstersheet.attributes.languages'),
+        name: z.literal('monsterStatblock.attributes.languages'),
         value: z.union([z.string(), z.literal('--')]),
       })
       .describe('The spoken languages of the generated monster'),
     challenge: z
       .object({
-        name: z.literal('monstersheet.attributes.cr'),
+        name: z.literal('monsterStatblock.attributes.cr'),
         value: z.string(),
       })
       .describe(
@@ -163,7 +163,8 @@ export const Generate5eMonsterSchema = z.object({
         description: z.string().describe('The description of the action'),
       }),
     )
-    .describe('The actions that the monster can take on its turn'),
+    .describe('The actions that the monster can take on its turn')
+    .nullable(),
   reactions: z
     .array(
       z.object({
@@ -173,7 +174,8 @@ export const Generate5eMonsterSchema = z.object({
     )
     .describe(
       'Any reactions the monster may make during the reaction phase of its turn',
-    ),
+    )
+    .nullable(),
   legendaryActions: z
     .object({
       ruleset: z
@@ -200,7 +202,8 @@ export const Generate5eMonsterSchema = z.object({
     })
     .describe(
       'Very rarily some monsters may have legendary actions that will be described here',
-    ),
+    )
+    .nullable(),
 });
 
 export type Generate5eMonsterParams = z.infer<typeof Generate5eMonsterSchema>;
