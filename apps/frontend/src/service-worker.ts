@@ -187,7 +187,7 @@ self.addEventListener('activate', () => {
 // Index should be cached networkFirst - this way, users will always get the newest application version
 const MAX_OFFLINE_INDEX_AGE_DAYS = 60;
 registerRoute(
-  /(\/index\.html)|\//,
+  /(\/index\.html)|(\/$)/,
   new NetworkFirst({
     cacheName: APP_SRC_CACHE_NAME,
     plugins: [
@@ -199,7 +199,7 @@ registerRoute(
 );
 
 // Language files should always come from network first since they change frequently
-const MAX_LANGUAGE_AGE_DAYS = 30;
+const MAX_LANGUAGE_AGE_DAYS = 60;
 registerRoute(
   /\/locales\/.*/,
   new NetworkFirst({
@@ -213,7 +213,7 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.getArtifactById/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactById/,
   async (event) => {
     return cacheSingleResponse(ObjectStoreName.Artifacts, event);
   },
@@ -221,7 +221,7 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.getArtifacts/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifacts/,
   async (event) => {
     return cacheListResponse(ObjectStoreName.Artifacts, event);
   },
@@ -229,7 +229,7 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.searchArtifacts/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifacts/,
   async (event) => {
     try {
       const response = await fetch(event.request);
