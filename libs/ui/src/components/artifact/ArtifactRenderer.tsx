@@ -10,6 +10,8 @@ import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { getIsEditable } from '../../utils/getIsEditable';
+import { useIonToast } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -22,6 +24,8 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
+  const [presentToast] = useIonToast();
+  const { t } = useTranslation();
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
@@ -54,9 +58,16 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   );
 
   useEffect(() => {
-    connection.syncedPromise.then(() => {
-      setCollabReady(true);
-    });
+    connection.syncedPromise
+      .then(() => {
+        setCollabReady(true);
+      })
+      .catch(() => {
+        presentToast({
+          message: t('generic.connectionError'),
+          duration: 5000,
+        });
+      });
   }, [connection]);
 
   useEffect(() => {
