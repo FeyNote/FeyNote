@@ -162,6 +162,7 @@
   "artifactRenderer.artifactReferences.help": "The artifacts listed here are referenced by the artifact you're viewing somewhere in it's content.",
   "artifactRenderer.artifactShares": "Shared With",
   "artifactRenderer.artifactShares.help": "This artifact is shared with any of the individuals listed here",
+  "artifactRenderer.sharedByLink": "Shared by link",
   "artifactRenderer.artifactShares.manage": "Manage Sharing",
   "artifactRenderer.artifactShares.null": "Not shared with anyone",
   "artifactRenderer.artifactSharedToYou": "Shared Artifact",
