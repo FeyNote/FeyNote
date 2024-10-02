@@ -1,10 +1,4 @@
-import {
-  ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentProps,
-} from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -23,7 +17,7 @@ import {
 import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
-  type paneableComponentNameToComponent,
+  PaneableComponentProps,
 } from './PaneableComponent';
 import { t } from 'i18next';
 
@@ -215,7 +209,7 @@ export const GlobalPaneContextProviderWrapper = ({
   const navigate = <T extends PaneableComponent>(
     paneId = getFocusedPaneId(),
     component: T,
-    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
+    props: PaneableComponentProps[T],
     transition: PaneTransition,
     select = true,
   ) => {

@@ -1,8 +1,8 @@
 import type { Action, Model } from 'flexlayout-react';
-import { createContext, type ComponentProps } from 'react';
+import { createContext } from 'react';
 import type {
   PaneableComponent,
-  paneableComponentNameToComponent,
+  PaneableComponentProps,
 } from './PaneableComponent';
 
 export enum PaneTransition {
@@ -73,7 +73,7 @@ interface GlobalPaneContextData {
   navigate: <T extends PaneableComponent>(
     paneId: string | undefined,
     component: T,
-    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
+    props: PaneableComponentProps[T],
     transition: PaneTransition,
     select?: boolean,
   ) => void;

@@ -14,6 +14,7 @@ import {
   chatboxEllipses,
   expand,
   gitNetwork,
+  people,
   pin,
   telescope,
 } from 'ionicons/icons';
@@ -25,12 +26,13 @@ import { useProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { DashboardRightSideMenu } from './DashboardSideMenu';
+import { DashboardRightSideMenu } from './DashboardRightSideMenu';
 import { createPortal } from 'react-dom';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
+import { SessionContext } from '../../context/session/SessionContext';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -66,6 +68,7 @@ export const Dashboard: React.FC = () => {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
+  const { session } = useContext(SessionContext);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
@@ -74,6 +77,14 @@ export const Dashboard: React.FC = () => {
   const recentArtifacts = useMemo(
     () =>
       artifacts
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        .slice(0, 10),
+    [artifacts],
+  );
+  const incomingSharedArtifacts = useMemo(
+    () =>
+      artifacts
+        .filter((artifact) => artifact.userId !== session.userId)
         .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
         .slice(0, 10),
     [artifacts],
@@ -110,10 +121,14 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  useEffect(() => {
+  const loadWithProgress = async () => {
     const progress = startProgressBar();
-    Promise.allSettled([getUserArtifacts(), getUserThreads()]).then(() => {
-      progress.dismiss();
+    await Promise.allSettled([getUserArtifacts(), getUserThreads()]);
+    progress.dismiss();
+  };
+
+  useEffect(() => {
+    loadWithProgress().then(() => {
       setInitialLoadComplete(true);
     });
   }, []);
@@ -129,6 +144,22 @@ export const Dashboard: React.FC = () => {
               <CardTitle>
                 <IonIcon icon={pin} />
                 &nbsp;{t('dashboard.pinned.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.PinnedArtifacts,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
               </CardTitle>
               {pinnedArtifacts.map((pinnedArtifact) => (
                 <CompactIonItem
@@ -161,6 +192,22 @@ export const Dashboard: React.FC = () => {
               <CardTitle>
                 <IonIcon icon={telescope} />
                 &nbsp;{t('dashboard.recents.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.RecentArtifacts,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
               </CardTitle>
               {recentArtifacts.map((recentArtifact) => (
                 <CompactIonItem
@@ -277,13 +324,64 @@ export const Dashboard: React.FC = () => {
                 />
               )}
             </Card>
+            <Card>
+              <CardTitle>
+                <IonIcon icon={people} />
+                &nbsp;{t('dashboard.sharedContent.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.SharedContent,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
+              </CardTitle>
+              {incomingSharedArtifacts.map((sharedArtifact) => (
+                <CompactIonItem
+                  lines="none"
+                  key={sharedArtifact.id}
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.Artifact,
+                      { id: sharedArtifact.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  {sharedArtifact.title}
+                </CompactIonItem>
+              ))}
+              {!incomingSharedArtifacts.length && (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noSharedContent.title')}
+                  message={t('dashboard.noSharedContent.message')}
+                />
+              )}
+            </Card>
           </FlexContainer>
         )}
       </IonContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
-          <DashboardRightSideMenu artifacts={artifacts} />,
+          <DashboardRightSideMenu
+            artifacts={artifacts}
+            reload={loadWithProgress}
+          />,
           sidemenuContentRef.current,
         )}
     </IonPage>

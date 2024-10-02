@@ -26,6 +26,7 @@ import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
 import { person, tv } from 'ionicons/icons';
+import { SessionContext } from '../../context/session/SessionContext';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -68,6 +69,7 @@ export const Settings: React.FC = () => {
   const [presentAlert] = useIonAlert();
   const { setPreference, getPreference, _preferencesService } =
     useContext(PreferencesContext);
+  const { session } = useContext(SessionContext);
 
   const languageOptions = useMemo(() => {
     try {
@@ -327,7 +329,12 @@ export const Settings: React.FC = () => {
               {t('settings.account')}
             </IonListHeader>
             <IonItem button>
-              <IonLabel>{t('settings.email')}</IonLabel>
+              <IonLabel>
+                {t('settings.email')}
+                <p>
+                  {t('settings.email.current')} {session.email}
+                </p>
+              </IonLabel>
             </IonItem>
             <IonItem button>
               <IonLabel>{t('settings.password')}</IonLabel>

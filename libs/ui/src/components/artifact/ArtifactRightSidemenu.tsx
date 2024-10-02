@@ -235,13 +235,25 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
             </CompactIonItem>
           ))}
-          {!props.artifact.artifactShares.length && (
-            <CompactIonItem lines="none">
+          {!!props.artifact.artifactShareTokens.length && (
+            <CompactIonItem
+              lines="none"
+              onClick={() => presentSharingModal()}
+              button
+            >
               <NowrapIonLabel>
-                {t('artifactRenderer.artifactShares.null')}
+                {t('artifactRenderer.sharedByLink')}
               </NowrapIonLabel>
             </CompactIonItem>
           )}
+          {!props.artifact.artifactShares.length &&
+            !props.artifact.artifactShareTokens.length && (
+              <CompactIonItem lines="none">
+                <NowrapIonLabel>
+                  {t('artifactRenderer.artifactShares.null')}
+                </NowrapIonLabel>
+              </CompactIonItem>
+            )}
           <CompactIonItem
             lines="none"
             button
