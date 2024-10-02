@@ -1,11 +1,11 @@
-import { createContext, type ComponentProps } from 'react';
+import { createContext } from 'react';
 import type {
   PaneTracker,
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
 import type {
   PaneableComponent,
-  paneableComponentNameToComponent,
+  PaneableComponentProps,
 } from '../globalPane/PaneableComponent';
 
 export interface PaneContextData {
@@ -13,7 +13,7 @@ export interface PaneContextData {
   navigateHistoryForward: () => void;
   navigate: <T extends PaneableComponent>(
     component: T,
-    props: ComponentProps<(typeof paneableComponentNameToComponent)[T]>,
+    props: PaneableComponentProps[T],
     transition: PaneTransition,
     select?: boolean,
   ) => void;

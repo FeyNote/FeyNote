@@ -144,6 +144,22 @@ export const Dashboard: React.FC = () => {
               <CardTitle>
                 <IonIcon icon={pin} />
                 &nbsp;{t('dashboard.pinned.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.PinnedArtifacts,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
               </CardTitle>
               {pinnedArtifacts.map((pinnedArtifact) => (
                 <CompactIonItem
@@ -176,6 +192,22 @@ export const Dashboard: React.FC = () => {
               <CardTitle>
                 <IonIcon icon={telescope} />
                 &nbsp;{t('dashboard.recents.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.RecentArtifacts,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
               </CardTitle>
               {recentArtifacts.map((recentArtifact) => (
                 <CompactIonItem

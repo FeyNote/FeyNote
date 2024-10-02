@@ -123,6 +123,20 @@
   "sharedContent.sharedBy": "Shared by:",
   "sharedContent.reload": "Refresh Content",
 
+  "recentArtifacts.title": "Recent Artifacts",
+  "recentArtifacts.noArtifacts.title": "No Artifacts",
+  "recentArtifacts.noArtifacts.message": "Artifacts will show up here sorted by most recently updated",
+  "recentArtifacts.unknownUser": "Unknown User",
+  "recentArtifacts.sharedBy": "Shared by:",
+  "recentArtifacts.reload": "Refresh Content",
+
+  "pinnedArtifacts.title": "Pinned Artifacts",
+  "pinnedArtifacts.noArtifacts.title": "No Pinned Artifacts",
+  "pinnedArtifacts.noArtifacts.message": "Artifacts will show up here if you pin them from the artifact view",
+  "pinnedArtifacts.unknownUser": "Unknown User",
+  "pinnedArtifacts.sharedBy": "Shared by:",
+  "pinnedArtifacts.reload": "Refresh Content",
+
   "graph.title": "Graph",
   "graph.nullState.title": "No Artifacts",
   "graph.nullState.message": "Click the plus button in the bottom right corner to create one!",

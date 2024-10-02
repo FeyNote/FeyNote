@@ -5,7 +5,7 @@ import {
   type PaneContextData,
 } from '../../context/pane/PaneContext';
 import styled from 'styled-components';
-import { paneableComponentNameToComponent } from '../../context/globalPane/PaneableComponent';
+import { getPaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 const PaneContainer = styled.div`
   height: 100%;
@@ -52,8 +52,7 @@ export const Pane: React.FC<Props> = memo((props) => {
     [props.id, isPaneFocused],
   );
 
-  const DisplayComponent =
-    paneableComponentNameToComponent[pane.currentView.component];
+  const DisplayComponent = getPaneableComponent(pane.currentView.component);
 
   return (
     <PaneContainer>
