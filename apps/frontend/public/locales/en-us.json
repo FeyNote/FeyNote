@@ -146,9 +146,10 @@
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 
-  "artifactRenderer.contextMenu.splitRight": "Split right",
-  "artifactRenderer.contextMenu.splitDown": "Split down",
-  "artifactRenderer.contextMenu.duplicateTab": "Duplicate tab",
+  "contextMenu.splitRight": "Split right",
+  "contextMenu.splitDown": "Split down",
+  "contextMenu.duplicateTab": "Duplicate tab",
+
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
   "artifactRenderer.settings": "Settings",

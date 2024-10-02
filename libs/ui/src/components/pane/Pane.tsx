@@ -49,7 +49,7 @@ export const Pane: React.FC<Props> = memo((props) => {
       pane,
       isPaneFocused,
     }),
-    [props.id, isPaneFocused],
+    [props.id, isPaneFocused, pane.currentView.navigationEventId],
   );
 
   const DisplayComponent = getPaneableComponent(pane.currentView.component);

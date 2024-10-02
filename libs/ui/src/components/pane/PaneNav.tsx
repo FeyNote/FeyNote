@@ -3,6 +3,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { IonButton, IonContent, IonIcon, IonPopover } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
+import { DefaultContextMenu } from '../contextMenu/DefaultContextMenu';
 
 const NavContainer = styled.div`
   display: flex;
@@ -34,7 +35,8 @@ const NavTitle = styled.div`
 
 interface Props {
   title: string;
-  popoverContents?: React.ReactNode;
+  // Pass null to disable the popover. Not passing this prop will use the default context menu
+  popoverContents?: React.ReactNode | null;
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
@@ -72,7 +74,7 @@ export const PaneNav: React.FC<Props> = (props) => {
           id={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}
           size="small"
           fill="clear"
-          disabled={!props.popoverContents}
+          disabled={props.popoverContents === null}
         >
           <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
         </IonButton>
@@ -81,7 +83,9 @@ export const PaneNav: React.FC<Props> = (props) => {
           triggerAction="click"
           dismissOnSelect={true}
         >
-          <IonContent>{props.popoverContents}</IonContent>
+          <IonContent>
+            {props.popoverContents || <DefaultContextMenu />}
+          </IonContent>
         </IonPopover>
       </NavGroup>
     </NavContainer>
