@@ -46,9 +46,10 @@ class ArtifactCollaborationManager {
     }
 
     const yjsDoc = new Doc();
-    const indexeddbProvider = new IndexeddbPersistence(artifactId, yjsDoc);
+    const docName = `artifact:${artifactId}`;
+    const indexeddbProvider = new IndexeddbPersistence(docName, yjsDoc);
     const tiptapCollabProvider = new TiptapCollabProvider({
-      name: `artifact:${artifactId}`,
+      name: docName,
       baseUrl: getApiUrls().hocuspocus,
       document: yjsDoc,
       token: session?.token || 'anonymous',

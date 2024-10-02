@@ -13,6 +13,8 @@ import {
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { Doc, encodeStateAsUpdate } from 'yjs';
+import { IndexeddbPersistence } from 'y-indexeddb';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
@@ -210,6 +212,41 @@ registerRoute(
       }),
     ],
   }),
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactYBinById/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (e: any) {
+      console.log(`Request failed`, e);
+
+      const input = getTrpcInputForEvent<{ id: string }>(event);
+      if (!input || !input.id) throw e;
+
+      const docName = `artifact:${input.id}`;
+      const manifestDb = await getManifestDb();
+      const manifestArtifact = await manifestDb.get(
+        ObjectStoreName.Artifacts,
+        input.id,
+      );
+      if (!manifestArtifact)
+        throw new Error('Artifact not found in manifest and user is offline');
+
+      const idbPersistence = new IndexeddbPersistence(docName, new Doc());
+      await idbPersistence.whenSynced;
+
+      const yBin = encodeStateAsUpdate(idbPersistence.doc);
+
+      return encodeCacheResultForTrpc({
+        yBin,
+      });
+    }
+  },
+  'GET',
 );
 
 registerRoute(
