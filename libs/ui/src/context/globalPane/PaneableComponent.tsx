@@ -4,6 +4,7 @@ import { AIThreadsList } from '../../components/assistant/AIThreadsList';
 import { Dashboard } from '../../components/dashboard/Dashboard';
 import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
+import { SharedContent } from '../../components/sharing/SharedContent';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -12,6 +13,7 @@ export enum PaneableComponent {
   AIThread = 'AIThread',
   AIThreadsList = 'AIThreadsList',
   Graph = 'Graph',
+  SharedContent = 'SharedContent',
 }
 
 export const paneableComponentNameToComponent = {
@@ -21,6 +23,7 @@ export const paneableComponentNameToComponent = {
   [PaneableComponent.AIThread]: AIThread,
   [PaneableComponent.AIThreadsList]: AIThreadsList,
   [PaneableComponent.Graph]: Graph,
+  [PaneableComponent.SharedContent]: SharedContent,
 } satisfies Record<PaneableComponent, React.FC<any>>;
 
 /**
@@ -33,4 +36,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.AIThread]: 'assistant.title',
   [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
   [PaneableComponent.Graph]: 'graph.title',
+  [PaneableComponent.SharedContent]: 'sharedContent.title',
 } satisfies Record<PaneableComponent, string>;

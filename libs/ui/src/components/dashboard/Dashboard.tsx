@@ -14,6 +14,7 @@ import {
   chatboxEllipses,
   expand,
   gitNetwork,
+  people,
   pin,
   telescope,
 } from 'ionicons/icons';
@@ -31,6 +32,7 @@ import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
+import { SessionContext } from '../../context/session/SessionContext';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -66,6 +68,7 @@ export const Dashboard: React.FC = () => {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
+  const { session } = useContext(SessionContext);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
@@ -74,6 +77,14 @@ export const Dashboard: React.FC = () => {
   const recentArtifacts = useMemo(
     () =>
       artifacts
+        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        .slice(0, 10),
+    [artifacts],
+  );
+  const incomingSharedArtifacts = useMemo(
+    () =>
+      artifacts
+        .filter((artifact) => artifact.userId !== session.userId)
         .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
         .slice(0, 10),
     [artifacts],
@@ -274,6 +285,54 @@ export const Dashboard: React.FC = () => {
                   size="small"
                   title={t('dashboard.noRecentThreads.title')}
                   message={t('dashboard.noRecentThreads.message')}
+                />
+              )}
+            </Card>
+            <Card>
+              <CardTitle>
+                <IonIcon icon={people} />
+                &nbsp;{t('dashboard.sharedContent.title')}
+                <CardTitleButton
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.SharedContent,
+                      {},
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  size="small"
+                  fill="clear"
+                >
+                  <IonIcon icon={expand} size="small" />
+                </CardTitleButton>
+              </CardTitle>
+              {incomingSharedArtifacts.map((sharedArtifact) => (
+                <CompactIonItem
+                  lines="none"
+                  key={sharedArtifact.id}
+                  onClick={(event) =>
+                    navigate(
+                      PaneableComponent.Artifact,
+                      { id: sharedArtifact.id },
+                      event.metaKey || event.ctrlKey
+                        ? PaneTransition.NewTab
+                        : PaneTransition.Push,
+                      !(event.metaKey || event.ctrlKey),
+                    )
+                  }
+                  button
+                >
+                  {sharedArtifact.title}
+                </CompactIonItem>
+              ))}
+              {!incomingSharedArtifacts.length && (
+                <CardNullState
+                  size="small"
+                  title={t('dashboard.noSharedContent.title')}
+                  message={t('dashboard.noSharedContent.message')}
                 />
               )}
             </Card>
