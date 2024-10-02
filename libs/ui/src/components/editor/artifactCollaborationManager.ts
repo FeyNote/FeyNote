@@ -7,6 +7,8 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
 import type { SessionDTO } from '@feynote/shared-utils';
 
+const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 10000;
+
 class ArtifactCollaborationManager {
   private session: SessionDTO | null = null;
 
@@ -25,6 +27,7 @@ class ArtifactCollaborationManager {
       yjsDoc: Doc;
       tiptapCollabProvider: TiptapCollabProvider;
       indexeddbProvider: IndexeddbPersistence;
+      syncedPromise: Promise<void>;
     }
   >();
 
@@ -58,6 +61,15 @@ class ArtifactCollaborationManager {
       yjsDoc,
       tiptapCollabProvider,
       indexeddbProvider,
+      syncedPromise: new Promise<void>((resolve, reject) => {
+        tiptapCollabProvider.on('synced', () => {
+          resolve();
+        });
+        indexeddbProvider.whenSynced.then(() => {
+          resolve();
+        });
+        setTimeout(reject, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
+      }),
     };
 
     this.connectionByArtifactId.set(artifactId, connection);

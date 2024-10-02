@@ -19,6 +19,7 @@ interface Props {
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
+  const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
 
@@ -53,6 +54,12 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   );
 
   useEffect(() => {
+    connection.syncedPromise.then(() => {
+      setCollabReady(true);
+    });
+  }, [connection]);
+
+  useEffect(() => {
     const cleanup = incrementVersionForChangesOnArtifact(
       props.artifact.id,
       connection.yjsDoc,
@@ -66,6 +73,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     () => getIsEditable(props.artifact, session.userId),
     [props.artifact, session.userId],
   );
+
+  if (!collabReady) {
+    return <></>;
+  }
 
   if (props.artifact.type === 'tiptap') {
     return (
