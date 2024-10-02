@@ -25,7 +25,8 @@
       "@feynote/queue": ["libs/queue/src/index.ts"],
       "@feynote/search": ["libs/search/src/index.ts"],
       "@feynote/shared-utils": ["libs/shared-utils/src/index.ts"],
-      "@feynote/trpc": ["libs/trpc/src/index.ts"]
+      "@feynote/trpc": ["libs/trpc/src/index.ts"],
+      "@feynote/ui": ["libs/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

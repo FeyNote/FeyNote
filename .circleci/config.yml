@@ -17,7 +17,7 @@ commands:
             - ./node_modules
 jobs:
   build_and_test:
-    resource_class: large
+    resource_class: medium
     docker:
       - image: cimg/node:20.11
         environment:
@@ -46,7 +46,7 @@ jobs:
           name: lint, typecheck, test, build
           command: npx nx run-many --targets=lint,typecheck,test,build
   push_backend:
-    resource_class: large
+    resource_class: medium
     docker:
       - image: cimg/node:20.11
     steps:
@@ -61,7 +61,7 @@ jobs:
           name: push
           command: ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
   push_frontend:
-    resource_class: large
+    resource_class: medium
     docker:
       - image: cimg/node:20.11
     steps:

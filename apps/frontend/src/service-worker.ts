@@ -1,18 +1,44 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable @nx/enforce-module-boundaries */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { superjson } from '../../../libs/ui/src/utils/trpc';
+import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
+import {
+  getManifestDb,
+  ObjectStoreName,
+} from '../../../libs/ui/src/utils/localDb';
+import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { superjson } from './utils/trpc';
-import { SearchManager } from './utils/SearchManager';
-import { getManifestDb, ObjectStoreName } from './utils/localDb';
-import { SyncManager } from './utils/SyncManager';
+import { Doc, encodeStateAsUpdate } from 'yjs';
+import { IndexeddbPersistence } from 'y-indexeddb';
 
 cleanupOutdatedCaches();
 // @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
 precacheAndRoute(self.__WB_MANIFEST);
+
+const staticAssets = [
+  // Images
+  'https://static.feynote.com/assets/parchment-background-20240925.jpg',
+  'https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg',
+  'https://static.feynote.com/assets/monster-border-20240925.png',
+  'https://static.feynote.com/assets/note-border-20240925.png',
+  'https://static.feynote.com/assets/red-triangle-20240925.png',
+
+  // Fonts
+  'https://static.feynote.com/fonts/mr-eaves/mr-eaves-small-caps.woff2',
+  'https://static.feynote.com/fonts/scaly-sans/scaly-sans.woff2',
+  'https://static.feynote.com/fonts/scaly-sans/scaly-sans-caps.woff2',
+  'https://static.feynote.com/fonts/book-insanity/book-insanity.woff2',
+  'https://static.feynote.com/fonts/libre-baskerville/libre-baskerville-latin.woff2',
+  'https://static.feynote.com/fonts/allison/allison-latin.woff2',
+  'https://static.feynote.com/fonts/italianno/italianno-latin.woff2',
+  'https://static.feynote.com/fonts/monsieur-la-doulaise/monsieur-la-doulaise-latin.woff2',
+];
+precacheAndRoute(staticAssets);
 
 (self as any).skipWaiting();
 clientsClaim();
@@ -163,7 +189,7 @@ self.addEventListener('activate', () => {
 // Index should be cached networkFirst - this way, users will always get the newest application version
 const MAX_OFFLINE_INDEX_AGE_DAYS = 60;
 registerRoute(
-  /(\/index\.html)|\//,
+  /(\/index\.html)|(\/$)/,
   new NetworkFirst({
     cacheName: APP_SRC_CACHE_NAME,
     plugins: [
@@ -175,7 +201,7 @@ registerRoute(
 );
 
 // Language files should always come from network first since they change frequently
-const MAX_LANGUAGE_AGE_DAYS = 30;
+const MAX_LANGUAGE_AGE_DAYS = 60;
 registerRoute(
   /\/locales\/.*/,
   new NetworkFirst({
@@ -189,7 +215,42 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.getArtifactById/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactYBinById/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (e: any) {
+      console.log(`Request failed`, e);
+
+      const input = getTrpcInputForEvent<{ id: string }>(event);
+      if (!input || !input.id) throw e;
+
+      const docName = `artifact:${input.id}`;
+      const manifestDb = await getManifestDb();
+      const manifestArtifact = await manifestDb.get(
+        ObjectStoreName.Artifacts,
+        input.id,
+      );
+      if (!manifestArtifact)
+        throw new Error('Artifact not found in manifest and user is offline');
+
+      const idbPersistence = new IndexeddbPersistence(docName, new Doc());
+      await idbPersistence.whenSynced;
+
+      const yBin = encodeStateAsUpdate(idbPersistence.doc);
+
+      return encodeCacheResultForTrpc({
+        yBin,
+      });
+    }
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactById/,
   async (event) => {
     return cacheSingleResponse(ObjectStoreName.Artifacts, event);
   },
@@ -197,7 +258,7 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.getArtifacts/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifacts/,
   async (event) => {
     return cacheListResponse(ObjectStoreName.Artifacts, event);
   },
@@ -205,7 +266,7 @@ registerRoute(
 );
 
 registerRoute(
-  /api\/trpc\/artifact\.searchArtifacts/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifacts/,
   async (event) => {
     try {
       const response = await fetch(event.request);

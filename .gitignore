@@ -42,3 +42,7 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
+
+# Astro
+.astro
+apps/www/.astro

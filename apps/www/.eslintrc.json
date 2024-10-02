@@ -1,0 +1,20 @@
+{
+  "extends": ["plugin:@nx/react-typescript", "../../.eslintrc.json"],
+  "ignorePatterns": ["!**/*", ".next/**/*", "src/env.d.ts"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "rules": {}
+    },
+    {
+      "files": ["*.js", "*.jsx"],
+      "rules": {}
+    },
+    {
+      "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
+}

@@ -11,8 +11,11 @@ app.use(bodyParser.json());
 
 const defaultCorsAllowlist = [
   'https://feynote.com',
+  'https://app.feynote.com',
   'https://beta.feynote.com',
+  'https://app.beta.feynote.com',
   'https://staging.feynote.com',
+  'https://app.staging.feynote.com',
 ];
 
 const hostMatch = (pattern: string, origin: string) => {

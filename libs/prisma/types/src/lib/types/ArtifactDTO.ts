@@ -27,6 +27,9 @@ export type ArtifactDTO = {
     targetArtifactId: string;
     targetArtifactBlockId: string | null;
     referenceTargetArtifactId: string | null;
+    targetArtifact: {
+      title: string;
+    } | null;
     referenceText: string;
     targetArtifactDate: string | null;
   }[];

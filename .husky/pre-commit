@@ -1,2 +1,2 @@
-npx nx affected -t lint,typecheck --parallel 6
+npx nx affected -t lint,typecheck --parallel 8
 npx lint-staged
