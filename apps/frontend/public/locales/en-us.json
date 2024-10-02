@@ -120,6 +120,7 @@
   "sharedContent.noArtifacts.message": "Artifacts will show up here if another user shares their content with you",
   "sharedContent.unknownUser": "Unknown User",
   "sharedContent.sharedBy": "Shared by:",
+  "sharedContent.reload": "Refresh Page",
 
   "graph.title": "Graph",
   "graph.nullState.title": "No Artifacts",

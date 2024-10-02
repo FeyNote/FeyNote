@@ -1,5 +1,4 @@
 import {
-  IonButton,
   IonCard,
   IonCardTitle,
   IonContent,
@@ -23,6 +22,9 @@ import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { SessionContext } from '../../context/session/SessionContext';
+import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { createPortal } from 'react-dom';
+import { SharedContentRightSideMenu } from './SharedContentSideMenu';
 
 const Title = styled(IonCardTitle)`
   padding: 8px;
@@ -41,7 +43,8 @@ const StyledNullState = styled(NullState)`
 
 export const SharedContent: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate, isPaneFocused } = useContext(PaneContext);
+  const { sidemenuContentRef } = useContext(SidemenuContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -67,10 +70,14 @@ export const SharedContent: React.FC = () => {
       });
   };
 
-  useEffect(() => {
+  const loadWithProgress = async () => {
     const progress = startProgressBar();
-    getUserArtifacts().then(() => {
-      progress.dismiss();
+    await getUserArtifacts();
+    progress.dismiss();
+  };
+
+  useEffect(() => {
+    loadWithProgress().then(() => {
       setInitialLoadComplete(true);
     });
   }, []);
@@ -122,6 +129,12 @@ export const SharedContent: React.FC = () => {
           </Card>
         )}
       </IonContent>
+      {isPaneFocused &&
+        sidemenuContentRef.current &&
+        createPortal(
+          <SharedContentRightSideMenu reload={loadWithProgress} />,
+          sidemenuContentRef.current,
+        )}
     </IonPage>
   );
 };
