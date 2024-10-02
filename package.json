@@ -72,7 +72,7 @@
     "express": "^4.21.0",
     "flexlayout-react": "^0.7.15",
     "google-auth-library": "^9.14.1",
-    "i18next": "^23.14.0",
+    "i18next": "^23.15.1",
     "idb": "^8.0.0",
     "ionicons": "^7.4.0",
     "minisearch": "^7.1.0",
