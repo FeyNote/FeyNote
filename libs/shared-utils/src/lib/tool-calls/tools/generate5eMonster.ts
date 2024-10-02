@@ -8,21 +8,21 @@ export const Generate5eMonsterSchema = z.object({
   }),
   general: z.object({
     ac: z.object({
-      name: z.literal('monstersheet.general.ac'),
+      name: z.literal('monsterStatblock.general.ac'),
       value: z.string().describe('The Armor Class of the generated monster'),
     }),
     hp: z.object({
-      name: z.literal('monstersheet.general.hp'),
+      name: z.literal('monsterStatblock.general.hp'),
       value: z.string().describe('The Hit Points of the generated monster'),
     }),
     speed: z.object({
-      name: z.literal('monstersheet.general.speed'),
+      name: z.literal('monsterStatblock.general.speed'),
       value: z.string().describe('The Hit Points of the generated monster'),
     }),
   }),
   stats: z.object({
     str: z.object({
-      name: z.literal('monstersheet.stats.str'),
+      name: z.literal('monsterStatblock.stats.str'),
       value: z
         .string()
         .describe(
@@ -30,7 +30,7 @@ export const Generate5eMonsterSchema = z.object({
         ),
     }),
     dex: z.object({
-      name: z.literal('monstersheet.stats.dex'),
+      name: z.literal('monsterStatblock.stats.dex'),
       value: z
         .string()
         .describe(
@@ -38,7 +38,7 @@ export const Generate5eMonsterSchema = z.object({
         ),
     }),
     con: z.object({
-      name: z.literal('monstersheet.stats.con'),
+      name: z.literal('monsterStatblock.stats.con'),
       value: z
         .string()
         .describe(
@@ -46,7 +46,7 @@ export const Generate5eMonsterSchema = z.object({
         ),
     }),
     int: z.object({
-      name: z.literal('monstersheet.stats.int'),
+      name: z.literal('monsterStatblock.stats.int'),
       value: z
         .string()
         .describe(
@@ -54,7 +54,7 @@ export const Generate5eMonsterSchema = z.object({
         ),
     }),
     wis: z.object({
-      name: z.literal('monstersheet.stats.wis'),
+      name: z.literal('monsterStatblock.stats.wis'),
       value: z
         .string()
         .describe(
@@ -62,7 +62,7 @@ export const Generate5eMonsterSchema = z.object({
         ),
     }),
     cha: z.object({
-      name: z.literal('monstersheet.stats.cha'),
+      name: z.literal('monsterStatblock.stats.cha'),
       value: z
         .string()
         .describe(
@@ -73,49 +73,49 @@ export const Generate5eMonsterSchema = z.object({
   attributes: z.object({
     skills: z
       .object({
-        name: z.literal('monstersheet.attributes.skills'),
+        name: z.literal('monsterStatblock.attributes.skills'),
         value: z.string(),
       })
       .describe('Skills or proficiencies of the generated monster')
       .nullable(),
     savingThows: z
       .object({
-        name: z.literal('monstersheet.attributes.savingThrows'),
+        name: z.literal('monsterStatblock.attributes.savingThrows'),
         value: z.string(),
       })
       .describe('Saving throw checks the monsters may have')
       .nullable(),
     damageResistances: z
       .object({
-        name: z.literal('monstersheet.attributes.dmgResistances'),
+        name: z.literal('monsterStatblock.attributes.dmgResistances'),
         value: z.string(),
       })
       .describe('Any damage resistances of the generated monster')
       .nullable(),
     damageImmunities: z
       .object({
-        name: z.literal('monstersheet.attributes.dmgImmunities'),
+        name: z.literal('monsterStatblock.attributes.dmgImmunities'),
         value: z.string(),
       })
       .describe('Any damage immunities of the generated monster')
       .nullable(),
     conditionImmunities: z
       .object({
-        name: z.literal('monstersheet.attributes.conditionImmunities'),
+        name: z.literal('monsterStatblock.attributes.conditionImmunities'),
         value: z.string(),
       })
       .describe('Any condition immunities of the generated monster')
       .nullable(),
     damageVulnerabilities: z
       .object({
-        name: z.literal('monstersheet.attributes.dmgVul'),
+        name: z.literal('monsterStatblock.attributes.dmgVul'),
         value: z.string(),
       })
       .describe('Any damage vulnerabilities of the generated monster')
       .nullable(),
     senses: z
       .object({
-        name: z.literal('monstersheet.attributes.senses'),
+        name: z.literal('monsterStatblock.attributes.senses'),
         value: z.string(),
       })
       .describe(

@@ -1,5 +1,4 @@
 import type { Generate5eMonsterParams } from '../tools/generate5eMonster';
-import { getTiptapTableObj } from './utils/generateTableDataFromObjectKeys';
 import { TFunction } from 'i18next';
 
 export const convert5eMonsterToTipTap = (
@@ -66,7 +65,7 @@ export const convert5eMonsterToTipTap = (
     tiptapContent.push({
       type: 'heading',
       attrs: { level: 3 },
-      content: [{ type: 'text', text: t('monstersheet.actions.header') }],
+      content: [{ type: 'text', text: t('monsterStatblock.actions.header') }],
     });
     tiptapContent.push(
       ...generatedMonster.actions.map((action) =>
@@ -78,7 +77,7 @@ export const convert5eMonsterToTipTap = (
     tiptapContent.push({
       type: 'heading',
       attrs: { level: 3 },
-      content: [{ type: 'text', text: t('monstersheet.reactions.header') }],
+      content: [{ type: 'text', text: t('monsterStatblock.reactions.header') }],
     });
     tiptapContent.push(
       ...generatedMonster.reactions.map((reaction) =>
@@ -91,7 +90,7 @@ export const convert5eMonsterToTipTap = (
       type: 'heading',
       attrs: { level: 3 },
       content: [
-        { type: 'text', text: t('monstersheet.legendaryActions.header') },
+        { type: 'text', text: t('monsterStatblock.legendaryActions.header') },
       ],
     });
     if (generatedMonster.legendaryActions.ruleset) {
