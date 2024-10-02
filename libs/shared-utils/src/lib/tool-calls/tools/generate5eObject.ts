@@ -18,14 +18,13 @@ const Generate5eObjectSchema = z.object({
       }),
     )
     .describe(
-      'Many 5e objects come with required key value properties, this is the list that will contain those',
-    ),
-  description: z
-    .string()
-    .describe(
-      'The generated description or paragraph text needed to generated for this object',
+      'Some 5e objects come with required key value properties, this is the list that will contain those',
     )
-    .optional(),
+    .nullable(),
+  descriptions: z
+    .array(z.string())
+    .describe('The descriptive text of the object')
+    .nullable(),
 });
 
 export type Generate5eObjectParams = z.infer<typeof Generate5eObjectSchema>;
@@ -36,7 +35,7 @@ export const Generate5eObjectTool = tool({
   parameters: Generate5eObjectSchema,
   execute: async (generatedObject: Generate5eObjectParams) => {
     return `
-    THE BELOW INFORMATION HAS ALREADY BEEN SHOW TO THE USER DO NOT REPEAT NEEDLESSLY
+    THE BELOW INFORMATION HAS ALREADY BEEN SHOW TO THE USER DO NOT REPEAT IT
     ---
     ${generatedObject}
     --

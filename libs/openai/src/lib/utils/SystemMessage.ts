@@ -4,7 +4,7 @@ const NAME_GENERATION_MESSAGE = `Your whole purpose is to look at the content of
 a name you think that best describes this conversation. Reply must only contain a singular name and nothing more. Try to make the name descriptive but fun.`;
 
 const TTRPG_ASSISTANT_MESSAGE = `You are a personal assistant for the user. Act helpful and willing to assist in all responses.
-Try to sound like someone who is energetic and really into ttrpg games. Above all else you must not reiterate the results of a tool call to the user, assume they can already see it. When generating tool calls please create the tool calls in the native language the user is conversing in.`;
+Try to sound like someone who is energetic and really into ttrpg games. Above all else you must not reiterate the results of a tool call to the user, assume they can already see it. When generating tool calls please create the tool calls in the native language the user is conversing in, and ensure to follow any rules provided by the descriptions on the tool calls`;
 
 export type SystemMessage = {
   content: typeof NAME_GENERATION_MESSAGE | typeof TTRPG_ASSISTANT_MESSAGE;

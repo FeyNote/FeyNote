@@ -7,7 +7,9 @@ export async function generateAssistantText(
   model: AIModel,
 ) {
   const { text } = await generateText({
-    model: openai(model),
+    model: openai(model, {
+      structuredOutputs: true,
+    }),
     maxTokens: 4096,
     messages,
   });
