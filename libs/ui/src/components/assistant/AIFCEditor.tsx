@@ -4,12 +4,13 @@ import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { useArtifactEditor } from '../editor/useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
 import { useEffect, useMemo } from 'react';
-import { tiptapToolCallBuilder } from '@feynote/shared-utils';
 import { copyOutline } from 'ionicons/icons';
 import type { ToolInvocation } from 'ai';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
+import { tiptapToolCallBuilder } from '@feynote/shared-utils';
+import { useTranslation } from 'react-i18next';
 
 const StyledEditorContent = styled(EditorContent)`
   max-width: min-content;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export const AIFCEditor: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const yDoc = useMemo(() => {
     return new YDoc();
   }, []);
@@ -32,8 +34,9 @@ export const AIFCEditor: React.FC<Props> = (props) => {
 
   useEffect(() => {
     try {
-      const content = tiptapToolCallBuilder(props.toolInvocation);
-      editor?.commands.setContent(content);
+      const tiptapContent = tiptapToolCallBuilder(props.toolInvocation, t);
+      if (!tiptapContent) return;
+      editor?.commands.setContent(tiptapContent);
     } catch (e) {
       console.log(e);
     }

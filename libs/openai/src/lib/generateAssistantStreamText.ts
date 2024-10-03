@@ -8,8 +8,8 @@ import {
 } from '@feynote/shared-utils';
 
 const tools = {
-  [FunctionName.Generate5eObject]: Generate5eObjectTool,
   [FunctionName.Generate5eMonster]: Generate5eMonsterTool,
+  [FunctionName.Generate5eObject]: Generate5eObjectTool,
 };
 
 export async function generateAssistantStreamText(
@@ -17,7 +17,9 @@ export async function generateAssistantStreamText(
   model: AIModel,
 ): ReturnType<typeof streamText<typeof tools>> {
   const stream = await streamText({
-    model: openai(model),
+    model: openai('gpt-4o-2024-08-06', {
+      structuredOutputs: true,
+    }),
     tools,
     maxTokens: 4096,
     messages,
