@@ -169,7 +169,14 @@ export class TypeSense implements SearchProvider {
     await this.deleteBlocksByArtifactIds(artifactIds);
   }
 
-  async searchArtifacts(userId: string, query: string) {
+  async searchArtifacts(
+    userId: string,
+    query: string,
+    options?: {
+      prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+      limit?: number;
+    },
+  ) {
     const query_by = 'title,fullText';
 
     const results = await this.client
@@ -178,9 +185,9 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
+        prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
-        per_page: 250,
-        limit_hits: 250,
+        per_page: options?.limit ?? 50,
       });
 
     return (
@@ -189,7 +196,14 @@ export class TypeSense implements SearchProvider {
       }) || []
     );
   }
-  async searchArtifactTitles(userId: string, query: string) {
+  async searchArtifactTitles(
+    userId: string,
+    query: string,
+    options?: {
+      prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+      limit?: number;
+    },
+  ) {
     const query_by = 'title';
 
     const results = await this.client
@@ -198,9 +212,9 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by,
+        prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
-        per_page: 250,
-        limit_hits: 250,
+        per_page: options?.limit ?? 50,
       });
 
     return (
@@ -213,7 +227,8 @@ export class TypeSense implements SearchProvider {
     userId: string,
     query: string,
     options?: {
-      prefix: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+      prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
+      limit?: number;
     },
   ) {
     const results = await this.client
@@ -222,10 +237,9 @@ export class TypeSense implements SearchProvider {
       .search({
         q: query,
         query_by: 'text',
-        prefix: options?.prefix || false,
+        prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
-        per_page: 250,
-        limit_hits: 250,
+        per_page: options?.limit ?? 50,
       });
 
     return (

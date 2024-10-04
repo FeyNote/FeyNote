@@ -21,13 +21,28 @@ export interface SearchProvider {
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
   indexBlocks: (artifact: IndexableArtifact) => Promise<void>;
   deleteArtifacts: (artifactIds: string[]) => Promise<void>;
-  searchArtifacts: (userId: string, query: string) => Promise<string[]>;
-  searchArtifactTitles: (userId: string, query: string) => Promise<string[]>;
+  searchArtifacts: (
+    userId: string,
+    query: string,
+    options?: {
+      prefix?: boolean;
+      limit?: number;
+    },
+  ) => Promise<string[]>;
+  searchArtifactTitles: (
+    userId: string,
+    query: string,
+    options?: {
+      prefix?: boolean;
+      limit?: number;
+    },
+  ) => Promise<string[]>;
   searchArtifactBlocks: (
     userId: string,
     query: string,
     options?: {
-      prefix: boolean;
+      prefix?: boolean;
+      limit?: number;
     },
   ) => Promise<BlockIndexDocument[]>;
 }

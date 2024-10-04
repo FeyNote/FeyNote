@@ -27,6 +27,7 @@ export const searchArtifactBlocks = authenticatedProcedure
         input.query,
         {
           prefix: true,
+          limit: input.limit,
         },
       );
 
@@ -45,7 +46,6 @@ export const searchArtifactBlocks = authenticatedProcedure
           },
         },
         ...artifactDetail,
-        take: input.limit || 100,
       });
 
       const artifactsById = artifacts.reduce<Record<string, ArtifactDTO>>(
