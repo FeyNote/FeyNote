@@ -47,10 +47,6 @@ const SuggestionListItem = styled.button<{
 
   padding-top: 6px;
   padding-bottom: 6px;
-
-  &:hover {
-    background-color: var(--ion-background-color, #dddddd);
-  }
 `;
 
 const SuggestionListItemIcon = styled.div`
@@ -202,6 +198,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           {props.items.map((item, index) => {
             return (
               <SuggestionListItem
+                onMouseOver={() => (setSelectedIndex(index), console.log('hi'))}
                 $selected={index === selectedIndex}
                 key={item.artifactId + item.artifactBlockId}
                 onClick={() => selectItem(index)}
@@ -226,6 +223,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           })}
           {props.items.length === 0 && (
             <SuggestionListItem
+              onMouseOver={() => setSelectedIndex(0)}
               $selected={selectedIndex === 0}
               onClick={() => createItem()}
             >
@@ -246,6 +244,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           )}
           {props.items.length !== 0 && props.query.trim().length && (
             <SuggestionListItem
+              onMouseOver={() => setSelectedIndex(0)}
               $selected={selectedIndex === props.items.length}
               onClick={() => createItem()}
             >

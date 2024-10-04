@@ -10,23 +10,15 @@ export const getReferenceSuggestions = async ({
     query,
     limit: 10,
   });
-  // .catch((error) => {
-  //   handleTRPCErrors(error, presentToast);
-  // });
   const blocksPromise = trpc.artifact.searchArtifactBlocks.query({
     query,
     limit: 15,
   });
-  // .catch((error) => {
-  //   handleTRPCErrors(error, presentToast);
-  // });
 
   const [artifacts, blocks] = await Promise.all([
     artifactsPromise,
     blocksPromise,
   ]);
-
-  if (!blocks || !artifacts) return [];
 
   const suggestionItems = [];
 
@@ -50,5 +42,5 @@ export const getReferenceSuggestions = async ({
     });
   }
 
-  return suggestionItems.slice(0, 10);
+  return suggestionItems.slice(0, 20);
 };
