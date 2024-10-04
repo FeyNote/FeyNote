@@ -13,6 +13,8 @@ export const useScrollDateIntoView = (
     if (scrollExecutedRef.current) return;
     // Focusing a blockId is optional
     if (!date) return;
+    // The consumer wants us to scroll only within a specific container, but it's not ready yet
+    if (containerRef && !containerRef.current) return;
 
     const datestamp = specifierToDatestamp(date);
     // We cannot focus invalid datestamps

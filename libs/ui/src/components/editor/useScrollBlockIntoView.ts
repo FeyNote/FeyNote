@@ -12,6 +12,8 @@ export const useScrollBlockIntoView = (
     if (scrollExecutedRef.current) return;
     // Focusing a blockId is optional
     if (!blockId) return;
+    // The consumer wants us to scroll only within a specific container, but it's not ready yet
+    if (containerRef && !containerRef.current) return;
 
     const el = (containerRef?.current || document).querySelector(
       `[data-id="${blockId}"]`,
