@@ -50,6 +50,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const setCenterRef = useRef<(center: string) => void>();
   const [title, setTitle] = useState('');
   const [theme, setTheme] = useState<ArtifactTheme>('default');
+  const [titleBodyMerge, setTitleBodyMerge] = useState(true);
   const { eventManager } = useContext(EventContext);
   const { t } = useTranslation();
 
@@ -82,6 +83,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
       const yArtifactMeta = getMetaFromYArtifact(yDoc);
       setTitle(yArtifactMeta.title ?? title);
       setTheme(yArtifactMeta.theme ?? theme);
+      setTitleBodyMerge(yArtifactMeta.titleBodyMerge ?? titleBodyMerge);
     };
 
     listener();
@@ -122,38 +124,45 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
 
   if (!configMap) return;
 
+  const titleInput = (
+    <IonItem lines="none" className="artifactTitle">
+      <ArtifactTitleInput
+        disabled={!props.editable}
+        placeholder={t('artifactRenderer.title.placeholder')}
+        value={title}
+        onIonInput={(event) => {
+          setMetaProp('title', event.target.value || '');
+          eventManager.broadcast([EventName.ArtifactTitleUpdated]);
+          props.onTitleChange?.((event.target.value || '').toString());
+        }}
+        type="text"
+      ></ArtifactTitleInput>
+    </IonItem>
+  );
+
   return (
-    <ArtifactCalendarStyles data-theme={theme}>
-      <IonItem lines="none" className="artifactTitle">
-        <ArtifactTitleInput
-          disabled={!props.editable}
-          placeholder={t('artifactRenderer.title.placeholder')}
-          value={title}
-          onIonInput={(event) => {
-            setMetaProp('title', event.target.value || '');
-            eventManager.broadcast([EventName.ArtifactTitleUpdated]);
-            props.onTitleChange?.((event.target.value || '').toString());
-          }}
-          type="text"
-        ></ArtifactTitleInput>
-      </IonItem>
-      {props.editable && (
-        <CalendarConfig
-          yDoc={yDoc}
+    <>
+      {!titleBodyMerge && titleInput}
+      <ArtifactCalendarStyles data-theme={theme}>
+        {titleBodyMerge && titleInput}
+        {props.editable && (
+          <CalendarConfig
+            yDoc={yDoc}
+            configMap={configMap}
+            setCenterRef={props.setCenterRef || setCenterRef}
+          />
+        )}
+
+        <CalendarRenderer
+          viewType={props.viewType}
+          knownReferencesByDay={knownReferencesByDay}
+          centerDate={props.centerDate}
           configMap={configMap}
           setCenterRef={props.setCenterRef || setCenterRef}
+          selectedDate={props.selectedDate}
+          onDayClicked={props.onDayClicked}
         />
-      )}
-
-      <CalendarRenderer
-        viewType={props.viewType}
-        knownReferencesByDay={knownReferencesByDay}
-        centerDate={props.centerDate}
-        configMap={configMap}
-        setCenterRef={props.setCenterRef || setCenterRef}
-        selectedDate={props.selectedDate}
-        onDayClicked={props.onDayClicked}
-      />
-    </ArtifactCalendarStyles>
+      </ArtifactCalendarStyles>
+    </>
   );
 });
