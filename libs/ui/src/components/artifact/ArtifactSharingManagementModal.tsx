@@ -92,7 +92,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setKnownUsers(result);
       })
       .catch((error) => {
-        handleTRPCErrors(presentToast, error);
+        handleTRPCErrors(error, presentToast);
       });
   };
   const getArtifact = async () => {
@@ -104,7 +104,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setArtifact(result);
       })
       .catch((error) => {
-        handleTRPCErrors(presentToast, error);
+        handleTRPCErrors(error, presentToast);
       });
   };
 
@@ -137,7 +137,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setSearchResult(result);
       })
       .catch((error) => {
-        handleTRPCErrors(presentToast, error, {
+        handleTRPCErrors(error, presentToast, {
           400: () => {
             // Do nothing (expected if the user types an invalid email format)
           },
@@ -163,7 +163,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           artifactId: props.artifactId,
         })
         .catch((error) => {
-          handleTRPCErrors(presentToast, error);
+          handleTRPCErrors(error, presentToast);
         });
     } else {
       await trpc.artifactShare.upsertArtifactShare
@@ -173,7 +173,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           accessLevel,
         })
         .catch((error) => {
-          handleTRPCErrors(presentToast, error);
+          handleTRPCErrors(error, presentToast);
         });
     }
 
@@ -291,6 +291,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
               onIonInput={(event) =>
                 setSearchText(event.detail.value as string)
               }
+              onKeyDown={() => setSearching(true)}
               debounce={200}
             ></IonSearchbar>
           </IonItem>
@@ -310,6 +311,11 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           {!loading && !searching && !!searchText.length && !searchResult && (
             <IonItem>
               <IonLabel>{t('artifactSharing.search.noResult')}</IonLabel>
+            </IonItem>
+          )}
+          {searching && (
+            <IonItem>
+              <IonLabel>{t('artifactSharing.search.searching')}</IonLabel>
             </IonItem>
           )}
         </IonCard>

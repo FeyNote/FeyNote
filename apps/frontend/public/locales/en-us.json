@@ -185,6 +185,8 @@
   "artifactSharing.search": "Add a New User",
   "artifactSharing.search.help": "You can search for a user by their account email address and give them access to this artifact. If they do not have an account, they will need to register for one to be given write access.",
   "artifactSharing.search.placeholder": "FeyNote account email",
+  "artifactSharing.search.noResult": "No FeyNote user found with that email",
+  "artifactSharing.search.searching": "Searching...",
   "artifactSharing.noaccess": "No Access",
   "artifactSharing.coowner": "Co-Owner",
   "artifactSharing.readwrite": "Read & Write",
