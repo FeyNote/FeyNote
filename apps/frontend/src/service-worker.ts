@@ -270,7 +270,9 @@ registerRoute(
 
       return response;
     } catch (e) {
-      const input = getTrpcInputForEvent<{ query: string }>(event);
+      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
+        event,
+      );
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchManager = await searchManagerP;
@@ -289,7 +291,84 @@ registerRoute(
         results.push(artifact);
       }
 
-      return encodeCacheResultForTrpc(results);
+      const limitedResults = results.slice(0, input.limit || 50);
+      return encodeCacheResultForTrpc(limitedResults);
+    }
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifactTitles/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (e) {
+      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
+        event,
+      );
+      if (!input || !input.query) throw new Error('No query provided');
+
+      const searchManager = await searchManagerP;
+      const searchResults = searchManager.search(input.query);
+      const artifactIds = new Set(
+        searchResults
+          .filter((searchResult) => !searchResult.blockId)
+          .map((searchResult) => searchResult.artifactId),
+      );
+
+      const manifestDb = await getManifestDb();
+      const results = [];
+      for (const artifactId of artifactIds) {
+        const artifact = await manifestDb.get(
+          ObjectStoreName.Artifacts,
+          artifactId,
+        );
+        results.push(artifact);
+      }
+
+      const limitedResults = results.slice(0, input.limit || 50);
+      return encodeCacheResultForTrpc(limitedResults);
+    }
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifactBlocks/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (e) {
+      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
+        event,
+      );
+      if (!input || !input.query) throw new Error('No query provided');
+
+      const searchManager = await searchManagerP;
+      const searchResults = searchManager.search(input.query);
+      const artifactIds = new Set(
+        searchResults
+          .filter((searchResult) => searchResult.blockId)
+          .map((searchResult) => searchResult.artifactId),
+      );
+
+      const manifestDb = await getManifestDb();
+      const results = [];
+      for (const artifactId of artifactIds) {
+        const artifact = await manifestDb.get(
+          ObjectStoreName.Artifacts,
+          artifactId,
+        );
+        results.push(artifact);
+      }
+
+      const limitedResults = results.slice(0, input.limit || 50);
+      return encodeCacheResultForTrpc(limitedResults);
     }
   },
   'GET',
