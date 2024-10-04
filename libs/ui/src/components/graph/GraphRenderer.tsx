@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -55,11 +56,50 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const forceGraphRef =
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>();
-  const { navigate } = useContext(PaneContext);
+  const { navigate, pane, isPaneFocused } = useContext(PaneContext);
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
   const _isDarkMode = isDarkMode();
+
+  const [displayWidth, setDisplayWidth] = useState(
+    props.overrideWidth || graphContainerRef.current?.offsetWidth,
+  );
+  const [displayHeight, setDisplayHeight] = useState(
+    props.overrideHeight || graphContainerRef.current?.offsetHeight,
+  );
+
+  useLayoutEffect(() => {
+    if (graphContainerRef.current) {
+      const rect = graphContainerRef.current.getBoundingClientRect();
+      setDisplayWidth(rect.width);
+      setDisplayHeight(rect.height);
+    }
+  }, [
+    graphContainerRef.current,
+    pane.currentView.navigationEventId,
+    isPaneFocused,
+  ]);
+
+  useEffect(() => {
+    // Use resize observer to watch graph container ref for size changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (graphContainerRef.current) {
+        const rect = graphContainerRef.current.getBoundingClientRect();
+
+        setDisplayWidth(rect.width);
+        setDisplayHeight(rect.height);
+      }
+    });
+
+    if (graphContainerRef.current) {
+      resizeObserver.observe(graphContainerRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [graphContainerRef.current]);
 
   const graphData = useMemo(() => {
     const nodesById: Record<string, FeynoteGraphNode> = {};
@@ -195,8 +235,8 @@ export const GraphRenderer: React.FC<Props> = (props) => {
         onNodeClick={handleNodeClick}
         onLinkHover={handleLinkHover}
         nodeLabel={() => ''}
-        width={props.overrideWidth || graphContainerRef.current?.offsetWidth}
-        height={props.overrideHeight || graphContainerRef.current?.offsetHeight}
+        width={displayWidth}
+        height={displayHeight}
       />
     </GraphContainer>
   );
