@@ -19,20 +19,6 @@ const NavGroup = styled.div`
   white-space: nowrap;
 `;
 
-const NavTitle = styled.div`
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  color: var(--ion-text-color, #000000);
-  opacity: 0;
-  transition: 0.1s;
-
-  &:hover {
-    opacity: 1;
-  }
-`;
-
 interface Props {
   title: string;
   // Pass null to disable the popover. Not passing this prop will use the default context menu
@@ -68,7 +54,6 @@ export const PaneNav: React.FC<Props> = (props) => {
           <IonIcon icon={arrowForward} slot="icon-only" />
         </IonButton>
       </NavGroup>
-      <NavTitle>{props.title}</NavTitle>
       <NavGroup style={{ textAlign: 'right' }}>
         <IonButton
           id={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}

@@ -13,7 +13,7 @@ class ArtifactCollaborationManager {
   private session: SessionDTO | null = null;
 
   private ws = new HocuspocusProviderWebsocket({
-    url: '/hocuspocus',
+    url: getApiUrls().hocuspocus,
     delay: 1000,
     minDelay: 1000,
     maxDelay: 10000,

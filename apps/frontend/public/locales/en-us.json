@@ -185,6 +185,8 @@
   "artifactSharing.search": "Add a New User",
   "artifactSharing.search.help": "You can search for a user by their account email address and give them access to this artifact. If they do not have an account, they will need to register for one to be given write access.",
   "artifactSharing.search.placeholder": "FeyNote account email",
+  "artifactSharing.search.noResult": "No FeyNote user found with that email",
+  "artifactSharing.search.searching": "Searching...",
   "artifactSharing.noaccess": "No Access",
   "artifactSharing.coowner": "Co-Owner",
   "artifactSharing.readwrite": "Read & Write",
@@ -200,6 +202,8 @@
   "artifactSharing.links.create": "New Link",
   "artifactSharing.links.delete.title": "Delete Link",
   "artifactSharing.links.delete.message": "Are you sure? This action is irreversible, and the link associated will become dead/unusable.",
+  "artifactSharing.links.allowAddToAccount": "Anyone with link can add to account.",
+  "artifactSharing.links.noAddToAccount": "Adding to account disabled.",
 
   "artifactTheme.default": "Default",
   "artifactTheme.classic": "Classic",

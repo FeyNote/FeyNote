@@ -161,42 +161,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           &nbsp;&nbsp;
           {t('artifactRenderer.settings')}
         </IonListHeader>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={isPinned}
-            onIonChange={async (event) => {
-              setIsPinned(event.target.checked);
-              await updateIsPinned(event.target.checked);
-              eventManager.broadcast([EventName.ArtifactPinned]);
-            }}
-          >
-            {t('artifactRenderer.isPinned')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.isPinned.help')}
-          />
-        </CompactIonItem>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={enableTitleBodyMerge}
-            onIonChange={async (event) => {
-              setEnableTitleBodyMerge(event.target.checked);
-              setMetaProp('titleBodyMerge', event.target.checked);
-            }}
-          >
-            {t('artifactRenderer.titleBodyMerge')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.titleBodyMerge.help')}
-          />
-        </CompactIonItem>
-        <CompactIonItem lines="none">
+        <CompactIonItem lines="none" button>
           <IonSelect
             label={t('artifactRenderer.theme')}
             labelPlacement="fixed"
@@ -215,6 +180,41 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               </IonSelectOption>
             ))}
           </IonSelect>
+        </CompactIonItem>
+        <CompactIonItem button lines="none">
+          <IonCheckbox
+            labelPlacement="end"
+            justify="start"
+            checked={enableTitleBodyMerge}
+            onIonChange={async (event) => {
+              setEnableTitleBodyMerge(event.target.checked);
+              setMetaProp('titleBodyMerge', event.target.checked);
+            }}
+          >
+            {t('artifactRenderer.titleBodyMerge')}
+          </IonCheckbox>
+          <InfoButton
+            slot="end"
+            message={t('artifactRenderer.titleBodyMerge.help')}
+          />
+        </CompactIonItem>
+        <CompactIonItem button lines="none">
+          <IonCheckbox
+            labelPlacement="end"
+            justify="start"
+            checked={isPinned}
+            onIonChange={async (event) => {
+              setIsPinned(event.target.checked);
+              await updateIsPinned(event.target.checked);
+              eventManager.broadcast([EventName.ArtifactPinned]);
+            }}
+          >
+            {t('artifactRenderer.isPinned')}
+          </IonCheckbox>
+          <InfoButton
+            slot="end"
+            message={t('artifactRenderer.isPinned.help')}
+          />
         </CompactIonItem>
       </IonCard>
       {props.artifact.userId === session.userId && (

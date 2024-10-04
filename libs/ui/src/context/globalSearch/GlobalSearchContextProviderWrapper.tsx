@@ -171,6 +171,7 @@ export const GlobalSearchContextProviderWrapper = ({
       trpc.artifact.searchArtifacts
         .query({
           query: searchText,
+          limit: SEARCH_RESULT_LIMIT,
         })
         .then((results) => {
           if (cancelled) return;
@@ -222,34 +223,32 @@ export const GlobalSearchContextProviderWrapper = ({
               </SearchInput>
 
               <SearchResultsContainer>
-                {searchResults
-                  .slice(0, SEARCH_RESULT_LIMIT)
-                  .map((searchResult) => (
-                    <IonItem
-                      lines="none"
-                      key={searchResult.id}
-                      onClick={() => {
-                        navigate(
-                          undefined, // Open in currently focused pane rather than in specific pane
-                          PaneableComponent.Artifact,
-                          { id: searchResult.id },
-                          PaneTransition.Push,
-                        );
-                        hide();
-                      }}
-                      button
-                    >
-                      <IonLabel>
-                        {searchResult.title}
-                        <p>
-                          {searchResult.previewText.substring(
-                            0,
-                            SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
-                          ) || t('artifact.title')}
-                        </p>
-                      </IonLabel>
-                    </IonItem>
-                  ))}
+                {searchResults.map((searchResult) => (
+                  <IonItem
+                    lines="none"
+                    key={searchResult.id}
+                    onClick={() => {
+                      navigate(
+                        undefined, // Open in currently focused pane rather than in specific pane
+                        PaneableComponent.Artifact,
+                        { id: searchResult.id },
+                        PaneTransition.Push,
+                      );
+                      hide();
+                    }}
+                    button
+                  >
+                    <IonLabel>
+                      {searchResult.title}
+                      <p>
+                        {searchResult.previewText.substring(
+                          0,
+                          SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
+                        ) || t('artifact.title')}
+                      </p>
+                    </IonLabel>
+                  </IonItem>
+                ))}
                 {!!searchText.length && searchText === searchedText && (
                   <IonItem
                     lines="none"

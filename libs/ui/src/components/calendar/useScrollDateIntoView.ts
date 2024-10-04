@@ -4,6 +4,7 @@ import { specifierToDatestamp } from './specifierToDatestamp';
 export const useScrollDateIntoView = (
   date: string | undefined,
   dependencies: any[],
+  containerRef?: React.RefObject<HTMLElement>,
 ) => {
   const scrollExecutedRef = useRef(false);
 
@@ -12,12 +13,16 @@ export const useScrollDateIntoView = (
     if (scrollExecutedRef.current) return;
     // Focusing a blockId is optional
     if (!date) return;
+    // The consumer wants us to scroll only within a specific container, but it's not ready yet
+    if (containerRef && !containerRef.current) return;
 
     const datestamp = specifierToDatestamp(date);
     // We cannot focus invalid datestamps
     if (!datestamp) return;
 
-    const el = document.querySelector(`[data-date="${datestamp}"]`);
+    const el = (containerRef?.current || document).querySelector(
+      `[data-date="${datestamp}"]`,
+    );
     if (el) {
       el.scrollIntoView({
         behavior: 'instant',
@@ -26,5 +31,5 @@ export const useScrollDateIntoView = (
       });
       scrollExecutedRef.current = true;
     }
-  }, [date, ...dependencies]);
+  }, [date, containerRef?.current, ...dependencies]);
 };

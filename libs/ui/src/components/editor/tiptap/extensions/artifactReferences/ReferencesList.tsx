@@ -47,10 +47,6 @@ const SuggestionListItem = styled.button<{
 
   padding-top: 6px;
   padding-bottom: 6px;
-
-  &:hover {
-    background-color: var(--ion-background-color, #dddddd);
-  }
 `;
 
 const SuggestionListItemIcon = styled.div`
@@ -93,12 +89,14 @@ interface Props {
 
 export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const { eventManager } = useContext(EventContext);
+  const [domNonce] = useState(Math.random().toString());
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [creatingItem, setCreatingItem] = useState(false);
   const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
 
-  // We always add 1 to the number of items since there's a "create" button
-  const itemCount = props.items.length + 1;
+  const showCreateButton =
+    props.items.length !== 0 && !!props.query.trim().length;
+  const itemCount = props.items.length + (showCreateButton ? 1 : 0);
 
   useEffect(() => {
     setSelectedIndex(0);
@@ -126,11 +124,25 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   }));
 
   const upHandler = () => {
-    setSelectedIndex((selectedIndex + itemCount - 1) % itemCount);
+    const newIdx = (selectedIndex + itemCount - 1) % itemCount;
+    setSelectedIndex(newIdx);
+    document
+      .getElementById(`reference-item-${domNonce}-${newIdx}`)
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
   };
 
   const downHandler = () => {
-    setSelectedIndex((selectedIndex + 1) % itemCount);
+    const newIdx = (selectedIndex + 1) % itemCount;
+    setSelectedIndex(newIdx);
+    document
+      .getElementById(`reference-item-${domNonce}-${newIdx}`)
+      ?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
   };
 
   const enterHandler = () => {
@@ -202,6 +214,9 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           {props.items.map((item, index) => {
             return (
               <SuggestionListItem
+                id={`reference-item-${domNonce}-${index}`}
+                // We use onMouseMove to prevent the item from being selected when the mouse just happens to be over the element when the suggestion menu opens
+                onMouseMove={() => (setSelectedIndex(index), console.log('hi'))}
                 $selected={index === selectedIndex}
                 key={item.artifactId + item.artifactBlockId}
                 onClick={() => selectItem(index)}
@@ -226,6 +241,8 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           })}
           {props.items.length === 0 && (
             <SuggestionListItem
+              id={`reference-item-${domNonce}-0`}
+              onMouseMove={() => setSelectedIndex(0)}
               $selected={selectedIndex === 0}
               onClick={() => createItem()}
             >
@@ -244,8 +261,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
               </SuggestionListItemText>
             </SuggestionListItem>
           )}
-          {props.items.length !== 0 && props.query.trim().length && (
+          {showCreateButton && (
             <SuggestionListItem
+              id={`reference-item-${domNonce}-${props.items.length}`}
+              onMouseMove={() => setSelectedIndex(props.items.length)}
               $selected={selectedIndex === props.items.length}
               onClick={() => createItem()}
             >

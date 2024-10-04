@@ -13,10 +13,12 @@ export const searchArtifacts = authenticatedProcedure
     }),
   )
   .query(async ({ input, ctx }): Promise<ArtifactDTO[]> => {
-    const limit = input.limit || 100;
     const resultArtifactIds = await searchProvider.searchArtifacts(
       ctx.session.userId,
       input.query,
+      {
+        limit: input.limit,
+      },
     );
 
     const artifacts = await prisma.artifact.findMany({
@@ -31,8 +33,6 @@ export const searchArtifacts = authenticatedProcedure
 
     const results: ArtifactDTO[] = [];
     for (const resultArtifactId of resultArtifactIds) {
-      if (results.length >= limit) break;
-
       const artifact = artifactsById.get(resultArtifactId);
       if (artifact) {
         results.push(artifactDetailToArtifactDTO(ctx.session.userId, artifact));

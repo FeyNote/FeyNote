@@ -4,28 +4,28 @@ const apiUrlsByEnv = {
     hocuspocus: '/hocuspocus',
   },
   'feynote.com': {
-    trpc: 'https://api.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
   'app.feynote.com': {
-    trpc: 'https://api.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
   'beta.feynote.com': {
-    trpc: 'https://api.beta.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.beta.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
   'app.beta.feynote.com': {
-    trpc: 'https://api.beta.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.beta.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
   'staging.feynote.com': {
-    trpc: 'https://api.staging.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.staging.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
   'app.staging.feynote.com': {
-    trpc: 'https://api.staging.feynote.com/trpc',
-    hocuspocus: 'https://hocuspocus.staging.feynote.com',
+    trpc: '/api/trpc',
+    hocuspocus: '/hocuspocus',
   },
 };
 

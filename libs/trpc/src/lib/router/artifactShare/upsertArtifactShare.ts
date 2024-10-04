@@ -20,6 +20,13 @@ export const upsertArtifactShare = authenticatedProcedure
     }): Promise<{
       id: string;
     }> => {
+      if (input.userId === ctx.session.userId) {
+        throw new TRPCError({
+          message: 'Cannot share artifact with self',
+          code: 'BAD_REQUEST',
+        });
+      }
+
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.artifactId,

@@ -159,7 +159,7 @@ export const Settings: React.FC = () => {
               &nbsp;&nbsp;
               {t('settings.interface')}
             </IonListHeader>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
@@ -172,7 +172,7 @@ export const Settings: React.FC = () => {
                 {t('settings.leftSideMenu')}
               </IonToggle>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(
                   PreferenceNames.LeftPaneShowPinnedArtifacts,
@@ -187,7 +187,7 @@ export const Settings: React.FC = () => {
                 {t('settings.leftSideMenuShowPinnedArtifacts')}
               </IonToggle>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(
                   PreferenceNames.LeftPaneShowRecentArtifacts,
@@ -202,7 +202,7 @@ export const Settings: React.FC = () => {
                 {t('settings.leftSideMenuShowRecentArtifacts')}
               </IonToggle>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(
                   PreferenceNames.LeftPaneShowRecentThreads,
@@ -217,7 +217,7 @@ export const Settings: React.FC = () => {
                 {t('settings.leftSideMenuShowRecentThreads')}
               </IonToggle>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.RightPaneStartOpen)}
                 onIonChange={(event) =>
@@ -230,7 +230,7 @@ export const Settings: React.FC = () => {
                 {t('settings.rightSideMenu')}
               </IonToggle>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none">
               <IonSelect
                 label={t('settings.language')}
                 labelPlacement="stacked"
@@ -257,7 +257,7 @@ export const Settings: React.FC = () => {
                 ))}
               </IonSelect>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none">
               <IonSelect
                 label={t('settings.theme')}
                 labelPlacement="stacked"
@@ -273,7 +273,7 @@ export const Settings: React.FC = () => {
                 ))}
               </IonSelect>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none">
               <IonSelect
                 label={t('settings.fontSize')}
                 labelPlacement="stacked"
@@ -293,7 +293,7 @@ export const Settings: React.FC = () => {
                 ))}
               </IonSelect>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none">
               <IonSelect
                 label={t('settings.collaborationColor')}
                 labelPlacement="stacked"
@@ -328,7 +328,7 @@ export const Settings: React.FC = () => {
               &nbsp;&nbsp;
               {t('settings.account')}
             </IonListHeader>
-            <IonItem button>
+            <IonItem lines="none" button>
               <IonLabel>
                 {t('settings.email')}
                 <p>
@@ -336,10 +336,10 @@ export const Settings: React.FC = () => {
                 </p>
               </IonLabel>
             </IonItem>
-            <IonItem button>
+            <IonItem lines="none" button>
               <IonLabel>{t('settings.password')}</IonLabel>
             </IonItem>
-            <IonItem>
+            <IonItem lines="none" button>
               <IonToggle
                 checked={
                   getPreference(PreferenceNames.PreferencesSync) ===
@@ -354,6 +354,7 @@ export const Settings: React.FC = () => {
             </IonItem>
           </IonList>
         </IonCard>
+        <br />
       </IonContent>
     </IonPage>
   );

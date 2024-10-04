@@ -23,6 +23,20 @@ export const createArtifactShareToken = authenticatedProcedure
     }): Promise<{
       id: string;
     }> => {
+      if (input.accessLevel === 'coowner') {
+        throw new TRPCError({
+          message: 'Cannot create share token with co-owner access level',
+          code: 'BAD_REQUEST',
+        });
+      }
+
+      if (input.accessLevel === 'readwrite' && !input.allowAddToAccount) {
+        throw new TRPCError({
+          message: 'Read-write share tokens must allow adding to account',
+          code: 'BAD_REQUEST',
+        });
+      }
+
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.artifactId,
