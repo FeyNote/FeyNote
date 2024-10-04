@@ -23,7 +23,7 @@
     "@ionic/react": "^8.3.1",
     "@prisma/client": "^5.20.0",
     "@swc/helpers": "0.5.13",
-    "@tiptap-pro/extension-unique-id": "^2.11.7",
+    "@tiptap-pro/extension-unique-id": "^2.11.9",
     "@tiptap/core": "2.8.0",
     "@tiptap/extension-blockquote": "2.8.0",
     "@tiptap/extension-bold": "2.8.0",
