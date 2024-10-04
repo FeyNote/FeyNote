@@ -1,6 +1,6 @@
 import { ArtifactDTO } from '@feynote/prisma/types';
 import styled from 'styled-components';
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
@@ -35,6 +35,8 @@ interface Props {
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const yDoc = useMemo(() => {
     const yDoc = new YDoc();
 
@@ -45,11 +47,12 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
 
   const artifactMeta = getMetaFromYArtifact(yDoc);
 
-  useScrollBlockIntoView(props.artifactBlockId, []);
-  useScrollDateIntoView(props.artifactDate, []);
+  useScrollBlockIntoView(props.artifactBlockId, [], containerRef);
+  useScrollDateIntoView(props.artifactDate, [], containerRef);
 
   return (
     <StyledBoundedFloatingWindow
+      ref={containerRef}
       floatTarget={props.previewTarget}
       width={PREVIEW_WIDTH_PX}
       minHeight={PREVIEW_MIN_HEIGHT_PX}

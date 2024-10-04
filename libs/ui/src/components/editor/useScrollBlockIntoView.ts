@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 export const useScrollBlockIntoView = (
   blockId: string | undefined,
   dependencies: any[],
+  containerRef?: React.RefObject<HTMLElement>,
 ) => {
   const scrollExecutedRef = useRef(false);
 
@@ -12,7 +13,9 @@ export const useScrollBlockIntoView = (
     // Focusing a blockId is optional
     if (!blockId) return;
 
-    const el = document.querySelector(`[data-id="${blockId}"]`);
+    const el = (containerRef?.current || document).querySelector(
+      `[data-id="${blockId}"]`,
+    );
     if (el) {
       el.scrollIntoView({
         behavior: 'instant',

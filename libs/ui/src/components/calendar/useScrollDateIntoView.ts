@@ -4,6 +4,7 @@ import { specifierToDatestamp } from './specifierToDatestamp';
 export const useScrollDateIntoView = (
   date: string | undefined,
   dependencies: any[],
+  containerRef?: React.RefObject<HTMLElement>,
 ) => {
   const scrollExecutedRef = useRef(false);
 
@@ -17,7 +18,9 @@ export const useScrollDateIntoView = (
     // We cannot focus invalid datestamps
     if (!datestamp) return;
 
-    const el = document.querySelector(`[data-date="${datestamp}"]`);
+    const el = (containerRef?.current || document).querySelector(
+      `[data-date="${datestamp}"]`,
+    );
     if (el) {
       el.scrollIntoView({
         behavior: 'instant',
