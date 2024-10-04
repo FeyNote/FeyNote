@@ -217,34 +217,31 @@ registerRoute(
 registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactYBinById/,
   async (event) => {
-    try {
+    // Cache first
+    const input = getTrpcInputForEvent<{ id: string }>(event);
+    if (!input || !input.id)
+      throw new Error('No id provided in procedure input');
+
+    const docName = `artifact:${input.id}`;
+    const manifestDb = await getManifestDb();
+    const manifestArtifact = await manifestDb.get(
+      ObjectStoreName.Artifacts,
+      input.id,
+    );
+    if (!manifestArtifact) {
       const response = await fetch(event.request);
 
       return response;
-    } catch (e: any) {
-      console.log(`Request failed`, e);
-
-      const input = getTrpcInputForEvent<{ id: string }>(event);
-      if (!input || !input.id) throw e;
-
-      const docName = `artifact:${input.id}`;
-      const manifestDb = await getManifestDb();
-      const manifestArtifact = await manifestDb.get(
-        ObjectStoreName.Artifacts,
-        input.id,
-      );
-      if (!manifestArtifact)
-        throw new Error('Artifact not found in manifest and user is offline');
-
-      const idbPersistence = new IndexeddbPersistence(docName, new Doc());
-      await idbPersistence.whenSynced;
-
-      const yBin = encodeStateAsUpdate(idbPersistence.doc);
-
-      return encodeCacheResultForTrpc({
-        yBin,
-      });
     }
+
+    const idbPersistence = new IndexeddbPersistence(docName, new Doc());
+    await idbPersistence.whenSynced;
+
+    const yBin = encodeStateAsUpdate(idbPersistence.doc);
+
+    return encodeCacheResultForTrpc({
+      yBin,
+    });
   },
   'GET',
 );
