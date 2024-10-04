@@ -143,6 +143,8 @@
 
   "newArtifact.title": "New Artifact",
   "artifact.title": "Artifact",
+  "artifact.delete.header": "Delete Artifact",
+  "artifact.delete.message": "Are you sure? This action is irreversible.",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 

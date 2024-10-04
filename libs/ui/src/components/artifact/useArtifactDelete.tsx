@@ -28,8 +28,8 @@ export const useArtifactDelete = () => {
   const deleteArtifact = (artifactId: string) => {
     return new Promise<void>((resolve, reject) => {
       presentAlert({
-        header: t('artifactDelete.header'),
-        message: t('artifactDelete.message'),
+        header: t('artifact.delete.header'),
+        message: t('artifact.delete.message'),
         buttons: [
           {
             text: t('generic.cancel'),
