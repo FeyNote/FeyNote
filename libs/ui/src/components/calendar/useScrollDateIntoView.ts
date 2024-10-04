@@ -31,5 +31,5 @@ export const useScrollDateIntoView = (
       });
       scrollExecutedRef.current = true;
     }
-  }, [date, ...dependencies]);
+  }, [date, containerRef?.current, ...dependencies]);
 };

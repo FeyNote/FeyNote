@@ -26,5 +26,5 @@ export const useScrollBlockIntoView = (
       });
       scrollExecutedRef.current = true;
     }
-  }, [blockId, ...dependencies]);
+  }, [blockId, containerRef?.current, ...dependencies]);
 };
