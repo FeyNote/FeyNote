@@ -19,7 +19,8 @@ export const AIMessageRenderer = ({
   retryMessage,
 }: Props) => {
   const messageHTML = useMemo(() => {
-    return starkdown(message.content || '');
+    if (!message.content) return null;
+    return starkdown(message.content);
   }, [message.content]);
 
   const toolInvocationsToDisplay = useMemo(() => {
@@ -29,47 +30,51 @@ export const AIMessageRenderer = ({
     );
   }, [message]);
 
-  if (toolInvocationsToDisplay) {
-    return (
-      <>
-        {toolInvocationsToDisplay.map((toolInvocation) => {
-          return (
-            <AIFCEditor
-              key={toolInvocation.toolCallId}
-              toolInvocation={toolInvocation}
-            />
-          );
-        })}
-      </>
-    );
-  }
-
   return (
-    <>
-      <div
-        dangerouslySetInnerHTML={{
-          __html: messageHTML,
-        }}
-      ></div>
-      <IonButtons>
-        <IonButton
-          size="small"
-          onClick={() =>
-            copyToClipboard({ html: messageHTML, plaintext: message.content })
-          }
-        >
-          <IonIcon icon={copyOutline} />
-        </IonButton>
-        {message.role === 'user' && (
-          <IonButton
-            disabled={disableRetry}
-            size="small"
-            onClick={() => retryMessage(message.id)}
-          >
-            <IonIcon icon={arrowUndoOutline} />
-          </IonButton>
-        )}
-      </IonButtons>
-    </>
+    <div>
+      {toolInvocationsToDisplay && (
+        <>
+          {toolInvocationsToDisplay.map((toolInvocation) => {
+            return (
+              <AIFCEditor
+                key={toolInvocation.toolCallId}
+                toolInvocation={toolInvocation}
+              />
+            );
+          })}
+        </>
+      )}
+      {messageHTML && (
+        <>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: messageHTML,
+            }}
+          ></div>
+          <IonButtons>
+            <IonButton
+              size="small"
+              onClick={() =>
+                copyToClipboard({
+                  html: messageHTML,
+                  plaintext: message.content,
+                })
+              }
+            >
+              <IonIcon icon={copyOutline} />
+            </IonButton>
+            {message.role === 'user' && (
+              <IonButton
+                disabled={disableRetry}
+                size="small"
+                onClick={() => retryMessage(message.id)}
+              >
+                <IonIcon icon={arrowUndoOutline} />
+              </IonButton>
+            )}
+          </IonButtons>
+        </>
+      )}
+    </div>
   );
 };

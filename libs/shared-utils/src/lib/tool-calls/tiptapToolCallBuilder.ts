@@ -24,7 +24,6 @@ export const tiptapToolCallBuilder = (
   invocation: ToolInvocation,
   t: TFunction,
 ) => {
-  console.log(invocation);
   const fncName = invocation.toolName as FunctionName;
   const tiptapContent = build(fncName, invocation.args, t);
   return tiptapContent;

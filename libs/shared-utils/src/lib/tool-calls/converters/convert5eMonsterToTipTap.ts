@@ -104,7 +104,7 @@ export const convert5eMonsterToTipTap = (
         ],
       });
     }
-    if (generatedMonster.legendaryActions.actions.length) {
+    if (generatedMonster.legendaryActions.actions?.length) {
       tiptapContent.push(
         ...generatedMonster.legendaryActions.actions.map((action) =>
           getTiptapParagraphFromObj(action),
@@ -186,12 +186,12 @@ const getTiptapTable = (
   statObj: Generate5eMonsterParams['stats'],
 ) => {
   const stats = Object.values(statObj);
-  const headers = stats.map((stat) =>
-    getTiptapTableObj(t(stat.name), 'tableHeader'),
-  );
-  const values = stats.map((stat) =>
-    getTiptapTableObj(stat.value, 'tableCell'),
-  );
+  const headers = stats
+    .filter((stat) => !!stat.name)
+    .map((stat) => getTiptapTableObj(t(stat.name), 'tableHeader'));
+  const values = stats
+    .filter((stat) => !!stat.value)
+    .map((stat) => getTiptapTableObj(stat.value, 'tableCell'));
   return {
     type: 'table',
     content: [
