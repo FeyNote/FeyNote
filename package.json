@@ -140,7 +140,7 @@
     "jest-environment-node": "^29.7.0",
     "jsdom": "~25.0.1",
     "lint-staged": "^15.2.10",
-    "nx": "19.8.3",
+    "nx": "19.8.4",
     "prettier": "^3.3.3",
     "prisma": "^5.20.0",
     "ts-jest": "^29.2.5",
