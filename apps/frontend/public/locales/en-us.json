@@ -200,6 +200,8 @@
   "artifactSharing.links.create": "New Link",
   "artifactSharing.links.delete.title": "Delete Link",
   "artifactSharing.links.delete.message": "Are you sure? This action is irreversible, and the link associated will become dead/unusable.",
+  "artifactSharing.links.allowAddToAccount": "Anyone with link can add to account.",
+  "artifactSharing.links.noAddToAccount": "Adding to account disabled.",
 
   "artifactTheme.default": "Default",
   "artifactTheme.classic": "Classic",

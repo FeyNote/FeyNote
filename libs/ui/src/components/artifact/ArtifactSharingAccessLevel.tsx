@@ -2,6 +2,7 @@ import { IonSelect, IonSelectOption } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
+  label?: string;
   accessLevel: 'noaccess' | 'readwrite' | 'readonly' | 'coowner';
   onChange: (level: 'noaccess' | 'readwrite' | 'readonly' | 'coowner') => void;
 }
@@ -11,6 +12,7 @@ export const ArtifactSharingAccessLevel: React.FC<Props> = (props) => {
 
   return (
     <IonSelect
+      label={props.label}
       value={props.accessLevel}
       onIonDismiss={(event) => props.onChange(event.target.value)}
     >

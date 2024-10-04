@@ -26,6 +26,13 @@ export const ArtifactSharingLinkAdd: React.FC<Props> = (props) => {
   );
 
   const onAddClick = () => {
+    if (accessLevel === 'readwrite') {
+      // Read write tokens _must_ always allow adding to account,
+      // since users can't edit within the link preview itself
+      createShareToken(true);
+      return;
+    }
+
     presentAlert({
       header: t('artifactSharing.links.allowAddToAccount.header'),
       message: t('artifactSharing.links.allowAddToAccount.message'),
@@ -65,9 +72,9 @@ export const ArtifactSharingLinkAdd: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonItem lines="none" button>
-      <IonLabel>{t('artifactSharing.links.create')}</IonLabel>
+    <IonItem lines="none">
       <IonSelect
+        label={t('artifactSharing.links.create')}
         value={accessLevel}
         onIonDismiss={(event) => setAccessLevel(event.target.value)}
       >
