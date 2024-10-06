@@ -1,8 +1,8 @@
 import type { ToolInvocation } from 'ai';
 import { TFunction } from 'i18next';
-import { Generate5eMonsterParams } from './tools/generate5eMonster';
+import type { Generate5eMonsterParams } from './tools/generate5eMonster';
 import { convert5eMonsterToTipTap } from './converters/convert5eMonsterToTipTap';
-import { Generate5eObjectParams } from './tools/generate5eObject';
+import type { Generate5eObjectParams } from './tools/generate5eObject';
 import { convert5eObjectToTiptap } from './converters/convert5eObjectToTiptap';
 
 export enum FunctionName {

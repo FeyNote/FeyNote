@@ -160,8 +160,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         title,
         type: 'tiptap',
         theme: 'default',
-        text: '',
-        json: {},
       })
       .then((artifact) => {
         props.command({

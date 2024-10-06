@@ -4,6 +4,12 @@ import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
 import { GlobalPaneContext } from '../globalPane/GlobalPaneContext';
+import {
+  getWelcomeModalPending,
+  setWelcomeModalPending,
+} from '../../utils/welcomeModalState';
+import { useIonModal } from '@ionic/react';
+import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 
 interface Props {
   children: ReactNode;
@@ -15,6 +21,16 @@ export const SessionContextProviderWrapper = ({
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<SessionDTO | null>(null);
   const { resetLayout } = useContext(GlobalPaneContext);
+  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
+    dismiss: () => dismissWelcomeModal(),
+  });
+
+  useEffect(() => {
+    if (getWelcomeModalPending()) {
+      setWelcomeModalPending(false);
+      presentWelcomeModal();
+    }
+  }, [session]);
 
   useEffect(() => {
     appIdbStorageManager.getSession().then((session) => {

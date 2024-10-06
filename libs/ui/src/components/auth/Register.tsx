@@ -1,17 +1,11 @@
 import {
   IonButton,
-  IonButtons,
   IonCardContent,
   IonCardSubtitle,
   IonCardTitle,
-  IonContent,
-  IonHeader,
   IonInput,
   IonItem,
-  IonMenuButton,
   IonPage,
-  IonTitle,
-  IonToolbar,
   useIonToast,
 } from '@ionic/react';
 import React, { useState, useContext } from 'react';
@@ -32,6 +26,8 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
+import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
+import { setWelcomeModalPending } from '../../utils/welcomeModalState';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -64,7 +60,12 @@ export const Register: React.FC<Props> = (props) => {
         email,
         password,
       })
-      .then((_session) => setSession(_session))
+      .then((_session) => {
+        setWelcomeModalPending(true);
+        setSession(_session).then(() => {
+          createWelcomeArtifacts();
+        });
+      })
       .catch((error) => {
         handleTRPCErrors(error, presentToast, {
           409: t('auth.register.conflict'),

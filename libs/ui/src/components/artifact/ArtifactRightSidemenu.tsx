@@ -17,11 +17,8 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
-import {
-  ARTIFACT_META_KEY,
-  getMetaFromYArtifact,
-  YArtifactMetaSchema,
-} from '@feynote/shared-utils';
+import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
+import type { YArtifactMeta } from '@feynote/prisma/types';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { EventContext } from '../../context/events/EventContext';
@@ -79,7 +76,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     return () => artifactMetaMap.unobserve(listener);
   }, [connection]);
 
-  const setMetaProp = (metaPropName: keyof YArtifactMetaSchema, value: any) => {
+  const setMetaProp = (metaPropName: keyof YArtifactMeta, value: any) => {
     (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
       metaPropName,
       value,

@@ -18,6 +18,7 @@ import {
   IonSelectOption,
   IonToggle,
   useIonAlert,
+  useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
 import { useContext, useMemo } from 'react';
@@ -25,8 +26,9 @@ import { PreferencesContext } from '../../context/preferences/PreferencesContext
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
-import { person, tv } from 'ionicons/icons';
+import { help, person, tv } from 'ionicons/icons';
 import { SessionContext } from '../../context/session/SessionContext';
+import { WelcomeModal } from '../dashboard/WelcomeModal';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -70,6 +72,9 @@ export const Settings: React.FC = () => {
   const { setPreference, getPreference, _preferencesService } =
     useContext(PreferencesContext);
   const { session } = useContext(SessionContext);
+  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
+    dismiss: () => dismissWelcomeModal(),
+  });
 
   const languageOptions = useMemo(() => {
     try {
@@ -152,6 +157,39 @@ export const Settings: React.FC = () => {
     <IonPage>
       <PaneNav title={t('settings.title')} />
       <IonContent>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={help} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.help')}
+            </IonListHeader>
+            <IonItem
+              lines="none"
+              href="https://feynote.com/documentation"
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.help.docs')}
+            </IonItem>
+            <IonItem
+              lines="none"
+              button
+              detail={true}
+              onClick={() => presentWelcomeModal()}
+            >
+              {t('settings.help.welcome')}
+            </IonItem>
+            <IonItem
+              lines="none"
+              href="https://discord.gg/Tz8trXrd4C"
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.help.contact')}
+            </IonItem>
+          </IonList>
+        </IonCard>
         <IonCard>
           <IonList>
             <IonListHeader>

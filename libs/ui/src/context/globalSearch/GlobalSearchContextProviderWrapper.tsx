@@ -118,8 +118,6 @@ export const GlobalSearchContextProviderWrapper = ({
       title: capitalizeEachWord(searchText),
       type: 'tiptap',
       theme: 'default',
-      text: '',
-      json: {},
     });
 
     navigate(

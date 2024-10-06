@@ -3,6 +3,7 @@ import { createTRPCProxyClient, httpLink } from '@trpc/client';
 import superjson from 'superjson';
 import { getApiUrls } from './getApiUrls';
 import { appIdbStorageManager } from './AppIdbStorageManager';
+import i18next from 'i18next';
 
 /**
  * SuperJson doesn't serialize Buffers to UInt8Array. Browsers don't have
@@ -28,6 +29,7 @@ export const trpc = createTRPCProxyClient<AppRouter>({
         const session = await appIdbStorageManager.getSession();
         return {
           Authorization: session?.token ? `Bearer ${session.token}` : undefined,
+          'Accept-Language': Array.from(i18next.languages || []),
         };
       },
     }),
