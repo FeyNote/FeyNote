@@ -46,3 +46,4 @@ Thumbs.db
 # Astro
 .astro
 apps/www/.astro
+apps/www/dist
