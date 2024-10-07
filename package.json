@@ -98,7 +98,7 @@
   "devDependencies": {
     "@babel/core": "^7.14.5",
     "@babel/preset-react": "^7.24.7",
-    "@nx/esbuild": "19.8.3",
+    "@nx/esbuild": "20.0.0",
     "@nx/eslint": "19.8.3",
     "@nx/eslint-plugin": "19.8.3",
     "@nx/express": "19.8.3",
