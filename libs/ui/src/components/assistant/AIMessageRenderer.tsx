@@ -3,7 +3,7 @@ import { AIFCEditor } from './AIFCEditor';
 import type { Message } from 'ai';
 import { useMemo } from 'react';
 import { ToolName } from '@feynote/shared-utils';
-import { IonButton, IonButtons, IonIcon } from '@ionic/react';
+import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { arrowUndoOutline, copyOutline } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 
@@ -28,6 +28,10 @@ export const AIMessageRenderer = ({
     message.toolInvocations.filter((invocation) =>
       Object.values<string>(ToolName).includes(invocation.toolName),
     );
+
+  if (!toolInvocationsToDisplay?.length && !messageHTML) {
+    return <IonSpinner name="dots"></IonSpinner>;
+  }
 
   return (
     <div>
