@@ -18,7 +18,7 @@ const generatorFnsByToolName = {
 };
 
 type InvocationBuilder = ToolName.Generate5eMonster | ToolName.Generate5eObject;
-type AllowedToolInvocation = ToolInvocation & {
+export type AllowedToolInvocation = ToolInvocation & {
   toolName: InvocationBuilder;
 };
 

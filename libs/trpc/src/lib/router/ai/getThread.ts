@@ -24,7 +24,6 @@ export const getThread = authenticatedProcedure
         code: 'NOT_FOUND',
       });
     }
-    console.log(thread.messages);
     const threadDTO = {
       id: thread.id,
       title: thread.title || undefined,
