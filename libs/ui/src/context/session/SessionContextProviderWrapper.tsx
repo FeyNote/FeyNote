@@ -41,7 +41,6 @@ export const SessionContextProviderWrapper = ({
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
     await appIdbStorageManager.deleteAllData();
-    if (resetLayout) resetLayout();
 
     if (newSession) {
       await appIdbStorageManager.setSession(newSession);
@@ -49,6 +48,8 @@ export const SessionContextProviderWrapper = ({
       await appIdbStorageManager.removeSession();
     }
     setSession(newSession);
+
+    if (resetLayout && newSession) resetLayout();
   };
 
   const value = useMemo(

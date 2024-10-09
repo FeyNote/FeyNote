@@ -51,8 +51,8 @@ export function App() {
 
   if (!path.length || path[0] === '') {
     return (
-      <IonApp>
-        <GlobalPaneContextProviderWrapper>
+      <GlobalPaneContextProviderWrapper>
+        <IonApp>
           <SidemenuContextProviderWrapper>
             <PreferencesContextProviderWrapper>
               <SessionContextProviderWrapper>
@@ -62,8 +62,8 @@ export function App() {
               </SessionContextProviderWrapper>
             </PreferencesContextProviderWrapper>
           </SidemenuContextProviderWrapper>
-        </GlobalPaneContextProviderWrapper>
-      </IonApp>
+        </IonApp>
+      </GlobalPaneContextProviderWrapper>
     );
   }
 

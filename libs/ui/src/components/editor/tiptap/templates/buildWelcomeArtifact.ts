@@ -3,7 +3,11 @@ import { JSONContent } from '@tiptap/core';
 import { templateBuilderHelper } from './templateBuilderHelper';
 import { t } from 'i18next';
 
-export const buildWelcomeArtifact = () => {
+// Must be passed a related artifact ID for an example reference
+export const buildWelcomeArtifact = (options: {
+  relationArtifactId: string;
+  relationArtifactBlockId: string;
+}) => {
   const meta = {
     title: t('template.welcome.title'),
     theme: 'default',
@@ -15,306 +19,853 @@ export const buildWelcomeArtifact = () => {
     type: 'doc',
     content: [
       {
-        type: 'heading',
-        attrs: { level: 2 },
-        content: [{ type: 'text', text: 'Mad Koala of the West' }],
-      },
-      {
         type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
         content: [
           {
             type: 'text',
-            marks: [{ type: 'italic' }],
-            text: 'Small cutie, chaotic gossipy',
+            text: t('template.welcome.p1'),
+          },
+          {
+            type: 'text',
+            marks: [
+              {
+                type: 'link',
+                attrs: {
+                  href: 'https://feynote.com/documentation',
+                  target: '_blank',
+                  rel: 'noopener noreferrer nofollow',
+                  class: null,
+                },
+              },
+            ],
+            text: t('template.welcome.p1.link'),
+          },
+          {
+            type: 'text',
+            text: '.',
           },
         ],
       },
-      { type: 'horizontalRule' },
       {
-        type: 'paragraph',
-        content: [
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Armor Class ' },
-          { type: 'text', text: '16 (chain mail, shield)' },
-          { type: 'hardBreak' },
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Hit Points ' },
-          { type: 'text', text: '41(1d4 + 5)' },
-          { type: 'hardBreak' },
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Speed ' },
-          { type: 'text', text: '13ft.' },
-        ],
-      },
-      { type: 'horizontalRule' },
-      {
-        type: 'table',
+        type: 'heading',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+          level: 2,
+        },
         content: [
           {
-            type: 'tableRow',
+            type: 'text',
+            text: t('template.welcome.commands'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.commands.p1'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.commands.p2'),
+          },
+        ],
+      },
+      {
+        type: 'heading',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+          level: 2,
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.references'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.references.p1'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.references.p2'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'artifactReference',
+            attrs: {
+              id: crypto.randomUUID(),
+              artifactId: options.relationArtifactId,
+              artifactBlockId: options.relationArtifactBlockId,
+              artifactDate: null,
+              referenceText: t('template.introducingReferences.reference'),
+            },
+          },
+          {
+            type: 'text',
+            text: ' ',
+          },
+        ],
+      },
+      {
+        type: 'heading',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+          level: 2,
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p1'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p2'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p3'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p4'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p5'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p6'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p7'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.formatting.p8'),
+          },
+        ],
+      },
+      {
+        type: 'heading',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+          level: 2,
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.statblocks'),
+          },
+        ],
+      },
+      {
+        type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.statblocks.p1'),
+          },
+        ],
+      },
+      {
+        type: 'customMonsterStatblock',
+        attrs: {
+          wide: false,
+        },
+        content: [
+          {
+            type: 'heading',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+              level: 2,
+            },
             content: [
               {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                type: 'text',
+                text: t('template.welcome.statblocks.example'),
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+            },
+            content: [
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'italic',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.subtitle'),
+              },
+            ],
+          },
+          {
+            type: 'horizontalRule',
+          },
+          {
+            type: 'paragraph',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+            },
+            content: [
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.ac'),
+              },
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.ac.val'),
+              },
+              {
+                type: 'hardBreak',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.hp'),
+              },
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.hp.val'),
+              },
+              {
+                type: 'hardBreak',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.speed'),
+              },
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.speed.val'),
+              },
+            ],
+          },
+          {
+            type: 'horizontalRule',
+          },
+          {
+            type: 'table',
+            content: [
+              {
+                type: 'tableRow',
                 content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'STR' }],
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.str'),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.dex'),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.con'),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.int'),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.wis'),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableHeader',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t('template.welcome.statblocks.example.cha'),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
               {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
+                type: 'tableRow',
                 content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'DEX' }],
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.str.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
                   },
-                ],
-              },
-              {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'CON' }],
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.dex.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
                   },
-                ],
-              },
-              {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'INT' }],
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.con.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
                   },
-                ],
-              },
-              {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'WIS' }],
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.int.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
                   },
-                ],
-              },
-              {
-                type: 'tableHeader',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: 'CHA' }],
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.wis.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                  {
+                    type: 'tableCell',
+                    attrs: {
+                      colspan: 1,
+                      rowspan: 1,
+                      colwidth: null,
+                    },
+                    content: [
+                      {
+                        type: 'paragraph',
+                        attrs: {
+                          id: crypto.randomUUID(),
+                          textAlign: 'left',
+                        },
+                        content: [
+                          {
+                            type: 'text',
+                            text: t(
+                              'template.welcome.statblocks.example.cha.val',
+                            ),
+                          },
+                        ],
+                      },
+                    ],
                   },
                 ],
               },
             ],
           },
           {
-            type: 'tableRow',
+            type: 'horizontalRule',
+          },
+          {
+            type: 'paragraph',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+            },
             content: [
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
+                type: 'text',
+                marks: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '7 (-1)' }],
+                    type: 'bold',
                   },
                 ],
+                text: t('template.welcome.statblocks.example.senses'),
               },
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
-                  {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '12 (+1)' }],
-                  },
-                ],
+                type: 'text',
+                text: t('template.welcome.statblocks.example.senses.val'),
               },
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
-                  {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '13 (+2)' }],
-                  },
-                ],
+                type: 'hardBreak',
               },
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
+                type: 'text',
+                marks: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '6 (-2)' }],
+                    type: 'bold',
                   },
                 ],
+                text: t('template.welcome.statblocks.example.languages'),
               },
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
-                  {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '15 (+3)' }],
-                  },
-                ],
+                type: 'text',
+                text: t('template.welcome.statblocks.example.languages.val'),
               },
               {
-                type: 'tableCell',
-                attrs: { colspan: 1, rowspan: 1, colwidth: null },
-                content: [
+                type: 'hardBreak',
+              },
+              {
+                type: 'text',
+                marks: [
                   {
-                    type: 'paragraph',
-                    content: [{ type: 'text', text: '5 (-2)' }],
+                    type: 'bold',
                   },
                 ],
+                text: t('template.welcome.statblocks.example.cr'),
+              },
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.cr.val'),
+              },
+            ],
+          },
+          {
+            type: 'horizontalRule',
+          },
+          {
+            type: 'paragraph',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+            },
+            content: [
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.traits.1'),
+              },
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.traits.1.val'),
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+              level: 3,
+            },
+            content: [
+              {
+                type: 'text',
+                text: t('template.welcome.statblocks.example.actions'),
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            attrs: {
+              id: crypto.randomUUID(),
+              textAlign: 'left',
+            },
+            content: [
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                  {
+                    type: 'italic',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.actions.1'),
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'italic',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.actions.1.attack'),
+              },
+              {
+                type: 'text',
+                text: t(
+                  'template.welcome.statblocks.example.actions.1.attack.val',
+                ),
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'italic',
+                  },
+                ],
+                text: t('template.welcome.statblocks.example.actions.1.damage'),
+              },
+              {
+                type: 'text',
+                text: t(
+                  'template.welcome.statblocks.example.actions.1.damage.val',
+                ),
               },
             ],
           },
         ],
       },
-      { type: 'horizontalRule' },
       {
         type: 'paragraph',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+        },
         content: [
           {
             type: 'text',
-            marks: [{ type: 'bold' }],
-            text: 'Condition Immunities ',
-          },
-          { type: 'text', text: 'groovy, buzzed, melancholy' },
-          { type: 'hardBreak' },
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Senses ' },
-          { type: 'text', text: 'darkvision 60 ft., passive Perception 14' },
-          { type: 'hardBreak' },
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Languages ' },
-          { type: 'text', text: 'Latin, Pottymouth' },
-          { type: 'hardBreak' },
-          { type: 'text', marks: [{ type: 'bold' }], text: 'Challenge ' },
-          { type: 'text', text: '2 (4603 XP)' },
-        ],
-      },
-      { type: 'horizontalRule' },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }, { type: 'italic' }],
-            text: 'Big Jerk.',
-          },
-          {
-            type: 'text',
-            text: ' Whenever this creature makes an attack, it starts telling you how much cooler it is than you.',
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }, { type: 'italic' }],
-            text: 'Enormous Nose.',
-          },
-          {
-            type: 'text',
-            text: ' This creature gains advantage on any check involving putting things in its nose.',
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }, { type: 'italic' }],
-            text: 'Full of Detergent.',
-          },
-          {
-            type: 'text',
-            text: ' This creature has swallowed an entire bottle of dish detergent and is actually having a pretty good time.',
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            text: 'While walking near this creature, you must make a dexterity check or become “a soapy mess” for three hours, after which your skin will get all dry and itchy.',
-          },
-        ],
-      },
-      {
-        type: 'heading',
-        attrs: { level: 3 },
-        content: [{ type: 'text', text: 'Actions' }],
-      },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }, { type: 'italic' }],
-            text: 'Corkscrew Strike.',
-          },
-          {
-            type: 'text',
-            marks: [{ type: 'italic' }],
-            text: ' Melee Weapon Attack:',
-          },
-          {
-            type: 'text',
-            text: ' +4 to hit, reach 5ft., one target.',
-          },
-          {
-            type: 'text',
-            marks: [{ type: 'italic' }],
-            text: ' Hit',
-          },
-          {
-            type: 'text',
-            text: ' 5 (1d6 + 2)',
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }, { type: 'italic' }],
-            text: 'Airplane Hammer.',
-          },
-          {
-            type: 'text',
-            marks: [{ type: 'italic' }],
-            text: ' Melee Weapon Attack:',
-          },
-          {
-            type: 'text',
-            text: ' +4 to hit, reach 5ft., one target.',
-          },
-          {
-            type: 'text',
-            marks: [{ type: 'italic' }],
-            text: ' Hit',
-          },
-          {
-            type: 'text',
-            text: ' 5 (1d6 + 2)',
+            text: t('template.welcome.statblocks.p2'),
           },
         ],
       },
     ],
   } satisfies JSONContent;
 
-  return templateBuilderHelper(meta, jsonContent);
+  return {
+    result: templateBuilderHelper(meta, jsonContent),
+    meta: {},
+  };
 };
