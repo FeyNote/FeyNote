@@ -6,12 +6,11 @@ export async function generateAssistantText(
   messages: CoreMessage[],
   model: AIModel,
 ) {
-  const { text, usage } = await generateText({
+  const { text } = await generateText({
     model: openai(model),
     maxTokens: 16383,
     messages,
   });
-  console.log(usage);
 
   return text;
 }
