@@ -91,8 +91,7 @@ export const AIThread: React.FC<Props> = (props) => {
   });
   const messagesToRender = useMemo(() => {
     return messages.filter((message) => {
-      const containsDisplayableToolCall = message.toolInvocations;
-      return message.content || containsDisplayableToolCall;
+      return message.content || message.toolInvocations;
     });
   }, [messages]);
 

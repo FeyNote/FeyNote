@@ -9,8 +9,9 @@ import type { ToolInvocation } from 'ai';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
-import { tiptapToolCallBuilder } from '@feynote/shared-utils';
+import { tiptapToolInvocationBuilder, ToolName } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
+import { starkdown } from 'starkdown';
 
 const StyledEditorContent = styled(EditorContent)`
   max-width: min-content;
@@ -34,13 +35,30 @@ export const AIFCEditor: React.FC<Props> = (props) => {
 
   useEffect(() => {
     try {
-      const tiptapContent = tiptapToolCallBuilder(props.toolInvocation, t);
+      const tiptapContent = getEditorContentFromInvocation(
+        props.toolInvocation,
+      );
       if (!tiptapContent) return;
       editor?.commands.setContent(tiptapContent);
     } catch (e) {
       console.log(e);
     }
   }, [editor, props.toolInvocation]);
+
+  const getEditorContentFromInvocation = (invocation: ToolInvocation) => {
+    if (
+      invocation.toolName === ToolName.Generate5eObject ||
+      invocation.toolName === ToolName.Generate5eMonster
+    ) {
+      return tiptapToolInvocationBuilder(invocation as any, t);
+    }
+    if (
+      invocation.toolName === ToolName.ScrapeUrl &&
+      invocation.state === 'result'
+    ) {
+      return starkdown(invocation.result);
+    }
+  };
 
   return (
     <>

@@ -1,4 +1,4 @@
-import type { Generate5eMonsterParams } from '../tools/generate5eMonster';
+import type { Generate5eMonsterParams } from '../schemas/generate5eMonsterSchema';
 import { TFunction } from 'i18next';
 
 export const convert5eMonsterToTipTap = (
@@ -54,9 +54,9 @@ export const convert5eMonsterToTipTap = (
       tiptapContent.push(getTiptapParagraphFromArray(values)) &&
       tiptapContent.push({ type: 'horizontalRule' });
   }
-  if (generatedMonster.abilities?.length) {
+  if (generatedMonster.traits?.length) {
     tiptapContent.push(
-      ...generatedMonster.abilities.map((ability) =>
+      ...generatedMonster.traits.map((ability) =>
         getTiptapParagraphFromObj(ability),
       ),
     );
