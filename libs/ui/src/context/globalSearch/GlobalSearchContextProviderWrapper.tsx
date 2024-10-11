@@ -95,7 +95,6 @@ export const GlobalSearchContextProviderWrapper = ({
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');
   const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
-  const { eventManager } = useContext(EventContext);
   const { session } = useContext(SessionContext);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -128,8 +127,6 @@ export const GlobalSearchContextProviderWrapper = ({
       },
       PaneTransition.Push,
     );
-
-    eventManager.broadcast([EventName.ArtifactCreated]);
   };
 
   useEffect(() => {

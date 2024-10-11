@@ -83,7 +83,6 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
         value={title}
         onIonInput={(event) => {
           setMetaProp('title', event.target.value || '');
-          eventManager.broadcast([EventName.ArtifactTitleUpdated]);
           props.onTitleChange?.((event.target.value || '').toString());
         }}
         type="text"

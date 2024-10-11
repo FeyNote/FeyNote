@@ -13,14 +13,22 @@ import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   getTiptapIdsFromYEvent,
+  ImmediateDebouncer,
 } from '../../../../libs/shared-utils/src';
 import { ObjectStoreName } from './localDb';
 import { waitFor } from './waitFor';
 import { appIdbStorageManager } from './AppIdbStorageManager';
+import { websocketClient } from '../context/events/websocketClient';
+import { eventManager } from '../context/events/EventManager';
+import { EventName } from '../context/events/EventName';
+import { getIsViteDevelopment } from './getIsViteDevelopment';
+websocketClient.connect();
 
-const ENABLE_VERBOSE_SYNC_LOGGING = true;
-const MANIFEST_SYNC_INTERVAL_MS = 60 * 1000;
+const ENABLE_VERBOSE_SYNC_LOGGING = getIsViteDevelopment();
 const ARTIFACT_SYNC_TIMEOUT_MS = 10 * 1000;
+
+const MANIFEST_MAX_SYNC_INTERVAL_MS = 120 * 1000;
+const MANIFEST_MIN_SYNC_INTERVAL_MS = 15 * 1000;
 
 /**
  * How many artifacts to sync at once
@@ -41,11 +49,27 @@ export class SyncManager {
     private manifestDb: IDBPDatabase,
     private searchManager: SearchManager,
   ) {
-    this.syncManifest();
+    const syncManifestDebouncer = new ImmediateDebouncer(
+      () => {
+        this.syncManifest();
+      },
+      MANIFEST_MIN_SYNC_INTERVAL_MS,
+      {
+        enableFollowupCall: true,
+      },
+    );
+    syncManifestDebouncer.call();
 
     this.syncInterval = setInterval(() => {
-      this.syncManifest();
-    }, MANIFEST_SYNC_INTERVAL_MS);
+      syncManifestDebouncer.call();
+    }, MANIFEST_MAX_SYNC_INTERVAL_MS);
+
+    eventManager.addEventListener(
+      [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
+      () => {
+        syncManifestDebouncer.call();
+      },
+    );
   }
 
   getDocName(artifactId: string): string {

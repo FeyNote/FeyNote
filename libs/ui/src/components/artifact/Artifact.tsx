@@ -12,6 +12,12 @@ import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import styled from 'styled-components';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
+import { EventData } from '../../context/events/EventData';
+import { navigate } from 'ionicons/icons';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 const BottomSpacer = styled.div`
   height: 100px;
@@ -28,12 +34,11 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [title, setTitle] = useState('');
-  const { isPaneFocused } = useContext(PaneContext);
+  const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
 
-  const load = () => {
-    const progress = startProgressBar();
-    trpc.artifact.getArtifactById
+  const load = async () => {
+    await trpc.artifact.getArtifactById
       .query({
         id: props.id,
       })
@@ -43,15 +48,50 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
-      })
-      .finally(() => {
-        progress.dismiss();
       });
   };
 
+  const loadWithProgress = async () => {
+    const progress = startProgressBar();
+    return load().finally(() => progress.dismiss());
+  };
+
   useEffect(() => {
-    load();
+    loadWithProgress();
   }, []);
+
+  useEffect(() => {
+    const updateHandler = (
+      _: EventName,
+      data: EventData[EventName.ArtifactUpdated],
+    ) => {
+      if (data.artifactId === props.id) {
+        load();
+      }
+    };
+    eventManager.addEventListener(EventName.ArtifactUpdated, updateHandler);
+
+    const deleteHandler = (
+      _: EventName,
+      data: EventData[EventName.ArtifactDeleted],
+    ) => {
+      if (data.artifactId === props.id) {
+        navigate(PaneableComponent.Dashboard, {}, PaneTransition.Reset);
+      }
+    };
+    eventManager.addEventListener(EventName.ArtifactDeleted, deleteHandler);
+
+    return () => {
+      eventManager.removeEventListener(
+        EventName.ArtifactUpdated,
+        updateHandler,
+      );
+      eventManager.removeEventListener(
+        EventName.ArtifactDeleted,
+        deleteHandler,
+      );
+    };
+  }, [props.id]);
 
   const onTitleChange = (updatedTitle: string) => {
     setTitle(updatedTitle);

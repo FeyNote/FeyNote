@@ -2,6 +2,11 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
+import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '@feynote/queue';
 
 export const createArtifactPin = authenticatedProcedure
   .input(
@@ -53,6 +58,20 @@ export const createArtifactPin = authenticatedProcedure
           id: true,
         },
       });
+
+      try {
+        await enqueueOutgoingWebsocketMessage({
+          room: wsRoomNameForUserId(ctx.session.userId),
+          event: WebsocketMessageEvent.ArtifactPinChanged,
+          json: {
+            artifactId: input.artifactId,
+            pinned: true,
+          },
+        });
+      } catch (e) {
+        console.error(e);
+        // TODO: Sentry
+      }
 
       return artifactPin;
     },

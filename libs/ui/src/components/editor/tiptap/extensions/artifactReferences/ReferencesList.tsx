@@ -167,8 +167,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           artifactBlockId: undefined,
           referenceText: title,
         });
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       });
   };
 

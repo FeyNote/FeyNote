@@ -161,27 +161,30 @@ export const LeftSideMenu: React.FC = () => {
 
   useEffect(() => {
     const handler = (event: EventName) => {
-      const immediateEvents = [
-        EventName.ArtifactCreated,
-        EventName.ArtifactPinned,
-      ];
+      const immediateEvents = [EventName.ArtifactPinChanged];
       const immediate = immediateEvents.includes(event);
 
       loadDebouncerRef.current.call(immediate);
     };
 
-    eventManager.addEventListener(handler, [
-      EventName.ArtifactCreated,
-      EventName.ArtifactTitleUpdated,
-      EventName.ArtifactPinned,
-    ]);
+    eventManager.addEventListener(
+      [
+        EventName.ArtifactUpdated,
+        EventName.ArtifactDeleted,
+        EventName.ArtifactPinChanged,
+      ],
+      handler,
+    );
 
     return () => {
-      eventManager.removeEventListener(handler, [
-        EventName.ArtifactCreated,
-        EventName.ArtifactTitleUpdated,
-        EventName.ArtifactPinned,
-      ]);
+      eventManager.removeEventListener(
+        [
+          EventName.ArtifactUpdated,
+          EventName.ArtifactDeleted,
+          EventName.ArtifactPinChanged,
+        ],
+        handler,
+      );
     };
   }, []);
 

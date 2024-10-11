@@ -14,12 +14,12 @@ import {
   getTiptapContentFromYjsDoc,
 } from '../../../../libs/shared-utils/src';
 import { KVStoreKeys, ObjectStoreName } from './localDb';
+import { getIsViteDevelopment } from './getIsViteDevelopment';
 
 /**
  * Enables some additional logging which is helpful for debugging
- * TODO: use a Vite environment file to populate this
  */
-const ENABLE_VERBOSE_INDEX_LOGGING = true;
+const ENABLE_VERBOSE_INDEX_LOGGING = getIsViteDevelopment();
 
 /**
  * The amount of debounce time before saving the search index to disk.

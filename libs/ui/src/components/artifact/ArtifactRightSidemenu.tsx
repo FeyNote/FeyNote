@@ -203,7 +203,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             onIonChange={async (event) => {
               setIsPinned(event.target.checked);
               await updateIsPinned(event.target.checked);
-              eventManager.broadcast([EventName.ArtifactPinned]);
             }}
           >
             {t('artifactRenderer.isPinned')}

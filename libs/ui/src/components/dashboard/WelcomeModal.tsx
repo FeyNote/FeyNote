@@ -83,8 +83,6 @@ export const WelcomeModal: React.FC<Props> = (props) => {
           },
           PaneTransition.Push,
         );
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);
