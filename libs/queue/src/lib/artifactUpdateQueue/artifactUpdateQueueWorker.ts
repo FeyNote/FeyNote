@@ -21,7 +21,7 @@ import {
   enqueueOutgoingWebsocketMessage,
   wsRoomNameForUserId,
 } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
-import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const artifactUpdateQueueWorker = new Worker<
   ArtifactUpdateQueueItem,

@@ -10,7 +10,7 @@ import type { TypedArray, TypedMap } from 'yjs-types';
 import type { YCalendarConfig } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { FullsizeCalendar } from './renderers/FullsizeCalendar';
 import { MiniCalendar } from './renderers/MiniCalendar';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';

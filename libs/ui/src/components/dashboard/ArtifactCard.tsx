@@ -1,4 +1,4 @@
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import {
   IonCard,
   IonCardContent,

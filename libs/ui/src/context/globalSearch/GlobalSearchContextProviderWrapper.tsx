@@ -24,7 +24,7 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { EventContext } from '../events/EventContext';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
   GlobalPaneContext,

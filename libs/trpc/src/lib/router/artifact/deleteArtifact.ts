@@ -7,7 +7,7 @@ import {
   enqueueOutgoingWebsocketMessage,
   wsRoomNameForUserId,
 } from '@feynote/queue';
-import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const deleteArtifact = authenticatedProcedure
   .input(

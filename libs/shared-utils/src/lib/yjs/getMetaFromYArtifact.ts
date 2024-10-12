@@ -1,6 +1,6 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
-import type { YArtifactMeta } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 import type { ArtifactTheme, ArtifactType } from '@prisma/client';
 
 export const getMetaFromYArtifact = (yArtifact: YDoc) => {

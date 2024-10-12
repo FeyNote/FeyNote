@@ -11,7 +11,7 @@ import { t } from 'i18next';
 import { trpc } from '../../../../../utils/trpc';
 import { EventContext } from '../../../../../context/events/EventContext';
 import { EventName } from '../../../../../context/events/EventName';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalize } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 

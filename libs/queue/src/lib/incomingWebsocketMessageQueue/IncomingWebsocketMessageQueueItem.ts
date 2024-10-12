@@ -1,4 +1,4 @@
-import type { WebsocketMessageEvent } from '@feynote/prisma/types';
+import type { WebsocketMessageEvent } from '@feynote/global-types';
 
 export interface IncomingWebsocketMessageQueueItem {
   userId: string;

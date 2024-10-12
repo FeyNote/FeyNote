@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
-import type { ArtifactDTO, ThreadDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
 import {
   GlobalPaneContext,
   PaneTransition,

@@ -14,7 +14,7 @@ import { trpc } from '../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
-import { ThreadDTO } from '@feynote/prisma/types';
+import { ThreadDTO } from '@feynote/global-types';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';

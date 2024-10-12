@@ -18,7 +18,7 @@ import {
   updateYArtifactMeta,
 } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
-import { ArtifactJSON, YArtifactMeta } from '@feynote/prisma/types';
+import { ArtifactJSON, YArtifactMeta } from '@feynote/global-types';
 
 export const createArtifact = authenticatedProcedure
   .input(

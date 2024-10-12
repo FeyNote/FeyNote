@@ -1,7 +1,7 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 import {
   enqueueOutgoingWebsocketMessage,
   wsRoomNameForUserId,

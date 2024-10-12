@@ -1,7 +1,7 @@
 import {
   WebsocketMessageEvent,
   WebsocketMessageJSON,
-} from '@feynote/prisma/types';
+} from '@feynote/global-types';
 import { EventName } from './EventName';
 
 export type EventData = {

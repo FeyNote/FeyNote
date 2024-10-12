@@ -1,5 +1,5 @@
 import { constructYArtifact } from '@feynote/shared-utils';
-import type { YArtifactMeta } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 import { JSONContent } from '@tiptap/core';
 import { applyTiptapJSONToYArtifact } from '../applyTiptapJSONToYArtifact';
 import { encodeStateAsUpdate } from 'yjs';

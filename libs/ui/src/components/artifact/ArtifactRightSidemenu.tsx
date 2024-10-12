@@ -11,14 +11,13 @@ import {
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
-import type { YArtifactMeta } from '@feynote/prisma/types';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { EventContext } from '../../context/events/EventContext';

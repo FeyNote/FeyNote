@@ -6,7 +6,7 @@ import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
-import type { YArtifactMeta } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {

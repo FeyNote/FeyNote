@@ -1,7 +1,7 @@
 import type {
   WebsocketMessageEvent,
   WebsocketMessageJSON,
-} from '@feynote/prisma/types';
+} from '@feynote/global-types';
 
 export interface OutgoingWebsocketMessageQueueItem {
   room: string;

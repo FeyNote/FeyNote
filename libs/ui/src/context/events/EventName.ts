@@ -1,4 +1,4 @@
-import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export enum EventName {
   ArtifactDeleted = WebsocketMessageEvent.ArtifactDeleted,

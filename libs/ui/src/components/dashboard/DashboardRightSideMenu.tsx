@@ -1,4 +1,4 @@
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { IonCard, IonIcon } from '@ionic/react';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';

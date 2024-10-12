@@ -1,4 +1,4 @@
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import { IonContent, IonPage, useIonToast } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';

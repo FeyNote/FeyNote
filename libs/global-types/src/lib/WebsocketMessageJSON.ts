@@ -1,4 +1,4 @@
-import { WebsocketMessageEvent } from './WebsocketMessageEvent';
+import type { WebsocketMessageEvent } from './WebsocketMessageEvent';
 
 export type WebsocketMessageJSON = {
   [WebsocketMessageEvent.ArtifactDeleted]: {

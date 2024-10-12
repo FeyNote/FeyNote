@@ -5,7 +5,7 @@ import {
   OutgoingWebsocketMessageQueueItem,
 } from './OutgoingWebsocketMessageQueueItem';
 import { globalServerConfig } from '@feynote/config';
-import { WebsocketMessageEvent } from '@feynote/prisma/types';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const websocketMessageQueue = new Queue<
   OutgoingWebsocketMessageQueueItem,
