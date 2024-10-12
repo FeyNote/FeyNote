@@ -5,14 +5,13 @@ import MiniSearch, {
 } from 'minisearch';
 import { IDBPDatabase } from 'idb';
 import { Doc } from 'yjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getJSONContentMapById,
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
-} from '../../../../libs/shared-utils/src';
+} from '@feynote/shared-utils';
 import { KVStoreKeys, ObjectStoreName } from './localDb';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 

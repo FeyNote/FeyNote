@@ -8,13 +8,12 @@ import { getApiUrls } from './getApiUrls';
 import { Doc, type YEvent } from 'yjs';
 import { trpc } from './trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
-} from '../../../../libs/shared-utils/src';
+} from '@feynote/shared-utils';
 import { ObjectStoreName } from './localDb';
 import { waitFor } from './waitFor';
 import { appIdbStorageManager } from './AppIdbStorageManager';
