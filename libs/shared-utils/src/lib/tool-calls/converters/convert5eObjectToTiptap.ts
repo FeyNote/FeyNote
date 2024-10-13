@@ -1,4 +1,4 @@
-import type { Generate5eObjectParams } from '../schemas/generate5eObjectSchema';
+import type { Generate5eObjectParams } from '../schemas/display5eObjectSchema';
 
 export const convert5eObjectToTiptap = (
   generatedObject?: Generate5eObjectParams,

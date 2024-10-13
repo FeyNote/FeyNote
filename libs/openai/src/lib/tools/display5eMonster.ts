@@ -1,19 +1,19 @@
 import {
   Generate5eMonsterParams,
-  get5eMonsterSchema,
+  getDisplay5eMonsterSchema,
 } from '@feynote/shared-utils';
 import { tool } from 'ai';
 
-export const Generate5eMonsterTool = tool({
+export const Display5eMonsterTool = tool({
   description:
     'A function that generates and displays a DND 5e Monster to the user',
-  parameters: get5eMonsterSchema(),
+  parameters: getDisplay5eMonsterSchema(),
   execute: async (generatedMonster: Generate5eMonsterParams) => {
     return `
-    THE BELOW INFORMATION HAS ALREADY BEEN SHOW TO THE USER DO NOT REPEAT NEEDLESSLY
     ---
     ${generatedMonster}
     --
+    DO NOT REPEAT ANY OF THE ABOVE MONSTER DETAILS, THEY HAVE ALREADY BEEN DISPLAYED TO THE USER
     `;
   },
 });

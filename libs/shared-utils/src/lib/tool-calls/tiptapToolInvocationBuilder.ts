@@ -1,8 +1,8 @@
 import type { ToolInvocation } from 'ai';
 import { TFunction } from 'i18next';
-import type { Generate5eMonsterParams } from './schemas/generate5eMonsterSchema';
+import type { Generate5eMonsterParams } from './schemas/display5eMonsterSchema';
 import { convert5eMonsterToTipTap } from './converters/convert5eMonsterToTipTap';
-import type { Generate5eObjectParams } from './schemas/generate5eObjectSchema';
+import type { Generate5eObjectParams } from './schemas/display5eObjectSchema';
 import { convert5eObjectToTiptap } from './converters/convert5eObjectToTiptap';
 import { ToolName } from './toolName';
 import './toolName';

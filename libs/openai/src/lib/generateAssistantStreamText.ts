@@ -2,14 +2,14 @@ import { openai } from './openai';
 import { AIModel } from './utils/AIModel';
 import { streamText, type CoreMessage } from 'ai';
 import { ToolName } from '@feynote/shared-utils';
-import { Generate5eMonsterTool } from './tools/generate5eMonster';
-import { Generate5eObjectTool } from './tools/generate5eObject';
-import { ScrapeUrlTool } from './tools/scrapeUrl';
+import { Display5eMonsterTool } from './tools/display5eMonster';
+import { Display5eObjectTool } from './tools/display5eObject';
+import { DisplayUrlTool } from './tools/displayUrlContent';
 
 const tools = {
-  [ToolName.Generate5eMonster]: Generate5eMonsterTool,
-  [ToolName.Generate5eObject]: Generate5eObjectTool,
-  [ToolName.ScrapeUrl]: ScrapeUrlTool,
+  [ToolName.Generate5eMonster]: Display5eMonsterTool,
+  [ToolName.Generate5eObject]: Display5eObjectTool,
+  [ToolName.ScrapeUrl]: DisplayUrlTool,
 };
 
 export async function generateAssistantStreamText(
@@ -19,6 +19,7 @@ export async function generateAssistantStreamText(
   const stream = await streamText({
     model: openai(AIModel.GPT4_MINI, {
       structuredOutputs: true,
+      parallelToolCalls: true,
     }),
     tools,
     maxTokens: 16383,

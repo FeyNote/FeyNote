@@ -63,7 +63,7 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "@types/dompurify": "^3.0.5",
-    "ai": "^3.3.26",
+    "ai": "^3.4.9",
     "astro": "^4.15.9",
     "axios": "^1.7.7",
     "body-parser": "^1.20.3",

@@ -1,6 +1,9 @@
 import { CoreMessage, tool } from 'ai';
 import { JSDOM } from 'jsdom';
-import { ScrapeUrlParams, getScrapeUrlSchema } from '@feynote/shared-utils';
+import {
+  ScrapeUrlParams,
+  getDisplayScrapeUrlSchema,
+} from '@feynote/shared-utils';
 import { generateAssistantText } from '../generateAssistantText';
 import { systemMessage } from '../utils/SystemMessage';
 import { AIModel } from '../utils/AIModel';
@@ -9,7 +12,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { globalServerConfig } from '@feynote/config';
 
-const scrapeUrlExecutor = async (params: ScrapeUrlParams) => {
+const displayUrlExecutor = async (params: ScrapeUrlParams) => {
   try {
     const requestConfig = {
       headers: {
@@ -75,8 +78,9 @@ const sanitizeHtml = (jsdom: JSDOM): string => {
   return cleanedHtml;
 };
 
-export const ScrapeUrlTool = tool({
-  description: 'A function that scrapes and returns content for a given url',
-  parameters: getScrapeUrlSchema(),
-  execute: scrapeUrlExecutor,
+export const DisplayUrlTool = tool({
+  description:
+    'A function that scrapes and displays the content of a given url',
+  parameters: getDisplayScrapeUrlSchema(),
+  execute: displayUrlExecutor,
 });

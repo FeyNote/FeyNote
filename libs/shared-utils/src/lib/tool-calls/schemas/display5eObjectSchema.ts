@@ -1,6 +1,6 @@
 import { z, infer as zInfer } from 'zod';
 
-export const get5eObjectSchema = () => {
+export const getDisplay5eObjectSchema = () => {
   return z.object({
     name: z.string().describe('The name of the generated object'),
     subheader: z
@@ -31,5 +31,5 @@ export const get5eObjectSchema = () => {
 };
 
 export type Generate5eObjectParams = zInfer<
-  ReturnType<typeof get5eObjectSchema>
+  ReturnType<typeof getDisplay5eObjectSchema>
 >;

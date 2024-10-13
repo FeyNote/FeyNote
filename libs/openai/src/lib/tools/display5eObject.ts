@@ -1,19 +1,19 @@
 import {
   Generate5eObjectParams,
-  get5eObjectSchema,
+  getDisplay5eObjectSchema,
 } from '@feynote/shared-utils';
 import { tool } from 'ai';
 
-export const Generate5eObjectTool = tool({
+export const Display5eObjectTool = tool({
   description:
     'A function that generates and displays a DND 5e object to the user',
-  parameters: get5eObjectSchema(),
+  parameters: getDisplay5eObjectSchema(),
   execute: async (generatedObject: Generate5eObjectParams) => {
     return `
-    THE BELOW INFORMATION HAS ALREADY BEEN SHOW TO THE USER DO NOT REPEAT IT
     ---
     ${generatedObject}
     --
+    THE ABOVE INFORMATION HAS ALREADY BEEN SHOW TO THE USER DO NOT REPEAT IT
     `;
   },
 });

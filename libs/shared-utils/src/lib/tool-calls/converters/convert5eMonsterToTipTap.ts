@@ -1,4 +1,4 @@
-import type { Generate5eMonsterParams } from '../schemas/generate5eMonsterSchema';
+import type { Generate5eMonsterParams } from '../schemas/display5eMonsterSchema';
 import { TFunction } from 'i18next';
 
 export const convert5eMonsterToTipTap = (
@@ -7,60 +7,260 @@ export const convert5eMonsterToTipTap = (
 ) => {
   const tiptapContent = [];
   if (!generatedMonster) return;
-  if (generatedMonster.header) {
-    if (generatedMonster.header.name) {
-      tiptapContent.push({
-        type: 'heading',
-        attrs: { level: 2 },
-        content: [{ type: 'text', text: generatedMonster.header.name }],
-      });
-    }
-    if (generatedMonster.header.alignment) {
-      tiptapContent.push({
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            marks: [{ type: 'italic' }],
-            text: generatedMonster.header.alignment,
-          },
-        ],
-      });
-    }
+
+  // Monster Heading
+  if (generatedMonster.name) {
+    tiptapContent.push({
+      type: 'heading',
+      attrs: { level: 2 },
+      content: [{ type: 'text', text: generatedMonster.name }],
+    });
   }
-  if (generatedMonster.general) {
+  if (generatedMonster.alignment) {
+    tiptapContent.push({
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          marks: [{ type: 'italic' }],
+          text: generatedMonster.alignment,
+        },
+      ],
+    });
+  }
+
+  // General Monster Info
+  tiptapContent.push({ type: 'horizontalRule' });
+  const generalParagraph = {
+    type: 'paragraph',
+    content: [] as any,
+  };
+  if (generatedMonster.ac) {
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.ac'),
+    });
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [],
+      text: ' ' + generatedMonster.ac,
+    });
+    generalParagraph.content.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.hp) {
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.hp'),
+    });
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [],
+      text: ' ' + generatedMonster.hp,
+    });
+    generalParagraph.content.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.speed) {
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.speed'),
+    });
+    generalParagraph.content.push({
+      type: 'text',
+      marks: [],
+      text: ': ' + generatedMonster.speed,
+    });
+  }
+  if (generalParagraph.content.length) {
+    tiptapContent.push(generalParagraph);
     tiptapContent.push({ type: 'horizontalRule' });
-    const values = Object.values(generatedMonster.general).map(
-      (generalObj) => ({
-        name: t(generalObj.name),
-        description: generalObj.value,
-      }),
+  }
+
+  // Generated Monster Stats
+  const tableHeaders = [];
+  const tableValues = [];
+  if (generatedMonster.str) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.str'), 'tableHeader'),
     );
-    values.length && tiptapContent.push(getTiptapParagraphFromArray(values));
+    tableValues.push(getTiptapTableObj(generatedMonster.str, 'tableCell'));
   }
-  if (generatedMonster.stats) {
+  if (generatedMonster.dex) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.dex'), 'tableHeader'),
+    );
+    tableValues.push(getTiptapTableObj(generatedMonster.dex, 'tableCell'));
+  }
+  if (generatedMonster.con) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.con'), 'tableHeader'),
+    );
+    tableValues.push(getTiptapTableObj(generatedMonster.con, 'tableCell'));
+  }
+  if (generatedMonster.int) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.int'), 'tableHeader'),
+    );
+    tableValues.push(getTiptapTableObj(generatedMonster.int, 'tableCell'));
+  }
+  if (generatedMonster.wis) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.wis'), 'tableHeader'),
+    );
+    tableValues.push(getTiptapTableObj(generatedMonster.wis, 'tableCell'));
+  }
+  if (generatedMonster.cha) {
+    tableHeaders.push(
+      getTiptapTableObj(t('monsterStatblock.cha'), 'tableHeader'),
+    );
+    tableValues.push(getTiptapTableObj(generatedMonster.cha, 'tableCell'));
+  }
+  if (tableHeaders.length) {
+    tiptapContent.push({
+      type: 'table',
+      content: [
+        {
+          type: 'tableRow',
+          content: tableHeaders,
+        },
+        {
+          type: 'tableRow',
+          content: tableValues,
+        },
+      ],
+    });
     tiptapContent.push({ type: 'horizontalRule' });
-    tiptapContent.push(getTiptapTable(t, generatedMonster.stats));
   }
-  if (generatedMonster.attributes) {
-    tiptapContent.push({ type: 'horizontalRule' });
-    const values = Object.values(generatedMonster.attributes)
-      .filter((attribute) => !!attribute)
-      .map((generalObj) => ({
-        name: t(generalObj.name),
-        description: generalObj.value,
-      }));
-    values.length &&
-      tiptapContent.push(getTiptapParagraphFromArray(values)) &&
-      tiptapContent.push({ type: 'horizontalRule' });
+
+  // Generated Monster Attributes
+  const skillsContent = [] as any;
+  if (generatedMonster.skills) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.skills'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.skills,
+    });
+    skillsContent.push({ type: 'hardBreak' });
   }
+  if (generatedMonster.savingThows) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.savingThrows'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.savingThows,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.damageResistances) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.damageResistances'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.damageResistances,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.damageImmunities) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.damageImmunities'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.damageImmunities,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.conditionImmunities) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.conditionImmunities'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.conditionImmunities,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.damageVulnerabilities) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.damageVulnerabilities'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.damageVulnerabilities,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.senses) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.senses'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.senses,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.languages) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.languages'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.languages,
+    });
+    skillsContent.push({ type: 'hardBreak' });
+  }
+  if (generatedMonster.challenge) {
+    skillsContent.push({
+      type: 'text',
+      marks: [{ type: 'bold' }],
+      text: t('monsterStatblock.challenge'),
+    });
+    skillsContent.push({
+      type: 'text',
+      text: ' ' + generatedMonster.challenge,
+    });
+  }
+  if (skillsContent.length) {
+    tiptapContent.push({
+      type: 'paragraph',
+      content: skillsContent,
+    });
+  }
+
+  // Generated Monster Traits
   if (generatedMonster.traits?.length) {
+    tiptapContent.push({ type: 'horizontalRule' });
     tiptapContent.push(
       ...generatedMonster.traits.map((ability) =>
         getTiptapParagraphFromObj(ability),
       ),
     );
   }
+
+  // Generated Monster Actions
   if (generatedMonster.actions?.length) {
     tiptapContent.push({
       type: 'heading',
@@ -73,6 +273,8 @@ export const convert5eMonsterToTipTap = (
       ),
     );
   }
+
+  // Generated Monster Reactions
   if (generatedMonster.reactions?.length) {
     tiptapContent.push({
       type: 'heading',
@@ -85,6 +287,8 @@ export const convert5eMonsterToTipTap = (
       ),
     );
   }
+
+  // Generated Monster Legendary Actions
   if (generatedMonster.legendaryActions) {
     tiptapContent.push({
       type: 'heading',
@@ -151,59 +355,6 @@ const getTiptapParagraphFromObj = (item: {
   return {
     type: 'paragraph',
     content,
-  };
-};
-
-const getTiptapParagraphFromArray = (
-  items: {
-    name: string;
-    description: string;
-  }[],
-) => {
-  return {
-    type: 'paragraph',
-    content: items.flatMap((item, idx) => {
-      const content = [];
-      if (idx) content.push({ type: 'hardBreak' });
-      item.name &&
-        content.push({
-          type: 'text',
-          marks: [{ type: 'bold' }],
-          text: item.name,
-        });
-      item.description &&
-        content.push({
-          type: 'text',
-          text: ': ' + item.description,
-        });
-      return content;
-    }),
-  };
-};
-
-const getTiptapTable = (
-  t: TFunction,
-  statObj: Generate5eMonsterParams['stats'],
-) => {
-  const stats = Object.values(statObj);
-  const headers = stats
-    .filter((stat) => !!stat.name)
-    .map((stat) => getTiptapTableObj(t(stat.name), 'tableHeader'));
-  const values = stats
-    .filter((stat) => !!stat.value)
-    .map((stat) => getTiptapTableObj(stat.value, 'tableCell'));
-  return {
-    type: 'table',
-    content: [
-      {
-        type: 'tableRow',
-        content: headers,
-      },
-      {
-        type: 'tableRow',
-        content: values,
-      },
-    ],
   };
 };
 

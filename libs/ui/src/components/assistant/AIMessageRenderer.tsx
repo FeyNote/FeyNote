@@ -25,9 +25,13 @@ export const AIMessageRenderer = ({
 
   const toolInvocationsToDisplay =
     message.toolInvocations &&
-    message.toolInvocations.filter((invocation) =>
-      Object.values<string>(ToolName).includes(invocation.toolName),
-    );
+    message.toolInvocations.filter((invocation) => {
+      return (
+        Object.values<string>(ToolName).includes(invocation.toolName) &&
+        invocation.args &&
+        Object.keys(invocation.args).length
+      );
+    });
 
   if (!toolInvocationsToDisplay?.length && !messageHTML) {
     return <IonSpinner name="dots"></IonSpinner>;
