@@ -19,6 +19,11 @@ export const globalServerConfig = {
   openai: {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
   },
+  proxy: {
+    url: getEnvOrThrow('PROXY_URL'),
+    username: getEnvOrThrow('PROXY_USERNAME'),
+    password: getEnvOrThrow('PROXY_PASSWORD'),
+  },
   hocuspocus: {
     port: parseInt(process.env['HOCUSPOCUS_PORT'] || '8080'),
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
