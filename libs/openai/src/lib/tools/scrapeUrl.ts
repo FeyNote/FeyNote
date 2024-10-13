@@ -5,22 +5,25 @@ import { generateAssistantText } from '../generateAssistantText';
 import { systemMessage } from '../utils/SystemMessage';
 import { AIModel } from '../utils/AIModel';
 import DOMPurify from 'dompurify';
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { globalServerConfig } from '@feynote/config';
 
 const scrapeUrlExecutor = async (params: ScrapeUrlParams) => {
   try {
-    const proxyUrl = new URL(globalServerConfig.proxy.url);
-    proxyUrl.username = globalServerConfig.proxy.username;
-    proxyUrl.password = globalServerConfig.proxy.password;
-    const res = await axios.get(params.url, {
+    const requestConfig = {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0',
       },
-      httpsAgent: new HttpsProxyAgent(proxyUrl),
-    });
+    } as AxiosRequestConfig;
+    if (process.env['NODE_ENV'] !== 'development') {
+      const proxyUrl = new URL(globalServerConfig.proxy.url);
+      proxyUrl.username = globalServerConfig.proxy.username;
+      proxyUrl.password = globalServerConfig.proxy.password;
+      requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
+    }
+    const res = await axios.get(params.url, requestConfig);
     const jsdom = new JSDOM(res.data);
     const html = sanitizeHtml(jsdom);
     const messages = [
