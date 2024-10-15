@@ -102,7 +102,7 @@
     "@nx/eslint": "19.8.3",
     "@nx/eslint-plugin": "19.8.3",
     "@nx/express": "19.8.3",
-    "@nx/jest": "19.8.3",
+    "@nx/jest": "20.0.1",
     "@nx/js": "19.8.3",
     "@nx/node": "19.8.3",
     "@nx/react": "19.8.3",
