@@ -63,7 +63,7 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "ai": "^3.3.26",
-    "astro": "^4.15.9",
+    "astro": "^4.16.5",
     "body-parser": "^1.20.3",
     "bullmq": "^5.15.0",
     "commander": "^12.1.0",
