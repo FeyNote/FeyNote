@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -10,7 +10,6 @@ import {
   DockLocation,
   Model,
   type Action,
-  type IGlobalAttributes,
   type TabNode,
   type TabSetNode,
 } from 'flexlayout-react';
@@ -20,6 +19,7 @@ import {
   PaneableComponentProps,
 } from './PaneableComponent';
 import { t } from 'i18next';
+import { useFlexLayout } from './useFlexLayout';
 
 interface Props {
   children: ReactNode;
@@ -28,55 +28,11 @@ interface Props {
 export const GlobalPaneContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
-  const model = useMemo(() => {
-    const global = {
-      tabEnableRename: false,
-      tabEnableFloat: false,
-      tabDragSpeed: 0.2,
-      tabSetMinWidth: 200,
-      tabSetEnableMaximize: false,
-      tabSetTabStripHeight: 36,
-    } satisfies IGlobalAttributes;
-
-    // TODO: move this to a idb KVstore
-    const savedLayoutStr = localStorage.getItem('savedLayout');
-    if (savedLayoutStr) {
-      const savedLayout = JSON.parse(savedLayoutStr);
-      savedLayout.global = global;
-      return Model.fromJson(savedLayout);
-    }
-
-    return Model.fromJson({
-      global,
-      borders: [],
-      layout: {
-        type: 'row',
-        weight: 100,
-        children: [
-          {
-            type: 'tabset',
-            weight: 50,
-            children: [
-              {
-                id: 'default',
-                type: 'tab',
-                name: t('dashboard.title'),
-                config: {
-                  component: PaneableComponent.Dashboard,
-                  props: {},
-                  navigationEventId: crypto.randomUUID(),
-                },
-              },
-            ],
-          },
-        ],
-      },
-    });
-  }, []);
+  const { layout, applyLayoutJson, resetLayout, saveLayout } = useFlexLayout();
 
   const getFirstTab = (): TabNode => {
     let found: TabNode | undefined = undefined;
-    model.visitNodes((node) => {
+    layout.visitNodes((node) => {
       if (found) return;
 
       if (node.getType() === 'tab') {
@@ -87,7 +43,7 @@ export const GlobalPaneContextProviderWrapper = ({
     if (!found) {
       // If there's no active pane, we need to create one for many of the assumptions throughout the app (things operate as if there's always at least one tab open!)
       const id = crypto.randomUUID();
-      found = model.doAction(
+      found = layout.doAction(
         Actions.addNode(
           {
             id,
@@ -104,7 +60,7 @@ export const GlobalPaneContextProviderWrapper = ({
               navigationEventId: crypto.randomUUID(),
             },
           },
-          (model.getActiveTabset() || model.getFirstTabSet()).getId(),
+          (layout.getActiveTabset() || layout.getFirstTabSet()).getId(),
           DockLocation.CENTER,
           -1,
           true,
@@ -117,16 +73,16 @@ export const GlobalPaneContextProviderWrapper = ({
 
   const getFocusedPaneId = () => {
     return (
-      model.getActiveTabset()?.getSelectedNode()?.getId() ||
+      layout.getActiveTabset()?.getSelectedNode()?.getId() ||
       getFirstTab().getId()
     );
   };
   const [focusedPaneId, setFocusedPaneId] = useState(getFocusedPaneId());
 
   const getSelectedTabForTabset = (
-    tabsetId: string = model.getFirstTabSet().getId(),
+    tabsetId: string = layout.getFirstTabSet().getId(),
   ) => {
-    const tabset = model.getNodeById(tabsetId) as TabSetNode | undefined;
+    const tabset = layout.getNodeById(tabsetId) as TabSetNode | undefined;
     if (!tabset) throw new Error('tabset not found');
     if (tabset.getType() !== 'tabset') throw new Error('not a tabset');
     const selectedTabNode = tabset.getSelectedNode() as TabNode;
@@ -138,7 +94,7 @@ export const GlobalPaneContextProviderWrapper = ({
   };
 
   const getPaneById = (paneId = getFocusedPaneId()): PaneTracker => {
-    const tabNode = model.getNodeById(paneId) as TabNode | undefined;
+    const tabNode = layout.getNodeById(paneId) as TabNode | undefined;
     if (!tabNode || tabNode.getType() !== 'tab')
       throw new Error(`Pane with id ${paneId} not present in pane list`);
 
@@ -172,7 +128,7 @@ export const GlobalPaneContextProviderWrapper = ({
     pane.forwardHistory.push(pane.currentView);
     pane.currentView = pane.history.splice(pane.history.length - 1, 1)[0];
 
-    model.doAction(
+    layout.doAction(
       Actions.updateNodeAttributes(paneId, {
         config: pane.currentView,
         extraData: {
@@ -195,7 +151,7 @@ export const GlobalPaneContextProviderWrapper = ({
       1,
     )[0];
 
-    model.doAction(
+    layout.doAction(
       Actions.updateNodeAttributes(paneId, {
         config: pane.currentView,
         extraData: {
@@ -214,7 +170,7 @@ export const GlobalPaneContextProviderWrapper = ({
     select = true,
   ) => {
     const { currentView, history, forwardHistory } = getPaneById(paneId);
-    const tabset = model.getNodeById(paneId)?.getParent();
+    const tabset = layout.getNodeById(paneId)?.getParent();
     if (!tabset) throw new Error('Active tabset not found');
 
     const historyNode = {
@@ -228,7 +184,7 @@ export const GlobalPaneContextProviderWrapper = ({
       case PaneTransition.Push: {
         history.push(currentView);
         forwardHistory.splice(0, forwardHistory.length);
-        model.doAction(
+        layout.doAction(
           Actions.updateNodeAttributes(paneId, {
             config: historyNode,
             extraData: {
@@ -242,7 +198,7 @@ export const GlobalPaneContextProviderWrapper = ({
       }
       case PaneTransition.Replace: {
         forwardHistory.splice(0, forwardHistory.length);
-        model.doAction(
+        layout.doAction(
           Actions.updateNodeAttributes(paneId, {
             config: historyNode,
             extraData: {
@@ -257,7 +213,7 @@ export const GlobalPaneContextProviderWrapper = ({
       case PaneTransition.Reset: {
         history.splice(0, history.length);
         forwardHistory.splice(0, forwardHistory.length);
-        model.doAction(
+        layout.doAction(
           Actions.updateNodeAttributes(paneId, {
             config: historyNode,
             extraData: {
@@ -279,7 +235,7 @@ export const GlobalPaneContextProviderWrapper = ({
         };
         const id = crypto.randomUUID();
 
-        model.doAction(
+        layout.doAction(
           Actions.addNode(
             {
               id,
@@ -307,11 +263,11 @@ export const GlobalPaneContextProviderWrapper = ({
   useEffect(() => {
     const listener = (event: PopStateEvent) => {
       if (!event.state?.layout) return;
-      localStorage.setItem('savedLayout', JSON.stringify(event.state.layout));
+      applyLayoutJson(event.state.layout);
       // This is the best way we have for now to handle native browser back
       // While this does work, it's slower than natively manipulating the state of the panes.
       // For now, encourage users to use in-app navigation techniques instead of browser back/forward (though they do work).
-      window.location.reload();
+      //window.location.reload();
     };
 
     window.addEventListener('popstate', listener);
@@ -319,10 +275,10 @@ export const GlobalPaneContextProviderWrapper = ({
     return () => {
       window.removeEventListener('popstate', listener);
     };
-  }, [model]);
+  }, [layout]);
 
   const renamePane = (paneId: string, name: string) => {
-    model.doAction(Actions.renameTab(paneId, name));
+    layout.doAction(Actions.renameTab(paneId, name));
   };
 
   const onActionListener = (action: Action) => {
@@ -332,8 +288,8 @@ export const GlobalPaneContextProviderWrapper = ({
     return action;
   };
 
-  const onModelChangeListener = (model: Model, action: Action) => {
-    localStorage.setItem('savedLayout', JSON.stringify(model.toJson()));
+  const onModelChangeListener = (_: Model, action: Action) => {
+    saveLayout();
 
     if (
       [
@@ -344,7 +300,7 @@ export const GlobalPaneContextProviderWrapper = ({
     ) {
       window.history.pushState(
         {
-          layout: model.toJson(),
+          layout: layout.toJson(),
         },
         '',
       );
@@ -372,11 +328,12 @@ export const GlobalPaneContextProviderWrapper = ({
       renamePane,
       focusedPaneId,
       getSelectedTabForTabset,
-      _model: model,
+      resetLayout,
+      _model: layout,
       _onActionListener: onActionListener,
       _onModelChangeListener: onModelChangeListener,
     }),
-    [model, focusedPaneId],
+    [layout, focusedPaneId],
   );
 
   return (

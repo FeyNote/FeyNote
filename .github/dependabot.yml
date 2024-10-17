@@ -19,3 +19,6 @@ updates:
       trpc:
         patterns:
           - '@trpc*'
+    ignore:
+      - dependency-name: 'nx'
+      - dependency-name: '@nx*'

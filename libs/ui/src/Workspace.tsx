@@ -28,6 +28,7 @@ import { EventContext } from './context/events/EventContext';
 import { PaneableComponent } from './context/globalPane/PaneableComponent';
 import { NewPaneButton } from './components/pane/NewPaneButton';
 import { handleTRPCErrors } from './utils/handleTRPCErrors';
+import { t } from 'i18next';
 
 const MENU_SIZE_PX = '240';
 
@@ -217,11 +218,9 @@ export const Workspace: React.FC = () => {
   const newArtifact = (type: ArtifactType) => {
     trpc.artifact.createArtifact
       .mutate({
-        title: 'Untitled',
+        title: t('generic.untitled'),
         type,
         theme: 'default',
-        text: '',
-        json: {},
       })
       .then((artifact) => {
         navigate(

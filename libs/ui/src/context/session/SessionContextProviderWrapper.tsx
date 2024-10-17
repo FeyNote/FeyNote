@@ -1,8 +1,15 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { SessionContext, type SessionContextData } from './SessionContext';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
+import { GlobalPaneContext } from '../globalPane/GlobalPaneContext';
+import {
+  getWelcomeModalPending,
+  setWelcomeModalPending,
+} from '../../utils/welcomeModalState';
+import { useIonModal } from '@ionic/react';
+import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 
 interface Props {
   children: ReactNode;
@@ -11,11 +18,24 @@ interface Props {
 export const SessionContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
+  const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<SessionDTO | null>(null);
+  const { resetLayout } = useContext(GlobalPaneContext);
+  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
+    dismiss: () => dismissWelcomeModal(),
+  });
+
+  useEffect(() => {
+    if (getWelcomeModalPending()) {
+      setWelcomeModalPending(false);
+      presentWelcomeModal();
+    }
+  }, [session]);
 
   useEffect(() => {
     appIdbStorageManager.getSession().then((session) => {
       setSession(session);
+      setLoading(false);
     });
   }, []);
 
@@ -28,6 +48,8 @@ export const SessionContextProviderWrapper = ({
       await appIdbStorageManager.removeSession();
     }
     setSession(newSession);
+
+    if (resetLayout && newSession) resetLayout();
   };
 
   const value = useMemo(
@@ -37,6 +59,11 @@ export const SessionContextProviderWrapper = ({
     }),
     [session],
   );
+
+  // We wait for the async idb call to finish so we don't flash the register page
+  if (loading) {
+    return <></>;
+  }
 
   if (!value.session) {
     return (

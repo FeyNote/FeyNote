@@ -1,6 +1,6 @@
 import { beforeHandleMessagePayload } from '@hocuspocus/server';
 
-import { yArtifactMetaSchema } from '@feynote/api-services';
+import { yArtifactMetaZodSchema } from '@feynote/api-services';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
@@ -13,7 +13,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
       case SupportedDocumentType.Artifact: {
         // Validate artifact meta
         const artifactMeta = getMetaFromYArtifact(args.document);
-        yArtifactMetaSchema.parse(artifactMeta);
+        yArtifactMetaZodSchema.parse(artifactMeta);
 
         // TODO validate sharing access
         // 1. Check if the artifact exists

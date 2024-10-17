@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  aws-cli: circleci/aws-cli@1.0.0
+  aws-cli: circleci/aws-cli@5.1.0
 commands:
   install-dependencies:
     steps:
@@ -19,7 +19,7 @@ jobs:
   build_and_test:
     resource_class: medium
     docker:
-      - image: cimg/node:20.11
+      - image: cimg/node:22.9
         environment:
           EMAIL_FROM_NAME: CI_PLACEHOLDER
           EMAIL_FROM_ADDRESS: CI_PLACEHOLDER
@@ -48,7 +48,7 @@ jobs:
   push_backend:
     resource_class: medium
     docker:
-      - image: cimg/node:20.11
+      - image: cimg/node:22.9
     steps:
       - checkout
       - setup_remote_docker:
@@ -63,13 +63,10 @@ jobs:
   push_frontend:
     resource_class: medium
     docker:
-      - image: cimg/node:20.11
+      - image: cimg/node:22.9
     steps:
       - checkout
       - aws-cli/setup
-      - setup_remote_docker:
-          version: docker24
-          docker_layer_caching: true
       - install-dependencies
       - run:
           name: build-frontend

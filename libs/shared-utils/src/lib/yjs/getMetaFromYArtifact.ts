@@ -1,6 +1,6 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
-import { YArtifactMetaSchema } from './YArtifactMetaSchema';
+import type { YArtifactMeta } from '@feynote/prisma/types';
 import type { ArtifactTheme, ArtifactType } from '@prisma/client';
 
 export const getMetaFromYArtifact = (yArtifact: YDoc) => {
@@ -11,7 +11,7 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     theme: (artifactMetaYMap.get('theme') as ArtifactTheme) ?? 'default',
     type: (artifactMetaYMap.get('type') as ArtifactType) ?? 'tiptap',
     titleBodyMerge: (artifactMetaYMap.get('titleBodyMerge') as boolean) ?? true,
-  } satisfies YArtifactMetaSchema;
+  } satisfies YArtifactMeta;
 
   return artifactMeta;
 };

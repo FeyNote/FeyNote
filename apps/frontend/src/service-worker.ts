@@ -40,9 +40,6 @@ const staticAssets = [
 ];
 precacheAndRoute(staticAssets);
 
-(self as any).skipWaiting();
-clientsClaim();
-
 const searchManagerP = getManifestDb().then(
   (manifestDb) => new SearchManager(manifestDb),
 );
@@ -170,6 +167,9 @@ const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
+
+  (self as any).skipWaiting();
+  clientsClaim();
 
   event.waitUntil(
     caches

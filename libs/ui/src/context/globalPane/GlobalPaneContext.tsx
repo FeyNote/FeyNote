@@ -78,6 +78,10 @@ interface GlobalPaneContextData {
     select?: boolean,
   ) => void;
   /**
+   * Reset layout of the pane context to the default state
+   */
+  resetLayout: () => void;
+  /**
    * DO NOT INTERACT WITH THIS DIRECTLY IN YOUR COMPONENTS.
    * All interaction with this model should occur using PaneControl. This model is present here simply to render FlexLayout.
    */
@@ -100,6 +104,7 @@ export const GlobalPaneContext = createContext<GlobalPaneContextData>({
   focusedPaneId: null as any,
   renamePane: null as any,
   getSelectedTabForTabset: null as any,
+  resetLayout: null as any,
   _model: null as any,
   _onActionListener: null as any,
   _onModelChangeListener: null as any,

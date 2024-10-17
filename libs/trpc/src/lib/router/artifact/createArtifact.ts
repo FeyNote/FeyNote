@@ -2,10 +2,23 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { enqueueArtifactUpdate } from '@feynote/queue';
-import { artifactJsonSchema } from '@feynote/prisma/types';
+import {
+  artifactJsonZodSchema,
+  yArtifactMetaZodSchema,
+} from '@feynote/api-services';
 import { ArtifactTheme, ArtifactType } from '@prisma/client';
-import { encodeStateAsUpdate } from 'yjs';
-import { constructYArtifact } from '@feynote/shared-utils';
+import { applyUpdate, encodeStateAsUpdate } from 'yjs';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  constructYArtifact,
+  getMetaFromYArtifact,
+  getTextForJSONContent,
+  getTiptapContentFromYjsDoc,
+  updateYArtifactMeta,
+} from '@feynote/shared-utils';
+import { Doc as YDoc } from 'yjs';
+import { ArtifactJSON, YArtifactMeta } from '@feynote/prisma/types';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -13,10 +26,9 @@ export const createArtifact = authenticatedProcedure
       id: z.string().uuid().optional(),
       title: z.string(),
       type: z.nativeEnum(ArtifactType),
-      text: z.string(),
-      json: artifactJsonSchema,
       theme: z.nativeEnum(ArtifactTheme),
       titleBodyMerge: z.boolean().optional(),
+      yBin: z.any().optional(),
     }),
   )
   .mutation(
@@ -26,21 +38,50 @@ export const createArtifact = authenticatedProcedure
     }): Promise<{
       id: string;
     }> => {
-      const yDoc = constructYArtifact({
+      let yDoc: YDoc | undefined;
+      const meta = {
         title: input.title,
         theme: input.theme,
         type: input.type,
         titleBodyMerge: input.titleBodyMerge ?? true,
-      });
+      } satisfies YArtifactMeta;
+
+      if (input.yBin) {
+        yDoc = new YDoc();
+        applyUpdate(yDoc, input.yBin);
+
+        // Even though we are overriding the meta here, we still want to validate it
+        const artifactMeta = getMetaFromYArtifact(yDoc);
+        yArtifactMetaZodSchema.parse(artifactMeta);
+
+        // We do not trust the client here and instead prefer to force the meta to be what was passed
+        updateYArtifactMeta(yDoc, meta);
+      } else {
+        yDoc = constructYArtifact(meta);
+      }
+
+      const json = {
+        tiptapBody:
+          input.type === 'tiptap'
+            ? getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY)
+            : undefined,
+        meta,
+      } satisfies ArtifactJSON;
+
       const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
+
+      let text = '';
+      if (json.tiptapBody) {
+        text = getTextForJSONContent(json.tiptapBody);
+      }
 
       const artifact = await prisma.artifact.create({
         data: {
           id: input.id,
           title: input.title,
           type: input.type,
-          text: input.text,
-          json: input.json,
+          text,
+          json,
           userId: ctx.session.userId,
           theme: input.theme,
           yBin,
@@ -57,7 +98,9 @@ export const createArtifact = authenticatedProcedure
         triggeredByUserId: ctx.session.userId,
         oldReadableUserIds: [ctx.session.userId],
         newReadableUserIds: [ctx.session.userId],
-        oldYBinB64: yBin.toString('base64'),
+        oldYBinB64: Buffer.from(encodeStateAsUpdate(new YDoc())).toString(
+          'base64',
+        ),
         newYBinB64: yBin.toString('base64'),
       });
 
