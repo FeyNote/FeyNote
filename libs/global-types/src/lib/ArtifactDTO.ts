@@ -1,9 +1,9 @@
-import {
+import type {
   ArtifactAccessLevel,
   ArtifactTheme,
   ArtifactType,
 } from '@prisma/client';
-import type { ArtifactDetail } from './artifactDetail';
+import type { ArtifactDetail } from '@feynote/prisma/types';
 
 type ExpectedType = Omit<ArtifactDetail, 'text' | 'artifactPins'> & {
   isPinned: boolean;

@@ -1,4 +1,4 @@
-import type { YArtifactMeta } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 import { JSONContent } from '@tiptap/core';
 import { templateBuilderHelper } from './templateBuilderHelper';
 import { t } from 'i18next';

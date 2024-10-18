@@ -13,7 +13,7 @@ import {
 } from 'react';
 import { CalendarRenderer } from './CalendarRenderer';
 import type { TypedMap } from 'yjs-types';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import {
   ARTIFACT_META_KEY,
   getMetaFromYArtifact,
@@ -132,7 +132,6 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
         value={title}
         onIonInput={(event) => {
           setMetaProp('title', event.target.value || '');
-          eventManager.broadcast([EventName.ArtifactTitleUpdated]);
           props.onTitleChange?.((event.target.value || '').toString());
         }}
         type="text"

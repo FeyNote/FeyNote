@@ -2,11 +2,8 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
-import {
-  ThreadDTO,
-  threadSummary,
-  type ThreadDTOMessage,
-} from '@feynote/prisma/types';
+import { ThreadDTO, type ThreadDTOMessage } from '@feynote/global-types';
+import { threadSummary } from '@feynote/prisma/types';
 
 export const getThread = authenticatedProcedure
   .input(

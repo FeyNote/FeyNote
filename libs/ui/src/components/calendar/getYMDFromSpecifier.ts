@@ -1,4 +1,3 @@
-import type { ArtifactDTO } from '@feynote/prisma/types';
 import {
   dashDelimitedDateSpecifier,
   periodDelimitedDateSpecifier,

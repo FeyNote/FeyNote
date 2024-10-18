@@ -1,8 +1,5 @@
-import {
-  ThreadDTO,
-  threadSummary,
-  type ThreadDTOMessage,
-} from '@feynote/prisma/types';
+import { ThreadDTO, type ThreadDTOMessage } from '@feynote/global-types';
+import { threadSummary } from '@feynote/prisma/types';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 

@@ -23,12 +23,13 @@ import { RightSideMenu } from './components/pane/RightSideMenu';
 import { add, calendar, chatboxEllipses, documentText } from 'ionicons/icons';
 import type { ArtifactType } from '@prisma/client';
 import { trpc } from './utils/trpc';
-import { EventName } from './context/events/EventName';
 import { EventContext } from './context/events/EventContext';
 import { PaneableComponent } from './context/globalPane/PaneableComponent';
 import { NewPaneButton } from './components/pane/NewPaneButton';
 import { handleTRPCErrors } from './utils/handleTRPCErrors';
 import { t } from 'i18next';
+import { websocketClient } from './context/events/websocketClient';
+websocketClient.connect();
 
 const MENU_SIZE_PX = '240';
 
@@ -231,8 +232,6 @@ export const Workspace: React.FC = () => {
           },
           PaneTransition.Push,
         );
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

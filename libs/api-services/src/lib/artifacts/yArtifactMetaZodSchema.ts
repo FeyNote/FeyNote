@@ -1,4 +1,4 @@
-import type { YArtifactMeta } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 import { ArtifactTheme, ArtifactType } from '@prisma/client';
 import { ZodSchema, z } from 'zod';
 

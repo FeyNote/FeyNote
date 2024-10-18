@@ -46,8 +46,6 @@ export const NewArtifact: React.FC = () => {
           { id: response.id },
           PaneTransition.Replace,
         );
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

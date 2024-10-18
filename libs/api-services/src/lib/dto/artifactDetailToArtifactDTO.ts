@@ -1,4 +1,5 @@
-import type { ArtifactDetail, ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDetail } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 
 const PREVIEW_TEXT_LENGTH = 150;
 

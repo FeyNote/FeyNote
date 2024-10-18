@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { ArtifactCard } from './ArtifactCard';
 import { IonButton, IonLabel, IonListHeader } from '@ionic/react';
 import { useTranslation } from 'react-i18next';

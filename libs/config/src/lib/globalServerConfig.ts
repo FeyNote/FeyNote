@@ -52,6 +52,12 @@ export const globalServerConfig = {
       port: parseInt(process.env['HOCUSPOCUS_REDIS_PORT'] || '6379'),
     },
   },
+  websocket: {
+    redis: {
+      host: process.env['WEBSOCKET_REDIS_HOST'],
+      port: parseInt(process.env['WEBSOCKET_REDIS_PORT'] || '6379'),
+    },
+  },
   worker: {
     queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '1'),
     queueCompleteCount: parseInt(

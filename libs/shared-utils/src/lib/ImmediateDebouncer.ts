@@ -1,15 +1,15 @@
 export class ImmediateDebouncer<F extends () => any> {
   pendingPromise: Promise<ReturnType<F>> | null = null;
   timeout: NodeJS.Timeout | null = null;
-  followupCallTimeout: NodeJS.Timeout | null = null;
+  needsFollowupCall = false;
 
   constructor(
     private method: F,
     private debounceTime: number,
     private options?: {
       /**
-       * Call the method one more time after the debounce is up
-       * for instance, for re-fetching potentially stale data
+       * Schedule a call for the debounced method one more time after the debounce is up
+       * if it's called again during the debounce wait. For instance, for re-fetching potentially stale data
        */
       enableFollowupCall?: boolean;
     },
@@ -27,25 +27,26 @@ export class ImmediateDebouncer<F extends () => any> {
         this.timeout = null;
       }
       this.pendingPromise = null;
+      this.needsFollowupCall = false;
     }
 
-    if (!this.pendingPromise)
+    if (!this.pendingPromise) {
       this.pendingPromise = Promise.resolve(this.method());
+    } else if (this.options?.enableFollowupCall) {
+      this.needsFollowupCall = true;
+    }
 
     if (!this.timeout) {
       this.timeout = setTimeout(() => {
         this.timeout = null;
         this.pendingPromise = null;
+        if (this.needsFollowupCall) {
+          this.needsFollowupCall = false;
+          this.call();
+        }
       }, this.debounceTime);
     }
 
-    if (this.options?.enableFollowupCall) {
-      if (this.followupCallTimeout) clearTimeout(this.followupCallTimeout);
-      this.followupCallTimeout = setTimeout(() => {
-        this.method();
-      }, this.debounceTime);
-    }
-
-    return this.pendingPromise!;
+    return this.pendingPromise;
   }
 }

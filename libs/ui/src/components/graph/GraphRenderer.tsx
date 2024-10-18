@@ -9,7 +9,7 @@ import {
   useState,
   type ComponentProps,
 } from 'react';
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import { isDarkMode } from '../../utils/isDarkMode';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';

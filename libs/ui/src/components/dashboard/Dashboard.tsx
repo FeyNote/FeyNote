@@ -19,7 +19,7 @@ import {
   telescope,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactDTO, type ThreadDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useProgressBar } from '../../utils/useProgressBar';
