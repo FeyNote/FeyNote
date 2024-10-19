@@ -15,6 +15,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import styled from 'styled-components';
+import { useWidthObserver } from '../../utils/useWidthObserver';
 
 const GraphContainer = styled.div<{
   $nodeHovered: boolean;
@@ -48,8 +49,6 @@ const NODE_RADIUS = 8;
 
 interface Props {
   artifacts: ArtifactDTO[];
-  overrideHeight?: number;
-  overrideWidth?: number;
 }
 
 export const GraphRenderer: React.FC<Props> = (props) => {
@@ -62,44 +61,14 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
   const _isDarkMode = isDarkMode();
 
-  const [displayWidth, setDisplayWidth] = useState(
-    props.overrideWidth || graphContainerRef.current?.offsetWidth,
+  const { height: displayHeight, width: displayWidth } = useWidthObserver(
+    graphContainerRef,
+    [
+      graphContainerRef.current,
+      pane.currentView.navigationEventId,
+      isPaneFocused,
+    ],
   );
-  const [displayHeight, setDisplayHeight] = useState(
-    props.overrideHeight || graphContainerRef.current?.offsetHeight,
-  );
-
-  useLayoutEffect(() => {
-    if (graphContainerRef.current) {
-      const rect = graphContainerRef.current.getBoundingClientRect();
-      setDisplayWidth(rect.width);
-      setDisplayHeight(rect.height);
-    }
-  }, [
-    graphContainerRef.current,
-    pane.currentView.navigationEventId,
-    isPaneFocused,
-  ]);
-
-  useEffect(() => {
-    // Use resize observer to watch graph container ref for size changes
-    const resizeObserver = new ResizeObserver(() => {
-      if (graphContainerRef.current) {
-        const rect = graphContainerRef.current.getBoundingClientRect();
-
-        setDisplayWidth(rect.width);
-        setDisplayHeight(rect.height);
-      }
-    });
-
-    if (graphContainerRef.current) {
-      resizeObserver.observe(graphContainerRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, [graphContainerRef.current]);
 
   const graphData = useMemo(() => {
     const nodesById: Record<string, FeynoteGraphNode> = {};

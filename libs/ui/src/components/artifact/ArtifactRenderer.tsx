@@ -12,6 +12,7 @@ import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { getIsEditable } from '../../utils/getIsEditable';
 import { useIonToast } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
+import { ArtifactDraw } from '../draw/ArtifactDraw';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -111,6 +112,19 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         y={connection.tiptapCollabProvider}
         viewType="fullsize"
         centerDate={props.scrollToDate}
+        incomingArtifactReferences={props.artifact.incomingArtifactReferences}
+        onTitleChange={props.onTitleChange}
+      />
+    );
+  }
+
+  if (props.artifact.type === 'excalidraw') {
+    return (
+      <ArtifactDraw
+        editable={isEditable}
+        knownReferences={knownReferences}
+        onReady={() => setEditorReady(true)}
+        y={connection.tiptapCollabProvider}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
       />

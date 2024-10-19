@@ -17,8 +17,13 @@ import { useTranslation } from 'react-i18next';
 import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
 import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
+import styled from 'styled-components';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
+
+const BottomSpacer = styled.div`
+  height: 100px;
+`;
 
 type DocArgOptions =
   | {
@@ -105,6 +110,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
           {editor && <TableBubbleMenu editor={editor} />}
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
+      <BottomSpacer />
     </>
   );
 });

@@ -19,10 +19,6 @@ import { navigate } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
-const BottomSpacer = styled.div`
-  height: 100px;
-`;
-
 interface ArtifactProps {
   id: string;
   focusBlockId?: string;
@@ -103,8 +99,8 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         title={title}
         popoverContents={<ArtifactContextMenu artifactId={props.id} />}
       />
+      {ProgressBar}
       <IonContent className="ion-padding-start ion-padding-end">
-        {ProgressBar}
         {artifact && (
           <ArtifactRenderer
             artifact={artifact}
@@ -113,7 +109,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
             onTitleChange={onTitleChange}
           />
         )}
-        <BottomSpacer />
       </IonContent>
       {artifact &&
         isPaneFocused &&

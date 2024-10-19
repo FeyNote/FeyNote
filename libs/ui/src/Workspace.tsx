@@ -20,7 +20,13 @@ import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
-import { add, calendar, chatboxEllipses, documentText } from 'ionicons/icons';
+import {
+  add,
+  calendar,
+  chatboxEllipses,
+  documentText,
+  pencil,
+} from 'ionicons/icons';
 import type { ArtifactType } from '@prisma/client';
 import { trpc } from './utils/trpc';
 import { EventContext } from './context/events/EventContext';
@@ -315,6 +321,9 @@ export const Workspace: React.FC = () => {
           </IonFabButton>
           <IonFabButton onClick={() => newArtifact('calendar')}>
             <IonIcon icon={calendar}></IonIcon>
+          </IonFabButton>
+          <IonFabButton onClick={() => newArtifact('excalidraw')}>
+            <IonIcon icon={pencil}></IonIcon>
           </IonFabButton>
           <IonFabButton onClick={() => newAIThread()}>
             <IonIcon icon={chatboxEllipses}></IonIcon>

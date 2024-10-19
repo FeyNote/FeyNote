@@ -29,6 +29,11 @@ import { IonItem } from '@ionic/react';
 import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
+import styled from 'styled-components';
+
+const BottomSpacer = styled.div`
+  height: 100px;
+`;
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -162,6 +167,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
           onDayClicked={props.onDayClicked}
         />
       </ArtifactCalendarStyles>
+      <BottomSpacer />
     </>
   );
 });
