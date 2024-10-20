@@ -70,7 +70,7 @@ export const convert5eMonsterToTipTap = (
     generalParagraph.content.push({
       type: 'text',
       marks: [],
-      text: ': ' + generatedMonster.speed,
+      text: ' ' + generatedMonster.speed,
     });
   }
   if (generalParagraph.content.length) {

@@ -20,6 +20,7 @@ export const globalServerConfig = {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
   },
   proxy: {
+    enabled: getEnvOrThrow('NODE_ENV') !== 'development',
     url: getEnvOrThrow('PROXY_URL'),
     username: getEnvOrThrow('PROXY_USERNAME'),
     password: getEnvOrThrow('PROXY_PASSWORD'),

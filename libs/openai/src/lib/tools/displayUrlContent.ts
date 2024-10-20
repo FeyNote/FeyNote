@@ -20,7 +20,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0',
       },
     } as AxiosRequestConfig;
-    if (process.env['NODE_ENV'] !== 'development') {
+    if (globalServerConfig.proxy.enabled) {
       const proxyUrl = new URL(globalServerConfig.proxy.url);
       proxyUrl.username = globalServerConfig.proxy.username;
       proxyUrl.password = globalServerConfig.proxy.password;
@@ -28,7 +28,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     }
     const res = await axios.get(params.url, requestConfig);
     const jsdom = new JSDOM(res.data);
-    const html = sanitizeHtml(jsdom);
+    const html = getTextFromHtml(jsdom);
     const messages = [
       systemMessage.scrapeContent,
       { role: 'user', content: html } as CoreMessage,
@@ -44,7 +44,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
   }
 };
 
-const sanitizeHtml = (jsdom: JSDOM): string => {
+const getTextFromHtml = (jsdom: JSDOM): string => {
   const innerHtml = jsdom.window.document.body.innerHTML;
   const domPurify = DOMPurify(jsdom.window);
   const newLineOnlyNodes = ['br'];
