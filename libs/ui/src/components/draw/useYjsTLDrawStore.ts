@@ -1,16 +1,20 @@
+import { ImmediateDebouncer } from '@feynote/shared-utils';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { useEffect, useMemo, useState } from 'react';
 import {
   computed,
   createPresenceStateDerivation,
   createTLStore,
+  debounce,
   defaultShapeUtils,
   defaultUserPreferences,
   getUserPreferences,
+  HistoryEntry,
   InstancePresenceRecordType,
   react,
   SerializedSchema,
   setUserPreferences,
+  StoreListener,
   TLAnyShapeUtilConstructor,
   TLInstancePresence,
   TLRecord,
@@ -19,12 +23,17 @@ import {
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
 
+const YJS_PERSIST_INTERVAL_MS = 1000;
+const AWARENESS_PUBLISH_INTERVAL_MS = 20;
+
 export const useYjsTLDrawStore = ({
   yProvider,
   shapeUtils,
+  editable = true,
 }: {
   yProvider: TiptapCollabProvider;
   shapeUtils: TLAnyShapeUtilConstructor[];
+  editable: boolean;
 }) => {
   const [store] = useState(() => {
     const store = createTLStore({
@@ -38,11 +47,20 @@ export const useYjsTLDrawStore = ({
     status: 'loading',
   });
 
-  const { yDoc, yStore, meta } = useMemo(() => {
+  const _awareness = yProvider.awareness;
+  if (!_awareness) {
+    throw new Error(
+      'Awareness not enabled and is required for our custom tldraw yjs store',
+    );
+  }
+  const awareness = _awareness;
+
+  const { yStore, meta, yDoc } = useMemo(() => {
     const yDoc = yProvider.document;
-    const yArr = yDoc.getArray<{ key: string; val: TLRecord }>(`tldraw`);
-    const yStore = new YKeyValue(yArr);
-    const meta = yDoc.getMap<SerializedSchema>('meta');
+    const yStore = new YKeyValue(
+      yDoc.getArray<{ key: string; val: TLRecord }>('tldraw'),
+    );
+    const meta = yDoc.getMap<SerializedSchema>('tldrawMeta');
 
     return {
       yDoc,
@@ -52,34 +70,92 @@ export const useYjsTLDrawStore = ({
   }, [yProvider]);
 
   useEffect(() => {
+    let lastReceivedAt = Date.now();
+    const awarenessChangeListener = () => {
+      const others: any = awareness?.getStates() ?? [];
+      others.forEach((value: any, clientID: number) => {
+        if (clientID === awareness?.clientID) return;
+        try {
+          const actions = value.actions as
+            | { t: number; shapes: TLRecord[] }
+            | undefined;
+          if (!actions) return;
+          const { t, shapes } = actions;
+          if (shapes && t > lastReceivedAt) {
+            store.mergeRemoteChanges(() => store.put(shapes.filter((s) => s)));
+            lastReceivedAt = t;
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+    };
+    awareness.on('change', awarenessChangeListener);
+    return () => {
+      awareness.off('change', awarenessChangeListener);
+    };
+  });
+
+  useEffect(() => {
     setStoreWithStatus({ status: 'loading' });
 
     const unsubs: (() => void)[] = [];
 
+    // Connect store to yjs store and vis versa, for both the document and awareness
+
+    /* -------------------- Document -------------------- */
+
+    // Sync store changes to the yjs doc
+    const processingBuffer = new Set<string>();
+    const flush = debounce(() => {
+      yDoc.transact(() => {
+        for (const id of processingBuffer) {
+          const record = store.get(id as any);
+          if (record) {
+            yStore.set(id, record as any);
+          } else {
+            yStore.delete(id);
+          }
+        }
+        processingBuffer.clear();
+      });
+    }, YJS_PERSIST_INTERVAL_MS);
+
+    const listener = new ImmediateDebouncer(
+      ({ changes }: HistoryEntry<TLRecord>): void => {
+        if (!editable) return;
+        // Always add to currentBuffer
+
+        const temp: TLRecord[] = [];
+
+        Object.values(changes.added).forEach((record) => {
+          processingBuffer.add(record.id);
+          temp.push(record);
+        });
+        Object.values(changes.updated).forEach(([_, record]) => {
+          processingBuffer.add(record.id);
+          temp.push(record);
+        });
+        Object.values(changes.removed).forEach((record) => {
+          processingBuffer.add(record.id);
+        });
+
+        awareness.setLocalStateField('actions', {
+          t: Date.now(),
+          shapes: temp,
+        });
+        flush();
+      },
+      AWARENESS_PUBLISH_INTERVAL_MS,
+      {
+        enableFollowupCall: true,
+      },
+    );
+
     function handleSync() {
-      // 1.
-      // Connect store to yjs store and vis versa, for both the document and awareness
-
-      /* -------------------- Document -------------------- */
-
-      // Sync store changes to the yjs doc
       unsubs.push(
         store.listen(
-          function syncStoreChangesToYjsDoc({ changes }) {
-            yDoc.transact(() => {
-              Object.values(changes.added).forEach((record) => {
-                yStore.set(record.id, record);
-              });
-
-              Object.values(changes.updated).forEach(([_, record]) => {
-                yStore.set(record.id, record);
-              });
-
-              Object.values(changes.removed).forEach((record) => {
-                yStore.delete(record.id);
-              });
-            });
-          },
+          (changes) => listener.call(undefined, changes),
           { source: 'user', scope: 'document' }, // only sync user's document changes
         ),
       );
@@ -126,12 +202,6 @@ export const useYjsTLDrawStore = ({
 
       /* -------------------- Awareness ------------------- */
 
-      const awareness = yProvider.awareness;
-      if (!awareness) {
-        throw new Error(
-          'Awareness not enabled and is required for our custom tldraw yjs store',
-        );
-      }
       const yClientId = awareness.clientID.toString();
       setUserPreferences({ id: yClientId });
 
@@ -220,7 +290,7 @@ export const useYjsTLDrawStore = ({
 
         if (!newMigrations.ok || newMigrations.value.length > 0) {
           window.alert('The schema has been updated. Please refresh the page.');
-          yDoc.destroy();
+          yProvider.destroy();
         }
       };
       meta.observe(handleMetaUpdate);
@@ -319,6 +389,8 @@ export const useYjsTLDrawStore = ({
 
     yProvider.on('status', handleStatusChange);
     unsubs.push(() => yProvider.off('status', handleStatusChange));
+    handleStatusChange({ status: yProvider.status as any });
+    if (yProvider.synced) handleSync();
 
     return () => {
       unsubs.forEach((fn) => fn());
