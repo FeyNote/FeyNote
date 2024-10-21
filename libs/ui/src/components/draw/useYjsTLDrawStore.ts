@@ -26,6 +26,13 @@ import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
 
+/* ------ These keys must not be changed ------ */
+// If changed without some type of data migration, all data in all documents will be lost
+const TLDRAW_YDOC_STORE_KEY = 'tldrawStore';
+const TLDRAW_YDOC_META_KEY = 'tldrawMeta';
+const TLDRAW_YDOC_META_SCHEMA_KEY = 'schema';
+/* ------ These keys must not be changed ------ */
+
 export const useYjsTLDrawStore = ({
   yProvider,
   shapeUtils,
@@ -55,17 +62,17 @@ export const useYjsTLDrawStore = ({
   }
   const awareness = _awareness;
 
-  const { yStore, meta, yDoc } = useMemo(() => {
+  const { yStore, yMeta, yDoc } = useMemo(() => {
     const yDoc = yProvider.document;
     const yStore = new YKeyValue(
-      yDoc.getArray<{ key: string; val: TLRecord }>('tldraw'),
+      yDoc.getArray<{ key: string; val: TLRecord }>(TLDRAW_YDOC_STORE_KEY),
     );
-    const meta = yDoc.getMap<SerializedSchema>('tldrawMeta');
+    const yMeta = yDoc.getMap<SerializedSchema>(TLDRAW_YDOC_META_KEY);
 
     return {
       yDoc,
       yStore,
-      meta,
+      yMeta,
     };
   }, [yProvider]);
 
@@ -281,7 +288,7 @@ export const useYjsTLDrawStore = ({
       };
 
       const handleMetaUpdate = () => {
-        const theirSchema = meta.get('schema');
+        const theirSchema = yMeta.get(TLDRAW_YDOC_META_SCHEMA_KEY);
         if (!theirSchema) {
           throw new Error('No schema found in the yjs doc');
         }
@@ -293,8 +300,8 @@ export const useYjsTLDrawStore = ({
           yProvider.destroy();
         }
       };
-      meta.observe(handleMetaUpdate);
-      unsubs.push(() => meta.unobserve(handleMetaUpdate));
+      yMeta.observe(handleMetaUpdate);
+      unsubs.push(() => yMeta.unobserve(handleMetaUpdate));
 
       awareness.on('update', handleUpdate);
       unsubs.push(() => awareness.off('update', handleUpdate));
@@ -305,7 +312,7 @@ export const useYjsTLDrawStore = ({
       if (yStore.yarray.length) {
         // Replace the store records with the yjs doc records
         const ourSchema = store.schema.serialize();
-        const theirSchema = meta.get('schema');
+        const theirSchema = yMeta.get(TLDRAW_YDOC_META_SCHEMA_KEY);
         if (!theirSchema) {
           throw new Error('No schema found in the yjs doc');
         }
@@ -335,7 +342,7 @@ export const useYjsTLDrawStore = ({
           for (const r of Object.values(migrationResult.value) as TLRecord[]) {
             yStore.set(r.id, r);
           }
-          meta.set('schema', ourSchema);
+          yMeta.set(TLDRAW_YDOC_META_SCHEMA_KEY, ourSchema);
         });
 
         store.loadSnapshot({
@@ -349,7 +356,7 @@ export const useYjsTLDrawStore = ({
           for (const record of store.allRecords()) {
             yStore.set(record.id, record);
           }
-          meta.set('schema', store.schema.serialize());
+          yMeta.set(TLDRAW_YDOC_META_SCHEMA_KEY, store.schema.serialize());
         });
       }
 
@@ -396,7 +403,7 @@ export const useYjsTLDrawStore = ({
       unsubs.forEach((fn) => fn());
       unsubs.length = 0;
     };
-  }, [yProvider, yDoc, store, yStore, meta]);
+  }, [yProvider, yDoc, store, yStore, yMeta]);
 
   return storeWithStatus;
 };

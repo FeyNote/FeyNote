@@ -1,36 +1,22 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
-import { UndoManager, Doc as YDoc } from 'yjs';
+import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import {
-  memo,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
-import type { TypedMap } from 'yjs-types';
+import { memo, useContext, useEffect, useState } from 'react';
 import type { ArtifactDTO } from '@feynote/global-types';
 import {
   ARTIFACT_META_KEY,
   getMetaFromYArtifact,
   PreferenceNames,
-  type YCalendarMap,
 } from '@feynote/shared-utils';
 import type { ArtifactTheme } from '@prisma/client';
-import { EventContext } from '../../context/events/EventContext';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
-import { useWidthObserver } from '../../utils/useWidthObserver';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { SessionContext } from '../../context/session/SessionContext';
-import { Map as YMap } from 'yjs';
-import { Tldraw, TLRecord } from 'tldraw';
+import { Tldraw } from 'tldraw';
 import 'tldraw/tldraw.css';
-import { YKeyValue } from 'y-utility/y-keyvalue';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 
 interface Props {
@@ -43,7 +29,6 @@ interface Props {
 }
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
-  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
   const [title, setTitle] = useState('');
   const [theme, setTheme] = useState<ArtifactTheme>('default');
@@ -66,42 +51,9 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const store = useYjsTLDrawStore({
     yProvider: props.y,
     shapeUtils: [],
+    editable: props.editable,
   });
 
-  //const {
-  //  height: displayHeight,
-  //  width: displayWidth,
-  //} = useWidthObserver(
-  //  graphContainerRef,
-  //  [
-  //    graphContainerRef.current,
-  //    pane.currentView.navigationEventId,
-  //    isPaneFocused,
-  //  ]
-  //);
-
-  //const calendarMap = useMemo(() => {
-  //  return yDoc.getMap('calendar') as TypedMap<Partial<YCalendarMap>>;
-  //}, [yDoc]);
-  //const configMap = calendarMap.get('config');
-  //
-  //useEffect(() => {
-  //  const listener = () => {
-  //    triggerRerender();
-  //  };
-  //
-  //  calendarMap.observeDeep(listener);
-  //  return () => calendarMap.unobserveDeep(listener);
-  //}, [calendarMap]);
-  //
-  //useEffect(() => {
-  //  if (configMap) {
-  //    setTimeout(() => {
-  //      props.onReady?.();
-  //    });
-  //  }
-  //}, [configMap]);
-  //
   useEffect(() => {
     const artifactMetaMap = yDoc.getMap('artifactMeta');
 
@@ -120,8 +72,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const setMetaProp = (metaPropName: string, value: any) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
   };
-  //
-  //if (!configMap) return;
 
   const titleInput = (
     <IonItem lines="none" className="artifactTitle">
