@@ -1,9 +1,6 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { UndoManager, Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { Excalidraw } from '@excalidraw/excalidraw';
-import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
-import { yjsToExcalidraw, ExcalidrawBinding } from 'y-excalidraw';
 import {
   memo,
   useContext,
@@ -31,11 +28,15 @@ import { useWidthObserver } from '../../utils/useWidthObserver';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { SessionContext } from '../../context/session/SessionContext';
 import { Map as YMap } from 'yjs';
+import { Tldraw, TLRecord } from 'tldraw';
+import 'tldraw/tldraw.css';
+import { YKeyValue } from 'y-utility/y-keyvalue';
+import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
   incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
-  y: YDoc | TiptapCollabProvider;
+  y: TiptapCollabProvider;
   editable: boolean;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
@@ -49,9 +50,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const [titleBodyMerge, setTitleBodyMerge] = useState(true);
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
-  const [api, setApi] = useState<ExcalidrawImperativeAPI | null>(null);
-  const [binding, setBindings] = useState<ExcalidrawBinding | null>(null);
-  const excalidrawRef = useRef(null);
   const { t } = useTranslation();
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
@@ -65,39 +63,10 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     }
   }, [session, preferredUserColor]);
 
-  const yElements = yDoc.getArray<YMap<any>>('elements'); // structure = {el: NonDeletedExcalidrawElement, pos: string}
-  const yAssets = yDoc.getMap('assets');
-
-  useEffect(() => {
-    console.log('cannot create binding');
-    if (!api || !excalidrawRef.current) return;
-
-    console.log('Creating binding');
-
-    const binding = new ExcalidrawBinding(
-      yElements,
-      yAssets,
-      api,
-      props.y instanceof TiptapCollabProvider
-        ? props.y.awareness || undefined
-        : undefined,
-      // excalidraw dom is needed to override the undo/redo buttons in the UI as there is no way to override it via props in excalidraw
-      // You might need to pass {trackedOrigins: new Set()} to undomanager depending on whether your provider sets an origin or not
-      {
-        excalidrawDom: excalidrawRef.current!,
-        undoManager: new UndoManager(yElements),
-      },
-    );
-    setBindings(binding);
-    return () => {
-      setBindings(null);
-      binding.destroy();
-    };
-  }, [api, excalidrawRef.current]);
-
-  const initData = {
-    elements: yjsToExcalidraw(yElements),
-  };
+  const store = useYjsTLDrawStore({
+    yProvider: props.y,
+    shapeUtils: [],
+  });
 
   //const {
   //  height: displayHeight,
@@ -175,31 +144,10 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       <ArtifactDrawStyles
         data-theme={theme}
         style={{ width: '100%', height: '100%' }}
-        ref={excalidrawRef}
       >
         {titleBodyMerge && titleInput}
 
-        <Excalidraw
-          UIOptions={{
-            dockedSidebarBreakpoint: 0,
-            tools: {
-              image: false,
-            },
-            canvasActions: {
-              changeViewBackgroundColor: false,
-              clearCanvas: false,
-              export: false,
-              loadScene: false,
-              saveToActiveFile: false,
-              toggleTheme: false,
-              saveAsImage: false,
-            },
-          }}
-          gridModeEnabled={true}
-          initialData={initData} // Need to set the initial data
-          excalidrawAPI={setApi}
-          onPointerUpdate={binding?.onPointerUpdate}
-        />
+        <Tldraw store={store} />
       </ArtifactDrawStyles>
     </div>
   );
