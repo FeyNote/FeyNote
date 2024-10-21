@@ -61,6 +61,10 @@ services:
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
@@ -92,6 +96,10 @@ services:
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
@@ -122,6 +130,10 @@ services:
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
@@ -152,6 +164,10 @@ services:
       - WEBSOCKET_REDIS_HOST=websocket-valkey
       - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:

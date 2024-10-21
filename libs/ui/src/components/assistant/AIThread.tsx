@@ -89,12 +89,6 @@ export const AIThread: React.FC<Props> = (props) => {
       }
     },
   });
-  const messagesToRender = useMemo(() => {
-    return messages.filter((message) => {
-      const containsDisplayableToolCall = message.toolInvocations;
-      return message.content || containsDisplayableToolCall;
-    });
-  }, [messages]);
 
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
@@ -169,7 +163,7 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
-              messages={messagesToRender}
+              messages={messages}
               disableRetry={isLoading}
             />
           )}

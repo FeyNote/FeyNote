@@ -2,8 +2,8 @@ import { starkdown } from 'starkdown';
 import { AIFCEditor } from './AIFCEditor';
 import type { Message } from 'ai';
 import { useMemo } from 'react';
-import { FunctionName } from '@feynote/shared-utils';
-import { IonButton, IonButtons, IonIcon } from '@ionic/react';
+import { ToolName } from '@feynote/shared-utils';
+import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { arrowUndoOutline, copyOutline } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 
@@ -23,12 +23,19 @@ export const AIMessageRenderer = ({
     return starkdown(message.content);
   }, [message.content]);
 
-  const toolInvocationsToDisplay = useMemo(() => {
-    if (!message.toolInvocations) return null;
-    return message.toolInvocations.filter((invocation) =>
-      Object.values<string>(FunctionName).includes(invocation.toolName),
-    );
-  }, [message]);
+  const toolInvocationsToDisplay =
+    message.toolInvocations &&
+    message.toolInvocations.filter((invocation) => {
+      return (
+        Object.values<string>(ToolName).includes(invocation.toolName) &&
+        invocation.args &&
+        Object.keys(invocation.args).length
+      );
+    });
+
+  if (!toolInvocationsToDisplay?.length && !messageHTML) {
+    return <IonSpinner name="dots"></IonSpinner>;
+  }
 
   return (
     <div>
