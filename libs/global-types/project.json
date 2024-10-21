@@ -1,0 +1,30 @@
+{
+  "name": "global-types",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/global-types/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/global-types",
+        "main": "libs/global-types/src/index.ts",
+        "tsConfig": "libs/global-types/tsconfig.lib.json",
+        "assets": ["libs/global-types/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/global-types/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

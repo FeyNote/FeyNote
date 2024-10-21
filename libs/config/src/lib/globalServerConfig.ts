@@ -20,7 +20,7 @@ export const globalServerConfig = {
     apiKey: getEnvOrThrow('OPENAI_API_KEY'),
   },
   proxy: {
-    enabled: getEnvOrThrow('NODE_ENV') !== 'development',
+    enabled: coerceBoolean(getEnvOrThrow('PROXY_ENABLED')),
     url: getEnvOrThrow('PROXY_URL'),
     username: getEnvOrThrow('PROXY_USERNAME'),
     password: getEnvOrThrow('PROXY_PASSWORD'),
@@ -56,6 +56,12 @@ export const globalServerConfig = {
         : true,
       host: process.env['HOCUSPOCUS_REDIS_HOST'],
       port: parseInt(process.env['HOCUSPOCUS_REDIS_PORT'] || '6379'),
+    },
+  },
+  websocket: {
+    redis: {
+      host: process.env['WEBSOCKET_REDIS_HOST'],
+      port: parseInt(process.env['WEBSOCKET_REDIS_PORT'] || '6379'),
     },
   },
   worker: {

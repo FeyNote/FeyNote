@@ -17,6 +17,11 @@ import {
 import { searchProvider } from '@feynote/search';
 import { ARTIFACT_UPDATE_QUEUE_NAME } from './ARTIFACT_UPDATE_QUEUE_NAME';
 import { globalServerConfig } from '@feynote/config';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const artifactUpdateQueueWorker = new Worker<
   ArtifactUpdateQueueItem,
@@ -35,6 +40,13 @@ export const artifactUpdateQueueWorker = new Worker<
       const newYBin = Buffer.from(args.data.newYBinB64, 'base64');
       applyUpdate(newYjsDoc, newYBin);
 
+      const oldReadableUserIds = args.data.oldReadableUserIds.sort((a, b) =>
+        a.localeCompare(b),
+      );
+      const newReadableUserIds = args.data.oldReadableUserIds.sort((a, b) =>
+        a.localeCompare(b),
+      );
+
       const oldJSONContent = getTiptapContentFromYjsDoc(
         oldYjsDoc,
         ARTIFACT_TIPTAP_BODY_KEY,
@@ -51,7 +63,10 @@ export const artifactUpdateQueueWorker = new Worker<
         .getMap(ARTIFACT_META_KEY)
         .get('title') as string;
 
-      await prisma.$transaction(
+      const oldText = getTextForJSONContent(oldJSONContent);
+      const newText = getTextForJSONContent(newJSONContent);
+
+      const { referencesMutatedCount } = await prisma.$transaction(
         async (tx) => {
           await updateArtifactTitleReferenceText(
             args.data.artifactId,
@@ -67,7 +82,7 @@ export const artifactUpdateQueueWorker = new Worker<
             tx,
           );
 
-          await updateArtifactOutgoingReferences(
+          const referencesMutatedCount = await updateArtifactOutgoingReferences(
             args.data.artifactId,
             newJSONContent,
             tx,
@@ -78,24 +93,53 @@ export const artifactUpdateQueueWorker = new Worker<
             userId: args.data.userId,
             oldState: {
               title: oldTitle,
-              readableUserIds: args.data.oldReadableUserIds,
-              text: getTextForJSONContent(oldJSONContent),
+              readableUserIds: oldReadableUserIds,
+              text: oldText,
               jsonContent: oldJSONContent,
             },
             newState: {
               title: newTitle,
-              readableUserIds: args.data.newReadableUserIds,
-              text: getTextForJSONContent(newJSONContent),
+              readableUserIds: newReadableUserIds,
+              text: newText,
               jsonContent: newJSONContent,
             },
           };
 
           await searchProvider.indexArtifact(indexableArtifact);
+
+          return {
+            referencesMutatedCount,
+          };
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
         },
       );
+
+      try {
+        for (const userId of new Set([
+          ...oldReadableUserIds,
+          ...newReadableUserIds,
+        ])) {
+          await enqueueOutgoingWebsocketMessage({
+            room: wsRoomNameForUserId(userId),
+            event: WebsocketMessageEvent.ArtifactUpdated,
+            json: {
+              artifactId: args.data.artifactId,
+              updated: {
+                title: oldTitle !== newTitle,
+                text: oldText !== newText,
+                readableUserIds:
+                  oldReadableUserIds.join(',') !== newReadableUserIds.join(','),
+                references: referencesMutatedCount > 0,
+              },
+            },
+          });
+        }
+      } catch (e) {
+        console.error(e);
+        // TODO: Sentry
+      }
     } catch (e) {
       console.log(`Failed processing job ${args.id}`, e);
 

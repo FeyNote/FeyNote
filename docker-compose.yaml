@@ -58,7 +58,13 @@ services:
       - WORKER_REDIS_PORT=6379
       - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
       - HOCUSPOCUS_REDIS_PORT=6379
+      - WEBSOCKET_REDIS_HOST=socketio-valkey
+      - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
@@ -87,7 +93,13 @@ services:
       - WORKER_REDIS_PORT=6379
       - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
       - HOCUSPOCUS_REDIS_PORT=6379
+      - WEBSOCKET_REDIS_HOST=socketio-valkey
+      - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
@@ -115,13 +127,54 @@ services:
       - WORKER_REDIS_PORT=6379
       - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
       - HOCUSPOCUS_REDIS_PORT=6379
+      - WEBSOCKET_REDIS_HOST=socketio-valkey
+      - WEBSOCKET_REDIS_PORT=6379
       - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
     env_file:
       - ./.env
     depends_on:
       - postgres
       - typesense
       - queue-worker-valkey
+  websocket:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: npx nx serve websocket --skip-nx-cache
+    environment:
+      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      - SEARCH_PROVIDER=typesense
+      - EMAIL_FROM_NAME=val
+      - EMAIL_FROM_ADDRESS=val
+      - EMAIL_REPLY_TO_ADDRESS=val
+      - TYPESENSE_API_KEY=feynote
+      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+      - WORKER_REDIS_HOST=queue-worker-valkey
+      - WORKER_REDIS_PORT=6379
+      - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
+      - HOCUSPOCUS_REDIS_PORT=6379
+      - WEBSOCKET_REDIS_HOST=websocket-valkey
+      - WEBSOCKET_REDIS_PORT=6379
+      - NODE_ENV=development
+      - PROXY_ENABLED=false
+      - PROXY_URL=val
+      - PROXY_USERNAME=val
+      - PROXY_PASSWORD=val
+    env_file:
+      - ./.env
+    depends_on:
+      - postgres
+      - typesense
+      - queue-worker-valkey
+      - websocket-valkey
   postgres:
     image: postgres:16.0
     ports:
@@ -137,4 +190,6 @@ services:
   queue-worker-valkey:
     image: valkey/valkey:7.2.5-bookworm
   hocuspocus-valkey:
+    image: valkey/valkey:7.2.5-bookworm
+  websocket-valkey:
     image: valkey/valkey:7.2.5-bookworm

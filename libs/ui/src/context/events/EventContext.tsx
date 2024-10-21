@@ -1,6 +1,6 @@
 import { createContext } from 'react';
-import { EventManager } from './EventManager';
+import { eventManager } from './EventManager';
 
 export const EventContext = createContext({
-  eventManager: new EventManager(),
+  eventManager,
 });

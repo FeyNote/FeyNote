@@ -11,17 +11,13 @@ import {
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
-import {
-  ARTIFACT_META_KEY,
-  getMetaFromYArtifact,
-  YArtifactMetaSchema,
-} from '@feynote/shared-utils';
+import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { EventContext } from '../../context/events/EventContext';
@@ -79,7 +75,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     return () => artifactMetaMap.unobserve(listener);
   }, [connection]);
 
-  const setMetaProp = (metaPropName: keyof YArtifactMetaSchema, value: any) => {
+  const setMetaProp = (metaPropName: keyof YArtifactMeta, value: any) => {
     (connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
       metaPropName,
       value,
@@ -206,7 +202,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             onIonChange={async (event) => {
               setIsPinned(event.target.checked);
               await updateIsPinned(event.target.checked);
-              eventManager.broadcast([EventName.ArtifactPinned]);
             }}
           >
             {t('artifactRenderer.isPinned')}

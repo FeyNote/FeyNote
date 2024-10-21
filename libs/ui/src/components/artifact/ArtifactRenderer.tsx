@@ -1,4 +1,4 @@
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import { memo, useContext, useEffect, useMemo, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';

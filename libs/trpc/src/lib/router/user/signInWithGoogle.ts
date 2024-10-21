@@ -12,27 +12,39 @@ export const signInWithGoogle = publicProcedure
       credential: z.string(),
     }),
   )
-  .mutation(async ({ input }): Promise<SessionDTO> => {
-    const { clientId, credential } = input;
-    const client = new OAuth2Client();
-    const ticket = await client.verifyIdToken({
-      idToken: credential,
-      audience: clientId,
-    });
-    const payload = ticket.getPayload();
-    if (!payload?.email) {
-      throw new TRPCError({
-        message: 'User email must be provided as part of the payload.',
-        code: 'BAD_REQUEST',
+  .mutation(
+    async ({
+      input,
+    }): Promise<{
+      session: SessionDTO;
+      created: boolean;
+    }> => {
+      const { clientId, credential } = input;
+
+      const client = new OAuth2Client();
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: clientId,
       });
-    }
-    const session = await upsertLogin(
-      payload.name || payload.email,
-      payload.email,
-    );
-    return {
-      token: session.token,
-      userId: session.userId,
-      email: payload.email,
-    } satisfies SessionDTO;
-  });
+      const payload = ticket.getPayload();
+      if (!payload?.email) {
+        throw new TRPCError({
+          message: 'User email must be provided as part of the payload.',
+          code: 'BAD_REQUEST',
+        });
+      }
+      const { session, created } = await upsertLogin(
+        payload.name || payload.email,
+        payload.email,
+      );
+
+      return {
+        session: {
+          token: session.token,
+          userId: session.userId,
+          email: payload.email,
+        } satisfies SessionDTO,
+        created,
+      };
+    },
+  );

@@ -1,29 +1,73 @@
+import { EventData } from './EventData';
 import { EventName } from './EventName';
 
-type EventListener = (eventName: EventName) => void;
+type EventListener = <T extends EventName>(
+  eventName: T,
+  data: EventData[T],
+) => void;
+type NarrowedEventListener<T extends EventName> = (
+  eventName: T,
+  data: EventData[T],
+) => void;
 
 export class EventManager {
-  private eventListeners: Record<EventName, Set<EventListener>> = {
-    [EventName.ArtifactCreated]: new Set(),
-    [EventName.ArtifactTitleUpdated]: new Set(),
-    [EventName.ArtifactPinned]: new Set(),
-  };
+  private eventListeners: Record<EventName, Set<EventListener>> = Object.values(
+    EventName,
+  ).reduce(
+    (acc, eventName) => {
+      acc[eventName] = new Set();
+      return acc;
+    },
+    {} as Record<EventName, Set<EventListener>>,
+  );
 
-  addEventListener(listener: EventListener, eventNames: EventName[]) {
-    for (const eventName of eventNames) {
-      this.eventListeners[eventName].add(listener);
+  addEventListener<T extends EventName>(
+    eventNames: T,
+    listener: NarrowedEventListener<T>,
+  ): void;
+  addEventListener<T extends EventName>(
+    eventNames: T[],
+    listener: EventListener,
+  ): void;
+  addEventListener<T extends EventName>(
+    eventNames: T | T[],
+    listener: EventListener,
+  ): void {
+    if (Array.isArray(eventNames)) {
+      for (const eventName of eventNames) {
+        this.eventListeners[eventName].add(listener);
+      }
+    } else {
+      this.eventListeners[eventNames].add(listener);
     }
   }
 
-  removeEventListener(listener: EventListener, eventNames: EventName[]) {
-    for (const eventName of eventNames) {
-      this.eventListeners[eventName].delete(listener);
+  removeEventListener(
+    eventNames: EventName[],
+    listener: NarrowedEventListener<any>,
+  ): void;
+  removeEventListener(
+    eventNames: EventName,
+    listener: NarrowedEventListener<any>,
+  ): void;
+  removeEventListener(
+    eventNames: EventName | EventName[],
+    listener: NarrowedEventListener<any>,
+  ): void {
+    if (Array.isArray(eventNames)) {
+      for (const eventName of eventNames) {
+        this.eventListeners[eventName].delete(listener);
+      }
+    } else {
+      this.eventListeners[eventNames].delete(listener);
     }
   }
 
-  broadcast(eventNames: EventName[]) {
-    for (const eventName of eventNames) {
-      this.eventListeners[eventName].forEach((listener) => listener(eventName));
-    }
+  broadcast<T extends EventName>(eventName: T, data: EventData[T]) {
+    this.eventListeners[eventName].forEach((listener) =>
+      listener(eventName, data),
+    );
   }
 }
+
+export const eventManager = new EventManager();

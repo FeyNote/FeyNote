@@ -2,7 +2,8 @@ import { searchProvider } from '@feynote/search';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, type ArtifactDTO } from '@feynote/prisma/types';
+import { artifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 import type { BlockIndexDocument } from '@feynote/search';
 

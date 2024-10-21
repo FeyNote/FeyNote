@@ -1,7 +1,7 @@
 import { IonIcon, IonItem, IonLabel } from '@ionic/react';
 import { mail } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ThreadDTO } from '@feynote/prisma/types';
+import { ThreadDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';

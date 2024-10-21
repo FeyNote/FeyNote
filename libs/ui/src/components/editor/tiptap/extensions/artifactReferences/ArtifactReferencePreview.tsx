@@ -1,4 +1,4 @@
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { useMemo, useRef } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';

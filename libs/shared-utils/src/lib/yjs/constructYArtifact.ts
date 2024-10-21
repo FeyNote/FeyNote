@@ -1,9 +1,9 @@
 import { Doc as YDoc, Map as YMap } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
-import { YArtifactMetaSchema } from './YArtifactMetaSchema';
+import type { YArtifactMeta } from '@feynote/global-types';
 import { generateGregorianSundayCalendarConfig } from '../calendar/generateGregorianSundayCalendarConfig';
 
-export const constructYArtifact = (meta: YArtifactMetaSchema) => {
+export const constructYArtifact = (meta: YArtifactMeta) => {
   const yArtifact = new YDoc();
 
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);

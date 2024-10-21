@@ -24,7 +24,7 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { EventContext } from '../events/EventContext';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
   GlobalPaneContext,
@@ -95,7 +95,6 @@ export const GlobalSearchContextProviderWrapper = ({
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');
   const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
-  const { eventManager } = useContext(EventContext);
   const { session } = useContext(SessionContext);
   const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -118,8 +117,6 @@ export const GlobalSearchContextProviderWrapper = ({
       title: capitalizeEachWord(searchText),
       type: 'tiptap',
       theme: 'default',
-      text: '',
-      json: {},
     });
 
     navigate(
@@ -130,8 +127,6 @@ export const GlobalSearchContextProviderWrapper = ({
       },
       PaneTransition.Push,
     );
-
-    eventManager.broadcast([EventName.ArtifactCreated]);
   };
 
   useEffect(() => {

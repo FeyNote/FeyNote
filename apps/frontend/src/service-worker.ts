@@ -1,16 +1,15 @@
 /* eslint-disable no-restricted-globals */
-/* eslint-disable @nx/enforce-module-boundaries */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
-import { superjson } from '../../../libs/ui/src/utils/trpc';
-import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import {
+  SearchManager,
+  SyncManager,
   getManifestDb,
   ObjectStoreName,
-} from '../../../libs/ui/src/utils/localDb';
-import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
+  superjson,
+} from '@feynote/ui';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
@@ -39,9 +38,6 @@ const staticAssets = [
   'https://static.feynote.com/fonts/monsieur-la-doulaise/monsieur-la-doulaise-latin.woff2',
 ];
 precacheAndRoute(staticAssets);
-
-(self as any).skipWaiting();
-clientsClaim();
 
 const searchManagerP = getManifestDb().then(
   (manifestDb) => new SearchManager(manifestDb),
@@ -170,6 +166,9 @@ const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
+
+  (self as any).skipWaiting();
+  clientsClaim();
 
   event.waitUntil(
     caches

@@ -3,6 +3,11 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { searchProvider } from '@feynote/search';
 import { TRPCError } from '@trpc/server';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '@feynote/queue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const deleteArtifact = authenticatedProcedure
   .input(
@@ -17,6 +22,11 @@ export const deleteArtifact = authenticatedProcedure
       },
       select: {
         userId: true,
+        artifactShares: {
+          select: {
+            userId: true,
+          },
+        },
       },
     });
 
@@ -47,6 +57,28 @@ export const deleteArtifact = authenticatedProcedure
     });
 
     await searchProvider.deleteArtifacts([input.id]);
+
+    try {
+      await enqueueOutgoingWebsocketMessage({
+        room: wsRoomNameForUserId(artifact.userId),
+        event: WebsocketMessageEvent.ArtifactDeleted,
+        json: {
+          artifactId: input.id,
+        },
+      });
+      for (const artifactShare of artifact.artifactShares) {
+        await enqueueOutgoingWebsocketMessage({
+          room: wsRoomNameForUserId(artifactShare.userId),
+          event: WebsocketMessageEvent.ArtifactDeleted,
+          json: {
+            artifactId: input.id,
+          },
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      // TODO: Sentry
+    }
 
     return 'Ok';
   });

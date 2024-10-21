@@ -13,18 +13,19 @@ import {
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
-import { t } from 'i18next';
 import { useContext } from 'react';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { useTranslation } from 'react-i18next';
 
 export const NewArtifact: React.FC = () => {
   const [presentToast] = useIonToast();
   const { navigate } = useContext(PaneContext);
   const { eventManager } = useContext(EventContext);
+  const { t } = useTranslation();
 
   useIonViewDidEnter(() => {
     create();
@@ -33,10 +34,8 @@ export const NewArtifact: React.FC = () => {
   const create = () => {
     trpc.artifact.createArtifact
       .mutate({
-        title: 'Untitled',
+        title: t('generic.untitled'),
         type: 'tiptap',
-        json: {},
-        text: '',
         theme: 'default',
       })
       .then((response) => {
@@ -47,8 +46,6 @@ export const NewArtifact: React.FC = () => {
           { id: response.id },
           PaneTransition.Replace,
         );
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       })
       .catch((error) => {
         handleTRPCErrors(error, presentToast);

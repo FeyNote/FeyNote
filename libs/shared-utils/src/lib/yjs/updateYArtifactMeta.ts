@@ -1,11 +1,8 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
-import { YArtifactMetaSchema } from './YArtifactMetaSchema';
+import type { YArtifactMeta } from '@feynote/global-types';
 
-export const updateYArtifactMeta = (
-  yArtifact: YDoc,
-  meta: YArtifactMetaSchema,
-) => {
+export const updateYArtifactMeta = (yArtifact: YDoc, meta: YArtifactMeta) => {
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
 
   artifactMetaYMap.set('title', meta.title);

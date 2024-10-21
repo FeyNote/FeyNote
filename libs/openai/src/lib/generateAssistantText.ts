@@ -5,12 +5,9 @@ import { openai } from './openai';
 export async function generateAssistantText(
   messages: CoreMessage[],
   model: AIModel,
-) {
+): Promise<string> {
   const { text } = await generateText({
-    model: openai(model, {
-      structuredOutputs: true,
-      parallelToolCalls: true,
-    }),
+    model: openai(model),
     maxTokens: 16383,
     messages,
   });

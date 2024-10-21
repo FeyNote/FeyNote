@@ -11,7 +11,7 @@ import { t } from 'i18next';
 import { trpc } from '../../../../../utils/trpc';
 import { EventContext } from '../../../../../context/events/EventContext';
 import { EventName } from '../../../../../context/events/EventName';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalize } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 
@@ -160,8 +160,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         title,
         type: 'tiptap',
         theme: 'default',
-        text: '',
-        json: {},
       })
       .then((artifact) => {
         props.command({
@@ -169,8 +167,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           artifactBlockId: undefined,
           referenceText: title,
         });
-
-        eventManager.broadcast([EventName.ArtifactCreated]);
       });
   };
 

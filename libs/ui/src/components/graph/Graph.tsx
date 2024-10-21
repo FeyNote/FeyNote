@@ -5,7 +5,7 @@ import { GraphRenderer } from './GraphRenderer';
 import { trpc } from '../../utils/trpc';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useEffect, useState } from 'react';
-import type { ArtifactDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import { useProgressBar } from '../../utils/useProgressBar';

@@ -3,8 +3,10 @@ import { trpc } from '../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useIonToast } from '@ionic/react';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
+import { setWelcomeModalPending } from '../../utils/welcomeModalState';
 
-interface Props {
+export interface SignInWithGoogleProps {
   className?: string;
 }
 
@@ -13,7 +15,7 @@ const getGoogleRef = () => {
   return (window as any).google;
 };
 
-export const SignInWithGoogle: React.FC<Props> = (props) => {
+export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
   const [presentToast] = useIonToast();
   const { setSession } = useContext(SessionContext);
   const buttonRef = useRef<HTMLDivElement>();
@@ -36,7 +38,14 @@ export const SignInWithGoogle: React.FC<Props> = (props) => {
     (args: any) => {
       trpc.user.signInWithGoogle
         .mutate(args)
-        .then((_session) => setSession(_session))
+        .then((response) => {
+          setSession(response.session).then(() => {
+            if (response.created) {
+              createWelcomeArtifacts();
+              setWelcomeModalPending(true);
+            }
+          });
+        })
         .catch((error) => {
           handleTRPCErrors(error, presentToast);
         });

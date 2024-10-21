@@ -19,12 +19,13 @@ const genCompositeKey = (args: {
 /**
  * Create/delete all references where this artifact points to another artifact
  * In this case, title reference text is used for other artifacts to reference this one directly.
+ * @returns The count of references created and deleted (but not updated!)
  */
 export async function updateArtifactOutgoingReferences(
   artifactId: string,
   jsonContent: JSONContent,
   tx: Prisma.TransactionClient = prisma,
-) {
+): Promise<number> {
   const referencesFromJSONContent = getReferencesFromJSONContent(jsonContent);
   const referencedArtifactIds = new Set(
     referencesFromJSONContent.map(
@@ -120,4 +121,6 @@ export async function updateArtifactOutgoingReferences(
   await tx.artifactReference.createMany({
     data: referencesToCreate,
   });
+
+  return referencesToCreate.length + referencesToDelete.length;
 }

@@ -12,7 +12,7 @@ import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { people, telescope } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactDTO } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useProgressBar } from '../../utils/useProgressBar';

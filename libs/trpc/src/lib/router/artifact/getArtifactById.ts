@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, ArtifactDTO } from '@feynote/prisma/types';
+import { artifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import {
   artifactDetailToArtifactDTO,
   hasArtifactAccess,

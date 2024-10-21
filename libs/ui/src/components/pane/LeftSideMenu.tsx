@@ -14,7 +14,7 @@ import styled from 'styled-components';
 import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
-import type { ArtifactDTO, ThreadDTO } from '@feynote/prisma/types';
+import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -161,27 +161,30 @@ export const LeftSideMenu: React.FC = () => {
 
   useEffect(() => {
     const handler = (event: EventName) => {
-      const immediateEvents = [
-        EventName.ArtifactCreated,
-        EventName.ArtifactPinned,
-      ];
+      const immediateEvents = [EventName.ArtifactPinChanged];
       const immediate = immediateEvents.includes(event);
 
       loadDebouncerRef.current.call(immediate);
     };
 
-    eventManager.addEventListener(handler, [
-      EventName.ArtifactCreated,
-      EventName.ArtifactTitleUpdated,
-      EventName.ArtifactPinned,
-    ]);
+    eventManager.addEventListener(
+      [
+        EventName.ArtifactUpdated,
+        EventName.ArtifactDeleted,
+        EventName.ArtifactPinChanged,
+      ],
+      handler,
+    );
 
     return () => {
-      eventManager.removeEventListener(handler, [
-        EventName.ArtifactCreated,
-        EventName.ArtifactTitleUpdated,
-        EventName.ArtifactPinned,
-      ]);
+      eventManager.removeEventListener(
+        [
+          EventName.ArtifactUpdated,
+          EventName.ArtifactDeleted,
+          EventName.ArtifactPinChanged,
+        ],
+        handler,
+      );
     };
   }, []);
 

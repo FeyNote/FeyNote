@@ -5,10 +5,8 @@ import type { TypedMap } from 'yjs-types';
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
-import {
-  ARTIFACT_META_KEY,
-  type YArtifactMetaSchema,
-} from '@feynote/shared-utils';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
@@ -37,7 +35,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
 
         const artifactMetaMap = args.document.getMap(
           ARTIFACT_META_KEY,
-        ) as TypedMap<Partial<YArtifactMetaSchema>>;
+        ) as TypedMap<Partial<YArtifactMeta>>;
         if (!artifactMetaMap.get('title'))
           artifactMetaMap.set('title', artifact.title);
         if (!artifactMetaMap.get('theme'))

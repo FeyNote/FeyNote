@@ -80,7 +80,7 @@ const getTextFromHtml = (jsdom: JSDOM): string => {
 
 export const DisplayUrlTool = tool({
   description:
-    'A function that scrapes and displays the content of a given url',
+    'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
   parameters: getDisplayScrapeUrlSchema(),
   execute: displayUrlExecutor,
 });

@@ -1,6 +1,7 @@
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, type ArtifactDTO } from '@feynote/prisma/types';
+import { artifactDetail } from '@feynote/prisma/types';
+import { ArtifactDTO } from '@feynote/global-types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
 export const getArtifacts = authenticatedProcedure.query(
