@@ -9,7 +9,6 @@ import { send } from 'ionicons/icons';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
-import { FunctionName } from '@feynote/shared-utils';
 import type { Message } from 'ai';
 import { trpc } from '../../utils/trpc';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +29,7 @@ const ChatTextContainer = styled.div`
   display: flex;
   align-items: center;
   padding-left: 8px;
+  margin-right: 75px;
 `;
 
 const SendButtonContainer = styled.div`
@@ -89,12 +89,6 @@ export const AIThread: React.FC<Props> = (props) => {
       }
     },
   });
-  const messagesToRender = useMemo(() => {
-    return messages.filter((message) => {
-      const containsDisplayableToolCall = message.toolInvocations;
-      return message.content || containsDisplayableToolCall;
-    });
-  }, [messages]);
 
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
@@ -169,7 +163,7 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
-              messages={messagesToRender}
+              messages={messages}
               disableRetry={isLoading}
             />
           )}
