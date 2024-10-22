@@ -33,7 +33,7 @@ export const AIMessageRenderer = ({
   const getEditorContentsFromToolInvocation = (
     invocation: ToolInvocation,
     t: TFunction,
-  ): string | JSONContent[] => {
+  ): (string | JSONContent)[] => {
     if (
       (invocation.toolName === ToolName.Generate5eObject ||
         invocation.toolName === ToolName.Generate5eMonster) &&
@@ -50,7 +50,7 @@ export const AIMessageRenderer = ({
       invocation.toolName === ToolName.ScrapeUrl &&
       invocation.state === 'result'
     ) {
-      const editorContents: any[] = [];
+      const editorContents: (string | JSONContent)[] = [];
       if (invocation.result.text) {
         editorContents.push(starkdown(invocation.result.text));
       }
