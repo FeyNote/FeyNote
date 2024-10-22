@@ -1,5 +1,4 @@
-import { memo, MutableRefObject, useContext, useEffect, useState } from 'react';
-import type { ArtifactTheme } from '@prisma/client';
+import { memo, MutableRefObject } from 'react';
 import { BubbleMenu, EditorContent } from '@tiptap/react';
 import { JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
@@ -9,15 +8,14 @@ import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/K
 import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
-import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
-import { EventContext } from '../../context/events/EventContext';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import { IonItem } from '@ionic/react';
-import { EventName } from '../../context/events/EventName';
 import { useTranslation } from 'react-i18next';
 import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
 import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -45,10 +43,11 @@ type Props = {
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const yDoc = props.yDoc || props.yjsProvider.document;
-  const [title, setTitle] = useState('');
-  const [theme, setTheme] = useState<ArtifactTheme>('default');
-  const [titleBodyMerge, setTitleBodyMerge] = useState(true);
-  const { eventManager } = useContext(EventContext);
+  const yMeta = useObserveYArtifactMeta(yDoc);
+  const title = yMeta.title ?? '';
+  const theme = yMeta.theme ?? 'default';
+  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
+
   const { t } = useTranslation();
 
   const editor = useArtifactEditor({
@@ -60,21 +59,6 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
       editor?.commands.setContent(content);
     };
   }
-
-  useEffect(() => {
-    const artifactMetaMap = yDoc.getMap('artifactMeta');
-
-    const listener = () => {
-      const yArtifactMeta = getMetaFromYArtifact(yDoc);
-      setTitle(yArtifactMeta.title ?? title);
-      setTheme(yArtifactMeta.theme ?? theme);
-      setTitleBodyMerge(yArtifactMeta.titleBodyMerge ?? titleBodyMerge);
-    };
-
-    listener();
-    artifactMetaMap.observe(listener);
-    return () => artifactMetaMap.unobserve(listener);
-  }, [yDoc]);
 
   const setMetaProp = (metaPropName: string, value: any) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);

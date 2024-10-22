@@ -223,41 +223,12 @@ export const Workspace: React.FC = () => {
   );
 
   const newArtifact = (type: ArtifactType) => {
-    trpc.artifact.createArtifact
-      .mutate({
-        title: t('generic.untitled'),
-        type,
-        theme: 'default',
-      })
-      .then((artifact) => {
-        navigate(
-          undefined, // Navigate within current focused pane rather than specific pane
-          PaneableComponent.Artifact,
-          {
-            id: artifact.id,
-          },
-          PaneTransition.Push,
-        );
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
-  };
-
-  const newAIThread = () => {
-    trpc.ai.createThread
-      .mutate({})
-      .then((thread) => {
-        navigate(
-          undefined,
-          PaneableComponent.AIThread,
-          { id: thread.id },
-          PaneTransition.Push,
-        );
-      })
-      .catch((error) => {
-        handleTRPCErrors(error, presentToast);
-      });
+    navigate(
+      undefined, // Navigate within current focused pane rather than specific pane
+      PaneableComponent.NewArtifact,
+      {},
+      PaneTransition.Push,
+    );
   };
 
   return (
@@ -311,24 +282,15 @@ export const Workspace: React.FC = () => {
           <RightSideMenu />
         </MenuInner>
       </Menu>
-      <IonFab slot="fixed" vertical="bottom" horizontal="end">
+      <IonFab
+        slot="fixed"
+        vertical="bottom"
+        horizontal="end"
+        onClick={newArtifact}
+      >
         <IonFabButton>
           <IonIcon icon={add} />
         </IonFabButton>
-        <IonFabList side="top">
-          <IonFabButton onClick={() => newArtifact('tiptap')}>
-            <IonIcon icon={documentText}></IonIcon>
-          </IonFabButton>
-          <IonFabButton onClick={() => newArtifact('calendar')}>
-            <IonIcon icon={calendar}></IonIcon>
-          </IonFabButton>
-          <IonFabButton onClick={() => newArtifact('excalidraw')}>
-            <IonIcon icon={pencil}></IonIcon>
-          </IonFabButton>
-          <IonFabButton onClick={() => newAIThread()}>
-            <IonIcon icon={chatboxEllipses}></IonIcon>
-          </IonFabButton>
-        </IonFabList>
       </IonFab>
     </MainGrid>
   );
