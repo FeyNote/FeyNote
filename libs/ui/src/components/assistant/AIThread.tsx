@@ -17,7 +17,7 @@ import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { useProgressBar } from '../../utils/useProgressBar';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -53,6 +53,7 @@ interface Props {
 }
 
 export const AIThread: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useProgressBar();

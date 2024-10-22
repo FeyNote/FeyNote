@@ -11,8 +11,8 @@ import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { copyOutline, pencil } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { TFunction } from 'i18next';
-import { t } from 'i18next';
 import { JSONContent } from '@tiptap/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   message: Message;
@@ -25,6 +25,8 @@ export const AIMessageRenderer = ({
   message,
   retryMessage,
 }: Props) => {
+  const { t } = useTranslation();
+
   const messageHTML = useMemo(() => {
     if (!message.content) return null;
     return starkdown(message.content);
@@ -32,7 +34,6 @@ export const AIMessageRenderer = ({
 
   const getEditorContentsFromToolInvocation = (
     invocation: ToolInvocation,
-    t: TFunction,
   ): (string | JSONContent)[] => {
     if (
       (invocation.toolName === ToolName.Generate5eObject ||
@@ -58,7 +59,7 @@ export const AIMessageRenderer = ({
         invocation.result.toolInvocations.forEach(
           (invocation: ToolInvocation) =>
             editorContents.push(
-              ...getEditorContentsFromToolInvocation(invocation, t),
+              ...getEditorContentsFromToolInvocation(invocation),
             ),
         );
       }
@@ -86,10 +87,8 @@ export const AIMessageRenderer = ({
       {toolInvocationsToDisplay && (
         <>
           {toolInvocationsToDisplay.map((toolInvocation) => {
-            const toolInvocationContents = getEditorContentsFromToolInvocation(
-              toolInvocation,
-              t,
-            );
+            const toolInvocationContents =
+              getEditorContentsFromToolInvocation(toolInvocation);
             if (!toolInvocationContents) return;
             return (
               <div key={toolInvocation.toolCallId}>

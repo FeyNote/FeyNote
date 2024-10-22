@@ -6,7 +6,7 @@ import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 const PreviewText = styled.p`
   overflow: hidden;
@@ -18,6 +18,7 @@ interface Props {
 }
 
 export const AIThreadMenuItem = (props: Props) => {
+  const { t } = useTranslation();
   const { navigate } = useContext(PaneContext);
   const previewText =
     (props.thread.messages.find(

@@ -12,7 +12,7 @@ import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   id: string;
@@ -21,6 +21,7 @@ interface Props {
 }
 
 export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
   const { navigate } = useContext(PaneContext);
