@@ -27,12 +27,12 @@ export const createThreadTitle = authenticatedProcedure
     ) as CoreMessage[];
     messages = [systemMessage.nameGeneration, ...messages];
 
-    const title = await generateAssistantText(messages, AIModel.GPT4_MINI);
+    const { text } = await generateAssistantText(messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
       where: { id: thread.id },
       data: {
-        title,
+        title: text,
       },
     });
-    return title;
+    return text;
   });

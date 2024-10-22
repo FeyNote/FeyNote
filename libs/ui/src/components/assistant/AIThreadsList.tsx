@@ -8,7 +8,6 @@ import {
   useIonToast,
 } from '@ionic/react';
 import { useContext, useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { trpc } from '../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
@@ -20,6 +19,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { useTranslation } from 'react-i18next';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();

@@ -5,7 +5,6 @@ import {
   useIonAlert,
   useIonToast,
 } from '@ionic/react';
-import { useTranslation } from 'react-i18next';
 import { pencil, trashBin } from 'ionicons/icons';
 import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
 import { trpc } from '../../utils/trpc';
@@ -13,6 +12,7 @@ import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   id: string;

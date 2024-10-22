@@ -1,11 +1,18 @@
 import { starkdown } from 'starkdown';
 import { AIFCEditor } from './AIFCEditor';
-import type { Message } from 'ai';
+import type { Message, ToolInvocation } from 'ai';
 import { useMemo } from 'react';
-import { ToolName } from '@feynote/shared-utils';
+import {
+  AllowedToolInvocation,
+  tiptapToolInvocationBuilder,
+  ToolName,
+} from '@feynote/shared-utils';
 import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
-import { arrowUndoOutline, copyOutline } from 'ionicons/icons';
+import { copyOutline, pencil } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
+import { TFunction } from 'i18next';
+import { JSONContent } from '@tiptap/core';
+import { useTranslation } from 'react-i18next';
 
 interface Props {
   message: Message;
@@ -18,10 +25,48 @@ export const AIMessageRenderer = ({
   message,
   retryMessage,
 }: Props) => {
+  const { t } = useTranslation();
+
   const messageHTML = useMemo(() => {
     if (!message.content) return null;
     return starkdown(message.content);
   }, [message.content]);
+
+  const getEditorContentsFromToolInvocation = (
+    invocation: ToolInvocation,
+  ): (string | JSONContent)[] => {
+    if (
+      (invocation.toolName === ToolName.Generate5eObject ||
+        invocation.toolName === ToolName.Generate5eMonster) &&
+      invocation.args
+    ) {
+      const tiptapContent = tiptapToolInvocationBuilder(
+        invocation as AllowedToolInvocation,
+        t,
+      );
+      if (!tiptapContent) return [];
+      return [tiptapContent];
+    }
+    if (
+      invocation.toolName === ToolName.ScrapeUrl &&
+      invocation.state === 'result'
+    ) {
+      const editorContents: (string | JSONContent)[] = [];
+      if (invocation.result.text) {
+        editorContents.push(starkdown(invocation.result.text));
+      }
+      if (invocation.result.toolInvocations) {
+        invocation.result.toolInvocations.forEach(
+          (invocation: ToolInvocation) =>
+            editorContents.push(
+              ...getEditorContentsFromToolInvocation(invocation),
+            ),
+        );
+      }
+      return editorContents;
+    }
+    return [];
+  };
 
   const toolInvocationsToDisplay =
     message.toolInvocations &&
@@ -42,11 +87,15 @@ export const AIMessageRenderer = ({
       {toolInvocationsToDisplay && (
         <>
           {toolInvocationsToDisplay.map((toolInvocation) => {
+            const toolInvocationContents =
+              getEditorContentsFromToolInvocation(toolInvocation);
+            if (!toolInvocationContents) return;
             return (
-              <AIFCEditor
-                key={toolInvocation.toolCallId}
-                toolInvocation={toolInvocation}
-              />
+              <div key={toolInvocation.toolCallId}>
+                {toolInvocationContents.map((content, i) => (
+                  <AIFCEditor key={i} editorContent={content} />
+                ))}
+              </div>
             );
           })}
         </>
@@ -76,7 +125,7 @@ export const AIMessageRenderer = ({
                 size="small"
                 onClick={() => retryMessage(message.id)}
               >
-                <IonIcon icon={arrowUndoOutline} />
+                <IonIcon icon={pencil} />
               </IonButton>
             )}
           </IonButtons>
