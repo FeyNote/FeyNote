@@ -26,6 +26,7 @@ export enum PaneableComponent {
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
   [PaneableComponent.Settings]: ComponentProps<typeof Settings>;
+  [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
   [PaneableComponent.AIThreadsList]: ComponentProps<typeof AIThreadsList>;

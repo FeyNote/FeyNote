@@ -222,7 +222,7 @@ export const Workspace: React.FC = () => {
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
 
-  const newArtifact = (type: ArtifactType) => {
+  const newArtifact = () => {
     navigate(
       undefined, // Navigate within current focused pane rather than specific pane
       PaneableComponent.NewArtifact,
