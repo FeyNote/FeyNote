@@ -46,7 +46,7 @@ export class ImmediateDebouncer<F extends (...args: any) => any> {
         if (this.followupCallArgs) {
           const followupCallArgs = this.followupCallArgs;
           this.followupCallArgs = null;
-          this.call(...followupCallArgs);
+          this.call(undefined, ...followupCallArgs);
         }
       }, this.debounceTime);
     }

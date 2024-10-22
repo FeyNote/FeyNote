@@ -129,10 +129,11 @@ export const useYjsTLDrawStore = ({
     }, YJS_PERSIST_INTERVAL_MS);
 
     const listener = new ImmediateDebouncer(
-      ({ changes }: HistoryEntry<TLRecord>): void => {
+      (historyEntry: HistoryEntry<TLRecord>): void => {
         if (!editable) return;
         // Always add to currentBuffer
 
+        const changes = historyEntry.changes;
         const temp: TLRecord[] = [];
 
         Object.values(changes.added).forEach((record) => {

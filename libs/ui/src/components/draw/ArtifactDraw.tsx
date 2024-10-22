@@ -18,6 +18,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { Tldraw } from 'tldraw';
 import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -30,9 +31,10 @@ interface Props {
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
-  const [title, setTitle] = useState('');
-  const [theme, setTheme] = useState<ArtifactTheme>('default');
-  const [titleBodyMerge, setTitleBodyMerge] = useState(true);
+  const yMeta = useObserveYArtifactMeta(yDoc);
+  const title = yMeta.title ?? '';
+  const theme = yMeta.theme ?? 'default';
+  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
   const { t } = useTranslation();
@@ -53,21 +55,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     shapeUtils: [],
     editable: props.editable,
   });
-
-  useEffect(() => {
-    const artifactMetaMap = yDoc.getMap('artifactMeta');
-
-    const listener = () => {
-      const yArtifactMeta = getMetaFromYArtifact(yDoc);
-      setTitle(yArtifactMeta.title ?? title);
-      setTheme(yArtifactMeta.theme ?? theme);
-      setTitleBodyMerge(yArtifactMeta.titleBodyMerge ?? titleBodyMerge);
-    };
-
-    listener();
-    artifactMetaMap.observe(listener);
-    return () => artifactMetaMap.unobserve(listener);
-  }, [yDoc]);
 
   const setMetaProp = (metaPropName: string, value: any) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
