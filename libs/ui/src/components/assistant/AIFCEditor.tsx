@@ -1,4 +1,4 @@
-import { EditorContent } from '@tiptap/react';
+import { EditorContent, JSONContent } from '@tiptap/react';
 import { ArtifactEditorStyles } from '../editor/ArtifactEditorStyles';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { useArtifactEditor } from '../editor/useTiptapEditor';
@@ -14,7 +14,7 @@ const AIFCEditorContainer = styled.div`
 `;
 
 interface Props {
-  editorContent: any;
+  editorContent: string | JSONContent;
 }
 
 export const AIFCEditor: React.FC<Props> = (props) => {

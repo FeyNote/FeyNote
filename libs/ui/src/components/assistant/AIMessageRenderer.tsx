@@ -11,7 +11,8 @@ import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { copyOutline, pencil } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { TFunction } from 'i18next';
-import { useTranslation } from 'react-i18next';
+import { t } from 'i18next';
+import { JSONContent } from '@tiptap/core';
 
 interface Props {
   message: Message;
@@ -24,7 +25,6 @@ export const AIMessageRenderer = ({
   message,
   retryMessage,
 }: Props) => {
-  const { t } = useTranslation();
   const messageHTML = useMemo(() => {
     if (!message.content) return null;
     return starkdown(message.content);
@@ -33,15 +33,18 @@ export const AIMessageRenderer = ({
   const getEditorContentsFromToolInvocation = (
     invocation: ToolInvocation,
     t: TFunction,
-  ): any[] => {
+  ): string | JSONContent[] => {
     if (
       (invocation.toolName === ToolName.Generate5eObject ||
         invocation.toolName === ToolName.Generate5eMonster) &&
       invocation.args
     ) {
-      return [
-        tiptapToolInvocationBuilder(invocation as AllowedToolInvocation, t),
-      ];
+      const tiptapContent = tiptapToolInvocationBuilder(
+        invocation as AllowedToolInvocation,
+        t,
+      );
+      if (!tiptapContent) return [];
+      return [tiptapContent];
     }
     if (
       invocation.toolName === ToolName.ScrapeUrl &&

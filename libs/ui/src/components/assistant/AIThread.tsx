@@ -7,16 +7,17 @@ import {
   IonTextarea,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import type { Message } from 'ai';
 import { trpc } from '../../utils/trpc';
-import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
+import { useProgressBar } from '../../utils/useProgressBar';
+import { t } from 'i18next';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -52,9 +53,9 @@ interface Props {
 }
 
 export const AIThread: React.FC<Props> = (props) => {
-  const { t } = useTranslation();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
+  const { startProgressBar, ProgressBar } = useProgressBar();
   const { session } = useContext(SessionContext);
   const { messages, setMessages, isLoading, input, setInput, append } = useChat(
     {
@@ -107,7 +108,11 @@ export const AIThread: React.FC<Props> = (props) => {
 
   useEffect(() => {
     setIsLoadingInitialState(true);
-    getThreadInfo().then(() => setIsLoadingInitialState(false));
+    const progress = startProgressBar();
+    getThreadInfo().finally(() => {
+      setIsLoadingInitialState(false);
+      progress.dismiss();
+    });
   }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
@@ -156,6 +161,7 @@ export const AIThread: React.FC<Props> = (props) => {
         }
       />
       <IonContent>
+        {ProgressBar}
         <ChatContainer>
           {!messages.length ? (
             <div style={{ height: '100%' }}>
@@ -174,12 +180,12 @@ export const AIThread: React.FC<Props> = (props) => {
             <IonTextarea
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
-              disabled={isLoading}
+              disabled={isLoading || isLoadingInitialState}
               onKeyUp={keyUpHandler}
             />
             <SendButtonContainer>
               <IonButton onClick={() => submitUserQuery()}>
-                {isLoading ? (
+                {isLoading || isLoadingInitialState ? (
                   <IonSpinner name="crescent" />
                 ) : (
                   <SendIcon icon={send} />

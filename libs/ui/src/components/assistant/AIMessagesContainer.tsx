@@ -1,9 +1,9 @@
 import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { personCircle } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
 import { AIMessageRenderer } from './AIMessageRenderer';
 import type { Message } from 'ai';
+import { t } from 'i18next';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -53,7 +53,6 @@ interface Props {
 }
 
 export const AIMessagesContainer = (props: Props) => {
-  const { t } = useTranslation();
   return (
     <Scroller>
       <ScrollerContent>

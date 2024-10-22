@@ -1,12 +1,12 @@
 import { IonIcon, IonItem, IonLabel } from '@ionic/react';
 import { mail } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
 import { ThreadDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { t } from 'i18next';
 
 const PreviewText = styled.p`
   overflow: hidden;
@@ -18,7 +18,6 @@ interface Props {
 }
 
 export const AIThreadMenuItem = (props: Props) => {
-  const { t } = useTranslation();
   const { navigate } = useContext(PaneContext);
   const previewText =
     (props.thread.messages.find(
