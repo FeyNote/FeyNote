@@ -8,7 +8,7 @@ import {
   ToolName,
 } from '@feynote/shared-utils';
 import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
-import { copyOutline, refresh } from 'ionicons/icons';
+import { copyOutline, pencil } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
@@ -87,7 +87,6 @@ export const AIMessageRenderer = ({
               toolInvocation,
               t,
             );
-            console.log(toolInvocationContents);
             if (!toolInvocationContents) return;
             return (
               <div key={toolInvocation.toolCallId}>
@@ -124,7 +123,7 @@ export const AIMessageRenderer = ({
                 size="small"
                 onClick={() => retryMessage(message.id)}
               >
-                <IonIcon icon={refresh} />
+                <IonIcon icon={pencil} />
               </IonButton>
             )}
           </IonButtons>
