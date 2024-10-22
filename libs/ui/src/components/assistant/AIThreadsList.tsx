@@ -19,9 +19,10 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { t } from 'i18next';
+import { useTranslation } from 'react-i18next';
 
 export const AIThreadsList: React.FC = () => {
+  const { t } = useTranslation();
   const [presentToast] = useIonToast();
   const [threads, setThreads] = useState<ThreadDTO[]>([]);
   const { startProgressBar, ProgressBar } = useProgressBar();
