@@ -11,6 +11,9 @@ import DOMPurify from 'dompurify';
 import axios, { AxiosRequestConfig } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { globalServerConfig } from '@feynote/config';
+import { ToolName } from '@feynote/shared-utils';
+import { Display5eMonsterTool } from './display5eMonster';
+import { Display5eObjectTool } from './display5eObject';
 
 const displayUrlExecutor = async (params: ScrapeUrlParams) => {
   try {
@@ -29,15 +32,23 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     const res = await axios.get(params.url, requestConfig);
     const jsdom = new JSDOM(res.data);
     const html = getTextFromHtml(jsdom);
+    console.log('html;', html);
     const messages = [
       systemMessage.scrapeContent,
       { role: 'user', content: html } as CoreMessage,
     ];
-    const assistantResponse = await generateAssistantText(
+    const { text, toolResults } = await generateAssistantText(
       messages,
       AIModel.GPT4_MINI,
+      {
+        [ToolName.Generate5eMonster]: Display5eMonsterTool,
+        [ToolName.Generate5eObject]: Display5eObjectTool,
+      },
     );
-    return assistantResponse;
+    return {
+      text,
+      toolInvocations: toolResults,
+    };
   } catch (e) {
     console.log(e);
     return null;

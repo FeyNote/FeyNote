@@ -3,6 +3,7 @@ import {
   IonContent,
   IonIcon,
   IonPage,
+  IonSpinner,
   IonTextarea,
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
@@ -53,42 +54,44 @@ interface Props {
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [title, setTitle] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { session } = useContext(SessionContext);
-  const { messages, setMessages, input, setInput, append } = useChat({
-    api: '/api/message/',
-    headers: {
-      Authorization: session?.token ? `Bearer ${session.token}` : '',
-      'Content-Type': 'application/json',
-    },
-    generateId: () => {
-      return crypto.randomUUID();
-    },
-    body: {
-      threadId: props.id,
-    },
-    maxToolRoundtrips: 5,
-    onFinish: async (message, options) => {
-      if (
-        options.finishReason === 'stop' ||
-        options.finishReason === 'tool-calls'
-      ) {
-        await trpc.ai.saveMessage.mutate({
-          threadId: props.id,
-          message,
-        });
-      }
-      if (options.finishReason === 'stop') {
-        if (!title) {
-          await trpc.ai.createThreadTitle.mutate({
-            id: props.id,
+  const { messages, setMessages, isLoading, input, setInput, append } = useChat(
+    {
+      api: '/api/message/',
+      headers: {
+        Authorization: session?.token ? `Bearer ${session.token}` : '',
+        'Content-Type': 'application/json',
+      },
+      generateId: () => {
+        return crypto.randomUUID();
+      },
+      body: {
+        threadId: props.id,
+      },
+      maxToolRoundtrips: 5,
+      onFinish: async (message, options) => {
+        if (
+          options.finishReason === 'stop' ||
+          options.finishReason === 'tool-calls'
+        ) {
+          await trpc.ai.saveMessage.mutate({
+            threadId: props.id,
+            message,
           });
-
-          await getThreadInfo();
         }
-      }
+        if (options.finishReason === 'stop') {
+          if (!title) {
+            await trpc.ai.createThreadTitle.mutate({
+              id: props.id,
+            });
+
+            await getThreadInfo();
+          }
+        }
+      },
     },
-  });
+  );
 
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
@@ -103,8 +106,8 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    setIsLoading(true);
-    getThreadInfo().then(() => setIsLoading(false));
+    setIsLoadingInitialState(true);
+    getThreadInfo().then(() => setIsLoadingInitialState(false));
   }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
@@ -176,7 +179,11 @@ export const AIThread: React.FC<Props> = (props) => {
             />
             <SendButtonContainer>
               <IonButton onClick={() => submitUserQuery()}>
-                <SendIcon color="white" icon={send} />
+                {isLoading ? (
+                  <IonSpinner name="crescent" />
+                ) : (
+                  <SendIcon icon={send} />
+                )}
               </IonButton>
             </SendButtonContainer>
           </ChatTextContainer>
