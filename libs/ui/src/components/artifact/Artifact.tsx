@@ -100,7 +100,10 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         popoverContents={<ArtifactContextMenu artifactId={props.id} />}
       />
       {ProgressBar}
-      <IonContent className="ion-padding-start ion-padding-end">
+      <IonContent
+        className="ion-padding-start ion-padding-end"
+        style={{ position: 'relative' }}
+      >
         {artifact && (
           <ArtifactRenderer
             artifact={artifact}

@@ -1,24 +1,89 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useContext, useEffect } from 'react';
 import type { ArtifactDTO } from '@feynote/global-types';
-import {
-  ARTIFACT_META_KEY,
-  getMetaFromYArtifact,
-  PreferenceNames,
-} from '@feynote/shared-utils';
-import type { ArtifactTheme } from '@prisma/client';
+import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { SessionContext } from '../../context/session/SessionContext';
-import { Tldraw } from 'tldraw';
+import {
+  ArrowDownToolbarItem,
+  ArrowLeftToolbarItem,
+  ArrowRightToolbarItem,
+  ArrowToolbarItem,
+  ArrowUpToolbarItem,
+  CheckBoxToolbarItem,
+  CloudToolbarItem,
+  DefaultMainMenu,
+  DefaultQuickActions,
+  DefaultToolbar,
+  DiamondToolbarItem,
+  DrawToolbarItem,
+  EditMenuSubmenu,
+  Editor,
+  EditSubmenu,
+  EllipseToolbarItem,
+  EraserToolbarItem,
+  ExportFileContentSubMenu,
+  FrameToolbarItem,
+  getUserPreferences,
+  HandToolbarItem,
+  HexagonToolbarItem,
+  HighlightToolbarItem,
+  LineToolbarItem,
+  NoteToolbarItem,
+  OvalToolbarItem,
+  PreferencesGroup,
+  RectangleToolbarItem,
+  RhombusToolbarItem,
+  SelectToolbarItem,
+  setUserPreferences,
+  StarToolbarItem,
+  TextToolbarItem,
+  TLComponents,
+  Tldraw,
+  TldrawUiMenuGroup,
+  TldrawUiMenuItem,
+  TldrawUiMenuSubmenu,
+  TLUiOverrides,
+  ToggleEdgeScrollingItem,
+  ToggleFocusModeItem,
+  ToggleGridItem,
+  ToggleReduceMotionItem,
+  ToggleSnapModeItem,
+  ToggleToolLockItem,
+  ToggleWrapModeItem,
+  TriangleToolbarItem,
+  UndoRedoGroup,
+  useActions,
+  useCanRedo,
+  useCanUndo,
+  ViewSubmenu,
+  XBoxToolbarItem,
+} from 'tldraw';
 import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import styled from 'styled-components';
+
+const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
+  display: grid;
+  height: 100%;
+  grid-template-rows: ${(props) =>
+    props.$titleBodyMerge ? 'auto' : 'min-content auto'};
+`;
+
+const StyledArtifactDrawStyles = styled(ArtifactDrawStyles)<{
+  $titleBodyMerge: boolean;
+}>`
+  display: grid;
+  grid-template-rows: ${(props) =>
+    props.$titleBodyMerge ? 'min-content auto' : 'auto'};
+`;
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -75,17 +140,94 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     </IonItem>
   );
 
+  const onMount = (editor: Editor) => {
+    const themePreference = getPreference(PreferenceNames.Theme);
+    let colorScheme: 'dark' | 'light' | 'system' = 'system';
+    if (themePreference === 'light') colorScheme = 'light';
+    if (themePreference === 'dark') colorScheme = 'dark';
+
+    const languagePreference = getPreference(PreferenceNames.Language);
+
+    setUserPreferences({
+      id: getUserPreferences().id,
+      colorScheme,
+      locale: languagePreference,
+    });
+  };
+
+  const components: TLComponents = {
+    NavigationPanel: null,
+    Toolbar: () => (
+      <DefaultToolbar>
+        <SelectToolbarItem />
+        <HandToolbarItem />
+        <DrawToolbarItem />
+        <EraserToolbarItem />
+        <ArrowToolbarItem />
+        <TextToolbarItem />
+        <NoteToolbarItem />
+        <RectangleToolbarItem />
+        <EllipseToolbarItem />
+        <TriangleToolbarItem />
+        <DiamondToolbarItem />
+        <HexagonToolbarItem />
+        <OvalToolbarItem />
+        <RhombusToolbarItem />
+        <StarToolbarItem />
+        <CloudToolbarItem />
+        <XBoxToolbarItem />
+        <CheckBoxToolbarItem />
+        <ArrowLeftToolbarItem />
+        <ArrowRightToolbarItem />
+        <ArrowUpToolbarItem />
+        <ArrowDownToolbarItem />
+        <LineToolbarItem />
+        <HighlightToolbarItem />
+        <FrameToolbarItem />
+      </DefaultToolbar>
+    ),
+    QuickActions: () => {
+      const canUndo = useCanUndo();
+      const canRedo = useCanRedo();
+      const actions = useActions();
+      return (
+        <DefaultQuickActions>
+          <TldrawUiMenuItem {...actions.undo} disabled={!canUndo} />
+          <TldrawUiMenuItem {...actions.redo} disabled={!canRedo} />
+        </DefaultQuickActions>
+      );
+    },
+    PageMenu: null,
+    ActionsMenu: null,
+    MainMenu: () => {
+      return (
+        <DefaultMainMenu>
+          <EditSubmenu />
+          <ViewSubmenu />
+          <ExportFileContentSubMenu />
+          <TldrawUiMenuSubmenu id="preferences" label="menu.preferences">
+            <ToggleSnapModeItem />
+            <ToggleGridItem />
+            <ToggleWrapModeItem />
+            <ToggleEdgeScrollingItem />
+            <ToggleReduceMotionItem />
+          </TldrawUiMenuSubmenu>
+        </DefaultMainMenu>
+      );
+    },
+  };
+
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <ArtifactDrawContainer $titleBodyMerge={titleBodyMerge}>
       {!titleBodyMerge && titleInput}
-      <ArtifactDrawStyles
+      <StyledArtifactDrawStyles
         data-theme={theme}
-        style={{ width: '100%', height: '100%' }}
+        $titleBodyMerge={titleBodyMerge}
       >
         {titleBodyMerge && titleInput}
 
-        <Tldraw store={store} />
-      </ArtifactDrawStyles>
-    </div>
+        <Tldraw store={store} onMount={onMount} components={components} />
+      </StyledArtifactDrawStyles>
+    </ArtifactDrawContainer>
   );
 });
