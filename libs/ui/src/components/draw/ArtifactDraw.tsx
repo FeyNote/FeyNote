@@ -198,7 +198,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       );
     },
     PageMenu: null,
-    ActionsMenu: null,
     MainMenu: () => {
       return (
         <DefaultMainMenu>
