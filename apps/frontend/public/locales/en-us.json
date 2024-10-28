@@ -305,6 +305,8 @@
   "editor.commandMenu.orderedList.subtitle": "Change current block to a numbered list",
   "editor.commandMenu.bulletList": "Bulleted List",
   "editor.commandMenu.bulletList.subtitle": "Change current block to a bulleted list",
+  "editor.commandMenu.noResults": "No results",
+  "editor.commandMenu.noResults.subtitle": "No matching commands",
   "editor.artifactTypeSelector.title": "Choose Your Artifact Type",
   "editor.artifactTypeSelector.tiptap": "Rich Text Artifact",
   "editor.artifactTypeSelector.tiptap.description": "Write notes, stories, or lore about your world in an interactive text editor with superpowers!",
