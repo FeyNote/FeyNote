@@ -88,17 +88,17 @@ export const ArtifactTypeSelector = (props: Props) => {
         <IonCard
           button
           onClick={() => {
-            props.newArtifact('excalidraw');
+            props.newArtifact('tldraw');
           }}
         >
           <IonCardHeader>
             <StyledIonCardTitle>
               <IonIcon icon={pencil} />
-              {t('editor.artifactTypeSelector.excalidraw')}
+              {t('editor.artifactTypeSelector.tldraw')}
             </StyledIonCardTitle>
           </IonCardHeader>
           <IonCardContent>
-            {t('editor.artifactTypeSelector.excalidraw.description')}
+            {t('editor.artifactTypeSelector.tldraw.description')}
           </IonCardContent>
         </IonCard>
         <IonCard

@@ -121,7 +121,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     );
   }
 
-  if (type === 'excalidraw') {
+  if (type === 'tldraw') {
     return (
       <ArtifactDraw
         editable={isEditable}

@@ -310,8 +310,8 @@
   "editor.artifactTypeSelector.tiptap.description": "Write notes, stories, or lore about your world in an interactive text editor with superpowers!",
   "editor.artifactTypeSelector.calendar": "Calendar Artifact",
   "editor.artifactTypeSelector.calendar.description": "Create a fantasy calendar to keep track of in-world events or your campaign's sessions",
-  "editor.artifactTypeSelector.excalidraw": "Drawing Artifact",
-  "editor.artifactTypeSelector.excalidraw.description": "Create drawings, annotate maps, whiteboard, or just sketch something out",
+  "editor.artifactTypeSelector.tldraw": "Drawing Artifact",
+  "editor.artifactTypeSelector.tldraw.description": "Create drawings, annotate maps, whiteboard, or just sketch something out",
   "editor.artifactTypeSelector.thread": "Assistant Thread",
   "editor.artifactTypeSelector.thread.description": "Grab content from the web via URL, format monster details into a statblock, ask questions about rules, or generate new content",
 

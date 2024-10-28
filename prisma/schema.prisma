@@ -157,7 +157,7 @@ enum ArtifactAccessLevel {
 enum ArtifactType {
   tiptap
   calendar
-  excalidraw
+  tldraw
 }
 
 enum ArtifactTheme {

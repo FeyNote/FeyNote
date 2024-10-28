@@ -1,2 +1,2 @@
 -- AlterEnum
-ALTER TYPE "ArtifactType" ADD VALUE 'excalidraw';
+ALTER TYPE "ArtifactType" ADD VALUE 'tldraw';
