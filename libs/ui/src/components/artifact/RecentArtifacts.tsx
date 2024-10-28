@@ -5,12 +5,11 @@ import {
   IonIcon,
   IonLabel,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { people, telescope } from 'ionicons/icons';
+import { telescope } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
@@ -46,7 +45,6 @@ export const RecentArtifacts: React.FC = () => {
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { session } = useContext(SessionContext);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
@@ -55,6 +53,7 @@ export const RecentArtifacts: React.FC = () => {
       artifacts.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()),
     [artifacts],
   );
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const getUserArtifacts = async () => {
     await trpc.artifact.getArtifacts
@@ -63,7 +62,7 @@ export const RecentArtifacts: React.FC = () => {
         setArtifacts(_artifacts);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 

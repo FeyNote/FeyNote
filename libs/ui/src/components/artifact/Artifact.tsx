@@ -1,7 +1,7 @@
 import { ArtifactDTO } from '@feynote/global-types';
-import { IonContent, IonPage, useIonToast } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useState } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { useProgressBar } from '../../utils/useProgressBar';
@@ -11,11 +11,9 @@ import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import styled from 'styled-components';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
 import { EventData } from '../../context/events/EventData';
-import { navigate } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
@@ -26,12 +24,12 @@ interface ArtifactProps {
 }
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
-  const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [title, setTitle] = useState('');
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const load = async () => {
     await trpc.artifact.getArtifactById
@@ -43,7 +41,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         setTitle(_artifact.title);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 

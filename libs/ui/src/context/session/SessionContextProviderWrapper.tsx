@@ -1,15 +1,15 @@
-import { ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { SessionContext, type SessionContextData } from './SessionContext';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
-import { GlobalPaneContext } from '../globalPane/GlobalPaneContext';
 import {
   getWelcomeModalPending,
   setWelcomeModalPending,
 } from '../../utils/welcomeModalState';
 import { useIonModal } from '@ionic/react';
 import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
+import { useSetAndPersistSession } from './useSetAndPersistSession';
 
 interface Props {
   children: ReactNode;
@@ -20,7 +20,8 @@ export const SessionContextProviderWrapper = ({
 }: Props): JSX.Element => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<SessionDTO | null>(null);
-  const { resetLayout } = useContext(GlobalPaneContext);
+  const { setAndPersistSession: _setAndPersistSession } =
+    useSetAndPersistSession();
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   });
@@ -40,16 +41,8 @@ export const SessionContextProviderWrapper = ({
   }, []);
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
-    await appIdbStorageManager.deleteAllData();
-
-    if (newSession) {
-      await appIdbStorageManager.setSession(newSession);
-    } else {
-      await appIdbStorageManager.removeSession();
-    }
+    await _setAndPersistSession(newSession);
     setSession(newSession);
-
-    if (resetLayout && newSession) resetLayout();
   };
 
   const value = useMemo(

@@ -8,12 +8,10 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
   IonLabel,
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonToast,
 } from '@ionic/react';
 import { close } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -25,9 +23,7 @@ import {
 } from '../../context/globalPane/GlobalPaneContext';
 import { useContext } from 'react';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { EventName } from '../../context/events/EventName';
-import { EventContext } from '../../context/events/EventContext';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 const Container = styled.div`
   position: relative;
@@ -63,8 +59,7 @@ interface Props {
 export const WelcomeModal: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigate } = useContext(GlobalPaneContext);
-  const { eventManager } = useContext(EventContext);
-  const [presentToast] = useIonToast();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = () => {
     trpc.artifact.createArtifact
@@ -85,7 +80,7 @@ export const WelcomeModal: React.FC<Props> = (props) => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
@@ -102,7 +97,7 @@ export const WelcomeModal: React.FC<Props> = (props) => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 

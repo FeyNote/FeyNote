@@ -3,8 +3,7 @@ import type { ArtifactDTO } from '@feynote/global-types';
 import { useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import { useProgressBar } from '../../utils/useProgressBar';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
-import { IonInput, useIonToast } from '@ionic/react';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import type { TypedMap } from 'yjs-types';
 import type { YCalendarMap } from '@feynote/shared-utils';
 import { CalendarSelectDateInput } from './CalendarSelectDateInput';
@@ -20,7 +19,7 @@ interface Props {
 export const CalendarSelectDate: React.FC<Props> = (props) => {
   const [yDoc, setYDoc] = useState(props.yDoc);
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const [presentToast] = useIonToast();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -35,8 +34,8 @@ export const CalendarSelectDate: React.FC<Props> = (props) => {
           applyUpdate(doc, artifact.yBin);
           setYDoc(doc);
         })
-        .catch((e) => {
-          handleTRPCErrors(e, presentToast);
+        .catch((error) => {
+          handleTRPCErrors(error);
         })
         .finally(() => {
           progress.dismiss();

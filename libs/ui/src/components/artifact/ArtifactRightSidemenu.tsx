@@ -7,21 +7,18 @@ import {
   IonSelect,
   IonSelectOption,
   useIonModal,
-  useIonToast,
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
-import { EventContext } from '../../context/events/EventContext';
-import { EventName } from '../../context/events/EventName';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { cog, link, person } from 'ionicons/icons';
@@ -37,7 +34,6 @@ interface Props {
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
     ArtifactSharingManagementModal,
     {
@@ -47,12 +43,12 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
   const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
-  const { eventManager } = useContext(EventContext);
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
 
   const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [enableTitleBodyMerge, setEnableTitleBodyMerge] = useState(false);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const connection = artifactCollaborationManager.get(
     props.artifact.id,
@@ -92,7 +88,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           props.reload();
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         });
     } else {
       await trpc.artifactPin.deleteArtifactPin
@@ -103,7 +99,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           props.reload();
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         });
     }
   };

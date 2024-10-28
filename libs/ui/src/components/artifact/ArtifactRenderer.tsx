@@ -10,7 +10,7 @@ import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { getIsEditable } from '../../utils/getIsEditable';
-import { useIonToast } from '@ionic/react';
+import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
@@ -26,7 +26,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
-  const [presentToast] = useIonToast();
+  const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
@@ -67,9 +67,15 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         setCollabReady(true);
       })
       .catch(() => {
-        presentToast({
+        presentAlert({
+          header: t('generic.error'),
           message: t('generic.connectionError'),
-          duration: 5000,
+          buttons: [
+            {
+              text: t('generic.okay'),
+              role: 'cancel',
+            },
+          ],
         });
       });
   }, [connection]);

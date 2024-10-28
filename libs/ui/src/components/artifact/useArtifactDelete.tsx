@@ -1,12 +1,12 @@
-import { useIonAlert, useIonToast } from '@ionic/react';
+import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 export const useArtifactDelete = () => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const _deleteArtifact = (artifactId: string) => {
     return new Promise<void>((resolve, reject) => {
@@ -18,7 +18,7 @@ export const useArtifactDelete = () => {
           resolve();
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
 
           reject();
         });

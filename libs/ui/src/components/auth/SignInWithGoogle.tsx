@@ -1,8 +1,7 @@
 import { useCallback, useContext, useEffect, useRef } from 'react';
 import { trpc } from '../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { useIonToast } from '@ionic/react';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
 import { setWelcomeModalPending } from '../../utils/welcomeModalState';
 
@@ -16,9 +15,9 @@ const getGoogleRef = () => {
 };
 
 export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
-  const [presentToast] = useIonToast();
   const { setSession } = useContext(SessionContext);
   const buttonRef = useRef<HTMLDivElement>();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const triggerGoogleButtonRender = useCallback(() => {
     if (getGoogleRef() && buttonRef.current) {
@@ -47,10 +46,10 @@ export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
           });
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         });
     },
-    [presentToast, setSession],
+    [setSession],
   );
 
   const buttonRefHook = useCallback(

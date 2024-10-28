@@ -1,6 +1,5 @@
 import { ArtifactDTO } from '@feynote/global-types';
-import { useIonToast } from '@ionic/react';
-import { handleTRPCErrors } from '../../../../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { useRef, useState } from 'react';
 import { trpc } from '../../../../../utils/trpc';
 
@@ -20,11 +19,11 @@ export const useArtifactPreviewTimer = (
   artifactId: string,
   isBroken: boolean,
 ) => {
-  const [presentToast] = useIonToast();
   const loadingPRef = useRef<Promise<unknown>>();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [artifactYBin, setArtifactYBin] = useState<Uint8Array>();
   const [showPreview, setShowPreview] = useState(false);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const loadArtifact = async () => {
     if (isBroken) return;
@@ -35,7 +34,7 @@ export const useArtifactPreviewTimer = (
         id: artifactId,
       })
       .catch((e) => {
-        handleTRPCErrors(e, presentToast, {
+        handleTRPCErrors(e, {
           401: () => {
             // Do nothing
           },
@@ -58,7 +57,7 @@ export const useArtifactPreviewTimer = (
         id: artifactId,
       })
       .catch((e) => {
-        handleTRPCErrors(e, presentToast, {
+        handleTRPCErrors(e, {
           401: () => {
             // Do nothing
           },

@@ -7,33 +7,16 @@ import {
   PaneTransition,
 } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import {
-  IonButton,
-  IonFab,
-  IonFabButton,
-  IonFabList,
-  IonIcon,
-  useIonToast,
-} from '@ionic/react';
+import { IonButton, IonFab, IonFabButton, IonIcon } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
-import {
-  add,
-  calendar,
-  chatboxEllipses,
-  documentText,
-  pencil,
-} from 'ionicons/icons';
-import type { ArtifactType } from '@prisma/client';
-import { trpc } from './utils/trpc';
+import { add } from 'ionicons/icons';
 import { EventContext } from './context/events/EventContext';
 import { PaneableComponent } from './context/globalPane/PaneableComponent';
 import { NewPaneButton } from './components/pane/NewPaneButton';
-import { handleTRPCErrors } from './utils/handleTRPCErrors';
-import { t } from 'i18next';
 import { websocketClient } from './context/events/websocketClient';
 websocketClient.connect();
 
@@ -212,8 +195,6 @@ export const Workspace: React.FC = () => {
   const { _model, navigate, _onActionListener, _onModelChangeListener } =
     useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
-  const { eventManager } = useContext(EventContext);
-  const [presentToast] = useIonToast();
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
     getPreference(PreferenceNames.LeftPaneStartOpen),

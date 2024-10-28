@@ -1,16 +1,14 @@
 import {
   IonButton,
   IonItem,
-  IonLabel,
   IonSelect,
   IonSelectOption,
   useIonAlert,
-  useIonToast,
 } from '@ionic/react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 interface Props {
   artifactId: string;
@@ -19,11 +17,11 @@ interface Props {
 
 export const ArtifactSharingLinkAdd: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
   const [accessLevel, setAccessLevel] = useState<'readwrite' | 'readonly'>(
     'readonly',
   );
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const onAddClick = () => {
     if (accessLevel === 'readwrite') {
@@ -67,7 +65,7 @@ export const ArtifactSharingLinkAdd: React.FC<Props> = (props) => {
         props.onAdded();
       })
       .catch((error) => {
-        handleTRPCErrors(presentToast, error);
+        handleTRPCErrors(error);
       });
   };
 

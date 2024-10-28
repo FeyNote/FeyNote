@@ -5,11 +5,10 @@ import {
   IonIcon,
   IonList,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
 import { add, chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
@@ -23,10 +22,10 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [threads, setThreads] = useState<ThreadDTO[]>([]);
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { navigate } = useContext(PaneContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const getUserThreads = () => {
     const progress = startProgressBar();
@@ -36,7 +35,7 @@ export const AIThreadsList: React.FC = () => {
         setThreads(_threads);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       })
       .finally(() => {
         progress.dismiss();
@@ -55,7 +54,7 @@ export const AIThreadsList: React.FC = () => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       })
       .finally(() => {
         progress.dismiss();

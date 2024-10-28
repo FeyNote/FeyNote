@@ -14,14 +14,13 @@ import {
   IonTitle,
   IonToolbar,
   useIonAlert,
-  useIonToast,
 } from '@ionic/react';
 import { close, person, trash } from 'ionicons/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { ArtifactSharingAccessLevel } from './ArtifactSharingAccessLevel';
 import { ArtifactSharingLinkAdd } from './ArtifactSharingLinkAdd';
 import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
@@ -57,7 +56,6 @@ interface Props {
 export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
-  const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<{
@@ -72,6 +70,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
   >([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const sharedUserIdsToAccessLevel = useMemo(() => {
     if (!artifact) return new Map();
@@ -91,7 +90,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setKnownUsers(result);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
   const getArtifact = async () => {
@@ -103,7 +102,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setArtifact(result);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
@@ -137,7 +136,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         setSearchResult(result);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast, {
+        handleTRPCErrors(error, {
           400: () => {
             // Do nothing (expected if the user types an invalid email format)
           },
@@ -163,7 +162,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           artifactId: props.artifactId,
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         });
     } else {
       await trpc.artifactShare.upsertArtifactShare
@@ -173,7 +172,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           accessLevel,
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         });
     }
 
@@ -204,7 +203,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
         id: shareTokenId,
       })
       .catch((error) => {
-        handleTRPCErrors(presentToast, error);
+        handleTRPCErrors(error);
       });
 
     await getArtifact();

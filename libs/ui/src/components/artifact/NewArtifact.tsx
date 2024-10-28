@@ -1,6 +1,6 @@
-import { IonContent, IonPage, useIonToast } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -11,9 +11,9 @@ import { PaneNav } from '../pane/PaneNav';
 import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
 
 export const NewArtifact: React.FC = () => {
-  const [presentToast] = useIonToast();
   const { navigate } = useContext(PaneContext);
   const { t } = useTranslation();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = (type: ArtifactType) => {
     trpc.artifact.createArtifact
@@ -30,7 +30,7 @@ export const NewArtifact: React.FC = () => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
@@ -45,7 +45,7 @@ export const NewArtifact: React.FC = () => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 

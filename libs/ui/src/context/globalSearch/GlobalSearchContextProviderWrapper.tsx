@@ -13,15 +13,12 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  useIonToast,
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { search } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
-import { EventName } from '../events/EventName';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
-import { EventContext } from '../events/EventContext';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
@@ -96,7 +93,7 @@ export const GlobalSearchContextProviderWrapper = ({
   const [searchedText, setSearchedText] = useState('');
   const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
   const { session } = useContext(SessionContext);
-  const [presentToast] = useIonToast();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { t } = useTranslation();
   const inputRef = useRef<HTMLIonInputElement>(null);
@@ -174,7 +171,7 @@ export const GlobalSearchContextProviderWrapper = ({
           setSearchedText(searchText);
         })
         .catch((error) => {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         })
         .finally(() => {
           progress.dismiss();
