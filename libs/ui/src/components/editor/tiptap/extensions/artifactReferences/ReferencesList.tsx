@@ -6,7 +6,8 @@ import {
   useState,
 } from 'react';
 import styled from 'styled-components';
-import { MdHorizontalRule } from 'react-icons/md';
+import { MdHorizontalRule, MdOutlineShortText, MdSearch } from 'react-icons/md';
+import { IoDocument } from 'react-icons/io5';
 import { t } from 'i18next';
 import { trpc } from '../../../../../utils/trpc';
 import { EventContext } from '../../../../../context/events/EventContext';
@@ -85,10 +86,10 @@ interface Props {
   items: ReferenceItem[];
   query: string;
   command: (...args: any) => void;
+  searching: boolean;
 }
 
 export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
-  const { eventManager } = useContext(EventContext);
   const [domNonce] = useState(Math.random().toString());
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [creatingItem, setCreatingItem] = useState(false);
@@ -203,6 +204,26 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     });
   };
 
+  if (props.searching) {
+    return (
+      <SuggestionListContainer>
+        <SuggestionListItem $selected={false}>
+          <SuggestionListItemIcon>
+            <MdSearch size={18} />
+          </SuggestionListItemIcon>
+          <SuggestionListItemText>
+            <SuggestionListItemTitle>
+              {t('editor.referenceMenu.searching.title')}
+            </SuggestionListItemTitle>
+            <SuggestionListItemSubtitle>
+              {t('editor.referenceMenu.searching.subtitle')}
+            </SuggestionListItemSubtitle>
+          </SuggestionListItemText>
+        </SuggestionListItem>
+      </SuggestionListContainer>
+    );
+  }
+
   return (
     <SuggestionListContainer>
       {!calendarSelectInfo && (
@@ -212,13 +233,17 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
               <SuggestionListItem
                 id={`reference-item-${domNonce}-${index}`}
                 // We use onMouseMove to prevent the item from being selected when the mouse just happens to be over the element when the suggestion menu opens
-                onMouseMove={() => (setSelectedIndex(index), console.log('hi'))}
+                onMouseMove={() => setSelectedIndex(index)}
                 $selected={index === selectedIndex}
                 key={item.artifactId + item.artifactBlockId}
                 onClick={() => selectItem(index)}
               >
                 <SuggestionListItemIcon>
-                  <MdHorizontalRule size={18} />
+                  {item.artifactBlockId ? (
+                    <MdOutlineShortText size={18} />
+                  ) : (
+                    <IoDocument size={18} />
+                  )}
                 </SuggestionListItemIcon>
                 <SuggestionListItemText>
                   <SuggestionListItemTitle>
