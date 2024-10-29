@@ -9,6 +9,15 @@ import type { SessionDTO } from '@feynote/shared-utils';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 10000;
 
+export interface ArtifactCollaborationManagerConnection {
+  artifactId: string;
+  session: SessionDTO | null;
+  yjsDoc: Doc;
+  tiptapCollabProvider: TiptapCollabProvider;
+  indexeddbProvider: IndexeddbPersistence;
+  syncedPromise: Promise<void>;
+}
+
 class ArtifactCollaborationManager {
   private session: SessionDTO | null = null;
 
@@ -21,14 +30,7 @@ class ArtifactCollaborationManager {
 
   private connectionByArtifactId = new Map<
     string,
-    {
-      artifactId: string;
-      session: SessionDTO | null;
-      yjsDoc: Doc;
-      tiptapCollabProvider: TiptapCollabProvider;
-      indexeddbProvider: IndexeddbPersistence;
-      syncedPromise: Promise<void>;
-    }
+    ArtifactCollaborationManagerConnection
   >();
 
   get(artifactId: string, session: SessionDTO | null) {

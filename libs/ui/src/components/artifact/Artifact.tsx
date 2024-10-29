@@ -16,6 +16,9 @@ import { EventName } from '../../context/events/EventName';
 import { EventData } from '../../context/events/EventData';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { SessionContext } from '../../context/session/SessionContext';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface ArtifactProps {
   id: string;
@@ -26,10 +29,13 @@ interface ArtifactProps {
 export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
-  const [title, setTitle] = useState('');
+  const { session } = useContext(SessionContext);
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
+
+  const connection = artifactCollaborationManager.get(props.id, session);
+  const { title } = useObserveYArtifactMeta(connection.yjsDoc);
 
   const load = async () => {
     await trpc.artifact.getArtifactById
@@ -38,7 +44,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
       })
       .then((_artifact) => {
         setArtifact(_artifact);
-        setTitle(_artifact.title);
       })
       .catch((error) => {
         handleTRPCErrors(error);
@@ -87,14 +92,10 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     };
   }, [props.id]);
 
-  const onTitleChange = (updatedTitle: string) => {
-    setTitle(updatedTitle);
-  };
-
   return (
     <IonPage>
       <PaneNav
-        title={title}
+        title={title || ''}
         popoverContents={<ArtifactContextMenu artifactId={props.id} />}
       />
       {ProgressBar}
@@ -105,9 +106,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         {artifact && (
           <ArtifactRenderer
             artifact={artifact}
+            connection={connection}
             scrollToBlockId={props.focusBlockId}
             scrollToDate={props.focusDate}
-            onTitleChange={onTitleChange}
           />
         )}
       </IonContent>

@@ -4,7 +4,7 @@ import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
-import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { ArtifactCollaborationManagerConnection } from '../editor/artifactCollaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
@@ -17,6 +17,7 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifact: ArtifactDTO;
+  connection: ArtifactCollaborationManagerConnection;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
@@ -54,15 +55,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     }
   }, [props.artifact.artifactReferences]);
 
-  const connection = artifactCollaborationManager.get(
-    props.artifact.id,
-    session,
-  );
-
-  const { type } = useObserveYArtifactMeta(connection.yjsDoc);
+  const { type } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
   useEffect(() => {
-    connection.syncedPromise
+    props.connection.syncedPromise
       .then(() => {
         setCollabReady(true);
       })
@@ -78,16 +74,16 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           ],
         });
       });
-  }, [connection]);
+  }, [props.connection]);
 
   useEffect(() => {
     const cleanup = incrementVersionForChangesOnArtifact(
       props.artifact.id,
-      connection.yjsDoc,
+      props.connection.yjsDoc,
     );
 
     return () => cleanup();
-  }, [connection]);
+  }, [props.connection]);
 
   // Purely for visual purposes. Permissioning occurs on the server, but we need to update the editor UI to be read/write
   const isEditable = useMemo(
@@ -105,7 +101,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
-        yjsProvider={connection.tiptapCollabProvider}
+        yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
         onTitleChange={props.onTitleChange}
       />
@@ -118,7 +114,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
-        y={connection.tiptapCollabProvider}
+        y={props.connection.tiptapCollabProvider}
         viewType="fullsize"
         centerDate={props.scrollToDate}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
@@ -133,7 +129,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
-        y={connection.tiptapCollabProvider}
+        y={props.connection.tiptapCollabProvider}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
       />
