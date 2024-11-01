@@ -19,7 +19,7 @@
     "@hocuspocus/extension-throttle": "2.13.6",
     "@hocuspocus/provider": "2.13.6",
     "@hocuspocus/server": "2.13.6",
-    "@hocuspocus/transformer": "2.13.6",
+    "@hocuspocus/transformer": "2.13.7",
     "@ionic/react": "^8.3.1",
     "@prisma/client": "^5.20.0",
     "@socket.io/redis-adapter": "^8.3.0",
