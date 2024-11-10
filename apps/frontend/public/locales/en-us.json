@@ -446,7 +446,9 @@
   "template.introducingReferences.reference": "Astral Dreadnought",
   "template.introducingReferences.p3": "If you update the text above, the welcome artifact will automatically update to reflect the changes. This is a powerful way to keep your content up-to-date and interconnected without managing it all yourself!",
 
-  "generic.error": "I'm sorry something went wrong, please try again.",
+  "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
+
+  "generic.error": "Error",
   "generic.connectionError": "A network connectivity error occurred",
   "generic.unsavedChanges": "You have unsaved changes! If you leave this page, you will lose any modifications in-progress.",
   "generic.anonymous": "Anonymous",
