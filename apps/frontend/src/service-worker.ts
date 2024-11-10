@@ -1,15 +1,16 @@
 /* eslint-disable no-restricted-globals */
+/* eslint-disable @nx/enforce-module-boundaries */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
+import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
-  SearchManager,
-  SyncManager,
   getManifestDb,
   ObjectStoreName,
-  superjson,
-} from '@feynote/ui';
+} from '../../../libs/ui/src/utils/localDb';
+import { superjson } from '../../../libs/ui/src/utils/trpc';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
