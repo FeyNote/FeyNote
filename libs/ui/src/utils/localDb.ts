@@ -2,6 +2,7 @@ import { IDBPDatabase, openDB } from 'idb';
 
 export enum ObjectStoreName {
   Artifacts = 'artifacts',
+  ArtifactSnapshots = 'artifactSnapshots',
   PendingArtifacts = 'pendingArtifacts',
   ArtifactVersions = 'artifactVersions',
   Edges = 'edges',
@@ -23,6 +24,10 @@ const connect = () => {
       switch (previousVersion) {
         case 0: {
           db.createObjectStore(ObjectStoreName.Artifacts, {
+            keyPath: 'id',
+          });
+
+          db.createObjectStore(ObjectStoreName.ArtifactSnapshots, {
             keyPath: 'id',
           });
 

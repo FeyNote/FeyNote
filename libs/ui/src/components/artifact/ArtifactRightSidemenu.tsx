@@ -17,7 +17,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
-import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -50,8 +50,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [enableTitleBodyMerge, setEnableTitleBodyMerge] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const connection = artifactCollaborationManager.get(
-    props.artifact.id,
+  const connection = collaborationManager.get(
+    `artifact:${props.artifact.id}`,
     session,
   );
   useEffect(() => {

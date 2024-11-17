@@ -70,6 +70,18 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         ) {
           args.connection.readOnly = true;
         }
+
+        break;
+      }
+      case SupportedDocumentType.UserTree: {
+        if (identifier !== context.userId) {
+          console.log(
+            'User attempted to connect to userTree that is not their own',
+          );
+          throw new Error();
+        }
+
+        break;
       }
     }
 

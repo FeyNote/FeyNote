@@ -21,6 +21,7 @@ model User {
   passwordVersion  Int?
   username         String?
   preferences      Json?
+  treeYBin         Bytes?             @db.ByteA
   sessions         Session[]
   artifacts        Artifact[]
   ArtifactRevision ArtifactRevision[]

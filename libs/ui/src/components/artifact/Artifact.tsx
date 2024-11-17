@@ -16,7 +16,7 @@ import { EventName } from '../../context/events/EventName';
 import { EventData } from '../../context/events/EventData';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
@@ -34,7 +34,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const connection = artifactCollaborationManager.get(props.id, session);
+  const connection = collaborationManager.get(`artifact:${props.id}`, session);
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
 
   const load = async () => {

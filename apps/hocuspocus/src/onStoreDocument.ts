@@ -81,6 +81,36 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           oldYBinB64: artifact.yBin.toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });
+
+        break;
+      }
+      case SupportedDocumentType.UserTree: {
+        const user = await prisma.user.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            treeYBin: true,
+          },
+        });
+
+        if (!user) {
+          console.error('Attempting to save user tree that does not exist');
+          throw new Error();
+        }
+
+        const treeYBin = Buffer.from(encodeStateAsUpdate(args.document));
+
+        await prisma.user.update({
+          where: {
+            id: identifier,
+          },
+          data: {
+            treeYBin,
+          },
+        });
+
+        break;
       }
     }
 

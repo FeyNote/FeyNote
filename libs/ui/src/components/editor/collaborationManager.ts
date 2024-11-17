@@ -9,8 +9,8 @@ import type { SessionDTO } from '@feynote/shared-utils';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 10000;
 
-export interface ArtifactCollaborationManagerConnection {
-  artifactId: string;
+export interface CollaborationManagerConnection {
+  docName: string;
   session: SessionDTO | null;
   yjsDoc: Doc;
   tiptapCollabProvider: TiptapCollabProvider;
@@ -18,7 +18,7 @@ export interface ArtifactCollaborationManagerConnection {
   syncedPromise: Promise<void>;
 }
 
-class ArtifactCollaborationManager {
+class CollaborationManager {
   private session: SessionDTO | null = null;
 
   private ws = new HocuspocusProviderWebsocket({
@@ -28,19 +28,19 @@ class ArtifactCollaborationManager {
     maxDelay: 10000,
   });
 
-  private connectionByArtifactId = new Map<
+  private connectionByDocName = new Map<
     string,
-    ArtifactCollaborationManagerConnection
+    CollaborationManagerConnection
   >();
 
-  get(artifactId: string, session: SessionDTO | null) {
+  get(docName: string, session: SessionDTO | null) {
     if (session?.token !== this.session?.token) {
       this.disconnectAll();
-      this.connectionByArtifactId.clear();
+      this.connectionByDocName.clear();
       this.session = session;
     }
 
-    const existingConnection = this.connectionByArtifactId.get(artifactId);
+    const existingConnection = this.connectionByDocName.get(docName);
     if (existingConnection) return existingConnection;
 
     if (this.ws.status !== 'connected') {
@@ -48,7 +48,6 @@ class ArtifactCollaborationManager {
     }
 
     const yjsDoc = new Doc();
-    const docName = `artifact:${artifactId}`;
     const indexeddbProvider = new IndexeddbPersistence(docName, yjsDoc);
     const tiptapCollabProvider = new TiptapCollabProvider({
       name: docName,
@@ -59,7 +58,7 @@ class ArtifactCollaborationManager {
     });
 
     const connection = {
-      artifactId,
+      docName,
       session,
       yjsDoc,
       tiptapCollabProvider,
@@ -75,13 +74,13 @@ class ArtifactCollaborationManager {
       }),
     };
 
-    this.connectionByArtifactId.set(artifactId, connection);
+    this.connectionByDocName.set(docName, connection);
 
     return connection;
   }
 
   disconnectAll() {
-    this.connectionByArtifactId.forEach((connection) => {
+    this.connectionByDocName.forEach((connection) => {
       connection.indexeddbProvider.destroy();
       connection.tiptapCollabProvider.destroy();
     });
@@ -93,4 +92,4 @@ class ArtifactCollaborationManager {
   }
 }
 
-export const artifactCollaborationManager = new ArtifactCollaborationManager();
+export const collaborationManager = new CollaborationManager();

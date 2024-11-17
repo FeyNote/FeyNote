@@ -4,7 +4,7 @@ import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
-import { ArtifactCollaborationManagerConnection } from '../editor/artifactCollaborationManager';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
@@ -17,7 +17,7 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifact: ArtifactDTO;
-  connection: ArtifactCollaborationManagerConnection;
+  connection: CollaborationManagerConnection;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
