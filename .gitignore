@@ -47,3 +47,5 @@ Thumbs.db
 .astro
 apps/www/.astro
 apps/www/dist
+
+vite.config.*.timestamp*
