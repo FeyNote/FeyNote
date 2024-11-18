@@ -213,31 +213,16 @@ export const Settings: React.FC = () => {
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(
-                  PreferenceNames.LeftPaneShowPinnedArtifacts,
+                  PreferenceNames.LeftPaneShowArtifactTree,
                 )}
                 onIonChange={(event) =>
                   setPreference(
-                    PreferenceNames.LeftPaneShowPinnedArtifacts,
+                    PreferenceNames.LeftPaneShowArtifactTree,
                     event.detail.checked,
                   )
                 }
               >
-                {t('settings.leftSideMenuShowPinnedArtifacts')}
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
-                  PreferenceNames.LeftPaneShowRecentArtifacts,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneShowRecentArtifacts,
-                    event.detail.checked,
-                  )
-                }
-              >
-                {t('settings.leftSideMenuShowRecentArtifacts')}
+                {t('settings.leftSideMenuShowArtifactTree')}
               </IonToggle>
             </IonItem>
             <IonItem lines="none" button>

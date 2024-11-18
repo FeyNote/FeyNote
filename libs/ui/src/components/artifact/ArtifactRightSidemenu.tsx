@@ -46,7 +46,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
 
-  const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [enableTitleBodyMerge, setEnableTitleBodyMerge] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
@@ -76,32 +75,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       metaPropName,
       value,
     );
-  };
-
-  const updateIsPinned = async (_isPinned: boolean) => {
-    if (_isPinned) {
-      await trpc.artifactPin.createArtifactPin
-        .mutate({
-          artifactId: props.artifact.id,
-        })
-        .then(() => {
-          props.reload();
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
-    } else {
-      await trpc.artifactPin.deleteArtifactPin
-        .mutate({
-          artifactId: props.artifact.id,
-        })
-        .then(() => {
-          props.reload();
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
-    }
   };
 
   const isEditable = useMemo(
@@ -188,23 +161,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <InfoButton
             slot="end"
             message={t('artifactRenderer.titleBodyMerge.help')}
-          />
-        </CompactIonItem>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={isPinned}
-            onIonChange={async (event) => {
-              setIsPinned(event.target.checked);
-              await updateIsPinned(event.target.checked);
-            }}
-          >
-            {t('artifactRenderer.isPinned')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.isPinned.help')}
           />
         </CompactIonItem>
       </IonCard>

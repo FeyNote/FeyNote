@@ -43,8 +43,5 @@ socket.on(EventName.ArtifactUpdated, (data) => {
 socket.on(EventName.ArtifactDeleted, (data) => {
   eventManager.broadcast(EventName.ArtifactDeleted, data);
 });
-socket.on(EventName.ArtifactPinChanged, (data) => {
-  eventManager.broadcast(EventName.ArtifactPinChanged, data);
-});
 
 export const websocketClient = socket;

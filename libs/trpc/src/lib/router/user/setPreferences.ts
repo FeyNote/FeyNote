@@ -16,8 +16,7 @@ export const setPreferences = authenticatedProcedure
       preferencesVersion: z.number().min(0),
 
       [PreferenceNames.LeftPaneStartOpen]: z.boolean(),
-      [PreferenceNames.LeftPaneShowPinnedArtifacts]: z.boolean(),
-      [PreferenceNames.LeftPaneShowRecentArtifacts]: z.boolean(),
+      [PreferenceNames.LeftPaneShowArtifactTree]: z.boolean(),
       [PreferenceNames.LeftPaneShowRecentThreads]: z.boolean(),
       [PreferenceNames.RightPaneStartOpen]: z.boolean(),
       [PreferenceNames.Language]: z.nativeEnum(SupportedLanguages).nullable(),

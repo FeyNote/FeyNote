@@ -20,8 +20,7 @@ export class PreferencesService {
     preferencesVersion: 0,
 
     [PreferenceNames.LeftPaneStartOpen]: true,
-    [PreferenceNames.LeftPaneShowPinnedArtifacts]: true,
-    [PreferenceNames.LeftPaneShowRecentArtifacts]: true,
+    [PreferenceNames.LeftPaneShowArtifactTree]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
     [PreferenceNames.RightPaneStartOpen]: true,
     [PreferenceNames.Language]: null,

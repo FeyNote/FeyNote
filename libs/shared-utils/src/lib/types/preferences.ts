@@ -23,8 +23,7 @@ export enum PreferencesSync {
 
 export enum PreferenceNames {
   LeftPaneStartOpen = 'leftPane.startOpen',
-  LeftPaneShowPinnedArtifacts = 'leftPane.showPinnedArtifacts',
-  LeftPaneShowRecentArtifacts = 'leftPane.showRecentArtifacts',
+  LeftPaneShowArtifactTree = 'leftPane.showArtifactTree',
   LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
   RightPaneStartOpen = 'rightPane.startOpen',
   Language = 'global.language',
@@ -38,8 +37,7 @@ export interface AppPreferences {
   preferencesVersion: number;
 
   [PreferenceNames.LeftPaneStartOpen]: boolean;
-  [PreferenceNames.LeftPaneShowPinnedArtifacts]: boolean;
-  [PreferenceNames.LeftPaneShowRecentArtifacts]: boolean;
+  [PreferenceNames.LeftPaneShowArtifactTree]: boolean;
   [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
   [PreferenceNames.RightPaneStartOpen]: boolean;
   [PreferenceNames.Language]: null | SupportedLanguages;

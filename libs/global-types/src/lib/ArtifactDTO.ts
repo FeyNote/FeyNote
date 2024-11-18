@@ -5,8 +5,7 @@ import type {
 } from '@prisma/client';
 import type { ArtifactDetail } from '@feynote/prisma/types';
 
-type ExpectedType = Omit<ArtifactDetail, 'text' | 'artifactPins'> & {
-  isPinned: boolean;
+type ExpectedType = Omit<ArtifactDetail, 'text'> & {
   previewText: string;
 };
 
@@ -18,7 +17,6 @@ export type ArtifactDTO = {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
-  isPinned: boolean;
   previewText: string;
   artifactReferences: {
     id: string;

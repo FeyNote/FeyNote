@@ -28,7 +28,6 @@ model User {
   File             File[]
   threads          Thread[]
   ArtifactShare    ArtifactShare[]
-  ArtifactPin      ArtifactPin[]
 }
 
 model Session {
@@ -60,17 +59,6 @@ model Artifact {
   incomingArtifactReferences ArtifactReference[]  @relation("artifactReferenceTargetArtifact")
   artifactShares             ArtifactShare[]
   artifactShareTokens        ArtifactShareToken[]
-  artifactPins               ArtifactPin[]
-}
-
-model ArtifactPin {
-  id String @id @default(uuid()) @db.Uuid
-
-  artifactId String   @db.Uuid
-  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @db.Uuid
 }
 
 model ArtifactReference {

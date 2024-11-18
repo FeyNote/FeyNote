@@ -76,11 +76,6 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         accessLevel: true,
       },
     },
-    artifactPins: {
-      select: {
-        userId: true,
-      },
-    },
     user: {
       select: {
         name: true,

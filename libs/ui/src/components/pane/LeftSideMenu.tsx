@@ -115,21 +115,13 @@ export const LeftSideMenu: React.FC = () => {
     };
 
     eventManager.addEventListener(
-      [
-        EventName.ArtifactUpdated,
-        EventName.ArtifactDeleted,
-        EventName.ArtifactPinChanged,
-      ],
+      [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
       handler,
     );
 
     return () => {
       eventManager.removeEventListener(
-        [
-          EventName.ArtifactUpdated,
-          EventName.ArtifactDeleted,
-          EventName.ArtifactPinChanged,
-        ],
+        [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
         handler,
       );
     };
