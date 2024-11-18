@@ -1,18 +1,12 @@
-import {
-  IonIcon,
-  IonItem,
-  IonLabel,
-  useIonAlert,
-  useIonToast,
-} from '@ionic/react';
+import { IonIcon, IonItem, IonLabel, useIonAlert } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 import { pencil, trashBin } from 'ionicons/icons';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
 import { useContext } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { useTranslation } from 'react-i18next';
 
 interface Props {
   id: string;
@@ -22,9 +16,9 @@ interface Props {
 
 export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
   const { navigate } = useContext(PaneContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const triggerRenameThreadAlert = async () => {
     presentAlert({
@@ -57,7 +51,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
           });
           props.setTitle(text);
         } catch (error) {
-          handleTRPCErrors(error, presentToast);
+          handleTRPCErrors(error);
         }
       },
     });
@@ -74,20 +68,21 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
         {
           text: t('generic.confirm'),
           role: 'confirm',
-          handler: async () => {
-            try {
-              await trpc.ai.deleteThread.mutate({
+          handler: () => {
+            trpc.ai.deleteThread
+              .mutate({
                 id: props.id,
+              })
+              .then(() => {
+                navigate(
+                  PaneableComponent.AIThreadsList,
+                  {},
+                  PaneTransition.Replace,
+                );
+              })
+              .catch((error) => {
+                handleTRPCErrors(error);
               });
-
-              navigate(
-                PaneableComponent.AIThreadsList,
-                {},
-                PaneTransition.Replace,
-              );
-            } catch (error) {
-              handleTRPCErrors(error, presentToast);
-            }
           },
         },
       ],

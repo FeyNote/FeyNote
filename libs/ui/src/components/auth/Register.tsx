@@ -6,7 +6,6 @@ import {
   IonInput,
   IonItem,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import React, { useState, useContext } from 'react';
 import {
@@ -22,7 +21,7 @@ import { validateEmail, validatePassword } from '@feynote/shared-utils';
 import { getIonInputClassNames } from './input';
 import { trpc } from '../../utils/trpc';
 import { SessionContext } from '../../context/session/SessionContext';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
@@ -35,7 +34,6 @@ interface Props {
 
 export const Register: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -51,6 +49,7 @@ export const Register: React.FC<Props> = (props) => {
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { setSession } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const submitRegister = () => {
     setIsLoading(true);
@@ -67,7 +66,7 @@ export const Register: React.FC<Props> = (props) => {
         });
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast, {
+        handleTRPCErrors(error, {
           409: t('auth.register.conflict'),
         });
       })

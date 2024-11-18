@@ -1,14 +1,12 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
-import { Doc as YDoc } from 'yjs';
+import { Doc as YDoc, Map as YMap } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import {
   memo,
-  useContext,
   useEffect,
   useMemo,
   useReducer,
   useRef,
-  useState,
   type MutableRefObject,
 } from 'react';
 import { CalendarRenderer } from './CalendarRenderer';
@@ -16,19 +14,23 @@ import type { TypedMap } from 'yjs-types';
 import type { ArtifactDTO } from '@feynote/global-types';
 import {
   ARTIFACT_META_KEY,
-  getMetaFromYArtifact,
+  generateGregorianSundayCalendarConfig,
+  YCalendarConfig,
   type YCalendarMap,
 } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { CalendarConfig } from './CalendarConfig';
 import { getYMDFromSpecifier } from './getYMDFromSpecifier';
-import type { ArtifactTheme } from '@prisma/client';
-import { EventContext } from '../../context/events/EventContext';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
-import { EventName } from '../../context/events/EventName';
 import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
+import styled from 'styled-components';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+
+const BottomSpacer = styled.div`
+  height: 100px;
+`;
 
 interface Props {
   knownReferences: Map<string, KnownArtifactReference>;
@@ -48,16 +50,34 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
   const setCenterRef = useRef<(center: string) => void>();
-  const [title, setTitle] = useState('');
-  const [theme, setTheme] = useState<ArtifactTheme>('default');
-  const [titleBodyMerge, setTitleBodyMerge] = useState(true);
-  const { eventManager } = useContext(EventContext);
+  const yMeta = useObserveYArtifactMeta(yDoc);
+  const title = yMeta.title ?? '';
+  const theme = yMeta.theme ?? 'default';
+  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
   const { t } = useTranslation();
 
-  const calendarMap = useMemo(() => {
-    return yDoc.getMap('calendar') as TypedMap<Partial<YCalendarMap>>;
+  const { calendarMap, configMap } = useMemo(() => {
+    const calendarMap = yDoc.getMap('calendar') as TypedMap<
+      Partial<YCalendarMap>
+    >;
+    if (!calendarMap.get('config')) {
+      const configMap = new YMap() as TypedMap<Partial<YCalendarConfig>>;
+      yDoc.transact(() => {
+        calendarMap.set('config', configMap);
+        for (const [key, value] of Object.entries(
+          generateGregorianSundayCalendarConfig(),
+        )) {
+          configMap.set(key as keyof YCalendarConfig, value);
+        }
+      });
+    }
+    const configMap = calendarMap.get('config');
+
+    return {
+      calendarMap,
+      configMap,
+    };
   }, [yDoc]);
-  const configMap = calendarMap.get('config');
 
   useEffect(() => {
     const listener = () => {
@@ -75,21 +95,6 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
       });
     }
   }, [configMap]);
-
-  useEffect(() => {
-    const artifactMetaMap = yDoc.getMap('artifactMeta');
-
-    const listener = () => {
-      const yArtifactMeta = getMetaFromYArtifact(yDoc);
-      setTitle(yArtifactMeta.title ?? title);
-      setTheme(yArtifactMeta.theme ?? theme);
-      setTitleBodyMerge(yArtifactMeta.titleBodyMerge ?? titleBodyMerge);
-    };
-
-    listener();
-    artifactMetaMap.observe(listener);
-    return () => artifactMetaMap.unobserve(listener);
-  }, [yDoc]);
 
   const setMetaProp = (metaPropName: string, value: any) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
@@ -162,6 +167,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
           onDayClicked={props.onDayClicked}
         />
       </ArtifactCalendarStyles>
+      <BottomSpacer />
     </>
   );
 });

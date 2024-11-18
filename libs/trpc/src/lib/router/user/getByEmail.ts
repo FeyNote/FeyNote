@@ -30,7 +30,7 @@ export const getByEmail = authenticatedProcedure
 
       if (!user) {
         throw new TRPCError({
-          code: 'NOT_FOUND',
+          code: 'PRECONDITION_FAILED',
           message: 'User with that email not found',
         });
       }

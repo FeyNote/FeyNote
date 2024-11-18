@@ -1,7 +1,7 @@
-export class ImmediateDebouncer<F extends () => any> {
+export class ImmediateDebouncer<F extends (...args: any) => any> {
   pendingPromise: Promise<ReturnType<F>> | null = null;
   timeout: NodeJS.Timeout | null = null;
-  needsFollowupCall = false;
+  followupCallArgs: Parameters<F> | null = null;
 
   constructor(
     private method: F,
@@ -20,29 +20,33 @@ export class ImmediateDebouncer<F extends () => any> {
    * call is made during the debounce interval
    * The immediate flag can be used to ensure this call is performed with zero delay
    */
-  async call(immediate?: boolean): Promise<ReturnType<F>> {
+  async call(
+    immediate?: boolean,
+    ...args: Parameters<F>
+  ): Promise<ReturnType<F>> {
     if (immediate) {
       if (this.timeout) {
         clearTimeout(this.timeout);
         this.timeout = null;
       }
       this.pendingPromise = null;
-      this.needsFollowupCall = false;
+      this.followupCallArgs = null;
     }
 
     if (!this.pendingPromise) {
-      this.pendingPromise = Promise.resolve(this.method());
+      this.pendingPromise = Promise.resolve(this.method(...args));
     } else if (this.options?.enableFollowupCall) {
-      this.needsFollowupCall = true;
+      this.followupCallArgs = args;
     }
 
     if (!this.timeout) {
       this.timeout = setTimeout(() => {
         this.timeout = null;
         this.pendingPromise = null;
-        if (this.needsFollowupCall) {
-          this.needsFollowupCall = false;
-          this.call();
+        if (this.followupCallArgs) {
+          const followupCallArgs = this.followupCallArgs;
+          this.followupCallArgs = null;
+          this.call(undefined, ...followupCallArgs);
         }
       }, this.debounceTime);
     }

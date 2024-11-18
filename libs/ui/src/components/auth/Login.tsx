@@ -6,7 +6,6 @@ import {
   IonInput,
   IonItem,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import {
   CenteredContainer,
@@ -21,7 +20,7 @@ import { trpc } from '../../utils/trpc';
 import { useContext, useState } from 'react';
 import { getIonInputClassNames } from './input';
 import { SessionContext } from '../../context/session/SessionContext';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
@@ -32,12 +31,12 @@ interface Props {
 
 export const Login: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailIsTouched, setEmailIsTouched] = useState(false);
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const { setSession } = useContext(SessionContext);
 
@@ -50,7 +49,7 @@ export const Login: React.FC<Props> = (props) => {
       })
       .then((_session) => setSession(_session))
       .catch((error) => {
-        handleTRPCErrors(error, presentToast, {
+        handleTRPCErrors(error, {
           400: 'The email or password you submited is incorrect.',
         });
       })

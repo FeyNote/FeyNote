@@ -7,6 +7,9 @@ import { ReferenceListItem } from './ReferenceListItem';
 
 export const renderReferenceList = (mentionMenuOptsRef: {
   enableMentionMenu: boolean;
+  componentRef: {
+    current: any;
+  };
 }) => {
   return () => {
     let component: any;
@@ -18,6 +21,8 @@ export const renderReferenceList = (mentionMenuOptsRef: {
           props,
           editor: props.editor,
         });
+
+        mentionMenuOptsRef.componentRef.current = component;
 
         popup = tippy('body', {
           getReferenceClientRect: props.clientRect as any,

@@ -1,3 +1,4 @@
+import { t } from 'i18next';
 import { Component } from 'react';
 import { MdHorizontalRule } from 'react-icons/md';
 import styled from 'styled-components';
@@ -171,9 +172,11 @@ export class TiptapCommandsList extends Component<Props, State> {
               <MdHorizontalRule size={18} />
             </SuggestionListItemIcon>
             <SuggestionListItemText>
-              <SuggestionListItemTitle>No results</SuggestionListItemTitle>
+              <SuggestionListItemTitle>
+                {t('editor.commandMenu.noResults')}
+              </SuggestionListItemTitle>
               <SuggestionListItemSubtitle>
-                No results for search text
+                {t('editor.commandMenu.noResults.subtitle')}
               </SuggestionListItemSubtitle>
             </SuggestionListItemText>
           </SuggestionListItem>

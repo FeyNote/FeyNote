@@ -5,10 +5,9 @@ import {
   IonContent,
   IonIcon,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import {
   chatboxEllipses,
@@ -66,9 +65,9 @@ export const Dashboard: React.FC = () => {
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { session } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const pinnedArtifacts = useMemo(
     () => artifacts.filter((artifact) => artifact.isPinned),
@@ -100,7 +99,7 @@ export const Dashboard: React.FC = () => {
         setArtifacts(_artifacts);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
@@ -117,7 +116,7 @@ export const Dashboard: React.FC = () => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
@@ -258,7 +257,7 @@ export const Dashboard: React.FC = () => {
                 </CardTitleButton>
               </CardTitle>
               {artifacts.length ? (
-                <GraphRenderer artifacts={artifacts} overrideHeight={400} />
+                <GraphRenderer artifacts={artifacts} />
               ) : (
                 <CardNullState
                   size="small"

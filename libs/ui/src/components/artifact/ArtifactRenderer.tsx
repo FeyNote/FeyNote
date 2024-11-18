@@ -10,8 +10,10 @@ import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { getIsEditable } from '../../utils/getIsEditable';
-import { useIonToast } from '@ionic/react';
+import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
+import { ArtifactDraw } from '../draw/ArtifactDraw';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -24,7 +26,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
-  const [presentToast] = useIonToast();
+  const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
@@ -57,15 +59,23 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     session,
   );
 
+  const { type } = useObserveYArtifactMeta(connection.yjsDoc);
+
   useEffect(() => {
     connection.syncedPromise
       .then(() => {
         setCollabReady(true);
       })
       .catch(() => {
-        presentToast({
+        presentAlert({
+          header: t('generic.error'),
           message: t('generic.connectionError'),
-          duration: 5000,
+          buttons: [
+            {
+              text: t('generic.okay'),
+              role: 'cancel',
+            },
+          ],
         });
       });
   }, [connection]);
@@ -85,11 +95,11 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     [props.artifact, session.userId],
   );
 
-  if (!collabReady) {
+  if (!collabReady || !type) {
     return <></>;
   }
 
-  if (props.artifact.type === 'tiptap') {
+  if (type === 'tiptap') {
     return (
       <ArtifactEditor
         editable={isEditable}
@@ -102,7 +112,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     );
   }
 
-  if (props.artifact.type === 'calendar') {
+  if (type === 'calendar') {
     return (
       <ArtifactCalendar
         editable={isEditable}
@@ -111,6 +121,19 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         y={connection.tiptapCollabProvider}
         viewType="fullsize"
         centerDate={props.scrollToDate}
+        incomingArtifactReferences={props.artifact.incomingArtifactReferences}
+        onTitleChange={props.onTitleChange}
+      />
+    );
+  }
+
+  if (type === 'tldraw') {
+    return (
+      <ArtifactDraw
+        editable={isEditable}
+        knownReferences={knownReferences}
+        onReady={() => setEditorReady(true)}
+        y={connection.tiptapCollabProvider}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
       />

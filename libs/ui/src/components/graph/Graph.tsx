@@ -1,9 +1,9 @@
-import { IonContent, IonPage, useIonToast } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useEffect, useState } from 'react';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { NullState } from '../info/NullState';
@@ -17,10 +17,10 @@ const StyledNullState = styled(NullState)`
 
 export const Graph: React.FC = () => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const [initialLoadCompleted, setInitialLoadCompleted] = useState(false);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const load = async () => {
     await trpc.artifact.getArtifacts
@@ -29,7 +29,7 @@ export const Graph: React.FC = () => {
         setArtifacts(_artifacts);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 

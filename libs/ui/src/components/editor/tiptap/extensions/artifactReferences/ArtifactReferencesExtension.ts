@@ -16,6 +16,9 @@ export type ReferencePluginOptions = MentionOptions & {
 // anytime the user navigates close to it. An object is necessary here so that we can pass by reference
 const mentionMenuOptsRef = {
   enableMentionMenu: false,
+  componentRef: {
+    current: null,
+  },
 };
 const keydownListener = (event: KeyboardEvent) => {
   if (event.key === '@') {
@@ -116,7 +119,7 @@ export const ArtifactReferencesExtension =
     },
   }).configure({
     suggestion: {
-      items: getReferenceSuggestions,
+      items: getReferenceSuggestions(mentionMenuOptsRef),
       render: renderReferenceList(mentionMenuOptsRef),
       char: '@',
       allowSpaces: true,

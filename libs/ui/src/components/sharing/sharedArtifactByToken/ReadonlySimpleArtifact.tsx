@@ -4,8 +4,8 @@ import { ArtifactEditor } from '../../editor/ArtifactEditor';
 import { ArtifactCalendar } from '../../calendar/ArtifactCalendar';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { trpc } from '../../../utils/trpc';
-import { useIonAlert, useIonToast } from '@ionic/react';
-import { handleTRPCErrors } from '../../../utils/handleTRPCErrors';
+import { useIonAlert } from '@ionic/react';
+import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
@@ -15,10 +15,10 @@ interface Props {
 
 export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
-  const [presentToast] = useIonToast();
   const [presentAlert] = useIonAlert();
   const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [yDoc, setYDoc] = useState<YDoc>();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const loadArtifact = () => {
     trpc.artifact.getArtifactById
@@ -30,7 +30,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         setArtifact(result);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast, {
+        handleTRPCErrors(error, {
           401: () => {
             presentAlert({
               header: t('readonlyArtifactViewer.unauthorized.header'),
@@ -75,7 +75,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         setYDoc(yDoc);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast, {
+        handleTRPCErrors(error, {
           401: () => {
             // We handle this in loadArtifact
           },

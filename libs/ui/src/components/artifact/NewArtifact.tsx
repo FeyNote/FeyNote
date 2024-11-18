@@ -1,46 +1,28 @@
-import {
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonItem,
-  IonMenuButton,
-  IonPage,
-  IonSpinner,
-  IonTitle,
-  IonToolbar,
-  useIonToast,
-  useIonViewDidEnter,
-} from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext } from 'react';
-import { EventContext } from '../../context/events/EventContext';
-import { EventName } from '../../context/events/EventName';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
+import type { ArtifactType } from '@prisma/client';
+import { PaneNav } from '../pane/PaneNav';
+import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
 
 export const NewArtifact: React.FC = () => {
-  const [presentToast] = useIonToast();
   const { navigate } = useContext(PaneContext);
-  const { eventManager } = useContext(EventContext);
   const { t } = useTranslation();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  useIonViewDidEnter(() => {
-    create();
-  }, []);
-
-  const create = () => {
+  const newArtifact = (type: ArtifactType) => {
     trpc.artifact.createArtifact
       .mutate({
         title: t('generic.untitled'),
-        type: 'tiptap',
+        type,
         theme: 'default',
       })
       .then((response) => {
-        // We navigate to the created artifact but replace it in the browser history, so that
-        // user does not get navigated back to this "create" page when pressing back.
         navigate(
           PaneableComponent.Artifact,
           { id: response.id },
@@ -48,24 +30,33 @@ export const NewArtifact: React.FC = () => {
         );
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
+      });
+  };
+
+  const newAIThread = () => {
+    trpc.ai.createThread
+      .mutate({})
+      .then((thread) => {
+        navigate(
+          PaneableComponent.AIThread,
+          { id: thread.id },
+          PaneTransition.Replace,
+        );
+      })
+      .catch((error) => {
+        handleTRPCErrors(error);
       });
   };
 
   return (
     <IonPage id="main">
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonMenuButton></IonMenuButton>
-          </IonButtons>
-          <IonTitle>{t('newArtifact.title')}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <PaneNav title={t('newArtifact.title')} />
       <IonContent className="ion-padding">
-        <IonItem className="ion-text-center">
-          <IonSpinner></IonSpinner>
-        </IonItem>
+        <ArtifactTypeSelector
+          newArtifact={newArtifact}
+          newAIThread={newAIThread}
+        />
       </IonContent>
     </IonPage>
   );

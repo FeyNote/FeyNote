@@ -5,10 +5,9 @@ import {
   IonIcon,
   IonLabel,
   IonPage,
-  useIonToast,
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { handleTRPCErrors } from '../../utils/handleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { pin } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -46,9 +45,9 @@ export const PinnedArtifacts: React.FC = () => {
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [presentToast] = useIonToast();
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { session } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const pinnedArtifacts = useMemo(
     () =>
@@ -65,7 +64,7 @@ export const PinnedArtifacts: React.FC = () => {
         setArtifacts(_artifacts);
       })
       .catch((error) => {
-        handleTRPCErrors(error, presentToast);
+        handleTRPCErrors(error);
       });
   };
 
