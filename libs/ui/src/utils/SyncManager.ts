@@ -5,7 +5,7 @@ import {
   HocuspocusProviderWebsocket,
 } from '@hocuspocus/provider';
 import { getApiUrls } from './getApiUrls';
-import { Doc, type YEvent } from 'yjs';
+import { Doc, encodeStateAsUpdate, type YEvent } from 'yjs';
 import { trpc } from './trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
@@ -334,6 +334,12 @@ export class SyncManager {
         `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
       );
     }
+
+    this.manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
+      id: artifactId,
+      meta: doc.getMap(ARTIFACT_META_KEY).toJSON(),
+      yDoc: encodeStateAsUpdate(doc),
+    });
 
     return async () => {
       doc

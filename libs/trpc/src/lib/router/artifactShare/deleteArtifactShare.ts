@@ -44,13 +44,6 @@ export const deleteArtifactShare = authenticatedProcedure
         },
       });
 
-      await prisma.artifactPin.deleteMany({
-        where: {
-          artifactId: input.artifactId,
-          userId: input.userId,
-        },
-      });
-
       const updatedArtifact = await tx.artifact.findUniqueOrThrow({
         where: {
           id: input.artifactId,

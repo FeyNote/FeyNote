@@ -69,10 +69,6 @@ export const Dashboard: React.FC = () => {
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
-  const pinnedArtifacts = useMemo(
-    () => artifacts.filter((artifact) => artifact.isPinned),
-    [artifacts],
-  );
   const recentArtifacts = useMemo(
     () =>
       artifacts
@@ -139,54 +135,6 @@ export const Dashboard: React.FC = () => {
         {ProgressBar}
         {initialLoadComplete && (
           <FlexContainer>
-            <Card>
-              <CardTitle>
-                <IonIcon icon={pin} />
-                &nbsp;{t('dashboard.pinned.title')}
-                <CardTitleButton
-                  onClick={(event) =>
-                    navigate(
-                      PaneableComponent.PinnedArtifacts,
-                      {},
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  size="small"
-                  fill="clear"
-                >
-                  <IonIcon icon={expand} size="small" />
-                </CardTitleButton>
-              </CardTitle>
-              {pinnedArtifacts.map((pinnedArtifact) => (
-                <CompactIonItem
-                  lines="none"
-                  key={pinnedArtifact.id}
-                  onClick={(event) =>
-                    navigate(
-                      PaneableComponent.Artifact,
-                      { id: pinnedArtifact.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  button
-                >
-                  {pinnedArtifact.title}
-                </CompactIonItem>
-              ))}
-              {!pinnedArtifacts.length && (
-                <CardNullState
-                  size="small"
-                  title={t('dashboard.noPinnedArtifacts.title')}
-                  message={t('dashboard.noPinnedArtifacts.message')}
-                />
-              )}
-            </Card>
             <Card>
               <CardTitle>
                 <IonIcon icon={telescope} />

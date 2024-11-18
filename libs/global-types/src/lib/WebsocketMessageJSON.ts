@@ -13,8 +13,4 @@ export type WebsocketMessageJSON = {
       references: boolean;
     };
   };
-  [WebsocketMessageEvent.ArtifactPinChanged]: {
-    artifactId: string;
-    pinned: boolean;
-  };
 };

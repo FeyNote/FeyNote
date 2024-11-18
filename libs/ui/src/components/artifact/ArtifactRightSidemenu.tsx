@@ -17,7 +17,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
-import { artifactCollaborationManager } from '../editor/artifactCollaborationManager';
+import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -46,12 +46,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [title, setTitle] = useState(props.artifact.title);
   const [theme, setTheme] = useState(props.artifact.theme);
 
-  const [isPinned, setIsPinned] = useState(props.artifact.isPinned);
   const [enableTitleBodyMerge, setEnableTitleBodyMerge] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const connection = artifactCollaborationManager.get(
-    props.artifact.id,
+  const connection = collaborationManager.get(
+    `artifact:${props.artifact.id}`,
     session,
   );
   useEffect(() => {
@@ -76,32 +75,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       metaPropName,
       value,
     );
-  };
-
-  const updateIsPinned = async (_isPinned: boolean) => {
-    if (_isPinned) {
-      await trpc.artifactPin.createArtifactPin
-        .mutate({
-          artifactId: props.artifact.id,
-        })
-        .then(() => {
-          props.reload();
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
-    } else {
-      await trpc.artifactPin.deleteArtifactPin
-        .mutate({
-          artifactId: props.artifact.id,
-        })
-        .then(() => {
-          props.reload();
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
-    }
   };
 
   const isEditable = useMemo(
@@ -188,23 +161,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <InfoButton
             slot="end"
             message={t('artifactRenderer.titleBodyMerge.help')}
-          />
-        </CompactIonItem>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={isPinned}
-            onIonChange={async (event) => {
-              setIsPinned(event.target.checked);
-              await updateIsPinned(event.target.checked);
-            }}
-          >
-            {t('artifactRenderer.isPinned')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.isPinned.help')}
           />
         </CompactIonItem>
       </IonCard>

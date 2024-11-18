@@ -11,10 +11,9 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
-import { EventContext } from '../../context/events/EventContext';
 import { EventName } from '../../context/events/EventName';
 import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
-import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
+import type { ThreadDTO } from '@feynote/global-types';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -27,34 +26,23 @@ import {
   pin,
   search,
   settings,
-  telescope,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
+import { ArtifactTree } from '../artifact/ArtifactTree';
+import { eventManager } from '../../context/events/EventManager';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
 `;
 
 /**
- * The default number of pinned artifacts to show
- */
-const PINNED_ARTIFACTS_LIMIT_DEFAULT = 10;
-/**
- * How many more pinned artifacts to show when "more" is clicked
- */
-const PINNED_ARTIFACTS_LIMIT_INC = 10;
-/**
  * The default number of recent artifacts to show
  */
 const RECENT_ARTIFACTS_LIMIT_DEFAULT = 5;
-/**
- * How many more recent artifacts to show when "more" is clicked
- */
-const RECENT_ARTIFACTS_LIMIT_INC = 10;
 /**
  * How many more recent threads to show when "more" is clicked
  */
@@ -65,37 +53,18 @@ const RECENT_THREADS_LIMIT_INC = 10;
 const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
 export const LeftSideMenu: React.FC = () => {
-  const { t } = useTranslation();
-  const { getPreference } = useContext(PreferencesContext);
   const { setSession } = useContext(SessionContext);
-  const { eventManager } = useContext(EventContext);
+  const { t } = useTranslation();
+
+  const { getPreference } = useContext(PreferencesContext);
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
   const { trigger: triggerGlobalSearch } = useContext(GlobalSearchContext);
   const currentPane = getPaneById(undefined);
-  const [pinnedArtifacts, setPinnedArtifacts] = useState<ArtifactDTO[]>([]);
-  const [pinnedArtifactsLimit, setPinnedArtifactsLimit] = useState(
-    PINNED_ARTIFACTS_LIMIT_DEFAULT,
-  );
-  const [recentlyUpdatedArtifacts, setRecentlyUpdatedArtifacts] = useState<
-    ArtifactDTO[]
-  >([]);
-  const [recentlyUpdatedArtifactsLimit, setRecentlyUpdatedArtifactsLimit] =
-    useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
     ThreadDTO[]
   >([]);
   const [recentlyUpdatedThreadsLimit, setRecentlyUpdatedThreadsLimit] =
     useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
-
-  const showMorePinned = () => {
-    setPinnedArtifactsLimit(pinnedArtifactsLimit + PINNED_ARTIFACTS_LIMIT_INC);
-  };
-
-  const showMoreRecent = () => {
-    setRecentlyUpdatedArtifactsLimit(
-      recentlyUpdatedArtifactsLimit + RECENT_ARTIFACTS_LIMIT_INC,
-    );
-  };
 
   const showMoreThreads = () => {
     setRecentlyUpdatedThreadsLimit(
@@ -108,25 +77,6 @@ export const LeftSideMenu: React.FC = () => {
   };
 
   const load = () => {
-    trpc.artifact.getArtifacts
-      .query()
-      .then((artifacts) => {
-        setPinnedArtifacts(
-          artifacts
-            .filter((el) => el.isPinned)
-            .sort((a, b) => a.title.localeCompare(b.title)),
-        );
-
-        setRecentlyUpdatedArtifacts(
-          artifacts.sort(
-            (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-          ),
-        );
-      })
-      .catch((e) => {
-        // TODO: Log to sentry
-      });
-
     trpc.ai.getThreads
       .query()
       .then((threads) => {
@@ -160,29 +110,18 @@ export const LeftSideMenu: React.FC = () => {
   }, [currentPane.currentView.navigationEventId]);
 
   useEffect(() => {
-    const handler = (event: EventName) => {
-      const immediateEvents = [EventName.ArtifactPinChanged];
-      const immediate = immediateEvents.includes(event);
-
-      loadDebouncerRef.current.call(immediate);
+    const handler = () => {
+      loadDebouncerRef.current.call();
     };
 
     eventManager.addEventListener(
-      [
-        EventName.ArtifactUpdated,
-        EventName.ArtifactDeleted,
-        EventName.ArtifactPinChanged,
-      ],
+      [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
       handler,
     );
 
     return () => {
       eventManager.removeEventListener(
-        [
-          EventName.ArtifactUpdated,
-          EventName.ArtifactDeleted,
-          EventName.ArtifactPinChanged,
-        ],
+        [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
         handler,
       );
     };
@@ -240,98 +179,16 @@ export const LeftSideMenu: React.FC = () => {
         </CompactIonItem>
       </IonCard>
 
-      {!!pinnedArtifacts.length &&
-        getPreference(PreferenceNames.LeftPaneShowPinnedArtifacts) && (
-          <IonCard>
-            <IonList class="ion-no-padding">
-              <IonListHeader lines="full">
-                <IonIcon icon={pin} />
-                &nbsp;&nbsp;
-                <IonLabel>{t('menu.pinned')}</IonLabel>
-              </IonListHeader>
-              {pinnedArtifacts
-                .slice(0, pinnedArtifactsLimit)
-                .map((pinnedArtifact) => (
-                  <CompactIonItem
-                    lines="none"
-                    key={pinnedArtifact.id}
-                    onClick={(event) =>
-                      navigate(
-                        undefined,
-                        PaneableComponent.Artifact,
-                        { id: pinnedArtifact.id },
-                        event.metaKey || event.ctrlKey
-                          ? PaneTransition.NewTab
-                          : PaneTransition.Push,
-                        !(event.metaKey || event.ctrlKey),
-                      )
-                    }
-                    button
-                  >
-                    <NowrapIonLabel>{pinnedArtifact.title}</NowrapIonLabel>
-                  </CompactIonItem>
-                ))}
-              {pinnedArtifacts.length > pinnedArtifactsLimit && (
-                <IonButton
-                  onClick={showMorePinned}
-                  fill="clear"
-                  size="small"
-                  expand="full"
-                >
-                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-                </IonButton>
-              )}
-            </IonList>
-          </IonCard>
-        )}
-
-      {!!recentlyUpdatedArtifacts.length &&
-        getPreference(PreferenceNames.LeftPaneShowRecentArtifacts) && (
-          <IonCard>
-            <IonList class="ion-no-padding">
-              <IonListHeader lines="full">
-                <IonIcon icon={telescope} />
-                &nbsp;&nbsp;
-                <IonLabel>{t('menu.recentlyUpdatedArtifacts')}</IonLabel>
-              </IonListHeader>
-              {recentlyUpdatedArtifacts
-                .slice(0, recentlyUpdatedArtifactsLimit)
-                .map((recentlyUpdatedArtifact) => (
-                  <CompactIonItem
-                    lines="none"
-                    key={recentlyUpdatedArtifact.id}
-                    onClick={(event) =>
-                      navigate(
-                        undefined,
-                        PaneableComponent.Artifact,
-                        { id: recentlyUpdatedArtifact.id },
-                        event.metaKey || event.ctrlKey
-                          ? PaneTransition.NewTab
-                          : PaneTransition.Push,
-                        !(event.metaKey || event.ctrlKey),
-                      )
-                    }
-                    button
-                  >
-                    <NowrapIonLabel>
-                      {recentlyUpdatedArtifact.title}
-                    </NowrapIonLabel>
-                  </CompactIonItem>
-                ))}
-              {recentlyUpdatedArtifacts.length >
-                recentlyUpdatedArtifactsLimit && (
-                <IonButton
-                  onClick={showMoreRecent}
-                  fill="clear"
-                  size="small"
-                  expand="full"
-                >
-                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-                </IonButton>
-              )}
-            </IonList>
-          </IonCard>
-        )}
+      <IonCard>
+        <IonList class="ion-no-padding">
+          <IonListHeader lines="full">
+            <IonIcon icon={pin} />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.tree')}</IonLabel>
+          </IonListHeader>
+          <ArtifactTree />
+        </IonList>
+      </IonCard>
 
       {!!recentlyUpdatedThreads.length &&
         getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (

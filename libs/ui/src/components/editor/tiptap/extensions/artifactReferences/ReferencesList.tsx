@@ -1,17 +1,9 @@
-import {
-  forwardRef,
-  useContext,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import styled from 'styled-components';
 import { MdHorizontalRule, MdOutlineShortText, MdSearch } from 'react-icons/md';
 import { IoDocument } from 'react-icons/io5';
 import { t } from 'i18next';
 import { trpc } from '../../../../../utils/trpc';
-import { EventContext } from '../../../../../context/events/EventContext';
-import { EventName } from '../../../../../context/events/EventName';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalize } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';

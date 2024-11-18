@@ -31,7 +31,7 @@ export const useHandleTRPCErrors = () => {
         message: handler,
         buttons: [
           {
-            text: t('generic.dismiss'),
+            text: t('generic.okay'),
             role: 'cancel',
           },
         ],
@@ -57,7 +57,7 @@ export const useHandleTRPCErrors = () => {
 
     const defaultErrorMessages = {
       0: t('generic.connectionError'),
-      500: t('generic.error'),
+      500: t('error.500'),
     } as Record<number, string>;
 
     if (!defaultErrorMessages[errorCode]) {
@@ -69,7 +69,7 @@ export const useHandleTRPCErrors = () => {
       message: defaultErrorMessages[errorCode],
       buttons: [
         {
-          text: t('generic.dismiss'),
+          text: t('generic.okay'),
           role: 'cancel',
         },
       ],
