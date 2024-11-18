@@ -1,7 +1,7 @@
 import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { personCircle } from 'ionicons/icons';
-import { AIMessageRenderer } from './AIMessageRenderer';
+import { AIMessageContent } from './AIMessageContent';
 import type { Message } from 'ai';
 import { useTranslation } from 'react-i18next';
 
@@ -49,7 +49,8 @@ const MessageHeader = styled(IonLabel)`
 interface Props {
   messages: Message[];
   retryMessage: (messageId: string) => void;
-  disableRetry: boolean;
+  updateMessage: (message: Message) => void;
+  ongoingCommunication: boolean;
 }
 
 export const AIMessagesContainer = (props: Props) => {
@@ -75,10 +76,11 @@ export const AIMessagesContainer = (props: Props) => {
                   )}
                   <MessageHeader>{name}</MessageHeader>
                 </div>
-                <AIMessageRenderer
+                <AIMessageContent
                   message={message}
                   retryMessage={props.retryMessage}
-                  disableRetry={props.disableRetry}
+                  updateMessage={props.updateMessage}
+                  ongoingCommunication={props.ongoingCommunication}
                 />
               </MessageContainer>
             );
