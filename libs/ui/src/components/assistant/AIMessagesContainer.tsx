@@ -1,9 +1,9 @@
 import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { personCircle } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
 import { AIMessageRenderer } from './AIMessageRenderer';
 import type { Message } from 'ai';
+import { useTranslation } from 'react-i18next';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -21,35 +21,29 @@ const Scroller = styled.div`
 
 const MessageContainer = styled.div`
   width: 100%;
-  display: flex;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
-  max-width: 40rem;
   line-height: 1.5rem;
 `;
 
 const UserIcon = styled(IonIcon)`
-  display: flex;
-  align-items: flex-end;
   font-size: 30px;
   min-width: 30px;
   padding-right: 0.75rem;
+  vertical-align: middle;
 `;
 
 const AILogo = styled.img`
   height: 30px;
   padding-right: 0.75rem;
-`;
-
-const FlexColumn = styled.div`
-  display: flex;
-  flex-direction: column;
+  vertical-align: middle;
 `;
 
 const MessageHeader = styled(IonLabel)`
   font-weight: 500;
+  vertical-align: middle;
 `;
 
 interface Props {
@@ -60,6 +54,7 @@ interface Props {
 
 export const AIMessagesContainer = (props: Props) => {
   const { t } = useTranslation();
+
   return (
     <Scroller>
       <ScrollerContent>
@@ -72,19 +67,19 @@ export const AIMessagesContainer = (props: Props) => {
               : t('assistant.thread.assistant.name');
             return (
               <MessageContainer key={message.id}>
-                {isUser ? (
-                  <UserIcon icon={personCircle} />
-                ) : (
-                  <AILogo src="https://static.feynote.com/assets/feynote-icon-20240925.png" />
-                )}
-                <FlexColumn>
+                <div>
+                  {isUser ? (
+                    <UserIcon icon={personCircle} />
+                  ) : (
+                    <AILogo src="https://static.feynote.com/assets/feynote-icon-20240925.png" />
+                  )}
                   <MessageHeader>{name}</MessageHeader>
-                  <AIMessageRenderer
-                    message={message}
-                    retryMessage={props.retryMessage}
-                    disableRetry={props.disableRetry}
-                  />
-                </FlexColumn>
+                </div>
+                <AIMessageRenderer
+                  message={message}
+                  retryMessage={props.retryMessage}
+                  disableRetry={props.disableRetry}
+                />
               </MessageContainer>
             );
           })}
