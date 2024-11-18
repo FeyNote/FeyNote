@@ -19,9 +19,9 @@ export const AIAssistantMessage = ({
   retryMessage,
   disableRetry,
 }: Props) => {
-  const isThereInvocationToDisplay = useMemo((): boolean => {
-    return !!message.toolInvocations?.find(isToolInvocationReadyToDipslay);
-  }, [message.toolInvocations]);
+  const isThereInvocationToDisplay = message.toolInvocations?.find(
+    isToolInvocationReadyToDipslay,
+  );
   const messageHTML = useMemo(() => {
     if (!message.content) return null;
     return starkdown(message.content);
@@ -39,7 +39,7 @@ export const AIAssistantMessage = ({
             const toolInvocationContents =
               getEditorContentsFromToolInvocation(toolInvocation);
             if (!toolInvocationContents.length)
-              return <IonSpinner name="dots" />;
+              return <IonSpinner key={toolInvocation.toolCallId} name="dots" />;
             return (
               <div key={toolInvocation.toolCallId}>
                 {toolInvocationContents.map((content, i) => (

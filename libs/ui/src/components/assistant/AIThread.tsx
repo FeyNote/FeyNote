@@ -146,7 +146,6 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   const updateMessage = async (message: Message) => {
-    console.log(message);
     await trpc.ai.updateMessage.mutate({
       threadId: props.id,
       message,
