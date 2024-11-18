@@ -430,7 +430,7 @@
   "template.introducingReferences.title": "Introducing References!",
   "template.introducingReferences.p1": "The power of FeyNote is in it's ability to reference between documents. You can create a reference to another document by pressing the at (@) key anywhere while you're typing text -- the only requirement is that there be a space before the @ sign.",
   "template.introducingReferences.p2": "The paragraph below is referenced by the welcome artifact:",
-  "template.introducingReferences.reference": "Astral Dreadnought",
+  "template.introducingReferences.reference": "Astral Plane",
   "template.introducingReferences.p3": "If you update the text above, the welcome artifact will automatically update to reflect the changes. This is a powerful way to keep your content up-to-date and interconnected without managing it all yourself!",
 
   "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
