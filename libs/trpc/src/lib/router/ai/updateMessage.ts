@@ -19,7 +19,6 @@ export const updateMessage = authenticatedProcedure
         code: 'NOT_FOUND',
       });
     }
-    console.log(input.message);
     const message = await prisma.message.update({
       where: { id: input.message.id },
       data: {
