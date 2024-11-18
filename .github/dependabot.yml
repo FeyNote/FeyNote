@@ -9,6 +9,9 @@ updates:
       tiptap:
         patterns:
           - '@tiptap*'
+      eslint:
+        patterns:
+          - '*eslint*'
       prisma:
         patterns:
           - '@prisma/client'
