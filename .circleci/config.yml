@@ -19,7 +19,7 @@ jobs:
   build_and_test:
     resource_class: medium
     docker:
-      - image: cimg/node:22.9
+      - image: cimg/node:22.11
         environment:
           EMAIL_FROM_NAME: CI_PLACEHOLDER
           EMAIL_FROM_ADDRESS: CI_PLACEHOLDER
@@ -48,7 +48,7 @@ jobs:
   push_backend:
     resource_class: medium
     docker:
-      - image: cimg/node:22.9
+      - image: cimg/node:22.11
     steps:
       - checkout
       - setup_remote_docker:
@@ -63,7 +63,7 @@ jobs:
   push_frontend:
     resource_class: medium
     docker:
-      - image: cimg/node:22.9
+      - image: cimg/node:22.11
     steps:
       - checkout
       - aws-cli/setup
