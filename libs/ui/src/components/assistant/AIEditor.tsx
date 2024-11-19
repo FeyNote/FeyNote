@@ -17,7 +17,7 @@ interface Props {
   editorContent: string | JSONContent;
 }
 
-export const AIFCEditor: React.FC<Props> = (props) => {
+export const AIEditor: React.FC<Props> = (props) => {
   const yDoc = useMemo(() => {
     return new YDoc();
   }, []);

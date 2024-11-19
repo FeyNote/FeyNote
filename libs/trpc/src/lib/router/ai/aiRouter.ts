@@ -1,15 +1,16 @@
 import { router as trpcRouter } from '../../trpc';
-import { deleteMessageUntil } from './deleteMessageUntil';
+import { deleteMessageToId } from './deleteMessageToId';
 import { getThreads } from './getThreads';
 import { getThread } from './getThread';
 import { createThread } from './createThread';
 import { updateThread } from './updateThread';
 import { deleteThread } from './deleteThread';
 import { saveMessage } from './saveMessage';
+import { updateMessage } from './updateMessage';
 import { createThreadTitle } from './createThreadTitle';
 
 export const aiRouter = trpcRouter({
-  deleteMessageUntil,
+  deleteMessageToId,
   createThreadTitle,
   getThreads,
   getThread,
@@ -17,4 +18,5 @@ export const aiRouter = trpcRouter({
   updateThread,
   deleteThread,
   saveMessage,
+  updateMessage,
 });

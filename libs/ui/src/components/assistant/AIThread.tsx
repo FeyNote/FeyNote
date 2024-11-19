@@ -8,9 +8,8 @@ import {
 } from '@ionic/react';
 import { send } from 'ionicons/icons';
 import { useContext, useEffect, useState } from 'react';
-import { useChat } from 'ai/react';
+import { Message, useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
-import type { Message } from 'ai';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
@@ -58,8 +57,8 @@ export const AIThread: React.FC<Props> = (props) => {
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { session } = useContext(SessionContext);
-  const { messages, setMessages, isLoading, input, setInput, append } = useChat(
-    {
+  const { messages, setMessages, isLoading, input, setInput, append, reload } =
+    useChat({
       api: '/api/message/',
       headers: {
         Authorization: session?.token ? `Bearer ${session.token}` : '',
@@ -92,8 +91,7 @@ export const AIThread: React.FC<Props> = (props) => {
           }
         }
       },
-    },
-  );
+    });
 
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
@@ -117,36 +115,70 @@ export const AIThread: React.FC<Props> = (props) => {
   }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      submitUserQuery();
+    if (
+      e.key === 'Enter' &&
+      e.shiftKey &&
+      !isLoading &&
+      !isLoadingInitialState
+    ) {
+      submitMessageQuery(input);
+      setInput('');
     } else {
       setInput(e.currentTarget.value || '');
     }
   };
 
-  const submitUserQuery = async () => {
+  const submitMessageQuery = async (query: string) => {
     const message = {
-      content: input,
+      content: query,
       role: 'user',
-    } as Message;
-    const response = await trpc.ai.saveMessage.mutate({
+    };
+    const newMessage = await trpc.ai.saveMessage.mutate({
       threadId: props.id,
       message,
     });
     append({
-      ...message,
-      id: response.id,
+      content: query,
+      role: 'user',
+      id: newMessage.id,
     });
-    setInput('');
+    await getThreadInfo();
   };
 
-  const retryMessage = async (messageId: string) => {
-    const userMessage = await trpc.ai.deleteMessageUntil.mutate({
-      id: messageId,
+  const updateMessage = async (message: Message) => {
+    await trpc.ai.updateMessage.mutate({
+      threadId: props.id,
+      message,
+    });
+    await trpc.ai.deleteMessageToId.mutate({
+      id: message.id,
       threadId: props.id,
     });
     await getThreadInfo();
-    setInput(userMessage);
+    reload();
+  };
+
+  const retryMessage = async (messageId: string) => {
+    let retriedUserMsg,
+      retriedUserMsgIdx = null;
+    for (const [idx, message] of messages.entries()) {
+      if (message.role === 'user') {
+        retriedUserMsgIdx = idx;
+        retriedUserMsg = message;
+      }
+      if (message.id === messageId) break;
+    }
+    if (retriedUserMsgIdx === null || !retriedUserMsg) return;
+    const messageToDelete = messages.at(retriedUserMsgIdx + 1);
+    if (!messageToDelete) return;
+    await trpc.ai.deleteMessageToId.mutate({
+      id: messageToDelete.id,
+      threadId: props.id,
+      inclusive: true,
+    });
+    const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
+    setMessages(remainingMessages);
+    reload();
   };
 
   return (
@@ -162,8 +194,8 @@ export const AIThread: React.FC<Props> = (props) => {
         }
       />
       <IonContent>
-        {ProgressBar}
         <ChatContainer>
+          {ProgressBar}
           {!messages.length ? (
             <div style={{ height: '100%' }}>
               {
@@ -173,8 +205,9 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
+              updateMessage={updateMessage}
               messages={messages}
-              disableRetry={isLoading}
+              ongoingCommunication={isLoading}
             />
           )}
           <ChatTextContainer>
@@ -185,7 +218,12 @@ export const AIThread: React.FC<Props> = (props) => {
               onKeyUp={keyUpHandler}
             />
             <SendButtonContainer>
-              <IonButton onClick={() => submitUserQuery()}>
+              <IonButton
+                onClick={() => {
+                  submitMessageQuery(input);
+                  setInput('');
+                }}
+              >
                 {isLoading || isLoadingInitialState ? (
                   <IonSpinner name="crescent" />
                 ) : (

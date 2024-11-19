@@ -3,14 +3,15 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
-export const deleteMessageUntil = authenticatedProcedure
+export const deleteMessageToId = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
       threadId: z.string(),
+      inclusive: z.boolean().optional(),
     }),
   )
-  .mutation(async ({ ctx, input }): Promise<string> => {
+  .mutation(async ({ ctx, input }): Promise<void> => {
     const thread = await prisma.thread.findFirst({
       where: { id: input.threadId, userId: ctx.session.userId },
     });
@@ -28,8 +29,9 @@ export const deleteMessageUntil = authenticatedProcedure
     const messageIndex = messages.findIndex(
       (message) => message.id === input.id,
     );
+    if (input.inclusive) messageIndex + 1;
     const messageIdsToDelete = messages
-      .slice(0, messageIndex + 1)
+      .slice(0, messageIndex)
       .map((message) => message.id);
     await prisma.message.deleteMany({
       where: {
@@ -38,6 +40,4 @@ export const deleteMessageUntil = authenticatedProcedure
         },
       },
     });
-    const userMessage = messages[messageIndex];
-    return (userMessage.json as any).content || '';
   });
