@@ -26,6 +26,11 @@ export const AIAssistantMessage = ({
     if (!message.content) return null;
     return starkdown(message.content);
   }, [message.content]);
+  const toolInvocationContents = useMemo(() => {
+    return message.toolInvocations
+      ? message.toolInvocations.map(getEditorContentsFromToolInvocation)
+      : [];
+  }, [message.toolInvocations]);
 
   if (!isThereInvocationToDisplay && !messageHTML) {
     return <IonSpinner name="dots" />;
@@ -35,18 +40,13 @@ export const AIAssistantMessage = ({
     <>
       {message.toolInvocations && isThereInvocationToDisplay && (
         <>
-          {message.toolInvocations.map((toolInvocation) => {
-            const toolInvocationContents =
-              getEditorContentsFromToolInvocation(toolInvocation);
+          {toolInvocationContents.map((toolInvocationContent, i) => {
             if (!toolInvocationContents.length)
-              return <IonSpinner key={toolInvocation.toolCallId} name="dots" />;
+              return <IonSpinner key={i} name="dots" />;
             return (
-              <div key={toolInvocation.toolCallId}>
-                {toolInvocationContents.map((content, i) => (
-                  <AIEditor
-                    key={`${toolInvocation.toolCallId}-${i}`}
-                    editorContent={content}
-                  />
+              <div key={i}>
+                {toolInvocationContent.map((content, i) => (
+                  <AIEditor key={i} editorContent={content} />
                 ))}
               </div>
             );

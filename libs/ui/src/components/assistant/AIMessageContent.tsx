@@ -1,6 +1,6 @@
 import type { Message } from 'ai';
 import { AIUserMessage } from './AIUserMessage';
-import { AIAssistantMessage } from './AIAssitantMessage';
+import { AIAssistantMessage } from './AIAssistantMessage';
 import styled from 'styled-components';
 
 const MessageContentContainer = styled.div`

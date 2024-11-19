@@ -20,7 +20,7 @@ export const updateMessage = authenticatedProcedure
       });
     }
     const message = await prisma.message.update({
-      where: { id: input.message.id },
+      where: { id: input.message.id, threadId: input.threadId },
       data: {
         json: input.message,
       },
