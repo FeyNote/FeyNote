@@ -22,6 +22,9 @@ updates:
       trpc:
         patterns:
           - '@trpc*'
+      hocuspocus:
+        patterns:
+          - '*hocuspocus*'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*'
