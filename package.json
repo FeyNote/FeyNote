@@ -23,7 +23,7 @@
     "@ionic/react": "^8.4.0",
     "@prisma/client": "^5.22.0",
     "@socket.io/redis-adapter": "^8.3.0",
-    "@swc/helpers": "0.5.13",
+    "@swc/helpers": "0.5.15",
     "@tiptap-pro/extension-unique-id": "^2.14.1",
     "@tiptap/core": "2.9.1",
     "@tiptap/extension-blockquote": "2.9.1",
