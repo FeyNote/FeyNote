@@ -1,12 +1,11 @@
 import type { Message } from 'ai';
 import { starkdown } from 'starkdown';
-import { AIEditor } from './AIEditor';
 import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { copyOutline, refresh } from 'ionicons/icons';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { useMemo } from 'react';
 import { isToolInvocationReadyToDipslay } from '../../utils/assistant/isToolInvocationReadyToDisplay';
-import { getEditorContentsFromToolInvocation } from '../../utils/assistant/getEditorContentsFromToolInvocation';
+import { AIToolInvocation } from './AIToolInvocation';
 
 interface Props {
   message: Message;
@@ -26,11 +25,6 @@ export const AIAssistantMessage = ({
     if (!message.content) return null;
     return starkdown(message.content);
   }, [message.content]);
-  const toolInvocationContents = useMemo(() => {
-    return message.toolInvocations
-      ? message.toolInvocations.map(getEditorContentsFromToolInvocation)
-      : [];
-  }, [message.toolInvocations]);
 
   if (!isThereInvocationToDisplay && !messageHTML) {
     return <IonSpinner name="dots" />;
@@ -40,17 +34,12 @@ export const AIAssistantMessage = ({
     <>
       {message.toolInvocations && isThereInvocationToDisplay && (
         <>
-          {toolInvocationContents.map((toolInvocationContent, i) => {
-            if (!toolInvocationContents.length)
-              return <IonSpinner key={i} name="dots" />;
-            return (
-              <div key={i}>
-                {toolInvocationContent.map((content, i) => (
-                  <AIEditor key={i} editorContent={content} />
-                ))}
-              </div>
-            );
-          })}
+          {message.toolInvocations.map((toolInvocation) => (
+            <AIToolInvocation
+              key={toolInvocation.toolCallId}
+              toolInvocation={toolInvocation}
+            />
+          ))}
         </>
       )}
       {messageHTML && (
