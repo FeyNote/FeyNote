@@ -28,6 +28,9 @@ updates:
       hocuspocus:
         patterns:
           - '*hocuspocus*'
+      workbox:
+        patterns:
+          - '*workbox*'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*'
