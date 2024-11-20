@@ -13,14 +13,13 @@ export const AIToolInvocation = (props: Props) => {
     () => getEditorContentsFromToolInvocation(props.toolInvocation),
     [props.toolInvocation],
   );
-  if (!toolInvocationContents.length)
-    return <IonSpinner key={props.toolInvocation.toolCallId} name="dots" />;
+  if (!toolInvocationContents.length) return <IonSpinner name="dots" />;
 
   return (
-    <div key={props.toolInvocation.toolCallId}>
+    <>
       {toolInvocationContents.map((content, i) => (
         <AIEditor key={i} editorContent={content} />
       ))}
-    </div>
+    </>
   );
 };
