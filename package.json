@@ -75,7 +75,7 @@
     "dompurify": "^3.1.7",
     "express": "^4.21.1",
     "flexlayout-react": "^0.7.15",
-    "google-auth-library": "^9.14.1",
+    "google-auth-library": "^9.15.0",
     "https-proxy-agent": "^7.0.5",
     "i18next": "^23.16.6",
     "idb": "^8.0.0",
