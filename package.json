@@ -93,7 +93,7 @@
     "socket.io-client": "^4.8.1",
     "starkdown": "^3.2.9",
     "styled-components": "6.1.13",
-    "superjson": "^1.13.3",
+    "superjson": "^2.2.1",
     "tippy.js": "^6.3.7",
     "tldraw": "^3.4.1",
     "ts-node": "^10.9.2",
