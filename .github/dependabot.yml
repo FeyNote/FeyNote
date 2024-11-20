@@ -3,8 +3,8 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'daily'
-    open-pull-requests-limit: 10
+      interval: 'weekly'
+    open-pull-requests-limit: 20
     groups:
       tiptap:
         patterns:
@@ -22,6 +22,9 @@ updates:
       trpc:
         patterns:
           - '@trpc*'
+      socketio:
+        patterns:
+          - '*socketio*'
       hocuspocus:
         patterns:
           - '*hocuspocus*'
