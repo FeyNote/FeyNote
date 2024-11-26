@@ -557,6 +557,10 @@ export const ArtifactTree = () => {
           extends: InteractionMode.ClickArrowToExpand,
           createInteractiveElementProps: (item, treeId, actions) => ({
             onClick: (e) => {
+              if (item.index === UNCATEGORIZED_ITEM_ID) {
+                return;
+              }
+
               if (e.ctrlKey || e.metaKey) {
                 navigate(
                   undefined,
