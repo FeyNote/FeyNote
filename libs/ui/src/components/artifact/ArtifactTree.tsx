@@ -396,6 +396,22 @@ export const ArtifactTree = () => {
     return items;
   }, [yKeyValue, _rerenderReducerValue]);
 
+  /**
+   * Uncategorize all descendants of the itemsToDelete
+   */
+  const recursiveDelete = (itemsToDelete: TreeItem<InternalTreeItem>[]) => {
+    for (const itemToDelete of itemsToDelete) {
+      yKeyValue.delete(itemToDelete.data.id);
+
+      const children = itemToDelete.children?.map(
+        (child) => items[child.toString()],
+      );
+      if (children?.length) {
+        recursiveDelete(children);
+      }
+    }
+  };
+
   const onDrop = (
     droppedItems: TreeItem<InternalTreeItem>[],
     target: DraggingPosition,
@@ -423,9 +439,7 @@ export const ArtifactTree = () => {
       }
 
       if (target.targetItem.toString() === UNCATEGORIZED_ITEM_ID) {
-        for (const item of droppedItems) {
-          yKeyValue.delete(item.data.id);
-        }
+        recursiveDelete(droppedItems);
 
         return;
       }
