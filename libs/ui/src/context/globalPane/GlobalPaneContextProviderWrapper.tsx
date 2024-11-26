@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useReducer, useState } from 'react';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -29,6 +29,7 @@ export const GlobalPaneContextProviderWrapper = ({
   children,
 }: Props): JSX.Element => {
   const { layout, applyLayoutJson, resetLayout, saveLayout } = useFlexLayout();
+  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
 
   const getFirstTab = (): TabNode => {
     let found: TabNode | undefined = undefined;
@@ -313,10 +314,15 @@ export const GlobalPaneContextProviderWrapper = ({
       action.type === Actions.DELETE_TABSET ||
       action.type === Actions.ADD_NODE ||
       action.type === Actions.MOVE_NODE ||
-      action.type === Actions.ADJUST_SPLIT
+      action.type === Actions.ADJUST_WEIGHTS ||
+      action.type === Actions.ADJUST_BORDER_SPLIT
     ) {
       setFocusedPaneId(getFocusedPaneId());
     }
+
+    // We're doing this because FlexLayout v0.8+ doesn't trigger a re-render of our component
+    // anymore when the layout changes. This is a workaround to force a re-render.
+    triggerRerender();
   };
 
   const value = useMemo(
@@ -333,7 +339,7 @@ export const GlobalPaneContextProviderWrapper = ({
       _onActionListener: onActionListener,
       _onModelChangeListener: onModelChangeListener,
     }),
-    [layout, focusedPaneId],
+    [layout, focusedPaneId, _rerenderReducerValue],
   );
 
   return (

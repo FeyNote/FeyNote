@@ -7,11 +7,10 @@ export const SAVED_LAYOUT_LOCAL_STORAGE_KEY = 'savedLayout';
 
 const defaultGlobalLayoutAttributes = {
   tabEnableRename: false,
-  tabEnableFloat: false,
+  tabEnablePopoutIcon: false,
   tabDragSpeed: 0.2,
   tabSetMinWidth: 200,
   tabSetEnableMaximize: false,
-  tabSetTabStripHeight: 36,
 } satisfies IGlobalAttributes;
 
 function getDefaultLayout() {
