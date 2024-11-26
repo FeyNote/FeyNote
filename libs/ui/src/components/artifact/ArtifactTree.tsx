@@ -90,6 +90,7 @@ const StyleContainer = styled.div`
     flex-grow: 1;
     display: flex;
     align-items: center;
+    text-align: left;
     background-color: transparent;
     height: 32px;
     color: var(--ion-text-color);
