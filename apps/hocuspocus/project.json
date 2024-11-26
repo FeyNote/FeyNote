@@ -5,20 +5,35 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
+      "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "target": "node",
-        "compiler": "tsc",
+        "platform": "node",
         "outputPath": "dist/apps/hocuspocus",
+        "format": ["esm"],
+        "bundle": true,
         "main": "apps/hocuspocus/src/main.ts",
         "tsConfig": "apps/hocuspocus/tsconfig.app.json",
-        "webpackConfig": "apps/hocuspocus/webpack.config.js"
+        "assets": ["apps/hocuspocus/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
       },
       "configurations": {
         "development": {},
-        "production": {}
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
       }
     },
     "serve": {
