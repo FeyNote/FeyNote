@@ -88,6 +88,7 @@
   "settings.collaborationColor.darkred": "Dark Red",
   "settings.leftSideMenu": "Start with left menu open",
   "settings.leftSideMenuShowArtifactTree": "Show artifact tree in left menu",
+  "settings.leftSideMenuArtifactTreeShowUncategorized": "Show uncategorized artifacts section in artifact tree",
   "settings.leftSideMenuShowRecentThreads": "Show recent AI threads in left menu",
   "settings.rightSideMenu": "Start with right menu open",
   "settings.account": "Account Settings",

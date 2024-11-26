@@ -21,6 +21,7 @@ export class PreferencesService {
 
     [PreferenceNames.LeftPaneStartOpen]: true,
     [PreferenceNames.LeftPaneShowArtifactTree]: true,
+    [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
     [PreferenceNames.RightPaneStartOpen]: true,
     [PreferenceNames.Language]: null,

@@ -24,11 +24,12 @@ import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { ImmediateDebouncer } from '@feynote/shared-utils';
+import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
 import { eventManager } from '../../context/events/EventManager';
 import styled from 'styled-components';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { t } from 'i18next';
+import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 
 /**
  * Calculates a lexographic sort order between two uppercase strings.
@@ -178,6 +179,10 @@ const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 export const ArtifactTree = () => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useContext(SessionContext);
+  const { getPreference } = useContext(PreferencesContext);
+  const leftPaneArtifactTreeShowUncategorized = getPreference(
+    PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
+  );
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -332,18 +337,20 @@ export const ArtifactTree = () => {
       }
     }
 
-    // All uncategorized items go under their own header
-    items[UNCATEGORIZED_ITEM_ID] = {
-      index: UNCATEGORIZED_ITEM_ID,
-      data: {
-        id: UNCATEGORIZED_ITEM_ID,
-        title: t('artifactTree.uncategorized'),
-        order: 'XZ',
-      },
-      children: Array.from(uncategorizedArtifacts),
-      isFolder: true,
-      canMove: false,
-    };
+    if (leftPaneArtifactTreeShowUncategorized) {
+      // All uncategorized items go under their own header
+      items[UNCATEGORIZED_ITEM_ID] = {
+        index: UNCATEGORIZED_ITEM_ID,
+        data: {
+          id: UNCATEGORIZED_ITEM_ID,
+          title: t('artifactTree.uncategorized'),
+          order: 'XZ',
+        },
+        children: Array.from(uncategorizedArtifacts),
+        isFolder: true,
+        canMove: false,
+      };
+    }
 
     // Sort children
     for (const key in items) {
@@ -394,7 +401,7 @@ export const ArtifactTree = () => {
     };
 
     return items;
-  }, [yKeyValue, _rerenderReducerValue]);
+  }, [yKeyValue, _rerenderReducerValue, leftPaneArtifactTreeShowUncategorized]);
 
   /**
    * Uncategorize all descendants of the itemsToDelete
