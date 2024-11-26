@@ -5,17 +5,14 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
+      "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "target": "node",
-        "compiler": "tsc",
         "outputPath": "dist/apps/backend",
         "main": "apps/backend/src/main.ts",
         "tsConfig": "apps/backend/tsconfig.app.json",
-        "assets": ["apps/backend/src/assets"],
-        "webpackConfig": "apps/backend/webpack.config.js"
+        "assets": ["apps/backend/src/assets"]
       },
       "configurations": {
         "development": {},
@@ -26,7 +23,8 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "backend:build"
+        "buildTarget": "backend:build",
+        "debounce": 1000
       },
       "configurations": {
         "development": {
