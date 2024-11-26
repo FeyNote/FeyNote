@@ -5,20 +5,35 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
+      "executor": "@nx/esbuild:esbuild",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "target": "node",
-        "compiler": "tsc",
+        "platform": "node",
         "outputPath": "dist/apps/websocket",
+        "format": ["esm"],
+        "bundle": true,
         "main": "apps/websocket/src/main.ts",
         "tsConfig": "apps/websocket/tsconfig.app.json",
-        "webpackConfig": "apps/websocket/webpack.config.js"
+        "assets": ["apps/websocket/src/assets"],
+        "generatePackageJson": true,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".js"
+          }
+        }
       },
       "configurations": {
         "development": {},
-        "production": {}
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        }
       }
     },
     "serve": {
