@@ -385,9 +385,6 @@ export const ArtifactTree = () => {
           // 'null' is the root node, so this element belongs at root
           if (kvEntry?.parentNodeId === null) return true;
 
-          // The parent of this item no longer exists/no longer shared, so it belongs at root
-          //if (kvEntry && !items[kvEntry.parentNodeId]) return true;
-
           return false;
         })
         .sort(([_, aVal], [__, bVal]) => {
