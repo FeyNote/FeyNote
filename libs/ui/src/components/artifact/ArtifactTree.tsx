@@ -173,7 +173,7 @@ interface InternalTreeItem {
 const TREE_ID = 'appArtifactTree';
 const ROOT_ITEM_ID = 'root';
 const UNCATEGORIZED_ITEM_ID = 'uncategorized';
-const RELOAD_DEBOUNCE_INTERVAL_MS = 5000;
+const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
 export const ArtifactTree = () => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
@@ -482,21 +482,29 @@ export const ArtifactTree = () => {
     }
   };
 
+  /**
+   * Returns true if the item is uncategorized, but is not the uncategorized header itself
+   */
   const isItemUncategorized = (index: string) => {
     if (index === UNCATEGORIZED_ITEM_ID) {
-      // allow drop on "uncategorized" itself
+      // Allow drop on "uncategorized" itself
       return false;
     }
     if (index === ROOT_ITEM_ID) {
+      // Always allow drop on root
       return false;
     }
 
-    const item = items[index];
-    if (!item) {
-      return false;
+    const kvEntry = yKeyValue.get(index);
+    // When an item isn't in the kv list, it's de-facto uncategorized since it has no capability to have a parent
+    if (!kvEntry) return true;
+
+    // When an item's parent doesn't exist in our items list, the user has likely lost access to the parent or it's been deleted
+    if (kvEntry.parentNodeId && !items[kvEntry.parentNodeId]) {
+      return true;
     }
 
-    return !yKeyValue.get(index);
+    return false;
   };
 
   return (
