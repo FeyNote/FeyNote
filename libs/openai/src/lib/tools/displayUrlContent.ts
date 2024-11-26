@@ -32,7 +32,6 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     const res = await axios.get(params.url, requestConfig);
     const jsdom = new JSDOM(res.data);
     const html = getTextFromHtml(jsdom);
-    console.log('html;', html);
     const messages = [
       systemMessage.scrapeContent,
       { role: 'user', content: html } as CoreMessage,
