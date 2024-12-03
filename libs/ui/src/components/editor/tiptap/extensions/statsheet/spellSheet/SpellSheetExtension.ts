@@ -15,7 +15,7 @@ declare module '@tiptap/core' {
 
 export const SpellSheetExtension = Node.create({
   name: 'customSpellSheet',
-  content: '(heading|paragraph|list|horizontalRule|table)+',
+  content: '(paragraph|list|heading|horizontalRule|table)+',
   group: 'block',
   defining: true,
   isolating: true,

@@ -5,6 +5,7 @@
   "menu.search": "Search",
   "menu.dashboard": "Dashboard",
   "menu.graph": "Graph",
+  "menu.new": "Create New",
   "menu.tree": "Artifacts",
   "menu.assistant": "Assistant",
   "menu.recentlyUpdatedArtifacts": "Recent Artifacts",
@@ -87,6 +88,7 @@
   "settings.collaborationColor.darkred": "Dark Red",
   "settings.leftSideMenu": "Start with left menu open",
   "settings.leftSideMenuShowArtifactTree": "Show artifact tree in left menu",
+  "settings.leftSideMenuArtifactTreeShowUncategorized": "Show uncategorized artifacts section in artifact tree",
   "settings.leftSideMenuShowRecentThreads": "Show recent AI threads in left menu",
   "settings.rightSideMenu": "Start with right menu open",
   "settings.account": "Account Settings",
@@ -114,6 +116,8 @@
   "dashboard.noSharedContent.title": "No Content Shared With You",
   "dashboard.noSharedContent.message": "Artifacts will show up here if another user shares their content with you",
   "dashboard.reload": "Refresh Dashboard",
+
+  "artifactTree.uncategorized": "Uncategorized",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",

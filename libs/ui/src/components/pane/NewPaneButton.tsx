@@ -27,11 +27,11 @@ export const NewPaneButton: React.FC<Props> = (props) => {
           component: id,
           name: t(
             paneableComponentNameToDefaultI18nTitle[
-              PaneableComponent.Dashboard
+              PaneableComponent.NewArtifact
             ],
           ),
           config: {
-            component: PaneableComponent.Dashboard,
+            component: PaneableComponent.NewArtifact,
             props: {},
             navigationEventId: crypto.randomUUID(),
           },
