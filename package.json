@@ -26,6 +26,8 @@
     "@ionic/react": "^8.4.0",
     "@prisma/client": "^5.22.0",
     "@sentry/node": "^8.42.0",
+    "@sentry/profiling-node": "^8.42.0",
+    "@sentry/react": "^8.42.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "@swc/helpers": "0.5.15",
     "@tiptap-pro/extension-file-handler": "^2.16.3",

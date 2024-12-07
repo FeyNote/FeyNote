@@ -90,7 +90,7 @@ export const LeftSideMenu: React.FC = () => {
         );
       })
       .catch((e) => {
-        // TODO: Log to sentry
+        // Do nothing
       });
   };
 

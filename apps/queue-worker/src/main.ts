@@ -1,3 +1,5 @@
+import './instrument.mjs';
+
 import { artifactUpdateQueueWorker } from '@feynote/queue';
 
 artifactUpdateQueueWorker.run();

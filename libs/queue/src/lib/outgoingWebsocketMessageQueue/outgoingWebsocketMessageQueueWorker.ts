@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Worker } from 'bullmq';
 import { OutgoingWebsocketMessageQueueItem } from './OutgoingWebsocketMessageQueueItem';
 import { OUTGOING_WEBSOCKET_MESSAGE_QUEUE_NAME } from './OUTGOING_WEBSOCKET_MESSAGE_QUEUE_NAME';
@@ -15,7 +16,7 @@ export const buildOutgoingWebsocketMessageQueueWorker = (io: Server) => {
       } catch (e) {
         console.log(`Failed processing job ${args.id}`, e);
 
-        // TODO: Cloud logging
+        Sentry.captureException(e);
 
         throw e;
       }

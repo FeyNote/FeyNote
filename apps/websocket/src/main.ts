@@ -1,3 +1,5 @@
+import './instrument.mjs';
+
 import { Server } from 'socket.io';
 import { prisma } from '@feynote/prisma/client';
 import {

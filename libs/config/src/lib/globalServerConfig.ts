@@ -78,4 +78,28 @@ export const globalServerConfig = {
       port: parseInt(getEnvOrThrow('WORKER_REDIS_PORT')),
     },
   },
+  sentry: {
+    api: {
+      dsn: 'https://aa046a905df8da04a718afb43cfcbb38@o4508428193955840.ingest.us.sentry.io/4508428256411648',
+      samplingRate: parseFloat(process.env['SENTRY_API_SAMPLING_RATE'] || '1'),
+    },
+    hocuspocus: {
+      dsn: 'https://d532e53fe91f06e1f8d37a68eba3ffc6@o4508428193955840.ingest.us.sentry.io/4508428775522304',
+      samplingRate: parseFloat(
+        process.env['SENTRY_HOCUSPOCUS_SAMPLING_RATE'] || '1',
+      ),
+    },
+    websocket: {
+      dsn: 'https://2ea5794d67f2d41f6505ed777dfd281b@o4508428193955840.ingest.us.sentry.io/4508428810911744',
+      samplingRate: parseFloat(
+        process.env['SENTRY_WEBSOCKET_SAMPLING_RATE'] || '1',
+      ),
+    },
+    queueWorker: {
+      dsn: 'https://1bbce81476ff1ead7c27ec76289a4892@o4508428193955840.ingest.us.sentry.io/4508428812877824',
+      samplingRate: parseFloat(
+        process.env['SENTRY_QUEUE_WORKER_SAMPLING_RATE'] || '1',
+      ),
+    },
+  },
 };

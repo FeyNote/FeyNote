@@ -21,7 +21,8 @@
           "sourcemap": true,
           "outExtension": {
             ".js": ".js"
-          }
+          },
+          "external": ["@sentry/profiling-node"]
         }
       },
       "configurations": {

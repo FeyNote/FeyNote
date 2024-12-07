@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { Worker } from 'bullmq';
 import { ArtifactUpdateQueueItem } from './ArtifactUpdateQueueItem';
 import { Doc as YDoc, applyUpdate } from 'yjs';
@@ -138,12 +139,11 @@ export const artifactUpdateQueueWorker = new Worker<
         }
       } catch (e) {
         console.error(e);
-        // TODO: Sentry
+        Sentry.captureException(e);
       }
     } catch (e) {
       console.log(`Failed processing job ${args.id}`, e);
-
-      // TODO: Cloud logging
+      Sentry.captureException(e);
 
       throw e;
     }

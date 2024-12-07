@@ -1,10 +1,13 @@
+import './instrument.mjs';
+
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';
+import bodyParser from 'body-parser';
+import cors from 'cors';
+
 import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
-import bodyParser from 'body-parser';
-import cors from 'cors';
 
 const app = express();
 app.use(bodyParser.urlencoded());
@@ -39,6 +42,9 @@ const corsOptions = {
 app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
+app.use('/message', messageRouter);
+app.use('/file', fileRouter);
+
 app.use(
   '/trpc',
   trpcExpress.createExpressMiddleware({
@@ -46,9 +52,6 @@ app.use(
     createContext,
   }),
 );
-
-app.use('/message', messageRouter);
-app.use('/file', fileRouter);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {

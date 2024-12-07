@@ -56,7 +56,7 @@ const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
   return input;
 };
 
-const encodeCacheResultForTrpc = (result: any) => {
+const encodeCacheResultForTrpc = (result: unknown) => {
   return new Response(
     JSON.stringify({
       result: {
@@ -122,7 +122,7 @@ const cacheListResponse = async (
     }
 
     return response;
-  } catch (e: any) {
+  } catch (e) {
     console.log(`Request failed`, e);
 
     // TODO: check response for statuscode
@@ -147,7 +147,7 @@ const cacheSingleResponse = async (
     }
 
     return response;
-  } catch (e: any) {
+  } catch (e) {
     console.log(`Request failed`, e);
 
     // TODO: check response for statuscode
@@ -165,9 +165,11 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (self as any).skipWaiting();
   clientsClaim();
 
