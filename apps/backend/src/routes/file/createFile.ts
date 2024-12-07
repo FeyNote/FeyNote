@@ -13,6 +13,8 @@ import { prisma } from '@feynote/prisma/client';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import { FilePurpose } from '@prisma/client';
 
+const MAX_FILE_SIZE_MB = 25;
+
 const schema = {
   query: z.object({
     id: z.string().uuid().optional(),
@@ -31,7 +33,7 @@ export const createFileHandler = defineExpressHandler(
       multer({
         storage: multer.memoryStorage(),
         limits: {
-          fileSize: 25 * 1024 * 1024, // 25 MB
+          fileSize: MAX_FILE_SIZE_MB * 1024 * 1024,
         },
       }).single('file'),
     ],

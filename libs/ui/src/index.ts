@@ -9,6 +9,7 @@ export { SyncManager } from './utils/SyncManager';
 export { SearchManager } from './utils/SearchManager';
 export { trpc, superjson } from './utils/trpc';
 export { getManifestDb, ObjectStoreName } from './utils/localDb';
+export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export { NotFound } from './NotFound';
 export { Workspace } from './Workspace';
 export { initI18Next } from './i18n/initI18Next';

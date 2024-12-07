@@ -8,7 +8,7 @@ Sentry.init({
     Sentry.browserTracingIntegration(),
     Sentry.replayIntegration(),
   ],
-  tracesSampleRate: 1.0, //  Percentage of transactions to capture. 1.0 captures 100%
+  sampleRate: getIsViteDevelopment() ? 0 : 0.5, //  Percentage of transactions to capture. 1.0 captures 100%
   // Controls which URLs distributed tracing should be enabled
   tracePropagationTargets: [
     'localhost',
@@ -16,13 +16,14 @@ Sentry.init({
     /^https:\/\/app\.feynote\.com\/api/,
   ],
   // Session Replay
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: getIsViteDevelopment() ? 0 : 0.1,
+  replaysOnErrorSampleRate: getIsViteDevelopment() ? 0 : 1,
 });
 
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/App';
+import { getIsViteDevelopment } from '@feynote/ui';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
