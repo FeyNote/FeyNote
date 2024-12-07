@@ -7,6 +7,7 @@ import { trpc } from '../../../utils/trpc';
 import { useIonAlert } from '@ionic/react';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { getFileRedirectUrl } from '../../../utils/files/getFileRedirectUrl';
 
 interface Props {
   artifactId: string;
@@ -100,6 +101,12 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         knownReferences={new Map()}
         yjsProvider={undefined}
         yDoc={yDoc}
+        getFileUrl={(fileId) => {
+          return getFileRedirectUrl({
+            fileId,
+            sessionToken: props.shareToken,
+          }).toString();
+        }}
       />
     );
   }

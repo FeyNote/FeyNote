@@ -14,14 +14,16 @@ import {
   react,
   SerializedSchema,
   setUserPreferences,
-  StoreListener,
   TLAnyShapeUtilConstructor,
+  TLAssetStore,
   TLInstancePresence,
   TLRecord,
   TLStoreWithStatus,
 } from 'tldraw';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
+import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { FileDTO } from '@feynote/global-types';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
@@ -35,16 +37,57 @@ const TLDRAW_YDOC_META_SCHEMA_KEY = 'schema';
 
 export const useYjsTLDrawStore = ({
   yProvider,
+  getFileUrl,
+  handleFileUpload,
   shapeUtils,
   editable = true,
 }: {
   yProvider: TiptapCollabProvider;
+  getFileUrl: (fileId: string) => string;
+  handleFileUpload?: (file: File) => Promise<FileDTO>;
   shapeUtils: TLAnyShapeUtilConstructor[];
   editable: boolean;
 }) => {
+  const [tldrawAssetStore] = useState<TLAssetStore>(() => ({
+    async upload(asset, file) {
+      try {
+        if (!handleFileUpload) {
+          throw new Error('No file upload handler provided');
+        }
+        const { id, storageKey } = await handleFileUpload(file);
+
+        asset.meta.id = id;
+        asset.meta.storageKey = storageKey;
+
+        // This url isn't really used since we're using meta
+        const url = getFileRedirectUrl({
+          fileId: id,
+        });
+
+        return url.toString();
+      } catch (e) {
+        console.error(e);
+
+        return '';
+      }
+    },
+
+    async resolve(asset): Promise<string> {
+      const id = asset.meta.id;
+      if (!id || typeof id !== 'string') {
+        throw new Error('Asset has no file id');
+      }
+
+      const url = getFileUrl(id);
+
+      return url;
+    },
+  }));
+
   const [store] = useState(() => {
     const store = createTLStore({
       shapeUtils: [...defaultShapeUtils, ...shapeUtils],
+      assets: tldrawAssetStore,
     });
 
     return store;

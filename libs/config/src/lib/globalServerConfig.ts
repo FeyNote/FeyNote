@@ -11,6 +11,9 @@ export const globalServerConfig = {
     region: getEnvOrThrow('AWS_REGION'),
     accessKeyId: getEnvOrThrow('AWS_ACCESS_KEY_ID'),
     secretAccessKey: getEnvOrThrow('AWS_SECRET_ACCESS_KEY'),
+    buckets: {
+      artifact: getEnvOrThrow('AWS_BUCKET_ARTIFACT'),
+    },
   },
   typesense: {
     apiKey: getEnvOrThrow('TYPESENSE_API_KEY'),

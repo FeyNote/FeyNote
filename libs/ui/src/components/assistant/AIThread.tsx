@@ -17,6 +17,7 @@ import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
+import { getApiUrls } from '../../utils/getApiUrls';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -59,7 +60,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const { session } = useContext(SessionContext);
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({
-      api: '/api/message/',
+      api: `${getApiUrls().rest}/message/`,
       headers: {
         Authorization: session?.token ? `Bearer ${session.token}` : '',
         'Content-Type': 'application/json',

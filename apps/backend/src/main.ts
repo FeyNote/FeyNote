@@ -1,7 +1,8 @@
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import { appRouter, createContext } from '@feynote/trpc';
-import message from './routes/message';
+import { fileRouter } from './routes/file/index';
+import { messageRouter } from './routes/message';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
@@ -46,7 +47,8 @@ app.use(
   }),
 );
 
-app.use('/message', message);
+app.use('/message', messageRouter);
+app.use('/file', fileRouter);
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {

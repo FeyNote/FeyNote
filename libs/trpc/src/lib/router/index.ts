@@ -4,6 +4,7 @@ import { artifactRouter } from './artifact/artifactRouter';
 import { aiRouter } from './ai/aiRouter';
 import { artifactShareRouter } from './artifactShare/artifactShareRouter';
 import { artifactShareTokenRouter } from './artifactShareToken/artifactShareTokenRouter';
+import { fileRouter } from './file/fileRouter';
 
 export const appRouter = router({
   health: publicProcedure.query(() => {
@@ -16,6 +17,7 @@ export const appRouter = router({
   artifactShare: artifactShareRouter,
   artifactShareToken: artifactShareTokenRouter,
   ai: aiRouter,
+  file: fileRouter,
 });
 
 export type AppRouter = typeof appRouter;

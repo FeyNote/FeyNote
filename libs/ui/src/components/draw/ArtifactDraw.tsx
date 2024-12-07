@@ -1,8 +1,8 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { memo, useContext, useEffect } from 'react';
-import type { ArtifactDTO } from '@feynote/global-types';
+import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import type { ArtifactDTO, FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
@@ -44,6 +44,7 @@ import {
   setUserPreferences,
   StarToolbarItem,
   TextToolbarItem,
+  TLAssetStore,
   TLComponents,
   Tldraw,
   TldrawUiMenuGroup,
@@ -92,6 +93,8 @@ interface Props {
   editable: boolean;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
+  handleFileUpload?: (file: File) => Promise<FileDTO>;
+  getFileUrl: (fileId: string) => string;
 }
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
@@ -117,6 +120,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
 
   const store = useYjsTLDrawStore({
     yProvider: props.y,
+    handleFileUpload: props.handleFileUpload,
+    getFileUrl: props.getFileUrl,
     shapeUtils: [],
     editable: props.editable,
   });
@@ -225,7 +230,19 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       >
         {titleBodyMerge && titleInput}
 
-        <Tldraw store={store} onMount={onMount} components={components} />
+        <Tldraw
+          store={store}
+          acceptedImageMimeTypes={['image/jpeg', 'image/png']}
+          acceptedVideoMimeTypes={[]}
+          maxImageDimension={Infinity}
+          maxAssetSize={10 * 1024 * 1024}
+          onMount={onMount}
+          components={components}
+          cameraOptions={{
+            zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
+            wheelBehavior: 'zoom',
+          }}
+        />
       </StyledArtifactDrawStyles>
     </ArtifactDrawContainer>
   );

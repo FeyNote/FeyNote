@@ -23,6 +23,8 @@ import PlaceholderExtension from '@tiptap/extension-placeholder';
 import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
+import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
+import ImageExtension from '@tiptap/extension-image';
 import LinkExtension from '@tiptap/extension-link';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
@@ -40,6 +42,8 @@ import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { KnownArtifactReference } from './extensions/artifactReferences/KnownArtifactReference';
+import { Editor } from '@tiptap/core';
+import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 
 type DocArgOptions =
   | {
@@ -57,6 +61,8 @@ export const getTiptapExtensions = (args: {
   y: DocArgOptions;
   collaborationUser: Record<string, string>;
   knownReferences: Map<string, KnownArtifactReference>;
+  handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
+  getFileUrl: (fileId: string) => string;
 }) => {
   return [
     DocumentExtension,
@@ -122,5 +128,33 @@ export const getTiptapExtensions = (args: {
     SpellSheetExtension,
     TTRPGNoteExtension,
     IsolatingContainerBackspaceExtension,
+    ...(args.editable && args.handleFileUpload
+      ? [
+          FileHandlerExtension.configure({
+            allowedMimeTypes: [
+              'image/png',
+              'image/jpeg',
+              'image/gif',
+              'image/webp',
+            ],
+            onDrop: args.handleFileUpload,
+            onPaste: (currentEditor, files, htmlContent) => {
+              if (htmlContent) {
+                // if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
+                // you could extract the pasted file from this url string and upload it to a server for example
+                return false;
+              }
+
+              args.handleFileUpload?.(currentEditor, files);
+            },
+          }),
+        ]
+      : []),
+    FeynoteImageExtension.configure({
+      getSrcForFileId: (fileId) => {
+        return args.getFileUrl(fileId);
+      },
+    }),
+    ImageExtension,
   ];
 };

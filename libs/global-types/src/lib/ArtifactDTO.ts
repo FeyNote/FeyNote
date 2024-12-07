@@ -42,15 +42,11 @@ export type ArtifactDTO = {
     targetArtifactBlockId: string | null;
     targetArtifactDate: string | null;
   }[];
-  artfactFiles: {
+  files: {
     id: string;
-    fileId: string;
-    order: number;
-    file: {
-      filename: string;
-      storageKey: string;
-      mimetype: string;
-    };
+    name: string;
+    storageKey: string;
+    mimetype: string;
   }[];
   artifactShares: {
     id: string;
