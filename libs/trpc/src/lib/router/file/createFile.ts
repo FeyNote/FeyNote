@@ -1,9 +1,11 @@
-import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
+import sharp from 'sharp';
 import { prisma } from '@feynote/prisma/client';
+import { TRPCError } from '@trpc/server';
+
+import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import { hasArtifactAccess, uploadFileToS3 } from '@feynote/api-services';
-import { TRPCError } from '@trpc/server';
 import { FilePurpose } from '@prisma/client';
 import { FileDTO } from '@feynote/global-types';
 
@@ -38,10 +40,24 @@ export const createFile = authenticatedProcedure
       }
     }
 
-    const buffer = Buffer.from(input.base64, 'base64');
+    let fileBuffer = Buffer.from(input.base64, 'base64');
+    if (['image/png', 'image/jpeg'].includes(input.mimetype)) {
+      fileBuffer = await sharp(fileBuffer)
+        .rotate()
+        .resize(1024, 1024, {
+          // TODO: Make this dependent on the user's subscription status
+          fit: 'contain',
+          withoutEnlargement: true,
+        })
+        .jpeg({
+          quality: 75,
+          mozjpeg: true,
+        })
+        .toBuffer();
+    }
 
     const uploadResult = await uploadFileToS3(
-      buffer,
+      fileBuffer,
       input.mimetype,
       input.purpose,
     );

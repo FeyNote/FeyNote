@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import multer from 'multer';
+import sharp from 'sharp';
 
 import {
   AuthenticationEnforcement,
@@ -8,7 +10,6 @@ import {
   BadRequestExpressError,
   NotFoundExpressError,
 } from '@feynote/api-services';
-import multer from 'multer';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import { FilePurpose } from '@prisma/client';
@@ -61,8 +62,24 @@ export const createFileHandler = defineExpressHandler(
       }
     }
 
+    let fileBuffer = req.file.buffer;
+    if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
+      fileBuffer = await sharp(req.file.buffer)
+        .rotate()
+        .resize(1024, 1024, {
+          // TODO: Make this dependent on the user's subscription status
+          fit: 'contain',
+          withoutEnlargement: true,
+        })
+        .jpeg({
+          quality: 75,
+          mozjpeg: true,
+        })
+        .toBuffer();
+    }
+
     const uploadResult = await uploadFileToS3(
-      req.file.buffer,
+      fileBuffer,
       req.query.mimetype,
       req.query.purpose,
     );
