@@ -62,9 +62,9 @@ export const createFileHandler = defineExpressHandler(
       }
     }
 
-    let fileBuffer = req.file.buffer;
+    let fileBuffer: Buffer = req.file.buffer;
     if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
-      fileBuffer = (await sharp(req.file.buffer)
+      fileBuffer = await sharp(req.file.buffer)
         .rotate()
         // TODO: Make this dependent on the user's subscription status
         .resize(1024, 1024, {
@@ -75,7 +75,7 @@ export const createFileHandler = defineExpressHandler(
           quality: 75,
           mozjpeg: true,
         })
-        .toBuffer()) as Buffer;
+        .toBuffer();
     }
 
     const uploadResult = await uploadFileToS3(
