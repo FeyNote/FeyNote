@@ -8,6 +8,7 @@ import { useIonAlert } from '@ionic/react';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { getFileRedirectUrl } from '../../../utils/files/getFileRedirectUrl';
+import { ArtifactDraw } from '../../draw/ArtifactDraw';
 
 interface Props {
   artifactId: string;
@@ -119,6 +120,23 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         y={yDoc}
         viewType="fullsize"
         incomingArtifactReferences={artifact.incomingArtifactReferences}
+      />
+    );
+  }
+
+  if (artifact.type === 'tldraw') {
+    return (
+      <ArtifactDraw
+        editable={false}
+        knownReferences={new Map()}
+        yDoc={yDoc}
+        incomingArtifactReferences={artifact.incomingArtifactReferences}
+        getFileUrl={(fileId) => {
+          return getFileRedirectUrl({
+            fileId,
+            sessionToken: props.shareToken,
+          }).toString();
+        }}
       />
     );
   }

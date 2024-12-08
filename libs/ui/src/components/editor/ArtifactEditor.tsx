@@ -26,10 +26,10 @@ const BottomSpacer = styled.div`
 type DocArgOptions =
   | {
       yjsProvider: TiptapCollabProvider;
-      yDoc: undefined;
+      yDoc?: undefined;
     }
   | {
-      yjsProvider: undefined;
+      yjsProvider?: undefined;
       yDoc: YDoc;
     };
 

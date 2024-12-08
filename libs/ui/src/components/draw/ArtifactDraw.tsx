@@ -70,6 +70,7 @@ import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -86,19 +87,28 @@ const StyledArtifactDrawStyles = styled(ArtifactDrawStyles)<{
     props.$titleBodyMerge ? 'min-content auto' : 'auto'};
 `;
 
-interface Props {
+type DocArgOptions =
+  | {
+      collaborationConnection: CollaborationManagerConnection;
+      yDoc?: undefined;
+    }
+  | {
+      collaborationConnection?: undefined;
+      yDoc: YDoc;
+    };
+
+type Props = {
   knownReferences: Map<string, KnownArtifactReference>;
   incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
-  y: TiptapCollabProvider;
   editable: boolean;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (file: File) => Promise<FileDTO>;
   getFileUrl: (fileId: string) => string;
-}
+} & DocArgOptions;
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
-  const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
+  const yDoc = props.yDoc || props.collaborationConnection.yjsDoc;
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
@@ -110,20 +120,29 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
   useEffect(() => {
-    if (props.y instanceof TiptapCollabProvider) {
-      props.y.awareness?.setLocalStateField('user', {
-        name: session ? session.email : t('generic.anonymous'),
-        color: preferredUserColor,
-      });
+    if (props.collaborationConnection) {
+      props.collaborationConnection.tiptapCollabProvider.awareness?.setLocalStateField(
+        'user',
+        {
+          name: session ? session.email : t('generic.anonymous'),
+          color: preferredUserColor,
+        },
+      );
     }
-  }, [session, preferredUserColor]);
+  }, [props.collaborationConnection, session, preferredUserColor]);
 
   const store = useYjsTLDrawStore({
-    yProvider: props.y,
     handleFileUpload: props.handleFileUpload,
     getFileUrl: props.getFileUrl,
     shapeUtils: [],
     editable: props.editable,
+    ...(props.yDoc
+      ? {
+          yDoc: props.yDoc,
+        }
+      : {
+          collaborationConnection: props.collaborationConnection,
+        }),
   });
 
   const setMetaProp = (metaPropName: string, value: any) => {

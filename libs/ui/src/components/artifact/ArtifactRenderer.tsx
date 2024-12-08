@@ -163,7 +163,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
-        y={props.connection.tiptapCollabProvider}
+        collaborationConnection={props.connection}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
         handleFileUpload={async (file) => {
