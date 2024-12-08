@@ -17,6 +17,10 @@ export const ArtifactDrawStyles = styled.div`
     padding-top: 10px;
   }
 
+  .tl-grid {
+    z-index: 400;
+  }
+
   --day-border-color: gray;
 
   &[data-theme='classic'] {

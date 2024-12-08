@@ -42,10 +42,10 @@ export const createFile = authenticatedProcedure
 
     let fileBuffer = Buffer.from(input.base64, 'base64');
     if (['image/png', 'image/jpeg'].includes(input.mimetype)) {
-      fileBuffer = await sharp(fileBuffer)
+      fileBuffer = (await sharp(fileBuffer)
         .rotate()
+        // TODO: Make this dependent on the user's subscription status
         .resize(1024, 1024, {
-          // TODO: Make this dependent on the user's subscription status
           fit: 'contain',
           withoutEnlargement: true,
         })
@@ -53,7 +53,7 @@ export const createFile = authenticatedProcedure
           quality: 75,
           mozjpeg: true,
         })
-        .toBuffer();
+        .toBuffer()) as Buffer;
     }
 
     const uploadResult = await uploadFileToS3(

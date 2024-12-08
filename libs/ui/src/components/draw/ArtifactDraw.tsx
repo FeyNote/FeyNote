@@ -71,6 +71,7 @@ import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { TLDrawCustomGrid } from './TLDrawCustomGrid';
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -242,6 +243,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
         </DefaultMainMenu>
       );
     },
+    Grid: TLDrawCustomGrid,
   };
 
   return (
