@@ -82,7 +82,7 @@
     "cors": "^2.8.5",
     "dedent": "^1.5.3",
     "dompurify": "^3.1.7",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "flexlayout-react": "^0.8.1",
     "google-auth-library": "^9.15.0",
     "https-proxy-agent": "^7.0.5",
