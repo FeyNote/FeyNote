@@ -183,35 +183,37 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
 
   const components: TLComponents = {
     NavigationPanel: null,
-    Toolbar: () => (
-      <DefaultToolbar>
-        <SelectToolbarItem />
-        <HandToolbarItem />
-        <DrawToolbarItem />
-        <EraserToolbarItem />
-        <ArrowToolbarItem />
-        <TextToolbarItem />
-        <NoteToolbarItem />
-        <RectangleToolbarItem />
-        <EllipseToolbarItem />
-        <TriangleToolbarItem />
-        <DiamondToolbarItem />
-        <HexagonToolbarItem />
-        <OvalToolbarItem />
-        <RhombusToolbarItem />
-        <StarToolbarItem />
-        <CloudToolbarItem />
-        <XBoxToolbarItem />
-        <CheckBoxToolbarItem />
-        <ArrowLeftToolbarItem />
-        <ArrowRightToolbarItem />
-        <ArrowUpToolbarItem />
-        <ArrowDownToolbarItem />
-        <LineToolbarItem />
-        <HighlightToolbarItem />
-        <FrameToolbarItem />
-      </DefaultToolbar>
-    ),
+    Toolbar: props.editable
+      ? () => (
+          <DefaultToolbar>
+            <SelectToolbarItem />
+            <HandToolbarItem />
+            <DrawToolbarItem />
+            <EraserToolbarItem />
+            <ArrowToolbarItem />
+            <TextToolbarItem />
+            <NoteToolbarItem />
+            <RectangleToolbarItem />
+            <EllipseToolbarItem />
+            <TriangleToolbarItem />
+            <DiamondToolbarItem />
+            <HexagonToolbarItem />
+            <OvalToolbarItem />
+            <RhombusToolbarItem />
+            <StarToolbarItem />
+            <CloudToolbarItem />
+            <XBoxToolbarItem />
+            <CheckBoxToolbarItem />
+            <ArrowLeftToolbarItem />
+            <ArrowRightToolbarItem />
+            <ArrowUpToolbarItem />
+            <ArrowDownToolbarItem />
+            <LineToolbarItem />
+            <HighlightToolbarItem />
+            <FrameToolbarItem />
+          </DefaultToolbar>
+        )
+      : null,
     QuickActions: () => {
       const canUndo = useCanUndo();
       const canRedo = useCanRedo();

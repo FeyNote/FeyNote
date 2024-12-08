@@ -469,6 +469,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
         store,
         status: 'not-synced',
       });
+      handleSync();
     }
 
     let waitingForSync = true;

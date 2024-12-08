@@ -105,7 +105,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
-            sessionToken: props.shareToken,
+            shareToken: props.shareToken,
           }).toString();
         }}
       />
@@ -134,7 +134,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
-            sessionToken: props.shareToken,
+            shareToken: props.shareToken,
           }).toString();
         }}
       />
