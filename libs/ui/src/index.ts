@@ -7,7 +7,7 @@ export { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuConte
 export { Artifact } from './components/artifact/Artifact';
 export { SyncManager } from './utils/SyncManager';
 export { SearchManager } from './utils/SearchManager';
-export { trpc, superjson } from './utils/trpc';
+export { trpc } from './utils/trpc';
 export { getManifestDb, ObjectStoreName } from './utils/localDb';
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export { NotFound } from './NotFound';

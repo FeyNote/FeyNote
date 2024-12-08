@@ -16,7 +16,7 @@ export const getArtifactYBinById = publicProcedure
       input,
       ctx,
     }): Promise<{
-      yBin: Buffer;
+      yBin: Uint8Array;
     }> => {
       if (!ctx.session && !input.shareToken) {
         throw new TRPCError({
