@@ -177,6 +177,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       colorScheme,
       locale: languagePreference,
     });
+
+    editor.setCurrentTool('hand');
   };
 
   const components: TLComponents = {
