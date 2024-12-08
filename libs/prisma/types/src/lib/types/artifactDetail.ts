@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
+export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
   select: {
     id: true,
     title: true,

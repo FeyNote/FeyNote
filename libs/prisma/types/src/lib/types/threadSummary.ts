@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const threadSummary = Prisma.validator<Prisma.ThreadArgs>()({
+export const threadSummary = Prisma.validator<Prisma.ThreadFindFirstArgs>()({
   select: {
     id: true,
     title: true,
