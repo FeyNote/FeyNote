@@ -64,13 +64,20 @@ class CollaborationManager {
       tiptapCollabProvider,
       indexeddbProvider,
       syncedPromise: new Promise<void>((resolve, reject) => {
+        let syncSuccess = false;
         tiptapCollabProvider.on('synced', () => {
           resolve();
+          syncSuccess = true;
         });
         indexeddbProvider.whenSynced.then(() => {
           resolve();
+          syncSuccess = true;
         });
-        setTimeout(reject, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
+        setTimeout(() => {
+          if (!syncSuccess) {
+            reject();
+          }
+        }, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
       }),
     };
 

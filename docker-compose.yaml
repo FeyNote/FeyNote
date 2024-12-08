@@ -49,9 +49,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -84,9 +81,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -118,9 +112,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -152,9 +143,6 @@ services:
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey

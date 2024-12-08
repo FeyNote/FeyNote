@@ -1,4 +1,4 @@
-import { useEditor } from '@tiptap/react';
+import { Editor, useEditor } from '@tiptap/react';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 
@@ -24,6 +24,8 @@ type UseArtifactEditorArgs = {
   editable: boolean;
   knownReferences?: Map<string, KnownArtifactReference>;
   onReady?: () => void;
+  handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
+  getFileUrl: (fileId: string) => string;
 } & DocArgOptions;
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
@@ -51,6 +53,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const extensions = getTiptapExtensions({
     placeholder,
     editable: args.editable,
+    handleFileUpload: args.handleFileUpload,
+    getFileUrl: args.getFileUrl,
     collaborationUser,
     knownReferences,
     y: args.yDoc

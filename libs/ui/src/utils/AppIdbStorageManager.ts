@@ -1,4 +1,6 @@
 import { deleteDB } from 'idb';
+import * as Sentry from '@sentry/react';
+
 import type { SessionDTO } from '@feynote/shared-utils';
 import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 
@@ -71,12 +73,15 @@ export class AppIdbStorageManager {
     const databases = await indexedDB.databases();
     for (const database of databases) {
       if (!database.name) continue;
-      if (database.name.startsWith('artifact:')) {
+      if (
+        database.name.startsWith('artifact:') ||
+        database.name.startsWith('userTree:')
+      ) {
         try {
           await deleteDB(database.name);
         } catch (e) {
           console.error('Failed to delete artifact IDB', database.name, e);
-          // TODO: log to sentry
+          Sentry.captureException(e);
         }
       }
     }

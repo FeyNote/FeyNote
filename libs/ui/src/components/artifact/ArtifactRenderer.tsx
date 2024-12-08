@@ -14,6 +14,8 @@ import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
 
 interface Props {
   artifact: ArtifactDTO;
@@ -104,6 +106,38 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
         onTitleChange={props.onTitleChange}
+        handleFileUpload={async (editor, files, pos) => {
+          for (const file of files) {
+            const response = await uploadFileToApi({
+              file,
+              purpose: 'artifact',
+              artifactId: props.artifact.id,
+              sessionToken: session.token,
+            });
+            if (pos === undefined) {
+              pos = editor.state.selection.anchor;
+            }
+            editor
+              .chain()
+              .insertContentAt(pos, {
+                type: 'feynoteImage',
+                attrs: {
+                  title: file.name,
+                  alt: file.name,
+                  fileId: response.id,
+                  storageKey: response.storageKey,
+                },
+              })
+              .focus()
+              .run();
+          }
+        }}
+        getFileUrl={(fileId) => {
+          return getFileRedirectUrl({
+            fileId,
+            sessionToken: session.token,
+          }).toString();
+        }}
       />
     );
   }
@@ -129,9 +163,24 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         editable={isEditable}
         knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
-        y={props.connection.tiptapCollabProvider}
+        collaborationConnection={props.connection}
         incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
+        handleFileUpload={async (file) => {
+          const response = await uploadFileToApi({
+            file,
+            purpose: 'artifact',
+            artifactId: props.artifact.id,
+            sessionToken: session.token,
+          });
+          return response;
+        }}
+        getFileUrl={(fileId) => {
+          return getFileRedirectUrl({
+            fileId,
+            sessionToken: session.token,
+          }).toString();
+        }}
       />
     );
   }

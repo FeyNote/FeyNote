@@ -1,5 +1,4 @@
 import { ImmediateDebouncer } from '@feynote/shared-utils';
-import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { useEffect, useMemo, useState } from 'react';
 import {
   computed,
@@ -11,17 +10,21 @@ import {
   getUserPreferences,
   HistoryEntry,
   InstancePresenceRecordType,
+  loadSnapshot,
   react,
   SerializedSchema,
   setUserPreferences,
-  StoreListener,
   TLAnyShapeUtilConstructor,
+  TLAssetStore,
   TLInstancePresence,
   TLRecord,
   TLStoreWithStatus,
 } from 'tldraw';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
+import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { FileDTO } from '@feynote/global-types';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
@@ -33,18 +36,71 @@ const TLDRAW_YDOC_META_KEY = 'tldrawMeta';
 const TLDRAW_YDOC_META_SCHEMA_KEY = 'schema';
 /* ------ These keys must not be changed ------ */
 
-export const useYjsTLDrawStore = ({
-  yProvider,
-  shapeUtils,
-  editable = true,
-}: {
-  yProvider: TiptapCollabProvider;
+type UseYjsTLDrawStoreOptions = {
+  getFileUrl: (fileId: string) => string;
+  handleFileUpload?: (file: File) => Promise<FileDTO>;
   shapeUtils: TLAnyShapeUtilConstructor[];
   editable: boolean;
-}) => {
+} & (
+  | {
+      collaborationConnection: CollaborationManagerConnection;
+      yDoc?: undefined;
+    }
+  | {
+      collaborationConnection?: undefined;
+      yDoc: YDoc;
+    }
+);
+
+export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
+  const {
+    collaborationConnection,
+    getFileUrl,
+    handleFileUpload,
+    shapeUtils,
+    editable = true,
+  } = args;
+
+  const [tldrawAssetStore] = useState<TLAssetStore>(() => ({
+    async upload(asset, file) {
+      try {
+        if (!handleFileUpload) {
+          throw new Error('No file upload handler provided');
+        }
+        const { id, storageKey } = await handleFileUpload(file);
+
+        asset.meta.id = id;
+        asset.meta.storageKey = storageKey;
+
+        // This url isn't really used since we're using meta
+        const url = getFileRedirectUrl({
+          fileId: id,
+        });
+
+        return url.toString();
+      } catch (e) {
+        console.error(e);
+
+        return '';
+      }
+    },
+
+    async resolve(asset): Promise<string> {
+      const id = asset.meta.id;
+      if (!id || typeof id !== 'string') {
+        throw new Error('Asset has no file id');
+      }
+
+      const url = getFileUrl(id);
+
+      return url;
+    },
+  }));
+
   const [store] = useState(() => {
     const store = createTLStore({
       shapeUtils: [...defaultShapeUtils, ...shapeUtils],
+      assets: tldrawAssetStore,
     });
 
     return store;
@@ -54,16 +110,11 @@ export const useYjsTLDrawStore = ({
     status: 'loading',
   });
 
-  const _awareness = yProvider.awareness;
-  if (!_awareness) {
-    throw new Error(
-      'Awareness not enabled and is required for our custom tldraw yjs store',
-    );
-  }
-  const awareness = _awareness;
+  const awareness =
+    collaborationConnection?.tiptapCollabProvider.awareness || undefined;
 
   const { yStore, yMeta, yDoc } = useMemo(() => {
-    const yDoc = yProvider.document;
+    const yDoc = args.yDoc || args.collaborationConnection.yjsDoc;
     const yStore = new YKeyValue(
       yDoc.getArray<{ key: string; val: TLRecord }>(TLDRAW_YDOC_STORE_KEY),
     );
@@ -74,7 +125,7 @@ export const useYjsTLDrawStore = ({
       yStore,
       yMeta,
     };
-  }, [yProvider]);
+  }, [collaborationConnection]);
 
   useEffect(() => {
     let lastReceivedAt = Date.now();
@@ -97,9 +148,9 @@ export const useYjsTLDrawStore = ({
         }
       });
     };
-    awareness.on('change', awarenessChangeListener);
+    awareness?.on('change', awarenessChangeListener);
     return () => {
-      awareness.off('change', awarenessChangeListener);
+      awareness?.off('change', awarenessChangeListener);
     };
   });
 
@@ -130,7 +181,7 @@ export const useYjsTLDrawStore = ({
 
     const listener = new ImmediateDebouncer(
       (historyEntry: HistoryEntry<TLRecord>): void => {
-        if (!editable) return;
+        if (!editable || !awareness) return;
         // Always add to currentBuffer
 
         const changes = historyEntry.changes;
@@ -210,7 +261,7 @@ export const useYjsTLDrawStore = ({
 
       /* -------------------- Awareness ------------------- */
 
-      const yClientId = awareness.clientID.toString();
+      const yClientId = awareness?.clientID.toString() || crypto.randomUUID();
       setUserPreferences({ id: yClientId });
 
       const userPreferences = computed<{
@@ -234,14 +285,14 @@ export const useYjsTLDrawStore = ({
       )(store);
 
       // Set our initial presence from the derivation's current value
-      awareness.setLocalStateField('presence', presenceDerivation.get());
+      awareness?.setLocalStateField('presence', presenceDerivation.get());
 
       // When the derivation change, sync presence to to yjs awareness
       unsubs.push(
         react('when presence changes', () => {
           const presence = presenceDerivation.get();
           requestAnimationFrame(() => {
-            awareness.setLocalStateField('presence', presence);
+            awareness?.setLocalStateField('presence', presence);
           });
         }),
       );
@@ -252,6 +303,8 @@ export const useYjsTLDrawStore = ({
         updated: number[];
         removed: number[];
       }) => {
+        if (!awareness) return;
+
         const states = awareness.getStates() as Map<
           number,
           { presence: TLInstancePresence }
@@ -298,14 +351,16 @@ export const useYjsTLDrawStore = ({
 
         if (!newMigrations.ok || newMigrations.value.length > 0) {
           window.alert('The schema has been updated. Please refresh the page.');
-          yProvider.destroy();
+          // TODO: unsure if this is the right way to handle this
+          collaborationConnection?.tiptapCollabProvider.destroy();
+          collaborationConnection?.indexeddbProvider.destroy();
         }
       };
       yMeta.observe(handleMetaUpdate);
       unsubs.push(() => yMeta.unobserve(handleMetaUpdate));
 
-      awareness.on('update', handleUpdate);
-      unsubs.push(() => awareness.off('update', handleUpdate));
+      awareness?.on('update', handleUpdate);
+      unsubs.push(() => awareness?.off('update', handleUpdate));
 
       // 2.
       // Initialize the store with the yjs doc records—or, if the yjs doc
@@ -333,20 +388,24 @@ export const useYjsTLDrawStore = ({
           return;
         }
 
-        yDoc.transact(() => {
-          // delete any deleted records from the yjs doc
-          for (const r of records) {
-            if (!migrationResult.value[r.id]) {
-              yStore.delete(r.id);
+        if (editable) {
+          yDoc.transact(() => {
+            // delete any deleted records from the yjs doc
+            for (const r of records) {
+              if (!migrationResult.value[r.id]) {
+                yStore.delete(r.id);
+              }
             }
-          }
-          for (const r of Object.values(migrationResult.value) as TLRecord[]) {
-            yStore.set(r.id, r);
-          }
-          yMeta.set(TLDRAW_YDOC_META_SCHEMA_KEY, ourSchema);
-        });
+            for (const r of Object.values(
+              migrationResult.value,
+            ) as TLRecord[]) {
+              yStore.set(r.id, r);
+            }
+            yMeta.set(TLDRAW_YDOC_META_SCHEMA_KEY, ourSchema);
+          });
+        }
 
-        store.loadSnapshot({
+        loadSnapshot(store, {
           store: migrationResult.value,
           schema: ourSchema,
         });
@@ -368,43 +427,67 @@ export const useYjsTLDrawStore = ({
       });
     }
 
-    let hasConnectedBefore = false;
-
     function handleStatusChange({
       status,
     }: {
       status: 'disconnected' | 'connected';
     }) {
-      // If we're disconnected, set the store status to 'synced-remote' and the connection status to 'offline'
       if (status === 'disconnected') {
+        if (collaborationConnection?.indexeddbProvider.synced) {
+          setStoreWithStatus({
+            store,
+            status: 'synced-remote',
+            connectionStatus: 'offline',
+          });
+        }
+      }
+
+      if (status === 'connected') {
         setStoreWithStatus({
           store,
           status: 'synced-remote',
-          connectionStatus: 'offline',
+          connectionStatus: 'online',
         });
-        return;
-      }
-
-      yProvider.off('synced', handleSync);
-
-      if (status === 'connected') {
-        if (hasConnectedBefore) return;
-        hasConnectedBefore = true;
-        yProvider.on('synced', handleSync);
-        unsubs.push(() => yProvider.off('synced', handleSync));
       }
     }
 
-    yProvider.on('status', handleStatusChange);
-    unsubs.push(() => yProvider.off('status', handleStatusChange));
-    handleStatusChange({ status: yProvider.status as any });
-    if (yProvider.synced) handleSync();
+    collaborationConnection?.tiptapCollabProvider.on(
+      'status',
+      handleStatusChange,
+    );
+    unsubs.push(() =>
+      collaborationConnection?.tiptapCollabProvider.off(
+        'status',
+        handleStatusChange,
+      ),
+    );
+    if (collaborationConnection) {
+      handleStatusChange({
+        status: collaborationConnection.tiptapCollabProvider.status as any,
+      });
+    } else {
+      setStoreWithStatus({
+        store,
+        status: 'not-synced',
+      });
+      handleSync();
+    }
+
+    let waitingForSync = true;
+    collaborationConnection?.syncedPromise.then(() => {
+      if (waitingForSync) {
+        handleSync();
+      }
+    });
+    unsubs.push(() => {
+      waitingForSync = false;
+    });
 
     return () => {
       unsubs.forEach((fn) => fn());
       unsubs.length = 0;
     };
-  }, [yProvider, yDoc, store, yStore, yMeta]);
+  }, [collaborationConnection, yDoc, store, yStore, yMeta]);
 
   return storeWithStatus;
 };

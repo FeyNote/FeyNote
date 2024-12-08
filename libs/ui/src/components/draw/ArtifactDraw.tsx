@@ -1,8 +1,8 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { memo, useContext, useEffect } from 'react';
-import type { ArtifactDTO } from '@feynote/global-types';
+import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import type { ArtifactDTO, FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
@@ -44,6 +44,7 @@ import {
   setUserPreferences,
   StarToolbarItem,
   TextToolbarItem,
+  TLAssetStore,
   TLComponents,
   Tldraw,
   TldrawUiMenuGroup,
@@ -69,6 +70,8 @@ import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { TLDrawCustomGrid } from './TLDrawCustomGrid';
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -85,17 +88,28 @@ const StyledArtifactDrawStyles = styled(ArtifactDrawStyles)<{
     props.$titleBodyMerge ? 'min-content auto' : 'auto'};
 `;
 
-interface Props {
+type DocArgOptions =
+  | {
+      collaborationConnection: CollaborationManagerConnection;
+      yDoc?: undefined;
+    }
+  | {
+      collaborationConnection?: undefined;
+      yDoc: YDoc;
+    };
+
+type Props = {
   knownReferences: Map<string, KnownArtifactReference>;
   incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
-  y: TiptapCollabProvider;
   editable: boolean;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
-}
+  handleFileUpload?: (file: File) => Promise<FileDTO>;
+  getFileUrl: (fileId: string) => string;
+} & DocArgOptions;
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
-  const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
+  const yDoc = props.yDoc || props.collaborationConnection.yjsDoc;
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
@@ -107,18 +121,29 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
   useEffect(() => {
-    if (props.y instanceof TiptapCollabProvider) {
-      props.y.awareness?.setLocalStateField('user', {
-        name: session ? session.email : t('generic.anonymous'),
-        color: preferredUserColor,
-      });
+    if (props.collaborationConnection) {
+      props.collaborationConnection.tiptapCollabProvider.awareness?.setLocalStateField(
+        'user',
+        {
+          name: session ? session.email : t('generic.anonymous'),
+          color: preferredUserColor,
+        },
+      );
     }
-  }, [session, preferredUserColor]);
+  }, [props.collaborationConnection, session, preferredUserColor]);
 
   const store = useYjsTLDrawStore({
-    yProvider: props.y,
+    handleFileUpload: props.handleFileUpload,
+    getFileUrl: props.getFileUrl,
     shapeUtils: [],
     editable: props.editable,
+    ...(props.yDoc
+      ? {
+          yDoc: props.yDoc,
+        }
+      : {
+          collaborationConnection: props.collaborationConnection,
+        }),
   });
 
   const setMetaProp = (metaPropName: string, value: any) => {
@@ -153,39 +178,43 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       colorScheme,
       locale: languagePreference,
     });
+
+    editor.setCurrentTool('hand');
   };
 
   const components: TLComponents = {
     NavigationPanel: null,
-    Toolbar: () => (
-      <DefaultToolbar>
-        <SelectToolbarItem />
-        <HandToolbarItem />
-        <DrawToolbarItem />
-        <EraserToolbarItem />
-        <ArrowToolbarItem />
-        <TextToolbarItem />
-        <NoteToolbarItem />
-        <RectangleToolbarItem />
-        <EllipseToolbarItem />
-        <TriangleToolbarItem />
-        <DiamondToolbarItem />
-        <HexagonToolbarItem />
-        <OvalToolbarItem />
-        <RhombusToolbarItem />
-        <StarToolbarItem />
-        <CloudToolbarItem />
-        <XBoxToolbarItem />
-        <CheckBoxToolbarItem />
-        <ArrowLeftToolbarItem />
-        <ArrowRightToolbarItem />
-        <ArrowUpToolbarItem />
-        <ArrowDownToolbarItem />
-        <LineToolbarItem />
-        <HighlightToolbarItem />
-        <FrameToolbarItem />
-      </DefaultToolbar>
-    ),
+    Toolbar: props.editable
+      ? () => (
+          <DefaultToolbar>
+            <SelectToolbarItem />
+            <HandToolbarItem />
+            <DrawToolbarItem />
+            <EraserToolbarItem />
+            <ArrowToolbarItem />
+            <TextToolbarItem />
+            <NoteToolbarItem />
+            <RectangleToolbarItem />
+            <EllipseToolbarItem />
+            <TriangleToolbarItem />
+            <DiamondToolbarItem />
+            <HexagonToolbarItem />
+            <OvalToolbarItem />
+            <RhombusToolbarItem />
+            <StarToolbarItem />
+            <CloudToolbarItem />
+            <XBoxToolbarItem />
+            <CheckBoxToolbarItem />
+            <ArrowLeftToolbarItem />
+            <ArrowRightToolbarItem />
+            <ArrowUpToolbarItem />
+            <ArrowDownToolbarItem />
+            <LineToolbarItem />
+            <HighlightToolbarItem />
+            <FrameToolbarItem />
+          </DefaultToolbar>
+        )
+      : null,
     QuickActions: () => {
       const canUndo = useCanUndo();
       const canRedo = useCanRedo();
@@ -214,6 +243,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
         </DefaultMainMenu>
       );
     },
+    Grid: TLDrawCustomGrid,
   };
 
   return (
@@ -225,7 +255,19 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       >
         {titleBodyMerge && titleInput}
 
-        <Tldraw store={store} onMount={onMount} components={components} />
+        <Tldraw
+          store={store}
+          acceptedImageMimeTypes={['image/jpeg', 'image/png']}
+          acceptedVideoMimeTypes={[]}
+          maxImageDimension={Infinity}
+          maxAssetSize={10 * 1024 * 1024}
+          onMount={onMount}
+          components={components}
+          cameraOptions={{
+            zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
+            wheelBehavior: 'zoom',
+          }}
+        />
       </StyledArtifactDrawStyles>
     </ArtifactDrawContainer>
   );

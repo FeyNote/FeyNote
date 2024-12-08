@@ -7,10 +7,6 @@ import {
   useState,
 } from 'react';
 import { YKeyValue } from 'y-utility/y-keyvalue';
-import { collaborationManager } from '../editor/collaborationManager';
-import { SessionContext } from '../../context/session/SessionContext';
-import { trpc } from '../../utils/trpc';
-import { ArtifactDTO } from '@feynote/global-types';
 import {
   ControlledTreeEnvironment,
   DraggingPosition,
@@ -19,6 +15,14 @@ import {
   TreeItem,
   TreeItemIndex,
 } from 'react-complex-tree';
+import styled from 'styled-components';
+import { t } from 'i18next';
+import * as Sentry from '@sentry/react';
+
+import { collaborationManager } from '../editor/collaborationManager';
+import { SessionContext } from '../../context/session/SessionContext';
+import { trpc } from '../../utils/trpc';
+import { ArtifactDTO } from '@feynote/global-types';
 import { EventName } from '../../context/events/EventName';
 import {
   GlobalPaneContext,
@@ -26,9 +30,7 @@ import {
 } from '../../context/globalPane/GlobalPaneContext';
 import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
 import { eventManager } from '../../context/events/EventManager';
-import styled from 'styled-components';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { t } from 'i18next';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 
 /**
@@ -56,7 +58,12 @@ const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
   const validRegex = /^[A-Z]*$/;
   if (!validRegex.test(a) || !validRegex.test(b)) {
     console.error('a and b must be uppercase strings');
-    // TODO: log to sentry
+    Sentry.captureException(new Error('a and b must be uppercase strings'), {
+      extra: {
+        a,
+        b,
+      },
+    });
     // We do not want to break the user's experience
     return 'Y';
   }
@@ -213,7 +220,7 @@ export const ArtifactTree = () => {
         triggerRerender();
       })
       .catch((e) => {
-        // TODO: Log to sentry
+        // Do nothing
       });
   };
 
@@ -437,8 +444,10 @@ export const ArtifactTree = () => {
     }
     if (target.targetType === 'item') {
       if (isItemUncategorized(target.targetItem.toString())) {
-        console.log('Cannot drop on uncategorized');
-        // TODO: log to sentry
+        // This is unexpected since we should have already prevented this in canDropAt
+        const error = new Error('Cannot drop on uncategorized');
+        console.error(error);
+        Sentry.captureException(error);
         return;
       }
 
@@ -467,8 +476,10 @@ export const ArtifactTree = () => {
     }
     if (target.targetType === 'between-items') {
       if (isItemUncategorized(target.parentItem.toString())) {
-        console.log('Cannot drop on uncategorized');
-        // TODO: log to sentry
+        // This is unexpected since we should have already prevented this in canDropAt
+        const error = new Error('Cannot drop between uncategorized items');
+        console.error(error);
+        Sentry.captureException(error);
         return;
       }
 

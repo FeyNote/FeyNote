@@ -42,18 +42,12 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactArgs>()({
         targetArtifactDate: true,
       },
     },
-    artfactFiles: {
+    files: {
       select: {
         id: true,
-        fileId: true,
-        order: true,
-        file: {
-          select: {
-            filename: true,
-            storageKey: true,
-            mimetype: true,
-          },
-        },
+        name: true,
+        storageKey: true,
+        mimetype: true,
       },
     },
     artifactShares: {

@@ -1,8 +1,8 @@
 import express from 'express';
 import { createMessage } from './createMessage';
 
-const router = express.Router();
+const messageRouter = express.Router();
 
-router.post('/', createMessage);
+messageRouter.post('/', createMessage);
 
-export default router;
+export { messageRouter };

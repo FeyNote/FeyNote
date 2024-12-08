@@ -1,6 +1,6 @@
 import { memo, MutableRefObject } from 'react';
 import { BubbleMenu, EditorContent } from '@tiptap/react';
-import { JSONContent } from '@tiptap/core';
+import { Editor, JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
@@ -26,10 +26,10 @@ const BottomSpacer = styled.div`
 type DocArgOptions =
   | {
       yjsProvider: TiptapCollabProvider;
-      yDoc: undefined;
+      yDoc?: undefined;
     }
   | {
-      yjsProvider: undefined;
+      yjsProvider?: undefined;
       yDoc: YDoc;
     };
 
@@ -39,6 +39,8 @@ type Props = {
   knownReferences: Map<string, KnownArtifactReference>;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
+  handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
+  getFileUrl: (fileId: string) => string;
 } & DocArgOptions;
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {

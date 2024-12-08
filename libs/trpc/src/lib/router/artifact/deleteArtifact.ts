@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
@@ -77,7 +78,7 @@ export const deleteArtifact = authenticatedProcedure
       }
     } catch (e) {
       console.error(e);
-      // TODO: Sentry
+      Sentry.captureException(e);
     }
 
     return 'Ok';
