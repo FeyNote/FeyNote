@@ -10,6 +10,7 @@ import {
   getUserPreferences,
   HistoryEntry,
   InstancePresenceRecordType,
+  loadSnapshot,
   react,
   SerializedSchema,
   setUserPreferences,
@@ -404,7 +405,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
           });
         }
 
-        store.loadSnapshot({
+        loadSnapshot(store, {
           store: migrationResult.value,
           schema: ourSchema,
         });
