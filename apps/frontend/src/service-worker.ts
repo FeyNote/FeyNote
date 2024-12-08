@@ -4,6 +4,7 @@
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
@@ -11,7 +12,7 @@ import {
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
 import { superjson } from '../../../libs/ui/src/utils/trpc';
-import { NetworkFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
@@ -211,6 +212,25 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxAgeSeconds: 60 * 60 * 24 * MAX_LANGUAGE_AGE_DAYS,
+      }),
+    ],
+  }),
+);
+
+// Artifact assets are immutable. Should be cached indefinitely, but we need to limit them so
+// we don't "anger" the browser by caching too much
+const ARTIFACT_ASSET_CACHE_NAME = 'artifact-asset-cache';
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/file\/.*?\/redirect/,
+  new CacheFirst({
+    cacheName: ARTIFACT_ASSET_CACHE_NAME,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200, 302],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 500,
+        purgeOnQuotaError: true, // Clear the image cache if we exceed the browser cache limit
       }),
     ],
   }),
