@@ -98,6 +98,7 @@
   "settings.preferencesSync.message": "You must select whether you want to override the synced settings in the cloud with the local settings on this device, or override the settings on this device with the settings from the cloud.",
   "settings.preferencesSync.local": "Keep Local Settings",
   "settings.preferencesSync.remote": "Keep Cloud Settings",
+  "settings.import": "Import Artifact Data",
 
   "dashboard.title": "Dashboard",
   "dashboard.recents.title": "Recent Artifacts",
@@ -127,6 +128,11 @@
   "welcome.ai.description": "The assistant can help you generate content or import content from any URL.",
 
   "welcome.footer": "You can always access this guide by clicking the welcome guide button on the settings page (in the left sidemenu)",
+
+  "import.title": "Import Artifacts",
+  "import.jobs.title": "Import Jobs",
+  "import.jobs.nullState.title": "No Import Jobs",
+  "import.jobs.nullState.message": "Import artifacts by clicking on an import option below!",
 
   "sharedContent.title": "Shared Content",
   "sharedContent.artifacts.title": "Artifacts Shared With You",

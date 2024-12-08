@@ -1,4 +1,3 @@
-import { isSessionExpired } from '@feynote/api-services';
 import {
   systemMessage,
   AIModel,
@@ -7,28 +6,11 @@ import {
   Display5eObjectTool,
   DisplayUrlTool,
 } from '@feynote/openai';
-import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
 import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';
 import { ToolName } from '@feynote/shared-utils';
 
 export async function createMessage(req: Request, res: Response) {
-  let token = req.headers.authorization;
-  if (!token) {
-    return res.status(401).send('Authorization header is required');
-  }
-  token = token.trim().split('Bearer ')[1];
-  const session = await prisma.session.findUnique({
-    where: {
-      token,
-    },
-  });
-  if (!session || isSessionExpired(session)) {
-    return res
-      .status(401)
-      .send('Session not found or expired with the provided token');
-  }
-
   const requestMessages = req.body['messages'];
   if (!requestMessages || !requestMessages.length) {
     return res

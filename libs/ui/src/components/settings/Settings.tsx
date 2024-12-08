@@ -29,6 +29,9 @@ import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
 import { SessionContext } from '../../context/session/SessionContext';
 import { WelcomeModal } from '../dashboard/WelcomeModal';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -72,6 +75,7 @@ export const Settings: React.FC = () => {
   const { setPreference, getPreference, _preferencesService } =
     useContext(PreferencesContext);
   const { session } = useContext(SessionContext);
+  const { navigate } = useContext(PaneContext);
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   });
@@ -374,6 +378,17 @@ export const Settings: React.FC = () => {
               >
                 {t('settings.preferencesSync')}
               </IonToggle>
+            </IonItem>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(PaneableComponent.Import, {}, PaneTransition.Push);
+              }}
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.import')}
             </IonItem>
           </IonList>
         </IonCard>

@@ -8,6 +8,7 @@ import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
 import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
+import { Import } from '../../components/import/Import';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -19,6 +20,7 @@ export enum PaneableComponent {
   Graph = 'Graph',
   SharedContent = 'SharedContent',
   RecentArtifacts = 'RecentArtifacts',
+  Import = 'Import',
 }
 
 export type PaneableComponentProps = {
@@ -31,6 +33,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
+  [PaneableComponent.Import]: ComponentProps<typeof Import>;
 };
 
 export const getPaneableComponent = (
@@ -46,6 +49,7 @@ export const getPaneableComponent = (
     [PaneableComponent.Graph]: Graph,
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
+    [PaneableComponent.Import]: Import,
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
   return paneableComponentNameToComponent[componentName];
@@ -64,4 +68,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Graph]: 'graph.title',
   [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
+  [PaneableComponent.Import]: 'import.title',
 } satisfies Record<PaneableComponent, string>;
