@@ -19,7 +19,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: npx nx serve frontend --skip-nx-cache
+    command: npx nx serve frontend
     environment:
       - VITE_ENVIRONMENT=development
     depends_on:
@@ -31,7 +31,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: npx nx serve www --skip-nx-cache
+    command: npx nx serve www
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
@@ -45,13 +45,10 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve hocuspocus --skip-nx-cache
+    command: npx nx serve hocuspocus
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -80,13 +77,10 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve backend --skip-nx-cache
+    command: npx nx serve backend
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -114,13 +108,10 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve queue-worker --skip-nx-cache
+    command: npx nx serve queue-worker
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey
@@ -148,13 +139,10 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve websocket --skip-nx-cache
+    command: npx nx serve websocket
     environment:
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
-      - EMAIL_FROM_NAME=val
-      - EMAIL_FROM_ADDRESS=val
-      - EMAIL_REPLY_TO_ADDRESS=val
       - TYPESENSE_API_KEY=feynote
       - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
       - WORKER_REDIS_HOST=queue-worker-valkey

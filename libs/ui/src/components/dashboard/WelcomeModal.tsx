@@ -62,26 +62,13 @@ export const WelcomeModal: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = () => {
-    trpc.artifact.createArtifact
-      .mutate({
-        title: t('generic.untitled'),
-        type: 'tiptap',
-        theme: 'default',
-      })
-      .then((artifact) => {
-        props.dismiss();
-        navigate(
-          undefined, // Navigate within current focused pane rather than specific pane
-          PaneableComponent.Artifact,
-          {
-            id: artifact.id,
-          },
-          PaneTransition.Push,
-        );
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
+    props.dismiss();
+    navigate(
+      undefined, // Navigate within current focused pane rather than specific pane
+      PaneableComponent.NewArtifact,
+      {},
+      PaneTransition.Push,
+    );
   };
 
   const newAIThread = () => {

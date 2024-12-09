@@ -211,7 +211,9 @@ export const Settings: React.FC = () => {
                   )
                 }
               >
-                {t('settings.leftSideMenu')}
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.leftSideMenu')}
+                </IonLabel>
               </IonToggle>
             </IonItem>
             <IonItem lines="none" button>
@@ -226,7 +228,26 @@ export const Settings: React.FC = () => {
                   )
                 }
               >
-                {t('settings.leftSideMenuShowArtifactTree')}
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.leftSideMenuShowArtifactTree')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.leftSideMenuArtifactTreeShowUncategorized')}
+                </IonLabel>
               </IonToggle>
             </IonItem>
             <IonItem lines="none" button>
@@ -241,7 +262,9 @@ export const Settings: React.FC = () => {
                   )
                 }
               >
-                {t('settings.leftSideMenuShowRecentThreads')}
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.leftSideMenuShowRecentThreads')}
+                </IonLabel>
               </IonToggle>
             </IonItem>
             <IonItem lines="none" button>
@@ -254,7 +277,9 @@ export const Settings: React.FC = () => {
                   )
                 }
               >
-                {t('settings.rightSideMenu')}
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.rightSideMenu')}
+                </IonLabel>
               </IonToggle>
             </IonItem>
             <IonItem lines="none">
@@ -376,7 +401,9 @@ export const Settings: React.FC = () => {
                   togglePreferencesSync(event.detail.checked)
                 }
               >
-                {t('settings.preferencesSync')}
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.preferencesSync')}
+                </IonLabel>
               </IonToggle>
             </IonItem>
             <IonItem

@@ -4,6 +4,7 @@
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
@@ -11,7 +12,7 @@ import {
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
 import { superjson } from '../../../libs/ui/src/utils/trpc';
-import { NetworkFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
@@ -56,7 +57,7 @@ const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
   return input;
 };
 
-const encodeCacheResultForTrpc = (result: any) => {
+const encodeCacheResultForTrpc = (result: unknown) => {
   return new Response(
     JSON.stringify({
       result: {
@@ -122,7 +123,7 @@ const cacheListResponse = async (
     }
 
     return response;
-  } catch (e: any) {
+  } catch (e) {
     console.log(`Request failed`, e);
 
     // TODO: check response for statuscode
@@ -147,7 +148,7 @@ const cacheSingleResponse = async (
     }
 
     return response;
-  } catch (e: any) {
+  } catch (e) {
     console.log(`Request failed`, e);
 
     // TODO: check response for statuscode
@@ -165,9 +166,11 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (self as any).skipWaiting();
   clientsClaim();
 
@@ -209,6 +212,25 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxAgeSeconds: 60 * 60 * 24 * MAX_LANGUAGE_AGE_DAYS,
+      }),
+    ],
+  }),
+);
+
+// Artifact assets are immutable. Should be cached indefinitely, but we need to limit them so
+// we don't "anger" the browser by caching too much
+const ARTIFACT_ASSET_CACHE_NAME = 'artifact-asset-cache';
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/file\/.*?\/redirect/,
+  new CacheFirst({
+    cacheName: ARTIFACT_ASSET_CACHE_NAME,
+    plugins: [
+      new CacheableResponsePlugin({
+        statuses: [0, 200, 302],
+      }),
+      new ExpirationPlugin({
+        maxEntries: 500,
+        purgeOnQuotaError: true, // Clear the image cache if we exceed the browser cache limit
       }),
     ],
   }),

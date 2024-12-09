@@ -43,23 +43,23 @@ model Session {
 }
 
 model Artifact {
-  id                 String        @id @default(uuid()) @db.Uuid
-  title              String
-  type               ArtifactType  @default(tiptap)
-  theme              ArtifactTheme @default(default)
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId             String        @db.Uuid
-  text               String
-  json               Json
-  yBin               Bytes         @db.ByteA
-  createdAt          DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt          DateTime      @updatedAt @db.Timestamptz(6)
+  id        String        @id @default(uuid()) @db.Uuid
+  title     String
+  type      ArtifactType  @default(tiptap)
+  theme     ArtifactTheme @default(default)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String        @db.Uuid
+  text      String
+  json      Json
+  yBin      Bytes         @db.ByteA
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
 
-  artfactFiles               ArtifactFile[]
   artifactReferences         ArtifactReference[]  @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[]  @relation("artifactReferenceTargetArtifact")
   artifactShares             ArtifactShare[]
   artifactShareTokens        ArtifactShareToken[]
+  files                      File[]
 }
 
 model ArtifactReference {
@@ -82,19 +82,6 @@ model ArtifactReference {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
-}
-
-model ArtifactFile {
-  id         String   @id @default(uuid()) @db.Uuid
-  artifactId String   @db.Uuid
-  artifact   Artifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  fileId     String   @db.Uuid
-  file       File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
-  order      Int
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
-
-  @@unique([artifactId, order])
 }
 
 model ArtifactRevision {
@@ -127,15 +114,15 @@ model ArtifactShare {
 }
 
 model ArtifactShareToken {
-  id          String              @id @default(uuid()) @db.Uuid
-  shareToken  String
-  allowAddToAccount  Boolean
-  artifact    Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  artifactId  String              @db.Uuid
-  accessLevel ArtifactAccessLevel
-  createdAt   DateTime            @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
-  expiresAt   DateTime?           @db.Timestamptz(6)
+  id                String              @id @default(uuid()) @db.Uuid
+  shareToken        String
+  allowAddToAccount Boolean
+  artifact          Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactId        String              @db.Uuid
+  accessLevel       ArtifactAccessLevel
+  createdAt         DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt         DateTime            @updatedAt @db.Timestamptz(6)
+  expiresAt         DateTime?           @db.Timestamptz(6)
 }
 
 enum ArtifactAccessLevel {
@@ -156,16 +143,22 @@ enum ArtifactTheme {
 }
 
 model File {
-  id            String         @id @default(uuid()) @db.Uuid
-  userId        String         @db.Uuid
-  user          User           @relation(fields: [userId], references: [id])
-  label         String
-  mimetype      String
-  filename      String
-  storageKey    String
-  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
-  updatedAt     DateTime       @updatedAt @db.Timestamptz(6)
-  artifactFiles ArtifactFile[]
+  id         String      @id @default(uuid()) @db.Uuid
+  userId     String      @db.Uuid
+  user       User        @relation(fields: [userId], references: [id])
+  artifactId String?     @db.Uuid
+  artifact   Artifact?   @relation(fields: [artifactId], references: [id])
+  mimetype   String
+  name       String
+  storageKey String
+  purpose    FilePurpose
+  metadata   Json
+  createdAt  DateTime    @default(now()) @db.Timestamptz(6)
+  updatedAt  DateTime    @updatedAt @db.Timestamptz(6)
+}
+
+enum FilePurpose {
+  artifact
 }
 
 model Thread {

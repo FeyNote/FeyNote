@@ -1,3 +1,5 @@
+import './instrument.mjs';
+
 import { Extension, Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';
 import { Throttle } from '@hocuspocus/extension-throttle';

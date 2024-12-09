@@ -19,6 +19,7 @@ export const applyTiptapJSONToYArtifact = (
       color: '',
     },
     knownReferences: new Map(),
+    getFileUrl: () => '',
   });
   const tiptapJSONAsY = TiptapTransformer.toYdoc(
     tiptapJSON,

@@ -7,10 +7,6 @@ import {
   useState,
 } from 'react';
 import { YKeyValue } from 'y-utility/y-keyvalue';
-import { collaborationManager } from '../editor/collaborationManager';
-import { SessionContext } from '../../context/session/SessionContext';
-import { trpc } from '../../utils/trpc';
-import { ArtifactDTO } from '@feynote/global-types';
 import {
   ControlledTreeEnvironment,
   DraggingPosition,
@@ -19,15 +15,23 @@ import {
   TreeItem,
   TreeItemIndex,
 } from 'react-complex-tree';
+import styled from 'styled-components';
+import { t } from 'i18next';
+import * as Sentry from '@sentry/react';
+
+import { collaborationManager } from '../editor/collaborationManager';
+import { SessionContext } from '../../context/session/SessionContext';
+import { trpc } from '../../utils/trpc';
+import { ArtifactDTO } from '@feynote/global-types';
 import { EventName } from '../../context/events/EventName';
 import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { ImmediateDebouncer } from '@feynote/shared-utils';
+import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
 import { eventManager } from '../../context/events/EventManager';
-import styled from 'styled-components';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 
 /**
  * Calculates a lexographic sort order between two uppercase strings.
@@ -54,7 +58,12 @@ const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
   const validRegex = /^[A-Z]*$/;
   if (!validRegex.test(a) || !validRegex.test(b)) {
     console.error('a and b must be uppercase strings');
-    // TODO: log to sentry
+    Sentry.captureException(new Error('a and b must be uppercase strings'), {
+      extra: {
+        a,
+        b,
+      },
+    });
     // We do not want to break the user's experience
     return 'Y';
   }
@@ -83,13 +92,14 @@ const StyleContainer = styled.div`
   .rct-tree-item-title-container {
     display: flex;
     align-items: center;
-    padding-left: 16px;
+    padding-left: 8px;
   }
 
   .rct-tree-item-button {
     flex-grow: 1;
     display: flex;
     align-items: center;
+    text-align: left;
     background-color: transparent;
     height: 32px;
     color: var(--ion-text-color);
@@ -103,9 +113,12 @@ const StyleContainer = styled.div`
     background-color: var(--ion-background-color);
   }
 
-  .rct-tree-item-arrow:has(svg) {
+  .rct-tree-item-arrow {
     width: 20px;
     height: 20px;
+  }
+
+  .rct-tree-item-arrow:has(svg) {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -167,11 +180,16 @@ interface InternalTreeItem {
 
 const TREE_ID = 'appArtifactTree';
 const ROOT_ITEM_ID = 'root';
-const RELOAD_DEBOUNCE_INTERVAL_MS = 5000;
+const UNCATEGORIZED_ITEM_ID = 'uncategorized';
+const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
 export const ArtifactTree = () => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useContext(SessionContext);
+  const { getPreference } = useContext(PreferencesContext);
+  const leftPaneArtifactTreeShowUncategorized = getPreference(
+    PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
+  );
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -202,7 +220,7 @@ export const ArtifactTree = () => {
         triggerRerender();
       })
       .catch((e) => {
-        // TODO: Log to sentry
+        // Do nothing
       });
   };
 
@@ -271,6 +289,8 @@ export const ArtifactTree = () => {
     for (const [key, value] of kvEntries) {
       const artifact = artifactsById.get(key);
       if (!artifact) {
+        // Artifact appears to be deleted, do not render but also do not remove from kvlist in case it comes back
+        // (re-shared to user)
         continue;
       }
 
@@ -286,6 +306,8 @@ export const ArtifactTree = () => {
       };
     }
 
+    // Artifact not explicitly added to tree, add it to uncategorized
+    const uncategorizedArtifacts = new Set<string>();
     for (const artifact of artifacts) {
       if (!items[artifact.id]) {
         items[artifact.id] = {
@@ -298,15 +320,43 @@ export const ArtifactTree = () => {
           children: [],
           isFolder: false,
         };
+
+        uncategorizedArtifacts.add(artifact.id);
       }
     }
 
     // Populate children
     for (const [key, value] of kvEntries) {
+      // We may have hanging items in our kvlist that aren't accessible to us anymore
+      if (!items[key]) continue;
+
+      // Find item which this item is a child of, and add to the parent item's children list
+      // enabling folder mode for the parent item
       if (value.parentNodeId && items[value.parentNodeId]) {
         items[value.parentNodeId].children?.push(key);
         items[value.parentNodeId].isFolder = true;
       }
+
+      // Parents for nodes may be deleted, unshared, or otherwise invalid.
+      // We don't want them to be permanently unavailable in the tree
+      if (value.parentNodeId && !items[value.parentNodeId]) {
+        uncategorizedArtifacts.add(key);
+      }
+    }
+
+    if (leftPaneArtifactTreeShowUncategorized) {
+      // All uncategorized items go under their own header
+      items[UNCATEGORIZED_ITEM_ID] = {
+        index: UNCATEGORIZED_ITEM_ID,
+        data: {
+          id: UNCATEGORIZED_ITEM_ID,
+          title: t('artifactTree.uncategorized'),
+          order: 'XZ',
+        },
+        children: Array.from(uncategorizedArtifacts),
+        isFolder: true,
+        canMove: false,
+      };
     }
 
     // Sort children
@@ -333,10 +383,17 @@ export const ArtifactTree = () => {
       },
       // Children should be anything that has no parent item found in our collection
       children: Object.entries(items)
-        .filter(
-          ([key]) =>
-            kvEntries.get(key)?.parentNodeId === null || !kvEntries.get(key),
-        )
+        .filter(([key]) => {
+          // We always want the list of uncategorized artifacts at the root
+          if (key === UNCATEGORIZED_ITEM_ID) return true;
+
+          const kvEntry = kvEntries.get(key);
+
+          // 'null' is the root node, so this element belongs at root
+          if (kvEntry?.parentNodeId === null) return true;
+
+          return false;
+        })
         .sort(([_, aVal], [__, bVal]) => {
           const comparison = aVal.data.order.localeCompare(bVal.data.order);
           if (comparison === 0) {
@@ -348,7 +405,23 @@ export const ArtifactTree = () => {
     };
 
     return items;
-  }, [yKeyValue, _rerenderReducerValue]);
+  }, [yKeyValue, _rerenderReducerValue, leftPaneArtifactTreeShowUncategorized]);
+
+  /**
+   * Uncategorize all descendants of the itemsToDelete
+   */
+  const recursiveDelete = (itemsToDelete: TreeItem<InternalTreeItem>[]) => {
+    for (const itemToDelete of itemsToDelete) {
+      yKeyValue.delete(itemToDelete.data.id);
+
+      const children = itemToDelete.children?.map(
+        (child) => items[child.toString()],
+      );
+      if (children?.length) {
+        recursiveDelete(children);
+      }
+    }
+  };
 
   const onDrop = (
     droppedItems: TreeItem<InternalTreeItem>[],
@@ -370,6 +443,20 @@ export const ArtifactTree = () => {
       }
     }
     if (target.targetType === 'item') {
+      if (isItemUncategorized(target.targetItem.toString())) {
+        // This is unexpected since we should have already prevented this in canDropAt
+        const error = new Error('Cannot drop on uncategorized');
+        console.error(error);
+        Sentry.captureException(error);
+        return;
+      }
+
+      if (target.targetItem.toString() === UNCATEGORIZED_ITEM_ID) {
+        recursiveDelete(droppedItems);
+
+        return;
+      }
+
       const parentItem = items[target.targetItem];
       const lastParentChildOrder =
         parentItem.children?.[parentItem.children!.length - 1]?.toString() ||
@@ -380,7 +467,7 @@ export const ArtifactTree = () => {
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
-            target.targetItem.toString() === 'root'
+            target.targetItem.toString() === ROOT_ITEM_ID
               ? null
               : target.targetItem.toString(),
           order,
@@ -388,6 +475,18 @@ export const ArtifactTree = () => {
       }
     }
     if (target.targetType === 'between-items') {
+      if (isItemUncategorized(target.parentItem.toString())) {
+        // This is unexpected since we should have already prevented this in canDropAt
+        const error = new Error('Cannot drop between uncategorized items');
+        console.error(error);
+        Sentry.captureException(error);
+        return;
+      }
+
+      if (target.parentItem.toString() === UNCATEGORIZED_ITEM_ID) {
+        return;
+      }
+
       const parentItem = items[target.parentItem];
       let previousItemOrder =
         items[parentItem.children?.[target.childIndex - 1] || -1]?.data.order ||
@@ -401,7 +500,7 @@ export const ArtifactTree = () => {
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
-            target.parentItem.toString() === 'root'
+            target.parentItem.toString() === ROOT_ITEM_ID
               ? null
               : target.parentItem.toString(),
           order,
@@ -410,6 +509,31 @@ export const ArtifactTree = () => {
         previousItemOrder = order;
       }
     }
+  };
+
+  /**
+   * Returns true if the item is uncategorized, but is not the uncategorized header itself
+   */
+  const isItemUncategorized = (index: string) => {
+    if (index === UNCATEGORIZED_ITEM_ID) {
+      // Allow drop on "uncategorized" itself
+      return false;
+    }
+    if (index === ROOT_ITEM_ID) {
+      // Always allow drop on root
+      return false;
+    }
+
+    const kvEntry = yKeyValue.get(index);
+    // When an item isn't in the kv list, it's de-facto uncategorized since it has no capability to have a parent
+    if (!kvEntry) return true;
+
+    // When an item's parent doesn't exist in our items list, the user has likely lost access to the parent or it's been deleted
+    if (kvEntry.parentNodeId && !items[kvEntry.parentNodeId]) {
+      return true;
+    }
+
+    return false;
   };
 
   return (
@@ -441,8 +565,18 @@ export const ArtifactTree = () => {
           extends: InteractionMode.ClickArrowToExpand,
           createInteractiveElementProps: (item, treeId, actions) => ({
             onClick: (e) => {
+              if (item.index === UNCATEGORIZED_ITEM_ID) {
+                return;
+              }
+
               if (e.ctrlKey || e.metaKey) {
-                actions.selectItem();
+                navigate(
+                  undefined,
+                  PaneableComponent.Artifact,
+                  { id: item.data.id },
+                  PaneTransition.NewTab,
+                  true,
+                );
               } else {
                 navigate(
                   undefined,
@@ -454,6 +588,19 @@ export const ArtifactTree = () => {
               }
             },
           }),
+        }}
+        canDropAt={(item, target) => {
+          if (target.targetType === 'item') {
+            return !isItemUncategorized(target.targetItem.toString());
+          }
+          if (target.targetType === 'between-items') {
+            return (
+              target.parentItem.toString() !== UNCATEGORIZED_ITEM_ID &&
+              !isItemUncategorized(target.parentItem.toString())
+            );
+          }
+
+          return true;
         }}
         canDragAndDrop
         canDropOnFolder

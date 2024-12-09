@@ -1,9 +1,8 @@
 import express from 'express';
 import { createMessage } from './createMessage';
-import { validateToken } from '@feynote/api-services';
 
-const router = express.Router();
+const messageRouter = express.Router();
 
-router.post('/', validateToken, createMessage);
+messageRouter.post('/', createMessage);
 
-export default router;
+export { messageRouter };

@@ -5,6 +5,9 @@ import { EditorContent } from '@tiptap/react';
 import { useArtifactEditor } from './useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
+import { useContext } from 'react';
+import { SessionContext } from '../../context/session/SessionContext';
+import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 
 interface Props {
   yDoc: YDoc;
@@ -13,6 +16,7 @@ interface Props {
 
 export const TiptapPreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { session } = useContext(SessionContext);
 
   const artifactMeta = getMetaFromYArtifact(props.yDoc);
 
@@ -21,6 +25,13 @@ export const TiptapPreview: React.FC<Props> = (props) => {
     knownReferences: new Map(), // TODO: Update this
     yjsProvider: undefined,
     yDoc: props.yDoc,
+    getFileUrl: (fileId) => {
+      if (!session) return '';
+      return getFileRedirectUrl({
+        fileId,
+        sessionToken: session.token,
+      }).toString();
+    },
   });
 
   const showEditor =

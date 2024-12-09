@@ -26,6 +26,7 @@ import {
   pin,
   search,
   settings,
+  add,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -89,7 +90,7 @@ export const LeftSideMenu: React.FC = () => {
         );
       })
       .catch((e) => {
-        // TODO: Log to sentry
+        // Do nothing
       });
   };
 
@@ -176,6 +177,25 @@ export const LeftSideMenu: React.FC = () => {
           <IonIcon icon={gitNetwork} size="small" />
           &nbsp;&nbsp;
           <IonLabel>{t('menu.graph')}</IonLabel>
+        </CompactIonItem>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
+              PaneableComponent.NewArtifact,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={add} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.new')}</IonLabel>
         </CompactIonItem>
       </IonCard>
 

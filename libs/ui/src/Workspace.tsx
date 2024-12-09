@@ -2,22 +2,15 @@ import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
 import { Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import {
-  GlobalPaneContext,
-  PaneTransition,
-} from './context/globalPane/GlobalPaneContext';
+import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import { IonButton, IonFab, IonFabButton, IonIcon } from '@ionic/react';
+import { IonButton } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
-import { add } from 'ionicons/icons';
-import { PaneableComponent } from './context/globalPane/PaneableComponent';
 import { NewPaneButton } from './components/pane/NewPaneButton';
-import { websocketClient } from './context/events/websocketClient';
-websocketClient.connect();
 
 const MENU_SIZE_PX = '240';
 
@@ -191,7 +184,7 @@ const MainGrid = styled.div<{
 `;
 
 export const Workspace: React.FC = () => {
-  const { _model, navigate, _onActionListener, _onModelChangeListener } =
+  const { _model, _onActionListener, _onModelChangeListener } =
     useContext(GlobalPaneContext);
   const { getPreference } = useContext(PreferencesContext);
 
@@ -201,15 +194,6 @@ export const Workspace: React.FC = () => {
   const [rightMenuOpen, setRightMenuOpen] = useState(
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
-
-  const newArtifact = () => {
-    navigate(
-      undefined, // Navigate within current focused pane rather than specific pane
-      PaneableComponent.NewArtifact,
-      {},
-      PaneTransition.Push,
-    );
-  };
 
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
@@ -262,16 +246,6 @@ export const Workspace: React.FC = () => {
           <RightSideMenu />
         </MenuInner>
       </Menu>
-      <IonFab
-        slot="fixed"
-        vertical="bottom"
-        horizontal="end"
-        onClick={newArtifact}
-      >
-        <IonFabButton>
-          <IonIcon icon={add} />
-        </IonFabButton>
-      </IonFab>
     </MainGrid>
   );
 };
