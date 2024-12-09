@@ -11,7 +11,7 @@ import {
   getManifestDb,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
-import { superjson } from '../../../libs/ui/src/utils/trpc';
+import superjson from 'superjson';
 import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
