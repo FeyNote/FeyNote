@@ -35,6 +35,7 @@ import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
+import { InfoButton } from '../info/InfoButton';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
@@ -205,9 +206,10 @@ export const LeftSideMenu: React.FC = () => {
             <IonIcon icon={pin} />
             &nbsp;&nbsp;
             <IonLabel>{t('menu.tree')}</IonLabel>
+            <InfoButton message={t('menu.tree.help')} />
           </IonListHeader>
-          <ArtifactTree />
         </IonList>
+        <ArtifactTree />
       </IonCard>
 
       {!!recentlyUpdatedThreads.length &&

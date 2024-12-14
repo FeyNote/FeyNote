@@ -566,6 +566,7 @@ export const ArtifactTree = () => {
           createInteractiveElementProps: (item, treeId, actions) => ({
             onClick: (e) => {
               if (item.index === UNCATEGORIZED_ITEM_ID) {
+                actions.toggleExpandedState();
                 return;
               }
 
