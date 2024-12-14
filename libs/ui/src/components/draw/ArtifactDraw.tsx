@@ -63,6 +63,8 @@ import {
   useActions,
   useCanRedo,
   useCanUndo,
+  useEditor,
+  useReactor,
   ViewSubmenu,
   XBoxToolbarItem,
 } from 'tldraw';
@@ -72,6 +74,8 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { TLDrawCustomGrid } from './TLDrawCustomGrid';
+
+const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -180,6 +184,13 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     });
 
     editor.setCurrentTool('hand');
+
+    const showGrid = yDoc.getMap(ARTIFACT_DRAW_META_KEY)?.get('showGrid') as
+      | boolean
+      | undefined;
+    editor.updateInstanceState({
+      isGridMode: showGrid ?? true,
+    });
   };
 
   const components: TLComponents = {
@@ -187,8 +198,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     Toolbar: props.editable
       ? () => (
           <DefaultToolbar>
-            <SelectToolbarItem />
             <HandToolbarItem />
+            <SelectToolbarItem />
             <DrawToolbarItem />
             <EraserToolbarItem />
             <ArrowToolbarItem />
@@ -228,6 +239,22 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     },
     PageMenu: null,
     MainMenu: () => {
+      const editor = useEditor();
+
+      useReactor(
+        'isGridMode',
+        () => {
+          const isGridMode = editor.getInstanceState().isGridMode;
+
+          if (
+            isGridMode !== yDoc.getMap(ARTIFACT_DRAW_META_KEY)?.get('showGrid')
+          ) {
+            yDoc.getMap(ARTIFACT_DRAW_META_KEY)?.set('showGrid', isGridMode);
+          }
+        },
+        [editor],
+      );
+
       return (
         <DefaultMainMenu>
           <EditSubmenu />
@@ -265,7 +292,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
           components={components}
           cameraOptions={{
             zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
-            wheelBehavior: 'zoom',
+            wheelBehavior: 'pan',
           }}
         />
       </StyledArtifactDrawStyles>

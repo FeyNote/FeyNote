@@ -71,6 +71,9 @@ export const TLDrawCustomGrid: React.FC<TLGridProps> = ({
     const numCols = Math.round((endPageX - startPageX) / size);
 
     ctx.strokeStyle = isDarkMode ? '#555' : '#BBB';
+    const showNonMajorLines = editor.getZoomLevel() > 0.8;
+    const minorLineStrokeWidth = 1;
+    const majorLineStrokeWidth = editor.getZoomLevel() > 0.8 ? 3 : 1;
 
     // Draw the grid lines. We draw major lines every 10 grid units.
     for (let row = 0; row <= numRows; row++) {
@@ -78,14 +81,26 @@ export const TLDrawCustomGrid: React.FC<TLGridProps> = ({
       // convert the page-space Y offset into our canvas' coordinate space
       const canvasY = (pageY + camera.y) * camera.z * devicePixelRatio;
       const isMajorLine = approximately(pageY % (size * 10), 0);
-      drawLine(ctx, 0, canvasY, canvasW, canvasY, isMajorLine ? 3 : 1);
+
+      if (isMajorLine || showNonMajorLines) {
+        const strokeWidth = isMajorLine
+          ? majorLineStrokeWidth
+          : minorLineStrokeWidth;
+        drawLine(ctx, 0, canvasY, canvasW, canvasY, strokeWidth);
+      }
     }
     for (let col = 0; col <= numCols; col++) {
       const pageX = startPageX + col * size;
       // convert the page-space X offset into our canvas' coordinate space
       const canvasX = (pageX + camera.x) * camera.z * devicePixelRatio;
       const isMajorLine = approximately(pageX % (size * 10), 0);
-      drawLine(ctx, canvasX, 0, canvasX, canvasH, isMajorLine ? 3 : 1);
+
+      if (isMajorLine || showNonMajorLines) {
+        const strokeWidth = isMajorLine
+          ? majorLineStrokeWidth
+          : minorLineStrokeWidth;
+        drawLine(ctx, canvasX, 0, canvasX, canvasH, strokeWidth);
+      }
     }
   }, [screenBounds, camera, size, devicePixelRatio, editor, isDarkMode]);
 
