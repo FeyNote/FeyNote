@@ -66,7 +66,7 @@ model ArtifactReference {
 
   artifactId      String   @db.Uuid
   artifact        Artifact @relation("artifactReferenceSourceArtifact", fields: [artifactId], references: [id], onDelete: Cascade)
-  artifactBlockId String   @db.Uuid
+  artifactBlockId String
 
   // Used for actual reference to artifact, so we can join
   referenceTargetArtifactId String?   @db.Uuid
@@ -74,7 +74,7 @@ model ArtifactReference {
 
   // Target artifact may not actually exist
   targetArtifactId      String  @db.Uuid
-  targetArtifactBlockId String? @db.Uuid
+  targetArtifactBlockId String?
   targetArtifactDate    String?
 
   referenceText String

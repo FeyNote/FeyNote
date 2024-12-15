@@ -46,15 +46,21 @@ export const CreateReferenceOverlayWrapper: React.FC = () => {
     <Container>
       <CreateReferenceOverlay
         hide={() => setShow(false)}
-        onSelected={(artifactId, artifactBlockId, artifactDate) => {
+        onSelected={(
+          artifactId,
+          artifactBlockId,
+          artifactDate,
+          referenceText,
+        ) => {
           editor.createShape({
             type: 'reference',
             x: currentPagePoint.x,
             y: currentPagePoint.y,
             props: {
-              artifactId,
-              artifactBlockId: artifactBlockId || null,
-              artifactDate: artifactDate || null,
+              targetArtifactId: artifactId,
+              targetArtifactBlockId: artifactBlockId || null,
+              targetArtifactDate: artifactDate || null,
+              referenceText: referenceText,
             },
           });
           setShow(false);

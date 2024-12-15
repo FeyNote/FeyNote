@@ -1,7 +1,11 @@
 import { prisma } from '@feynote/prisma/client';
-import { getReferencesFromJSONContent } from '@feynote/shared-utils';
+import {
+  getReferencesFromJSONContent,
+  getReferencesFromTLDrawContent,
+} from '@feynote/shared-utils';
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
+import { Array as YArray } from 'yjs';
 
 // Uniquely identify a given reference in a set for the purposes of comparing a diff between
 // current state and desired state
@@ -16,6 +20,16 @@ const genCompositeKey = (args: {
   (args.targetArtifactBlockId || null) +
   (args.targetArtifactDate || null);
 
+type Data =
+  | {
+      tldrawContent: YArray<any>;
+      jsonContent?: undefined;
+    }
+  | {
+      tldrawContent?: undefined;
+      jsonContent?: JSONContent;
+    };
+
 /**
  * Create/delete all references where this artifact points to another artifact
  * In this case, title reference text is used for other artifacts to reference this one directly.
@@ -23,12 +37,22 @@ const genCompositeKey = (args: {
  */
 export async function updateArtifactOutgoingReferences(
   artifactId: string,
-  jsonContent: JSONContent,
+  data: Data,
   tx: Prisma.TransactionClient = prisma,
 ): Promise<number> {
-  const referencesFromJSONContent = getReferencesFromJSONContent(jsonContent);
+  const referencesFromUserContent = [];
+  if (data.jsonContent) {
+    referencesFromUserContent.push(
+      ...getReferencesFromJSONContent(data.jsonContent),
+    );
+  }
+  if (data.tldrawContent) {
+    referencesFromUserContent.push(
+      ...getReferencesFromTLDrawContent(data.tldrawContent),
+    );
+  }
   const referencedArtifactIds = new Set(
-    referencesFromJSONContent.map(
+    referencesFromUserContent.map(
       (artifactReference) => artifactReference.targetArtifactId,
     ),
   );
@@ -36,7 +60,7 @@ export async function updateArtifactOutgoingReferences(
   // We build a list of composite ids with their associated count of occurrences so that we can
   // decrement later as we ensure the same count exists in our datastore as exists in the JSON content
   const referenceCountTracker = new Map<string, number>();
-  for (const reference of referencesFromJSONContent) {
+  for (const reference of referencesFromUserContent) {
     const key = genCompositeKey(reference);
     const count = referenceCountTracker.get(key) || 0;
     referenceCountTracker.set(key, count + 1);
@@ -78,7 +102,7 @@ export async function updateArtifactOutgoingReferences(
     }
   }
 
-  for (const reference of referencesFromJSONContent) {
+  for (const reference of referencesFromUserContent) {
     const compositeKey = genCompositeKey(reference);
     const count = referenceCountTracker.get(compositeKey);
     if (count === undefined) throw new Error('This should not be possible');

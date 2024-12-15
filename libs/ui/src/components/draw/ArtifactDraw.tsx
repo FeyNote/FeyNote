@@ -1,4 +1,3 @@
-import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -82,12 +81,6 @@ import {
   TLDrawReferenceShapeTool,
   TLDrawReferenceUtil,
 } from './TLDrawReference';
-import {
-  CustomTLDrawEventInfo,
-  CustomTLDrawEventType,
-  tldrawToolEventDriver,
-} from './tldrawToolEventDriver';
-import { CreateReferenceOverlay } from './CreateReferenceOverlay';
 import { CreateReferenceOverlayWrapper } from './CreateReferenceOverlayWrapper';
 
 const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';

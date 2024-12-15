@@ -77,6 +77,7 @@ interface Props {
     artifactId: string,
     artifactBlockId: string | undefined,
     artifactDate: string | undefined,
+    referenceText: string,
   ) => void;
   hide: () => void;
 }
@@ -98,13 +99,14 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
   }, []);
 
   const create = async () => {
+    const title = capitalizeEachWord(searchText);
     const artifact = await trpc.artifact.createArtifact.mutate({
-      title: capitalizeEachWord(searchText),
+      title,
       type: 'tiptap',
       theme: 'default',
     });
 
-    props.onSelected(artifact.id, undefined, undefined);
+    props.onSelected(artifact.id, undefined, undefined, title);
   };
 
   useEffect(() => {
@@ -217,6 +219,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
                     searchResult.artifactId,
                     searchResult.artifactBlockId,
                     undefined,
+                    searchResult.referenceText,
                   );
                 }
               }}
@@ -287,6 +290,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
               calendarSelectInfo.artifactId,
               calendarSelectInfo.artifactBlockId,
               date,
+              calendarSelectInfo.referenceText,
             );
           }}
         />

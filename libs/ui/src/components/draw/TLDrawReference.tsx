@@ -25,23 +25,25 @@ export class TLDrawReferenceShapeTool extends StateNode {
 
   onPointerUp() {
     this.editor.setCurrentTool('hand');
-    tldrawToolEventDriver.dispatchReferencePointerDown({});
+    tldrawToolEventDriver.dispatchReferencePointerDown();
   }
 }
 
 export type ReferenceShape = TLBaseShape<
   'reference',
   {
-    artifactId: string;
-    artifactBlockId: string | null;
-    artifactDate: string | null;
+    targetArtifactId: string;
+    targetArtifactBlockId: string | null;
+    targetArtifactDate: string | null;
+    referenceText: string;
   }
 >;
 
 export const referenceShapeProps: RecordProps<ReferenceShape> = {
-  artifactId: T.string,
-  artifactBlockId: T.string.nullable(),
-  artifactDate: T.string.nullable(),
+  targetArtifactId: T.string,
+  targetArtifactBlockId: T.string.nullable(),
+  targetArtifactDate: T.string.nullable(),
+  referenceText: T.string,
 };
 
 /**
@@ -106,9 +108,10 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    */
   getDefaultProps(): ReferenceShape['props'] {
     return {
-      artifactId: 'uninitialized',
-      artifactBlockId: null,
-      artifactDate: null,
+      targetArtifactId: 'uninitialized',
+      targetArtifactBlockId: null,
+      targetArtifactDate: null,
+      referenceText: '',
     };
   }
 
@@ -159,14 +162,14 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       close,
       // eslint-disable-next-line react-hooks/rules-of-hooks
     } = useArtifactPreviewTimer(
-      shape.props.artifactId,
+      shape.props.targetArtifactId,
       false, // TODO: knownReference?.isBroken
     );
 
     const key = getKnownArtifactReferenceKey(
-      shape.props.artifactId,
-      shape.props.artifactBlockId || undefined,
-      shape.props.artifactDate || undefined,
+      shape.props.targetArtifactId,
+      shape.props.targetArtifactBlockId || undefined,
+      shape.props.targetArtifactDate || undefined,
     );
 
     // TODO: global known references store
@@ -193,9 +196,9 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       navigate(
         PaneableComponent.Artifact,
         {
-          id: shape.props.artifactId,
-          focusBlockId: shape.props.artifactBlockId || undefined,
-          focusDate: shape.props.artifactDate || undefined,
+          id: shape.props.targetArtifactId,
+          focusBlockId: shape.props.targetArtifactBlockId || undefined,
+          focusDate: shape.props.targetArtifactDate || undefined,
         },
         paneTransition,
         !(event.metaKey || event.ctrlKey),
@@ -240,8 +243,8 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
             <ArtifactReferencePreview
               artifact={artifact}
               artifactYBin={artifactYBin}
-              artifactBlockId={shape.props.artifactBlockId || undefined}
-              artifactDate={shape.props.artifactDate || undefined}
+              artifactBlockId={shape.props.targetArtifactBlockId || undefined}
+              artifactDate={shape.props.targetArtifactDate || undefined}
               previewTarget={ref.current}
               onClick={linkClicked}
             />
