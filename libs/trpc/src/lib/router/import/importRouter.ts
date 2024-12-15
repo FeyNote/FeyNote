@@ -1,6 +1,6 @@
 import { router as trpcRouter } from '../../trpc';
-import { getImportJobs } from './getImportJobs';
+import { createImportJob } from './createImportJob';
 
-export const aiRouter = trpcRouter({
-  getImportJobs,
+export const importRouter = trpcRouter({
+  createImportJob,
 });

@@ -12,13 +12,5 @@ export const createImportJob = authenticatedProcedure
     }),
   )
   .mutation(async ({ ctx, input }): Promise<void> => {
-    await prisma.importJob.create({
-      data: {
-        userId: ctx.session.userId,
-        title: input.title,
-        s3: input.s3,
-        type: input.type,
-        status: JobStatus.InProgress,
-      },
-    });
+    console.log('bleh');
   });

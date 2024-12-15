@@ -20,4 +20,3 @@ export * from './lib/session/isSessionExpired';
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
 export * from './lib/dto/artifactDetailToArtifactDTO';
-export * from './lib/express/middleware/validateToken';

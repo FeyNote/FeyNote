@@ -148,6 +148,7 @@ model File {
   user       User        @relation(fields: [userId], references: [id])
   artifactId String?     @db.Uuid
   artifact   Artifact?   @relation(fields: [artifactId], references: [id])
+  importJob  ImportJob?
   mimetype   String
   name       String
   storageKey String
@@ -159,6 +160,7 @@ model File {
 
 enum FilePurpose {
   artifact
+  import
 }
 
 model Thread {
@@ -194,13 +196,14 @@ enum JobStatus {
 }
 
 model ImportJob {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String        @id @default(uuid()) @db.Uuid
   title     String
-  user      User      @relation(fields: [userId], references: [id])
-  userId    String    @db.Uuid
+  user      User          @relation(fields: [userId], references: [id])
+  userId    String        @db.Uuid
+  file      File?          @relation(fields: [fileId], references: [id])
+  fileId    String?        @unique @db.Uuid
   type      ImportJobType
   status    JobStatus
-  s3        String
-  createdAt DateTime @unique @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  createdAt DateTime      @unique @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
 }
