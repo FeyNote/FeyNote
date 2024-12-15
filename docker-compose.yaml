@@ -45,8 +45,9 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve hocuspocus
+    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
+      - SWC_NODE_PROJECT=./apps/hocuspocus/tsconfig.json
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
       - TYPESENSE_API_KEY=feynote
@@ -77,8 +78,9 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve backend
+    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/openai ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
+      - SWC_NODE_PROJECT=./apps/backend/tsconfig.json
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
       - TYPESENSE_API_KEY=feynote
@@ -108,8 +110,9 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve queue-worker
+    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
+      - SWC_NODE_PROJECT=./apps/queue-worker/tsconfig.json
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
       - TYPESENSE_API_KEY=feynote
@@ -139,8 +142,9 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: npx nx serve websocket
+    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
+      - SWC_NODE_PROJECT=./apps/websocket/tsconfig.json
       - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
       - SEARCH_PROVIDER=typesense
       - TYPESENSE_API_KEY=feynote

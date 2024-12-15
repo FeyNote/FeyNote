@@ -1,4 +1,4 @@
-import './instrument.mjs';
+import './instrument.ts';
 
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';

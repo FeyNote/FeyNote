@@ -1,4 +1,4 @@
-import './instrument.mjs';
+import './instrument.ts';
 
 import { Server } from 'socket.io';
 import { prisma } from '@feynote/prisma/client';

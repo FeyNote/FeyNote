@@ -1,4 +1,4 @@
-import './instrument.mjs';
+import './instrument.ts';
 
 import { artifactUpdateQueueWorker } from '@feynote/queue';
 
