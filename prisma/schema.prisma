@@ -204,6 +204,6 @@ model ImportJob {
   fileId    String?        @unique @db.Uuid
   type      ImportJobType
   status    JobStatus
-  createdAt DateTime      @unique @default(now()) @db.Timestamptz(6)
+  createdAt DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt DateTime      @updatedAt @db.Timestamptz(6)
 }

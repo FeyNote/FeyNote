@@ -24,9 +24,6 @@ CREATE TABLE "ImportJob" (
 -- CreateIndex
 CREATE UNIQUE INDEX "ImportJob_fileId_key" ON "ImportJob"("fileId");
 
--- CreateIndex
-CREATE UNIQUE INDEX "ImportJob_createdAt_key" ON "ImportJob"("createdAt");
-
 -- AddForeignKey
 ALTER TABLE "ImportJob" ADD CONSTRAINT "ImportJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
