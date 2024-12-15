@@ -118,6 +118,11 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
     const yStore = new YKeyValue(
       yDoc.getArray<{ key: string; val: TLRecord }>(TLDRAW_YDOC_STORE_KEY),
     );
+    //let i = 0;
+    //while(yDoc.getArray<{ key: string; val: TLRecord }>(TLDRAW_YDOC_STORE_KEY).get(i)) {
+    //  console.log(yDoc.getArray<{ key: string; val: TLRecord }>(TLDRAW_YDOC_STORE_KEY).get(i));
+    //  i++;
+    //}
     const yMeta = yDoc.getMap<SerializedSchema>(TLDRAW_YDOC_META_KEY);
 
     return {

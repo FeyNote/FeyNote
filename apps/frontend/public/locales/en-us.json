@@ -220,6 +220,10 @@
   "editor.placeholder": "Changes are automatically saved. Use / to bring up the command menu, or @ to reference another artifact",
   "editor.placeholder.readOnlyEmpty": "Artifact has no content",
   "editor.emptyReference": "Untitled Reference",
+
+  "editor.referenceMenu.title": "Create Reference",
+  "editor.referenceMenu.search": "Search for any text within your collection",
+  "editor.referenceMenu.selectDate": "Select Date",
   "editor.referenceMenu.noItems.title": "No results for \"{{title}}\"",
   "editor.referenceMenu.noItems.subtitle": "Click to create",
   "editor.referenceMenu.artifactBlock": "Block within {{title}}",
@@ -228,6 +232,7 @@
   "editor.referenceMenu.searching.subtitle": "Search results will appear when you pause typing",
   "editor.referenceMenu.create.title": "Create \"{{title}}\"",
   "editor.referenceMenu.create.subtitle": "Click to create",
+
   "editor.bubbleMenu.defaultFont": "Theme Default",
   "editor.bubbleMenu.sans": "Sans-Serif",
   "editor.bubbleMenu.serif": "Serif",

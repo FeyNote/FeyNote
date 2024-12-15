@@ -1,7 +1,7 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ArtifactDTO, FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import {
   ArrowRightToolbarItem,
   ArrowToolbarItem,
   ArrowUpToolbarItem,
+  BaseBoxShapeTool,
   CheckBoxToolbarItem,
   CloudToolbarItem,
   DefaultMainMenu,
@@ -45,6 +46,7 @@ import {
   StarToolbarItem,
   TextToolbarItem,
   TLAssetStore,
+  TLClickEventInfo,
   TLComponents,
   Tldraw,
   TldrawUiMenuGroup,
@@ -64,7 +66,9 @@ import {
   useCanRedo,
   useCanUndo,
   useEditor,
+  useIsToolSelected,
   useReactor,
+  useTools,
   ViewSubmenu,
   XBoxToolbarItem,
 } from 'tldraw';
@@ -74,8 +78,39 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { TLDrawCustomGrid } from './TLDrawCustomGrid';
+import {
+  TLDrawReferenceShapeTool,
+  TLDrawReferenceUtil,
+} from './TLDrawReference';
+import {
+  CustomTLDrawEventInfo,
+  CustomTLDrawEventType,
+  tldrawToolEventDriver,
+} from './tldrawToolEventDriver';
+import { CreateReferenceOverlay } from './CreateReferenceOverlay';
+import { CreateReferenceOverlayWrapper } from './CreateReferenceOverlayWrapper';
 
 const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';
+const MAX_ASSET_SIZE_MB = 25;
+
+export const uiOverrides: TLUiOverrides = {
+  tools(editor, tools) {
+    // Create a tool item in the ui's context.
+    tools.reference = {
+      id: 'referenceInsertion',
+      icon: 'color',
+      label: 'Insert Reference',
+      kbd: 'c',
+      onSelect: () => {
+        editor.setCurrentTool('referenceInsertion');
+      },
+    };
+    return tools;
+  },
+};
+
+const customTools = [TLDrawReferenceShapeTool];
+const customShapeUtils = [TLDrawReferenceUtil];
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -139,7 +174,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const store = useYjsTLDrawStore({
     handleFileUpload: props.handleFileUpload,
     getFileUrl: props.getFileUrl,
-    shapeUtils: [],
+    shapeUtils: customShapeUtils,
     editable: props.editable,
     ...(props.yDoc
       ? {
@@ -183,8 +218,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       locale: languagePreference,
     });
 
-    editor.setCurrentTool('hand');
-
     const showGrid = yDoc.getMap(ARTIFACT_DRAW_META_KEY)?.get('showGrid') as
       | boolean
       | undefined;
@@ -196,35 +229,46 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const components: TLComponents = {
     NavigationPanel: null,
     Toolbar: props.editable
-      ? () => (
-          <DefaultToolbar>
-            <HandToolbarItem />
-            <SelectToolbarItem />
-            <DrawToolbarItem />
-            <EraserToolbarItem />
-            <ArrowToolbarItem />
-            <TextToolbarItem />
-            <NoteToolbarItem />
-            <RectangleToolbarItem />
-            <EllipseToolbarItem />
-            <TriangleToolbarItem />
-            <DiamondToolbarItem />
-            <HexagonToolbarItem />
-            <OvalToolbarItem />
-            <RhombusToolbarItem />
-            <StarToolbarItem />
-            <CloudToolbarItem />
-            <XBoxToolbarItem />
-            <CheckBoxToolbarItem />
-            <ArrowLeftToolbarItem />
-            <ArrowRightToolbarItem />
-            <ArrowUpToolbarItem />
-            <ArrowDownToolbarItem />
-            <LineToolbarItem />
-            <HighlightToolbarItem />
-            <FrameToolbarItem />
-          </DefaultToolbar>
-        )
+      ? () => {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const tools = useTools();
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const isReferenceSelected = useIsToolSelected(tools['reference']);
+
+          return (
+            <DefaultToolbar>
+              <HandToolbarItem />
+              <SelectToolbarItem />
+              <DrawToolbarItem />
+              <EraserToolbarItem />
+              <TldrawUiMenuItem
+                {...tools['reference']}
+                isSelected={isReferenceSelected}
+              />
+              <ArrowToolbarItem />
+              <TextToolbarItem />
+              <NoteToolbarItem />
+              <RectangleToolbarItem />
+              <EllipseToolbarItem />
+              <TriangleToolbarItem />
+              <DiamondToolbarItem />
+              <HexagonToolbarItem />
+              <OvalToolbarItem />
+              <RhombusToolbarItem />
+              <StarToolbarItem />
+              <CloudToolbarItem />
+              <XBoxToolbarItem />
+              <CheckBoxToolbarItem />
+              <ArrowLeftToolbarItem />
+              <ArrowRightToolbarItem />
+              <ArrowUpToolbarItem />
+              <ArrowDownToolbarItem />
+              <LineToolbarItem />
+              <HighlightToolbarItem />
+              <FrameToolbarItem />
+            </DefaultToolbar>
+          );
+        }
       : null,
     QuickActions: () => {
       const canUndo = useCanUndo();
@@ -241,6 +285,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     MainMenu: () => {
       const editor = useEditor();
 
+      // We add this reactor here since we cannot access these hooks outside of a TLDraw component.
+      // It's not technically required that this exist within MainMenu.
       useReactor(
         'isGridMode',
         () => {
@@ -283,18 +329,24 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
         {titleBodyMerge && titleInput}
 
         <Tldraw
+          initialState="hand"
           store={store}
           acceptedImageMimeTypes={['image/jpeg', 'image/png']}
           acceptedVideoMimeTypes={[]}
           maxImageDimension={Infinity}
-          maxAssetSize={10 * 1024 * 1024}
+          maxAssetSize={MAX_ASSET_SIZE_MB * 1024 * 1024}
           onMount={onMount}
           components={components}
           cameraOptions={{
             zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
             wheelBehavior: 'pan',
           }}
-        />
+          tools={customTools}
+          shapeUtils={customShapeUtils}
+          overrides={uiOverrides}
+        >
+          <CreateReferenceOverlayWrapper />
+        </Tldraw>
       </StyledArtifactDrawStyles>
     </ArtifactDrawContainer>
   );

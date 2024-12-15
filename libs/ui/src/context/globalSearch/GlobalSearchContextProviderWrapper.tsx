@@ -140,7 +140,8 @@ export const GlobalSearchContextProviderWrapper = ({
         event.preventDefault();
         trigger();
       }
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && show) {
+        event.stopPropagation();
         hide();
       }
     };
@@ -149,7 +150,7 @@ export const GlobalSearchContextProviderWrapper = ({
     return () => {
       document.removeEventListener('keydown', listener);
     };
-  });
+  }, [show]);
 
   useEffect(() => {
     if (!searchText.trim().length) {
