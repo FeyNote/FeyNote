@@ -200,8 +200,8 @@ model ImportJob {
   title     String
   user      User          @relation(fields: [userId], references: [id])
   userId    String        @db.Uuid
-  file      File?          @relation(fields: [fileId], references: [id])
-  fileId    String?        @unique @db.Uuid
+  file      File          @relation(fields: [fileId], references: [id])
+  fileId    String        @db.Uuid
   type      ImportJobType
   status    JobStatus
   createdAt DateTime      @default(now()) @db.Timestamptz(6)

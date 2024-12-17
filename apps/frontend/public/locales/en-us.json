@@ -137,6 +137,11 @@
   "import.jobs.title": "Import Jobs",
   "import.jobs.nullState.title": "No Import Jobs",
   "import.jobs.nullState.message": "Import artifacts by clicking on an import option below!",
+  "import.jobs.options.obsidian": "Import from Obsidian",
+
+  "import.file.title": "Import from File",
+  "import.file.input.error.type": "Invalid file type selected. File must be of type(s);",
+  "import.file.input.error.size": "File size limit exceeded. File must have a size of under;",
 
   "sharedContent.title": "Shared Content",
   "sharedContent.artifacts.title": "Artifacts Shared With You",
@@ -459,5 +464,6 @@
   "generic.okay": "Okay",
   "generic.cancel": "Cancel",
   "generic.delete": "Delete",
-  "generic.warning": "Warning"
+  "generic.warning": "Warning",
+  "generic.upload": "Upload"
 }
