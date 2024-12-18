@@ -1,13 +1,15 @@
 import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
-import { getMetaFromYArtifact } from '@feynote/shared-utils';
+import { getEdgeId, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { TiptapPreview } from '../../../TiptapPreview';
 import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
+import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
+import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -47,6 +49,26 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
 
   const artifactMeta = getMetaFromYArtifact(yDoc);
 
+  useEffect(() => {
+    getEdgeStore().provideStaticEdgesForArtifactId({
+      artifactId: props.artifact.id,
+      outgoingEdges: props.artifact.artifactReferences.map((ref) => ({
+        ...ref,
+        id: getEdgeId(ref),
+        isBroken: !ref.referenceTargetArtifactId,
+        artifactTitle: ref.artifact.title,
+      })),
+      incomingEdges: props.artifact.incomingArtifactReferences.map((ref) => ({
+        ...ref,
+        id: getEdgeId(ref),
+        isBroken: !ref.referenceTargetArtifactId,
+        artifactTitle: ref.artifact.title,
+      })),
+    });
+  }, [props.artifact]);
+
+  const { incomingEdges } = useEdgesForArtifactId(props.artifact.id);
+
   useScrollBlockIntoView(props.artifactBlockId, [], containerRef);
   useScrollDateIntoView(props.artifactDate, [], containerRef);
 
@@ -61,13 +83,16 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     >
       <Header>{props.artifact.title}</Header>
       {artifactMeta.type === 'tiptap' && (
-        <TiptapPreview yDoc={yDoc} previewText={props.artifact.previewText} />
+        <TiptapPreview
+          artifactId={props.artifact.id}
+          yDoc={yDoc}
+          previewText={props.artifact.previewText}
+        />
       )}
       {artifactMeta.type === 'calendar' && (
         <ArtifactCalendar
+          artifactId={props.artifact.id}
           y={yDoc}
-          knownReferences={new Map()}
-          incomingArtifactReferences={props.artifact.incomingArtifactReferences}
           centerDate={props.artifactDate}
           editable={false}
           viewType="fullsize"

@@ -41,7 +41,6 @@ import { BlockGroup } from './extensions/BlockGroup';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
-import { KnownArtifactReference } from './extensions/artifactReferences/KnownArtifactReference';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 
@@ -56,11 +55,11 @@ type DocArgOptions =
     };
 
 export const getTiptapExtensions = (args: {
+  artifactId: string | undefined; // Passing undefined here will disable artifact reference text lookup
   placeholder: string;
   editable: boolean;
   y: DocArgOptions;
   collaborationUser: Record<string, string>;
-  knownReferences: Map<string, KnownArtifactReference>;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
 }) => {
@@ -115,7 +114,7 @@ export const getTiptapExtensions = (args: {
       : []),
     CommandsExtension,
     ArtifactReferencesExtension.configure({
-      knownReferences: args.knownReferences,
+      artifactId: args.artifactId,
     }),
     PlaceholderExtension.configure({
       placeholder: args.placeholder,

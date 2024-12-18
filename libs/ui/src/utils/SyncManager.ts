@@ -11,6 +11,7 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
+  Edge,
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
@@ -23,7 +24,12 @@ import { EventName } from '../context/events/EventName';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 websocketClient.connect();
 
+const broadcastChannel = new BroadcastChannel('edges.updated');
+
 const ENABLE_VERBOSE_SYNC_LOGGING = getIsViteDevelopment();
+/**
+ * How long an artifact can take to sync before we consider it timed out and kill it
+ */
 const ARTIFACT_SYNC_TIMEOUT_MS = 10 * 1000;
 
 const MANIFEST_MAX_SYNC_INTERVAL_MS = 120 * 1000;
@@ -60,12 +66,16 @@ export class SyncManager {
     syncManifestDebouncer.call();
 
     this.syncInterval = setInterval(() => {
+      if (ENABLE_VERBOSE_SYNC_LOGGING)
+        console.log('Sync interval triggered, queueing sync');
       syncManifestDebouncer.call();
     }, MANIFEST_MAX_SYNC_INTERVAL_MS);
 
     eventManager.addEventListener(
       [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
       () => {
+        if (ENABLE_VERBOSE_SYNC_LOGGING)
+          console.log('Artifact updated, queueing sync');
         syncManifestDebouncer.call();
       },
     );
@@ -98,8 +108,16 @@ export class SyncManager {
       const latestManifest = await trpc.user.getManifest.query();
 
       // ==== Update Artifact References ====
-      const localEdges = await this.manifestDb.getAll(ObjectStoreName.Edges);
-      const localEdgeIds = new Set(localEdges.map((edge) => edge.id));
+      const modifiedEdgeArtifactIds = new Set<string>();
+      const edgesTx = this.manifestDb.transaction(
+        ObjectStoreName.Edges,
+        'readwrite',
+      );
+      const edgesStore = edgesTx.store;
+      const localEdges = await edgesStore.getAll(ObjectStoreName.Edges);
+      const localEdgesById = new Map<string, Edge>(
+        localEdges.map((edge) => [edge.id, edge]),
+      );
       const remoteEdgeIds = new Set(
         latestManifest.edges.map(
           (edge) =>
@@ -109,26 +127,35 @@ export class SyncManager {
 
       for (const edge of latestManifest.edges) {
         const edgeId = `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`;
-        if (localEdgeIds.has(edgeId)) {
-          await this.manifestDb.put(ObjectStoreName.Edges, {
+        const localEdge = localEdgesById.get(edgeId);
+        if (
+          !localEdge ||
+          localEdge.referenceText !== edge.referenceText ||
+          localEdge.isBroken !== edge.isBroken
+        ) {
+          await edgesStore.put({
             ...edge,
             targetArtifactBlockId: edge.targetArtifactBlockId || '',
             id: edgeId,
           });
-        } else {
-          await this.manifestDb.add(ObjectStoreName.Edges, {
-            ...edge,
-            targetArtifactBlockId: edge.targetArtifactBlockId || '',
-            id: edgeId,
-          });
+          modifiedEdgeArtifactIds.add(edge.artifactId);
+          modifiedEdgeArtifactIds.add(edge.targetArtifactId);
         }
       }
 
-      for (const edgeId of localEdgeIds) {
-        if (!remoteEdgeIds.has(edgeId)) {
-          await this.manifestDb.delete(ObjectStoreName.Edges, edgeId);
+      for (const localEdge of localEdges) {
+        if (!remoteEdgeIds.has(localEdge.id)) {
+          await edgesStore.delete(localEdge.id);
+          modifiedEdgeArtifactIds.add(localEdge.artifactId);
+          modifiedEdgeArtifactIds.add(localEdge.targetArtifactId);
         }
       }
+
+      await edgesTx.done;
+
+      broadcastChannel.postMessage({
+        modifiedEdgeArtifactIds: [...modifiedEdgeArtifactIds],
+      });
 
       // ==== Update Artifacts ====
       const localArtifactVersionsRecords = await this.manifestDb.getAll(
@@ -328,6 +355,13 @@ export class SyncManager {
       timeout,
       Promise.all([idbSyncP, ttpSyncP]),
     ]);
+
+    if (tiptapCollabProvider.authorizedScope) {
+      await appIdbStorageManager.setAuthorizedCollaborationScope(
+        docName,
+        tiptapCollabProvider.authorizedScope,
+      );
+    }
 
     if (result === false) {
       console.error(

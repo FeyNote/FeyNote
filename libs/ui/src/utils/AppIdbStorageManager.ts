@@ -24,6 +24,28 @@ export class AppIdbStorageManager {
     }
   }
 
+  async setAuthorizedCollaborationScope(
+    docName: string,
+    accessLevel: string,
+  ): Promise<void> {
+    const manifestDb = await getManifestDb();
+    await manifestDb.put(ObjectStoreName.AuthorizedCollaborationScopes, {
+      docName,
+      accessLevel,
+    });
+  }
+
+  async getAuthorizedCollaborationScope(
+    docName: string,
+  ): Promise<string | null> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.AuthorizedCollaborationScopes,
+      docName,
+    );
+    return record?.accessLevel || null;
+  }
+
   async getSession(): Promise<SessionDTO | null> {
     const manifestDb = await getManifestDb();
     const session = await manifestDb.get(
@@ -69,6 +91,7 @@ export class AppIdbStorageManager {
     await manifestDb.clear(ObjectStoreName.Artifacts);
     await manifestDb.clear(ObjectStoreName.ArtifactVersions);
     await manifestDb.clear(ObjectStoreName.PendingArtifacts);
+    await manifestDb.clear(ObjectStoreName.AuthorizedCollaborationScopes);
 
     const databases = await indexedDB.databases();
     for (const database of databases) {

@@ -27,7 +27,7 @@ export async function updateArtifactContentReferenceText(
     .filter((element) => element.status !== 'deleted')
     .map((element) => {
       // SECURITY: We must use Prisma.sql to prevent SQL injection
-      return Prisma.sql`(${artifactId}::uuid, ${element.id}::uuid, ${element.referenceText})`;
+      return Prisma.sql`(${artifactId}::uuid, ${element.id}, ${element.referenceText})`;
     });
 
   // We cannot perform an update call with an empty set of values

@@ -3,7 +3,6 @@ import { PreferenceNames } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 
 import { TiptapCollabProvider } from '@hocuspocus/provider';
-import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useTranslation } from 'react-i18next';
 import { useContext, useEffect, useMemo } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
@@ -21,8 +20,8 @@ type DocArgOptions =
     };
 
 type UseArtifactEditorArgs = {
+  artifactId: string | undefined; // Passing undefined here will disable artifact reference text lookup
   editable: boolean;
-  knownReferences?: Map<string, KnownArtifactReference>;
   onReady?: () => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
@@ -32,9 +31,6 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
-  const knownReferences = useMemo(() => {
-    return args.knownReferences ? args.knownReferences : new Map();
-  }, [args.knownReferences]);
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
@@ -51,12 +47,12 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
     : t('editor.placeholder.readOnlyEmpty');
 
   const extensions = getTiptapExtensions({
+    artifactId: args.artifactId,
     placeholder,
     editable: args.editable,
     handleFileUpload: args.handleFileUpload,
     getFileUrl: args.getFileUrl,
     collaborationUser,
-    knownReferences,
     y: args.yDoc
       ? {
           yDoc: args.yDoc,
@@ -73,6 +69,12 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       args.onReady?.();
     },
   });
+
+  useEffect(() => {
+    editor?.setOptions({
+      editable: args.editable,
+    });
+  }, [args.editable, editor]);
 
   useEffect(() => {
     // "updateUser" command is dependent on yjs provider being instantiated

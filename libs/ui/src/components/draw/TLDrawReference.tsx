@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 import {
   Circle2d,
   createShapePropsMigrationSequence,
@@ -14,10 +16,11 @@ import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactRe
 import { useContext, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
+import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
+import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 
 export class TLDrawReferenceShapeTool extends StateNode {
   static override id = 'referenceInsertion';
@@ -145,11 +148,23 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
   component(shape: ReferenceShape) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { navigate } = useContext(PaneContext);
+    const artifactId = useContext(TLDrawArtifactIdContext);
+    if (!artifactId) {
+      throw new Error('TLDrawReferenceUtil.component: missing artifactId');
+    }
+
     const radius = this.getRadius();
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const ref = useRef<HTMLDivElement>(null);
+
+    const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
+    const edge = getEdge({
+      artifactId,
+      artifactBlockId: shape.id,
+      targetArtifactId: shape.props.targetArtifactId,
+      targetArtifactBlockId: shape.props.targetArtifactBlockId,
+      targetArtifactDate: shape.props.targetArtifactDate,
+    });
 
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 
@@ -160,22 +175,10 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       onMouseOver,
       onMouseOut,
       close,
-      // eslint-disable-next-line react-hooks/rules-of-hooks
     } = useArtifactPreviewTimer(
       shape.props.targetArtifactId,
-      false, // TODO: knownReference?.isBroken
+      edge ? edge.isBroken : false, // TODO: knownReference?.isBroken
     );
-
-    const key = getKnownArtifactReferenceKey(
-      shape.props.targetArtifactId,
-      shape.props.targetArtifactBlockId || undefined,
-      shape.props.targetArtifactDate || undefined,
-    );
-
-    // TODO: global known references store
-    const knownReference = {
-      isBroken: false,
-    };
 
     const linkClicked = (
       event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
@@ -185,7 +188,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       event.preventDefault();
       event.stopPropagation();
 
-      if (knownReference?.isBroken) return;
+      if (edge?.isBroken) return;
 
       close();
 

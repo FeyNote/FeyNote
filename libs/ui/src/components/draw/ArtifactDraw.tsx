@@ -1,7 +1,6 @@
 import { Doc as YDoc } from 'yjs';
-import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import type { ArtifactDTO, FileDTO } from '@feynote/global-types';
+import type { FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
@@ -82,6 +81,7 @@ import {
   TLDrawReferenceUtil,
 } from './TLDrawReference';
 import { CreateReferenceOverlayWrapper } from './CreateReferenceOverlayWrapper';
+import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 
 const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';
 const MAX_ASSET_SIZE_MB = 25;
@@ -131,8 +131,7 @@ type DocArgOptions =
     };
 
 type Props = {
-  knownReferences: Map<string, KnownArtifactReference>;
-  incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
+  artifactId: string;
   editable: boolean;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
@@ -321,25 +320,27 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       >
         {titleBodyMerge && titleInput}
 
-        <Tldraw
-          initialState="hand"
-          store={store}
-          acceptedImageMimeTypes={['image/jpeg', 'image/png']}
-          acceptedVideoMimeTypes={[]}
-          maxImageDimension={Infinity}
-          maxAssetSize={MAX_ASSET_SIZE_MB * 1024 * 1024}
-          onMount={onMount}
-          components={components}
-          cameraOptions={{
-            zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
-            wheelBehavior: 'pan',
-          }}
-          tools={customTools}
-          shapeUtils={customShapeUtils}
-          overrides={uiOverrides}
-        >
-          <CreateReferenceOverlayWrapper />
-        </Tldraw>
+        <TLDrawArtifactIdContext.Provider value={props.artifactId}>
+          <Tldraw
+            initialState="hand"
+            store={store}
+            acceptedImageMimeTypes={['image/jpeg', 'image/png']}
+            acceptedVideoMimeTypes={[]}
+            maxImageDimension={Infinity}
+            maxAssetSize={MAX_ASSET_SIZE_MB * 1024 * 1024}
+            onMount={onMount}
+            components={components}
+            cameraOptions={{
+              zoomSteps: [0.05, 0.1, 0.25, 0.5, 1, 2, 4, 8],
+              wheelBehavior: 'pan',
+            }}
+            tools={customTools}
+            shapeUtils={customShapeUtils}
+            overrides={uiOverrides}
+          >
+            <CreateReferenceOverlayWrapper />
+          </Tldraw>
+        </TLDrawArtifactIdContext.Provider>
       </StyledArtifactDrawStyles>
     </ArtifactDrawContainer>
   );

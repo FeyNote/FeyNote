@@ -19,28 +19,28 @@ export type ArtifactDTO = {
   updatedAt: Date;
   previewText: string;
   artifactReferences: {
-    id: string;
     artifactId: string;
     artifactBlockId: string;
     targetArtifactId: string;
-    targetArtifactBlockId: string | null;
     referenceTargetArtifactId: string | null;
-    targetArtifact: {
-      title: string;
-    } | null;
-    referenceText: string;
+    targetArtifactBlockId: string | null;
     targetArtifactDate: string | null;
-  }[];
-  incomingArtifactReferences: {
-    id: string;
-    artifactId: string;
+    referenceText: string;
     artifact: {
       title: string;
     };
+  }[];
+  incomingArtifactReferences: {
+    artifactId: string;
     artifactBlockId: string;
     targetArtifactId: string;
+    referenceTargetArtifactId: string | null;
     targetArtifactBlockId: string | null;
     targetArtifactDate: string | null;
+    referenceText: string;
+    artifact: {
+      title: string;
+    };
   }[];
   files: {
     id: string;

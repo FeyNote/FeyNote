@@ -87,7 +87,7 @@ const updateListCache = async (
   const store = tx.objectStore(objectStoreName);
   await store.clear();
   for (const item of deserialized) {
-    await manifestDb.add(objectStoreName, item);
+    await manifestDb.put(objectStoreName, item);
   }
   await tx.done;
 };
@@ -100,15 +100,7 @@ const updateSingleCache = async (
   const deserialized = superjson.deserialize<{ id: string }>(json.result.data);
 
   const manifestDb = await getManifestDb();
-  const tx = manifestDb.transaction(objectStoreName, 'readwrite');
-  const store = tx.objectStore(objectStoreName);
-  const exists = await store.count(deserialized.id);
-  if (exists) {
-    await store.put(deserialized);
-  } else {
-    await store.add(deserialized);
-  }
-  await tx.done;
+  await manifestDb.put(objectStoreName, deserialized);
 };
 
 const cacheListResponse = async (
@@ -261,8 +253,38 @@ registerRoute(
 
     const yBin = encodeStateAsUpdate(idbPersistence.doc);
 
+    await idbPersistence.destroy();
+
     return encodeCacheResultForTrpc({
       yBin,
+    });
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactReferencesById/,
+  async (event) => {
+    // Cache only
+    const input = getTrpcInputForEvent<{ id: string }>(event);
+    if (!input || !input.id)
+      throw new Error('No id provided in procedure input');
+
+    const manifestDb = await getManifestDb();
+    const outgoingReferences = await manifestDb.getAllFromIndex(
+      ObjectStoreName.Edges,
+      'artifactId',
+      input.id,
+    );
+    const incomingReferences = await manifestDb.getAllFromIndex(
+      ObjectStoreName.Edges,
+      'targetArtifactId',
+      input.id,
+    );
+
+    return encodeCacheResultForTrpc({
+      artifactReferences: outgoingReferences,
+      incomingArtifactReferences: incomingReferences,
     });
   },
   'GET',

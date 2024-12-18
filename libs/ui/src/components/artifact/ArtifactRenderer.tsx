@@ -1,24 +1,21 @@
-import { ArtifactDTO } from '@feynote/global-types';
-import { memo, useContext, useEffect, useMemo, useState } from 'react';
+import { memo, useContext, useEffect, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
-import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
-import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
-import { getIsEditable } from '../../utils/getIsEditable';
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
+import { useIsEditable } from '../../utils/useAuthorizedScope';
 
 interface Props {
-  artifact: ArtifactDTO;
+  artifactId: string;
   connection: CollaborationManagerConnection;
   scrollToBlockId?: string;
   scrollToDate?: string;
@@ -26,6 +23,7 @@ interface Props {
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
+  const { isEditable } = useIsEditable(props.connection);
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const { session } = useContext(SessionContext);
@@ -34,28 +32,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
-
-  // We must preserve the original map between renders
-  // because tiptap exists outside of React's render cycle
-  const [knownReferences] = useState(new Map<string, KnownArtifactReference>());
-  useEffect(() => {
-    for (const reference of props.artifact.artifactReferences) {
-      const key = getKnownArtifactReferenceKey(
-        reference.targetArtifactId,
-        reference.targetArtifactBlockId || undefined,
-        reference.targetArtifactDate || undefined,
-      );
-
-      knownReferences.set(key, {
-        artifactBlockId: reference.artifactBlockId,
-        targetArtifactId: reference.targetArtifactId,
-        targetArtifactBlockId: reference.targetArtifactBlockId || undefined,
-        targetArtifactDate: reference.targetArtifactDate || undefined,
-        referenceText: reference.referenceText,
-        isBroken: !reference.referenceTargetArtifactId,
-      });
-    }
-  }, [props.artifact.artifactReferences]);
 
   const { type } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
@@ -80,18 +56,12 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   useEffect(() => {
     const cleanup = incrementVersionForChangesOnArtifact(
-      props.artifact.id,
+      props.artifactId,
       props.connection.yjsDoc,
     );
 
     return () => cleanup();
   }, [props.connection]);
-
-  // Purely for visual purposes. Permissioning occurs on the server, but we need to update the editor UI to be read/write
-  const isEditable = useMemo(
-    () => getIsEditable(props.artifact, session.userId),
-    [props.artifact, session.userId],
-  );
 
   if (!collabReady || !type) {
     return <></>;
@@ -100,8 +70,8 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (type === 'tiptap') {
     return (
       <ArtifactEditor
+        artifactId={props.artifactId}
         editable={isEditable}
-        knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
@@ -111,7 +81,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             const response = await uploadFileToApi({
               file,
               purpose: 'artifact',
-              artifactId: props.artifact.id,
+              artifactId: props.artifactId,
               sessionToken: session.token,
             });
             if (pos === undefined) {
@@ -145,13 +115,12 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (type === 'calendar') {
     return (
       <ArtifactCalendar
+        artifactId={props.artifactId}
         editable={isEditable}
-        knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         y={props.connection.tiptapCollabProvider}
         viewType="fullsize"
         centerDate={props.scrollToDate}
-        incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
       />
     );
@@ -160,17 +129,16 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (type === 'tldraw') {
     return (
       <ArtifactDraw
+        artifactId={props.artifactId}
         editable={isEditable}
-        knownReferences={knownReferences}
         onReady={() => setEditorReady(true)}
         collaborationConnection={props.connection}
-        incomingArtifactReferences={props.artifact.incomingArtifactReferences}
         onTitleChange={props.onTitleChange}
         handleFileUpload={async (file) => {
           const response = await uploadFileToApi({
             file,
             purpose: 'artifact',
-            artifactId: props.artifact.id,
+            artifactId: props.artifactId,
             sessionToken: session.token,
           });
           return response;

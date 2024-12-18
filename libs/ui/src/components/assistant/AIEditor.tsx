@@ -23,6 +23,7 @@ export const AIEditor: React.FC<Props> = (props) => {
   }, []);
 
   const editor = useArtifactEditor({
+    artifactId: undefined,
     editable: false,
     yDoc,
     getFileUrl: () => '', // We don't currently support embedded images within the AI Editor
