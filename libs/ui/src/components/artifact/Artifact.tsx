@@ -28,7 +28,7 @@ interface ArtifactProps {
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { session } = useContext(SessionContext);
-  const { navigate, isPaneFocused } = useContext(PaneContext);
+  const { pane, navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
 
   const connection = collaborationManager.get(`artifact:${props.id}`, session);
@@ -57,7 +57,13 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     <IonPage>
       <PaneNav
         title={title || ''}
-        popoverContents={<ArtifactContextMenu artifactId={props.id} />}
+        popoverContents={
+          <ArtifactContextMenu
+            artifactId={props.id}
+            pane={pane}
+            navigate={navigate}
+          />
+        }
       />
       <IonContent
         className="ion-padding-start ion-padding-end"
