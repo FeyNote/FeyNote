@@ -1,5 +1,5 @@
 import { Edge, getEdgeId, GetEdgeIdArgs } from '@feynote/shared-utils';
-import { getManifestDb, ObjectStoreName } from '../localDb';
+import { trpc } from '../trpc';
 
 class EdgeStore {
   private readonly CLEANUP_INTERVAL_SECONDS = 60;
@@ -51,7 +51,7 @@ class EdgeStore {
 
       for (const artifactId of aritfactIdsWithUpdatedEdges) {
         if (this.watchedEdges.has(artifactId)) {
-          await this.loadIdbArtifactEdges(artifactId);
+          await this.loadArtifactEdges(artifactId);
 
           this.notifyArtifactListeners(artifactId);
         }
@@ -126,26 +126,25 @@ class EdgeStore {
   /**
    * Loads edges for a given artifact from IndexedDB into our in-memory maps
    */
-  private async loadIdbArtifactEdges(artifactId: string) {
-    const manifestDb = await getManifestDb();
-    const outgoingEdges = await manifestDb.getAllFromIndex(
-      ObjectStoreName.Edges,
-      'artifactId',
-      artifactId,
-    );
-    const incomingEdges = await manifestDb.getAllFromIndex(
-      ObjectStoreName.Edges,
-      'targetArtifactId',
-      artifactId,
-    );
+  private async loadArtifactEdges(artifactId: string) {
+    const response = await trpc.artifact.getArtifactEdgesById
+      .query({ id: artifactId })
+      .catch(() => {
+        return {
+          outgoingEdges: [] as Edge[],
+          incomingEdges: [] as Edge[],
+        };
+      });
+
+    if (!response) return;
 
     this.localOutgoingEdgesByArtifactId.set(
       artifactId,
-      outgoingEdges.map(this.idbEdgeToTypedEdge),
+      response.outgoingEdges.map(this.idbEdgeToTypedEdge),
     );
     this.localIncomingEdgesByArtifactId.set(
       artifactId,
-      incomingEdges.map(this.idbEdgeToTypedEdge),
+      response.incomingEdges.map(this.idbEdgeToTypedEdge),
     );
 
     this.updateTrackedEdges(artifactId);
@@ -235,7 +234,7 @@ class EdgeStore {
 
     if (!this.watchedEdges.has(artifactId)) {
       this.watchedEdges.add(artifactId);
-      this.loadIdbArtifactEdges(artifactId).then(() => {
+      this.loadArtifactEdges(artifactId).then(() => {
         this.notifyArtifactListeners(artifactId);
       });
     }

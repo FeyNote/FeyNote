@@ -263,7 +263,7 @@ registerRoute(
 );
 
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactReferencesById/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
     // Cache only
     const input = getTrpcInputForEvent<{ id: string }>(event);
@@ -271,20 +271,20 @@ registerRoute(
       throw new Error('No id provided in procedure input');
 
     const manifestDb = await getManifestDb();
-    const outgoingReferences = await manifestDb.getAllFromIndex(
+    const outgoingEdges = await manifestDb.getAllFromIndex(
       ObjectStoreName.Edges,
       'artifactId',
       input.id,
     );
-    const incomingReferences = await manifestDb.getAllFromIndex(
+    const incomingEdges = await manifestDb.getAllFromIndex(
       ObjectStoreName.Edges,
       'targetArtifactId',
       input.id,
     );
 
     return encodeCacheResultForTrpc({
-      artifactReferences: outgoingReferences,
-      incomingArtifactReferences: incomingReferences,
+      outgoingEdges,
+      incomingEdges,
     });
   },
   'GET',

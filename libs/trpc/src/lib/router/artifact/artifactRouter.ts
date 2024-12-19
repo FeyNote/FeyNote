@@ -8,11 +8,11 @@ import { updateArtifact } from './updateArtifact';
 import { createArtifact } from './createArtifact';
 import { deleteArtifact } from './deleteArtifact';
 import { getArtifactYBinById } from './getArtifactYBinById';
-import { getArtifactReferencesById } from './getArtifactReferencesById';
+import { getArtifactEdgesById } from './getArtifactEdgesById';
 
 export const artifactRouter = trpcRouter({
   getArtifactById,
-  getArtifactReferencesById,
+  getArtifactEdgesById,
   getArtifactYBinById,
   getArtifacts,
   searchArtifacts,

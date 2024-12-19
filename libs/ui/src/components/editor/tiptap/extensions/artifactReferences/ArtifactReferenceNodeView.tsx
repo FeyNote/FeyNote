@@ -32,14 +32,6 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     targetArtifactDate,
   });
 
-  console.log(
-    're-rendering',
-    edge?.referenceText,
-    edge,
-    artifactId,
-    artifactBlockId,
-  );
-
   const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
