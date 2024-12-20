@@ -226,7 +226,7 @@
   "editor.referenceMenu.selectDate": "Select Date",
   "editor.referenceMenu.noItems.title": "No results for \"{{title}}\"",
   "editor.referenceMenu.noItems.subtitle": "Click to create",
-  "editor.referenceMenu.artifactBlock": "Block within {{title}}",
+  "editor.referenceMenu.artifactBlock": "Block within \"{{title}}\"",
   "editor.referenceMenu.artifact": "Artifact",
   "editor.referenceMenu.searching.title": "Searching...",
   "editor.referenceMenu.searching.subtitle": "Search results will appear when you pause typing",

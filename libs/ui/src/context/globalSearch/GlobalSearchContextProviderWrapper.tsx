@@ -113,7 +113,7 @@ export const GlobalSearchContextProviderWrapper = ({
 
   const create = async () => {
     const artifact = await trpc.artifact.createArtifact.mutate({
-      title: capitalizeEachWord(searchText),
+      title: capitalizeEachWord(searchText).trim(),
       type: 'tiptap',
       theme: 'default',
     });
@@ -257,7 +257,7 @@ export const GlobalSearchContextProviderWrapper = ({
                         searchResults.length
                           ? 'editor.referenceMenu.create.title'
                           : 'editor.referenceMenu.noItems.title',
-                        { title: searchText },
+                        { title: capitalizeEachWord(searchText).trim() },
                       )}
                       <p>
                         {t(

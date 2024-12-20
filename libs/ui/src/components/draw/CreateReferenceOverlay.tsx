@@ -61,6 +61,11 @@ const Backdrop = styled(IonBackdrop)`
  */
 const SEARCH_DELAY_MS = 20;
 
+/**
+ * Number of characters to display in the result preview
+ */
+const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 200;
+
 interface SearchResult {
   artifactId: string;
   artifactBlockId: string | undefined;
@@ -102,7 +107,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
   }, []);
 
   const create = async () => {
-    const title = capitalizeEachWord(searchText);
+    const title = capitalizeEachWord(searchText).trim();
     const artifact = await trpc.artifact.createArtifact.mutate({
       title,
       type: 'tiptap',
@@ -196,6 +201,14 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
     };
   }, [searchText]);
 
+  const trimSearchResultText = (text: string) => {
+    if (text.length > SEARCH_RESULT_PREVIEW_TEXT_LENGTH) {
+      return text.slice(0, SEARCH_RESULT_PREVIEW_TEXT_LENGTH) + '...';
+    }
+
+    return text;
+  };
+
   const searchUI = (
     <SearchContainer>
       <h1>{t('editor.referenceMenu.title')}</h1>
@@ -232,7 +245,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
               button
             >
               <IonLabel>
-                {searchResult.referenceText}
+                {trimSearchResultText(searchResult.referenceText)}
                 <p>
                   {searchResult.artifactBlockId
                     ? t('editor.referenceMenu.artifactBlock', {
@@ -251,12 +264,13 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
               button
             >
               <IonLabel>
-                {t(
-                  searchResults.length
-                    ? 'editor.referenceMenu.create.title'
-                    : 'editor.referenceMenu.noItems.title',
-                  { title: searchText },
-                )}
+                {searchResults.length
+                  ? t('editor.referenceMenu.create.title', {
+                      title: capitalizeEachWord(searchText).trim(),
+                    })
+                  : t('editor.referenceMenu.noItems.title', {
+                      title: capitalizeEachWord(searchText).trim(),
+                    })}
                 <p>
                   {t(
                     searchResults.length

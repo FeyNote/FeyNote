@@ -32,6 +32,8 @@ export const searchArtifactBlocks = authenticatedProcedure
         },
       );
 
+      console.log('matchedArtifactBlocks', matchedArtifactBlocks);
+
       const matchedArtifactIds = [
         ...new Set(
           matchedArtifactBlocks.map(
