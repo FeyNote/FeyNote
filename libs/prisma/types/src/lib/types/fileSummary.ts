@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const fileSummary = Prisma.validator<Prisma.FileArgs>()({
+export const fileSummary = Prisma.validator<Prisma.FileFindFirstArgs>()({
   select: {
     id: true,
     name: true,

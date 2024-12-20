@@ -108,8 +108,8 @@ export const upsertArtifactShare = authenticatedProcedure
             updatedArtifact.userId,
             ...updatedArtifact.artifactShares.map((el) => el.userId),
           ],
-          oldYBinB64: artifact.yBin.toString('base64'),
-          newYBinB64: updatedArtifact.yBin.toString('base64'),
+          oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
+          newYBinB64: Buffer.from(updatedArtifact.yBin).toString('base64'),
         });
 
         return artifactShare;

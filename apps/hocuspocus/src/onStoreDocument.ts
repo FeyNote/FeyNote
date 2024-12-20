@@ -78,7 +78,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             artifact.userId,
             ...artifact.artifactShares.map((el) => el.userId),
           ],
-          oldYBinB64: artifact.yBin.toString('base64'),
+          oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });
 

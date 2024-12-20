@@ -31,7 +31,7 @@ export async function createArtifactRevision(
       artifactId: artifact.id,
       revisionId,
       userId: artifact.userId,
-      artifactJson: artifact,
+      artifactJson: artifact as any, // TODO: artifact is actually incompatible because of yBin
       artifactFilesJson: [],
       artifactDeletedAt: currentRevision?.artifactDeletedAt || null,
     },
