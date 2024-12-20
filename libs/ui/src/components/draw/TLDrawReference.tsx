@@ -34,6 +34,41 @@ import { tldrawToolEventDriver } from './tldrawToolEventDriver';
 import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
+import styled from 'styled-components';
+
+const StyledHTMLContainer = styled(HTMLContainer)<{
+  isHandMode: boolean;
+  radius: number;
+  type: ReferenceIconTLDrawStyle;
+}>`
+  position: relative;
+  margin-left: ${({ radius }) => -radius}px;
+  margin-top: ${({ radius }) => -radius}px;
+  width: ${({ radius }) => radius * 2}px;
+  height: ${({ radius }) => radius * 2}px;
+  font-size: ${({ radius }) => radius * 2}px;
+  border-radius: 100%;
+  ${({ type }) =>
+    type === 'circle'
+      ? `
+    background-color: var(--ion-color-primary);
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.7);
+  `
+      : ''}
+  color: #ffffff;
+  pointer-events: all;
+  text-align: center;
+  vertical-align: middle;
+  cursor: ${({ isHandMode }) => (isHandMode ? 'pointer' : 'default')};
+
+  svg {
+    overflow: visible;
+
+    path {
+      filter: drop-shadow(1px 1px 50px rgba(0, 0, 0, 0.9));
+    }
+  }
+`;
 
 export const referenceIconTLDrawStyle = StyleProp.defineEnum('reference:icon', {
   defaultValue: 'circle',
@@ -270,27 +305,11 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
     );
 
     return (
-      <HTMLContainer
+      <StyledHTMLContainer
         id={shape.id}
-        style={{
-          position: 'relative',
-          marginLeft: -radius,
-          marginTop: -radius,
-          width: radius * 2,
-          height: radius * 2,
-          fontSize: `${radius * 2}px`,
-          borderRadius: '100%',
-          border: shape.props.icon === 'circle' ? '1px solid black' : undefined,
-          backgroundColor:
-            shape.props.icon === 'circle'
-              ? 'var(--ion-color-primary)'
-              : undefined,
-          color: 'var(--ion-color-primary)',
-          pointerEvents: 'all',
-          textAlign: 'center',
-          verticalAlign: 'middle',
-          cursor: isHandMode ? 'pointer' : 'default',
-        }}
+        radius={radius}
+        isHandMode={isHandMode}
+        type={shape.props.icon}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onClick={linkClicked}
@@ -307,7 +326,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
         {shape.props.icon === 'monster' && <GiMonsterGrasp />}
 
         {contents}
-      </HTMLContainer>
+      </StyledHTMLContainer>
     );
   }
 
