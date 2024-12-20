@@ -30,6 +30,7 @@ const staticAssets = [
   'https://static.feynote.com/assets/red-triangle-20240925.png',
   'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
   'https://static.feynote.com/assets/favicon-20240925.ico',
+  'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png',
   'https://cdn.tldraw.com/3.4.1/icons/icon/0_merged.svg',
 
   // Fonts
