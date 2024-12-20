@@ -12,7 +12,7 @@ CREATE TABLE "ImportJob" (
     "id" UUID NOT NULL,
     "title" TEXT NOT NULL,
     "userId" UUID NOT NULL,
-    "fileId" UUID,
+    "fileId" UUID NOT NULL,
     "type" "ImportJobType" NOT NULL,
     "status" "JobStatus" NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -28,4 +28,4 @@ CREATE UNIQUE INDEX "ImportJob_fileId_key" ON "ImportJob"("fileId");
 ALTER TABLE "ImportJob" ADD CONSTRAINT "ImportJob_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ImportJob" ADD CONSTRAINT "ImportJob_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ImportJob" ADD CONSTRAINT "ImportJob_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

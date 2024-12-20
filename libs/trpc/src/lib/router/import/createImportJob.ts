@@ -8,8 +8,8 @@ import {
   getSignedUrlForFilePurpose,
 } from '@feynote/api-services';
 
-const ALLOWED_MIN_BETWEEN_JOBS = 5;
-const NUMBER_OF_JOBS_PER_LIMIT = 2;
+const TIME_LIMIT_OF_JOBS = 5; //In minutes
+const NUMBER_OF_JOBS_PER_TIME_LIMIT = 2000;
 const TTL_S3_PRESIGNED_URL = 86400; // 24 hours in sec
 
 export const createImportJob = authenticatedProcedure
@@ -32,16 +32,16 @@ export const createImportJob = authenticatedProcedure
       orderBy: {
         createdAt: 'asc',
       },
-      take: NUMBER_OF_JOBS_PER_LIMIT,
+      take: NUMBER_OF_JOBS_PER_TIME_LIMIT,
     });
     // Ensure number of jobs created doesn't surpass allowable limits within a given timeframe
     if (
       mostRecentJobs.length &&
-      mostRecentJobs.length === NUMBER_OF_JOBS_PER_LIMIT
+      mostRecentJobs.length >= NUMBER_OF_JOBS_PER_TIME_LIMIT
     ) {
-      const lastJobToCheck = mostRecentJobs[NUMBER_OF_JOBS_PER_LIMIT - 1];
+      const lastJobToCheck = mostRecentJobs[NUMBER_OF_JOBS_PER_TIME_LIMIT - 1];
       const timelimit = new Date();
-      timelimit.setMinutes(timelimit.getMinutes() - ALLOWED_MIN_BETWEEN_JOBS);
+      timelimit.setMinutes(timelimit.getMinutes() - TIME_LIMIT_OF_JOBS);
       if (lastJobToCheck.createdAt > timelimit) {
         throw new TRPCError({
           code: 'TOO_MANY_REQUESTS',
@@ -67,7 +67,7 @@ export const createImportJob = authenticatedProcedure
         },
         title: `${input.name}-${new Date()}`,
         status: JobStatus.InProgress,
-        type: ImportJobType.Obsidian,
+        type: input.type,
         file: {
           create: {
             userId,

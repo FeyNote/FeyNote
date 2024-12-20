@@ -27,8 +27,8 @@ interface Props {
   type: ImportJobType;
 }
 
-const FILE_SIZE_LIMIT = 5000000;
-const ALLOWED_FILE_TYPES = ['application/zip'];
+const FILE_SIZE_LIMIT = 5000000; //5MB
+const ALLOWED_FILE_TYPES = ['application/zip', 'application/x-zip-compressed'];
 const ALLOWED_FILE_TYPES_STR = ALLOWED_FILE_TYPES.join(', ');
 
 export const ImportFromFile: React.FC<Props> = (props: Props) => {
@@ -39,13 +39,14 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const selectedfile = e.target.files[0];
+    console.log(selectedfile);
     if (!ALLOWED_FILE_TYPES.includes(selectedfile.type))
       return setFileInputError(
-        `${t('upload.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
+        `${t('import.file.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
       );
     if (selectedfile.size >= FILE_SIZE_LIMIT)
       return setFileInputError(
-        `${t('upload.input.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        `${t('import.file.input.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
       );
     setFile(selectedfile);
     setFileInputError(null);
@@ -59,9 +60,14 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
       type: props.type,
     });
 
+    console.log(s3PresignedUrl);
+
     const response = await fetch(s3PresignedUrl, {
       method: 'PUT',
       body: file,
+      headers: {
+        'Content-Type': file.type,
+      },
     });
 
     console.log(`response: ${await response.json()}`);
