@@ -8,10 +8,22 @@ import {
   RecordProps,
   ShapeUtil,
   StateNode,
+  StyleProp,
   T,
   TLBaseShape,
   TLPointerEventInfo,
 } from 'tldraw';
+import {
+  FaAnchor,
+  FaCircle,
+  FaFlag,
+  FaFortAwesome,
+  FaHeart,
+  FaHome,
+  FaMapPin,
+  FaStar,
+  FaTree,
+} from 'react-icons/fa';
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useContext, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
@@ -21,6 +33,26 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
 import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
+import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
+
+export const referenceIconTLDrawStyle = StyleProp.defineEnum('reference:icon', {
+  defaultValue: 'circle',
+  values: [
+    'circle',
+    'star',
+    'home',
+    'fort',
+    'heart',
+    'tree',
+    'pin',
+    'flag',
+    'anchor',
+    'sword',
+    'monster',
+  ],
+});
+
+type ReferenceIconTLDrawStyle = T.TypeOf<typeof referenceIconTLDrawStyle>;
 
 export class TLDrawReferenceShapeTool extends StateNode {
   static override id = 'referenceInsertion';
@@ -39,6 +71,7 @@ export type ReferenceShape = TLBaseShape<
     targetArtifactBlockId: string | null;
     targetArtifactDate: string | null;
     referenceText: string;
+    icon: ReferenceIconTLDrawStyle;
   }
 >;
 
@@ -47,6 +80,7 @@ export const referenceShapeProps: RecordProps<ReferenceShape> = {
   targetArtifactBlockId: T.string.nullable(),
   targetArtifactDate: T.string.nullable(),
   referenceText: T.string,
+  icon: referenceIconTLDrawStyle,
 };
 
 /**
@@ -77,6 +111,9 @@ export const referenceShapeMigrations = createShapePropsMigrationSequence({
   ],
 });
 
+/**
+ * This scales the size of the reference icon based on the user's zoom level
+ */
 const REFERENCE_RADIUS_MULTIPLIER = 8;
 export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
   static override type = 'reference' as const;
@@ -115,6 +152,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       targetArtifactBlockId: null,
       targetArtifactDate: null,
       referenceText: '',
+      icon: 'circle',
     };
   }
 
@@ -131,15 +169,11 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    */
   getGeometry() {
     const radius = this.getRadius();
-    return new Group2d({
-      children: [
-        new Circle2d({
-          isFilled: true,
-          radius,
-          x: -radius,
-          y: -radius,
-        }),
-      ],
+    return new Circle2d({
+      isFilled: true,
+      radius,
+      x: -radius,
+      y: -radius,
     });
   }
 
@@ -177,7 +211,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       close,
     } = useArtifactPreviewTimer(
       shape.props.targetArtifactId,
-      edge ? edge.isBroken : false, // TODO: knownReference?.isBroken
+      edge ? edge.isBroken : false,
     );
 
     const linkClicked = (
@@ -208,28 +242,8 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       );
     };
 
-    return (
-      <HTMLContainer
-        id={shape.id}
-        style={{
-          position: 'relative',
-          marginLeft: -radius,
-          marginTop: -radius,
-          width: radius * 2,
-          height: radius * 2,
-          border: '1px solid black',
-          borderRadius: '100%',
-          backgroundColor: 'var(--ion-color-primary)',
-          pointerEvents: 'all',
-          textAlign: 'center',
-          lineHeight: '40px',
-          verticalAlign: 'middle',
-          cursor: isHandMode ? 'pointer' : 'default',
-        }}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        onClick={linkClicked}
-      >
+    const contents = (
+      <>
         <div
           ref={ref}
           style={{
@@ -252,6 +266,47 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
               onClick={linkClicked}
             />
           )}
+      </>
+    );
+
+    return (
+      <HTMLContainer
+        id={shape.id}
+        style={{
+          position: 'relative',
+          marginLeft: -radius,
+          marginTop: -radius,
+          width: radius * 2,
+          height: radius * 2,
+          fontSize: `${radius * 2}px`,
+          borderRadius: '100%',
+          border: shape.props.icon === 'circle' ? '1px solid black' : undefined,
+          backgroundColor:
+            shape.props.icon === 'circle'
+              ? 'var(--ion-color-primary)'
+              : undefined,
+          color: 'var(--ion-color-primary)',
+          pointerEvents: 'all',
+          textAlign: 'center',
+          verticalAlign: 'middle',
+          cursor: isHandMode ? 'pointer' : 'default',
+        }}
+        onMouseOver={onMouseOver}
+        onMouseOut={onMouseOut}
+        onClick={linkClicked}
+      >
+        {shape.props.icon === 'pin' && <FaMapPin />}
+        {shape.props.icon === 'star' && <FaStar />}
+        {shape.props.icon === 'fort' && <FaFortAwesome />}
+        {shape.props.icon === 'tree' && <FaTree />}
+        {shape.props.icon === 'flag' && <FaFlag />}
+        {shape.props.icon === 'anchor' && <FaAnchor />}
+        {shape.props.icon === 'heart' && <FaHeart />}
+        {shape.props.icon === 'home' && <FaHome />}
+        {shape.props.icon === 'sword' && <GiBroadsword />}
+        {shape.props.icon === 'monster' && <GiMonsterGrasp />}
+
+        {contents}
       </HTMLContainer>
     );
   }

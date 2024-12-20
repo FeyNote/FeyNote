@@ -340,6 +340,9 @@
   "calendar.selectDate.placeholder.gregorian": "YYYY.MM.DD",
   "calendar.selectDate.placeholder.session": "#5",
 
+  "draw.mixed": "Mixed",
+  "draw.tool.reference": "Insert Reference",
+
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",
 

@@ -28,6 +28,8 @@ const staticAssets = [
   'https://static.feynote.com/assets/monster-border-20240925.png',
   'https://static.feynote.com/assets/note-border-20240925.png',
   'https://static.feynote.com/assets/red-triangle-20240925.png',
+  'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
+  'https://cdn.tldraw.com/3.4.1/icons/icon/0_merged.svg',
 
   // Fonts
   'https://static.feynote.com/fonts/mr-eaves/mr-eaves-small-caps.woff2',

@@ -50,6 +50,7 @@ import {
   TldrawUiMenuGroup,
   TldrawUiMenuItem,
   TldrawUiMenuSubmenu,
+  TLUiAssetUrlOverrides,
   TLUiOverrides,
   ToggleEdgeScrollingItem,
   ToggleFocusModeItem,
@@ -82,6 +83,8 @@ import {
 } from './TLDrawReference';
 import { CreateReferenceOverlayWrapper } from './CreateReferenceOverlayWrapper';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
+import { TLDrawCustomStylePanel } from './TLDrawCustomStylePanel';
+import { t } from 'i18next';
 
 const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';
 const MAX_ASSET_SIZE_MB = 25;
@@ -91,9 +94,9 @@ export const uiOverrides: TLUiOverrides = {
     // Create a tool item in the ui's context.
     tools.reference = {
       id: 'referenceInsertion',
-      icon: 'color',
-      label: 'Insert Reference',
-      kbd: 'c',
+      icon: 'pin-icon',
+      label: t('draw.tool.reference'),
+      kbd: 'p',
       onSelect: () => {
         editor.setCurrentTool('referenceInsertion');
       },
@@ -104,6 +107,12 @@ export const uiOverrides: TLUiOverrides = {
 
 const customTools = [TLDrawReferenceShapeTool];
 const customShapeUtils = [TLDrawReferenceUtil];
+const customAssetUrls: TLUiAssetUrlOverrides = {
+  icons: {
+    'pin-icon':
+      'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
+  },
+};
 
 const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
   display: grid;
@@ -220,6 +229,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
 
   const components: TLComponents = {
     NavigationPanel: null,
+    StylePanel: TLDrawCustomStylePanel,
     Toolbar: props.editable
       ? () => {
           // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -336,6 +346,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
             }}
             tools={customTools}
             shapeUtils={customShapeUtils}
+            assetUrls={customAssetUrls}
             overrides={uiOverrides}
           >
             <CreateReferenceOverlayWrapper />
