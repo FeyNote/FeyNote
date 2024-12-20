@@ -41,7 +41,10 @@ const SearchResultsContainer = styled.div`
 `;
 
 const SearchInput = styled(IonInput)`
+  font-size: 1rem;
   --background: transparent;
+  --highlight-height: 0;
+  --highlight-color-focused: var(--ion-text-color, #000000);
   --padding-start: 10px;
   --padding-end: 10px;
   --padding-top: 20px;
@@ -56,7 +59,7 @@ const Backdrop = styled(IonBackdrop)`
 /**
  * How often to query search results as the user types
  */
-const SEARCH_DELAY_MS = 250;
+const SEARCH_DELAY_MS = 20;
 
 interface SearchResult {
   artifactId: string;
@@ -182,6 +185,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
           setSearchResults(results);
         })
         .finally(() => {
+          if (cancelled) return;
           progress.dismiss();
         });
     }, SEARCH_DELAY_MS);
@@ -206,6 +210,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
           <IonIcon slot="start" icon={search} aria-hidden="true"></IonIcon>
         </SearchInput>
 
+        {ProgressBar}
         <SearchResultsContainer>
           {searchResults.map((searchResult) => (
             <IonItem
@@ -281,6 +286,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
     <SearchContainer>
       <h1>{t('editor.referenceMenu.selectDate')}</h1>
 
+      {ProgressBar}
       <FloatingSearchContainer>
         <CalendarSelectDate
           artifactId={calendarSelectInfo?.artifactId}
@@ -300,7 +306,6 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
 
   return (
     <>
-      {ProgressBar}
       <Backdrop
         visible={true}
         onIonBackdropTap={props.hide}
