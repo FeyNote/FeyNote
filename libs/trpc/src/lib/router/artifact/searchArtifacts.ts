@@ -18,6 +18,7 @@ export const searchArtifacts = authenticatedProcedure
       ctx.session.userId,
       input.query,
       {
+        prefix: true,
         limit: input.limit,
       },
     );
