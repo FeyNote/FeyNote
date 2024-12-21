@@ -32,7 +32,6 @@ const ENABLE_VERBOSE_SYNC_LOGGING = getIsViteDevelopment();
  */
 const ARTIFACT_SYNC_TIMEOUT_MS = 10 * 1000;
 
-const MANIFEST_MAX_SYNC_INTERVAL_MS = 120 * 1000;
 const MANIFEST_MIN_SYNC_INTERVAL_MS = 15 * 1000;
 
 /**
@@ -47,8 +46,7 @@ const SYNC_BATCH_SIZE = 5;
 const SYNC_BATCH_RATE_LIMIT_WAIT = 1 * 1000;
 
 export class SyncManager {
-  private syncing = false;
-  private syncInterval: NodeJS.Timeout;
+  private currentSyncPromise: Promise<void> | null = null;
 
   constructor(
     private manifestDb: IDBPDatabase,
@@ -63,13 +61,7 @@ export class SyncManager {
         enableFollowupCall: true,
       },
     );
-    syncManifestDebouncer.call();
-
-    this.syncInterval = setInterval(() => {
-      if (ENABLE_VERBOSE_SYNC_LOGGING)
-        console.log('Sync interval triggered, queueing sync');
-      syncManifestDebouncer.call();
-    }, MANIFEST_MAX_SYNC_INTERVAL_MS);
+    this.syncManifest();
 
     eventManager.addEventListener(
       [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
@@ -85,12 +77,20 @@ export class SyncManager {
     return `artifact:${artifactId}`;
   }
 
-  private async syncManifest(): Promise<void> {
-    if (this.syncing) {
+  public async syncManifest(): Promise<void> {
+    if (this.currentSyncPromise) {
       console.log('Sync already in progress');
-      return;
+      return this.currentSyncPromise;
     }
 
+    this.currentSyncPromise = this._syncManifest().finally(() => {
+      this.currentSyncPromise = null;
+    });
+
+    return this.currentSyncPromise;
+  }
+
+  private async _syncManifest(): Promise<void> {
     const session = await appIdbStorageManager.getSession();
     if (!session) {
       console.log('Not logged in, will not perform sync.');
@@ -100,7 +100,6 @@ export class SyncManager {
     performance.mark('startSync');
 
     console.log(`Beginning sync for ${session.email}`);
-    this.syncing = true;
 
     await this.searchManager.onReady();
 
@@ -288,8 +287,6 @@ export class SyncManager {
     } catch (e) {
       console.error('Sync failed', e);
     }
-
-    this.syncing = false;
   }
 
   private async sync(
@@ -383,9 +380,5 @@ export class SyncManager {
       tiptapCollabProvider.destroy();
       await indexeddbProvider.destroy();
     };
-  }
-
-  async destroy(): Promise<void> {
-    clearInterval(this.syncInterval);
   }
 }

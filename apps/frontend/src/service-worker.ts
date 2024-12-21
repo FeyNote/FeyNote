@@ -185,6 +185,22 @@ self.addEventListener('activate', () => {
   console.log('Service Worker activated');
 });
 
+self.addEventListener('sync', (event: any) => {
+  if (event.tag == 'manifest') {
+    event.waitUntil(
+      syncManagerP.then((syncManager) => syncManager.syncManifest()),
+    );
+  }
+});
+
+self.addEventListener('periodicSync', (event: any) => {
+  if (event.tag == 'manifest') {
+    event.waitUntil(
+      syncManagerP.then((syncManager) => syncManager.syncManifest()),
+    );
+  }
+});
+
 // Index should be cached networkFirst - this way, users will always get the newest application version
 const MAX_OFFLINE_INDEX_AGE_DAYS = 60;
 registerRoute(

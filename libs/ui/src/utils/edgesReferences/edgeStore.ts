@@ -208,7 +208,6 @@ class EdgeStore {
           ?.find((edge) => getEdgeId(edge) === edgeId);
 
         const edge = incomingEdge || outgoingEdge;
-        console.log('getting edge', edge?.referenceText);
 
         return edge;
       },
