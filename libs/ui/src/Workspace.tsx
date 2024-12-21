@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import { Layout } from 'flexlayout-react';
+import { Actions, Layout } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
@@ -219,6 +219,11 @@ export const Workspace: React.FC = () => {
           }}
           onAction={_onActionListener}
           onModelChange={_onModelChangeListener}
+          onAuxMouseClick={(node, event) => {
+            if (event.button === 1 && node.getType() === 'tab') {
+              _model.doAction(Actions.deleteTab(node.getId()));
+            }
+          }}
         />
         <IonButton
           style={{ position: 'absolute', left: 0 }}
