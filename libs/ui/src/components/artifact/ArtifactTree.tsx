@@ -32,6 +32,7 @@ import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
 import { eventManager } from '../../context/events/EventManager';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { ArtifactTreeItem } from './ArtifactTreeItem';
 
 /**
  * Calculates a lexographic sort order between two uppercase strings.
@@ -82,63 +83,6 @@ const StyleContainer = styled.div`
     padding-right: 4px;
   }
 
-  .rct-tree-item-li {
-    font-size: 0.8rem;
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .rct-tree-item-title-container {
-    display: flex;
-    align-items: center;
-    padding-left: 8px;
-  }
-
-  .rct-tree-item-button {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    text-align: left;
-    background-color: transparent;
-    height: 32px;
-    color: var(--ion-text-color);
-    outline: none;
-    border-radius: 5px;
-    padding-left: 8px;
-    padding-right: 8px;
-  }
-
-  .rct-tree-item-button:hover {
-    background-color: var(--ion-background-color);
-  }
-
-  .rct-tree-item-arrow {
-    width: 20px;
-    height: 20px;
-  }
-
-  .rct-tree-item-arrow:has(svg) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--ion-background-color);
-    }
-  }
-
-  .rct-tree-item-arrow svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .rct-tree-item-arrow-path {
-    fill: var(--ion-text-color);
-  }
-
   .rct-tree-items-container {
     margin: 0;
     padding: 0;
@@ -146,11 +90,6 @@ const StyleContainer = styled.div`
 
   .rct-tree-items-container .rct-tree-items-container {
     margin-left: 20px;
-  }
-
-  .rct-tree-item-title-container-dragging-over {
-    background-color: var(--ion-color-primary);
-    color: var(--ion-color-primary);
   }
 
   .rct-tree-drag-between-line {
@@ -171,7 +110,7 @@ const StyleContainer = styled.div`
   }
 `;
 
-interface InternalTreeItem {
+export interface InternalTreeItem {
   id: string;
   title: string;
   order: string;
@@ -180,7 +119,7 @@ interface InternalTreeItem {
 
 const TREE_ID = 'appArtifactTree';
 const ROOT_ITEM_ID = 'root';
-const UNCATEGORIZED_ITEM_ID = 'uncategorized';
+export const UNCATEGORIZED_ITEM_ID = 'uncategorized';
 const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
 export const ArtifactTree = () => {
@@ -608,6 +547,7 @@ export const ArtifactTree = () => {
         canReorderItems
         canDropOnNonFolder
         onDrop={onDrop}
+        renderItem={ArtifactTreeItem}
       >
         <Tree treeId={TREE_ID} rootItem={ROOT_ITEM_ID} />
       </ControlledTreeEnvironment>
