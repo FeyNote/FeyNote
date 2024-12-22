@@ -504,7 +504,11 @@ export const ArtifactTree = () => {
         defaultInteractionMode={{
           mode: 'custom',
           extends: InteractionMode.ClickArrowToExpand,
-          createInteractiveElementProps: (item, treeId, actions) => ({
+          createInteractiveElementProps: (
+            item: TreeItem<InternalTreeItem>,
+            treeId,
+            actions,
+          ) => ({
             onClick: (e) => {
               if (item.index === UNCATEGORIZED_ITEM_ID) {
                 actions.toggleExpandedState();
@@ -528,6 +532,18 @@ export const ArtifactTree = () => {
                   true,
                 );
               }
+            },
+            onDragStart: (e) => {
+              e.dataTransfer.setData(
+                'application/json',
+                JSON.stringify({
+                  component: PaneableComponent.Artifact,
+                  props: {
+                    id: item.data.id,
+                  },
+                }),
+              );
+              actions.startDragging();
             },
           }),
         }}

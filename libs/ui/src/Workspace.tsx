@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import styled from 'styled-components';
-import { Actions, Layout } from 'flexlayout-react';
+import { Actions, Layout, TabNode, Node } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
@@ -11,6 +11,11 @@ import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
 import { NewPaneButton } from './components/pane/NewPaneButton';
+import { t } from 'i18next';
+import {
+  PaneableComponent,
+  paneableComponentNameToDefaultI18nTitle,
+} from './context/globalPane/PaneableComponent';
 
 const MENU_SIZE_PX = '240';
 
@@ -223,6 +228,57 @@ export const Workspace: React.FC = () => {
             if (event.button === 1 && node.getType() === 'tab') {
               _model.doAction(Actions.deleteTab(node.getId()));
             }
+          }}
+          onExternalDrag={(event) => {
+            const jsonData = JSON.parse(
+              event.dataTransfer.getData('application/json'),
+            ) as unknown;
+
+            if (
+              !jsonData ||
+              typeof jsonData !== 'object' ||
+              !('component' in jsonData) ||
+              !('props' in jsonData)
+            ) {
+              return undefined;
+            }
+
+            const component = jsonData.component;
+            const props = jsonData.props;
+
+            if (
+              typeof jsonData.component !== 'string' ||
+              !(jsonData.component in PaneableComponent)
+            ) {
+              return undefined;
+            }
+
+            if (typeof jsonData.props !== 'object') {
+              return undefined;
+            }
+
+            return {
+              json: {
+                id: crypto.randomUUID(),
+                type: 'tab',
+                component,
+                name: t(
+                  paneableComponentNameToDefaultI18nTitle[
+                    component as PaneableComponent
+                  ],
+                ),
+                config: {
+                  component,
+                  props,
+                  navigationEventId: crypto.randomUUID(),
+                },
+              },
+              // Unused, but kept for reference --
+              //onDrop: (node?: Node, event?: React.DragEvent<HTMLElement>) => {
+              //  if (!node || !event) return;  // aborted drag
+              //  return; // Do something with the drop event like mutating the state of the tab
+              //}
+            };
           }}
         />
         <IonButton
