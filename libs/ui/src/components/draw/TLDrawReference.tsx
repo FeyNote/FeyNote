@@ -37,19 +37,19 @@ import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 import styled from 'styled-components';
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
-  isHandMode: boolean;
-  radius: number;
-  type: ReferenceIconTLDrawStyle;
+  $isHandMode: boolean;
+  $radius: number;
+  $type: ReferenceIconTLDrawStyle;
 }>`
   position: relative;
-  margin-left: ${({ radius }) => -radius}px;
-  margin-top: ${({ radius }) => -radius}px;
-  width: ${({ radius }) => radius * 2}px;
-  height: ${({ radius }) => radius * 2}px;
-  font-size: ${({ radius }) => radius * 2}px;
+  margin-left: ${({ $radius }) => -$radius}px;
+  margin-top: ${({ $radius }) => -$radius}px;
+  width: ${({ $radius }) => $radius * 2}px;
+  height: ${({ $radius }) => $radius * 2}px;
+  font-size: ${({ $radius }) => $radius * 2}px;
   border-radius: 100%;
-  ${({ type }) =>
-    type === 'circle'
+  ${({ $type }) =>
+    $type === 'circle'
       ? `
     background-color: var(--ion-color-primary);
     box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.7);
@@ -59,7 +59,7 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   pointer-events: all;
   text-align: center;
   vertical-align: middle;
-  cursor: ${({ isHandMode }) => (isHandMode ? 'pointer' : 'default')};
+  cursor: ${({ $isHandMode }) => ($isHandMode ? 'pointer' : 'default')};
 
   svg {
     overflow: visible;
@@ -307,9 +307,9 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
     return (
       <StyledHTMLContainer
         id={shape.id}
-        radius={radius}
-        isHandMode={isHandMode}
-        type={shape.props.icon}
+        $radius={radius}
+        $isHandMode={isHandMode}
+        $type={shape.props.icon}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onClick={linkClicked}
