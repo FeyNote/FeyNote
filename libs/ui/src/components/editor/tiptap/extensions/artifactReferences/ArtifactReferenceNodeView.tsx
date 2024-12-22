@@ -31,13 +31,14 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     targetArtifactBlockId,
     targetArtifactDate,
   });
+  const isBroken = edge ? edge.isBroken : false;
 
   const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    if (edge?.isBroken) return;
+    if (isBroken) return;
 
     let paneTransition = PaneTransition.Push;
     if (event.metaKey || event.ctrlKey) {
@@ -73,7 +74,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
-        $isBroken={false}
+        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
