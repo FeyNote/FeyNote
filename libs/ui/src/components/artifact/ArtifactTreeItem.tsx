@@ -1,9 +1,11 @@
-import { TreeRenderProps } from 'react-complex-tree';
-import { InternalTreeItem, UNCATEGORIZED_ITEM_ID } from './ArtifactTree';
+import { TreeItem, TreeItemIndex, TreeRenderProps } from 'react-complex-tree';
 import styled from 'styled-components';
 import { useRef } from 'react';
 import { IonContent, useIonPopover } from '@ionic/react';
+
+import { InternalTreeItem, UNCATEGORIZED_ITEM_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
+import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
 
 const TreeListItem = styled.li<{
   $draggingOver: boolean;
@@ -89,15 +91,64 @@ const TreeItemButton = styled.button<{
   `}
 `;
 
-export const ArtifactTreeItem: TreeRenderProps<
-  InternalTreeItem,
-  'expandedItems' | 'selectedItems'
->['renderItem'] = (props) => {
+interface ArtifactTreeItemProps {
+  treeRenderProps: Parameters<
+    NonNullable<
+      TreeRenderProps<
+        InternalTreeItem,
+        'expandedItems' | 'selectedItems'
+      >['renderItem']
+    >
+  >[0];
+  itemsRef: React.MutableRefObject<
+    Record<TreeItemIndex, TreeItem<InternalTreeItem>>
+  >;
+  expandedItemsRef: React.MutableRefObject<string[]>;
+  setExpandedItemsRef: React.MutableRefObject<
+    (expandedItems: string[]) => void
+  >;
+}
+
+export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   const popoverDismissRef = useRef<() => void>();
+
+  const expandAll = () => {
+    const expandedItems = new Set(props.expandedItemsRef.current);
+    expandedItems.add(props.treeRenderProps.item.data.id);
+
+    const childIds = getAllChildIdsForTreeItem(
+      props.itemsRef.current,
+      props.treeRenderProps.item,
+      0,
+    );
+    for (const childId of childIds) {
+      expandedItems.add(childId);
+    }
+    props.setExpandedItemsRef.current(Array.from(expandedItems));
+  };
+
+  const collapseAll = () => {
+    const expandedItems = new Set(props.expandedItemsRef.current);
+    expandedItems.delete(props.treeRenderProps.item.data.id);
+
+    const childIds = getAllChildIdsForTreeItem(
+      props.itemsRef.current,
+      props.treeRenderProps.item,
+      0,
+    );
+    for (const childId of childIds) {
+      expandedItems.delete(childId);
+    }
+    props.setExpandedItemsRef.current(Array.from(expandedItems));
+  };
 
   const popoverContents = (
     <IonContent onClick={popoverDismissRef.current}>
-      <ArtifactTreeItemContextMenu artifactId={props.item.data.id} />
+      <ArtifactTreeItemContextMenu
+        artifactId={props.treeRenderProps.item.data.id}
+        expandAll={expandAll}
+        collapseAll={collapseAll}
+      />
     </IonContent>
   );
 
@@ -109,34 +160,39 @@ export const ArtifactTreeItem: TreeRenderProps<
   return (
     <>
       <TreeListItem
-        {...props.context.itemContainerWithChildrenProps}
-        $isUncategorized={props.item.data.id === UNCATEGORIZED_ITEM_ID}
-        $draggingOver={props.context.isDraggingOver || false}
+        {...props.treeRenderProps.context.itemContainerWithChildrenProps}
+        $isUncategorized={
+          props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+        }
+        $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
       >
         <TreeItemContainer>
-          {props.arrow}
+          {props.treeRenderProps.arrow}
           <TreeItemButton
-            {...props.context.itemContainerWithoutChildrenProps}
-            {...(props.context.interactiveElementProps as any)}
-            $isUncategorized={props.item.data.id === UNCATEGORIZED_ITEM_ID}
+            {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
+            {...(props.treeRenderProps.context.interactiveElementProps as any)}
+            $isUncategorized={
+              props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+            }
             className={`rct-tree-item-button`}
             onContextMenu={(e) => {
               e.preventDefault();
               e.stopPropagation();
 
-              if (props.item.data.id === UNCATEGORIZED_ITEM_ID) return;
+              if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID)
+                return;
 
               present({
                 event: e.nativeEvent,
               });
             }}
           >
-            {props.title}
+            {props.treeRenderProps.title}
           </TreeItemButton>
         </TreeItemContainer>
       </TreeListItem>
-      {props.children}
+      {props.treeRenderProps.children}
     </>
   );
 };

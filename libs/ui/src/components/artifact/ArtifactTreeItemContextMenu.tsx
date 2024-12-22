@@ -18,6 +18,8 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   artifactId: string;
+  expandAll: () => void;
+  collapseAll: () => void;
 }
 
 export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
@@ -78,6 +80,15 @@ export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
           }
         >
           {t('contextMenu.newTab')}
+        </ContextMenuItem>
+      </ContextMenuGroup>
+      <ContextMenuGroupDivider />
+      <ContextMenuGroup>
+        <ContextMenuItem onClick={props.expandAll}>
+          {t('contextMenu.expandAll')}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={props.collapseAll}>
+          {t('contextMenu.collapseAll')}
         </ContextMenuItem>
       </ContextMenuGroup>
       <ContextMenuGroupDivider />
