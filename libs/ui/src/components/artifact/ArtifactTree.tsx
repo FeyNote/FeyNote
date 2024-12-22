@@ -289,7 +289,9 @@ export const ArtifactTree = () => {
         index: UNCATEGORIZED_ITEM_ID,
         data: {
           id: UNCATEGORIZED_ITEM_ID,
-          title: t('artifactTree.uncategorized'),
+          title: t('artifactTree.uncategorized', {
+            count: uncategorizedArtifacts.size,
+          }),
           order: 'XZ',
         },
         children: Array.from(uncategorizedArtifacts),

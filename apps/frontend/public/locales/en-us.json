@@ -118,7 +118,7 @@
   "dashboard.noSharedContent.message": "Artifacts will show up here if another user shares their content with you",
   "dashboard.reload": "Refresh Dashboard",
 
-  "artifactTree.uncategorized": "Uncategorized",
+  "artifactTree.uncategorized": "Uncategorized ({{count}})",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",

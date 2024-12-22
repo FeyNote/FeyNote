@@ -7,6 +7,7 @@ import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 
 const TreeListItem = styled.li<{
   $draggingOver: boolean;
+  $isUncategorized: boolean;
 }>`
   font-size: 0.8rem;
   list-style-type: none;
@@ -18,6 +19,16 @@ const TreeListItem = styled.li<{
     `
     background-color: var(--ion-color-primary);
     color: var(--ion-color-primary);
+  `}
+
+  ${({ $isUncategorized }) =>
+    $isUncategorized &&
+    `
+    &:hover {
+      .rct-tree-item-arrow {
+        background-color: var(--ion-background-color);
+      }
+    }
   `}
 `;
 
@@ -53,7 +64,9 @@ const TreeItemContainer = styled.div`
   }
 `;
 
-const TreeItemButton = styled.button`
+const TreeItemButton = styled.button<{
+  $isUncategorized: boolean;
+}>`
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -67,9 +80,13 @@ const TreeItemButton = styled.button`
   padding-right: 8px;
   cursor: pointer;
 
-  &:hover {
-    background-color: var(--ion-background-color);
-  }
+  ${({ $isUncategorized }) =>
+    !$isUncategorized &&
+    `
+    &:hover {
+      background-color: var(--ion-background-color);
+    }
+  `}
 `;
 
 export const ArtifactTreeItem: TreeRenderProps<
@@ -93,6 +110,7 @@ export const ArtifactTreeItem: TreeRenderProps<
     <>
       <TreeListItem
         {...props.context.itemContainerWithChildrenProps}
+        $isUncategorized={props.item.data.id === UNCATEGORIZED_ITEM_ID}
         $draggingOver={props.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
       >
@@ -101,6 +119,7 @@ export const ArtifactTreeItem: TreeRenderProps<
           <TreeItemButton
             {...props.context.itemContainerWithoutChildrenProps}
             {...(props.context.interactiveElementProps as any)}
+            $isUncategorized={props.item.data.id === UNCATEGORIZED_ITEM_ID}
             className={`rct-tree-item-button`}
             onContextMenu={(e) => {
               e.preventDefault();
