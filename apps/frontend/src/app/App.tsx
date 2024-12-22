@@ -44,6 +44,19 @@ export function App() {
       setInterval(() => {
         registration?.update();
       }, SW_UPDATE_INTERVAL_MS);
+
+      (registration as any)?.sync?.register('manifest').catch((e: unknown) => {
+        console.error('Cannot register background sync', e);
+      });
+
+      const PERIODIC_SYNC_INTERVAL_HOURS = 48;
+      (registration as any)?.periodicSync
+        ?.register('manifest', {
+          minInterval: PERIODIC_SYNC_INTERVAL_HOURS * 60 * 60 * 1000,
+        })
+        .catch((e: unknown) => {
+          console.error('Cannot register periodic sync', e);
+        });
     },
   });
 

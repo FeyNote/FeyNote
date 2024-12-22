@@ -10,6 +10,7 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 
 interface Props {
+  artifactId: string;
   yDoc: YDoc;
   previewText?: string;
 }
@@ -21,8 +22,8 @@ export const TiptapPreview: React.FC<Props> = (props) => {
   const artifactMeta = getMetaFromYArtifact(props.yDoc);
 
   const editor = useArtifactEditor({
+    artifactId: props.artifactId,
     editable: false,
-    knownReferences: new Map(), // TODO: Update this
     yjsProvider: undefined,
     yDoc: props.yDoc,
     getFileUrl: (fileId) => {

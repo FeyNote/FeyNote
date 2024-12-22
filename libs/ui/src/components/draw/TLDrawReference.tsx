@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 import {
   Circle2d,
   createShapePropsMigrationSequence,
@@ -6,18 +8,86 @@ import {
   RecordProps,
   ShapeUtil,
   StateNode,
+  StyleProp,
   T,
   TLBaseShape,
   TLPointerEventInfo,
 } from 'tldraw';
+import {
+  FaAnchor,
+  FaCircle,
+  FaFlag,
+  FaFortAwesome,
+  FaHeart,
+  FaHome,
+  FaMapPin,
+  FaStar,
+  FaTree,
+} from 'react-icons/fa';
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useContext, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { getKnownArtifactReferenceKey } from '../editor/tiptap/extensions/artifactReferences/getKnownArtifactReferenceKey';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
+import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
+import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
+import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
+import styled from 'styled-components';
+
+const StyledHTMLContainer = styled(HTMLContainer)<{
+  $isHandMode: boolean;
+  $radius: number;
+  $type: ReferenceIconTLDrawStyle;
+}>`
+  position: relative;
+  margin-left: ${({ $radius }) => -$radius}px;
+  margin-top: ${({ $radius }) => -$radius}px;
+  width: ${({ $radius }) => $radius * 2}px;
+  height: ${({ $radius }) => $radius * 2}px;
+  font-size: ${({ $radius }) => $radius * 2}px;
+  border-radius: 100%;
+  ${({ $type }) =>
+    $type === 'circle'
+      ? `
+    background-color: var(--ion-color-primary);
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.7);
+  `
+      : ''}
+  color: #ffffff;
+  pointer-events: all;
+  text-align: center;
+  vertical-align: middle;
+  cursor: ${({ $isHandMode }) => ($isHandMode ? 'pointer' : 'default')};
+
+  svg {
+    overflow: visible;
+
+    path {
+      filter: drop-shadow(1px 1px 50px rgba(0, 0, 0, 0.9));
+    }
+  }
+`;
+
+export const referenceIconTLDrawStyle = StyleProp.defineEnum('reference:icon', {
+  defaultValue: 'circle',
+  values: [
+    'circle',
+    'star',
+    'home',
+    'fort',
+    'heart',
+    'tree',
+    'pin',
+    'flag',
+    'anchor',
+    'sword',
+    'monster',
+  ],
+});
+
+type ReferenceIconTLDrawStyle = T.TypeOf<typeof referenceIconTLDrawStyle>;
 
 export class TLDrawReferenceShapeTool extends StateNode {
   static override id = 'referenceInsertion';
@@ -36,6 +106,7 @@ export type ReferenceShape = TLBaseShape<
     targetArtifactBlockId: string | null;
     targetArtifactDate: string | null;
     referenceText: string;
+    icon: ReferenceIconTLDrawStyle;
   }
 >;
 
@@ -44,6 +115,7 @@ export const referenceShapeProps: RecordProps<ReferenceShape> = {
   targetArtifactBlockId: T.string.nullable(),
   targetArtifactDate: T.string.nullable(),
   referenceText: T.string,
+  icon: referenceIconTLDrawStyle,
 };
 
 /**
@@ -74,6 +146,9 @@ export const referenceShapeMigrations = createShapePropsMigrationSequence({
   ],
 });
 
+/**
+ * This scales the size of the reference icon based on the user's zoom level
+ */
 const REFERENCE_RADIUS_MULTIPLIER = 8;
 export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
   static override type = 'reference' as const;
@@ -112,6 +187,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       targetArtifactBlockId: null,
       targetArtifactDate: null,
       referenceText: '',
+      icon: 'circle',
     };
   }
 
@@ -128,15 +204,11 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    */
   getGeometry() {
     const radius = this.getRadius();
-    return new Group2d({
-      children: [
-        new Circle2d({
-          isFilled: true,
-          radius,
-          x: -radius,
-          y: -radius,
-        }),
-      ],
+    return new Circle2d({
+      isFilled: true,
+      radius,
+      x: -radius,
+      y: -radius,
     });
   }
 
@@ -145,11 +217,23 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
   component(shape: ReferenceShape) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const { navigate } = useContext(PaneContext);
+    const artifactId = useContext(TLDrawArtifactIdContext);
+    if (!artifactId) {
+      throw new Error('TLDrawReferenceUtil.component: missing artifactId');
+    }
+
     const radius = this.getRadius();
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const ref = useRef<HTMLDivElement>(null);
+
+    const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
+    const edge = getEdge({
+      artifactId,
+      artifactBlockId: shape.id,
+      targetArtifactId: shape.props.targetArtifactId,
+      targetArtifactBlockId: shape.props.targetArtifactBlockId,
+      targetArtifactDate: shape.props.targetArtifactDate,
+    });
 
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 
@@ -160,22 +244,10 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       onMouseOver,
       onMouseOut,
       close,
-      // eslint-disable-next-line react-hooks/rules-of-hooks
     } = useArtifactPreviewTimer(
       shape.props.targetArtifactId,
-      false, // TODO: knownReference?.isBroken
+      edge ? edge.isBroken : false,
     );
-
-    const key = getKnownArtifactReferenceKey(
-      shape.props.targetArtifactId,
-      shape.props.targetArtifactBlockId || undefined,
-      shape.props.targetArtifactDate || undefined,
-    );
-
-    // TODO: global known references store
-    const knownReference = {
-      isBroken: false,
-    };
 
     const linkClicked = (
       event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
@@ -185,7 +257,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       event.preventDefault();
       event.stopPropagation();
 
-      if (knownReference?.isBroken) return;
+      if (edge?.isBroken) return;
 
       close();
 
@@ -205,28 +277,8 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       );
     };
 
-    return (
-      <HTMLContainer
-        id={shape.id}
-        style={{
-          position: 'relative',
-          marginLeft: -radius,
-          marginTop: -radius,
-          width: radius * 2,
-          height: radius * 2,
-          border: '1px solid black',
-          borderRadius: '100%',
-          backgroundColor: 'var(--ion-color-primary)',
-          pointerEvents: 'all',
-          textAlign: 'center',
-          lineHeight: '40px',
-          verticalAlign: 'middle',
-          cursor: isHandMode ? 'pointer' : 'default',
-        }}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        onClick={linkClicked}
-      >
+    const contents = (
+      <>
         <div
           ref={ref}
           style={{
@@ -249,7 +301,32 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
               onClick={linkClicked}
             />
           )}
-      </HTMLContainer>
+      </>
+    );
+
+    return (
+      <StyledHTMLContainer
+        id={shape.id}
+        $radius={radius}
+        $isHandMode={isHandMode}
+        $type={shape.props.icon}
+        onMouseOver={onMouseOver}
+        onMouseOut={onMouseOut}
+        onClick={linkClicked}
+      >
+        {shape.props.icon === 'pin' && <FaMapPin />}
+        {shape.props.icon === 'star' && <FaStar />}
+        {shape.props.icon === 'fort' && <FaFortAwesome />}
+        {shape.props.icon === 'tree' && <FaTree />}
+        {shape.props.icon === 'flag' && <FaFlag />}
+        {shape.props.icon === 'anchor' && <FaAnchor />}
+        {shape.props.icon === 'heart' && <FaHeart />}
+        {shape.props.icon === 'home' && <FaHome />}
+        {shape.props.icon === 'sword' && <GiBroadsword />}
+        {shape.props.icon === 'monster' && <GiMonsterGrasp />}
+
+        {contents}
+      </StyledHTMLContainer>
     );
   }
 

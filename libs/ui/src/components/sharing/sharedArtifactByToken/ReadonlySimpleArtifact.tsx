@@ -9,6 +9,8 @@ import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { getFileRedirectUrl } from '../../../utils/files/getFileRedirectUrl';
 import { ArtifactDraw } from '../../draw/ArtifactDraw';
+import { getEdgeId } from '@feynote/shared-utils';
+import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
 
 interface Props {
   artifactId: string;
@@ -93,13 +95,33 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     loadArtifactYDoc();
   }, [props.artifactId, props.shareToken]);
 
+  useEffect(() => {
+    if (!artifact) return;
+
+    getEdgeStore().provideStaticEdgesForArtifactId({
+      artifactId: artifact.id,
+      outgoingEdges: artifact.artifactReferences.map((ref) => ({
+        ...ref,
+        id: getEdgeId(ref),
+        isBroken: !ref.referenceTargetArtifactId,
+        artifactTitle: ref.artifact.title,
+      })),
+      incomingEdges: artifact.incomingArtifactReferences.map((ref) => ({
+        ...ref,
+        id: getEdgeId(ref),
+        isBroken: !ref.referenceTargetArtifactId,
+        artifactTitle: ref.artifact.title,
+      })),
+    });
+  }, [artifact]);
+
   if (!artifact || !yDoc) return;
 
   if (artifact.type === 'tiptap') {
     return (
       <ArtifactEditor
+        artifactId={props.artifactId}
         editable={false}
-        knownReferences={new Map()}
         yjsProvider={undefined}
         yDoc={yDoc}
         getFileUrl={(fileId) => {
@@ -115,11 +137,10 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   if (artifact.type === 'calendar') {
     return (
       <ArtifactCalendar
+        artifactId={props.artifactId}
         editable={false}
-        knownReferences={new Map()}
         y={yDoc}
         viewType="fullsize"
-        incomingArtifactReferences={artifact.incomingArtifactReferences}
       />
     );
   }
@@ -127,10 +148,9 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   if (artifact.type === 'tldraw') {
     return (
       <ArtifactDraw
+        artifactId={props.artifactId}
         editable={false}
-        knownReferences={new Map()}
         yDoc={yDoc}
-        incomingArtifactReferences={artifact.incomingArtifactReferences}
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,

@@ -56,9 +56,8 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
   return (
     <div>
       <ArtifactCalendar
+        artifactId={undefined}
         y={props.yDoc}
-        knownReferences={new Map()}
-        incomingArtifactReferences={[]}
         editable={false}
         viewType="mini"
         setCenterRef={setCenterRef}

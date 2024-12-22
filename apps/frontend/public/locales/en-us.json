@@ -118,7 +118,7 @@
   "dashboard.noSharedContent.message": "Artifacts will show up here if another user shares their content with you",
   "dashboard.reload": "Refresh Dashboard",
 
-  "artifactTree.uncategorized": "Uncategorized",
+  "artifactTree.uncategorized": "Uncategorized ({{count}})",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",
@@ -162,6 +162,7 @@
   "contextMenu.splitRight": "Split right",
   "contextMenu.splitDown": "Split down",
   "contextMenu.duplicateTab": "Duplicate tab",
+  "contextMenu.newTab": "New tab",
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
@@ -226,7 +227,7 @@
   "editor.referenceMenu.selectDate": "Select Date",
   "editor.referenceMenu.noItems.title": "No results for \"{{title}}\"",
   "editor.referenceMenu.noItems.subtitle": "Click to create",
-  "editor.referenceMenu.artifactBlock": "Block within {{title}}",
+  "editor.referenceMenu.artifactBlock": "Block within \"{{title}}\"",
   "editor.referenceMenu.artifact": "Artifact",
   "editor.referenceMenu.searching.title": "Searching...",
   "editor.referenceMenu.searching.subtitle": "Search results will appear when you pause typing",
@@ -339,6 +340,9 @@
   "calendar.selectDate.submit": "Create calendar reference",
   "calendar.selectDate.placeholder.gregorian": "YYYY.MM.DD",
   "calendar.selectDate.placeholder.session": "#5",
+
+  "draw.mixed": "Mixed",
+  "draw.tool.reference": "Insert Reference",
 
   "artifactDetail.missingTitle.title": "Missing artifact title",
   "artifactDetail.missingTitle.message": "You'll need to add a title to the artifact before you can save it.",

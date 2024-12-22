@@ -7,10 +7,9 @@ import {
 } from 'react';
 import { Array as YArray } from 'yjs';
 import type { TypedArray, TypedMap } from 'yjs-types';
-import type { YCalendarConfig } from '@feynote/shared-utils';
+import type { Edge, YCalendarConfig } from '@feynote/shared-utils';
 import { ymdToDatestamp } from './ymdToDatestamp';
 import { getStartDayOfWeekForMonth } from './getStartDayOfWeekForMonth';
-import type { ArtifactDTO } from '@feynote/global-types';
 import { FullsizeCalendar } from './renderers/FullsizeCalendar';
 import { MiniCalendar } from './renderers/MiniCalendar';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
@@ -18,10 +17,7 @@ import { specifierToDatestamp } from './specifierToDatestamp';
 
 interface Props {
   viewType: 'fullsize' | 'mini';
-  knownReferencesByDay: Record<
-    string,
-    ArtifactDTO['incomingArtifactReferences']
-  >;
+  edgesByDay: Record<string, Edge[]>;
   configMap: TypedMap<Partial<YCalendarConfig>>;
   setCenterRef?: MutableRefObject<((center: string) => void) | undefined>;
   centerDate?: string;
@@ -134,7 +130,7 @@ export const CalendarRenderer: React.FC<Props> = (props) => {
     getDayInfo,
     onDayClicked: props.onDayClicked,
     selectedDate: props.selectedDate,
-    knownReferencesByDay: props.knownReferencesByDay,
+    edgesByDay: props.edgesByDay,
   };
 
   switch (props.viewType) {
