@@ -33,6 +33,13 @@ import { eventManager } from '../../context/events/EventManager';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
+import {
+  clearCustomDragData,
+  CustomDragStateData,
+  getCustomDragData,
+  registerStartTreeDrag,
+  setCustomDragData,
+} from '../../utils/artifactTree/customDrag';
 
 /**
  * Calculates a lexographic sort order between two uppercase strings.
@@ -480,6 +487,43 @@ export const ArtifactTree = () => {
   return (
     <StyleContainer>
       <ControlledTreeEnvironment
+        ref={(el) => {
+          registerStartTreeDrag(() => {
+            const customDragData = getCustomDragData();
+            if (!customDragData) {
+              throw new Error(
+                'startTreeDrag was called without customDragData being set first',
+              );
+            }
+            if (customDragData.component !== PaneableComponent.Artifact) {
+              throw new Error(
+                'startTreeDrag was called with an unexpected component',
+              );
+            }
+            const { props } =
+              customDragData as CustomDragStateData<PaneableComponent.Artifact>;
+
+            el?.dragAndDropContext.onStartDraggingItems(
+              [
+                {
+                  index: props.id,
+                  children: [],
+                  isFolder: false,
+                  canMove: true,
+                  canRename: false,
+                  data: {
+                    id: props.id,
+                    title:
+                      artifacts.find((artifact) => artifact.id === props.id)
+                        ?.title || 'Unknown',
+                    order: 'X',
+                  } satisfies InternalTreeItem,
+                },
+              ],
+              TREE_ID,
+            );
+          });
+        }}
         items={items}
         getItemTitle={(item) => item.data.title}
         viewState={{
@@ -533,16 +577,13 @@ export const ArtifactTree = () => {
                 );
               }
             },
-            onDragStart: (e) => {
-              e.dataTransfer.setData(
-                'application/json',
-                JSON.stringify({
-                  component: PaneableComponent.Artifact,
-                  props: {
-                    id: item.data.id,
-                  },
-                }),
-              );
+            onDragStart: () => {
+              setCustomDragData({
+                component: PaneableComponent.Artifact,
+                props: {
+                  id: item.data.id,
+                },
+              });
               actions.startDragging();
             },
           }),

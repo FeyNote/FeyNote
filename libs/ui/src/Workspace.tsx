@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Actions, Layout, TabNode, Node } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
@@ -16,6 +16,12 @@ import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
 } from './context/globalPane/PaneableComponent';
+import {
+  clearCustomDragData,
+  getCustomDragData,
+  setCustomDragData,
+  startTreeDrag,
+} from './utils/artifactTree/customDrag';
 
 const MENU_SIZE_PX = '240';
 
@@ -200,6 +206,59 @@ export const Workspace: React.FC = () => {
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
 
+  useEffect(() => {
+    const listener = (event: DragEvent) => {
+      if (!(event.target instanceof HTMLElement)) return;
+
+      // We exit early if there's already drag data since this event listener is called extremely
+      // frequently and querySelector is expensive
+      const customDragData = getCustomDragData();
+      if (customDragData) return;
+
+      const layoutPath = event.target.querySelector('[data-layout-path]');
+      if (!layoutPath) {
+        return;
+      }
+
+      const nodeId = event.target
+        .querySelector('[data-node-id]')
+        ?.getAttribute('data-node-id');
+      if (!nodeId) {
+        return;
+      }
+
+      const node = _model.getNodeById(nodeId);
+      if (node?.getType() !== 'tab') return;
+      const config = (node as TabNode).getConfig();
+      if (!config || !config.component || !config.props) return;
+
+      setCustomDragData({
+        component: config.component,
+        props: config.props,
+      });
+
+      if (config.component === PaneableComponent.Artifact) {
+        startTreeDrag();
+      }
+    };
+
+    window.addEventListener('drag', listener);
+    return () => {
+      window.removeEventListener('drag', listener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const listener = () => {
+      clearCustomDragData();
+    };
+
+    window.addEventListener('dragend', listener);
+    return () => {
+      window.removeEventListener('dragend', listener);
+    };
+  }, []);
+
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
       <Menu $side="left">
@@ -216,10 +275,18 @@ export const Workspace: React.FC = () => {
               navigationEventId={arg.getConfig().navigationEventId}
             />
           )}
-          onRenderTabSet={(node, { buttons }) => {
+          onRenderTabSet={(node, renderValues) => {
             if (node.getType() !== 'tabset') return;
-            buttons.push(
+
+            renderValues.buttons.push(
               <NewPaneButton key="newpanebutton" tabsetId={node.getId()} />,
+            );
+          }}
+          onRenderTab={(node, renderValues) => {
+            // data-node-id is used for dragging interactions since flexlayout-react doesn't provide
+            // a way to figure out what the node is when dragging
+            renderValues.content = (
+              <div data-node-id={node.getId()}>{renderValues.content}</div>
             );
           }}
           onAction={_onActionListener}
@@ -229,44 +296,18 @@ export const Workspace: React.FC = () => {
               _model.doAction(Actions.deleteTab(node.getId()));
             }
           }}
-          onExternalDrag={(event) => {
-            const jsonData = JSON.parse(
-              event.dataTransfer.getData('application/json'),
-            ) as unknown;
+          onExternalDrag={() => {
+            const customDragData = getCustomDragData();
+            if (!customDragData) return undefined;
 
-            if (
-              !jsonData ||
-              typeof jsonData !== 'object' ||
-              !('component' in jsonData) ||
-              !('props' in jsonData)
-            ) {
-              return undefined;
-            }
-
-            const component = jsonData.component;
-            const props = jsonData.props;
-
-            if (
-              typeof jsonData.component !== 'string' ||
-              !(jsonData.component in PaneableComponent)
-            ) {
-              return undefined;
-            }
-
-            if (typeof jsonData.props !== 'object') {
-              return undefined;
-            }
+            const { component, props } = customDragData;
 
             return {
               json: {
                 id: crypto.randomUUID(),
                 type: 'tab',
                 component,
-                name: t(
-                  paneableComponentNameToDefaultI18nTitle[
-                    component as PaneableComponent
-                  ],
-                ),
+                name: t(paneableComponentNameToDefaultI18nTitle[component]),
                 config: {
                   component,
                   props,
@@ -276,7 +317,7 @@ export const Workspace: React.FC = () => {
               // Unused, but kept for reference --
               //onDrop: (node?: Node, event?: React.DragEvent<HTMLElement>) => {
               //  if (!node || !event) return;  // aborted drag
-              //  return; // Do something with the drop event like mutating the state of the tab
+              //  return; // Do something with the drop event (now has access to dataTransfer)
               //}
             };
           }}
