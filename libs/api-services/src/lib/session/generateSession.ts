@@ -7,12 +7,15 @@ import { Prisma } from '@prisma/client';
  * The initial length of validity for a session
  * The session will expire after this time unless extended
  */
-const SESSION_VALID_DAYS = 21;
+const SESSION_VALID_DAYS = 90;
 /**
  * The total length this session can maximally be valid for if extended to it's maximum time.
  * Used to force the user to re-auth at a reasonable interval
+ *
+ * TODO: we may want to re-evaluate even doing this at all, since invalidating a user who has
+ * added data offline (even for just a day or two) will erase their offline work.
  */
-const SESSION_MAX_VALID_DAYS = 90;
+const SESSION_MAX_VALID_DAYS = 365;
 
 export const generateSession = async (
   userId: string,
