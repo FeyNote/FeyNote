@@ -30,17 +30,22 @@ export async function createArtifactRevision(
     },
   });
 
+  const artifactJson = {
+    ...artifact,
+    yBin: undefined,
+    files: undefined,
+    yBinBase64: Buffer.from(artifact.yBin).toString('base64'),
+  };
+  delete artifactJson.yBin;
+  delete artifactJson.files;
+
   // TODO: validate if user can create revisions/if we nuke an old revision depending on sub level
   const createP = tx.artifactRevision.create({
     data: {
       artifactId: artifact.id,
       revisionId,
       userId: artifact.userId,
-      artifactJson: {
-        ...artifact,
-        yBin: undefined,
-        yBinBase64: Buffer.from(artifact.yBin).toString('base64'),
-      },
+      artifactJson,
       artifactFilesJson: artifact.files,
       artifactDeletedAt: null,
     },
