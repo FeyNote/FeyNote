@@ -31,13 +31,14 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     targetArtifactBlockId,
     targetArtifactDate,
   });
+  const isBroken = edge ? edge.isBroken : false;
 
   const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    if (edge?.isBroken) return;
+    if (isBroken) return;
 
     let paneTransition = PaneTransition.Push;
     if (event.metaKey || event.ctrlKey) {
@@ -55,14 +56,8 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
   };
 
-  const {
-    artifact,
-    artifactYBin,
-    showPreview,
-    onMouseOver,
-    onMouseOut,
-    close,
-  } = useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
+  const { previewInfo, onMouseOver, onMouseOut, close } =
+    useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
 
   let referenceText = edge?.referenceText || props.node.attrs.referenceText;
   if (targetArtifactDate) {
@@ -73,7 +68,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
-        $isBroken={false}
+        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
@@ -88,13 +83,14 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         >
           {referenceText}
         </a>
-        {showPreview && artifact && artifactYBin && ref.current && (
+        {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
               event.stopPropagation(), linkClicked(event), close()
             )}
-            artifact={artifact}
-            artifactYBin={artifactYBin}
+            artifactId={artifactId}
+            previewInfo={previewInfo}
+            referenceText={referenceText}
             artifactBlockId={targetArtifactBlockId || undefined}
             artifactDate={targetArtifactDate || undefined}
             previewTarget={ref.current}

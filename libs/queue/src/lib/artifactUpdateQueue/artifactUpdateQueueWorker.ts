@@ -6,6 +6,7 @@ import {
   updateArtifactTitleReferenceText,
   updateArtifactContentReferenceText,
   updateArtifactOutgoingReferences,
+  createArtifactRevision,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { ArtifactType, Prisma } from '@prisma/client';
@@ -104,6 +105,8 @@ export const artifactUpdateQueueWorker = new Worker<
               tx,
             );
           }
+
+          await createArtifactRevision(args.data.artifactId, tx);
 
           const indexableArtifact = {
             id: args.data.artifactId,

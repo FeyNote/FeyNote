@@ -39,12 +39,18 @@ export const getManifest = authenticatedProcedure.query(
 
     const relationships = await prisma.artifactReference.findMany({
       where: {
-        artifactId: {
-          in: allArtifactIds,
-        },
-        targetArtifactId: {
-          in: allArtifactIds,
-        },
+        OR: [
+          {
+            artifactId: {
+              in: allArtifactIds,
+            },
+          },
+          {
+            targetArtifactId: {
+              in: allArtifactIds,
+            },
+          },
+        ],
       },
       select: {
         artifactId: true,

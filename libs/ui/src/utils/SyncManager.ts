@@ -12,6 +12,7 @@ import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   Edge,
+  getEdgeId,
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
@@ -113,19 +114,14 @@ export class SyncManager {
         'readwrite',
       );
       const edgesStore = edgesTx.store;
-      const localEdges = await edgesStore.getAll(ObjectStoreName.Edges);
+      const localEdges = await edgesStore.getAll();
       const localEdgesById = new Map<string, Edge>(
         localEdges.map((edge) => [edge.id, edge]),
       );
-      const remoteEdgeIds = new Set(
-        latestManifest.edges.map(
-          (edge) =>
-            `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`,
-        ),
-      );
+      const remoteEdgeIds = new Set(latestManifest.edges.map((el) => el.id));
 
       for (const edge of latestManifest.edges) {
-        const edgeId = `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`;
+        const edgeId = getEdgeId(edge);
         const localEdge = localEdgesById.get(edgeId);
         if (
           !localEdge ||

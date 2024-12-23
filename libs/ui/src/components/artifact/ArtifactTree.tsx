@@ -34,7 +34,6 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
 import {
-  clearCustomDragData,
   CustomDragStateData,
   getCustomDragData,
   registerStartTreeDrag,
@@ -138,6 +137,10 @@ export const ArtifactTree = () => {
   );
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const expandedItemsRef = useRef(expandedItems);
+  expandedItemsRef.current = expandedItems;
+  const setExpandedItemsRef = useRef(setExpandedItems);
+  setExpandedItemsRef.current = setExpandedItems;
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
   const currentPane = getPaneById(undefined);
@@ -354,6 +357,10 @@ export const ArtifactTree = () => {
 
     return items;
   }, [yKeyValue, _rerenderReducerValue, leftPaneArtifactTreeShowUncategorized]);
+  const itemsRef = useRef<Record<TreeItemIndex, TreeItem<InternalTreeItem>>>(
+    {},
+  );
+  itemsRef.current = items;
 
   /**
    * Uncategorize all descendants of the itemsToDelete
@@ -606,7 +613,16 @@ export const ArtifactTree = () => {
         canReorderItems
         canDropOnNonFolder
         onDrop={onDrop}
-        renderItem={ArtifactTreeItem}
+        renderItem={(props) => {
+          return (
+            <ArtifactTreeItem
+              treeRenderProps={props}
+              itemsRef={itemsRef}
+              expandedItemsRef={expandedItemsRef}
+              setExpandedItemsRef={setExpandedItemsRef}
+            />
+          );
+        }}
       >
         <Tree treeId={TREE_ID} rootItem={ROOT_ITEM_ID} />
       </ControlledTreeEnvironment>
