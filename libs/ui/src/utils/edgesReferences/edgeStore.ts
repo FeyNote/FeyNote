@@ -154,7 +154,7 @@ class EdgeStore {
    * For an external consumer of this class to provide some static edges that the local DB might not be aware of (for instance, a user viewing another user's artifact that isn't shared to them explicitly)
    * Note: Intended limitation is that there be only one provider per artifactId
    */
-  public async provideStaticEdgesForArtifactId(opts: {
+  public provideStaticEdgesForArtifactId(opts: {
     artifactId: string;
     outgoingEdges: Edge[];
     incomingEdges: Edge[];
@@ -165,10 +165,8 @@ class EdgeStore {
       this.staticOutgoingEdgesByArtifactId.has(artifactId) ||
       this.staticIncomingEdgesByArtifactId.has(artifactId)
     ) {
-      // We could allow this, but if this ever happens, we've made a mistake elsewhere
-      throw new Error(
-        `Static edges for artifact ${artifactId} already provided`,
-      );
+      // We need to figure out a better way to handle multiple providers
+      console.warn(`Static edges for artifact ${artifactId} already provided`);
     }
 
     this.staticOutgoingEdgesByArtifactId.set(artifactId, outgoingEdges);

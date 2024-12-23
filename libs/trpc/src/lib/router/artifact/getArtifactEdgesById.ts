@@ -108,7 +108,7 @@ export const getArtifactEdgesById = publicProcedure
             targetArtifactId: edge.targetArtifactId,
             targetArtifactBlockId: edge.targetArtifactBlockId,
             targetArtifactDate: edge.targetArtifactDate,
-            isBroken: !!edge.referenceTargetArtifactId,
+            isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: edge.artifact.title,
           };
@@ -121,7 +121,7 @@ export const getArtifactEdgesById = publicProcedure
             targetArtifactId: edge.targetArtifactId,
             targetArtifactBlockId: edge.targetArtifactBlockId,
             targetArtifactDate: edge.targetArtifactDate,
-            isBroken: !!edge.referenceTargetArtifactId,
+            isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: artifact.title,
           };

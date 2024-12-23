@@ -1,15 +1,22 @@
-import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
-import { useEffect, useMemo, useRef } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
-import { getEdgeId, getMetaFromYArtifact } from '@feynote/shared-utils';
 import { TiptapPreview } from '../../../TiptapPreview';
 import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
-import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
-import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
+import { SessionContext } from '../../../../../context/session/SessionContext';
+import { getFileRedirectUrl } from '../../../../../utils/files/getFileRedirectUrl';
+import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
+import { useTranslation } from 'react-i18next';
+
+export interface ReferencePreviewInfo {
+  artifactYBin: Uint8Array | undefined;
+  artifactInaccessible: boolean;
+  isBroken: boolean;
+}
 
 const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
@@ -28,49 +35,89 @@ const Header = styled.h4`
 `;
 
 interface Props {
-  artifact: ArtifactDTO;
-  artifactYBin: Uint8Array;
-  artifactBlockId?: string;
-  artifactDate?: string;
+  artifactId: string;
   previewTarget: HTMLElement;
+  referenceText: string;
+  artifactBlockId: string | undefined;
+  artifactDate: string | undefined;
+  /**
+   * This is expected to come from useArtifactPreviewTimer but could be passed in manually
+   */
+  previewInfo: ReferencePreviewInfo;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
+  const { session } = useContext(SessionContext);
 
   const yDoc = useMemo(() => {
     const yDoc = new YDoc();
 
-    applyUpdate(yDoc, props.artifactYBin);
+    if (props.previewInfo.artifactYBin) {
+      applyUpdate(yDoc, props.previewInfo.artifactYBin);
+    }
 
     return yDoc;
-  }, [props.artifact]);
+  }, [props.artifactId]);
 
-  const artifactMeta = getMetaFromYArtifact(yDoc);
-
-  useEffect(() => {
-    getEdgeStore().provideStaticEdgesForArtifactId({
-      artifactId: props.artifact.id,
-      outgoingEdges: props.artifact.artifactReferences.map((ref) => ({
-        ...ref,
-        id: getEdgeId(ref),
-        isBroken: !ref.referenceTargetArtifactId,
-        artifactTitle: ref.artifact.title,
-      })),
-      incomingEdges: props.artifact.incomingArtifactReferences.map((ref) => ({
-        ...ref,
-        id: getEdgeId(ref),
-        isBroken: !ref.referenceTargetArtifactId,
-        artifactTitle: ref.artifact.title,
-      })),
-    });
-  }, [props.artifact]);
-
-  const { incomingEdges } = useEdgesForArtifactId(props.artifact.id);
+  const artifactMeta = useObserveYArtifactMeta(yDoc);
 
   useScrollBlockIntoView(props.artifactBlockId, [], containerRef);
   useScrollDateIntoView(props.artifactDate, [], containerRef);
+
+  const previewContent = (
+    <>
+      <Header>{artifactMeta.title}</Header>
+      {artifactMeta.type === 'tiptap' && (
+        <TiptapPreview artifactId={props.artifactId} yDoc={yDoc} />
+      )}
+      {artifactMeta.type === 'calendar' && (
+        <ArtifactCalendar
+          artifactId={props.artifactId}
+          y={yDoc}
+          centerDate={props.artifactDate}
+          editable={false}
+          viewType="fullsize"
+        />
+      )}
+      {artifactMeta.type === 'tldraw' && (
+        <ArtifactDraw
+          artifactId={props.artifactId}
+          yDoc={yDoc}
+          editable={false}
+          getFileUrl={(fileId) => {
+            if (!session) return '';
+            return getFileRedirectUrl({
+              fileId,
+              sessionToken: session.token,
+            }).toString();
+          }}
+        />
+      )}
+    </>
+  );
+
+  const inaccessibleMessage = (
+    <>
+      <Header>{t('referencePreview.inaccessible')}</Header>
+      {t('referencePreview.inaccessible.message')}
+    </>
+  );
+
+  const brokenMessage = (
+    <>
+      <Header>{t('referencePreview.broken')}</Header>
+      {props.referenceText && (
+        <div>
+          {t('referencePreview.broken.message')}
+          <br />
+          {props.referenceText}
+        </div>
+      )}
+    </>
+  );
 
   return (
     <StyledBoundedFloatingWindow
@@ -81,23 +128,11 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       maxHeight={PREVIEW_MAX_HEIGHT_PX}
       onClick={(event) => props.onClick?.(event)}
     >
-      <Header>{props.artifact.title}</Header>
-      {artifactMeta.type === 'tiptap' && (
-        <TiptapPreview
-          artifactId={props.artifact.id}
-          yDoc={yDoc}
-          previewText={props.artifact.previewText}
-        />
-      )}
-      {artifactMeta.type === 'calendar' && (
-        <ArtifactCalendar
-          artifactId={props.artifact.id}
-          y={yDoc}
-          centerDate={props.artifactDate}
-          editable={false}
-          viewType="fullsize"
-        />
-      )}
+      {props.previewInfo.isBroken && brokenMessage}
+      {props.previewInfo.artifactInaccessible && inaccessibleMessage}
+      {!props.previewInfo.artifactInaccessible &&
+        !props.previewInfo.isBroken &&
+        previewContent}
     </StyledBoundedFloatingWindow>
   );
 };

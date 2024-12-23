@@ -56,14 +56,8 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
   };
 
-  const {
-    artifact,
-    artifactYBin,
-    showPreview,
-    onMouseOver,
-    onMouseOut,
-    close,
-  } = useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
+  const { previewInfo, onMouseOver, onMouseOut, close } =
+    useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
 
   let referenceText = edge?.referenceText || props.node.attrs.referenceText;
   if (targetArtifactDate) {
@@ -89,13 +83,14 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         >
           {referenceText}
         </a>
-        {showPreview && artifact && artifactYBin && ref.current && (
+        {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
               event.stopPropagation(), linkClicked(event), close()
             )}
-            artifact={artifact}
-            artifactYBin={artifactYBin}
+            artifactId={artifactId}
+            previewInfo={previewInfo}
+            referenceText={referenceText}
             artifactBlockId={targetArtifactBlockId || undefined}
             artifactDate={targetArtifactDate || undefined}
             previewTarget={ref.current}

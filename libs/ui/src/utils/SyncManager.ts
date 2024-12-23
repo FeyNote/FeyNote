@@ -114,11 +114,11 @@ export class SyncManager {
         'readwrite',
       );
       const edgesStore = edgesTx.store;
-      const localEdges = await edgesStore.getAll(ObjectStoreName.Edges);
+      const localEdges = await edgesStore.getAll();
       const localEdgesById = new Map<string, Edge>(
         localEdges.map((edge) => [edge.id, edge]),
       );
-      const remoteEdgeIds = new Set(latestManifest.edges.map(getEdgeId));
+      const remoteEdgeIds = new Set(latestManifest.edges.map((el) => el.id));
 
       for (const edge of latestManifest.edges) {
         const edgeId = getEdgeId(edge);

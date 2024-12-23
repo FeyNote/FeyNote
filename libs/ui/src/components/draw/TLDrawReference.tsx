@@ -240,18 +240,13 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       targetArtifactBlockId: shape.props.targetArtifactBlockId,
       targetArtifactDate: shape.props.targetArtifactDate,
     });
+    const referenceText = edge?.referenceText || shape.props.referenceText;
     const isBroken = edge ? edge.isBroken : false;
 
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 
-    const {
-      artifact,
-      artifactYBin,
-      showPreview,
-      onMouseOver,
-      onMouseOut,
-      close,
-    } = useArtifactPreviewTimer(shape.props.targetArtifactId, isBroken);
+    const { previewInfo, onMouseOver, onMouseOut, close } =
+      useArtifactPreviewTimer(shape.props.targetArtifactId, isBroken);
 
     const linkClicked = (
       event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
@@ -291,20 +286,17 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
             left: '100%',
           }}
         />
-        {showPreview &&
-          artifact &&
-          artifactYBin &&
-          ref.current &&
-          isHandMode && (
-            <ArtifactReferencePreview
-              artifact={artifact}
-              artifactYBin={artifactYBin}
-              artifactBlockId={shape.props.targetArtifactBlockId || undefined}
-              artifactDate={shape.props.targetArtifactDate || undefined}
-              previewTarget={ref.current}
-              onClick={linkClicked}
-            />
-          )}
+        {previewInfo && ref.current && isHandMode && (
+          <ArtifactReferencePreview
+            artifactId={artifactId}
+            previewInfo={previewInfo}
+            referenceText={referenceText}
+            artifactBlockId={shape.props.targetArtifactBlockId || undefined}
+            artifactDate={shape.props.targetArtifactDate || undefined}
+            previewTarget={ref.current}
+            onClick={linkClicked}
+          />
+        )}
       </>
     );
 

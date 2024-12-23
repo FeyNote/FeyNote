@@ -186,7 +186,6 @@
   "artifactRenderer.artifactSharedToYou.readwrite": "You have edit access",
   "artifactRenderer.artifactSharedToYou.readonly": "You have read-only access.",
   "artifactRenderer.theme": "Theme",
-  "artifactReferencePreview.noContent": "No content",
 
   "artifactSharing.title": "Manage Artifact Access",
   "artifactSharing.existing": "Users With Access",
@@ -223,6 +222,11 @@
   "editor.placeholder": "Changes are automatically saved. Use / to bring up the command menu, or @ to reference another artifact",
   "editor.placeholder.readOnlyEmpty": "Artifact has no content",
   "editor.emptyReference": "Untitled Reference",
+
+  "referencePreview.inaccessible": "Not Found",
+  "referencePreview.inaccessible.message": "Artifact has been deleted, is no longer shared with you, or could not be loaded.",
+  "referencePreview.broken": "Broken Reference",
+  "referencePreview.broken.message": "The artifact this link references no longer exists. The original reference text was:",
 
   "editor.referenceMenu.title": "Create Reference",
   "editor.referenceMenu.search": "Search for any text within your collection",
