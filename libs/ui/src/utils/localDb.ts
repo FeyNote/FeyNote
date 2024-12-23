@@ -13,6 +13,7 @@ export enum ObjectStoreName {
 export enum KVStoreKeys {
   Session = 'session',
   SearchIndex = 'searchIndex',
+  LastSessionUserId = 'lastSessionUserId',
 }
 
 const connect = () => {

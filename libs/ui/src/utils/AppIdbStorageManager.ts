@@ -60,17 +60,14 @@ export class AppIdbStorageManager {
     const manifestDb = await getManifestDb();
     const tx = manifestDb.transaction(ObjectStoreName.KV, 'readwrite');
     const store = tx.objectStore(ObjectStoreName.KV);
-    if (await store.get(KVStoreKeys.Session)) {
-      await store.put({
-        key: KVStoreKeys.Session,
-        value: session,
-      });
-    } else {
-      await store.add({
-        key: KVStoreKeys.Session,
-        value: session,
-      });
-    }
+    await store.put({
+      key: KVStoreKeys.Session,
+      value: session,
+    });
+    await store.put({
+      key: KVStoreKeys.LastSessionUserId,
+      value: session.userId,
+    });
     await tx.done;
   }
 
@@ -78,10 +75,17 @@ export class AppIdbStorageManager {
     const manifestDb = await getManifestDb();
     const tx = manifestDb.transaction(ObjectStoreName.KV, 'readwrite');
     const store = tx.objectStore(ObjectStoreName.KV);
-    if (await store.get(KVStoreKeys.Session)) {
-      await store.delete(KVStoreKeys.Session);
-    }
+    await store.delete(KVStoreKeys.Session);
     await tx.done;
+  }
+
+  async getLastSessionUserId(): Promise<string | null> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.KV,
+      KVStoreKeys.LastSessionUserId,
+    );
+    return record?.value || null;
   }
 
   async deleteAllData(): Promise<void> {
