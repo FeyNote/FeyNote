@@ -1,6 +1,5 @@
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc, Map as YMap } from 'yjs';
-import { KnownArtifactReference } from '../editor/tiptap/extensions/artifactReferences/KnownArtifactReference';
 import {
   memo,
   useEffect,
@@ -11,9 +10,9 @@ import {
 } from 'react';
 import { CalendarRenderer } from './CalendarRenderer';
 import type { TypedMap } from 'yjs-types';
-import type { ArtifactDTO } from '@feynote/global-types';
 import {
   ARTIFACT_META_KEY,
+  Edge,
   generateGregorianSundayCalendarConfig,
   YCalendarConfig,
   type YCalendarMap,
@@ -27,14 +26,14 @@ import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 
 const BottomSpacer = styled.div`
   height: 100px;
 `;
 
 interface Props {
-  knownReferences: Map<string, KnownArtifactReference>;
-  incomingArtifactReferences: ArtifactDTO['incomingArtifactReferences'];
+  artifactId: string | undefined;
   y: YDoc | TiptapCollabProvider;
   centerDate?: string;
   editable: boolean;
@@ -55,6 +54,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const theme = yMeta.theme ?? 'default';
   const titleBodyMerge = yMeta.titleBodyMerge ?? true;
   const { t } = useTranslation();
+  const { incomingEdges } = useEdgesForArtifactId(props.artifactId);
 
   const { calendarMap, configMap } = useMemo(() => {
     const calendarMap = yDoc.getMap('calendar') as TypedMap<
@@ -100,31 +100,32 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
     (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
   };
 
-  const knownReferencesByDay = useMemo(
+  const edgesByDay = useMemo(
     () =>
-      props.incomingArtifactReferences.reduce<
-        Record<string, ArtifactDTO['incomingArtifactReferences']>
-      >((knownReferencesByDay, incomingReference) => {
-        if (!incomingReference.targetArtifactDate) {
-          // TODO: we probably want to consider displaying references that don't have dates below the calendar
-          return knownReferencesByDay;
-        }
+      incomingEdges.reduce<Record<string, Edge[]>>(
+        (edgesByDay, incomingEdge) => {
+          if (!incomingEdge.targetArtifactDate) {
+            // TODO: we probably want to consider displaying references that don't have dates below the calendar
+            return edgesByDay;
+          }
 
-        const date = incomingReference.targetArtifactDate;
-        if (date.includes('<>')) {
-          const [start, end] = date.split('-');
-          // TODO: add support for date ranges
-        } else {
-          const ymd = getYMDFromSpecifier(incomingReference.targetArtifactDate);
-          if (!ymd) return knownReferencesByDay;
-          const datestamp = ymdToDatestamp(ymd);
-          knownReferencesByDay[datestamp] ||= [];
-          knownReferencesByDay[datestamp].push(incomingReference);
-        }
+          const date = incomingEdge.targetArtifactDate;
+          if (date.includes('<>')) {
+            const [start, end] = date.split('-');
+            // TODO: add support for date ranges
+          } else {
+            const ymd = getYMDFromSpecifier(incomingEdge.targetArtifactDate);
+            if (!ymd) return edgesByDay;
+            const datestamp = ymdToDatestamp(ymd);
+            edgesByDay[datestamp] ||= [];
+            edgesByDay[datestamp].push(incomingEdge);
+          }
 
-        return knownReferencesByDay;
-      }, {}),
-    [props.incomingArtifactReferences],
+          return edgesByDay;
+        },
+        {},
+      ),
+    [incomingEdges],
   );
 
   if (!configMap) return;
@@ -159,7 +160,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
 
         <CalendarRenderer
           viewType={props.viewType}
-          knownReferencesByDay={knownReferencesByDay}
+          edgesByDay={edgesByDay}
           centerDate={props.centerDate}
           configMap={configMap}
           setCenterRef={props.setCenterRef || setCenterRef}

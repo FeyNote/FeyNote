@@ -54,6 +54,8 @@ const SearchResultsContainer = styled.div`
 
 const SearchInput = styled(IonInput)`
   --background: transparent;
+  --highlight-height: 0;
+  --highlight-color-focused: var(--ion-text-color, #000000);
   --padding-start: 10px;
   --padding-end: 10px;
   --padding-top: 20px;
@@ -77,7 +79,7 @@ const SEARCH_RESULT_LIMIT = 25;
 /**
  * How often to query search results as the user types
  */
-const SEARCH_DELAY_MS = 250;
+const SEARCH_DELAY_MS = 20;
 
 /**
  * Number of characters to display in the result preview
@@ -111,7 +113,7 @@ export const GlobalSearchContextProviderWrapper = ({
 
   const create = async () => {
     const artifact = await trpc.artifact.createArtifact.mutate({
-      title: capitalizeEachWord(searchText),
+      title: capitalizeEachWord(searchText).trim(),
       type: 'tiptap',
       theme: 'default',
     });
@@ -140,7 +142,8 @@ export const GlobalSearchContextProviderWrapper = ({
         event.preventDefault();
         trigger();
       }
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && show) {
+        event.stopPropagation();
         hide();
       }
     };
@@ -149,7 +152,7 @@ export const GlobalSearchContextProviderWrapper = ({
     return () => {
       document.removeEventListener('keydown', listener);
     };
-  });
+  }, [show]);
 
   useEffect(() => {
     if (!searchText.trim().length) {
@@ -174,6 +177,7 @@ export const GlobalSearchContextProviderWrapper = ({
           handleTRPCErrors(error);
         })
         .finally(() => {
+          if (cancelled) return;
           progress.dismiss();
         });
     }, SEARCH_DELAY_MS);
@@ -193,7 +197,6 @@ export const GlobalSearchContextProviderWrapper = ({
 
   const searchUI = (
     <>
-      {ProgressBar}
       <Backdrop visible={true} onIonBackdropTap={hide} stopPropagation={true} />
       <SearchContainer>
         {session ? (
@@ -206,6 +209,7 @@ export const GlobalSearchContextProviderWrapper = ({
                 onIonInput={(event) => setSearchText(event.detail.value || '')}
                 value={searchText}
                 placeholder={t('globalSearch.placeholder')}
+                inputMode="search"
               >
                 <IonIcon
                   slot="start"
@@ -214,6 +218,7 @@ export const GlobalSearchContextProviderWrapper = ({
                 ></IonIcon>
               </SearchInput>
 
+              {ProgressBar}
               <SearchResultsContainer>
                 {searchResults.map((searchResult) => (
                   <IonItem
@@ -252,7 +257,7 @@ export const GlobalSearchContextProviderWrapper = ({
                         searchResults.length
                           ? 'editor.referenceMenu.create.title'
                           : 'editor.referenceMenu.noItems.title',
-                        { title: searchText },
+                        { title: capitalizeEachWord(searchText).trim() },
                       )}
                       <p>
                         {t(

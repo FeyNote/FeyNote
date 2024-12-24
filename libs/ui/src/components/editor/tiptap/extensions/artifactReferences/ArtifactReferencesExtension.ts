@@ -2,14 +2,13 @@ import Mention, { MentionOptions } from '@tiptap/extension-mention';
 import { getReferenceSuggestions } from './getReferenceSuggestions';
 import { renderReferenceList } from './renderReferenceList';
 import { mergeAttributes } from '@tiptap/core';
-import { KnownArtifactReference } from './KnownArtifactReference';
-import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
 import { t } from 'i18next';
+import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
 
 export type ReferencePluginOptions = MentionOptions & {
-  knownReferences: Map<string, KnownArtifactReference>;
+  artifactId: string | undefined;
 };
 
 // We do this to prevent a hanging @ from triggering the mention menu
@@ -110,7 +109,6 @@ export const ArtifactReferencesExtension =
     addOptions() {
       return {
         ...this.parent?.(),
-        knownReferences: new Map(),
       };
     },
 
@@ -126,14 +124,18 @@ export const ArtifactReferencesExtension =
       allow: () => mentionMenuOptsRef.enableMentionMenu,
     },
     renderHTML({ options, node }) {
-      const key = getKnownArtifactReferenceKey(
-        node.attrs.artifactId,
-        node.attrs.artifactBlockId || undefined,
-        node.attrs.artifactDate || undefined,
-      );
-      const knownReference = this.knownReferences?.get(key);
+      const edgeStore = getEdgeStore();
+      const edge = this.artifactId
+        ? edgeStore.getEdgeInstant({
+            artifactId: this.artifactId,
+            artifactBlockId: node.attrs.id,
+            targetArtifactId: node.attrs.artifactId,
+            targetArtifactBlockId: node.attrs.artifactBlockId,
+            targetArtifactDate: node.attrs.artifactDate,
+          })
+        : undefined;
 
-      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+      let displayText = `${options.suggestion.char}${edge?.referenceText || node.attrs.referenceText}`;
 
       if (node.attrs.artifactDate) {
         displayText += ` ${node.attrs.artifactDate}`;
@@ -142,14 +144,18 @@ export const ArtifactReferencesExtension =
       return ['span', mergeAttributes({}, options.HTMLAttributes), displayText];
     },
     renderText({ options, node }) {
-      const key = getKnownArtifactReferenceKey(
-        node.attrs.artifactId,
-        node.attrs.artifactBlockId || undefined,
-        node.attrs.artifactDate || undefined,
-      );
-      const knownReference = this.knownReferences?.get(key);
+      const edgeStore = getEdgeStore();
+      const edge = this.artifactId
+        ? edgeStore.getEdgeInstant({
+            artifactId: this.artifactId,
+            artifactBlockId: node.attrs.id,
+            targetArtifactId: node.attrs.artifactId,
+            targetArtifactBlockId: node.attrs.artifactBlockId,
+            targetArtifactDate: node.attrs.artifactDate,
+          })
+        : undefined;
 
-      let displayText = `${options.suggestion.char}${knownReference?.referenceText || node.attrs.referenceText}`;
+      let displayText = `${options.suggestion.char}${edge?.referenceText || node.attrs.referenceText}`;
 
       if (node.attrs.artifactDate) {
         displayText += ` ${node.attrs.artifactDate}`;

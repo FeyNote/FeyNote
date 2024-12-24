@@ -4,7 +4,6 @@ import { Editor, JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
-import { KnownArtifactReference } from './tiptap/extensions/artifactReferences/KnownArtifactReference';
 import { useArtifactEditor } from './useTiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
@@ -34,9 +33,9 @@ type DocArgOptions =
     };
 
 type Props = {
+  artifactId: string;
   setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
   editable: boolean;
-  knownReferences: Map<string, KnownArtifactReference>;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;

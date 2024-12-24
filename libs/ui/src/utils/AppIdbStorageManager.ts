@@ -24,6 +24,28 @@ export class AppIdbStorageManager {
     }
   }
 
+  async setAuthorizedCollaborationScope(
+    docName: string,
+    accessLevel: string,
+  ): Promise<void> {
+    const manifestDb = await getManifestDb();
+    await manifestDb.put(ObjectStoreName.AuthorizedCollaborationScopes, {
+      docName,
+      accessLevel,
+    });
+  }
+
+  async getAuthorizedCollaborationScope(
+    docName: string,
+  ): Promise<string | null> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.AuthorizedCollaborationScopes,
+      docName,
+    );
+    return record?.accessLevel || null;
+  }
+
   async getSession(): Promise<SessionDTO | null> {
     const manifestDb = await getManifestDb();
     const session = await manifestDb.get(
@@ -38,17 +60,14 @@ export class AppIdbStorageManager {
     const manifestDb = await getManifestDb();
     const tx = manifestDb.transaction(ObjectStoreName.KV, 'readwrite');
     const store = tx.objectStore(ObjectStoreName.KV);
-    if (await store.get(KVStoreKeys.Session)) {
-      await store.put({
-        key: KVStoreKeys.Session,
-        value: session,
-      });
-    } else {
-      await store.add({
-        key: KVStoreKeys.Session,
-        value: session,
-      });
-    }
+    await store.put({
+      key: KVStoreKeys.Session,
+      value: session,
+    });
+    await store.put({
+      key: KVStoreKeys.LastSessionUserId,
+      value: session.userId,
+    });
     await tx.done;
   }
 
@@ -56,10 +75,17 @@ export class AppIdbStorageManager {
     const manifestDb = await getManifestDb();
     const tx = manifestDb.transaction(ObjectStoreName.KV, 'readwrite');
     const store = tx.objectStore(ObjectStoreName.KV);
-    if (await store.get(KVStoreKeys.Session)) {
-      await store.delete(KVStoreKeys.Session);
-    }
+    await store.delete(KVStoreKeys.Session);
     await tx.done;
+  }
+
+  async getLastSessionUserId(): Promise<string | null> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.KV,
+      KVStoreKeys.LastSessionUserId,
+    );
+    return record?.value || null;
   }
 
   async deleteAllData(): Promise<void> {
@@ -69,6 +95,7 @@ export class AppIdbStorageManager {
     await manifestDb.clear(ObjectStoreName.Artifacts);
     await manifestDb.clear(ObjectStoreName.ArtifactVersions);
     await manifestDb.clear(ObjectStoreName.PendingArtifacts);
+    await manifestDb.clear(ObjectStoreName.AuthorizedCollaborationScopes);
 
     const databases = await indexedDB.databases();
     for (const database of databases) {

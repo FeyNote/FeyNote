@@ -1,4 +1,4 @@
-import './instrument.mjs';
+import './instrument.ts';
 
 import { Extension, Server } from '@hocuspocus/server';
 import { Logger } from '@hocuspocus/extension-logger';

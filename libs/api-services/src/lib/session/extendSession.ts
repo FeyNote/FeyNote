@@ -1,15 +1,10 @@
 import { prisma } from '@feynote/prisma/client';
 import { generateSessionExpiry } from './generateSessionExpiry';
 import { Session } from '@prisma/client';
-
-/**
- * We will only extend a session if it expires within this many days
- */
-const EXTEND_IF_EXPIRES_WITHIN_DAYS = 7;
-/**
- * When extending a session, it will be valid for this length
- */
-const EXTENDED_SESSION_VALID_DAYS = 21;
+import {
+  EXTEND_IF_EXPIRES_WITHIN_DAYS,
+  EXTENDED_SESSION_VALID_DAYS,
+} from './constants';
 
 /**
  * Attempts to extend session if possible, otherwise returns early

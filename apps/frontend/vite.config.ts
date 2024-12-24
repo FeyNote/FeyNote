@@ -60,21 +60,31 @@ export default defineConfig({
         },
       },
       manifest: {
+        id: 'com.feynote.app',
         name: 'FeyNote - Tabletop Note Keeper',
         short_name: 'FeyNote',
         description:
           'A place to store your notes for your favorite tabletop game',
         theme_color: '#ffffff',
+        launch_handler: {
+          client_mode: 'navigate-existing',
+        },
+        orientation: 'any',
+        screenshots: [],
+        handle_links: 'preferred',
+        categories: ['games', 'role-playing', 'note-taking'],
         icons: [
           {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-          },
-          {
-            src: 'pwa-512x512.png',
+            src: 'https://static.feynote.com/icons/feynote-icon-padded-512x512-20241220.png',
             sizes: '512x512',
             type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
           },
         ],
       },

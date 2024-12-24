@@ -1,2 +1,2 @@
 export * from './lib/search';
-export { BlockIndexDocument } from './lib/types';
+export type { BlockIndexDocument } from './lib/types';

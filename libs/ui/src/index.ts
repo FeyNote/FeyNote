@@ -12,5 +12,6 @@ export { getManifestDb, ObjectStoreName } from './utils/localDb';
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export { NotFound } from './NotFound';
 export { Workspace } from './Workspace';
+export { PasswordReset } from './components/auth/PasswordReset';
 export { initI18Next } from './i18n/initI18Next';
 export { ShareviewApp } from './ShareviewApp';

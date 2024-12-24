@@ -1,9 +1,16 @@
-import type { ArtifactDetail } from '@feynote/prisma/types';
+import { ArtifactAccessLevel } from '@prisma/client';
 
-type ArtifactInfoWithPermissions = Pick<
-  ArtifactDetail,
-  'userId' | 'artifactShares' | 'artifactShareTokens'
->;
+type ArtifactInfoWithPermissions = {
+  userId: string;
+  artifactShares: {
+    userId: string;
+    accessLevel: ArtifactAccessLevel;
+  }[];
+  artifactShareTokens: {
+    shareToken: string;
+    accessLevel: ArtifactAccessLevel;
+  }[];
+};
 
 export const hasArtifactAccess = (
   artifact: ArtifactInfoWithPermissions,

@@ -1,4 +1,9 @@
-import { ImmediateDebouncer } from '@feynote/shared-utils';
+import {
+  ImmediateDebouncer,
+  TLDRAW_YDOC_META_KEY,
+  TLDRAW_YDOC_META_SCHEMA_KEY,
+  TLDRAW_YDOC_STORE_KEY,
+} from '@feynote/shared-utils';
 import { useEffect, useMemo, useState } from 'react';
 import {
   computed,
@@ -28,13 +33,6 @@ import { CollaborationManagerConnection } from '../editor/collaborationManager';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
-
-/* ------ These keys must not be changed ------ */
-// If changed without some type of data migration, all data in all documents will be lost
-const TLDRAW_YDOC_STORE_KEY = 'tldrawStore';
-const TLDRAW_YDOC_META_KEY = 'tldrawMeta';
-const TLDRAW_YDOC_META_SCHEMA_KEY = 'schema';
-/* ------ These keys must not be changed ------ */
 
 type UseYjsTLDrawStoreOptions = {
   getFileUrl: (fileId: string) => string;

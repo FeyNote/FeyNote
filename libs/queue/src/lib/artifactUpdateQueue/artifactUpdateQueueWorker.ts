@@ -6,14 +6,16 @@ import {
   updateArtifactTitleReferenceText,
   updateArtifactContentReferenceText,
   updateArtifactOutgoingReferences,
+  createArtifactRevision,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
-import { Prisma } from '@prisma/client';
+import { ArtifactType, Prisma } from '@prisma/client';
 import {
-  ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
+  getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
+  TLDRAW_YDOC_STORE_KEY,
 } from '@feynote/shared-utils';
 import { searchProvider } from '@feynote/search';
 import { ARTIFACT_UPDATE_QUEUE_NAME } from './ARTIFACT_UPDATE_QUEUE_NAME';
@@ -48,6 +50,14 @@ export const artifactUpdateQueueWorker = new Worker<
         a.localeCompare(b),
       );
 
+      const oldYMeta = getMetaFromYArtifact(oldYjsDoc);
+      const oldTitle = oldYMeta.title;
+      const newYMeta = getMetaFromYArtifact(newYjsDoc);
+      const newTitle = newYMeta.title;
+      const type = newYMeta.type;
+
+      const newTLDrawData = newYjsDoc.getArray(TLDRAW_YDOC_STORE_KEY);
+
       const oldJSONContent = getTiptapContentFromYjsDoc(
         oldYjsDoc,
         ARTIFACT_TIPTAP_BODY_KEY,
@@ -56,13 +66,6 @@ export const artifactUpdateQueueWorker = new Worker<
         newYjsDoc,
         ARTIFACT_TIPTAP_BODY_KEY,
       );
-
-      const oldTitle = oldYjsDoc
-        .getMap(ARTIFACT_META_KEY)
-        .get('title') as string;
-      const newTitle = newYjsDoc
-        .getMap(ARTIFACT_META_KEY)
-        .get('title') as string;
 
       const oldText = getTextForJSONContent(oldJSONContent);
       const newText = getTextForJSONContent(newJSONContent);
@@ -83,11 +86,27 @@ export const artifactUpdateQueueWorker = new Worker<
             tx,
           );
 
-          const referencesMutatedCount = await updateArtifactOutgoingReferences(
-            args.data.artifactId,
-            newJSONContent,
-            tx,
-          );
+          let referencesMutatedCount = 0;
+          if (type === ArtifactType.tiptap) {
+            referencesMutatedCount = await updateArtifactOutgoingReferences(
+              args.data.artifactId,
+              {
+                jsonContent: newJSONContent,
+              },
+              tx,
+            );
+          }
+          if (type === ArtifactType.tldraw) {
+            referencesMutatedCount = await updateArtifactOutgoingReferences(
+              args.data.artifactId,
+              {
+                tldrawContent: newTLDrawData,
+              },
+              tx,
+            );
+          }
+
+          await createArtifactRevision(args.data.artifactId, tx);
 
           const indexableArtifact = {
             id: args.data.artifactId,

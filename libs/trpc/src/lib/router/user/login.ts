@@ -25,18 +25,24 @@ export const login = publicProcedure
         throw new TRPCError({
           message:
             'User does not have a password set. Try using an alternative credential provider.',
+          code: 'PRECONDITION_FAILED',
+        });
+      }
+
+      if (e instanceof UserNotFoundError) {
+        throw new TRPCError({
+          message: 'User not found.',
+          code: 'NOT_FOUND',
+        });
+      }
+
+      if (e instanceof InvalidCredentialsError) {
+        throw new TRPCError({
+          message: 'Credentials provided do not match what was stored.',
           code: 'FORBIDDEN',
         });
       }
-      if (
-        e instanceof UserNotFoundError ||
-        e instanceof InvalidCredentialsError
-      ) {
-        throw new TRPCError({
-          message: 'Credentials provided do not match what was stored.',
-          code: 'BAD_REQUEST',
-        });
-      }
+
       throw e;
     }
   });

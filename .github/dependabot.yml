@@ -33,4 +33,5 @@ updates:
           - '*workbox*'
     ignore:
       - dependency-name: 'nx'
-      - dependency-name: '@nx*'
+      - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI
+      - dependency-name: 'tldraw' # Ignored because tldraw must be bumped with service-worker cache

@@ -9,6 +9,7 @@ export const applyTiptapJSONToYArtifact = (
   tiptapJSON: JSONContent,
 ) => {
   const extensions = getTiptapExtensions({
+    artifactId: undefined,
     placeholder: '',
     editable: true,
     y: {
@@ -18,7 +19,6 @@ export const applyTiptapJSONToYArtifact = (
       name: '',
       color: '',
     },
-    knownReferences: new Map(),
     getFileUrl: () => '',
   });
   const tiptapJSONAsY = TiptapTransformer.toYdoc(

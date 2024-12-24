@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { useArtifactDelete } from './useArtifactDelete';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import {
+  ArtifactDeleteDeclinedError,
+  useArtifactDelete,
+} from './useArtifactDelete';
+import { PaneContextData } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import {
   ContextMenuContainer,
@@ -13,18 +15,26 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 interface Props {
   artifactId: string;
+  pane: PaneContextData['pane'];
+  navigate: PaneContextData['navigate'];
 }
 
 export const ArtifactContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { pane, navigate } = useContext(PaneContext);
+  const { pane, navigate } = props;
 
   const { deleteArtifact } = useArtifactDelete();
 
   const onDeleteArtifactClicked = () => {
-    deleteArtifact(props.artifactId).then(() => {
-      navigate(PaneableComponent.Dashboard, {}, PaneTransition.Replace);
-    });
+    deleteArtifact(props.artifactId)
+      .then(() => {
+        navigate(PaneableComponent.Dashboard, {}, PaneTransition.Replace);
+      })
+      .catch((e) => {
+        if (e instanceof ArtifactDeleteDeclinedError) return;
+
+        throw e;
+      });
   };
 
   return (
