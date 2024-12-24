@@ -13,14 +13,13 @@ export const triggerPasswordReset = async (
   });
 
   if (!user) {
-    // We do nothing when a user account is not found so as not to reveal if an account exists with the given email
-    return;
+    return false;
   }
 
   const session = await generatePasswordResetSession(user.id);
 
   const resetLink = new URL(returnUrl);
-  resetLink.searchParams.set('token', session.token);
+  resetLink.searchParams.set('passwordResetToken', session.token);
 
   const mail = new PasswordResetMail(
     [email],
@@ -29,4 +28,6 @@ export const triggerPasswordReset = async (
   );
 
   await mail.send();
+
+  return true;
 };

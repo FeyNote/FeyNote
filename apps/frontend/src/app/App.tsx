@@ -30,6 +30,7 @@ import {
   NotFound,
   Workspace,
   initI18Next,
+  PasswordReset,
 } from '@feynote/ui';
 
 initI18Next();
@@ -60,7 +61,22 @@ export function App() {
     },
   });
 
+  const url = new URL(window.location.href);
   const path = window.location.pathname.split('/').slice(1);
+
+  const passworeResetToken = url.searchParams.get('passwordResetToken');
+  if (passworeResetToken) {
+    return (
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <PasswordReset
+            passwordResetToken={passworeResetToken}
+            redirectPath={window.location.origin}
+          />
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    );
+  }
 
   if (!path.length || path[0] === '') {
     return (

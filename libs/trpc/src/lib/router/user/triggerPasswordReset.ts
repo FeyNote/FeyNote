@@ -1,6 +1,7 @@
 import { publicProcedure } from '../../trpc';
 import { z } from 'zod';
 import * as services from '@feynote/api-services';
+import { TRPCError } from '@trpc/server';
 
 export const triggerPasswordReset = publicProcedure
   .input(
@@ -9,6 +10,15 @@ export const triggerPasswordReset = publicProcedure
       returnUrl: z.string(),
     }),
   )
-  .mutation(({ input }): Promise<void> => {
-    return services.triggerPasswordReset(input.email, input.returnUrl);
+  .mutation(async ({ input }): Promise<void> => {
+    const result = await services.triggerPasswordReset(
+      input.email,
+      input.returnUrl,
+    );
+
+    if (!result) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+      });
+    }
   });

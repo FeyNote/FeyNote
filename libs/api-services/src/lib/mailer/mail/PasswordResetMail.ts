@@ -24,14 +24,14 @@ export class PasswordResetMail implements Mail {
   }
 
   private getSubject() {
-    return 'DnD Assistant Password Reset';
+    return 'FeyNote Password Reset';
   }
 
   private getHTML(name: string, resetLink: string) {
     return dedent`
       Hello ${name},
       <br /><br />
-      Someone recently requested a password reset link for the DnD Assistant account associated with this email address.
+      Someone recently requested a password reset link for the FeyNote account associated with this email address.
       <br /><br />
       If you did not request a password reset, please disregard this email.
       <br /><br />
@@ -45,7 +45,7 @@ export class PasswordResetMail implements Mail {
     return dedent`
       Hello ${name},
 
-      Someone recently requested a password reset link for the DnD Assistant account associated with this email address.
+      Someone recently requested a password reset link for the FeyNote account associated with this email address.
 
       If you did not request a password reset, please disregard this email.
 
