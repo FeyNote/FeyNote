@@ -58,6 +58,7 @@ services:
       - HOCUSPOCUS_REDIS_PORT=6379
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
+      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
       - NODE_ENV=development
       - PROXY_ENABLED=false
       - PROXY_URL=val
@@ -91,6 +92,7 @@ services:
       - HOCUSPOCUS_REDIS_PORT=6379
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
+      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
       - NODE_ENV=development
       - PROXY_ENABLED=false
       - PROXY_URL=val
@@ -123,6 +125,7 @@ services:
       - HOCUSPOCUS_REDIS_PORT=6379
       - WEBSOCKET_REDIS_HOST=socketio-valkey
       - WEBSOCKET_REDIS_PORT=6379
+      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
       - NODE_ENV=development
       - PROXY_ENABLED=false
       - PROXY_URL=val
@@ -155,6 +158,7 @@ services:
       - HOCUSPOCUS_REDIS_PORT=6379
       - WEBSOCKET_REDIS_HOST=websocket-valkey
       - WEBSOCKET_REDIS_PORT=6379
+      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
       - NODE_ENV=development
       - PROXY_ENABLED=false
       - PROXY_URL=val

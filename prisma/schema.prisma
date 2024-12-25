@@ -11,23 +11,27 @@ datasource db {
 }
 
 model User {
-  id               String             @id @default(uuid()) @db.Uuid
-  createdAt        DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt        DateTime           @updatedAt @db.Timestamptz(6)
+  id               String   @id @default(uuid()) @db.Uuid
+  createdAt        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(6)
   name             String
-  email            String             @unique
+  email            String   @unique
   passwordHash     String?
   passwordSalt     String?
   passwordVersion  Int?
   username         String?
   preferences      Json?
-  treeYBin         Bytes?             @db.ByteA
-  sessions         Session[]
-  artifacts        Artifact[]
-  ArtifactRevision ArtifactRevision[]
-  File             File[]
-  threads          Thread[]
-  ArtifactShare    ArtifactShare[]
+  treeYBin         Bytes?   @db.ByteA
+  stripeCustomerId String?  @unique @db.VarChar(255)
+
+  sessions          Session[]
+  artifacts         Artifact[]
+  artifactRevisions ArtifactRevision[]
+  files             File[]
+  threads           Thread[]
+  artifactShares    ArtifactShare[]
+  stripePayments    StripePayment[]
+  subscriptions     Subscription[]
 }
 
 model Session {
@@ -177,4 +181,35 @@ model Message {
   thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   createdAt DateTime @unique @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model StripePayment {
+  id                   String        @id @default(uuid()) @db.Uuid
+  userId               String?       @db.Uuid
+  user                 User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amountPaid           Int
+  customerId           String        @db.VarChar(255)
+  customerEmail        String?       @db.VarChar(255)
+  paymentIntentId      String        @unique @db.VarChar(255)
+  stripeSubscriptionId String        @unique @db.VarChar(255)
+  subscriptionId       String?       @db.Uuid
+  subscription         Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  eventObjectJson      Json
+  createdAt            DateTime      @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime      @updatedAt @db.Timestamptz(6)
+}
+
+model Subscription {
+  id                   String          @id @default(uuid()) @db.Uuid
+  userId               String          @db.Uuid
+  user                 User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                 String          @db.VarChar(255)
+  stripeSubscriptionId String?         @unique @db.VarChar(255)
+  expiresAt            DateTime?       @db.Timestamptz(6)
+  cancelledAt          DateTime?       @db.Timestamptz(6)
+  createdAt            DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime        @updatedAt @db.Timestamptz(6)
+  stripePayments       StripePayment[]
+
+  @@unique([userId, name])
 }

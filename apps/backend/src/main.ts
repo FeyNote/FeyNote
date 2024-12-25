@@ -8,10 +8,23 @@ import cors from 'cors';
 import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
+import { stripeRouter } from './routes/stripe/index.js';
 
 const app = express();
 app.use(bodyParser.urlencoded());
-app.use(bodyParser.json());
+app.use(
+  bodyParser.json({
+    limit: '100MB',
+    verify: (req, res, buf) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const url = (req as any).originalUrl;
+      if (url.startsWith('/stripe/webhook')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (req as any).rawBody = buf.toString();
+      }
+    },
+  }),
+);
 
 const defaultCorsAllowlist = [
   'https://feynote.com',
@@ -44,6 +57,7 @@ app.use(cors(corsOptions));
 
 app.use('/message', messageRouter);
 app.use('/file', fileRouter);
+app.use('/stripe', stripeRouter);
 
 app.use(
   '/trpc',

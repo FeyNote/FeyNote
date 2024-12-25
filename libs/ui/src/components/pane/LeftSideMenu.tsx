@@ -27,6 +27,7 @@ import {
   search,
   settings,
   add,
+  heart,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -260,6 +261,25 @@ export const LeftSideMenu: React.FC = () => {
         )}
 
       <IonCard>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
+              PaneableComponent.Contribute,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={heart} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.contribute')}</IonLabel>
+        </CompactIonItem>
         <CompactIonItem
           lines="none"
           onClick={(event) =>

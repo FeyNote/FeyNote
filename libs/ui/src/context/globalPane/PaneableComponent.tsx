@@ -8,10 +8,12 @@ import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
 import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
+import { Contribute } from '../../components/payments/Contribute';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
   Settings = 'Settings',
+  Contribute = 'Contribute',
   NewArtifact = 'NewArtifact',
   Artifact = 'Artifact',
   AIThread = 'AIThread',
@@ -24,6 +26,7 @@ export enum PaneableComponent {
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
   [PaneableComponent.Settings]: ComponentProps<typeof Settings>;
+  [PaneableComponent.Contribute]: ComponentProps<typeof Contribute>;
   [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
@@ -39,6 +42,7 @@ export const getPaneableComponent = (
   const paneableComponentNameToComponent = {
     [PaneableComponent.Dashboard]: Dashboard,
     [PaneableComponent.Settings]: Settings,
+    [PaneableComponent.Contribute]: Contribute,
     [PaneableComponent.NewArtifact]: NewArtifact,
     [PaneableComponent.Artifact]: Artifact,
     [PaneableComponent.AIThread]: AIThread,
@@ -57,6 +61,7 @@ export const getPaneableComponent = (
 export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Dashboard]: 'dashboard.title',
   [PaneableComponent.Settings]: 'settings.title',
+  [PaneableComponent.Contribute]: 'contribute.title',
   [PaneableComponent.NewArtifact]: 'newArtifact.title',
   [PaneableComponent.Artifact]: 'artifact.title',
   [PaneableComponent.AIThread]: 'assistant.title',
