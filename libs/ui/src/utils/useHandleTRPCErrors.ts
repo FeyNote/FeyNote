@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useContext, useState } from 'react';
 import { SessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
+import * as Sentry from '@sentry/react';
 
 const openAlertTracker = {
   isOpen: false,
@@ -93,6 +94,10 @@ export const useHandleTRPCErrors = () => {
         openAlertTracker.isOpen = false;
       },
     });
+
+    console.error('Unexpected TRPC error', error);
+    Sentry.captureException(error);
+
     return errorCode;
   };
 
