@@ -129,7 +129,7 @@ export const Login: React.FC<Props> = (props) => {
             <CenteredIonInputContainer>
               <IonInput
                 className={getIonInputClassNames(true, emailIsTouched)}
-                label={t('auth.login.label')}
+                label={t('auth.login.email.label')}
                 type="email"
                 labelPlacement="stacked"
                 placeholder={t('auth.login.email.placeholder')}

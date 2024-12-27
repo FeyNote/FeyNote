@@ -62,7 +62,7 @@
   "auth.register.confirmPassword.placeholder": "Confirm your password",
   "auth.register.confirmPassword.error": "Passwords must match",
   "auth.register.conflict": "An account with that email already exists",
-  "auth.register.register": "Register",
+  "auth.register.submit": "Register",
   "auth.register.switchToLogin": "Already have an account? Click to login",
 
   "settings.title": "Settings",

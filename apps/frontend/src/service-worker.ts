@@ -258,12 +258,13 @@ registerRoute(
 
     const docName = `artifact:${input.id}`;
     const manifestDb = await getManifestDb();
-    const manifestArtifact = await manifestDb.get(
-      ObjectStoreName.Artifacts,
+    const manifestArtifactVersion = await manifestDb.get(
+      ObjectStoreName.ArtifactVersions,
       input.id,
     );
-    if (!manifestArtifact) {
+    if (!manifestArtifactVersion) {
       const response = await fetch(event.request);
+      // TODO: consider syncing to indexeddb here since it'd be nearly "free"
 
       return response;
     }
