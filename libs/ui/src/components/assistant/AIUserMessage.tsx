@@ -28,7 +28,8 @@ export const AIUserMessage = ({
   }, [isEditing]);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (e.key === 'Enter' && e.shiftKey && !disableEdit) {
+    if (e.key === 'Enter' && !e.shiftKey && !disableEdit) {
+      e.preventDefault(); // Prevents adding a newline
       editMessage({ ...message, content: editInput });
       setIsEditing(false);
     } else {

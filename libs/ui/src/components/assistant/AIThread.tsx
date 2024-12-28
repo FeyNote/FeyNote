@@ -118,10 +118,11 @@ export const AIThread: React.FC<Props> = (props) => {
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (
       e.key === 'Enter' &&
-      e.shiftKey &&
+      !e.shiftKey &&
       !isLoading &&
       !isLoadingInitialState
     ) {
+      e.preventDefault(); // Prevents adding a newline
       submitMessageQuery(input);
       setInput('');
     } else {
