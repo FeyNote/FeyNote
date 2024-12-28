@@ -26,7 +26,6 @@ import {
   GlobalSearchContextProviderWrapper,
   GlobalPaneContextProviderWrapper,
   SidemenuContextProviderWrapper,
-  ArtifactShareView,
   NotFound,
   Workspace,
   initI18Next,
@@ -93,16 +92,6 @@ export function App() {
           </SidemenuContextProviderWrapper>
         </IonApp>
       </GlobalPaneContextProviderWrapper>
-    );
-  }
-
-  if (path[0] === 'artifact' && path[1]) {
-    return (
-      <IonApp>
-        <PreferencesContextProviderWrapper>
-          <ArtifactShareView artifactId={path[1]} />
-        </PreferencesContextProviderWrapper>
-      </IonApp>
     );
   }
 

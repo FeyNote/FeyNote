@@ -19,12 +19,10 @@ const Grid = styled.div`
 
 interface Props {
   artifactId: string;
+  shareToken?: string;
 }
 
 export const ArtifactShareView: React.FC<Props> = (props) => {
-  const shareToken =
-    new URLSearchParams(window.location.search).get('shareToken') || undefined;
-
   return (
     <IonPage>
       <IonContent>
@@ -33,7 +31,7 @@ export const ArtifactShareView: React.FC<Props> = (props) => {
           <FloatingPresentation>
             <ReadonlyArtifactViewer
               artifactId={props.artifactId}
-              shareToken={shareToken}
+              shareToken={props.shareToken}
             />
           </FloatingPresentation>
         </Grid>

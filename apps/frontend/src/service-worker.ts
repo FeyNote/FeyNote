@@ -287,9 +287,18 @@ registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
     // Cache only
-    const input = getTrpcInputForEvent<{ id: string }>(event);
+    const input = getTrpcInputForEvent<{
+      id: string;
+      shareToken?: string;
+    }>(event);
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
+
+    if (input.shareToken) {
+      const response = await fetch(event.request);
+
+      return response;
+    }
 
     const manifestDb = await getManifestDb();
     const outgoingEdges = await manifestDb.getAllFromIndex(
