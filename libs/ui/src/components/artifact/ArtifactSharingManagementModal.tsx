@@ -214,7 +214,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
   );
 
   const buildShareUrl = (shareToken: string) => {
-    return `${window.location.origin}/artifact/${props.artifactId}?shareToken=${shareToken}`;
+    return `https://feynote.com/artifact/${props.artifactId}?shareToken=${shareToken}`;
   };
 
   if (loading || !artifact) return;
