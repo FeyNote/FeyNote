@@ -8,7 +8,7 @@
   },
   "private": true,
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.55",
+    "@ai-sdk/openai": "^1.0.11",
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^4.1.2",
     "@aws-sdk/client-s3": "^3.703.0",
