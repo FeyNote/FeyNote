@@ -59,7 +59,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             text,
             yBin,
             json: {
-              ...(artifact.json as any),
+              ...(artifact.json as unknown as Record<string, unknown>),
               tiptapBody,
               meta: artifactMeta,
             },

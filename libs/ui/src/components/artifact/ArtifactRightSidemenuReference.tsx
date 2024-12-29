@@ -1,7 +1,6 @@
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { useContext, useRef } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { useTranslation } from 'react-i18next';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
@@ -14,7 +13,6 @@ interface Props {
 }
 
 export const ArtifactRightSidemenuReference: React.FC<Props> = (props) => {
-  const { t } = useTranslation();
   const { navigate } = useContext(PaneContext);
   const ref = useRef<HTMLIonItemElement>(null);
 

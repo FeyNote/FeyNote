@@ -1,9 +1,11 @@
-import ForceGraph2D, { ForceGraphMethods } from 'react-force-graph-2d';
+import ForceGraph2D, {
+  ForceGraphMethods,
+  NodeObject,
+} from 'react-force-graph-2d';
 import {
   useCallback,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -56,8 +58,12 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   const forceGraphRef =
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>();
   const { navigate, pane, isPaneFocused } = useContext(PaneContext);
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  const [highlightNodes, setHighlightNodes] = useState(
+    new Set<FeynoteGraphNode>(),
+  );
+  const [highlightLinks, setHighlightLinks] = useState(
+    new Set<FeynoteGraphLink>(),
+  );
   const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
   const _isDarkMode = isDarkMode();
 
@@ -70,7 +76,7 @@ export const GraphRenderer: React.FC<Props> = (props) => {
     ],
   );
 
-  const graphData = useMemo(() => {
+  const { graphData, nodesById } = useMemo(() => {
     const nodesById: Record<string, FeynoteGraphNode> = {};
     const graphData = {
       nodes: [],
@@ -107,7 +113,10 @@ export const GraphRenderer: React.FC<Props> = (props) => {
       targetNode.links.push(link);
     }
 
-    return graphData;
+    return {
+      graphData,
+      nodesById,
+    };
   }, [props.artifacts]);
 
   const updateHighlight = () => {
@@ -131,8 +140,8 @@ export const GraphRenderer: React.FC<Props> = (props) => {
     highlightLinks.clear();
     if (node) {
       highlightNodes.add(node);
-      node.neighbors?.forEach((neighbor: any) => highlightNodes.add(neighbor));
-      node.links?.forEach((link: any) => highlightLinks.add(link));
+      node.neighbors?.forEach((neighbor) => highlightNodes.add(neighbor));
+      node.links?.forEach((link) => highlightLinks.add(link));
     }
 
     setHoverNode(node || null);
@@ -145,8 +154,14 @@ export const GraphRenderer: React.FC<Props> = (props) => {
 
     if (link) {
       highlightLinks.add(link);
-      highlightNodes.add(link.source);
-      highlightNodes.add(link.target);
+      const sourceNode = nodesById[link.source];
+      if (sourceNode) {
+        highlightNodes.add(sourceNode);
+      }
+      const targetNode = nodesById[link.target];
+      if (targetNode) {
+        highlightNodes.add(targetNode);
+      }
     }
 
     updateHighlight();
@@ -154,7 +169,9 @@ export const GraphRenderer: React.FC<Props> = (props) => {
 
   // add ring just for highlighted nodes
   const paintRing = useCallback(
-    (node: any, ctx: CanvasRenderingContext2D) => {
+    (node: NodeObject<FeynoteGraphNode>, ctx: CanvasRenderingContext2D) => {
+      if (!node.x || !node.y) return;
+
       ctx.beginPath();
       ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
       if (highlightNodes.has(node) || !hoverNode) {

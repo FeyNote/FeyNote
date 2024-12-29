@@ -2,7 +2,7 @@ import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
 import { monsterStatblockDefaultContent } from './monsterStatblockDefaultContent';
 
 export interface MonsterStatblockOptions {
-  HTMLAttributes: Record<string, any>;
+  HTMLAttributes: Record<string, string>;
 }
 
 declare module '@tiptap/core' {
@@ -55,7 +55,7 @@ export const MonsterStatblockExtension = Node.create({
       wide: {
         default: false,
         parseHTML: (element) => element.getAttribute('data-wide'),
-        renderHTML: (attributes: any) => {
+        renderHTML: (attributes) => {
           return {
             'data-wide': attributes.wide,
           };

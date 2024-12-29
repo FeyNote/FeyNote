@@ -177,7 +177,7 @@ export const GlobalPaneContextProviderWrapper = ({
     const historyNode = {
       component,
       // We really don't want to type enforce props as it now just gets dumped into FlexLayout state
-      props: props as any,
+      props: props as HistoryNode['props'],
       navigationEventId: crypto.randomUUID(),
     } satisfies HistoryNode;
 

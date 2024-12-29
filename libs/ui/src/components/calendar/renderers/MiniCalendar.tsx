@@ -91,7 +91,7 @@ const CalendarDay = styled.button<{
 export const MiniCalendar: React.FC<CalendarRenderProps> = (props) => {
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);
-    if (!dayInfo) return <></>;
+    if (!dayInfo) return null;
 
     return (
       <CalendarDay

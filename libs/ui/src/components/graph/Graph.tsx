@@ -46,18 +46,14 @@ export const Graph: React.FC = () => {
       <PaneNav title={t('graph.title')} />
       {ProgressBar}
       <IonContent>
-        {initialLoadCompleted && (
-          <>
-            {artifacts.length ? (
-              <GraphRenderer artifacts={artifacts} />
-            ) : (
-              <StyledNullState
-                title={t('graph.nullState.title')}
-                message={t('graph.nullState.message')}
-                icon={gitNetwork}
-              />
-            )}
-          </>
+        {initialLoadCompleted && artifacts.length ? (
+          <GraphRenderer artifacts={artifacts} />
+        ) : (
+          <StyledNullState
+            title={t('graph.nullState.title')}
+            message={t('graph.nullState.message')}
+            icon={gitNetwork}
+          />
         )}
       </IonContent>
     </IonPage>

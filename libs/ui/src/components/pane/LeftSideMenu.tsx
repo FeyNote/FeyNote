@@ -91,7 +91,7 @@ export const LeftSideMenu: React.FC = () => {
           ),
         );
       })
-      .catch((e) => {
+      .catch(() => {
         // Do nothing
       });
   };

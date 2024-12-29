@@ -77,7 +77,12 @@ export interface ReferenceItem {
 interface Props {
   items: ReferenceItem[];
   query: string;
-  command: (...args: any) => void;
+  command: (args: {
+    artifactId: string;
+    artifactBlockId: string | undefined;
+    artifactDate: string | undefined;
+    referenceText: string;
+  }) => void;
   searching: boolean;
 }
 
@@ -158,6 +163,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         props.command({
           artifactId: artifact.id,
           artifactBlockId: undefined,
+          artifactDate: undefined,
           referenceText: title,
         });
       });
@@ -182,6 +188,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     props.command({
       artifactId: item.artifactId,
       artifactBlockId: item.artifactBlockId,
+      artifactDate: undefined,
       referenceText: item.referenceText,
     });
   };
@@ -191,6 +198,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
 
     props.command({
       artifactId: calendarSelectInfo.artifactId,
+      artifactBlockId: undefined,
       artifactDate: date,
       referenceText: calendarSelectInfo.referenceText,
     });

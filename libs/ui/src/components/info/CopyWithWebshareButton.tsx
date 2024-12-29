@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const CopyWithWebshareButton: React.FC<Props> = (props) => {
-  const hasWebShareAPI = !!(navigator as any).share;
+  const hasWebShareAPI = 'share' in navigator;
 
   const webShare = async () => {
     if (hasWebShareAPI) {
@@ -19,7 +19,7 @@ export const CopyWithWebshareButton: React.FC<Props> = (props) => {
           text: props.webshareText,
           url: props.webshareURL,
         });
-      } catch (e) {
+      } catch (_e) {
         // Ignore webshare errors
       }
     }

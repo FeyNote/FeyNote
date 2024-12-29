@@ -96,8 +96,8 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
     }
   }, [configMap]);
 
-  const setMetaProp = (metaPropName: string, value: any) => {
-    (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
+  const setMetaProp = (metaPropName: string, value: string) => {
+    yDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
   };
 
   const edgesByDay = useMemo(
@@ -111,7 +111,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
 
           const date = incomingEdge.targetArtifactDate;
           if (date.includes('<>')) {
-            const [start, end] = date.split('-');
+            const [_start, _end] = date.split('-');
             // TODO: add support for date ranges
           } else {
             const ymd = getYMDFromSpecifier(incomingEdge.targetArtifactDate);
@@ -137,8 +137,8 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
         placeholder={t('artifactRenderer.title.placeholder')}
         value={title}
         onIonInput={(event) => {
-          setMetaProp('title', event.target.value || '');
-          props.onTitleChange?.((event.target.value || '').toString());
+          setMetaProp('title', event.target.value?.toString() || '');
+          props.onTitleChange?.(event.target.value?.toString() || '');
         }}
         type="text"
       ></ArtifactTitleInput>

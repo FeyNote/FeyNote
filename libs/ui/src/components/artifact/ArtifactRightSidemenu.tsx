@@ -9,18 +9,15 @@ import {
   useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
@@ -45,7 +42,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       dismiss: () => dismissSharingModal(),
     },
   );
-  const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
   const { theme, titleBodyMerge } = useObserveYArtifactMeta(
     props.connection.yjsDoc,
@@ -71,11 +67,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const setMetaProp = (metaPropName: keyof YArtifactMeta, value: any) => {
-    (props.connection.yjsDoc.getMap(ARTIFACT_META_KEY) as any).set(
-      metaPropName,
-      value,
-    );
+  const setMetaProp = (
+    metaPropName: keyof YArtifactMeta,
+    value: string | boolean,
+  ) => {
+    props.connection.yjsDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
   };
 
   const incomingArtifactReferenceTitles = useMemo(

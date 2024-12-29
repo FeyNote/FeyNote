@@ -3,6 +3,7 @@ import { ReferenceListItem } from './ReferenceListItem';
 
 export const getReferenceSuggestions = (mentionMenuOptsRef: {
   componentRef: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- kill me, for I do not want to live anymore.
     current: any;
   };
 }) => {

@@ -109,15 +109,15 @@ class EdgeStore {
   /**
    * Local idb edges have undefined values as '' for index purposes. We want to convert those to undefined
    */
-  private idbEdgeToTypedEdge(edge: any): Edge {
+  private idbEdgeToTypedEdge(edge: Edge): Edge {
     return {
       id: getEdgeId(edge),
       artifactTitle: edge.artifactTitle,
       artifactId: edge.artifactId,
       artifactBlockId: edge.artifactBlockId,
       targetArtifactId: edge.targetArtifactId,
-      targetArtifactBlockId: edge.targetArtifactBlockId || undefined,
-      targetArtifactDate: edge.targetArtifactDate || undefined,
+      targetArtifactBlockId: edge.targetArtifactBlockId || null,
+      targetArtifactDate: edge.targetArtifactDate || null,
       referenceText: edge.referenceText,
       isBroken: edge.isBroken,
     };

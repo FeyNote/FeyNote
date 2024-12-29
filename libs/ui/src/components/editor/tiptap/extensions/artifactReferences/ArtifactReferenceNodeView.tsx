@@ -9,6 +9,10 @@ import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneCont
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
 
+const ArtifactReferenceLink = styled.a`
+  cursor: pointer;
+`;
+
 const StyledNodeViewWrapper = styled(NodeViewWrapper)`
   display: inline;
 `;
@@ -72,8 +76,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <a
-          href=""
+        <ArtifactReferenceLink
           onClick={(event) => (
             event.preventDefault(),
             event.stopPropagation(),
@@ -82,7 +85,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
           )}
         >
           {referenceText}
-        </a>
+        </ArtifactReferenceLink>
         {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (

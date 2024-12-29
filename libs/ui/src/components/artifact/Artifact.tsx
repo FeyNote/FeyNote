@@ -1,10 +1,6 @@
-import { ArtifactDTO } from '@feynote/global-types';
 import { IonContent, IonPage } from '@ionic/react';
-import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
-import { useProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactContextMenu } from './ArtifactContextMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';

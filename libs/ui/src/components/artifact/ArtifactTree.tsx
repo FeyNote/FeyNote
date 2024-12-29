@@ -152,11 +152,17 @@ export const ArtifactTree = () => {
   const yDoc = connection.yjsDoc;
 
   const yKeyValue = useMemo(() => {
-    const yArray = yDoc.getArray('treeNodes');
+    const yArray = yDoc.getArray<{
+      key: string;
+      val: {
+        parentNodeId: string | null;
+        order: string;
+      };
+    }>('treeNodes');
     const yKeyValue = new YKeyValue<{
       parentNodeId: string | null;
       order: string;
-    }>(yArray as any);
+    }>(yArray);
 
     return yKeyValue;
   }, [yDoc]);
@@ -168,7 +174,7 @@ export const ArtifactTree = () => {
         setArtifacts(artifacts);
         triggerRerender();
       })
-      .catch((e) => {
+      .catch(() => {
         // Do nothing
       });
   };
@@ -384,8 +390,10 @@ export const ArtifactTree = () => {
   ) => {
     if (target.targetType === 'root') {
       const parentItem = items[target.targetItem];
+      if (!parentItem.children)
+        throw new Error("ParentItem of an item doesn't have children somehow");
       const lastParentChildOrder =
-        parentItem.children?.[parentItem.children!.length - 1]?.toString() ||
+        parentItem.children.at(parentItem.children.length - 1)?.toString() ||
         'A';
 
       for (const item of droppedItems) {
@@ -413,9 +421,10 @@ export const ArtifactTree = () => {
       }
 
       const parentItem = items[target.targetItem];
+      if (!parentItem.children)
+        throw new Error("ParentItem of an item doesn't have children somehow");
       const lastParentChildOrder =
-        parentItem.children?.[parentItem.children!.length - 1]?.toString() ||
-        'A';
+        parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
 
       for (const item of droppedItems) {
         const order = calculateOrderBetween(lastParentChildOrder, 'Z');

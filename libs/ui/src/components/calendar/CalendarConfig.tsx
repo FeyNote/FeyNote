@@ -13,7 +13,7 @@ import {
   IonRadioGroup,
   IonRow,
 } from '@ionic/react';
-import { settings, chevronExpand } from 'ionicons/icons';
+import { settings } from 'ionicons/icons';
 import type { TypedMap } from 'yjs-types';
 import {
   generateGregorianMondayCalendarConfig,

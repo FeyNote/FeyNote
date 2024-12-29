@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { Actions, Layout, TabNode, Node } from 'flexlayout-react';
+import { Actions, Layout, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
 import {
   GlobalPaneContext,
@@ -18,6 +18,7 @@ import { t } from 'i18next';
 import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
+  PaneableComponentProps,
 } from './context/globalPane/PaneableComponent';
 import {
   clearCustomDragData,
@@ -26,7 +27,6 @@ import {
   startTreeDrag,
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
-import { PaneContext } from './context/pane/PaneContext';
 
 const MENU_SIZE_PX = '240';
 
@@ -214,15 +214,15 @@ export const Workspace: React.FC = () => {
       useContext(GlobalPaneContext);
     const pane = getPaneById(paneId);
 
-    const navigate = (
-      component: PaneableComponent,
-      props: any,
+    const navigate = <T extends PaneableComponent>(
+      component: T,
+      props: PaneableComponentProps[T],
       transition: PaneTransition,
     ) => {
       globalNavigate(pane.id, component, props, transition);
     };
 
-    if (!contextMenuPaneIdRef.current) return <></>;
+    if (!contextMenuPaneIdRef.current) return null;
 
     return (
       <IonContent onClick={popoverDismissRef.current}>
@@ -234,7 +234,7 @@ export const Workspace: React.FC = () => {
   const popoverDismissRef = useRef<() => void>();
 
   const [present, dismiss] = useIonPopover(PaneTabContextMenuWrapper, {
-    onDismiss: (data: any, role: string) => dismiss(data, role),
+    onDismiss: (data: unknown, role: string) => dismiss(data, role),
   });
   popoverDismissRef.current = dismiss;
 

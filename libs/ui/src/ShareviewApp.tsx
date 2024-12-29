@@ -35,7 +35,7 @@ export const ShareviewApp: React.FC<Props> = (props) => {
     () => ({
       navigateHistoryBack: () => undefined, // Noop
       navigateHistoryForward: () => undefined, // Noop
-      navigate: (componentName, componentProps, transition, select) => {
+      navigate: (componentName, componentProps) => {
         if (componentName === PaneableComponent.Artifact) {
           const id = (componentProps as PaneableComponentProps['Artifact']).id;
 
@@ -49,7 +49,7 @@ export const ShareviewApp: React.FC<Props> = (props) => {
           // Noop
         }
       },
-      renamePane: (name: string) => undefined, // Noop
+      renamePane: () => undefined, // Noop
       pane: {
         id: props.id,
         history: [],

@@ -1,6 +1,7 @@
 /* eslint-disable import/first */
 
 import * as Sentry from '@sentry/react';
+import { getIsViteDevelopment } from '@feynote/ui';
 
 Sentry.init({
   dsn: 'https://c33be4806db6ac96de06c5de2f8ebc85@o4508428193955840.ingest.us.sentry.io/4508428202606592',
@@ -23,7 +24,6 @@ Sentry.init({
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/App';
-import { getIsViteDevelopment } from '@feynote/ui';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,

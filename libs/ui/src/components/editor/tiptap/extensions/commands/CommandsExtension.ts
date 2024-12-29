@@ -1,4 +1,4 @@
-import { Extension } from '@tiptap/core';
+import { Editor, Extension } from '@tiptap/core';
 import { Suggestion } from '@tiptap/suggestion';
 import { getTiptapCommands } from './getTiptapCommands';
 import { renderCommandList } from './renderCommandList';
@@ -38,8 +38,18 @@ export const CommandsExtension = Extension.create({
         items: () => [],
         char: '/',
         startOfLine: false,
-        command: ({ editor, range, props }: any) => {
-          props.command({ editor, range, props });
+        command: (args: {
+          editor: Editor;
+          range: Range;
+          props: {
+            command: (props: {
+              editor: Editor;
+              range: Range;
+              props: unknown;
+            }) => void;
+          };
+        }) => {
+          args.props.command(args);
         },
       },
     };

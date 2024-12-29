@@ -15,9 +15,9 @@ interface Props {
   children: ReactNode;
 }
 
-export const SessionContextProviderWrapper = ({
+export const SessionContextProviderWrapper: React.FC<Props> = ({
   children,
-}: Props): JSX.Element => {
+}) => {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<SessionDTO | null>(null);
   const { setAndPersistSession: _setAndPersistSession } =
@@ -55,7 +55,7 @@ export const SessionContextProviderWrapper = ({
 
   // We wait for the async idb call to finish so we don't flash the register page
   if (loading) {
-    return <></>;
+    return null;
   }
 
   if (!value.session) {

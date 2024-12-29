@@ -45,12 +45,27 @@ export function App() {
         registration?.update();
       }, SW_UPDATE_INTERVAL_MS);
 
-      (registration as any)?.sync?.register('manifest').catch((e: unknown) => {
+      // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
+      const swRegistration = registration as unknown as
+        | {
+            sync?: {
+              register: (name: string) => Promise<void>;
+            };
+            periodicSync?: {
+              register: (
+                name: string,
+                options: { minInterval: number },
+              ) => Promise<void>;
+            };
+          }
+        | undefined;
+
+      swRegistration?.sync?.register('manifest').catch((e: unknown) => {
         console.error('Cannot register background sync', e);
       });
 
       const PERIODIC_SYNC_INTERVAL_HOURS = 48;
-      (registration as any)?.periodicSync
+      swRegistration?.periodicSync
         ?.register('manifest', {
           minInterval: PERIODIC_SYNC_INTERVAL_HOURS * 60 * 60 * 1000,
         })
