@@ -2,7 +2,6 @@ export { SessionContextProviderWrapper } from './context/session/SessionContextP
 export { PreferencesContextProviderWrapper } from './context/preferences/PreferencesContextProviderWrapper';
 export { GlobalSearchContextProviderWrapper } from './context/globalSearch/GlobalSearchContextProviderWrapper';
 export { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPaneContextProviderWrapper';
-export { ArtifactShareView } from './components/sharing/sharedArtifactByToken/ArtifactShareView';
 export { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 export { Artifact } from './components/artifact/Artifact';
 export { SyncManager } from './utils/SyncManager';

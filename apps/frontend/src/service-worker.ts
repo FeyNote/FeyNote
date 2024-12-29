@@ -258,12 +258,13 @@ registerRoute(
 
     const docName = `artifact:${input.id}`;
     const manifestDb = await getManifestDb();
-    const manifestArtifact = await manifestDb.get(
-      ObjectStoreName.Artifacts,
+    const manifestArtifactVersion = await manifestDb.get(
+      ObjectStoreName.ArtifactVersions,
       input.id,
     );
-    if (!manifestArtifact) {
+    if (!manifestArtifactVersion) {
       const response = await fetch(event.request);
+      // TODO: consider syncing to indexeddb here since it'd be nearly "free"
 
       return response;
     }
@@ -286,9 +287,18 @@ registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
     // Cache only
-    const input = getTrpcInputForEvent<{ id: string }>(event);
+    const input = getTrpcInputForEvent<{
+      id: string;
+      shareToken?: string;
+    }>(event);
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
+
+    if (input.shareToken) {
+      const response = await fetch(event.request);
+
+      return response;
+    }
 
     const manifestDb = await getManifestDb();
     const outgoingEdges = await manifestDb.getAllFromIndex(

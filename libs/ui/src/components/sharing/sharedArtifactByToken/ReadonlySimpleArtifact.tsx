@@ -1,4 +1,3 @@
-import { ArtifactDTO } from '@feynote/global-types';
 import { memo, useEffect, useState } from 'react';
 import { ArtifactEditor } from '../../editor/ArtifactEditor';
 import { ArtifactCalendar } from '../../calendar/ArtifactCalendar';
@@ -9,8 +8,9 @@ import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { getFileRedirectUrl } from '../../../utils/files/getFileRedirectUrl';
 import { ArtifactDraw } from '../../draw/ArtifactDraw';
-import { getEdgeId } from '@feynote/shared-utils';
+import { Edge } from '@feynote/shared-utils';
 import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
+import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifactId: string;
@@ -20,18 +20,23 @@ interface Props {
 export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const [artifact, setArtifact] = useState<ArtifactDTO>();
+  const [edges, setEdges] = useState<{
+    incomingEdges: Edge[];
+    outgoingEdges: Edge[];
+  }>();
   const [yDoc, setYDoc] = useState<YDoc>();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const loadArtifact = () => {
-    trpc.artifact.getArtifactById
+  const { type } = useObserveYArtifactMeta(yDoc || new YDoc());
+
+  const loadArtifactEdges = () => {
+    trpc.artifact.getArtifactEdgesById
       .query({
         id: props.artifactId,
         shareToken: props.shareToken,
       })
       .then((result) => {
-        setArtifact(result);
+        setEdges(result);
       })
       .catch((error) => {
         handleTRPCErrors(error, {
@@ -81,43 +86,33 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       .catch((error) => {
         handleTRPCErrors(error, {
           401: () => {
-            // We handle this in loadArtifact
+            // We handle this in loadArtifactEdges
           },
           404: () => {
-            // We handle this in loadArtifact
+            // We handle this in loadArtifactEdges
           },
         });
       });
   };
 
   useEffect(() => {
-    loadArtifact();
+    loadArtifactEdges();
     loadArtifactYDoc();
   }, [props.artifactId, props.shareToken]);
 
   useEffect(() => {
-    if (!artifact) return;
+    if (!edges) return;
 
     getEdgeStore().provideStaticEdgesForArtifactId({
-      artifactId: artifact.id,
-      outgoingEdges: artifact.artifactReferences.map((ref) => ({
-        ...ref,
-        id: getEdgeId(ref),
-        isBroken: !ref.referenceTargetArtifactId,
-        artifactTitle: ref.artifact.title,
-      })),
-      incomingEdges: artifact.incomingArtifactReferences.map((ref) => ({
-        ...ref,
-        id: getEdgeId(ref),
-        isBroken: !ref.referenceTargetArtifactId,
-        artifactTitle: ref.artifact.title,
-      })),
+      artifactId: props.artifactId,
+      outgoingEdges: edges.outgoingEdges,
+      incomingEdges: edges.incomingEdges,
     });
-  }, [artifact]);
+  }, [edges]);
 
-  if (!artifact || !yDoc) return;
+  if (!edges || !yDoc) return;
 
-  if (artifact.type === 'tiptap') {
+  if (type === 'tiptap') {
     return (
       <ArtifactEditor
         artifactId={props.artifactId}
@@ -134,7 +129,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     );
   }
 
-  if (artifact.type === 'calendar') {
+  if (type === 'calendar') {
     return (
       <ArtifactCalendar
         artifactId={props.artifactId}
@@ -145,7 +140,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     );
   }
 
-  if (artifact.type === 'tldraw') {
+  if (type === 'tldraw') {
     return (
       <ArtifactDraw
         artifactId={props.artifactId}

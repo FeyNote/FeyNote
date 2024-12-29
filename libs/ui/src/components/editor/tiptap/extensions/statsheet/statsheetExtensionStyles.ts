@@ -13,7 +13,9 @@ export const statsheetExtensionStyles = css`
   text-rendering: optimizeLegibility;
   background-color: #f2e5b5;
   background-image: url('https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg');
+  background-repeat: no-repeat;
   background-blend-mode: overlay;
+  background-origin: border-box;
   border-style: solid;
   border-width: 7px 6px;
   border-image: url('https://static.feynote.com/assets/monster-border-20240925.png')

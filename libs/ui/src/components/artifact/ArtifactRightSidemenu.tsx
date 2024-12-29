@@ -28,6 +28,7 @@ import { ArtifactSharingManagementModal } from './ArtifactSharingManagementModal
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { useIsEditable } from '../../utils/useAuthorizedScope';
 import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
+import { ArtifactRightSidemenuReference } from './ArtifactRightSidemenuReference';
 
 interface Props {
   artifactId: string;
@@ -244,20 +245,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </IonListHeader>
           {incomingArtifactReferenceTitles.map(
             ([otherArtifactId, otherArtifactTitle]) => (
-              <CompactIonItem
-                lines="none"
+              <ArtifactRightSidemenuReference
                 key={otherArtifactId}
-                onClick={() =>
-                  navigate(
-                    PaneableComponent.Artifact,
-                    { id: otherArtifactId },
-                    PaneTransition.Push,
-                  )
-                }
-                button
-              >
-                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
-              </CompactIonItem>
+                otherArtifactId={otherArtifactId}
+                otherArtifactTitle={otherArtifactTitle}
+              />
             ),
           )}
         </IonCard>
@@ -274,20 +266,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </IonListHeader>
           {artifactReferenceTitles.map(
             ([otherArtifactId, otherArtifactTitle]) => (
-              <CompactIonItem
-                lines="none"
+              <ArtifactRightSidemenuReference
                 key={otherArtifactId}
-                onClick={() =>
-                  navigate(
-                    PaneableComponent.Artifact,
-                    { id: otherArtifactId },
-                    PaneTransition.Push,
-                  )
-                }
-                button
-              >
-                <NowrapIonLabel>{otherArtifactTitle}</NowrapIonLabel>
-              </CompactIonItem>
+                otherArtifactId={otherArtifactId}
+                otherArtifactTitle={otherArtifactTitle}
+              />
             ),
           )}
         </IonCard>

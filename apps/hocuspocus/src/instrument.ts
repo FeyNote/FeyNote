@@ -8,4 +8,10 @@ Sentry.init({
   integrations: [nodeProfilingIntegration()],
   tracesSampleRate: globalServerConfig.sentry.hocuspocus.samplingRate,
   environment: process.env.NODE_ENV,
+  beforeSend(event, hint) {
+    // Sentry trace sampling does not corrrectly filter at 0% sample rate
+    if (globalServerConfig.sentry.hocuspocus.samplingRate === 0) return null;
+
+    return event;
+  },
 });

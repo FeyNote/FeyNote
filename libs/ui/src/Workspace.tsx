@@ -52,13 +52,9 @@ const DockContainer = styled.div`
     background: var(--ion-card-background, #ffffff);
   }
 
-  .flexlayout__tabset .flexlayout__tabset_tabbar_outer_top {
-    padding-right: 30px;
-  }
-
   .flexlayout__tabset:first-child .flexlayout__tabset_tabbar_outer_top {
     padding-left: 30px;
-    padding-right: 0;
+    padding-right: 30px;
   }
 
   .flexlayout__tabset_tabbar_inner {

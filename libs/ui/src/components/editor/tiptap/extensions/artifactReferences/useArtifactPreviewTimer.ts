@@ -36,7 +36,7 @@ export const useArtifactPreviewTimer = (
       .catch((e) => {
         handleTRPCErrors(e, {
           401: () => {
-            // Do nothing
+            setArtifactInaccessible(true);
           },
           404: () => {
             setArtifactInaccessible(true);
