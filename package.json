@@ -8,7 +8,7 @@
   },
   "private": true,
   "dependencies": {
-    "@ai-sdk/openai": "^0.0.55",
+    "@ai-sdk/openai": "^1.0.11",
     "@astrojs/node": "^8.3.4",
     "@astrojs/react": "^4.1.2",
     "@aws-sdk/client-s3": "^3.717.0",
@@ -73,7 +73,7 @@
     "@types/dedent": "^0.7.2",
     "@types/dompurify": "^3.0.5",
     "@types/multer": "^1.4.12",
-    "ai": "^3.4.9",
+    "ai": "^3.4.33",
     "astro": "^4.16.18",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
