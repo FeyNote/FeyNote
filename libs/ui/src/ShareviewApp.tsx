@@ -20,6 +20,11 @@ import {
   PaneableComponent,
   PaneableComponentProps,
 } from './context/globalPane/PaneableComponent';
+import {
+  GlobalPaneContext,
+  GlobalPaneContextData,
+} from './context/globalPane/GlobalPaneContext';
+import { Model } from 'flexlayout-react';
 
 initI18Next();
 setupIonicReact();
@@ -30,6 +35,47 @@ interface Props {
 export const ShareviewApp: React.FC<Props> = (props) => {
   const shareToken =
     new URLSearchParams(window.location.search).get('shareToken') || undefined;
+
+  const globalPaneContextValue = useMemo<GlobalPaneContextData>(
+    () => ({
+      navigateHistoryBack: () => undefined, // Noop
+      navigateHistoryForward: () => undefined, // Noop
+      getPaneById: () => ({
+        id: props.id,
+        history: [],
+        forwardHistory: [],
+        currentView: {
+          component: PaneableComponent.Artifact,
+          navigationEventId: 'shareview',
+          props: {
+            id: props.id,
+          },
+        },
+      }),
+      renamePane: () => undefined, // Noop
+      focusedPaneId: props.id,
+      getSelectedTabForTabset: () => undefined, // Noop
+      navigate: (_, componentName, componentProps) => {
+        if (componentName === PaneableComponent.Artifact) {
+          const id = (componentProps as PaneableComponentProps['Artifact']).id;
+
+          const url = new URL(`/artifact/${id}`, window.location.href);
+          // TODO: the following will absolutely not work with the current shareToken implementation
+          // but this is an idea of what we'd do once we can share sets of artifacts under the same token
+          if (shareToken) url.searchParams.set('shareToken', shareToken);
+
+          window.location.href = url.href;
+        } else {
+          // Noop
+        }
+      },
+      resetLayout: () => undefined, // Noop
+      _model: null as unknown as Model, // We have no good way to mock this
+      _onActionListener: () => undefined, // Noop
+      _onModelChangeListener: () => undefined, // Noop
+    }),
+    [],
+  );
 
   const paneContextValue = useMemo<PaneContextData>(
     () => ({
@@ -70,9 +116,11 @@ export const ShareviewApp: React.FC<Props> = (props) => {
   return (
     <IonApp>
       <PreferencesContextProviderWrapper>
-        <PaneContext.Provider value={paneContextValue}>
-          <ArtifactShareView artifactId={props.id} shareToken={shareToken} />
-        </PaneContext.Provider>
+        <GlobalPaneContext.Provider value={globalPaneContextValue}>
+          <PaneContext.Provider value={paneContextValue}>
+            <ArtifactShareView artifactId={props.id} shareToken={shareToken} />
+          </PaneContext.Provider>
+        </GlobalPaneContext.Provider>
       </PreferencesContextProviderWrapper>
     </IonApp>
   );
