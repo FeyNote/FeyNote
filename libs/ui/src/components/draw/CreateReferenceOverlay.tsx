@@ -1,8 +1,7 @@
 import { useProgressBar } from '../../utils/useProgressBar';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { SessionContext } from '../../context/session/SessionContext';
 import { ArtifactDTO } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';

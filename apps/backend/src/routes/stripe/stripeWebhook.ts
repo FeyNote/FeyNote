@@ -15,7 +15,7 @@ import { globalServerConfig } from '@feynote/config';
 function assertCheckoutFieldWithSentryLog<T>(
   property: T,
   propertyName: string,
-  extra: Record<string, any> = {},
+  extra: Record<string, unknown> = {},
 ): asserts property is NonNullable<T> {
   if (property === null || property === undefined) {
     const message = `${propertyName} is missing on Stripe webhook object`;
@@ -46,8 +46,10 @@ export const stripeWebhookHandler = defineExpressHandler(
 
     let event: Stripe.Event;
     try {
+      // rawBody is a custom field added by the body-parser middleware for only this route. See the main express app file for info
+      const customReq = req as unknown as { rawBody: string };
       event = await stripe.webhooks.constructEventAsync(
-        (req as any).rawBody,
+        customReq.rawBody,
         stripeSignature,
         globalServerConfig.stripe.webhookSecret,
       );
@@ -108,6 +110,7 @@ export const stripeWebhookHandler = defineExpressHandler(
             paymentIntentId,
             stripeSubscriptionId: subscriptionId,
             subscriptionId: internalSubscription?.id,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe's typings are incompatible with Prisma's troublesome json type
             eventObjectJson: invoice as any,
           },
         });

@@ -3,7 +3,7 @@
 import {
   Circle2d,
   createShapePropsMigrationSequence,
-  Group2d,
+  EnumStyleProp,
   HTMLContainer,
   RecordProps,
   ShapeUtil,
@@ -11,11 +11,9 @@ import {
   StyleProp,
   T,
   TLBaseShape,
-  TLPointerEventInfo,
 } from 'tldraw';
 import {
   FaAnchor,
-  FaCircle,
   FaFlag,
   FaFortAwesome,
   FaHeart,
@@ -35,6 +33,10 @@ import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForAr
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 import styled from 'styled-components';
+import {
+  ReferenceShapeIconOptions,
+  ReferenceShapeProps,
+} from '@feynote/shared-utils';
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
   $isHandMode: boolean;
@@ -91,7 +93,7 @@ export const referenceIconTLDrawStyle = StyleProp.defineEnum('reference:icon', {
     'sword',
     'monster',
   ],
-});
+}) satisfies EnumStyleProp<ReferenceShapeIconOptions>;
 
 type ReferenceIconTLDrawStyle = T.TypeOf<typeof referenceIconTLDrawStyle>;
 
@@ -194,7 +196,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       targetArtifactDate: null,
       referenceText: '',
       icon: 'circle',
-    };
+    } satisfies ReferenceShapeProps; // ReferenceShapeProps is a type that we can use on the backend, so we make sure it lines up here
   }
 
   getRadius() {

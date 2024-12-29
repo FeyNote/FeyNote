@@ -1,12 +1,6 @@
 import { useContext, useEffect, useRef } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import {
-  IonButton,
-  IonContent,
-  IonIcon,
-  IonPopover,
-  useIonPopover,
-} from '@ionic/react';
+import { IonButton, IonContent, IonIcon, useIonPopover } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
 import { DefaultContextMenu } from '../contextMenu/DefaultContextMenu';
@@ -44,7 +38,7 @@ export const PaneNav: React.FC<Props> = (props) => {
   );
 
   const [present, dismiss] = useIonPopover(popoverContents, {
-    onDismiss: (data: any, role: string) => dismiss(data, role),
+    onDismiss: (data: unknown, role: string) => dismiss(data, role),
   });
   popoverDismissRef.current = dismiss;
 

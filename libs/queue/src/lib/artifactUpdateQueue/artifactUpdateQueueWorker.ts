@@ -25,6 +25,7 @@ import {
   wsRoomNameForUserId,
 } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
+import type { TLRecord } from 'tldraw';
 
 export const artifactUpdateQueueWorker = new Worker<
   ArtifactUpdateQueueItem,
@@ -56,7 +57,10 @@ export const artifactUpdateQueueWorker = new Worker<
       const newTitle = newYMeta.title;
       const type = newYMeta.type;
 
-      const newTLDrawData = newYjsDoc.getArray(TLDRAW_YDOC_STORE_KEY);
+      const newTLDrawData = newYjsDoc.getArray<{
+        key: string;
+        val: TLRecord;
+      }>(TLDRAW_YDOC_STORE_KEY);
 
       const oldJSONContent = getTiptapContentFromYjsDoc(
         oldYjsDoc,

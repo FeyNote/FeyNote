@@ -45,17 +45,20 @@ export const getSubscriptions = authenticatedProcedure.query(
     }
 
     return {
-      subscriptions: internalSubscriptions.map((subscription) => ({
-        id: subscription.id,
-        name: subscription.name as SubscriptionModelName,
-        expiresAt: subscription.expiresAt,
-        cancelledAt: subscription.cancelledAt,
-        activeWithStripe:
-          stripeSubscriptionsById.has(subscription.id) &&
-          ['active', 'past_due', 'unpaid'].includes(
-            stripeSubscriptionsById.get(subscription.id)!.status,
-          ),
-      })),
+      subscriptions: internalSubscriptions.map((subscription) => {
+        const stripeSub = stripeSubscriptionsById.get(subscription.id);
+        const activeStatuses = ['active', 'past_due', 'unpaid'];
+        const activeWithStripe =
+          !!stripeSub && activeStatuses.includes(stripeSub.status);
+
+        return {
+          id: subscription.id,
+          name: subscription.name as SubscriptionModelName,
+          expiresAt: subscription.expiresAt,
+          cancelledAt: subscription.cancelledAt,
+          activeWithStripe,
+        };
+      }),
     };
   },
 );

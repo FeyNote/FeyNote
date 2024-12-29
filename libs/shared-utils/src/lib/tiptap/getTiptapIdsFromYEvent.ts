@@ -1,21 +1,23 @@
-import type { YEvent } from 'yjs';
+import type { Item, XmlElement as YXmlElement, YEvent } from 'yjs';
 
-export const getTiptapIdsFromYEvent = (yEvent: YEvent<any>) => {
+export const getTiptapIdsFromYEvent = (yEvent: YEvent<YXmlElement>) => {
   // Yjs change target is simple, but we do recurse up the tree here to cover all nodes changed
-  const getIdsFromChangeTarget = (node: any): string[] => {
+  const getIdsFromChangeTarget = (node: YXmlElement): string[] => {
     const ids: string[] = [];
 
-    if (node.getAttribute?.('id')) {
-      ids.push(node.getAttribute?.('id'));
+    const id = node.getAttribute?.('id');
+    if (id) {
+      ids.push(id);
     }
 
-    if (node.parent) ids.push(...getIdsFromChangeTarget(node.parent));
+    if (node.parent)
+      ids.push(...getIdsFromChangeTarget(node.parent as YXmlElement));
 
     return ids;
   };
 
   // From yjs delta format, we grab all ids up the tree stored as attributes by tiptap
-  const getIdsFromDelta = (delta: any): string[] => {
+  const getIdsFromDelta = (delta: Item): string[] => {
     const ids: string[] = [];
 
     if (!delta.content) return ids;

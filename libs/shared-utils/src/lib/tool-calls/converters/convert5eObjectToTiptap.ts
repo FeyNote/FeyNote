@@ -5,13 +5,13 @@ export const convert5eObjectToTiptap = (
 ) => {
   const content = [];
   if (!generatedObject) return;
-  generatedObject.name &&
+  if (generatedObject.name)
     content.push({
       type: 'heading',
       attrs: { level: 4 },
       content: [{ type: 'text', text: generatedObject.name }],
     });
-  generatedObject.subheader &&
+  if (generatedObject.subheader)
     content.push({
       type: 'paragraph',
       content: [

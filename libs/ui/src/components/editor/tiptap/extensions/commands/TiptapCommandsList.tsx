@@ -70,12 +70,14 @@ const SuggestionListItemSubtitle = styled.div`
 export interface CommandItem {
   title: string;
   subtitle: string;
-  icon: React.FC<any>;
+  icon: React.FC<{
+    size: number;
+  }>;
 }
 
 interface Props {
   items: CommandItem[];
-  command: (...args: any) => void;
+  command: (item: CommandItem) => void;
 }
 
 interface State {

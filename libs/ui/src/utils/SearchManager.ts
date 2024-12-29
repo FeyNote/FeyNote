@@ -135,7 +135,7 @@ export class SearchManager {
   ): StoredSearchFields | undefined {
     return this.miniSearch.getStoredFields(
       this.getIndexId(artifactId, undefined),
-    ) as any;
+    ) as StoredSearchFields | undefined;
   }
 
   onReady(): Promise<void> {
@@ -195,10 +195,11 @@ export class SearchManager {
 
     const artifactMeta = getMetaFromYArtifact(doc);
     const artifactIndexId = this.getIndexId(artifactId, undefined);
+    const knownBlockIds =
+      this.knownBlockIdsByArtifactId.get(artifactId) || new Set();
     if (!this.knownBlockIdsByArtifactId.has(artifactId)) {
-      this.knownBlockIdsByArtifactId.set(artifactId, new Set());
+      this.knownBlockIdsByArtifactId.set(artifactId, knownBlockIds);
     }
-    const knownBlockIds = this.knownBlockIdsByArtifactId.get(artifactId)!;
 
     if (artifactMeta.title) {
       const artifactIndexDoc = {

@@ -1,4 +1,4 @@
-import type { Doc, Transaction, YEvent } from 'yjs';
+import type { Doc, Transaction, YEvent, Map as YMap } from 'yjs';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import {
   ARTIFACT_META_KEY,
@@ -10,7 +10,7 @@ export const incrementVersionForChangesOnArtifact = (
   doc: Doc,
 ) => {
   const metaObserveListener = async (
-    _: YEvent<any>[],
+    _: YEvent<YMap<unknown>>[],
     transaction: Transaction,
   ) => {
     if (transaction.local) {
@@ -19,7 +19,7 @@ export const incrementVersionForChangesOnArtifact = (
   };
 
   const docObserveListener = async (
-    _: YEvent<any>[],
+    _: YEvent<YMap<unknown>>[],
     transaction: Transaction,
   ) => {
     if (transaction.local) {

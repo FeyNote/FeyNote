@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 export const useScrollBlockIntoView = (
   blockId: string | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do accept any!
   dependencies: any[],
   containerRef?: React.RefObject<HTMLElement>,
 ) => {

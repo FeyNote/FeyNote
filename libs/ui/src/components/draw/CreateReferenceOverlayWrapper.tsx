@@ -1,10 +1,10 @@
-import { Editor, useEditor } from 'tldraw';
+import { useEditor } from 'tldraw';
 import { CreateReferenceOverlay } from './CreateReferenceOverlay';
 import {
   CustomTLDrawEventType,
   tldrawToolEventDriver,
 } from './tldrawToolEventDriver';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`

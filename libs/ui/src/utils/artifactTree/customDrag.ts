@@ -16,7 +16,10 @@ interface CustomDragState {
 const customDragState: CustomDragState = {};
 
 const registerWindowCustomDragState = () => {
-  (window as any).customDragState = customDragState;
+  const customWindow = window as unknown as {
+    customDragState: CustomDragState | undefined;
+  };
+  customWindow.customDragState = customDragState;
 };
 
 export const getCustomDragData = () => {

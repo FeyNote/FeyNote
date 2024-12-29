@@ -1,5 +1,57 @@
+import { JSONContent } from '@tiptap/core';
 import type { Generate5eMonsterParams } from '../schemas/display5eMonsterSchema';
 import { TFunction } from 'i18next';
+
+const getTiptapTableObj = (
+  value: string,
+  type: 'tableCell' | 'tableHeader',
+) => {
+  const text = type === 'tableHeader' ? value.toUpperCase() : value;
+  return {
+    type,
+    attrs: { colspan: 1, rowspan: 1, colwidth: null },
+    content: [
+      {
+        type: 'paragraph',
+        content: [
+          {
+            type: 'text',
+            text,
+          },
+        ],
+      },
+    ],
+  };
+};
+
+const getTiptapParagraphFromObj = (item: {
+  name: string;
+  description: string;
+  frequency?: string | null;
+}) => {
+  const content = [];
+  if (item.name)
+    content.push({
+      type: 'text',
+      marks: [{ type: 'bold' }, { type: 'italic' }],
+      text: item.name,
+    });
+  if (item.frequency)
+    content.push({
+      type: 'text',
+      marks: [{ type: 'italic' }],
+      text: ' (' + item.frequency + ')',
+    });
+  if (item.description)
+    content.push({
+      type: 'text',
+      text: ': ' + item.description,
+    });
+  return {
+    type: 'paragraph',
+    content,
+  };
+};
 
 export const convert5eMonsterToTipTap = (
   generatedMonster: Generate5eMonsterParams,
@@ -33,7 +85,7 @@ export const convert5eMonsterToTipTap = (
   tiptapContent.push({ type: 'horizontalRule' });
   const generalParagraph = {
     type: 'paragraph',
-    content: [] as any,
+    content: [] as JSONContent[],
   };
   if (generatedMonster.ac) {
     generalParagraph.content.push({
@@ -135,7 +187,7 @@ export const convert5eMonsterToTipTap = (
   }
 
   // Generated Monster Attributes
-  const skillsContent = [] as any;
+  const skillsContent = [] as JSONContent[];
   if (generatedMonster.skills) {
     skillsContent.push({
       type: 'text',
@@ -327,55 +379,4 @@ export const convert5eMonsterToTipTap = (
     },
   ];
   return monsterStatblockContent;
-};
-
-const getTiptapParagraphFromObj = (item: {
-  name: string;
-  description: string;
-  frequency?: string | null;
-}) => {
-  const content = [];
-  item.name &&
-    content.push({
-      type: 'text',
-      marks: [{ type: 'bold' }, { type: 'italic' }],
-      text: item.name,
-    });
-  item.frequency &&
-    content.push({
-      type: 'text',
-      marks: [{ type: 'italic' }],
-      text: ' (' + item.frequency + ')',
-    });
-  item.description &&
-    content.push({
-      type: 'text',
-      text: ': ' + item.description,
-    });
-  return {
-    type: 'paragraph',
-    content,
-  };
-};
-
-const getTiptapTableObj = (
-  value: string,
-  type: 'tableCell' | 'tableHeader',
-) => {
-  const text = type === 'tableHeader' ? value.toUpperCase() : value;
-  return {
-    type,
-    attrs: { colspan: 1, rowspan: 1, colwidth: null },
-    content: [
-      {
-        type: 'paragraph',
-        content: [
-          {
-            type: 'text',
-            text,
-          },
-        ],
-      },
-    ],
-  };
 };

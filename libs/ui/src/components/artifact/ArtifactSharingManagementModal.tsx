@@ -332,6 +332,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
                   <a
                     href={buildShareUrl(shareToken.shareToken)}
                     target="_blank"
+                    rel="noreferrer"
                   >
                     {buildShareUrl(shareToken.shareToken)}
                   </a>

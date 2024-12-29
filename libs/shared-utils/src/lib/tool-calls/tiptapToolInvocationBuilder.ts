@@ -22,6 +22,16 @@ export type AllowedToolInvocation = ToolInvocation & {
   toolName: InvocationBuilder;
 };
 
+const build = <T extends InvocationBuilder>(
+  name: T,
+  args: ToolNameToInvocationParam[T],
+  t: TFunction,
+) => {
+  if (!args) return;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return generatorFnsByToolName[name](args as any, t);
+};
+
 export const tiptapToolInvocationBuilder = (
   invocation: AllowedToolInvocation,
   t: TFunction,
@@ -29,13 +39,4 @@ export const tiptapToolInvocationBuilder = (
   const fncName = invocation.toolName;
   const tiptapContent = build(fncName, invocation.args, t);
   return tiptapContent;
-};
-
-const build = <T extends InvocationBuilder>(
-  name: T,
-  args: ToolNameToInvocationParam[T],
-  t: TFunction,
-) => {
-  if (!args) return;
-  return generatorFnsByToolName[name](args as any, t);
 };

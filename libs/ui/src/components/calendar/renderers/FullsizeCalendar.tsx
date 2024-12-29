@@ -83,6 +83,10 @@ const CalendarItem = styled.div`
   font-size: 0.8rem;
 `;
 
+const CalendarItemLink = styled.a`
+  cursor: pointer;
+`;
+
 interface FullsizeCalendarProps extends CalendarRenderProps {
   edgesByDay: Record<string, Edge[]>;
 }
@@ -92,7 +96,7 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
 
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);
-    if (!dayInfo) return <></>;
+    if (!dayInfo) return null;
 
     const edges = props.edgesByDay[dayInfo.datestamp] || [];
 
@@ -102,9 +106,8 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
 
         {edges.map((edge) => (
           <CalendarItem key={edge.id}>
-            <a
+            <CalendarItemLink
               key={edge.id}
-              href=""
               onClick={(event) => (
                 event.preventDefault(),
                 event.stopPropagation(),
@@ -119,7 +122,7 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
               )}
             >
               {edge.artifactTitle}
-            </a>
+            </CalendarItemLink>
           </CalendarItem>
         ))}
       </CalendarDay>

@@ -36,9 +36,9 @@ export type PaneableComponentProps = {
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
 };
 
-export const getPaneableComponent = (
+export const getPaneableComponent = <T extends PaneableComponent>(
   componentName: PaneableComponent,
-): React.FC<any> => {
+): React.FC<PaneableComponentProps[T]> => {
   const paneableComponentNameToComponent = {
     [PaneableComponent.Dashboard]: Dashboard,
     [PaneableComponent.Settings]: Settings,
@@ -50,9 +50,13 @@ export const getPaneableComponent = (
     [PaneableComponent.Graph]: Graph,
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
-  return paneableComponentNameToComponent[componentName];
+  // I was unable to find a way to map-type this properly
+  return paneableComponentNameToComponent[componentName] as unknown as React.FC<
+    PaneableComponentProps[T]
+  >;
 };
 
 /**

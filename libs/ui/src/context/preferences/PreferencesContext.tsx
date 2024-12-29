@@ -10,13 +10,15 @@ export type SetPreferenceHandler = <T extends PreferenceNames>(
   value: AppPreferences[T],
 ) => void;
 
-export const PreferencesContext = createContext<{
+interface PreferencesContextData {
   setPreference: SetPreferenceHandler;
   getPreference: GetPreferenceHandler;
   _preferencesService: PreferencesService;
   _rerenderReducerValue: number;
-}>(
+}
+
+export const PreferencesContext = createContext<PreferencesContextData>(
   // Purposefully make this an invalid type, since we don't want to initialize here (we do so in wrapper)
   // and we don't want to provide a partial implementation that might not throw an error if used improperly
-  null as any,
+  null as unknown as PreferencesContextData,
 );

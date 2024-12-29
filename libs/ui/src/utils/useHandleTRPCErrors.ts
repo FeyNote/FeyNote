@@ -2,7 +2,7 @@ import { useIonAlert } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
 import { useTranslation } from 'react-i18next';
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { SessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
 import * as Sentry from '@sentry/react';

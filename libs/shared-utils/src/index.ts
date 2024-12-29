@@ -24,6 +24,8 @@ export * from './lib/tiptap/jsonContentForEach';
 export * from './lib/tiptap/patchJsonContentWithReferenceText';
 export * from './lib/tiptap/randomizeJSONContentUUIDs';
 export * from './lib/tldraw/getReferencesFromTLDrawContent';
+export * from './lib/tldraw/ReferenceShapeProps';
+export * from './lib/tldraw/ReferenceShapeIconOptions';
 export * from './lib/tool-calls/schemas/display5eMonsterSchema';
 export * from './lib/tool-calls/schemas/display5eObjectSchema';
 export * from './lib/tool-calls/schemas/displayUrlContent';

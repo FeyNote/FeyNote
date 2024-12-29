@@ -6,6 +6,7 @@ import {
 import { Prisma } from '@prisma/client';
 import { JSONContent } from '@tiptap/core';
 import { Array as YArray } from 'yjs';
+import type { TLRecord } from 'tldraw';
 
 // Uniquely identify a given reference in a set for the purposes of comparing a diff between
 // current state and desired state
@@ -22,7 +23,10 @@ const genCompositeKey = (args: {
 
 type Data =
   | {
-      tldrawContent: YArray<any>;
+      tldrawContent: YArray<{
+        key: string;
+        val: TLRecord;
+      }>;
       jsonContent?: undefined;
     }
   | {

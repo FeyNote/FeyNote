@@ -14,7 +14,6 @@ import {
   expand,
   gitNetwork,
   people,
-  pin,
   telescope,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';

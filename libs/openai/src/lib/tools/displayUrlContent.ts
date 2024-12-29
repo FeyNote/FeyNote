@@ -15,6 +15,40 @@ import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
 
+const getTextFromHtml = (jsdom: JSDOM): string => {
+  const innerHtml = jsdom.window.document.body.innerHTML;
+  const domPurify = DOMPurify(jsdom.window);
+  const newLineOnlyNodes = ['br'];
+  const newLineCausingNodes = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7'];
+
+  domPurify.addHook('afterSanitizeElements', function (node) {
+    if (!node.tagName) {
+      return;
+    }
+
+    // Newline-only nodes
+    if (newLineOnlyNodes.includes(node.tagName.toLowerCase())) {
+      node.outerHTML = '\n';
+    }
+
+    // Newline-causing nodes
+    if (newLineCausingNodes.includes(node.tagName.toLowerCase())) {
+      node.outerHTML = node.innerHTML + '\n';
+    }
+  });
+  const cleanedHtml = domPurify
+    .sanitize(innerHtml, {
+      ALLOWED_TAGS: [...newLineOnlyNodes, ...newLineCausingNodes],
+      ALLOWED_ATTR: [],
+      KEEP_CONTENT: true,
+    })
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line)
+    .join('\n');
+  return cleanedHtml;
+};
+
 const displayUrlExecutor = async (params: ScrapeUrlParams) => {
   try {
     const requestConfig = {
@@ -52,40 +86,6 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     console.log(e);
     return null;
   }
-};
-
-const getTextFromHtml = (jsdom: JSDOM): string => {
-  const innerHtml = jsdom.window.document.body.innerHTML;
-  const domPurify = DOMPurify(jsdom.window);
-  const newLineOnlyNodes = ['br'];
-  const newLineCausingNodes = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7'];
-
-  domPurify.addHook('afterSanitizeElements', function (node) {
-    if (!node.tagName) {
-      return;
-    }
-
-    // Newline-only nodes
-    if (newLineOnlyNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = '\n';
-    }
-
-    // Newline-causing nodes
-    if (newLineCausingNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = node.innerHTML + '\n';
-    }
-  });
-  const cleanedHtml = domPurify
-    .sanitize(innerHtml, {
-      ALLOWED_TAGS: [...newLineOnlyNodes, ...newLineCausingNodes],
-      ALLOWED_ATTR: [],
-      KEEP_CONTENT: true,
-    })
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .join('\n');
-  return cleanedHtml;
 };
 
 export const DisplayUrlTool = tool({

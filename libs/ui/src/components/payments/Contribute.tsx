@@ -3,8 +3,6 @@ import {
   IonCard,
   IonCardTitle,
   IonContent,
-  IonItem,
-  IonLabel,
   IonPage,
 } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';

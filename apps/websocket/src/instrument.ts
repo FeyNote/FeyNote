@@ -8,7 +8,7 @@ Sentry.init({
   integrations: [nodeProfilingIntegration()],
   tracesSampleRate: globalServerConfig.sentry.websocket.samplingRate,
   environment: process.env.NODE_ENV,
-  beforeSend(event, hint) {
+  beforeSend(event) {
     // Sentry trace sampling does not corrrectly filter at 0% sample rate
     if (globalServerConfig.sentry.websocket.samplingRate === 0) return null;
 

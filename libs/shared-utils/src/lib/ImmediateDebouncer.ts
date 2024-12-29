@@ -1,4 +1,6 @@
-export class ImmediateDebouncer<F extends (...args: any) => any> {
+export class ImmediateDebouncer<
+  F extends (...args: Parameters<F>) => ReturnType<F>,
+> {
   pendingPromise: Promise<ReturnType<F>> | null = null;
   timeout: NodeJS.Timeout | null = null;
   followupCallArgs: Parameters<F> | null = null;
@@ -20,9 +22,9 @@ export class ImmediateDebouncer<F extends (...args: any) => any> {
    * call is made during the debounce interval
    * The immediate flag can be used to ensure this call is performed with zero delay
    */
-  async call(
-    immediate?: boolean,
-    ...args: Parameters<F>
+  private async _call(
+    immediate: boolean | undefined,
+    args: Parameters<F>,
   ): Promise<ReturnType<F>> {
     if (immediate) {
       if (this.timeout) {
@@ -46,11 +48,15 @@ export class ImmediateDebouncer<F extends (...args: any) => any> {
         if (this.followupCallArgs) {
           const followupCallArgs = this.followupCallArgs;
           this.followupCallArgs = null;
-          this.call(undefined, ...followupCallArgs);
+          this._call(undefined, followupCallArgs);
         }
       }, this.debounceTime);
     }
 
     return this.pendingPromise;
+  }
+
+  public async call(immediate?: boolean, ...args: Parameters<F>) {
+    this._call(immediate, args);
   }
 }

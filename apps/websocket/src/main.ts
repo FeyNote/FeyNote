@@ -46,7 +46,7 @@ io.use(async (socket, next) => {
     socket.data.userId = userId;
 
     next();
-  } catch (e) {
+  } catch (_e) {
     next(new Error('Unauthorized'));
   }
 });

@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable @nx/enforce-module-boundaries */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
@@ -162,11 +163,9 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (self as any).skipWaiting();
   clientsClaim();
 
@@ -186,7 +185,7 @@ self.addEventListener('activate', () => {
 });
 
 self.addEventListener('sync', (event: any) => {
-  if (event.tag == 'manifest') {
+  if (event.tag === 'manifest') {
     event.waitUntil(
       syncManagerP.then((syncManager) => syncManager.syncManifest()),
     );
@@ -194,7 +193,7 @@ self.addEventListener('sync', (event: any) => {
 });
 
 self.addEventListener('periodicSync', (event: any) => {
-  if (event.tag == 'manifest') {
+  if (event.tag === 'manifest') {
     event.waitUntil(
       syncManagerP.then((syncManager) => syncManager.syncManifest()),
     );
@@ -343,7 +342,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );
@@ -379,7 +378,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );
@@ -417,7 +416,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );

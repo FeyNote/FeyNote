@@ -21,6 +21,7 @@ import {
   setUserPreferences,
   TLAnyShapeUtilConstructor,
   TLAssetStore,
+  TLInstanceId,
   TLInstancePresence,
   TLRecord,
   TLStoreWithStatus,
@@ -30,6 +31,7 @@ import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { FileDTO } from '@feynote/global-types';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { WebSocketStatus } from '@hocuspocus/provider';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
@@ -128,8 +130,10 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
   useEffect(() => {
     let lastReceivedAt = Date.now();
     const awarenessChangeListener = () => {
-      const others: any = awareness?.getStates() ?? [];
-      others.forEach((value: any, clientID: number) => {
+      const others =
+        awareness?.getStates() ??
+        (new Map() as ReturnType<NonNullable<typeof awareness>['getStates']>);
+      others.forEach((value, clientID: number) => {
         if (clientID === awareness?.clientID) return;
         try {
           const actions = value.actions as
@@ -166,9 +170,9 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
     const flush = debounce(() => {
       yDoc.transact(() => {
         for (const id of processingBuffer) {
-          const record = store.get(id as any);
+          const record = store.get(id as TLInstanceId);
           if (record) {
-            yStore.set(id, record as any);
+            yStore.set(id, record);
           } else {
             yStore.delete(id);
           }
@@ -236,7 +240,11 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
           switch (change.action) {
             case 'add':
             case 'update': {
-              const record = yStore.get(id)!;
+              const record = yStore.get(id);
+              if (!record)
+                throw new Error(
+                  "Unexpected update record somehow doesn't exist in ystore",
+                );
               toPut.push(record);
               break;
             }
@@ -425,11 +433,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
       });
     }
 
-    function handleStatusChange({
-      status,
-    }: {
-      status: 'disconnected' | 'connected';
-    }) {
+    function handleStatusChange({ status }: { status: WebSocketStatus }) {
       if (status === 'disconnected') {
         if (collaborationConnection?.indexeddbProvider.synced) {
           setStoreWithStatus({
@@ -461,7 +465,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
     );
     if (collaborationConnection) {
       handleStatusChange({
-        status: collaborationConnection.tiptapCollabProvider.status as any,
+        status: collaborationConnection.tiptapCollabProvider.status,
       });
     } else {
       setStoreWithStatus({

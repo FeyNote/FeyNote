@@ -32,10 +32,6 @@ export class PreferencesService {
   };
   initialLoading: Promise<void> | undefined;
 
-  constructor() {
-    // Do nothing
-  }
-
   init() {
     if (!this.initialLoading) {
       // These preferences must be initialized upon React render since window is not available during SSR

@@ -5,7 +5,12 @@ import {
   HocuspocusProviderWebsocket,
 } from '@hocuspocus/provider';
 import { getApiUrls } from './getApiUrls';
-import { Doc, encodeStateAsUpdate, type YEvent } from 'yjs';
+import {
+  Doc,
+  encodeStateAsUpdate,
+  type XmlElement as YXmlElement,
+  type YEvent,
+} from 'yjs';
 import { trpc } from './trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
@@ -226,7 +231,7 @@ export class SyncManager {
           await this.searchManager.unindexArtifact(artifactId);
           try {
             await deleteDB(`artifact:${artifactId}`);
-          } catch (e) {
+          } catch (_e) {
             // Do nothing
           }
           if (ENABLE_VERBOSE_SYNC_LOGGING)
@@ -308,7 +313,7 @@ export class SyncManager {
       await this.searchManager.indexPartialArtifact(artifactId, doc, []);
     };
 
-    const docObserveListener = async (yEvents: YEvent<any>[]) => {
+    const docObserveListener = async (yEvents: YEvent<YXmlElement>[]) => {
       const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
 
       if (!this.searchManager.getKnownIndexIds().has(artifactId)) {

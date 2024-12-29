@@ -1,5 +1,5 @@
 import { Doc as YDoc } from 'yjs';
-import { memo, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useContext, useEffect } from 'react';
 import type { FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
@@ -14,7 +14,6 @@ import {
   ArrowRightToolbarItem,
   ArrowToolbarItem,
   ArrowUpToolbarItem,
-  BaseBoxShapeTool,
   CheckBoxToolbarItem,
   CloudToolbarItem,
   DefaultMainMenu,
@@ -22,7 +21,6 @@ import {
   DefaultToolbar,
   DiamondToolbarItem,
   DrawToolbarItem,
-  EditMenuSubmenu,
   Editor,
   EditSubmenu,
   EllipseToolbarItem,
@@ -36,31 +34,24 @@ import {
   LineToolbarItem,
   NoteToolbarItem,
   OvalToolbarItem,
-  PreferencesGroup,
   RectangleToolbarItem,
   RhombusToolbarItem,
   SelectToolbarItem,
   setUserPreferences,
   StarToolbarItem,
   TextToolbarItem,
-  TLAssetStore,
-  TLClickEventInfo,
   TLComponents,
   Tldraw,
-  TldrawUiMenuGroup,
   TldrawUiMenuItem,
   TldrawUiMenuSubmenu,
   TLUiAssetUrlOverrides,
   TLUiOverrides,
   ToggleEdgeScrollingItem,
-  ToggleFocusModeItem,
   ToggleGridItem,
   ToggleReduceMotionItem,
   ToggleSnapModeItem,
-  ToggleToolLockItem,
   ToggleWrapModeItem,
   TriangleToolbarItem,
-  UndoRedoGroup,
   useActions,
   useCanRedo,
   useCanUndo,
@@ -186,8 +177,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
         }),
   });
 
-  const setMetaProp = (metaPropName: string, value: any) => {
-    (yDoc.getMap(ARTIFACT_META_KEY) as any).set(metaPropName, value);
+  const setMetaProp = (metaPropName: string, value: string) => {
+    yDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
   };
 
   const titleInput = (
@@ -197,8 +188,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
         placeholder={t('artifactRenderer.title.placeholder')}
         value={title}
         onIonInput={(event) => {
-          setMetaProp('title', event.target.value || '');
-          props.onTitleChange?.((event.target.value || '').toString());
+          setMetaProp('title', event.target.value?.toString() || '');
+          props.onTitleChange?.(event.target.value?.toString() || '');
         }}
         type="text"
       ></ArtifactTitleInput>

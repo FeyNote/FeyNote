@@ -49,53 +49,49 @@ export const AIUserMessage = ({
     return starkdown(message.content);
   }, [message.content]);
 
-  return (
-    <>
-      {isEditing ? (
-        <>
-          <IonTextarea
-            ref={inputRef}
-            value={editInput}
-            onKeyUp={keyUpHandler}
-          />
-          <IonButtons>
-            <IonButton size="small" onClick={() => setIsEditing(false)}>
-              Cancel
-            </IonButton>
-            <IonButton
-              size="small"
-              disabled={disableEdit}
-              onClick={submitHandler}
-            >
-              Save
-            </IonButton>
-          </IonButtons>
-        </>
-      ) : (
-        <>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: messageHTML,
-            }}
-          ></div>
-          <IonButtons>
-            <IonButton
-              size="small"
-              onClick={() =>
-                copyToClipboard({
-                  html: messageHTML,
-                  plaintext: message.content,
-                })
-              }
-            >
-              <IonIcon icon={copyOutline} />
-            </IonButton>
-            <IonButton size="small" onClick={() => setIsEditing(true)}>
-              <IonIcon icon={pencil} />
-            </IonButton>
-          </IonButtons>
-        </>
-      )}
-    </>
-  );
+  if (isEditing) {
+    return (
+      <>
+        <IonTextarea ref={inputRef} value={editInput} onKeyUp={keyUpHandler} />
+        <IonButtons>
+          <IonButton size="small" onClick={() => setIsEditing(false)}>
+            Cancel
+          </IonButton>
+          <IonButton
+            size="small"
+            disabled={disableEdit}
+            onClick={submitHandler}
+          >
+            Save
+          </IonButton>
+        </IonButtons>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <div
+          dangerouslySetInnerHTML={{
+            __html: messageHTML,
+          }}
+        ></div>
+        <IonButtons>
+          <IonButton
+            size="small"
+            onClick={() =>
+              copyToClipboard({
+                html: messageHTML,
+                plaintext: message.content,
+              })
+            }
+          >
+            <IonIcon icon={copyOutline} />
+          </IonButton>
+          <IonButton size="small" onClick={() => setIsEditing(true)}>
+            <IonIcon icon={pencil} />
+          </IonButton>
+        </IonButtons>
+      </>
+    );
+  }
 };

@@ -64,7 +64,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   }, [props.connection]);
 
   if (!collabReady || !type) {
-    return <></>;
+    return null;
   }
 
   if (type === 'tiptap') {

@@ -22,13 +22,6 @@ export interface PaneContextData {
   isPaneFocused: boolean;
 }
 
-export const PaneContext = createContext<PaneContextData>({
-  // We cast null to any so that any usage of this context without initialization blows up in
-  // catastrophic fashion
-  navigateHistoryForward: null as any,
-  navigateHistoryBack: null as any,
-  navigate: null as any,
-  renamePane: null as any,
-  pane: null as any,
-  isPaneFocused: null as any,
-});
+export const PaneContext = createContext<PaneContextData>(
+  null as unknown as PaneContextData,
+);

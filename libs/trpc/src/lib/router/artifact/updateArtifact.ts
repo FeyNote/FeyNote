@@ -34,45 +34,43 @@ export const updateArtifact = authenticatedProcedure
       });
     }
 
-    await prisma.$transaction(async (tx) => {
-      await prisma.artifact.update({
-        where: {
-          id: input.id,
-        },
-        data: {},
-      });
+    await prisma.artifact.update({
+      where: {
+        id: input.id,
+      },
+      data: {},
+    });
 
-      const updatedArtifact = await prisma.artifact.findUniqueOrThrow({
-        where: {
-          id: input.id,
-        },
-        select: {
-          id: true,
-          userId: true,
-          yBin: true,
-          artifactShares: {
-            select: {
-              userId: true,
-            },
+    const updatedArtifact = await prisma.artifact.findUniqueOrThrow({
+      where: {
+        id: input.id,
+      },
+      select: {
+        id: true,
+        userId: true,
+        yBin: true,
+        artifactShares: {
+          select: {
+            userId: true,
           },
         },
-      });
+      },
+    });
 
-      await enqueueArtifactUpdate({
-        artifactId: artifact.id,
-        userId: artifact.userId,
-        triggeredByUserId: ctx.session.userId,
-        oldReadableUserIds: [
-          artifact.userId,
-          ...artifact.artifactShares.map((el) => el.userId),
-        ],
-        newReadableUserIds: [
-          updatedArtifact.userId,
-          ...updatedArtifact.artifactShares.map((el) => el.userId),
-        ],
-        oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
-        newYBinB64: Buffer.from(updatedArtifact.yBin).toString('base64'),
-      });
+    await enqueueArtifactUpdate({
+      artifactId: artifact.id,
+      userId: artifact.userId,
+      triggeredByUserId: ctx.session.userId,
+      oldReadableUserIds: [
+        artifact.userId,
+        ...artifact.artifactShares.map((el) => el.userId),
+      ],
+      newReadableUserIds: [
+        updatedArtifact.userId,
+        ...updatedArtifact.artifactShares.map((el) => el.userId),
+      ],
+      oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
+      newYBinB64: Buffer.from(updatedArtifact.yBin).toString('base64'),
     });
 
     // We do not return the complete artifact, but rather expect that the frontend will

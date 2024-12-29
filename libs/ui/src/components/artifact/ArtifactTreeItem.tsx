@@ -153,9 +153,13 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   );
 
   const [present, dismiss] = useIonPopover(popoverContents, {
-    onDismiss: (data: any, role: string) => dismiss(data, role),
+    onDismiss: (data: unknown, role: string) => dismiss(data, role),
   });
   popoverDismissRef.current = dismiss;
+
+  const interactiveElementProps =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
+    props.treeRenderProps.context.interactiveElementProps as any;
 
   return (
     <>
@@ -171,7 +175,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
           {props.treeRenderProps.arrow}
           <TreeItemButton
             {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
-            {...(props.treeRenderProps.context.interactiveElementProps as any)}
+            {...interactiveElementProps}
             $isUncategorized={
               props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
             }

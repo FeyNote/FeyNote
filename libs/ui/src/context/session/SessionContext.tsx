@@ -7,6 +7,6 @@ export interface SessionContextData {
 }
 
 export const SessionContext = createContext<SessionContextData>({
-  session: null as any,
-  setSession: null as any,
+  session: null as unknown as SessionContextData['session'],
+  setSession: null as unknown as SessionContextData['setSession'],
 });
