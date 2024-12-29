@@ -157,9 +157,9 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   });
   popoverDismissRef.current = dismiss;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
-  const interactiveElementProps = props.treeRenderProps.context
-    .interactiveElementProps as any;
+  const interactiveElementProps =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
+    props.treeRenderProps.context.interactiveElementProps as any;
 
   return (
     <>
