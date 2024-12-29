@@ -26,10 +26,8 @@ export const deleteMessageToId = authenticatedProcedure
         createdAt: 'desc',
       },
     });
-    const messageIndex = messages.findIndex(
-      (message) => message.id === input.id,
-    );
-    if (input.inclusive) messageIndex + 1;
+    let messageIndex = messages.findIndex((message) => message.id === input.id);
+    if (input.inclusive) messageIndex += 1;
     const messageIdsToDelete = messages
       .slice(0, messageIndex)
       .map((message) => message.id);

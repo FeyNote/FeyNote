@@ -1,3 +1,4 @@
+import { JSONContent } from '@tiptap/core';
 import type { Generate5eMonsterParams } from '../schemas/display5eMonsterSchema';
 import { TFunction } from 'i18next';
 
@@ -33,7 +34,7 @@ export const convert5eMonsterToTipTap = (
   tiptapContent.push({ type: 'horizontalRule' });
   const generalParagraph = {
     type: 'paragraph',
-    content: [] as any,
+    content: [],
   };
   if (generatedMonster.ac) {
     generalParagraph.content.push({
@@ -135,7 +136,7 @@ export const convert5eMonsterToTipTap = (
   }
 
   // Generated Monster Attributes
-  const skillsContent = [] as any;
+  const skillsContent = [] as JSONContent[];
   if (generatedMonster.skills) {
     skillsContent.push({
       type: 'text',
@@ -335,19 +336,19 @@ const getTiptapParagraphFromObj = (item: {
   frequency?: string | null;
 }) => {
   const content = [];
-  item.name &&
+  if (item.name)
     content.push({
       type: 'text',
       marks: [{ type: 'bold' }, { type: 'italic' }],
       text: item.name,
     });
-  item.frequency &&
+  if (item.frequency)
     content.push({
       type: 'text',
       marks: [{ type: 'italic' }],
       text: ' (' + item.frequency + ')',
     });
-  item.description &&
+  if (item.description)
     content.push({
       type: 'text',
       text: ': ' + item.description,
