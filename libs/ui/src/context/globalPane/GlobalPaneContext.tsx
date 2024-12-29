@@ -45,7 +45,7 @@ export type PaneTracker = {
   currentView: HistoryNode;
 };
 
-interface GlobalPaneContextData {
+export interface GlobalPaneContextData {
   /**
    * Move the desired view back in history
    */
