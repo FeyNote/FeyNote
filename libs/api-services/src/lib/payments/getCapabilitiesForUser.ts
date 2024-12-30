@@ -5,10 +5,18 @@ import { getSubscriptionsForUser } from './getSubscriptionsForUser';
 export const getCapabilitiesForUser = async (userId: string) => {
   const activeSubscriptions = await getSubscriptionsForUser(userId);
 
-  return activeSubscriptions.reduce<Capability[]>((acc, activeSubscription) => {
-    const capabilities = getCapabilitiesForSubscription(
-      activeSubscription.name as SubscriptionModelName,
-    );
-    return [...acc, ...capabilities];
-  }, []);
+  const capabilities = activeSubscriptions.reduce<Set<Capability>>(
+    (acc, activeSubscription) => {
+      const capabilities = getCapabilitiesForSubscription(
+        activeSubscription.name as SubscriptionModelName,
+      );
+      for (const capability of capabilities) {
+        acc.add(capability);
+      }
+      return acc;
+    },
+    new Set(),
+  );
+
+  return capabilities;
 };

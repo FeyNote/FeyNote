@@ -13,7 +13,7 @@ export const getCapabilities = authenticatedProcedure.query(
     );
 
     return {
-      capabilities: capabilitiesForUser,
+      capabilities: Array.from(capabilitiesForUser),
     };
   },
 );

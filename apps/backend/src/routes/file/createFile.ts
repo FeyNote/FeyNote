@@ -9,10 +9,12 @@ import {
   uploadFileToS3,
   BadRequestExpressError,
   NotFoundExpressError,
+  getCapabilitiesForUser,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import { FilePurpose } from '@prisma/client';
+import { Capability } from '@feynote/shared-utils';
 
 const MAX_FILE_SIZE_MB = 25;
 
@@ -62,17 +64,30 @@ export const createFileHandler = defineExpressHandler(
       }
     }
 
+    const userCapabilities = await getCapabilitiesForUser(
+      res.locals.session.userId,
+    );
+    let maxResolution = 1024;
+    let quality = 65;
+    if (userCapabilities.has(Capability.HighResImages)) {
+      maxResolution = 2048;
+      quality = 75;
+    }
+    if (userCapabilities.has(Capability.UltraHighResImages)) {
+      maxResolution = 4096;
+      quality = 80;
+    }
+
     let fileBuffer: Buffer = req.file.buffer;
     if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
       fileBuffer = await sharp(req.file.buffer)
         .rotate()
-        // TODO: Make this dependent on the user's subscription status
-        .resize(1024, 1024, {
+        .resize(maxResolution, maxResolution, {
           fit: 'contain',
           withoutEnlargement: true,
         })
         .jpeg({
-          quality: 75,
+          quality,
           mozjpeg: true,
         })
         .toBuffer();
