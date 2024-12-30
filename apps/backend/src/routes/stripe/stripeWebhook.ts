@@ -93,6 +93,39 @@ export const stripeWebhookHandler = defineExpressHandler(
       });
 
       await prisma.$transaction(async (tx) => {
+        const subscriptionModelNames = invoice.lines.data
+          .map((lineItem) => lineItem.plan?.metadata?.name)
+          .filter((priceName): priceName is string => Boolean(priceName));
+
+        if (subscriptionModelNames.length === 0) {
+          console.error('No subscription model found in paid invoice');
+          Sentry.captureMessage('No subscription model found in paid invoice', {
+            extra: {
+              type: event.type,
+              stripeInvoice: invoice,
+            },
+          });
+        }
+
+        if (userId) {
+          for (const priceName of subscriptionModelNames) {
+            await extendSubscription({
+              userId,
+              priceName,
+              stripeSubscriptionId: subscriptionId,
+              tx,
+            });
+          }
+        } else {
+          console.error('Payment collected for unknown user');
+          Sentry.captureMessage('Payment collected for unknown user', {
+            extra: {
+              type: event.type,
+              stripeInvoice: invoice,
+            },
+          });
+        }
+
         const internalSubscription = await tx.subscription.findUnique({
           where: {
             stripeSubscriptionId: subscriptionId,
@@ -112,36 +145,6 @@ export const stripeWebhookHandler = defineExpressHandler(
             eventObjectJson: invoice as any,
           },
         });
-
-        const subscriptionModelNames = invoice.lines.data
-          .map((lineItem) => lineItem.plan?.metadata?.name)
-          .filter((priceName): priceName is string => Boolean(priceName));
-
-        if (subscriptionModelNames.length === 0) {
-          Sentry.captureMessage('No subscription model found in paid invoice', {
-            extra: {
-              type: event.type,
-              stripeInvoice: invoice,
-            },
-          });
-        }
-
-        if (userId) {
-          for (const priceName of subscriptionModelNames) {
-            await extendSubscription({
-              userId,
-              priceName,
-              tx,
-            });
-          }
-        } else {
-          Sentry.captureMessage('Payment collected for unknown user', {
-            extra: {
-              type: event.type,
-              stripeInvoice: invoice,
-            },
-          });
-        }
       });
     }
 
