@@ -81,14 +81,16 @@ export function App() {
   const passworeResetToken = url.searchParams.get('passwordResetToken');
   if (passworeResetToken) {
     return (
-      <IonApp>
-        <PreferencesContextProviderWrapper>
-          <PasswordReset
-            passwordResetToken={passworeResetToken}
-            redirectPath={window.location.origin}
-          />
-        </PreferencesContextProviderWrapper>
-      </IonApp>
+      <GlobalPaneContextProviderWrapper>
+        <IonApp>
+          <PreferencesContextProviderWrapper>
+            <PasswordReset
+              passwordResetToken={passworeResetToken}
+              redirectPath={window.location.origin}
+            />
+          </PreferencesContextProviderWrapper>
+        </IonApp>
+      </GlobalPaneContextProviderWrapper>
     );
   }
 

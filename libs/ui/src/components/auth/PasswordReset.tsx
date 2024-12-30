@@ -104,7 +104,9 @@ export const PasswordReset: React.FC<Props> = (props) => {
         <CenteredIonCard>
           <CenteredIonCardHeader>
             <IonCardTitle>{t('auth.passwordReset.title')}</IonCardTitle>
-            <IonCardSubtitle>{t('auth.passwordReset.title')}</IonCardSubtitle>
+            <IonCardSubtitle>
+              {t('auth.passwordReset.subtitle')}
+            </IonCardSubtitle>
           </CenteredIonCardHeader>
           <IonCardContent>
             <CenteredIonInputContainer>
