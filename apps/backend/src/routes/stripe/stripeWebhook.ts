@@ -27,7 +27,6 @@ function assertCheckoutFieldWithSentryLog<T>(
 }
 
 const schema = {};
-console.log('baapbapp', globalServerConfig.stripe.webhookSecret);
 
 export const stripeWebhookHandler = defineExpressHandler(
   {
@@ -35,7 +34,6 @@ export const stripeWebhookHandler = defineExpressHandler(
     authentication: AuthenticationEnforcement.None,
   },
   async (req) => {
-    console.log('got webhook', globalServerConfig.stripe.webhookSecret);
     const stripeSignature = req.headers['stripe-signature'];
     if (!stripeSignature) {
       Sentry.captureMessage(

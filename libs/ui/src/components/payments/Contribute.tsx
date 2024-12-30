@@ -91,8 +91,8 @@ export const Contribute: React.FC = () => {
     const response = await trpc.payment.createStripeCheckoutSession
       .mutate({
         subscriptionModelName: name,
-        successUrl: 'https://feynote.com/payments/success',
-        cancelUrl: 'https://feynote.com/payments/cancel',
+        successUrl: 'https://feynote.com/payment/success',
+        cancelUrl: 'https://feynote.com/payment/cancel',
       })
       .catch((error) => {
         handleTRPCErrors(error);
