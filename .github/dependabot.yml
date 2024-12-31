@@ -31,6 +31,22 @@ updates:
       workbox:
         patterns:
           - '*workbox*'
+      aws:
+        patterns:
+          - '@aws-sdk/*'
+      vite:
+        patterns:
+          - 'vite'
+          - 'vite-*'
+          - '@vitejs/*'
+      babel:
+        patterns:
+          - '@babel/*'
+      y:
+        patterns:
+          - 'yjs'
+          - 'yjs-*'
+          - 'y-*'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI
