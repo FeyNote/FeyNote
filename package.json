@@ -27,7 +27,7 @@
     "@prisma/client": "^6.1.0",
     "@sentry/node": "^8.42.0",
     "@sentry/profiling-node": "^8.47.0",
-    "@sentry/react": "^8.42.0",
+    "@sentry/react": "^8.47.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "@swc/helpers": "0.5.15",
     "@tiptap-pro/extension-file-handler": "^2.17.1",
