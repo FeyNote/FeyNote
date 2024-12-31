@@ -116,7 +116,7 @@
     "workbox-sw": "^7.3.0",
     "y-indexeddb": "^9.0.12",
     "y-utility": "^0.1.4",
-    "yjs": "^13.6.20",
+    "yjs": "^13.6.21",
     "zod": "^3.23.8"
   },
   "devDependencies": {
