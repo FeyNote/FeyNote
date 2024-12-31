@@ -8,6 +8,7 @@ import {
 export const extendSubscription = async (args: {
   userId: string;
   priceName: string;
+  stripeSubscriptionId: string;
   tx?: Prisma.TransactionClient;
 }) => {
   const tx = args.tx || prisma;
@@ -47,10 +48,12 @@ export const extendSubscription = async (args: {
     },
     update: {
       expiresAt,
+      cancelledAt: null,
     },
     create: {
       userId: args.userId,
       name: args.priceName,
+      stripeSubscriptionId: args.stripeSubscriptionId,
       expiresAt,
     },
   });

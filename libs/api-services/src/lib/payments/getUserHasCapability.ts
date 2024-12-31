@@ -6,5 +6,5 @@ export const getUserHasCapability = async (
   capability: Capability,
 ) => {
   const capabilities = await getCapabilitiesForUser(userId);
-  return capabilities.includes(capability);
+  return capabilities.has(capability);
 };

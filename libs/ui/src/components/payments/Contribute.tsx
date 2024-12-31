@@ -42,17 +42,19 @@ const FrequencySelector = styled.div`
 const subscriptionModelNameToI18n = {
   [SubscriptionModelName.Tier1Monthly]: 'contribute.tier1.monthly',
   [SubscriptionModelName.Tier1Yearly]: 'contribute.tier1.yearly',
+  [SubscriptionModelName.Tier1Forever]: 'contribute.tier1.forever',
   [SubscriptionModelName.Tier2Monthly]: 'contribute.tier2.monthly',
   [SubscriptionModelName.Tier2Yearly]: 'contribute.tier2.yearly',
-  [SubscriptionModelName.Forever]: 'contribute.forever',
+  [SubscriptionModelName.Tier2Forever]: 'contribute.tier2.forever',
 } satisfies Record<SubscriptionModelName, string>;
 
 const subscriptionModelNameToPrice = {
   [SubscriptionModelName.Tier1Monthly]: 2,
   [SubscriptionModelName.Tier1Yearly]: 20,
+  [SubscriptionModelName.Tier1Forever]: -1,
   [SubscriptionModelName.Tier2Monthly]: 5,
   [SubscriptionModelName.Tier2Yearly]: 40,
-  [SubscriptionModelName.Forever]: -1,
+  [SubscriptionModelName.Tier2Forever]: -1,
 } satisfies Record<SubscriptionModelName, number>;
 
 export const Contribute: React.FC = () => {
@@ -91,8 +93,8 @@ export const Contribute: React.FC = () => {
     const response = await trpc.payment.createStripeCheckoutSession
       .mutate({
         subscriptionModelName: name,
-        successUrl: 'https://feynote.com/payments/success',
-        cancelUrl: 'https://feynote.com/payments/cancel',
+        successUrl: 'https://feynote.com/payment/success',
+        cancelUrl: 'https://feynote.com/payment/cancel',
       })
       .catch((error) => {
         handleTRPCErrors(error);
@@ -153,15 +155,37 @@ export const Contribute: React.FC = () => {
     );
   };
 
+  const renderSubscriptionExpirationInformation = (subscription: {
+    expiresAt: Date | null;
+    cancelledAt: Date | null;
+    activeWithStripe: boolean;
+  }) => {
+    return (
+      <div>
+        {subscription.expiresAt &&
+          !subscription.activeWithStripe &&
+          t('contribute.expiresAt', {
+            date: subscription.expiresAt,
+          })}
+        {!subscription.activeWithStripe && t('contribute.inactive')}
+        {subscription.activeWithStripe && t('contribute.active')}
+        <br />
+        {!subscription.expiresAt && t('contribute.expiresAtNever')}
+        {subscription.cancelledAt &&
+          t('contribute.cancelledAt', {
+            date: subscription.cancelledAt,
+          })}
+      </div>
+    );
+  };
+
   return (
     <IonPage>
       <PaneNav title={t('contribute.title')} />
       <IonContent>
         <p className="ion-padding">{t('contribute.description')}</p>
-        <br />
-        <br />
         {subscriptions.length > 0 && (
-          <IonCard>
+          <IonCard className="ion-padding">
             <IonCardTitle>{t('contribute.currentSubscriptions')}</IonCardTitle>
             <div>
               {subscriptions.map((subscription) => (
@@ -169,16 +193,7 @@ export const Contribute: React.FC = () => {
                   <p>
                     {t(subscriptionModelNameToI18n[subscription.name])}
                     <br />
-                    {subscription.expiresAt
-                      ? t('contribute.expiresAt', {
-                          date: subscription.expiresAt,
-                        })
-                      : t('contribute.expiresAtNever')}
-                    {subscription.cancelledAt &&
-                      t('contribute.cancelledAt', {
-                        date: subscription.cancelledAt,
-                      })}
-                    {!subscription.activeWithStripe && t('contribute.inactive')}
+                    {renderSubscriptionExpirationInformation(subscription)}
                   </p>
                   <IonButton
                     disabled={!subscription.activeWithStripe}

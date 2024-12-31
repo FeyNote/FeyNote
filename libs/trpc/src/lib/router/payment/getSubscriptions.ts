@@ -46,7 +46,9 @@ export const getSubscriptions = authenticatedProcedure.query(
 
     return {
       subscriptions: internalSubscriptions.map((subscription) => {
-        const stripeSub = stripeSubscriptionsById.get(subscription.id);
+        const stripeSub = subscription.stripeSubscriptionId
+          ? stripeSubscriptionsById.get(subscription.stripeSubscriptionId)
+          : undefined;
         const activeStatuses = ['active', 'past_due', 'unpaid'];
         const activeWithStripe =
           !!stripeSub && activeStatuses.includes(stripeSub.status);
