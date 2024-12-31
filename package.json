@@ -87,7 +87,7 @@
     "google-auth-library": "^9.15.0",
     "https-proxy-agent": "^7.0.5",
     "i18next": "^24.0.2",
-    "idb": "^8.0.0",
+    "idb": "^8.0.1",
     "ionicons": "^7.4.0",
     "ioredis": "^5.4.1",
     "minisearch": "^7.1.1",
