@@ -12,9 +12,16 @@ import {
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { trpc } from '../../utils/trpc';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { getMetaFromYArtifact } from '@feynote/shared-utils';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
+import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
 
 interface Props {
   artifactId: string;
+  connection: CollaborationManagerConnection;
   pane: PaneContextData['pane'];
   navigate: PaneContextData['navigate'];
 }
@@ -24,6 +31,7 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
   const { pane, navigate } = props;
 
   const { deleteArtifact } = useArtifactDelete();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const onDeleteArtifactClicked = () => {
     deleteArtifact(props.artifactId)
@@ -34,6 +42,36 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
         if (e instanceof ArtifactDeleteDeclinedError) return;
 
         throw e;
+      });
+  };
+
+  const onDuplicateArtifactClicked = () => {
+    const { title, theme, type, titleBodyMerge } = getMetaFromYArtifact(
+      props.connection.yjsDoc,
+    );
+
+    const newTitle = t('artifact.duplicateTitle', { title });
+    const oldYBin = encodeStateAsUpdate(props.connection.yjsDoc);
+    const newYDoc = new YDoc();
+    applyUpdate(newYDoc, oldYBin);
+
+    randomizeContentUUIDsInYDoc(newYDoc);
+
+    const newYBin = encodeStateAsUpdate(newYDoc);
+
+    trpc.artifact.createArtifact
+      .mutate({
+        title: newTitle,
+        theme,
+        type: type || 'tiptap',
+        titleBodyMerge,
+        yBin: newYBin,
+      })
+      .then(({ id }) => {
+        navigate(PaneableComponent.Artifact, { id }, PaneTransition.NewTab);
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
       });
   };
 
@@ -76,6 +114,9 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       </ContextMenuGroup>
       <ContextMenuGroupDivider />
       <ContextMenuGroup>
+        <ContextMenuItem onClick={onDuplicateArtifactClicked}>
+          {t('contextMenu.duplicateArtifact')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={onDeleteArtifactClicked}>
           {t('generic.delete')}
         </ContextMenuItem>

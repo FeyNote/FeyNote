@@ -221,6 +221,7 @@
   "artifact.title": "Artifact",
   "artifact.delete.header": "Delete Artifact",
   "artifact.delete.message": "Are you sure? This action is irreversible.",
+  "artifact.duplicateTitle": "Copy of {{title}}",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 
@@ -230,6 +231,7 @@
   "contextMenu.newTab": "New tab",
   "contextMenu.expandAll": "Expand all",
   "contextMenu.collapseAll": "Collapse all",
+  "contextMenu.duplicateArtifact": "Duplicate Artifact",
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
