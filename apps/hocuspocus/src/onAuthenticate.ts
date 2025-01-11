@@ -83,6 +83,44 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
 
         break;
       }
+      case SupportedDocumentType.ArtifactCollection: {
+        const artifactCollection = await prisma.artifactCollection.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            artifactCollectionShares: {
+              select: {
+                userId: true,
+                accessLevel: true,
+              },
+            },
+          },
+        });
+
+        if (!artifactCollection) {
+          console.log(
+            'User attempted to authenticate to an artifactCollection that does not exist',
+          );
+          throw new Error();
+        }
+
+        const artifactShare = artifactCollection.artifactCollectionShares.find(
+          (share) => share.userId === context.userId,
+        );
+        if (!artifactShare) {
+          console.log(
+            'User attempted to connect to artifactCollection that they do not have access to',
+          );
+          throw new Error();
+        }
+
+        if (artifactShare.accessLevel === ArtifactAccessLevel.readonly) {
+          args.connection.readOnly = true;
+        }
+
+        break;
+      }
     }
 
     return context;

@@ -1,8 +1,11 @@
-import { encodeStateAsUpdate } from 'yjs';
+import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { onStoreDocumentPayload } from '@hocuspocus/server';
 
 import { prisma } from '@feynote/prisma/client';
-import { enqueueArtifactUpdate } from '@feynote/queue';
+import {
+  enqueueArtifactCollectionUpdate,
+  enqueueArtifactUpdate,
+} from '@feynote/queue';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getMetaFromYArtifact,
@@ -99,6 +102,9 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           throw new Error();
         }
 
+        if (user.treeYBin) {
+          applyUpdate(args.document, user.treeYBin);
+        }
         const treeYBin = Buffer.from(encodeStateAsUpdate(args.document));
 
         await prisma.user.update({
@@ -108,6 +114,46 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           data: {
             treeYBin,
           },
+        });
+
+        break;
+      }
+      case SupportedDocumentType.ArtifactCollection: {
+        const artifactCollection = await prisma.artifactCollection.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            treeYBin: true,
+          },
+        });
+
+        if (!artifactCollection) {
+          console.error(
+            'Attempting to save artifact collection that does not exist',
+          );
+          throw new Error();
+        }
+
+        applyUpdate(args.document, artifactCollection.treeYBin);
+        const treeYBin = Buffer.from(encodeStateAsUpdate(args.document));
+
+        await prisma.user.update({
+          where: {
+            id: identifier,
+          },
+          data: {
+            treeYBin,
+          },
+        });
+
+        await enqueueArtifactCollectionUpdate({
+          artifactCollectionId: identifier,
+          triggeredByUserId: args.context.userId,
+          oldYBinB64: Buffer.from(artifactCollection.treeYBin).toString(
+            'base64',
+          ),
+          newYBinB64: treeYBin.toString('base64'),
         });
 
         break;

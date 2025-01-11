@@ -42,48 +42,8 @@ import {
   registerStartTreeDrag,
   setCustomDragData,
 } from '../../utils/artifactTree/customDrag';
-
-/**
- * Calculates a lexographic sort order between two uppercase strings.
- * The absolute values "A" and "Z" are used as the lower and upper bounds, but will not be returned as lexographic sort order.
- * You can use "A" and "Z" as the lower and upper bounds, respectively, when passing in arguments to place an item at the upper or lower bound.
- */
-const _calculateOrderBetween = (a: string, b: string): string => {
-  const aChar = a[0] || 'A';
-  const aCharCode = a ? a.charCodeAt(0) : 'A'.charCodeAt(0);
-  const bCharCode = b ? b.charCodeAt(0) : 'Z'.charCodeAt(0);
-
-  if (bCharCode - aCharCode >= 2) {
-    return String.fromCharCode(bCharCode - 1);
-  }
-
-  if (bCharCode - aCharCode === 1) {
-    return aChar + _calculateOrderBetween(a.substring(1), '');
-  }
-
-  return aChar + _calculateOrderBetween(a.substring(1), b.substring(1));
-};
-
-const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
-  const validRegex = /^[A-Z]*$/;
-  if (!validRegex.test(a) || !validRegex.test(b)) {
-    console.error('a and b must be uppercase strings');
-    Sentry.captureException(new Error('a and b must be uppercase strings'), {
-      extra: {
-        a,
-        b,
-      },
-    });
-    // We do not want to break the user's experience
-    return 'Y';
-  }
-
-  if (a.localeCompare(b) > 0) {
-    throw new Error('a must be greater than b');
-  }
-
-  return _calculateOrderBetween(a, b);
-};
+import { calculateTreeOrderBetween } from '../../utils/artifactTree/calculateTreeOrderBetween';
+import { useIsEditable } from '../../utils/useAuthorizedScope';
 
 const StyleContainer = styled.div`
   .rct-tree-root {
@@ -126,12 +86,16 @@ export interface InternalTreeItem {
   draggable?: boolean;
 }
 
-const TREE_ID = 'appArtifactTree';
+interface Props {
+  artifactCollectionId: string;
+}
+
 const ROOT_ITEM_ID = 'root';
 export const UNCATEGORIZED_ITEM_ID = 'uncategorized';
 const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
-export const ArtifactTree = () => {
+export const ArtifactCollectionTree: React.FC<Props> = (props) => {
+  const treeId = `artifactCollection:${props.artifactCollectionId}`;
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
@@ -149,10 +113,12 @@ export const ArtifactTree = () => {
   const currentPane = getPaneById(undefined);
 
   const connection = collaborationManager.get(
-    `userTree:${session.userId}`,
+    `artifactCollection:${props.artifactCollectionId}`,
     session,
   );
   const yDoc = connection.yjsDoc;
+
+  const { isEditable } = useIsEditable(connection);
 
   const yKeyValue = useMemo(() => {
     const { yKeyValue } = getTreeFromYDoc(yDoc);
@@ -390,7 +356,7 @@ export const ArtifactTree = () => {
         'A';
 
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+        const order = calculateTreeOrderBetween(lastParentChildOrder, 'Z');
 
         yKeyValue.set(item.data.id, {
           parentNodeId: null,
@@ -420,7 +386,7 @@ export const ArtifactTree = () => {
         parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
 
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+        const order = calculateTreeOrderBetween(lastParentChildOrder, 'Z');
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
@@ -453,7 +419,10 @@ export const ArtifactTree = () => {
         'Z';
 
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(previousItemOrder, nextItemOrder);
+        const order = calculateTreeOrderBetween(
+          previousItemOrder,
+          nextItemOrder,
+        );
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
@@ -529,14 +498,14 @@ export const ArtifactTree = () => {
                   } satisfies InternalTreeItem,
                 },
               ],
-              TREE_ID,
+              treeId,
             );
           });
         }}
         items={items}
         getItemTitle={(item) => item.data.title}
         viewState={{
-          [TREE_ID]: {
+          [treeId]: {
             expandedItems,
             selectedItems,
           },
@@ -610,7 +579,7 @@ export const ArtifactTree = () => {
 
           return true;
         }}
-        canDragAndDrop
+        canDragAndDrop={isEditable}
         canDropOnFolder
         canReorderItems
         canDropOnNonFolder
@@ -626,7 +595,7 @@ export const ArtifactTree = () => {
           );
         }}
       >
-        <Tree treeId={TREE_ID} rootItem={ROOT_ITEM_ID} />
+        <Tree treeId={treeId} rootItem={ROOT_ITEM_ID} />
       </ControlledTreeEnvironment>
     </StyleContainer>
   );

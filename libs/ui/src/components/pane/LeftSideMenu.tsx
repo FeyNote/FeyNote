@@ -37,6 +37,7 @@ import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
+import { ArtifactCollections } from '../artifact/ArtifactCollections';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
@@ -211,6 +212,18 @@ export const LeftSideMenu: React.FC = () => {
           </IonListHeader>
         </IonList>
         <ArtifactTree />
+      </IonCard>
+
+      <IonCard>
+        <IonList class="ion-no-padding">
+          <IonListHeader lines="full">
+            <IonIcon icon={pin} />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.shared')}</IonLabel>
+            <InfoButton message={t('menu.shared.help')} />
+          </IonListHeader>
+        </IonList>
+        <ArtifactCollections />
       </IonCard>
 
       {!!recentlyUpdatedThreads.length &&

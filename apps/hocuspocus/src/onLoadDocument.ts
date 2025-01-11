@@ -67,6 +67,27 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
 
         return args.document;
       }
+      case SupportedDocumentType.ArtifactCollection: {
+        const artifactCollection = await prisma.artifactCollection.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            treeYBin: true,
+          },
+        });
+
+        if (!artifactCollection) {
+          console.error(
+            'Attempted to load artifact collection that does not exist!',
+          );
+          throw new Error();
+        }
+
+        applyUpdate(args.document, artifactCollection.treeYBin);
+
+        return args.document;
+      }
     }
   } catch (e) {
     console.error(e);
