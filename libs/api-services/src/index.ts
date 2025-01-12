@@ -1,3 +1,4 @@
+export * from './lib/user/generatePasswordHashAndSalt';
 export * from './lib/user/register';
 export * from './lib/user/login';
 export * from './lib/user/upsertLogin';
@@ -20,3 +21,9 @@ export * from './lib/session/isSessionExpired';
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
 export * from './lib/dto/artifactDetailToArtifactDTO';
+export * from './lib/payments/getSubscriptionsForUser';
+export * from './lib/payments/getCapabilitiesForSubscription';
+export * from './lib/payments/getCapabilitiesForUser';
+export * from './lib/payments/extendSubscription';
+export * from './lib/payments/getCheckoutUserId';
+export * from './lib/payments/stripe';

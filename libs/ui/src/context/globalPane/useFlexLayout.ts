@@ -1,5 +1,5 @@
 import { useMemo, useReducer, useRef } from 'react';
-import { IGlobalAttributes, Model } from 'flexlayout-react';
+import { IGlobalAttributes, IJsonModel, Model } from 'flexlayout-react';
 import { PaneableComponent } from './PaneableComponent';
 import { t } from 'i18next';
 
@@ -67,7 +67,7 @@ export const useFlexLayout = () => {
     );
   };
 
-  const applyLayoutJson = (json: any) => {
+  const applyLayoutJson = (json: IJsonModel) => {
     layoutRef.current = Model.fromJson(json);
     saveLayout();
     triggerRerender();

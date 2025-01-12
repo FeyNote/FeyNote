@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable @nx/enforce-module-boundaries */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
@@ -28,6 +29,10 @@ const staticAssets = [
   'https://static.feynote.com/assets/monster-border-20240925.png',
   'https://static.feynote.com/assets/note-border-20240925.png',
   'https://static.feynote.com/assets/red-triangle-20240925.png',
+  'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
+  'https://static.feynote.com/assets/favicon-20240925.ico',
+  'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png',
+  'https://cdn.tldraw.com/3.4.1/icons/icon/0_merged.svg',
 
   // Fonts
   'https://static.feynote.com/fonts/mr-eaves/mr-eaves-small-caps.woff2',
@@ -87,7 +92,7 @@ const updateListCache = async (
   const store = tx.objectStore(objectStoreName);
   await store.clear();
   for (const item of deserialized) {
-    await manifestDb.add(objectStoreName, item);
+    await manifestDb.put(objectStoreName, item);
   }
   await tx.done;
 };
@@ -100,15 +105,7 @@ const updateSingleCache = async (
   const deserialized = superjson.deserialize<{ id: string }>(json.result.data);
 
   const manifestDb = await getManifestDb();
-  const tx = manifestDb.transaction(objectStoreName, 'readwrite');
-  const store = tx.objectStore(objectStoreName);
-  const exists = await store.count(deserialized.id);
-  if (exists) {
-    await store.put(deserialized);
-  } else {
-    await store.add(deserialized);
-  }
-  await tx.done;
+  await manifestDb.put(objectStoreName, deserialized);
 };
 
 const cacheListResponse = async (
@@ -166,11 +163,9 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 self.addEventListener('install', (event: any) => {
   console.log('Service Worker installed');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (self as any).skipWaiting();
   clientsClaim();
 
@@ -187,6 +182,22 @@ self.addEventListener('install', (event: any) => {
 
 self.addEventListener('activate', () => {
   console.log('Service Worker activated');
+});
+
+self.addEventListener('sync', (event: any) => {
+  if (event.tag === 'manifest') {
+    event.waitUntil(
+      syncManagerP.then((syncManager) => syncManager.syncManifest()),
+    );
+  }
+});
+
+self.addEventListener('periodicSync', (event: any) => {
+  if (event.tag === 'manifest') {
+    event.waitUntil(
+      syncManagerP.then((syncManager) => syncManager.syncManifest()),
+    );
+  }
 });
 
 // Index should be cached networkFirst - this way, users will always get the newest application version
@@ -246,12 +257,13 @@ registerRoute(
 
     const docName = `artifact:${input.id}`;
     const manifestDb = await getManifestDb();
-    const manifestArtifact = await manifestDb.get(
-      ObjectStoreName.Artifacts,
+    const manifestArtifactVersion = await manifestDb.get(
+      ObjectStoreName.ArtifactVersions,
       input.id,
     );
-    if (!manifestArtifact) {
+    if (!manifestArtifactVersion) {
       const response = await fetch(event.request);
+      // TODO: consider syncing to indexeddb here since it'd be nearly "free"
 
       return response;
     }
@@ -261,8 +273,47 @@ registerRoute(
 
     const yBin = encodeStateAsUpdate(idbPersistence.doc);
 
+    await idbPersistence.destroy();
+
     return encodeCacheResultForTrpc({
       yBin,
+    });
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
+  async (event) => {
+    // Cache only
+    const input = getTrpcInputForEvent<{
+      id: string;
+      shareToken?: string;
+    }>(event);
+    if (!input || !input.id)
+      throw new Error('No id provided in procedure input');
+
+    if (input.shareToken) {
+      const response = await fetch(event.request);
+
+      return response;
+    }
+
+    const manifestDb = await getManifestDb();
+    const outgoingEdges = await manifestDb.getAllFromIndex(
+      ObjectStoreName.Edges,
+      'artifactId',
+      input.id,
+    );
+    const incomingEdges = await manifestDb.getAllFromIndex(
+      ObjectStoreName.Edges,
+      'targetArtifactId',
+      input.id,
+    );
+
+    return encodeCacheResultForTrpc({
+      outgoingEdges,
+      incomingEdges,
     });
   },
   'GET',
@@ -291,7 +342,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );
@@ -327,7 +378,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );
@@ -365,7 +416,7 @@ registerRoute(
       const response = await fetch(event.request);
 
       return response;
-    } catch (e) {
+    } catch (_e) {
       const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
         event,
       );

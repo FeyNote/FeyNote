@@ -7,9 +7,16 @@ export const useSetAndPersistSession = () => {
   const { resetLayout } = useContext(GlobalPaneContext);
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
-    await appIdbStorageManager.deleteAllData();
-
     if (newSession) {
+      // We only want to purge data if we're switching users, otherwise
+      // we might lose unsynced offline changes where the user just needs to log back in
+      // due to session timeout.
+      const lastSessionUserId =
+        await appIdbStorageManager.getLastSessionUserId();
+      if (lastSessionUserId !== newSession.userId) {
+        await appIdbStorageManager.deleteAllData();
+      }
+
       await appIdbStorageManager.setSession(newSession);
     } else {
       await appIdbStorageManager.removeSession();

@@ -1,7 +1,7 @@
-import { ArtifactDTO } from '@feynote/global-types';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { useRef, useState } from 'react';
 import { trpc } from '../../../../../utils/trpc';
+import { ReferencePreviewInfo } from './ArtifactReferencePreview';
 
 /**
  * Milliseconds the user has to hover in order for reference preview to open
@@ -20,33 +20,10 @@ export const useArtifactPreviewTimer = (
   isBroken: boolean,
 ) => {
   const loadingPRef = useRef<Promise<unknown>>();
-  const [artifact, setArtifact] = useState<ArtifactDTO>();
   const [artifactYBin, setArtifactYBin] = useState<Uint8Array>();
+  const [artifactInaccessible, setArtifactInaccessible] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-
-  const loadArtifact = async () => {
-    if (isBroken) return;
-    if (artifact) return;
-
-    const _artifact = await trpc.artifact.getArtifactById
-      .query({
-        id: artifactId,
-      })
-      .catch((e) => {
-        handleTRPCErrors(e, {
-          401: () => {
-            // Do nothing
-          },
-          404: () => {
-            // Do nothing
-          },
-        });
-      });
-    if (!_artifact) return;
-
-    setArtifact(_artifact);
-  };
 
   const loadArtifactYBin = async () => {
     if (isBroken) return;
@@ -59,10 +36,10 @@ export const useArtifactPreviewTimer = (
       .catch((e) => {
         handleTRPCErrors(e, {
           401: () => {
-            // Do nothing
+            setArtifactInaccessible(true);
           },
           404: () => {
-            // Do nothing
+            setArtifactInaccessible(true);
           },
         });
       });
@@ -74,7 +51,7 @@ export const useArtifactPreviewTimer = (
   const load = async () => {
     if (loadingPRef.current) return loadingPRef.current;
 
-    loadingPRef.current = Promise.all([loadArtifact(), loadArtifactYBin()]);
+    loadingPRef.current = loadArtifactYBin();
   };
 
   const hoverTimeoutRef = useRef<NodeJS.Timeout>();
@@ -100,12 +77,18 @@ export const useArtifactPreviewTimer = (
     setShowPreview(false);
   };
 
+  const previewInfo = showPreview
+    ? ({
+        artifactYBin,
+        artifactInaccessible,
+        isBroken,
+      } as ReferencePreviewInfo)
+    : undefined;
+
   return {
-    artifact,
-    artifactYBin,
-    showPreview,
     onMouseOver,
     onMouseOut,
     close,
+    previewInfo,
   };
 };

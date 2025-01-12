@@ -5,7 +5,7 @@ try {
   // We reference self here so that we're service-worker compatible
   // eslint-disable-next-line no-restricted-globals
   wsHost = `${self.location.protocol === 'https:' ? 'wss' : 'ws'}://${self.location.host}`;
-} catch (e) {
+} catch (_e) {
   // Do nothing, window is not available in all environments
 }
 

@@ -1,10 +1,6 @@
-import { ArtifactDTO } from '@feynote/global-types';
 import { IonContent, IonPage } from '@ionic/react';
-import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
-import { useProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactContextMenu } from './ArtifactContextMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
@@ -27,49 +23,14 @@ interface ArtifactProps {
 }
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
-  const { startProgressBar, ProgressBar } = useProgressBar();
-  const [artifact, setArtifact] = useState<ArtifactDTO>();
   const { session } = useContext(SessionContext);
-  const { navigate, isPaneFocused } = useContext(PaneContext);
+  const { pane, navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
-  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const connection = collaborationManager.get(`artifact:${props.id}`, session);
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
 
-  const load = async () => {
-    await trpc.artifact.getArtifactById
-      .query({
-        id: props.id,
-      })
-      .then((_artifact) => {
-        setArtifact(_artifact);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
-  };
-
-  const loadWithProgress = async () => {
-    const progress = startProgressBar();
-    return load().finally(() => progress.dismiss());
-  };
-
   useEffect(() => {
-    loadWithProgress();
-  }, []);
-
-  useEffect(() => {
-    const updateHandler = (
-      _: EventName,
-      data: EventData[EventName.ArtifactUpdated],
-    ) => {
-      if (data.artifactId === props.id) {
-        load();
-      }
-    };
-    eventManager.addEventListener(EventName.ArtifactUpdated, updateHandler);
-
     const deleteHandler = (
       _: EventName,
       data: EventData[EventName.ArtifactDeleted],
@@ -82,10 +43,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
     return () => {
       eventManager.removeEventListener(
-        EventName.ArtifactUpdated,
-        updateHandler,
-      );
-      eventManager.removeEventListener(
         EventName.ArtifactDeleted,
         deleteHandler,
       );
@@ -96,30 +53,32 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     <IonPage>
       <PaneNav
         title={title || ''}
-        popoverContents={<ArtifactContextMenu artifactId={props.id} />}
+        popoverContents={
+          <ArtifactContextMenu
+            artifactId={props.id}
+            pane={pane}
+            navigate={navigate}
+          />
+        }
       />
-      {ProgressBar}
       <IonContent
         className="ion-padding-start ion-padding-end"
         style={{ position: 'relative' }}
       >
-        {artifact && (
-          <ArtifactRenderer
-            artifact={artifact}
-            connection={connection}
-            scrollToBlockId={props.focusBlockId}
-            scrollToDate={props.focusDate}
-          />
-        )}
+        <ArtifactRenderer
+          artifactId={props.id}
+          connection={connection}
+          scrollToBlockId={props.focusBlockId}
+          scrollToDate={props.focusDate}
+        />
       </IonContent>
-      {artifact &&
-        isPaneFocused &&
+      {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
           <ArtifactRightSidemenu
-            key={artifact.id}
-            artifact={artifact}
-            reload={load}
+            artifactId={props.id}
+            connection={connection}
+            key={props.id}
           />,
           sidemenuContentRef.current,
         )}

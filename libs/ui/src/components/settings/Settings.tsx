@@ -96,7 +96,7 @@ export const Settings: React.FC = () => {
       }
 
       return languageOptions.sort((a, b) => a[1].localeCompare(b[1]));
-    } catch (e) {
+    } catch (_e) {
       console.error('Intl not supported');
 
       return Object.values(SupportedLanguages).map((code) => [code, code]);

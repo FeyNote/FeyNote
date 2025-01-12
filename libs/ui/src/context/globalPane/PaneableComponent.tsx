@@ -9,11 +9,12 @@ import { Settings } from '../../components/settings/Settings';
 import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
 import { Import } from '../../components/import/Import';
-import { ImportFromFile } from '../../components/import/ImportFromFile';
+import { Contribute } from '../../components/payments/Contribute';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
   Settings = 'Settings',
+  Contribute = 'Contribute',
   NewArtifact = 'NewArtifact',
   Artifact = 'Artifact',
   AIThread = 'AIThread',
@@ -22,12 +23,12 @@ export enum PaneableComponent {
   SharedContent = 'SharedContent',
   RecentArtifacts = 'RecentArtifacts',
   Import = 'Import',
-  ImportFile = 'ImportFile',
 }
 
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
   [PaneableComponent.Settings]: ComponentProps<typeof Settings>;
+  [PaneableComponent.Contribute]: ComponentProps<typeof Contribute>;
   [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
@@ -36,15 +37,15 @@ export type PaneableComponentProps = {
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
   [PaneableComponent.Import]: ComponentProps<typeof Import>;
-  [PaneableComponent.ImportFile]: ComponentProps<typeof ImportFromFile>;
 };
 
-export const getPaneableComponent = (
+export const getPaneableComponent = <T extends PaneableComponent>(
   componentName: PaneableComponent,
-): React.FC<any> => {
+): React.FC<PaneableComponentProps[T]> => {
   const paneableComponentNameToComponent = {
     [PaneableComponent.Dashboard]: Dashboard,
     [PaneableComponent.Settings]: Settings,
+    [PaneableComponent.Contribute]: Contribute,
     [PaneableComponent.NewArtifact]: NewArtifact,
     [PaneableComponent.Artifact]: Artifact,
     [PaneableComponent.AIThread]: AIThread,
@@ -53,10 +54,13 @@ export const getPaneableComponent = (
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
     [PaneableComponent.Import]: Import,
-    [PaneableComponent.ImportFile]: ImportFromFile,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
-  return paneableComponentNameToComponent[componentName];
+  // I was unable to find a way to map-type this properly
+  return paneableComponentNameToComponent[componentName] as unknown as React.FC<
+    PaneableComponentProps[T]
+  >;
 };
 
 /**
@@ -65,6 +69,7 @@ export const getPaneableComponent = (
 export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Dashboard]: 'dashboard.title',
   [PaneableComponent.Settings]: 'settings.title',
+  [PaneableComponent.Contribute]: 'contribute.title',
   [PaneableComponent.NewArtifact]: 'newArtifact.title',
   [PaneableComponent.Artifact]: 'artifact.title',
   [PaneableComponent.AIThread]: 'assistant.title',
@@ -73,5 +78,4 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
   [PaneableComponent.Import]: 'import.title',
-  [PaneableComponent.ImportFile]: 'import.file.title',
 } satisfies Record<PaneableComponent, string>;

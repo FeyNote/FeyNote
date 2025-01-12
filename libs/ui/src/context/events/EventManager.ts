@@ -42,16 +42,19 @@ export class EventManager {
     }
   }
 
-  removeEventListener(
-    eventNames: EventName[],
+  removeEventListener<T extends EventName>(
+    eventNames: T,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: NarrowedEventListener<any>,
   ): void;
-  removeEventListener(
-    eventNames: EventName,
+  removeEventListener<T extends EventName>(
+    eventNames: T[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: NarrowedEventListener<any>,
   ): void;
-  removeEventListener(
-    eventNames: EventName | EventName[],
+  removeEventListener<T extends EventName>(
+    eventNames: T | T[],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     listener: NarrowedEventListener<any>,
   ): void {
     if (Array.isArray(eventNames)) {

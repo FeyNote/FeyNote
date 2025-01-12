@@ -26,10 +26,10 @@ import {
   GlobalSearchContextProviderWrapper,
   GlobalPaneContextProviderWrapper,
   SidemenuContextProviderWrapper,
-  ArtifactShareView,
   NotFound,
   Workspace,
   initI18Next,
+  PasswordReset,
 } from '@feynote/ui';
 
 initI18Next();
@@ -44,10 +44,55 @@ export function App() {
       setInterval(() => {
         registration?.update();
       }, SW_UPDATE_INTERVAL_MS);
+
+      // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
+      const swRegistration = registration as unknown as
+        | {
+            sync?: {
+              register: (name: string) => Promise<void>;
+            };
+            periodicSync?: {
+              register: (
+                name: string,
+                options: { minInterval: number },
+              ) => Promise<void>;
+            };
+          }
+        | undefined;
+
+      swRegistration?.sync?.register('manifest').catch((e: unknown) => {
+        console.error('Cannot register background sync', e);
+      });
+
+      const PERIODIC_SYNC_INTERVAL_HOURS = 48;
+      swRegistration?.periodicSync
+        ?.register('manifest', {
+          minInterval: PERIODIC_SYNC_INTERVAL_HOURS * 60 * 60 * 1000,
+        })
+        .catch((e: unknown) => {
+          console.error('Cannot register periodic sync', e);
+        });
     },
   });
 
+  const url = new URL(window.location.href);
   const path = window.location.pathname.split('/').slice(1);
+
+  const passworeResetToken = url.searchParams.get('passwordResetToken');
+  if (passworeResetToken) {
+    return (
+      <GlobalPaneContextProviderWrapper>
+        <IonApp>
+          <PreferencesContextProviderWrapper>
+            <PasswordReset
+              passwordResetToken={passworeResetToken}
+              redirectPath={window.location.origin}
+            />
+          </PreferencesContextProviderWrapper>
+        </IonApp>
+      </GlobalPaneContextProviderWrapper>
+    );
+  }
 
   if (!path.length || path[0] === '') {
     return (
@@ -64,16 +109,6 @@ export function App() {
           </SidemenuContextProviderWrapper>
         </IonApp>
       </GlobalPaneContextProviderWrapper>
-    );
-  }
-
-  if (path[0] === 'artifact' && path[1]) {
-    return (
-      <IonApp>
-        <PreferencesContextProviderWrapper>
-          <ArtifactShareView artifactId={path[1]} />
-        </PreferencesContextProviderWrapper>
-      </IonApp>
     );
   }
 

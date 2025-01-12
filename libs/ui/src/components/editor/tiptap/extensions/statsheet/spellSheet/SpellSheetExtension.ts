@@ -2,7 +2,7 @@ import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
 import { spellSheetDefaultContent } from './spellSheetDefaultContent';
 
 export interface SpellSheetOptions {
-  HTMLAttributes: Record<string, any>;
+  HTMLAttributes: Record<string, string>;
 }
 
 declare module '@tiptap/core' {

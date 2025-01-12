@@ -1,4 +1,4 @@
-import { Manifest } from '@feynote/shared-utils';
+import { getEdgeId, Manifest } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 
@@ -39,24 +39,47 @@ export const getManifest = authenticatedProcedure.query(
 
     const relationships = await prisma.artifactReference.findMany({
       where: {
-        artifactId: {
-          in: allArtifactIds,
-        },
-        targetArtifactId: {
-          in: allArtifactIds,
-        },
+        OR: [
+          {
+            artifactId: {
+              in: allArtifactIds,
+            },
+          },
+          {
+            targetArtifactId: {
+              in: allArtifactIds,
+            },
+          },
+        ],
       },
       select: {
         artifactId: true,
         artifactBlockId: true,
         targetArtifactId: true,
+        referenceTargetArtifactId: true,
         targetArtifactBlockId: true,
+        targetArtifactDate: true,
         referenceText: true,
+        artifact: {
+          select: {
+            title: true,
+          },
+        },
       },
     });
 
     const manifest: Manifest = {
-      edges: relationships,
+      edges: relationships.map((relationship) => ({
+        id: getEdgeId(relationship),
+        artifactId: relationship.artifactId,
+        artifactBlockId: relationship.artifactBlockId,
+        targetArtifactId: relationship.targetArtifactId,
+        targetArtifactBlockId: relationship.targetArtifactBlockId,
+        targetArtifactDate: relationship.targetArtifactDate,
+        referenceText: relationship.referenceText,
+        artifactTitle: relationship.artifact.title,
+        isBroken: !relationship.referenceTargetArtifactId,
+      })),
       artifactVersions: {},
     };
 

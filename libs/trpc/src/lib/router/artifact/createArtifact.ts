@@ -2,14 +2,10 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { enqueueArtifactUpdate } from '@feynote/queue';
-import {
-  artifactJsonZodSchema,
-  yArtifactMetaZodSchema,
-} from '@feynote/api-services';
+import { yArtifactMetaZodSchema } from '@feynote/api-services';
 import { ArtifactTheme, ArtifactType } from '@prisma/client';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import {
-  ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   constructYArtifact,
   getMetaFromYArtifact,

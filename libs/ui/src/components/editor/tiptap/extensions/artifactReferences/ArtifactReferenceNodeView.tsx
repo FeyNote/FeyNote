@@ -1,7 +1,5 @@
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
-import { getKnownArtifactReferenceKey } from './getKnownArtifactReferenceKey';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
-import type { ReferencePluginOptions } from './ArtifactReferencesExtension';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
 import { useContext, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
@@ -9,30 +7,42 @@ import styled from 'styled-components';
 import { PaneContext } from '../../../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
+import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
+
+const ArtifactReferenceLink = styled.a`
+  cursor: pointer;
+`;
 
 const StyledNodeViewWrapper = styled(NodeViewWrapper)`
   display: inline;
 `;
 
 export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
+  const {
+    artifactId: targetArtifactId,
+    artifactBlockId: targetArtifactBlockId,
+    artifactDate: targetArtifactDate,
+  } = props.node.attrs;
+  const artifactBlockId = props.node.attrs.id;
+  const { artifactId } = props.extension.options;
+
   const { navigate } = useContext(PaneContext);
-
-  const { artifactId, artifactBlockId, artifactDate } = props.node.attrs;
-
-  const key = getKnownArtifactReferenceKey(
+  const { getEdge } = useEdgesForArtifactId(artifactId);
+  const edge = getEdge({
     artifactId,
-    artifactBlockId || undefined,
-    artifactDate || undefined,
-  );
-  const ref = useRef<HTMLSpanElement>(null);
+    artifactBlockId,
+    targetArtifactId,
+    targetArtifactBlockId,
+    targetArtifactDate,
+  });
+  const isBroken = edge ? edge.isBroken : false;
 
-  const options = props.extension.options as ReferencePluginOptions;
-  const knownReference = options.knownReferences.get(key);
+  const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    if (knownReference?.isBroken) return;
+    if (isBroken) return;
 
     let paneTransition = PaneTransition.Push;
     if (event.metaKey || event.ctrlKey) {
@@ -41,43 +51,32 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     navigate(
       PaneableComponent.Artifact,
       {
-        id: props.node.attrs.artifactId,
-        focusBlockId: artifactBlockId || undefined,
-        focusDate: artifactDate || undefined,
+        id: targetArtifactId,
+        focusBlockId: targetArtifactBlockId || undefined,
+        focusDate: targetArtifactDate || undefined,
       },
       paneTransition,
       !(event.metaKey || event.ctrlKey),
     );
   };
 
-  const {
-    artifact,
-    artifactYBin,
-    showPreview,
-    onMouseOver,
-    onMouseOut,
-    close,
-  } = useArtifactPreviewTimer(
-    props.node.attrs.artifactId,
-    knownReference?.isBroken ?? false,
-  );
+  const { previewInfo, onMouseOver, onMouseOut, close } =
+    useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
 
-  let referenceText =
-    knownReference?.referenceText || props.node.attrs.referenceText;
-  if (props.node.attrs.artifactDate) {
-    referenceText += ` ${props.node.attrs.artifactDate}`;
+  let referenceText = edge?.referenceText || props.node.attrs.referenceText;
+  if (targetArtifactDate) {
+    referenceText += ` ${targetArtifactDate}`;
   }
 
   return (
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
-        $isBroken={false}
+        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >
-        <a
-          href=""
+        <ArtifactReferenceLink
           onClick={(event) => (
             event.preventDefault(),
             event.stopPropagation(),
@@ -86,16 +85,17 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
           )}
         >
           {referenceText}
-        </a>
-        {showPreview && artifact && artifactYBin && ref.current && (
+        </ArtifactReferenceLink>
+        {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
               event.stopPropagation(), linkClicked(event), close()
             )}
-            artifact={artifact}
-            artifactYBin={artifactYBin}
-            artifactBlockId={props.node.attrs.artifactBlockId || undefined}
-            artifactDate={props.node.attrs.artifactDate || undefined}
+            artifactId={artifactId}
+            previewInfo={previewInfo}
+            referenceText={referenceText}
+            artifactBlockId={targetArtifactBlockId || undefined}
+            artifactDate={targetArtifactDate || undefined}
             previewTarget={ref.current}
           />
         )}

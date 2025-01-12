@@ -45,7 +45,7 @@ export type PaneTracker = {
   currentView: HistoryNode;
 };
 
-interface GlobalPaneContextData {
+export interface GlobalPaneContextData {
   /**
    * Move the desired view back in history
    */
@@ -94,18 +94,6 @@ interface GlobalPaneContextData {
   _onModelChangeListener: (model: Model, action: Action) => void;
 }
 
-export const GlobalPaneContext = createContext<GlobalPaneContextData>({
-  // We cast null to any so that any usage of this context without initialization blows up in
-  // catastrophic fashion
-  navigateHistoryBack: null as any,
-  navigateHistoryForward: null as any,
-  navigate: null as any,
-  getPaneById: null as any,
-  focusedPaneId: null as any,
-  renamePane: null as any,
-  getSelectedTabForTabset: null as any,
-  resetLayout: null as any,
-  _model: null as any,
-  _onActionListener: null as any,
-  _onModelChangeListener: null as any,
-});
+export const GlobalPaneContext = createContext<GlobalPaneContextData>(
+  null as unknown as GlobalPaneContextData,
+);

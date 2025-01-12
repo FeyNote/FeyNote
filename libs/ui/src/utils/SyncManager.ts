@@ -5,12 +5,19 @@ import {
   HocuspocusProviderWebsocket,
 } from '@hocuspocus/provider';
 import { getApiUrls } from './getApiUrls';
-import { Doc, encodeStateAsUpdate, type YEvent } from 'yjs';
+import {
+  Doc,
+  encodeStateAsUpdate,
+  type XmlElement as YXmlElement,
+  type YEvent,
+} from 'yjs';
 import { trpc } from './trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
+  Edge,
+  getEdgeId,
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
@@ -23,10 +30,14 @@ import { EventName } from '../context/events/EventName';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 websocketClient.connect();
 
+const broadcastChannel = new BroadcastChannel('edges.updated');
+
 const ENABLE_VERBOSE_SYNC_LOGGING = getIsViteDevelopment();
+/**
+ * How long an artifact can take to sync before we consider it timed out and kill it
+ */
 const ARTIFACT_SYNC_TIMEOUT_MS = 10 * 1000;
 
-const MANIFEST_MAX_SYNC_INTERVAL_MS = 120 * 1000;
 const MANIFEST_MIN_SYNC_INTERVAL_MS = 15 * 1000;
 
 /**
@@ -41,8 +52,7 @@ const SYNC_BATCH_SIZE = 5;
 const SYNC_BATCH_RATE_LIMIT_WAIT = 1 * 1000;
 
 export class SyncManager {
-  private syncing = false;
-  private syncInterval: NodeJS.Timeout;
+  private currentSyncPromise: Promise<void> | null = null;
 
   constructor(
     private manifestDb: IDBPDatabase,
@@ -57,15 +67,13 @@ export class SyncManager {
         enableFollowupCall: true,
       },
     );
-    syncManifestDebouncer.call();
-
-    this.syncInterval = setInterval(() => {
-      syncManifestDebouncer.call();
-    }, MANIFEST_MAX_SYNC_INTERVAL_MS);
+    this.syncManifest();
 
     eventManager.addEventListener(
       [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
       () => {
+        if (ENABLE_VERBOSE_SYNC_LOGGING)
+          console.log('Artifact updated, queueing sync');
         syncManifestDebouncer.call();
       },
     );
@@ -75,12 +83,20 @@ export class SyncManager {
     return `artifact:${artifactId}`;
   }
 
-  private async syncManifest(): Promise<void> {
-    if (this.syncing) {
+  public async syncManifest(): Promise<void> {
+    if (this.currentSyncPromise) {
       console.log('Sync already in progress');
-      return;
+      return this.currentSyncPromise;
     }
 
+    this.currentSyncPromise = this._syncManifest().finally(() => {
+      this.currentSyncPromise = null;
+    });
+
+    return this.currentSyncPromise;
+  }
+
+  private async _syncManifest(): Promise<void> {
     const session = await appIdbStorageManager.getSession();
     if (!session) {
       console.log('Not logged in, will not perform sync.');
@@ -90,7 +106,6 @@ export class SyncManager {
     performance.mark('startSync');
 
     console.log(`Beginning sync for ${session.email}`);
-    this.syncing = true;
 
     await this.searchManager.onReady();
 
@@ -98,37 +113,49 @@ export class SyncManager {
       const latestManifest = await trpc.user.getManifest.query();
 
       // ==== Update Artifact References ====
-      const localEdges = await this.manifestDb.getAll(ObjectStoreName.Edges);
-      const localEdgeIds = new Set(localEdges.map((edge) => edge.id));
-      const remoteEdgeIds = new Set(
-        latestManifest.edges.map(
-          (edge) =>
-            `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`,
-        ),
+      const modifiedEdgeArtifactIds = new Set<string>();
+      const edgesTx = this.manifestDb.transaction(
+        ObjectStoreName.Edges,
+        'readwrite',
       );
+      const edgesStore = edgesTx.store;
+      const localEdges = await edgesStore.getAll();
+      const localEdgesById = new Map<string, Edge>(
+        localEdges.map((edge) => [edge.id, edge]),
+      );
+      const remoteEdgeIds = new Set(latestManifest.edges.map((el) => el.id));
 
       for (const edge of latestManifest.edges) {
-        const edgeId = `${edge.artifactId}:${edge.artifactBlockId}:${edge.targetArtifactId}:${edge.targetArtifactBlockId}`;
-        if (localEdgeIds.has(edgeId)) {
-          await this.manifestDb.put(ObjectStoreName.Edges, {
+        const edgeId = getEdgeId(edge);
+        const localEdge = localEdgesById.get(edgeId);
+        if (
+          !localEdge ||
+          localEdge.referenceText !== edge.referenceText ||
+          localEdge.isBroken !== edge.isBroken
+        ) {
+          await edgesStore.put({
             ...edge,
             targetArtifactBlockId: edge.targetArtifactBlockId || '',
             id: edgeId,
           });
-        } else {
-          await this.manifestDb.add(ObjectStoreName.Edges, {
-            ...edge,
-            targetArtifactBlockId: edge.targetArtifactBlockId || '',
-            id: edgeId,
-          });
+          modifiedEdgeArtifactIds.add(edge.artifactId);
+          modifiedEdgeArtifactIds.add(edge.targetArtifactId);
         }
       }
 
-      for (const edgeId of localEdgeIds) {
-        if (!remoteEdgeIds.has(edgeId)) {
-          await this.manifestDb.delete(ObjectStoreName.Edges, edgeId);
+      for (const localEdge of localEdges) {
+        if (!remoteEdgeIds.has(localEdge.id)) {
+          await edgesStore.delete(localEdge.id);
+          modifiedEdgeArtifactIds.add(localEdge.artifactId);
+          modifiedEdgeArtifactIds.add(localEdge.targetArtifactId);
         }
       }
+
+      await edgesTx.done;
+
+      broadcastChannel.postMessage({
+        modifiedEdgeArtifactIds: [...modifiedEdgeArtifactIds],
+      });
 
       // ==== Update Artifacts ====
       const localArtifactVersionsRecords = await this.manifestDb.getAll(
@@ -204,7 +231,7 @@ export class SyncManager {
           await this.searchManager.unindexArtifact(artifactId);
           try {
             await deleteDB(`artifact:${artifactId}`);
-          } catch (e) {
+          } catch (_e) {
             // Do nothing
           }
           if (ENABLE_VERBOSE_SYNC_LOGGING)
@@ -261,8 +288,6 @@ export class SyncManager {
     } catch (e) {
       console.error('Sync failed', e);
     }
-
-    this.syncing = false;
   }
 
   private async sync(
@@ -288,7 +313,7 @@ export class SyncManager {
       await this.searchManager.indexPartialArtifact(artifactId, doc, []);
     };
 
-    const docObserveListener = async (yEvents: YEvent<any>[]) => {
+    const docObserveListener = async (yEvents: YEvent<YXmlElement>[]) => {
       const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
 
       if (!this.searchManager.getKnownIndexIds().has(artifactId)) {
@@ -329,6 +354,13 @@ export class SyncManager {
       Promise.all([idbSyncP, ttpSyncP]),
     ]);
 
+    if (tiptapCollabProvider.authorizedScope) {
+      await appIdbStorageManager.setAuthorizedCollaborationScope(
+        docName,
+        tiptapCollabProvider.authorizedScope,
+      );
+    }
+
     if (result === false) {
       console.error(
         `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
@@ -349,9 +381,5 @@ export class SyncManager {
       tiptapCollabProvider.destroy();
       await indexeddbProvider.destroy();
     };
-  }
-
-  async destroy(): Promise<void> {
-    clearInterval(this.syncInterval);
   }
 }

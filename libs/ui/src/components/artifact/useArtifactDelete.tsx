@@ -3,26 +3,29 @@ import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
+export class ArtifactDeleteDeclinedError extends Error {
+  constructor() {
+    super('Artifact delete declined');
+  }
+}
+
 export const useArtifactDelete = () => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const _deleteArtifact = (artifactId: string) => {
-    return new Promise<void>((resolve, reject) => {
-      trpc.artifact.deleteArtifact
-        .mutate({
-          id: artifactId,
-        })
-        .then(() => {
-          resolve();
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-
-          reject();
-        });
-    });
+  const _deleteArtifact = async (artifactId: string): Promise<void> => {
+    return trpc.artifact.deleteArtifact
+      .mutate({
+        id: artifactId,
+      })
+      .then(() => {
+        return;
+      })
+      .catch((error) => {
+        handleTRPCErrors(error);
+        throw error;
+      });
   };
 
   const deleteArtifact = (artifactId: string) => {
@@ -35,7 +38,7 @@ export const useArtifactDelete = () => {
             text: t('generic.cancel'),
             role: 'cancel',
             handler: () => {
-              reject();
+              reject(new ArtifactDeleteDeclinedError());
             },
           },
           {

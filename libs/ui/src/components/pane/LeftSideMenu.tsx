@@ -27,6 +27,7 @@ import {
   search,
   settings,
   add,
+  heart,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -35,6 +36,7 @@ import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
+import { InfoButton } from '../info/InfoButton';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
@@ -89,7 +91,7 @@ export const LeftSideMenu: React.FC = () => {
           ),
         );
       })
-      .catch((e) => {
+      .catch(() => {
         // Do nothing
       });
   };
@@ -205,9 +207,10 @@ export const LeftSideMenu: React.FC = () => {
             <IonIcon icon={pin} />
             &nbsp;&nbsp;
             <IonLabel>{t('menu.tree')}</IonLabel>
+            <InfoButton message={t('menu.tree.help')} />
           </IonListHeader>
-          <ArtifactTree />
         </IonList>
+        <ArtifactTree />
       </IonCard>
 
       {!!recentlyUpdatedThreads.length &&
@@ -258,6 +261,25 @@ export const LeftSideMenu: React.FC = () => {
         )}
 
       <IonCard>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
+              PaneableComponent.Contribute,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={heart} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.contribute')}</IonLabel>
+        </CompactIonItem>
         <CompactIonItem
           lines="none"
           onClick={(event) =>

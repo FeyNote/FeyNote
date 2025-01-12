@@ -1,8 +1,7 @@
 import { randomBytes } from 'crypto';
-
-const TOKEN_LENGTH = 64;
+import { SESSION_TOKEN_LENGTH_BYTES } from './constants';
 
 export const generateSessionToken = () => {
-  const token = randomBytes(TOKEN_LENGTH).toString('hex');
+  const token = randomBytes(SESSION_TOKEN_LENGTH_BYTES).toString('hex');
   return token;
 };

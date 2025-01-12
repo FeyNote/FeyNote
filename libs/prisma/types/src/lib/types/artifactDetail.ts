@@ -12,34 +12,34 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
     text: true,
     artifactReferences: {
       select: {
-        id: true,
         artifactId: true,
         artifactBlockId: true,
         targetArtifactId: true,
         targetArtifactBlockId: true,
-        referenceTargetArtifactId: true,
-        targetArtifact: {
-          select: {
-            title: true,
-          },
-        },
-        referenceText: true,
         targetArtifactDate: true,
-      },
-    },
-    incomingArtifactReferences: {
-      select: {
-        id: true,
-        artifactId: true,
+        referenceText: true,
+        referenceTargetArtifactId: true,
         artifact: {
           select: {
             title: true,
           },
         },
+      },
+    },
+    incomingArtifactReferences: {
+      select: {
+        artifactId: true,
         artifactBlockId: true,
         targetArtifactId: true,
         targetArtifactBlockId: true,
         targetArtifactDate: true,
+        referenceText: true,
+        referenceTargetArtifactId: true,
+        artifact: {
+          select: {
+            title: true,
+          },
+        },
       },
     },
     files: {

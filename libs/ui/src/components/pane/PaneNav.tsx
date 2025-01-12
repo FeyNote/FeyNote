@@ -1,6 +1,6 @@
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { PaneContext } from '../../context/pane/PaneContext';
-import { IonButton, IonContent, IonIcon, IonPopover } from '@ionic/react';
+import { IonButton, IonContent, IonIcon, useIonPopover } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
 import { DefaultContextMenu } from '../contextMenu/DefaultContextMenu';
@@ -29,6 +29,19 @@ export const PaneNav: React.FC<Props> = (props) => {
   const { navigateHistoryBack, navigateHistoryForward, pane, renamePane } =
     useContext(PaneContext);
 
+  const popoverDismissRef = useRef<() => void>();
+
+  const popoverContents = (
+    <IonContent onClick={popoverDismissRef.current}>
+      {props.popoverContents || <DefaultContextMenu />}
+    </IonContent>
+  );
+
+  const [present, dismiss] = useIonPopover(popoverContents, {
+    onDismiss: (data: unknown, role: string) => dismiss(data, role),
+  });
+  popoverDismissRef.current = dismiss;
+
   useEffect(() => {
     // Since pane itself is memoized, this does not cause re-render of entire pane, but rather just the tab title itself
     renamePane(props.title);
@@ -56,22 +69,13 @@ export const PaneNav: React.FC<Props> = (props) => {
       </NavGroup>
       <NavGroup style={{ textAlign: 'right' }}>
         <IonButton
-          id={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}
           size="small"
           fill="clear"
           disabled={props.popoverContents === null}
+          onClick={(e) => present({ event: e.nativeEvent })}
         >
           <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
         </IonButton>
-        <IonPopover
-          trigger={`artifact-popover-trigger-${pane.id}-${pane.currentView.navigationEventId}`}
-          triggerAction="click"
-          dismissOnSelect={true}
-        >
-          <IonContent>
-            {props.popoverContents || <DefaultContextMenu />}
-          </IonContent>
-        </IonPopover>
       </NavGroup>
     </NavContainer>
   );

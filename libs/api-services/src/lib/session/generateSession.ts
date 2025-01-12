@@ -2,17 +2,7 @@ import { prisma } from '@feynote/prisma/client';
 import { generateSessionToken } from './generateSessionToken';
 import { generateSessionExpiry } from './generateSessionExpiry';
 import { Prisma } from '@prisma/client';
-
-/**
- * The initial length of validity for a session
- * The session will expire after this time unless extended
- */
-const SESSION_VALID_DAYS = 21;
-/**
- * The total length this session can maximally be valid for if extended to it's maximum time.
- * Used to force the user to re-auth at a reasonable interval
- */
-const SESSION_MAX_VALID_DAYS = 90;
+import { SESSION_MAX_VALID_DAYS, SESSION_VALID_DAYS } from './constants';
 
 export const generateSession = async (
   userId: string,

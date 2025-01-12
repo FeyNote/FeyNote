@@ -5,9 +5,14 @@ import { TRPCError } from '@trpc/server';
 
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
-import { hasArtifactAccess, uploadFileToS3 } from '@feynote/api-services';
+import {
+  getCapabilitiesForUser,
+  hasArtifactAccess,
+  uploadFileToS3,
+} from '@feynote/api-services';
 import { FilePurpose } from '@prisma/client';
 import { FileDTO } from '@feynote/global-types';
+import { Capability } from '@feynote/shared-utils';
 
 export const createFile = authenticatedProcedure
   .input(
@@ -40,17 +45,28 @@ export const createFile = authenticatedProcedure
       }
     }
 
+    const userCapabilities = await getCapabilitiesForUser(ctx.session.userId);
+    let maxResolution = 1024;
+    let quality = 65;
+    if (userCapabilities.has(Capability.HighResImages)) {
+      maxResolution = 2048;
+      quality = 75;
+    }
+    if (userCapabilities.has(Capability.UltraHighResImages)) {
+      maxResolution = 4096;
+      quality = 80;
+    }
+
     let fileBuffer: Buffer = Buffer.from(input.base64, 'base64');
     if (['image/png', 'image/jpeg'].includes(input.mimetype)) {
       fileBuffer = await sharp(fileBuffer)
         .rotate()
-        // TODO: Make this dependent on the user's subscription status
-        .resize(1024, 1024, {
+        .resize(maxResolution, maxResolution, {
           fit: 'contain',
           withoutEnlargement: true,
         })
         .jpeg({
-          quality: 75,
+          quality,
           mozjpeg: true,
         })
         .toBuffer();

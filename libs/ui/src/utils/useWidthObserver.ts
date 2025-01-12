@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useState } from 'react';
 
 export const useWidthObserver = (
   elementRef: React.RefObject<HTMLElement>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do accept any!
   deps: any[] = [],
 ) => {
   const [width, setWidth] = useState(elementRef.current?.offsetWidth);

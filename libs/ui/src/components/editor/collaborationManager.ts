@@ -16,6 +16,7 @@ export interface CollaborationManagerConnection {
   tiptapCollabProvider: TiptapCollabProvider;
   indexeddbProvider: IndexeddbPersistence;
   syncedPromise: Promise<void>;
+  authorizedScopePromise: Promise<string>;
 }
 
 class CollaborationManager {
@@ -57,6 +58,12 @@ class CollaborationManager {
       websocketProvider: this.ws,
     });
 
+    const authorizedScopePromise = new Promise<string>((resolve) => {
+      tiptapCollabProvider.authenticatedHandler = (scope) => {
+        resolve(scope);
+      };
+    });
+
     const connection = {
       docName,
       session,
@@ -79,6 +86,7 @@ class CollaborationManager {
           }
         }, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
       }),
+      authorizedScopePromise,
     };
 
     this.connectionByDocName.set(docName, connection);

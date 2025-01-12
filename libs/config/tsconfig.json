@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "esm",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,

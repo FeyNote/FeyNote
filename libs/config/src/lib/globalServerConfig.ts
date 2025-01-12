@@ -103,4 +103,8 @@ export const globalServerConfig = {
       ),
     },
   },
+  stripe: {
+    webhookSecret: getEnvOrThrow('STRIPE_WEBHOOK_SECRET'),
+    apiKey: getEnvOrThrow('STRIPE_API_KEY'),
+  },
 };

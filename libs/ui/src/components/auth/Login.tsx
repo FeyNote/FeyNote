@@ -6,6 +6,7 @@ import {
   IonInput,
   IonItem,
   IonPage,
+  useIonAlert,
 } from '@ionic/react';
 import {
   CenteredContainer,
@@ -37,6 +38,7 @@ export const Login: React.FC<Props> = (props) => {
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
+  const [presentAlert] = useIonAlert();
 
   const { setSession } = useContext(SessionContext);
 
@@ -50,7 +52,47 @@ export const Login: React.FC<Props> = (props) => {
       .then((_session) => setSession(_session))
       .catch((error) => {
         handleTRPCErrors(error, {
-          400: 'The email or password you submited is incorrect.',
+          412: t('auth.login.error.passwordNotSet'),
+          404: t('auth.login.error.notFound'),
+          403: t('auth.login.error.invalidPassword'),
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
+
+  const submitTriggerReset = () => {
+    if (!email) {
+      presentAlert({
+        header: t('auth.login.forgot.noEmail'),
+        buttons: [t('generic.okay')],
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    trpc.user.triggerPasswordReset
+      .mutate({
+        email,
+        returnUrl: window.location.origin,
+      })
+      .then((_session) => {
+        presentAlert({
+          header: t('auth.login.forgot.submitted.header'),
+          message: t('auth.login.forgot.submitted.message'),
+          buttons: [t('generic.okay')],
+        });
+      })
+      .catch((error) => {
+        handleTRPCErrors(error, {
+          404: () => {
+            presentAlert({
+              header: t('auth.login.forgot.notFound.header'),
+              message: t('auth.login.forgot.notFound.message'),
+              buttons: [t('generic.okay')],
+            });
+          },
         });
       })
       .finally(() => {
@@ -87,23 +129,23 @@ export const Login: React.FC<Props> = (props) => {
             <CenteredIonInputContainer>
               <IonInput
                 className={getIonInputClassNames(true, emailIsTouched)}
-                label={t('auth.login.field.email.label')}
+                label={t('auth.login.email.label')}
                 type="email"
                 labelPlacement="stacked"
-                placeholder={t('auth.login.field.email.placeholder')}
+                placeholder={t('auth.login.email.placeholder')}
                 value={email}
                 disabled={isLoading}
-                errorText={t('auth.login.field.email.error')}
+                errorText={t('auth.login.email.error')}
                 onIonInput={(e) => emailInputHandler(e.target.value as string)}
                 onIonBlur={() => setEmailIsTouched(false)}
               />
               <IonInput
                 className={getIonInputClassNames(true, passwordIsTouched)}
-                label={t('auth.login.field.password.label')}
+                label={t('auth.login.password.label')}
                 type="password"
                 labelPlacement="stacked"
-                placeholder={t('auth.login.field.password.placeholder')}
-                errorText={t('auth.login.field.password.error')}
+                placeholder={t('auth.login.password.placeholder')}
+                errorText={t('auth.login.password.error')}
                 value={password}
                 disabled={isLoading}
                 onKeyDown={enterKeyHandler}
@@ -116,10 +158,10 @@ export const Login: React.FC<Props> = (props) => {
             <br />
             <CenteredContainer>
               <IonButton onClick={submitLogin} disabled={isLoading}>
-                {t('auth.login.button.login')}
+                {t('auth.login.submit')}
               </IonButton>
-              <IonButton fill="clear">
-                {t('auth.login.button.forgot')}
+              <IonButton onClick={submitTriggerReset} fill="clear">
+                {t('auth.login.forgot')}
               </IonButton>
             </CenteredContainer>
             <SignInWithGoogleButton />

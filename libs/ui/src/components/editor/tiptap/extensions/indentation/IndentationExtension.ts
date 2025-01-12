@@ -1,8 +1,4 @@
-import {
-  Extension,
-  findParentNode,
-  KeyboardShortcutCommand,
-} from '@tiptap/core';
+import { Extension, KeyboardShortcutCommand } from '@tiptap/core';
 import { Node } from 'prosemirror-model';
 import { TextSelection, Transaction, Selection } from 'prosemirror-state';
 import { findWrapping } from 'prosemirror-transform';
@@ -25,7 +21,7 @@ export const IndentationExtension = Extension.create<void, never>({
       indent: () => {
         return (tiptapCommandProps) => {
           const pmCommand = autoJoin(
-            (state, dispatch, view) => {
+            (state, dispatch) => {
               const { selection } = state;
               let tr = state.tr.setSelection(selection);
               tr = updateIndentLevel(tr, 'indent');
@@ -47,7 +43,7 @@ export const IndentationExtension = Extension.create<void, never>({
       outdent: () => {
         return (tiptapCommandProps) => {
           const pmCommand = autoJoin(
-            (state, dispatch, view) => {
+            (state, dispatch) => {
               const { selection } = state;
               let tr = state.tr.setSelection(selection);
               tr = updateIndentLevel(tr, 'outdent');

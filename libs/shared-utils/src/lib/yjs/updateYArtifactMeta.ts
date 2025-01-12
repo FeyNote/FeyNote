@@ -1,5 +1,5 @@
 import { Doc as YDoc } from 'yjs';
-import { ARTIFACT_META_KEY } from '../ARTIFACT_META_KEY';
+import { ARTIFACT_META_KEY } from './ARTIFACT_META_KEY';
 import type { YArtifactMeta } from '@feynote/global-types';
 
 export const updateYArtifactMeta = (yArtifact: YDoc, meta: YArtifactMeta) => {

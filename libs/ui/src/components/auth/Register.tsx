@@ -131,25 +131,25 @@ export const Register: React.FC<Props> = (props) => {
             <CenteredIonInputContainer>
               <IonInput
                 className={getIonInputClassNames(nameIsValid, nameIsTouched)}
-                label={t('auth.register.field.name.label')}
+                label={t('auth.register.name.label')}
                 type="text"
                 labelPlacement="stacked"
-                placeholder={t('auth.register.field.name.placeholder')}
+                placeholder={t('auth.register.name.placeholder')}
                 value={name}
                 disabled={isLoading}
-                errorText={t('auth.register.field.name.error')}
+                errorText={t('auth.register.name.error')}
                 onIonInput={(e) => nameInputHandler(e.target.value as string)}
                 onIonBlur={() => setNameIsTouched(false)}
               />
               <IonInput
                 className={getIonInputClassNames(emailIsValid, emailIsTouched)}
-                label={t('auth.register.field.email.label')}
+                label={t('auth.register.email.label')}
                 type="email"
                 labelPlacement="stacked"
-                placeholder={t('auth.register.field.email.placeholder')}
+                placeholder={t('auth.register.email.placeholder')}
                 value={email}
                 disabled={isLoading}
-                errorText={t('auth.register.field.email.error')}
+                errorText={t('auth.register.email.error')}
                 onIonInput={(e) => emailInputHandler(e.target.value as string)}
                 onIonBlur={() => setEmailIsTouched(false)}
               />
@@ -158,11 +158,11 @@ export const Register: React.FC<Props> = (props) => {
                   passwordIsValid,
                   passwordIsTouched,
                 )}
-                label={t('auth.register.field.password.label')}
+                label={t('auth.register.password.label')}
                 type="password"
                 labelPlacement="stacked"
-                placeholder={t('auth.register.field.password.placeholder')}
-                errorText={t('auth.register.field.password.error')}
+                placeholder={t('auth.register.password.placeholder')}
+                errorText={t('auth.register.password.error')}
                 value={password}
                 disabled={isLoading}
                 onIonInput={(e) =>
@@ -175,13 +175,11 @@ export const Register: React.FC<Props> = (props) => {
                   confirmPasswordIsValid,
                   confirmPasswordIsTouched,
                 )}
-                label={t('auth.register.field.confirmPassword.label')}
+                label={t('auth.register.confirmPassword.label')}
                 type="password"
                 labelPlacement="stacked"
-                placeholder={t(
-                  'auth.register.field.confirmPassword.placeholder',
-                )}
-                errorText={t('auth.register.field.confirmPassword.error')}
+                placeholder={t('auth.register.confirmPassword.placeholder')}
+                errorText={t('auth.register.confirmPassword.error')}
                 disabled={isLoading}
                 value={confirmPassword}
                 onKeyDown={enterKeyHandler}
@@ -197,7 +195,7 @@ export const Register: React.FC<Props> = (props) => {
                 onClick={submitRegister}
                 disabled={disableRegisterButton}
               >
-                {t('auth.register.button.register')}
+                {t('auth.register.submit')}
               </IonButton>
             </CenteredContainer>
             <SignInWithGoogleButton />

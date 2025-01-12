@@ -59,7 +59,11 @@ export const Pane: React.FC<Props> = memo((props) => {
       <PaneContext.Provider value={contextValue}>
         <ComponentWrapper key={pane.currentView.navigationEventId}>
           {/** Cast to any since we have no good way of generic-typing props stored in FlexLayout config and having them spit out here */}
-          <DisplayComponent {...(pane.currentView.props as any)} />
+          <DisplayComponent
+            {...(pane.currentView.props as React.ComponentProps<
+              typeof DisplayComponent
+            >)}
+          />
         </ComponentWrapper>
       </PaneContext.Provider>
     </PaneContainer>

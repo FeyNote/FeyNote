@@ -1,4 +1,3 @@
-import type { ArtifactDTO } from '@feynote/global-types';
 import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
 import type { CalendarRenderProps } from './CalendarRenderProps';
@@ -7,6 +6,7 @@ import { useContext } from 'react';
 import { PaneContext } from '../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
+import { Edge } from '@feynote/shared-utils';
 
 const CalendarContainer = styled.div``;
 
@@ -83,11 +83,12 @@ const CalendarItem = styled.div`
   font-size: 0.8rem;
 `;
 
+const CalendarItemLink = styled.a`
+  cursor: pointer;
+`;
+
 interface FullsizeCalendarProps extends CalendarRenderProps {
-  knownReferencesByDay: Record<
-    string,
-    ArtifactDTO['incomingArtifactReferences']
-  >;
+  edgesByDay: Record<string, Edge[]>;
 }
 
 export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
@@ -95,25 +96,24 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
 
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);
-    if (!dayInfo) return <></>;
+    if (!dayInfo) return null;
 
-    const references = props.knownReferencesByDay[dayInfo.datestamp] || [];
+    const edges = props.edgesByDay[dayInfo.datestamp] || [];
 
     return (
       <CalendarDay data-date={dayInfo.datestamp}>
         <div>{dayInfo.day}</div>
 
-        {references.map((reference) => (
-          <CalendarItem key={reference.id}>
-            <a
-              key={reference.id}
-              href=""
+        {edges.map((edge) => (
+          <CalendarItem key={edge.id}>
+            <CalendarItemLink
+              key={edge.id}
               onClick={(event) => (
                 event.preventDefault(),
                 event.stopPropagation(),
                 navigate(
                   PaneableComponent.Artifact,
-                  { id: reference.artifactId },
+                  { id: edge.artifactId },
                   event.metaKey || event.ctrlKey
                     ? PaneTransition.NewTab
                     : PaneTransition.Push,
@@ -121,8 +121,8 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
                 )
               )}
             >
-              {reference.artifact.title}
-            </a>
+              {edge.artifactTitle}
+            </CalendarItemLink>
           </CalendarItem>
         ))}
       </CalendarDay>

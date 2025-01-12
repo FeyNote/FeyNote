@@ -2,7 +2,7 @@ import {
   artifactUpdateQueueWorker,
   importJobQueueWorker,
 } from '@feynote/queue';
-import './instrument.mjs';
+import './instrument.ts';
 
 artifactUpdateQueueWorker.run();
 importJobQueueWorker.run();

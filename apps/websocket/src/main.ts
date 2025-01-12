@@ -1,4 +1,4 @@
-import './instrument.mjs';
+import './instrument.ts';
 
 import { Server } from 'socket.io';
 import { prisma } from '@feynote/prisma/client';
@@ -46,7 +46,7 @@ io.use(async (socket, next) => {
     socket.data.userId = userId;
 
     next();
-  } catch (e) {
+  } catch (_e) {
     next(new Error('Unauthorized'));
   }
 });

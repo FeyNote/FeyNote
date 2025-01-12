@@ -3,6 +3,7 @@ import { specifierToDatestamp } from './specifierToDatestamp';
 
 export const useScrollDateIntoView = (
   date: string | undefined,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do allow any!
   dependencies: any[],
   containerRef?: React.RefObject<HTMLElement>,
 ) => {

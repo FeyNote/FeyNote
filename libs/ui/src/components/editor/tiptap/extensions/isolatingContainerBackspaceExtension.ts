@@ -24,6 +24,7 @@ export const IsolatingContainerBackspaceExtension = Extension.create({
 
         const pos = from;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- The typings on this are particularly fucked, thanks prosemirror
         let customBlockContainer: any = null;
         let containerPos = -1;
         state.doc.nodesBetween(pos, pos, (node, _containerPos) => {

@@ -5,6 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import { SessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
+import * as Sentry from '@sentry/react';
+
+const openAlertTracker = {
+  isOpen: false,
+};
 
 export const useHandleTRPCErrors = () => {
   const [presentAlert] = useIonAlert();
@@ -26,6 +31,10 @@ export const useHandleTRPCErrors = () => {
     }
     const handler = handlerMap?.[errorCode];
     if (typeof handler === 'string') {
+      if (openAlertTracker.isOpen) {
+        return errorCode;
+      }
+      openAlertTracker.isOpen = true;
       presentAlert({
         header: t('generic.error'),
         message: handler,
@@ -35,6 +44,9 @@ export const useHandleTRPCErrors = () => {
             role: 'cancel',
           },
         ],
+        onDidDismiss: () => {
+          openAlertTracker.isOpen = false;
+        },
       });
       return errorCode;
     }
@@ -64,6 +76,11 @@ export const useHandleTRPCErrors = () => {
       errorCode = 500;
     }
 
+    if (openAlertTracker.isOpen) {
+      return errorCode;
+    }
+
+    openAlertTracker.isOpen = true;
     presentAlert({
       header: t('generic.error'),
       message: defaultErrorMessages[errorCode],
@@ -73,7 +90,14 @@ export const useHandleTRPCErrors = () => {
           role: 'cancel',
         },
       ],
+      onDidDismiss: () => {
+        openAlertTracker.isOpen = false;
+      },
     });
+
+    console.error('Unexpected TRPC error', error);
+    Sentry.captureException(error);
+
     return errorCode;
   };
 

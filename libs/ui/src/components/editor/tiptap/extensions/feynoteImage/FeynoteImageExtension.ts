@@ -17,7 +17,7 @@ export interface FeynoteImageOptions {
    * @default {}
    * @example { class: 'foo' }
    */
-  HTMLAttributes: Record<string, any>;
+  HTMLAttributes: Record<string, string>;
 }
 
 declare module '@tiptap/core' {

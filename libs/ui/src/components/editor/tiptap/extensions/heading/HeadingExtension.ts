@@ -38,7 +38,7 @@ export const HeadingExtension = Heading.extend({
   },
   addInputRules() {
     const { options, type, editor } = this;
-    return options.levels.map((level: any) => {
+    return options.levels.map((level) => {
       return textblockTypeInputRule({
         find: new RegExp(`^(#{1,${level}})\\s$`),
         type,
