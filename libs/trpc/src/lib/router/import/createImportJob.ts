@@ -65,7 +65,7 @@ export const createImportJob = authenticatedProcedure
             id: userId,
           },
         },
-        title: `${input.name}-${new Date()}`,
+        title: input.name,
         status: JobStatus.InProgress,
         type: input.type,
         file: {

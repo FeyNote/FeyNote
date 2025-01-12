@@ -1,69 +1,67 @@
 import {
+  IonAccordion,
+  IonAccordionGroup,
   IonContent,
   IonItem,
   IonLabel,
-  IonList,
-  IonListHeader,
   IonPage,
 } from '@ionic/react';
-import { cloudDownload } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
-import { useContext, useState } from 'react';
-import { NullState } from '../info/NullState';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { ImportJobType } from '@prisma/client';
+import { ImportFromFile } from './ImportFromFile';
+import { ImportJobsTable } from './ImportJobsTable';
+import { useEffect, useState } from 'react';
+import { useProgressBar } from '../../utils/useProgressBar';
+import { trpc } from '../../utils/trpc';
+import { ImportJobDTO } from '@feynote/global-types';
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
-  const [importJobs, setImportJobs] = useState([]);
+  const [importJobs, setImportJobs] = useState<ImportJobDTO[]>([]);
+  const { startProgressBar, ProgressBar } = useProgressBar();
+
+  useEffect(() => {
+    getImportJobs();
+  }, []);
+
+  const getImportJobs = async () => {
+    const progress = startProgressBar();
+    const importJobDTOs = await trpc.import.getImportJobs.query();
+    setImportJobs(importJobDTOs);
+    progress.dismiss();
+  };
 
   return (
     <IonPage>
       <PaneNav title={t('import.title')} />
-      <IonContent>
-        <IonList>
-          {importJobs.length ? (
-            <>
-              <IonListHeader>
-                <IonLabel>{t('import.jobs.title')}</IonLabel>
-              </IonListHeader>
-              {importJobs.map((job) => (
-                <IonItem></IonItem>
-              ))}
-            </>
-          ) : (
-            <NullState
-              className="ion-padding"
-              title={t('import.jobs.nullState.title')}
-              message={t('import.jobs.nullState.message')}
-              icon={cloudDownload}
-            />
-          )}
-        </IonList>
-        <IonList>
-          <IonItem
-            lines="none"
-            button
-            target="_blank"
-            detail={true}
-            onClick={() => {
-              navigate(
-                PaneableComponent.ImportFile,
-                {
-                  type: ImportJobType.Obsidian,
-                  title: t('import.jobs.options.obsidian'),
-                },
-                PaneTransition.Push,
-              );
-            }}
-          >
-            {t('import.jobs.options.obsidian')}
-          </IonItem>
-        </IonList>
+      <IonContent className="ion-padding">
+        {ProgressBar}
+        {!!importJobs.length && <ImportJobsTable importJobs={importJobs} />}
+        <IonAccordionGroup>
+          <IonAccordion value="first">
+            <IonItem slot="header">
+              <IonLabel>{t('import.jobs.options.obsidian')}</IonLabel>
+            </IonItem>
+            <div slot="content">
+              <ImportFromFile
+                refetchImportJobs={getImportJobs}
+                type={ImportJobType.Obsidian}
+              />
+            </div>
+          </IonAccordion>
+          <IonAccordion value="second">
+            <IonItem slot="header">
+              <IonLabel>Import from Logseq</IonLabel>
+            </IonItem>
+            <div slot="content">
+              <ImportFromFile
+                refetchImportJobs={getImportJobs}
+                type={ImportJobType.Obsidian}
+              />
+            </div>
+          </IonAccordion>
+        </IonAccordionGroup>
       </IonContent>
     </IonPage>
   );

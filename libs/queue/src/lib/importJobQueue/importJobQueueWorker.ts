@@ -9,6 +9,7 @@ import { importContentFromObsidian } from './importContentFromObsidian';
 export const importJobQueueWorker = new Worker<ImportJobQueueItem, void>(
   IMPORT_JOB_QUEUE_NAME,
   async (args) => {
+    console.log(`Received job: ${args.data}`);
     switch (args.data.type) {
       case ImportJobType.Obsidian:
         importContentFromObsidian(args.data);

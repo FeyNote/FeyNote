@@ -136,8 +136,12 @@
   "import.title": "Import Artifacts",
   "import.jobs.title": "Import Jobs",
   "import.jobs.nullState.title": "No Import Jobs",
-  "import.jobs.nullState.message": "Import artifacts by clicking on an import option below!",
+  "import.jobs.nullState.message": "Import artifacts by selecting an import option below!",
   "import.jobs.options.obsidian": "Import from Obsidian",
+  "import.jobs.table.columns.title": "Title",
+  "import.jobs.table.columns.status": "Status",
+  "import.jobs.table.columns.type": "Type",
+  "import.jobs.table.columns.createdAt": "Created At",
 
   "import.file.title": "Import from File",
   "import.file.input.error.type": "Invalid file type selected. File must be of type(s);",

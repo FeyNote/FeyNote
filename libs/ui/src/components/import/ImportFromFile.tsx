@@ -1,30 +1,33 @@
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonPage,
-  IonText,
-} from '@ionic/react';
-import { PaneNav } from '../pane/PaneNav';
+import { IonButton, IonIcon, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { trpc } from '../../utils/trpc';
 import { ImportJobType } from '@prisma/client';
-import axios from 'axios';
+import { closeOutline } from 'ionicons/icons';
 
 const FileErrorText = styled.p`
   font-size: 0.8rem;
 `;
 
+const Header = styled.h3`
+  margin-top: 0;
+`;
+
+const FileInstructions = styled(IonText)`
+  opacity: 0.6;
+  padding-bottom: 8px;
+  display: block;
+`;
+
+const FileInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 interface Props {
-  title: string;
   type: ImportJobType;
+  refetchImportJobs: () => void;
 }
 
 const FILE_SIZE_LIMIT = 5000000; //5MB
@@ -32,6 +35,7 @@ const ALLOWED_FILE_TYPES = ['application/zip', 'application/x-zip-compressed'];
 const ALLOWED_FILE_TYPES_STR = ALLOWED_FILE_TYPES.join(', ');
 
 export const ImportFromFile: React.FC<Props> = (props: Props) => {
+  const fileUploadRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>();
   const [fileInputError, setFileInputError] = useState<string | null>(null);
@@ -52,47 +56,83 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
     setFileInputError(null);
   };
 
+  const toggleFileInput = () => {
+    fileUploadRef.current?.click();
+  };
+
+  const clearFileSelection = () => {
+    setFile(null);
+    setFileInputError(null);
+    if (fileUploadRef.current) fileUploadRef.current.value = '';
+  };
+
   const uploadFile = async () => {
     if (!file) return;
-    const s3PresignedUrl = await trpc.import.createImportJob.mutate({
-      name: file.name,
-      mimetype: file.type,
-      type: props.type,
-    });
+    try {
+      const s3PresignedUrl = await trpc.import.createImportJob.mutate({
+        name: file.name,
+        mimetype: file.type,
+        type: props.type,
+      });
 
-    console.log(s3PresignedUrl);
-
-    const response = await fetch(s3PresignedUrl, {
-      method: 'PUT',
-      body: file,
-      headers: {
-        'Content-Type': file.type,
-      },
-    });
-
-    console.log(`response: ${await response.json()}`);
+      await fetch(s3PresignedUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+      clearFileSelection();
+      props.refetchImportJobs();
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
-    <IonPage>
-      <PaneNav title={props.title} />
-      <IonContent className="ion-padding">
-        <h4>File Selection</h4>
-        <p>Please zip and select your obsidian vault file.</p>
-        <input
-          accept={ALLOWED_FILE_TYPES_STR}
-          type="file"
-          onChange={handleFileChange}
-        />
-        {fileInputError && (
-          <IonText color="danger">
-            <FileErrorText>{fileInputError}</FileErrorText>
-          </IonText>
-        )}
-        <IonButtons>
-          <IonButton onClick={uploadFile}>{t('generic.upload')}</IonButton>
-        </IonButtons>
-      </IonContent>
-    </IonPage>
+    <div className="ion-padding">
+      <Header>File Selection</Header>
+      <FileInstructions>
+        Please zip and select your obsidian vault file.
+      </FileInstructions>
+      {file ? (
+        <>
+          <FileInfoContainer>
+            <IonText color="dark">{file.name}</IonText>
+            <IonButton
+              size="small"
+              fill="clear"
+              color="dark"
+              onClick={clearFileSelection}
+            >
+              <IonIcon slot="icon-only" icon={closeOutline} size="small" />
+            </IonButton>
+          </FileInfoContainer>
+          <div>
+            <IonButton fill="outline" size="small" onClick={uploadFile}>
+              Submit
+            </IonButton>
+          </div>
+        </>
+      ) : (
+        <div>
+          <IonButton size="small" onClick={toggleFileInput}>
+            Browse
+          </IonButton>
+        </div>
+      )}
+      {fileInputError && (
+        <IonText color="danger">
+          <FileErrorText>{fileInputError}</FileErrorText>
+        </IonText>
+      )}
+      <input
+        ref={fileUploadRef}
+        hidden={true}
+        accept={ALLOWED_FILE_TYPES_STR}
+        type="file"
+        onChange={handleFileChange}
+      />
+    </div>
   );
 };
