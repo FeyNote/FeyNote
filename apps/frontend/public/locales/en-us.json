@@ -7,7 +7,7 @@
   "menu.graph": "Graph",
   "menu.new": "Create New",
   "menu.tree": "Artifact Tree",
-  "menu.tree.help": "Drag and drop artifacts to organize them in a tree-like structure. You can put artifacts within other artifacts to form folders",
+  "menu.tree.help": "Drag and drop artifacts to organize them in a tree-like structure. You can put artifacts within other artifacts to form folders. All items go within 'Uncategorized' if they aren't placed elsewhere in the tree.",
   "menu.assistant": "Assistant",
   "menu.recentlyUpdatedArtifacts": "Recent Artifacts",
   "menu.recentlyUpdatedThreads": "Recent Threads",
@@ -221,6 +221,7 @@
   "artifact.title": "Artifact",
   "artifact.delete.header": "Delete Artifact",
   "artifact.delete.message": "Are you sure? This action is irreversible.",
+  "artifact.duplicateTitle": "Copy of {{title}}",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 
@@ -230,6 +231,7 @@
   "contextMenu.newTab": "New tab",
   "contextMenu.expandAll": "Expand all",
   "contextMenu.collapseAll": "Collapse all",
+  "contextMenu.duplicateArtifact": "Duplicate Artifact",
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",

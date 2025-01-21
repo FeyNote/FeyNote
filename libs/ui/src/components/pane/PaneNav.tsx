@@ -33,7 +33,7 @@ export const PaneNav: React.FC<Props> = (props) => {
 
   const popoverContents = (
     <IonContent onClick={popoverDismissRef.current}>
-      {props.popoverContents || <DefaultContextMenu />}
+      {props.popoverContents || <DefaultContextMenu paneId={pane.id} />}
     </IonContent>
   );
 

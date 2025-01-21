@@ -56,6 +56,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         popoverContents={
           <ArtifactContextMenu
             artifactId={props.id}
+            connection={connection}
             pane={pane}
             navigate={navigate}
           />
