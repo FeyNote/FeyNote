@@ -208,6 +208,13 @@
   "import.jobs.table.columns.status": "Status",
   "import.jobs.table.columns.type": "Type",
   "import.jobs.table.columns.createdAt": "Created At",
+  "import.jobs.table.columns.actions": "Actions",
+  "import.jobs.table.columns.actions.retry.label": "Retry Job",
+  "import.jobs.table.columns.actions.stop.label": "Cancel Job",
+  "import.jobs.table.columns.status.notStarted": "Not Started",
+  "import.jobs.table.columns.status.inProgress": "In-Progress",
+  "import.jobs.table.columns.status.success": "Success",
+  "import.jobs.table.columns.status.failed": "Failed",
 
   "import.file.title": "Import from File",
   "import.file.input.error.type": "Invalid file type selected. File must be of type(s);",

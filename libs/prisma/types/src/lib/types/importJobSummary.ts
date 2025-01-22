@@ -16,7 +16,7 @@ export const importJobSummary =
       },
     },
     orderBy: {
-      createdAt: 'asc',
+      createdAt: 'desc',
     },
   });
 

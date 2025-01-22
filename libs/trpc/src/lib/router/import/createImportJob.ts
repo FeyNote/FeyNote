@@ -20,7 +20,7 @@ export const createImportJob = authenticatedProcedure
       type: z.nativeEnum(ImportJobType),
     }),
   )
-  .mutation(async ({ ctx, input }): Promise<string> => {
+  .mutation(async ({ ctx, input }) => {
     const userId = ctx.session.userId;
     const mostRecentJobs = await prisma.importJob.findMany({
       select: {
@@ -58,7 +58,7 @@ export const createImportJob = authenticatedProcedure
       expiresInSeconds: TTL_S3_PRESIGNED_URL,
     });
 
-    await prisma.importJob.create({
+    const importJob = await prisma.importJob.create({
       data: {
         user: {
           connect: {
@@ -66,12 +66,12 @@ export const createImportJob = authenticatedProcedure
           },
         },
         title: input.name,
-        status: JobStatus.InProgress,
+        status: JobStatus.NotStarted,
         type: input.type,
         file: {
           create: {
             userId,
-            storageKey,
+            storageKey: storageKey,
             purpose,
             mimetype: input.mimetype,
             name: input.name,
@@ -80,5 +80,5 @@ export const createImportJob = authenticatedProcedure
         },
       },
     });
-    return s3SignedURL;
+    return { importJobId: importJob.id, s3SignedURL };
   });

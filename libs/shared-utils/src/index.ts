@@ -43,3 +43,5 @@ export * from './lib/types/preferences';
 export * from './lib/types/Manifest';
 export * from './lib/types/SessionDTO';
 export * from './lib/ImmediateDebouncer';
+export * from './lib/tiptap/getTiptapServerExtensions';
+

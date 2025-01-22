@@ -22,10 +22,10 @@ export const Import: React.FC = () => {
   const { startProgressBar, ProgressBar } = useProgressBar();
 
   useEffect(() => {
-    getImportJobs();
+    fetchImportJobs();
   }, []);
 
-  const getImportJobs = async () => {
+  const fetchImportJobs = async () => {
     const progress = startProgressBar();
     const importJobDTOs = await trpc.import.getImportJobs.query();
     setImportJobs(importJobDTOs);
@@ -37,7 +37,7 @@ export const Import: React.FC = () => {
       <PaneNav title={t('import.title')} />
       <IonContent className="ion-padding">
         {ProgressBar}
-        {!!importJobs.length && <ImportJobsTable importJobs={importJobs} />}
+        {!!importJobs.length && <ImportJobsTable fetchImportJobs={fetchImportJobs} importJobs={importJobs} />}
         <IonAccordionGroup>
           <IonAccordion value="first">
             <IonItem slot="header">
@@ -45,7 +45,7 @@ export const Import: React.FC = () => {
             </IonItem>
             <div slot="content">
               <ImportFromFile
-                refetchImportJobs={getImportJobs}
+                fetchImportJobs={fetchImportJobs}
                 type={ImportJobType.Obsidian}
               />
             </div>
@@ -56,7 +56,7 @@ export const Import: React.FC = () => {
             </IonItem>
             <div slot="content">
               <ImportFromFile
-                refetchImportJobs={getImportJobs}
+                fetchImportJobs={fetchImportJobs}
                 type={ImportJobType.Obsidian}
               />
             </div>

@@ -1,24 +1,55 @@
 import { Worker } from 'bullmq';
-
 import { IMPORT_JOB_QUEUE_NAME } from './IMPORT_JOB_QUEUE_NAME';
 import { ImportJobQueueItem } from './ImportJobQueueItem';
 import { globalServerConfig } from '@feynote/config';
-import { ImportJobType } from '@prisma/client';
+import { ImportJobType, JobStatus } from '@prisma/client';
 import { importContentFromObsidian } from './importContentFromObsidian';
+import { prisma } from '@feynote/prisma/client';
 
 export const importJobQueueWorker = new Worker<ImportJobQueueItem, void>(
   IMPORT_JOB_QUEUE_NAME,
   async (args) => {
-    console.log(`Received job: ${args.data}`);
-    switch (args.data.type) {
-      case ImportJobType.Obsidian:
-        importContentFromObsidian(args.data);
+    console.log(`Received job: ${JSON.stringify(args.data)}`);
+    const userId = args.data.triggeredByUserId;
+    const importJob = await prisma.importJob.update({
+      where: {
+        id: args.data.importJobId,
+      },
+      data: {
+        status: JobStatus.InProgress,
+      },
+      select: {
+        type: true,
+        file: {
+          select: {
+            storageKey: true,
+          },
+        }
+      }
+    });
+    let status: JobStatus = JobStatus.Success;
+    try {
+      switch (importJob.type) {
+        case ImportJobType.Obsidian:
+          await importContentFromObsidian(importJob.file.storageKey, userId);
         break;
-      default:
-        throw new Error(
-          `Invalid job type provided by queue worker: ${args.data}`,
+        default:
+          throw new Error(
+            `Invalid job type provided by queue worker: ${args.data}`,
         );
+      }
+    } catch (e) {
+      console.error(`Failed processing import job ${args.id}`, e);
+      status = JobStatus.Failed;
     }
+    await prisma.importJob.update({
+      where: {
+        id: args.data.importJobId,
+      },
+      data: {
+        status,
+      }
+    });
   },
   {
     autorun: false,

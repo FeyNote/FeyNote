@@ -13,6 +13,6 @@ export const importJobQueue = new Queue<ImportJobQueueItem, void>(
   },
 );
 
-export const enqueueJobQueueUpdate = (item: ImportJobQueueItem) => {
-  return importJobQueue.add(`${Date.now()}-${Math.random()}`, item);
+export const enqueueImportJob = (item: ImportJobQueueItem) => {
+  importJobQueue.add(`${Date.now()}-${Math.random()}`, item);
 };

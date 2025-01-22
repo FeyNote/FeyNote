@@ -27,7 +27,7 @@ const FileInfoContainer = styled.div`
 
 interface Props {
   type: ImportJobType;
-  refetchImportJobs: () => void;
+  fetchImportJobs: () => void;
 }
 
 const FILE_SIZE_LIMIT = 5000000; //5MB
@@ -43,7 +43,6 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     const selectedfile = e.target.files[0];
-    console.log(selectedfile);
     if (!ALLOWED_FILE_TYPES.includes(selectedfile.type))
       return setFileInputError(
         `${t('import.file.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
@@ -69,21 +68,24 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const uploadFile = async () => {
     if (!file) return;
     try {
-      const s3PresignedUrl = await trpc.import.createImportJob.mutate({
+      const { importJobId, s3SignedURL } = await trpc.import.createImportJob.mutate({
         name: file.name,
         mimetype: file.type,
         type: props.type,
       });
 
-      await fetch(s3PresignedUrl, {
+      await fetch(s3SignedURL, {
         method: 'PUT',
         body: file,
         headers: {
           'Content-Type': file.type,
         },
       });
+      await trpc.import.startImportJob.mutate({
+        id: importJobId,
+      });
       clearFileSelection();
-      props.refetchImportJobs();
+      props.fetchImportJobs();
     } catch (e) {
       console.error(e);
     }

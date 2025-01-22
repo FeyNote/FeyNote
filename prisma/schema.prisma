@@ -225,7 +225,8 @@ enum ImportJobType {
 }
 
 enum JobStatus {
-  Error
+  NotStarted
+  Failed
   Success
   InProgress
 }

@@ -2,7 +2,7 @@
 CREATE TYPE "ImportJobType" AS ENUM ('Logseq', 'Obsidian', 'Notion', 'GoogleDrive');
 
 -- CreateEnum
-CREATE TYPE "JobStatus" AS ENUM ('Error', 'Success', 'InProgress');
+CREATE TYPE "JobStatus" AS ENUM ('NotStarted', 'Failed', 'Success', 'InProgress');
 
 -- AlterEnum
 ALTER TYPE "FilePurpose" ADD VALUE 'import';

@@ -47,7 +47,7 @@ export const artifactUpdateQueueWorker = new Worker<
       const oldReadableUserIds = args.data.oldReadableUserIds.sort((a, b) =>
         a.localeCompare(b),
       );
-      const newReadableUserIds = args.data.oldReadableUserIds.sort((a, b) =>
+      const newReadableUserIds = args.data.newReadableUserIds.sort((a, b) =>
         a.localeCompare(b),
       );
 
