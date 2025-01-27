@@ -23,7 +23,7 @@
     "@hocuspocus/provider": "2.15.0",
     "@hocuspocus/server": "2.15.0",
     "@hocuspocus/transformer": "2.15.0",
-    "@ionic/react": "^8.4.1",
+    "@ionic/react": "^8.4.2",
     "@prisma/client": "^6.2.1",
     "@sentry/node": "^8.50.0",
     "@sentry/profiling-node": "^8.50.0",
