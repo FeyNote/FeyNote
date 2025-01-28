@@ -16,6 +16,8 @@ export * from './lib/s3/generateS3Key';
 export * from './lib/s3/getSignedUrl';
 export * from './lib/s3/getSignedUrlForFilePurpose';
 export * from './lib/s3/uploadFileToS3';
+export * from './lib/s3/getImageQuality';
+export * from './lib/s3/uploadImageFromPathToS3';
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';
 export * from './lib/artifacts/yArtifactMetaZodSchema';

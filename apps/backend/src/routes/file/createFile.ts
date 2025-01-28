@@ -10,11 +10,11 @@ import {
   BadRequestExpressError,
   NotFoundExpressError,
   getCapabilitiesForUser,
+  getImageQuality,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import { FilePurpose } from '@prisma/client';
-import { Capability } from '@feynote/shared-utils';
 
 const MAX_FILE_SIZE_MB = 25;
 
@@ -67,16 +67,7 @@ export const createFileHandler = defineExpressHandler(
     const userCapabilities = await getCapabilitiesForUser(
       res.locals.session.userId,
     );
-    let maxResolution = 1024;
-    let quality = 65;
-    if (userCapabilities.has(Capability.HighResImages)) {
-      maxResolution = 2048;
-      quality = 75;
-    }
-    if (userCapabilities.has(Capability.UltraHighResImages)) {
-      maxResolution = 4096;
-      quality = 80;
-    }
+    const { maxResolution, quality } = getImageQuality(userCapabilities);
 
     let fileBuffer: Buffer = req.file.buffer;
     if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
