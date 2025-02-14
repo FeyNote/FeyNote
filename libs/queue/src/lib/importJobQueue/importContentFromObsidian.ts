@@ -9,7 +9,7 @@ import {
   ArtifactType,
   Prisma,
 } from '@prisma/client';
-import { readFileSync, rmSync } from 'fs';
+import { readFile } from 'fs/promises';
 import path, { extname, parse } from 'path';
 import { marked } from 'marked';
 import {
@@ -29,6 +29,7 @@ import { replaceObsidianHeadings } from './utils/replaceObsidianHeadings';
 import { downloadZipFromS3 } from './utils/downloadZipFromS3';
 import { replaceImageFileTags } from './utils/replaceImageFileTags';
 import { replaceImageHttpTags } from './utils/replaceImageHttpTags';
+import { pushImgTagsToNewLine } from './utils/pushImgTagsToNewLine';
 
 export const importContentFromObsidian = async (
   storageKey: string,
@@ -65,23 +66,25 @@ export const importContentFromObsidian = async (
   const fileUploadCountRef = {
     fileUploadCount: 0,
   };
-  console.log(`\nFile Paths:\n${filePaths}\n`);
   for await (const filePath of filePaths) {
     console.log(`\nFile Path:\n${filePath}\n`);
     if (extname(filePath) !== '.md') continue;
 
-    let markdown = readFileSync(filePath, 'utf-8');
+    let markdown = await readFile(filePath, 'utf-8');
     console.log(`\n\n\nFile Read:\n${markdown}\n\n\n`);
+    markdown = pushImgTagsToNewLine(markdown)
     markdown = replaceObsidianReferences(markdown, referenceIdToInfoMap, imagesToCreate);
     markdown = replaceObsidianHeadings(markdown);
     markdown = replaceImageFileTags(markdown, imagePathToIdMap);
     const replacementResult = await replaceImageHttpTags(markdown, userId, fileUploadCountRef);
     markdown = replacementResult.updatedContent;
 
-    const html = marked.parse(markdown, { async: false });
+    const html = await marked.parse(markdown);
     console.log(`\n\n\nHTML:\n${html}\n\n\n`);
-    //const extensions = getTiptapServerExtensions();
-    //const tiptap = generateJSON(html, extensions);
+    const extensions = getTiptapServerExtensions();
+    const tiptap = generateJSON(html, extensions);
+    console.log(`\n\n\nTipTap:\n${JSON.stringify(tiptap, null, 2)}\n\n\n`);
+  }
     //addMissingBlockIds(tiptap);
     //
     //const text = getTextForJSONContent(tiptap);
