@@ -8,10 +8,8 @@ import { generateAssistantText } from '../generateAssistantText';
 import { systemMessage } from '../utils/SystemMessage';
 import { AIModel } from '../utils/AIModel';
 import DOMPurify from 'dompurify';
-import axios, { AxiosRequestConfig } from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { globalServerConfig } from '@feynote/config';
 import { ToolName } from '@feynote/shared-utils';
+import { proxyGetRequest } from '@feynote/api-services';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
 
@@ -51,20 +49,8 @@ const getTextFromHtml = (jsdom: JSDOM): string => {
 
 const displayUrlExecutor = async (params: ScrapeUrlParams) => {
   try {
-    const requestConfig = {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0',
-      },
-    } as AxiosRequestConfig;
-    if (globalServerConfig.proxy.enabled) {
-      const proxyUrl = new URL(globalServerConfig.proxy.url);
-      proxyUrl.username = globalServerConfig.proxy.username;
-      proxyUrl.password = globalServerConfig.proxy.password;
-      requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
-    }
-    const res = await axios.get(params.url, requestConfig);
-    const jsdom = new JSDOM(res.data);
+    const response = await proxyGetRequest(params.url)
+    const jsdom = new JSDOM(response.data);
     const html = getTextFromHtml(jsdom);
     const messages = [
       systemMessage.scrapeContent,

@@ -251,9 +251,13 @@ export const getTiptapServerExtensions = () => {
     }),
     Node.create({
       name: 'feynoteImage',
+      group() {
+        return this.options.inline ? 'inline' : 'block';
+      },
       addAttributes() {
         return {
           fileId: {
+            parseHTML: element => element.getAttribute('fileId'),
             default: null,
           },
           storageKey: {
@@ -272,8 +276,8 @@ export const getTiptapServerExtensions = () => {
         return [
           {
             tag: 'img[fileId]',
-          },
-        ];
+          }
+        ]
       },
 
       renderHTML({ HTMLAttributes }) {

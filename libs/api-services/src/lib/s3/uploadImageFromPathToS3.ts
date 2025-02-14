@@ -9,6 +9,7 @@ export const uploadImageFromPathToS3 = async (
   userCapabilities: Set<Capability>,
 ) => {
   const { maxResolution, quality } = getImageQuality(userCapabilities);
+  console.log(`path: ${path}`);
   const fileBuffer = await sharp(path)
     .rotate()
     .resize(maxResolution, maxResolution, {
@@ -23,6 +24,7 @@ export const uploadImageFromPathToS3 = async (
 
   const purpose = FilePurpose.artifact;
   const mimetype = 'image/jpeg';
+  console.log(`uploading buffer to s3`);
   const uploadResult = await uploadFileToS3(fileBuffer, mimetype, purpose);
 
   return {

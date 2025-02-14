@@ -23,6 +23,7 @@ export * from './lib/tiptap/getTiptapIdsFromYEvent';
 export * from './lib/tiptap/jsonContentForEach';
 export * from './lib/tiptap/patchJsonContentWithReferenceText';
 export * from './lib/tiptap/randomizeJSONContentUUIDs';
+export * from './lib/tiptap/addMissingBlockIds';
 export * from './lib/tldraw/getReferencesFromTLDrawContent';
 export * from './lib/tldraw/ReferenceShapeProps';
 export * from './lib/tldraw/ReferenceShapeIconOptions';
@@ -44,4 +45,3 @@ export * from './lib/types/Manifest';
 export * from './lib/types/SessionDTO';
 export * from './lib/ImmediateDebouncer';
 export * from './lib/tiptap/getTiptapServerExtensions';
-
