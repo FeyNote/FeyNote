@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { hasArtifactAccess } from '@feynote/api-services';
 import { publicProcedure } from '../../trpc';
 import { Edge, getEdgeId } from '@feynote/shared-utils';
+import { ArtifactAccessLevel } from '@prisma/client';
+import { getArtifactAccessLevel } from '@feynote/api-services';
 
 export const getArtifactEdgesById = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -20,41 +20,30 @@ export const getArtifactEdgesById = publicProcedure
       outgoingEdges: Edge[];
       incomingEdges: Edge[];
     }> => {
-      if (!ctx.session && !input.shareToken) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-        });
-      }
-
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.id,
         },
         select: {
           title: true,
-          userId: true,
-          artifactShares: {
-            select: {
-              userId: true,
-              accessLevel: true,
-            },
-          },
-          artifactShareTokens: {
-            select: {
-              shareToken: true,
-              accessLevel: true,
-            },
-          },
         },
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (!artifact) {
         throw new TRPCError({
-          message:
-            'Artifact does not exist or is not visible to the current user',
+          message: 'Artifact does not exist',
+          code: 'NOT_FOUND',
+        });
+      }
+
+      const accessLevel = await getArtifactAccessLevel({
+        currentUserId: ctx.session?.userId,
+        artifact: input.id,
+      });
+
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
+        throw new TRPCError({
+          message: 'You do not have rights to view this artifact',
           code: 'NOT_FOUND',
         });
       }

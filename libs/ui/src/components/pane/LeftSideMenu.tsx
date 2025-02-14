@@ -37,7 +37,7 @@ import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
-import { ArtifactCollections } from '../artifact/ArtifactCollections';
+import { CreateCollectionButton } from '../artifact/collection/CreateCollectionButton';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
@@ -202,29 +202,39 @@ export const LeftSideMenu: React.FC = () => {
         </CompactIonItem>
       </IonCard>
 
-      <IonCard>
-        <IonList class="ion-no-padding">
-          <IonListHeader lines="full">
-            <IonIcon icon={pin} />
-            &nbsp;&nbsp;
-            <IonLabel>{t('menu.tree')}</IonLabel>
-            <InfoButton message={t('menu.tree.help')} />
-          </IonListHeader>
-        </IonList>
-        <ArtifactTree />
-      </IonCard>
-
-      <IonCard>
-        <IonList class="ion-no-padding">
-          <IonListHeader lines="full">
-            <IonIcon icon={pin} />
-            &nbsp;&nbsp;
-            <IonLabel>{t('menu.shared')}</IonLabel>
-            <InfoButton message={t('menu.shared.help')} />
-          </IonListHeader>
-        </IonList>
-        <ArtifactCollections />
-      </IonCard>
+      <ArtifactTree
+        renderPersonalSection={(children) => (
+          <IonCard>
+            <IonList class="ion-no-padding">
+              <IonListHeader lines="full">
+                <IonIcon icon={pin} />
+                &nbsp;&nbsp;
+                <IonLabel>{t('menu.tree.personal')}</IonLabel>
+                <InfoButton message={t('menu.tree.personal.help')} />
+              </IonListHeader>
+            </IonList>
+            {children}
+          </IonCard>
+        )}
+        renderCollectionSection={(children) => (
+          <IonCard>
+            <IonList class="ion-no-padding">
+              <IonListHeader lines="full">
+                <IonIcon icon={pin} />
+                &nbsp;&nbsp;
+                <IonLabel>{t('menu.tree.collections')}</IonLabel>
+                <CreateCollectionButton />
+                <InfoButton message={t('menu.tree.collections.help')} />
+              </IonListHeader>
+            </IonList>
+            {children || (
+              <IonList>
+                <IonLabel>{t('menu.tree.collections.empty')}</IonLabel>
+              </IonList>
+            )}
+          </IonCard>
+        )}
+      />
 
       {!!recentlyUpdatedThreads.length &&
         getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (

@@ -2,12 +2,12 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
-import { artifactDetail } from '@feynote/prisma/types';
 import {
+  getArtifactAccessLevel,
   getSignedUrlForFilePurpose,
-  hasArtifactAccess,
 } from '@feynote/api-services';
 import { publicProcedure } from '../../trpc';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 const SIGNED_URL_EXPIRATION_SECONDS = 86400;
 
@@ -37,17 +37,12 @@ export const getFileUrlById = publicProcedure
         throw new Error('File with purpose artifact has no artifact id');
       }
 
-      const artifact = await prisma.artifact.findUnique({
-        where: {
-          id: file.artifactId,
-        },
-        ...artifactDetail,
+      const accessLevel = await getArtifactAccessLevel({
+        artifact: file.artifactId,
+        currentUserId: ctx.session?.userId,
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
         throw new TRPCError({
           message: 'You do not have access to this file',
           code: 'FORBIDDEN',

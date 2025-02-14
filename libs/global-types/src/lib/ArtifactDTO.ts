@@ -1,8 +1,4 @@
-import type {
-  ArtifactAccessLevel,
-  ArtifactTheme,
-  ArtifactType,
-} from '@prisma/client';
+import type { ArtifactTheme, ArtifactType } from '@prisma/client';
 import type { ArtifactDetail } from '@feynote/prisma/types';
 
 type ExpectedType = Omit<ArtifactDetail, 'text'> & {
@@ -14,6 +10,7 @@ export type ArtifactDTO = {
   title: string;
   type: ArtifactType;
   theme: ArtifactTheme;
+  artifactCollectionId: string | null;
   userId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -47,20 +44,6 @@ export type ArtifactDTO = {
     name: string;
     storageKey: string;
     mimetype: string;
-  }[];
-  artifactShares: {
-    id: string;
-    userId: string;
-    user: {
-      name: string;
-    };
-    accessLevel: ArtifactAccessLevel;
-  }[];
-  artifactShareTokens: {
-    id: string;
-    shareToken: string;
-    allowAddToAccount: boolean;
-    accessLevel: ArtifactAccessLevel;
   }[];
   user: {
     name: string;

@@ -2,13 +2,13 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { publicProcedure } from '../../trpc';
-import { hasArtifactAccess } from '@feynote/api-services';
+import { getArtifactAccessLevel } from '@feynote/api-services';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export const getArtifactYBinById = publicProcedure
   .input(
     z.object({
       id: z.string().uuid(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -18,49 +18,34 @@ export const getArtifactYBinById = publicProcedure
     }): Promise<{
       yBin: Uint8Array;
     }> => {
-      if (!ctx.session && !input.shareToken) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-        });
-      }
-
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.id,
         },
         select: {
           yBin: true,
+          id: true,
           userId: true,
-          artifactShares: {
-            select: {
-              id: true,
-              userId: true,
-              user: {
-                select: {
-                  name: true,
-                },
-              },
-              accessLevel: true,
-            },
-          },
-          artifactShareTokens: {
-            select: {
-              id: true,
-              shareToken: true,
-              allowAddToAccount: true,
-              accessLevel: true,
-            },
-          },
+          artifactCollectionId: true,
+          linkAccessLevel: true,
         },
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (!artifact) {
         throw new TRPCError({
-          message:
-            'Artifact does not exist or is not visible to the current user',
+          message: 'Artifact does not exist',
+          code: 'NOT_FOUND',
+        });
+      }
+
+      const accessLevel = await getArtifactAccessLevel({
+        currentUserId: ctx.session?.userId,
+        artifact,
+      });
+
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
+        throw new TRPCError({
+          message: 'You do not have rights to view this artifact',
           code: 'NOT_FOUND',
         });
       }

@@ -111,7 +111,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
 
   const expandAll = () => {
     const expandedItems = new Set(props.expandedItemsRef.current);
-    expandedItems.add(props.treeRenderProps.item.data.id);
+    expandedItems.add(props.treeRenderProps.item.data.aliasId);
 
     const childIds = getAllChildIdsForTreeItem(
       props.itemsRef.current,
@@ -126,7 +126,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
 
   const collapseAll = () => {
     const expandedItems = new Set(props.expandedItemsRef.current);
-    expandedItems.delete(props.treeRenderProps.item.data.id);
+    expandedItems.delete(props.treeRenderProps.item.data.aliasId);
 
     const childIds = getAllChildIdsForTreeItem(
       props.itemsRef.current,
@@ -139,15 +139,21 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     props.setExpandedItemsRef.current(Array.from(expandedItems));
   };
 
-  const popoverContents = (
-    <IonContent onClick={popoverDismissRef.current}>
-      <ArtifactTreeItemContextMenu
-        artifactId={props.treeRenderProps.item.data.id}
-        expandAll={expandAll}
-        collapseAll={collapseAll}
-      />
-    </IonContent>
-  );
+  const internalTreeItem = props.treeRenderProps.item.data;
+  const popoverContents =
+    internalTreeItem.type === 'collectionArtifact' ||
+    internalTreeItem.type === 'personalArtifact' ||
+    internalTreeItem.type === 'uncategorizedArtifact' ? (
+      <IonContent onClick={popoverDismissRef.current}>
+        <ArtifactTreeItemContextMenu
+          artifactId={internalTreeItem.artifactId}
+          expandAll={expandAll}
+          collapseAll={collapseAll}
+        />
+      </IonContent>
+    ) : (
+      <span></span>
+    );
 
   const [presentContextMenuPopover, dismissContextMenuPopover] = useIonPopover(
     popoverContents,
@@ -166,7 +172,8 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID) return;
+    if (props.treeRenderProps.item.data.aliasId === UNCATEGORIZED_ITEM_ID)
+      return;
 
     presentContextMenuPopover({
       event: e.nativeEvent,
@@ -178,7 +185,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
       <TreeListItem
         {...props.treeRenderProps.context.itemContainerWithChildrenProps}
         $isUncategorized={
-          props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+          props.treeRenderProps.item.data.aliasId === UNCATEGORIZED_ITEM_ID
         }
         $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
@@ -203,7 +210,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
             {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
             {...interactiveElementProps}
             $isUncategorized={
-              props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+              props.treeRenderProps.item.data.aliasId === UNCATEGORIZED_ITEM_ID
             }
             className={`rct-tree-item-button`}
             onContextMenu={onContextMenu}

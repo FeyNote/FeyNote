@@ -6,6 +6,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
     title: true,
     type: true,
     theme: true,
+    artifactCollectionId: true,
     userId: true,
     createdAt: true,
     updatedAt: true,
@@ -48,26 +49,6 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
         name: true,
         storageKey: true,
         mimetype: true,
-      },
-    },
-    artifactShares: {
-      select: {
-        id: true,
-        userId: true,
-        user: {
-          select: {
-            name: true,
-          },
-        },
-        accessLevel: true,
-      },
-    },
-    artifactShareTokens: {
-      select: {
-        id: true,
-        shareToken: true,
-        allowAddToAccount: true,
-        accessLevel: true,
       },
     },
     user: {

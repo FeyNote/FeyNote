@@ -5,15 +5,15 @@ import sharp from 'sharp';
 import {
   AuthenticationEnforcement,
   defineExpressHandler,
-  hasArtifactAccess,
   uploadFileToS3,
   BadRequestExpressError,
-  NotFoundExpressError,
   getCapabilitiesForUser,
+  getArtifactAccessLevel,
+  ForbiddenExpressError,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail, fileSummary } from '@feynote/prisma/types';
-import { FilePurpose } from '@prisma/client';
+import { fileSummary } from '@feynote/prisma/types';
+import { ArtifactAccessLevel, FilePurpose } from '@prisma/client';
 import { Capability } from '@feynote/shared-utils';
 
 const MAX_FILE_SIZE_MB = 25;
@@ -47,19 +47,14 @@ export const createFileHandler = defineExpressHandler(
     }
 
     if (req.query.artifactId) {
-      const artifact = await prisma.artifact.findUnique({
-        where: {
-          id: req.query.artifactId,
-        },
-        ...artifactDetail,
+      const accessLevel = await getArtifactAccessLevel({
+        artifact: req.query.artifactId,
+        currentUserId: res.locals.session.userId,
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, res.locals.session.userId)
-      ) {
-        throw new NotFoundExpressError(
-          'Artifact does not exist or is not visible to the current user',
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
+        throw new ForbiddenExpressError(
+          'You do not have access to this artifact',
         );
       }
     }

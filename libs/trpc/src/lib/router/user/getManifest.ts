@@ -1,41 +1,56 @@
 import { getEdgeId, Manifest } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export const getManifest = authenticatedProcedure.query(
   async ({ ctx }): Promise<Manifest> => {
-    const artifactsPromise = prisma.artifact.findMany({
+    const personalArtifactsPromise = prisma.artifact.findMany({
       where: {
         userId: ctx.session.userId,
+        artifactCollectionId: null,
       },
       select: {
         id: true,
-        updatedAt: true,
       },
     });
 
-    const artifactSharesPromise = prisma.artifactShare.findMany({
+    const artifactCollectionsPromise = prisma.artifactCollectionShare.findMany({
       where: {
         userId: ctx.session.userId,
       },
       select: {
-        artifact: {
-          select: {
-            id: true,
-            updatedAt: true,
-          },
-        },
+        computedAccessLevels: true,
       },
     });
 
-    const [artifacts, artifactShares] = await Promise.all([
-      artifactsPromise,
-      artifactSharesPromise,
+    const [personalArtifacts, artifactCollections] = await Promise.all([
+      personalArtifactsPromise,
+      artifactCollectionsPromise,
     ]);
 
-    const allArtifactIds = artifacts
-      .map((artifact) => artifact.id)
-      .concat(artifactShares.map((artifactShare) => artifactShare.artifact.id));
+    const personalArtifactIds = personalArtifacts.map(
+      (artifact) => artifact.id,
+    );
+    const artifactCollectionArtifactIds = artifactCollections.flatMap(
+      (artifactCollection) =>
+        Object.entries(
+          artifactCollection.computedAccessLevels as Record<
+            string,
+            ArtifactAccessLevel
+          >,
+        )
+          .filter(([_, accessLevel]) => {
+            return accessLevel !== ArtifactAccessLevel.noaccess;
+          })
+          .map(([artifactId]) => {
+            return artifactId;
+          }),
+    );
+
+    const allArtifactIds = [
+      ...new Set(personalArtifactIds.concat(artifactCollectionArtifactIds)),
+    ];
 
     const relationships = await prisma.artifactReference.findMany({
       where: {
@@ -83,12 +98,20 @@ export const getManifest = authenticatedProcedure.query(
       artifactVersions: {},
     };
 
-    for (const artifact of artifacts) {
+    const artifactVersions = await prisma.artifact.findMany({
+      where: {
+        id: {
+          in: allArtifactIds,
+        },
+      },
+      select: {
+        id: true,
+        updatedAt: true,
+      },
+    });
+
+    for (const artifact of artifactVersions) {
       manifest.artifactVersions[artifact.id] = artifact.updatedAt.getTime();
-    }
-    for (const artifactShare of artifactShares) {
-      manifest.artifactVersions[artifactShare.artifact.id] =
-        artifactShare.artifact.updatedAt.getTime();
     }
 
     return manifest;

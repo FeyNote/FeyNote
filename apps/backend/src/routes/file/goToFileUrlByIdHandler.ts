@@ -4,21 +4,18 @@ import {
   AuthenticationEnforcement,
   defineExpressHandler,
   ForbiddenExpressError,
+  getArtifactAccessLevel,
   getSignedUrlForFilePurpose,
-  hasArtifactAccess,
   NotFoundExpressError,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
-import { artifactDetail } from '@feynote/prisma/types';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 const SIGNED_URL_EXPIRATION_SECONDS = 86400;
 
 const schema = {
   params: z.object({
     id: z.string().uuid(),
-  }),
-  query: z.object({
-    shareToken: z.string().optional(),
   }),
 };
 
@@ -43,21 +40,12 @@ export const goToFileUrlByIdHandler = defineExpressHandler(
         throw new Error('File with purpose artifact has no artifact id');
       }
 
-      const artifact = await prisma.artifact.findUnique({
-        where: {
-          id: file.artifactId,
-        },
-        ...artifactDetail,
+      const accessLevel = await getArtifactAccessLevel({
+        artifact: file.artifactId,
+        currentUserId: res.locals.session?.userId,
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(
-          artifact,
-          res.locals.session?.userId,
-          req.query.shareToken,
-        )
-      ) {
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
         throw new ForbiddenExpressError('You do not have access to this file');
       }
     }

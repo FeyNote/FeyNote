@@ -4,7 +4,10 @@ import { ArtifactCollectionUpdateQueueItem } from './ArtifactCollectionUpdateQue
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { prisma } from '@feynote/prisma/client';
 import { Prisma } from '@prisma/client';
-import { getMetaFromYArtifactCollection } from '@feynote/shared-utils';
+import {
+  getMetaFromYArtifactCollection,
+  getUserAccessLevelsForCollection,
+} from '@feynote/shared-utils';
 import { ARTIFACT_COLLECTION_UPDATE_QUEUE_NAME } from './ARTIFACT_COLLECTION_UPDATE_QUEUE_NAME';
 import { globalServerConfig } from '@feynote/config';
 import {
@@ -41,6 +44,22 @@ export const artifactCollectionUpdateQueueWorker = new Worker<
         newYMeta.userAccess?.toJSON() ?? {},
       );
 
+      const artifactCollectionShares: Prisma.ArtifactCollectionShareCreateManyArgs['data'] =
+        [];
+      for (const [userId, opts] of newYMeta.userAccess?.entries() ?? []) {
+        const userAccessLevels = getUserAccessLevelsForCollection(
+          newYjsDoc,
+          userId,
+        );
+
+        artifactCollectionShares.push({
+          artifactCollectionId: args.data.artifactCollectionId,
+          userId,
+          accessLevel: opts.accessLevel,
+          computedAccessLevels: Object.fromEntries(userAccessLevels),
+        });
+      }
+
       await prisma.$transaction(
         async (tx) => {
           await tx.artifactCollectionShare.deleteMany({
@@ -49,15 +68,9 @@ export const artifactCollectionUpdateQueueWorker = new Worker<
             },
           });
 
-          for (const [userId, opts] of oldYMeta.userAccess?.entries() ?? []) {
-            await tx.artifactCollectionShare.create({
-              data: {
-                artifactCollectionId: args.data.artifactCollectionId,
-                userId,
-                accessLevel: opts.accessLevel,
-              },
-            });
-          }
+          await tx.artifactCollectionShare.createMany({
+            data: artifactCollectionShares,
+          });
         },
         {
           isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -73,7 +86,7 @@ export const artifactCollectionUpdateQueueWorker = new Worker<
             room: wsRoomNameForUserId(userId),
             event: WebsocketMessageEvent.ArtifactCollectionUpdated,
             json: {
-              artifactId: args.data.artifactCollectionId,
+              collectionId: args.data.artifactCollectionId,
               updated: {
                 title: oldTitle !== newTitle,
                 readableUserIds:

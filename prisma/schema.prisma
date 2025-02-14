@@ -24,15 +24,15 @@ model User {
   treeYBin         Bytes?   @db.ByteA
   stripeCustomerId String?  @unique @db.VarChar(255)
 
-  sessions                Session[]
-  artifacts               Artifact[]
-  artifactRevisions       ArtifactRevision[]
-  files                   File[]
-  threads                 Thread[]
-  artifactShares          ArtifactShare[]
-  stripePayments          StripePayment[]
-  subscriptions           Subscription[]
-  ArtifactCollectionShare ArtifactCollectionShare[]
+  sessions                 Session[]
+  artifacts                Artifact[]
+  artifactRevisions        ArtifactRevision[]
+  files                    File[]
+  threads                  Thread[]
+  artifactShares           ArtifactShare[]
+  stripePayments           StripePayment[]
+  subscriptions            Subscription[]
+  artifactCollectionShares ArtifactCollectionShare[]
 }
 
 model Session {
@@ -47,24 +47,27 @@ model Session {
 }
 
 model Artifact {
-  id        String        @id @default(uuid()) @db.Uuid
-  title     String
-  type      ArtifactType  @default(tiptap)
-  theme     ArtifactTheme @default(default)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String        @db.Uuid
-  text      String
-  json      Json
-  yBin      Bytes         @db.ByteA
-  createdAt DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
+  id              String              @id @default(uuid()) @db.Uuid
+  title           String
+  type            ArtifactType        @default(tiptap)
+  theme           ArtifactTheme       @default(default)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String              @db.Uuid
+  linkAccessLevel ArtifactAccessLevel @default(noaccess)
+  text            String
+  json            Json
+  yBin            Bytes               @db.ByteA
+  createdAt       DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(6)
 
-  artifactReferences          ArtifactReference[]          @relation("artifactReferenceSourceArtifact")
-  incomingArtifactReferences  ArtifactReference[]          @relation("artifactReferenceTargetArtifact")
-  artifactShares              ArtifactShare[]
-  artifactShareTokens         ArtifactShareToken[]
-  files                       File[]
-  artifactCollectionArtifacts ArtifactCollectionArtifact[]
+  artifactCollectionId String?             @db.Uuid
+  artifactCollection   ArtifactCollection? @relation(fields: [artifactCollectionId], references: [id], onDelete: Cascade)
+
+  artifactReferences         ArtifactReference[]  @relation("artifactReferenceSourceArtifact")
+  incomingArtifactReferences ArtifactReference[]  @relation("artifactReferenceTargetArtifact")
+  artifactShares             ArtifactShare[]
+  artifactShareTokens        ArtifactShareToken[]
+  files                      File[]
 }
 
 model ArtifactReference {
@@ -131,24 +134,14 @@ model ArtifactShareToken {
 }
 
 model ArtifactCollection {
-  id                          String                         @id @default(uuid()) @db.Uuid
-  title                       String
-  treeYBin                    Bytes                          @db.ByteA
-  linkAccessLevel             ArtifactCollectionAccessLevel?
-  createdAt                   DateTime                       @default(now()) @db.Timestamptz(6)
-  updatedAt                   DateTime                       @updatedAt @db.Timestamptz(6)
-  artifactCollectionArtifacts ArtifactCollectionArtifact[]
-  artifactCollectionShares    ArtifactCollectionShare[]
-}
-
-model ArtifactCollectionArtifact {
-  id           String             @id @default(uuid()) @db.Uuid
-  artifact     Artifact           @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  artifactId   String             @db.Uuid
-  collection   ArtifactCollection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId String             @db.Uuid
-  createdAt    DateTime           @default(now()) @db.Timestamptz(6)
-  updatedAt    DateTime           @updatedAt @db.Timestamptz(6)
+  id                       String                         @id @default(uuid()) @db.Uuid
+  title                    String
+  treeYBin                 Bytes                          @db.ByteA
+  linkAccessLevel          ArtifactCollectionAccessLevel?
+  createdAt                DateTime                       @default(now()) @db.Timestamptz(6)
+  updatedAt                DateTime                       @updatedAt @db.Timestamptz(6)
+  artifacts                Artifact[]
+  artifactCollectionShares ArtifactCollectionShare[]
 }
 
 model ArtifactCollectionShare {
@@ -157,6 +150,7 @@ model ArtifactCollectionShare {
   userId               String                        @db.Uuid
   artifactCollection   ArtifactCollection            @relation(fields: [artifactCollectionId], references: [id], onDelete: Cascade)
   artifactCollectionId String                        @db.Uuid
+  computedAccessLevels Json
   accessLevel          ArtifactCollectionAccessLevel
   createdAt            DateTime                      @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime                      @updatedAt @db.Timestamptz(6)
@@ -165,6 +159,7 @@ model ArtifactCollectionShare {
 }
 
 enum ArtifactAccessLevel {
+  noaccess
   coowner
   readwrite
   readonly

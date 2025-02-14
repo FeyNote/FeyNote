@@ -13,4 +13,11 @@ export type WebsocketMessageJSON = {
       references: boolean;
     };
   };
+  [WebsocketMessageEvent.ArtifactCollectionUpdated]: {
+    collectionId: string;
+    updated: {
+      title: boolean;
+      readableUserIds: boolean;
+    };
+  };
 };

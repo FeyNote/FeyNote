@@ -18,19 +18,26 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 import * as Sentry from '@sentry/react';
 
-import { collaborationManager } from '../editor/collaborationManager';
+import {
+  collaborationManager,
+  CollaborationManagerConnection,
+} from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
-import { ArtifactDTO } from '@feynote/global-types';
+import { ArtifactCollectionDTO, ArtifactDTO } from '@feynote/global-types';
 import { EventName } from '../../context/events/EventName';
 import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
 import {
+  ARTIFACT_META_KEY,
+  getMetaFromYArtifactCollection,
   getTreeFromYDoc,
   ImmediateDebouncer,
   PreferenceNames,
+  SessionDTO,
+  TreeYKVNode,
 } from '@feynote/shared-utils';
 import { eventManager } from '../../context/events/EventManager';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -42,6 +49,10 @@ import {
   registerStartTreeDrag,
   setCustomDragData,
 } from '../../utils/artifactTree/customDrag';
+import { YKeyValue } from 'y-utility/y-keyvalue';
+import { Map as YMap } from 'yjs';
+import { ArtifactAccessLevel } from '@prisma/client';
+import { TypedMap } from 'yjs-types';
 
 /**
  * Calculates a lexographic sort order between two uppercase strings.
@@ -119,19 +130,283 @@ const StyleContainer = styled.div`
   }
 `;
 
-export interface InternalTreeItem {
-  id: string;
+interface BaseInternalTreeItem {
+  aliasId: string;
   title: string;
   order: string;
   draggable?: boolean;
 }
 
-const TREE_ID = 'appArtifactTree';
-const ROOT_ITEM_ID = 'root';
+interface RootInternalTreeItem extends BaseInternalTreeItem {
+  type: 'personalTreeRoot' | 'collectionTreeRoot' | 'uncategorized';
+}
+
+interface CollectionInternalTreeItem extends BaseInternalTreeItem {
+  type: 'collection';
+  collectionId: string;
+}
+
+interface CollectionArtifactInternalTreeItem extends BaseInternalTreeItem {
+  type: 'collectionArtifact';
+  artifactId: string;
+  collectionId: string;
+}
+
+interface UncategorizedArtifactInternalTreeItem extends BaseInternalTreeItem {
+  type: 'uncategorizedArtifact';
+  artifactId: string;
+  collectionId?: undefined;
+}
+
+interface PersonalArtifactInternalTreeItem extends BaseInternalTreeItem {
+  type: 'personalArtifact';
+  artifactId: string;
+  collectionId?: undefined;
+}
+
+export type InternalTreeItem =
+  | RootInternalTreeItem
+  | CollectionInternalTreeItem
+  | CollectionArtifactInternalTreeItem
+  | PersonalArtifactInternalTreeItem
+  | UncategorizedArtifactInternalTreeItem;
+
+const PERSONAL_TREE_ID = 'personalArtifactTree';
+const PERSONAL_ROOT_ITEM_ID = 'personalArtifactTreeRoot';
+const COLLECTION_ROOT_ITEM_ID = 'collectionArtifactTreeRoot';
+const COLLECTION_TREE_ID = 'collectionArtifactTree';
 export const UNCATEGORIZED_ITEM_ID = 'uncategorized';
 const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
-export const ArtifactTree = () => {
+const moveArtifact = async (args: {
+  artifactId: string;
+  newCollectionId: string | null;
+  session: SessionDTO;
+  nodeVal: Omit<TreeYKVNode['val'], 'userAccess'>;
+}) => {
+  const artifactConnection = collaborationManager.get(
+    `artifact:${args.artifactId}`,
+    args.session,
+  );
+  await artifactConnection.syncedPromise;
+  const yArtifactMetaMap = artifactConnection.yjsDoc.getMap(ARTIFACT_META_KEY);
+  const oldCollectionId = yArtifactMetaMap.get('collectionId') as
+    | string
+    | undefined;
+
+  // We only need to remove the artifact from the old collection if it's changing collections
+  if (oldCollectionId !== args.newCollectionId) {
+    yArtifactMetaMap.set('collectionId', args.newCollectionId);
+
+    if (oldCollectionId) {
+      const oldCollectionConnection = collaborationManager.get(
+        `artifactCollection:${oldCollectionId}`,
+        args.session,
+      );
+      await oldCollectionConnection.syncedPromise;
+      const tree = getTreeFromYDoc(oldCollectionConnection.yjsDoc);
+      tree.yKeyValue.delete(args.artifactId);
+    } else {
+      const personalConnection = collaborationManager.get(
+        `userTree:${args.session.userId}`,
+        args.session,
+      );
+      await personalConnection.syncedPromise;
+      const tree = getTreeFromYDoc(personalConnection.yjsDoc);
+      tree.yKeyValue.delete(args.artifactId);
+    }
+  }
+
+  if (args.newCollectionId) {
+    const collectionConnection = collaborationManager.get(
+      `artifactCollection:${args.newCollectionId}`,
+      args.session,
+    );
+    await collectionConnection.syncedPromise;
+    const tree = getTreeFromYDoc(collectionConnection.yjsDoc);
+
+    // When we're moving an item in the same collection, we don't want to erase the user's custom access permissions
+    const userAccess =
+      args.newCollectionId === oldCollectionId
+        ? tree.yKeyValue.get(args.artifactId)?.userAccess.clone()
+        : undefined;
+
+    tree.yKeyValue.set(args.artifactId, {
+      ...args.nodeVal,
+      userAccess:
+        userAccess ||
+        (new YMap() as TypedMap<{
+          [userId: string]: ArtifactAccessLevel;
+        }>),
+    });
+  } else {
+    const personalConnection = collaborationManager.get(
+      `userTree:${args.session.userId}`,
+      args.session,
+    );
+    await personalConnection.syncedPromise;
+    const tree = getTreeFromYDoc(personalConnection.yjsDoc);
+    tree.yKeyValue.set(args.artifactId, {
+      ...args.nodeVal,
+      // We drop user access when moving to a personal tree
+      userAccess: new YMap() as TypedMap<{
+        [userId: string]: ArtifactAccessLevel;
+      }>,
+    });
+  }
+};
+
+const sortTreeItems = (
+  a: TreeItem<InternalTreeItem>,
+  b: TreeItem<InternalTreeItem>,
+) => {
+  const comparison = a.data.order.localeCompare(b.data.order);
+  if (comparison === 0) {
+    return a.data.title.localeCompare(b.data.title);
+  }
+  return comparison;
+};
+
+const mutateSortTreeChildren = (
+  items: Record<TreeItemIndex, TreeItem<InternalTreeItem>>,
+) => {
+  for (const key in items) {
+    items[key].children = items[key].children?.sort((a, b) =>
+      sortTreeItems(items[a], items[b]),
+    );
+  }
+};
+
+const buildATreeHelper = (opts: {
+  artifacts: ArtifactDTO[];
+  yKeyValue: YKeyValue<TreeYKVNode['val']>;
+  itemIdPrefix: string;
+  collectionId: string | null;
+  userId: string;
+}) => {
+  const artifactsById = new Map(
+    opts.artifacts.map((artifact) => [artifact.id, artifact]),
+  );
+
+  const aliasedKvEntriesMap = new Map<
+    string,
+    TreeYKVNode['val'] & {
+      artifactId: string;
+    }
+  >();
+  for (const entry of opts.yKeyValue.yarray) {
+    aliasedKvEntriesMap.set(`${opts.itemIdPrefix}:${entry.key}`, {
+      ...entry.val,
+      artifactId: entry.key,
+    });
+  }
+
+  const items: Record<TreeItemIndex, TreeItem<InternalTreeItem>> = {};
+
+  // Build tree nodes
+  for (const [key, value] of aliasedKvEntriesMap) {
+    const artifact = artifactsById.get(value.artifactId);
+
+    if (opts.collectionId) {
+      // For shared collections, we may not have access to the artifact in question
+      const title = artifact?.title || t('artifactTree.invisibleArtifact');
+
+      items[key] = {
+        index: key,
+        data: {
+          type: 'collectionArtifact',
+          aliasId: key,
+          artifactId: value.artifactId,
+          title,
+          order: value.order,
+          collectionId: opts.collectionId,
+        },
+        children: [],
+        isFolder: false,
+      };
+    } else {
+      if (!artifact) {
+        // Artifact appears to be deleted, do not render but also do not remove from kvlist in case it comes back
+        continue;
+      }
+
+      items[key] = {
+        index: key,
+        data: {
+          type: 'personalArtifact',
+          aliasId: key,
+          artifactId: value.artifactId,
+          title: artifact?.title || t('artifactTree.invisibleArtifact'),
+          order: value.order,
+        },
+        children: [],
+        isFolder: false,
+      };
+    }
+  }
+
+  const uncategorizedArtifacts = new Set<string>();
+  for (const artifact of opts.artifacts) {
+    if (
+      // An artifact existing in our artifacts list but not being included in our kv list means that it has never been
+      // added to the tree. We want to make sure users don't lose track of artifacts so keep them in an uncategorized list
+      !opts.yKeyValue.has(artifact.id) &&
+      // We only want to show uncategorized artifacts that actually belong to the current user
+      artifact.userId === opts.userId &&
+      // We don't do uncategorized for a collection - if it's not in the collection, it's not in the collection
+      !opts.collectionId
+    ) {
+      const treeItemId = `uncategorizedArtifact:${artifact.id}`;
+      items[treeItemId] = {
+        index: treeItemId,
+        data: {
+          type: 'personalArtifact',
+          aliasId: treeItemId,
+          artifactId: artifact.id,
+          title: artifact.title,
+          order: 'Y',
+        },
+        children: [],
+        isFolder: false,
+      };
+
+      uncategorizedArtifacts.add(artifact.id);
+    }
+  }
+
+  // Populate tree children
+  for (const [key, value] of aliasedKvEntriesMap) {
+    // We may have hanging items in our kvlist that aren't accessible to us anymore
+    if (!items[key]) continue;
+
+    // Find item which this item is a child of, and add to the parent item's children list
+    // enabling folder mode for the parent item
+    if (value.parentNodeId && items[value.parentNodeId]) {
+      items[value.parentNodeId].children?.push(key);
+      items[value.parentNodeId].isFolder = true;
+    }
+
+    // Parents for nodes may be deleted, unshared, or otherwise invalid.
+    // We don't want them to be permanently unavailable in the tree
+    if (value.parentNodeId && !items[value.parentNodeId]) {
+      uncategorizedArtifacts.add(key);
+    }
+  }
+
+  mutateSortTreeChildren(items);
+
+  return {
+    items,
+    uncategorizedArtifacts,
+  };
+};
+
+interface Props {
+  renderPersonalSection: (children: React.ReactNode) => React.ReactNode;
+  renderCollectionSection: (children: React.ReactNode) => React.ReactNode;
+}
+
+export const ArtifactTree: React.FC<Props> = (props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
@@ -139,6 +414,9 @@ export const ArtifactTree = () => {
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
+  const [artifactCollections, setArtifactCollections] = useState<
+    ArtifactCollectionDTO[]
+  >([]);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
@@ -148,23 +426,48 @@ export const ArtifactTree = () => {
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
   const currentPane = getPaneById(undefined);
 
-  const connection = collaborationManager.get(
+  const personalConnection = collaborationManager.get(
     `userTree:${session.userId}`,
     session,
   );
-  const yDoc = connection.yjsDoc;
+  const { yKeyValue: personalYKeyValue } = getTreeFromYDoc(
+    personalConnection.yjsDoc,
+  );
 
-  const yKeyValue = useMemo(() => {
-    const { yKeyValue } = getTreeFromYDoc(yDoc);
+  const artifactCollectionConnections = artifactCollections.reduce(
+    (acc, collection) => {
+      acc[collection.id] = collaborationManager.get(
+        `artifactCollection:${collection.id}`,
+        session,
+      );
+      return acc;
+    },
+    {} as Record<string, CollaborationManagerConnection>,
+  );
 
-    return yKeyValue;
-  }, [yDoc]);
+  const artifactCollectionsY = useMemo(() => {
+    const map = {} as Record<string, ReturnType<typeof getTreeFromYDoc>>;
+    for (const [collectionId, connection] of Object.entries(
+      artifactCollectionConnections,
+    )) {
+      const tree = getTreeFromYDoc(connection.yjsDoc);
+      map[collectionId] = tree;
+    }
+    return map;
+  }, [
+    Object.keys(artifactCollectionConnections)
+      .map((key) => key)
+      .join(','),
+  ]);
 
   const load = () => {
-    trpc.artifact.getArtifacts
-      .query()
-      .then((artifacts) => {
+    Promise.all([
+      trpc.artifact.getArtifacts.query(),
+      trpc.artifactCollection.getArtifactCollections.query(),
+    ])
+      .then(([artifacts, artifactCollections]) => {
         setArtifacts(artifacts);
+        setArtifactCollections(artifactCollections);
         triggerRerender();
       })
       .catch(() => {
@@ -180,12 +483,23 @@ export const ArtifactTree = () => {
     const listener = () => {
       triggerRerender();
     };
-    yKeyValue.on('change', listener);
+    personalYKeyValue.on('change', listener);
+    Object.values(artifactCollectionsY).forEach((el) => {
+      el.yKeyValue.on('change', listener);
+    });
 
     return () => {
-      yKeyValue.off('change', listener);
+      personalYKeyValue.off('change', listener);
+      Object.values(artifactCollectionsY).forEach((el) => {
+        el.yKeyValue.off('change', listener);
+      });
     };
-  }, [yKeyValue]);
+  }, [
+    personalYKeyValue,
+    Object.keys(artifactCollectionConnections)
+      .map((key) => key)
+      .join(','),
+  ]);
 
   useEffect(() => {
     loadDebouncerRef.current.call();
@@ -225,137 +539,285 @@ export const ArtifactTree = () => {
     TreeItemIndex,
     TreeItem<InternalTreeItem>
   > => {
-    const artifactsById = new Map(
-      artifacts.map((artifact) => [artifact.id, artifact]),
-    );
+    //const artifactsById = new Map(
+    //  artifacts.map((artifact) => [artifact.id, artifact]),
+    //);
+    //
+    //const aliasedKvEntriesMap = new Map<string, TreeYKVNode['val'] & {
+    //  artifactId: string;
+    //  collectionId: string | null;
+    //}>();
+    //for (const entry of personalYKeyValue.yarray) {
+    //  aliasedKvEntriesMap.set(`personalTree:${entry.key}`, {
+    //    ...entry.val,
+    //    artifactId: entry.key,
+    //    collectionId: null,
+    //  });
+    //}
+    //for (let i = 0; i < artifactCollections.length; i++) {
+    //  for (const entry of artifactCollectionsY[i].yKeyValue.yarray) {
+    //    aliasedKvEntriesMap.set(`sharedCollectionTree:${artifactCollections[i].id}:${entry.key}`, {
+    //      ...entry.val,
+    //      artifactId: entry.key,
+    //      collectionId: artifactCollections[i].id,
+    //    });
+    //  }
+    //}
+    //
+    //const items: Record<TreeItemIndex, TreeItem<InternalTreeItem>> = {};
+    //
+    //// Build tree nodes
+    //for (const [key, value] of aliasedKvEntriesMap) {
+    //  const artifact = artifactsById.get(key);
+    //  if (!artifact && !value.collectionId) {
+    //    // Artifact appears to be deleted, do not render but also do not remove from kvlist in case it comes back
+    //    continue;
+    //  }
+    //
+    //  items[key] = {
+    //    index: key,
+    //    data: {
+    //      type: 'personalArtifact',
+    //      aliasId: key,
+    //      artifactId: value.artifactId,
+    //      title: artifact?.title || t('artifactTree.invisibleArtifact'),
+    //      order: value.order,
+    //    },
+    //    children: [],
+    //    isFolder: false,
+    //  };
+    //}
+    //
+    //// Artifact not explicitly added to tree, add it to uncategorized
+    //const uncategorizedArtifacts = new Set<string>();
+    //for (const artifact of artifacts) {
+    //  const isInPersonalTree = aliasedKvEntriesMap.has(`personalTree:${artifact.id}`);
+    //  if (!isInPersonalTree && artifact.userId === session.userId) {
+    //    const treeItemId = `uncategorizedArtifact:${artifact.id}`;
+    //    items[treeItemId] = {
+    //      index: treeItemId,
+    //      data: {
+    //        type: 'personalArtifact',
+    //        aliasId: treeItemId,
+    //        artifactId: artifact.id,
+    //        title: artifact.title,
+    //        order: 'Y',
+    //      },
+    //      children: [],
+    //      isFolder: false,
+    //    };
+    //
+    //    uncategorizedArtifacts.add(artifact.id);
+    //  }
+    //}
+    //
+    //for (let i = 0; i < artifactCollections.length; i++) {
+    //  const connection = artifactCollectionConnections[i];
+    //  const meta = getMetaFromYArtifactCollection(connection.yjsDoc);
+    //  const { yKeyValue } = artifactCollectionsY[i];
+    //
+    //  const treeItemId = `artifactCollection:${artifactCollections[i].id}`;
+    //  items[treeItemId] = {
+    //    index: treeItemId,
+    //    data: {
+    //      type: 'collectionRoot',
+    //      aliasId: treeItemId,
+    //      title: meta.title,
+    //      order: 'Y',
+    //      collectionId: artifactCollections[i].id,
+    //    },
+    //    children: yKeyValue.yarray.map((el) => el.key),
+    //    isFolder: true,
+    //    canMove: false,
+    //  };
+    //}
+    //
+    //// Populate tree children
+    //for (const [key, value] of aliasedKvEntriesMap) {
+    //  // We may have hanging items in our kvlist that aren't accessible to us anymore
+    //  if (!items[key]) continue;
+    //
+    //  // Find item which this item is a child of, and add to the parent item's children list
+    //  // enabling folder mode for the parent item
+    //  if (value.parentNodeId && items[value.parentNodeId]) {
+    //    items[value.parentNodeId].children?.push(key);
+    //    items[value.parentNodeId].isFolder = true;
+    //  }
+    //
+    //  // Parents for nodes may be deleted, unshared, or otherwise invalid.
+    //  // We don't want them to be permanently unavailable in the tree
+    //  if (value.parentNodeId && !items[value.parentNodeId]) {
+    //    uncategorizedArtifacts.add(key);
+    //  }
+    //}
+    //
+    //if (leftPaneArtifactTreeShowUncategorized) {
+    //  // All uncategorized items go under their own header
+    //  items[UNCATEGORIZED_ITEM_ID] = {
+    //    index: UNCATEGORIZED_ITEM_ID,
+    //    data: {
+    //      type: 'uncategorizedRoot',
+    //      aliasId: UNCATEGORIZED_ITEM_ID,
+    //      title: t('artifactTree.uncategorized', {
+    //        count: uncategorizedArtifacts.size,
+    //      }),
+    //      order: 'XZ',
+    //    },
+    //    children: Array.from(uncategorizedArtifacts),
+    //    isFolder: true,
+    //    canMove: false,
+    //  };
+    //}
+    //
+    //// Sort children
+    //for (const key in items) {
+    //  items[key].children = items[key].children?.sort((a, b) => {
+    //    const aItem = items[a];
+    //    const bItem = items[b];
+    //
+    //    const comparison = aItem.data.order.localeCompare(bItem.data.order);
+    //    if (comparison === 0) {
+    //      return aItem.data.title.localeCompare(bItem.data.title);
+    //    }
+    //    return comparison;
+    //  });
+    //}
+    const personalTree = buildATreeHelper({
+      artifacts,
+      yKeyValue: personalYKeyValue,
+      itemIdPrefix: 'personalTree',
+      collectionId: null,
+      userId: session.userId,
+    });
 
-    const kvEntries = new Map(yKeyValue.yarray.map((el) => [el.key, el.val]));
-
-    const items: Record<TreeItemIndex, TreeItem<InternalTreeItem>> = {};
-
-    // Build tree nodes
-    for (const [key, value] of kvEntries) {
-      const artifact = artifactsById.get(key);
-      if (!artifact) {
-        // Artifact appears to be deleted, do not render but also do not remove from kvlist in case it comes back
-        // (re-shared to user)
-        continue;
-      }
-
-      items[key] = {
-        index: key,
-        data: {
-          id: key,
-          title: artifact.title,
-          order: value.order,
-        },
-        children: [],
-        isFolder: false,
-      };
-    }
-
-    // Artifact not explicitly added to tree, add it to uncategorized
-    const uncategorizedArtifacts = new Set<string>();
-    for (const artifact of artifacts) {
-      if (!items[artifact.id]) {
-        items[artifact.id] = {
-          index: artifact.id,
-          data: {
-            id: artifact.id,
-            title: artifact.title,
-            order: 'Z',
-          },
-          children: [],
-          isFolder: false,
+    console.log('baba', artifactCollections, artifactCollectionsY);
+    const collections = artifactCollections
+      .filter((artifactCollection) => {
+        return artifactCollectionsY[artifactCollection.id];
+      })
+      .map((artifactCollection) => {
+        return {
+          id: artifactCollection.id,
+          connection: artifactCollectionConnections[artifactCollection.id],
+          ...buildATreeHelper({
+            artifacts,
+            yKeyValue: artifactCollectionsY[artifactCollection.id].yKeyValue,
+            itemIdPrefix: 'sharedCollectionTree',
+            collectionId: artifactCollection.id,
+            userId: session.userId,
+          }),
         };
+      });
 
-        uncategorizedArtifacts.add(artifact.id);
-      }
-    }
+    const allItems = {} as Record<TreeItemIndex, TreeItem<InternalTreeItem>>;
 
-    // Populate children
-    for (const [key, value] of kvEntries) {
-      // We may have hanging items in our kvlist that aren't accessible to us anymore
-      if (!items[key]) continue;
-
-      // Find item which this item is a child of, and add to the parent item's children list
-      // enabling folder mode for the parent item
-      if (value.parentNodeId && items[value.parentNodeId]) {
-        items[value.parentNodeId].children?.push(key);
-        items[value.parentNodeId].isFolder = true;
-      }
-
-      // Parents for nodes may be deleted, unshared, or otherwise invalid.
-      // We don't want them to be permanently unavailable in the tree
-      if (value.parentNodeId && !items[value.parentNodeId]) {
-        uncategorizedArtifacts.add(key);
-      }
+    for (const [key, value] of Object.entries(personalTree.items)) {
+      allItems[key] = value;
     }
 
     if (leftPaneArtifactTreeShowUncategorized) {
       // All uncategorized items go under their own header
-      items[UNCATEGORIZED_ITEM_ID] = {
+      allItems[UNCATEGORIZED_ITEM_ID] = {
         index: UNCATEGORIZED_ITEM_ID,
         data: {
-          id: UNCATEGORIZED_ITEM_ID,
+          type: 'uncategorized',
+          aliasId: UNCATEGORIZED_ITEM_ID,
           title: t('artifactTree.uncategorized', {
-            count: uncategorizedArtifacts.size,
+            count: personalTree.uncategorizedArtifacts.size,
           }),
           order: 'XZ',
         },
-        children: Array.from(uncategorizedArtifacts),
+        children: Array.from(personalTree.uncategorizedArtifacts),
         isFolder: true,
         canMove: false,
       };
     }
 
-    // Sort children
-    for (const key in items) {
-      items[key].children = items[key].children?.sort((a, b) => {
-        const aItem = items[a];
-        const bItem = items[b];
-
-        const comparison = aItem.data.order.localeCompare(bItem.data.order);
-        if (comparison === 0) {
-          return aItem.data.title.localeCompare(bItem.data.title);
-        }
-        return comparison;
-      });
+    for (const [key, value] of Object.entries(personalTree.items)) {
+      allItems[key] = value;
     }
 
-    // Create root node
-    items[ROOT_ITEM_ID] = {
-      index: ROOT_ITEM_ID,
+    // Personal root node
+    allItems[PERSONAL_ROOT_ITEM_ID] = {
+      index: PERSONAL_ROOT_ITEM_ID,
       data: {
-        id: ROOT_ITEM_ID,
+        type: 'personalTreeRoot',
+        aliasId: PERSONAL_ROOT_ITEM_ID,
         title: 'Root',
         order: 'A',
       },
       // Children should be anything that has no parent item found in our collection
-      children: Object.entries(items)
-        .filter(([key]) => {
+      children: Object.entries(personalTree.items)
+        .filter(([key, value]) => {
           // We always want the list of uncategorized artifacts at the root
           if (key === UNCATEGORIZED_ITEM_ID) return true;
 
-          const kvEntry = kvEntries.get(key);
+          const node = value.data;
+          if (node.type !== 'personalArtifact') return false;
+
+          const kvEntry = personalYKeyValue.get(node.artifactId);
 
           // 'null' is the root node, so this element belongs at root
           if (kvEntry?.parentNodeId === null) return true;
 
           return false;
         })
-        .sort(([_, aVal], [__, bVal]) => {
-          const comparison = aVal.data.order.localeCompare(bVal.data.order);
-          if (comparison === 0) {
-            return aVal.data.title.localeCompare(bVal.data.title);
-          }
-          return comparison;
-        })
+        .sort(([_, aVal], [__, bVal]) => sortTreeItems(aVal, bVal))
         .map(([key]) => key),
     };
 
-    return items;
-  }, [yKeyValue, _rerenderReducerValue, leftPaneArtifactTreeShowUncategorized]);
+    const collectionRoots = collections.map((collection, i) => {
+      const collectionId = collection.id;
+      console.log('haha crie', artifactCollectionConnections, i);
+      const meta = getMetaFromYArtifactCollection(
+        artifactCollectionConnections[collection.id].yjsDoc,
+      );
+
+      return {
+        index: `collectionRoot:${collectionId}`,
+        data: {
+          type: 'collection',
+          aliasId: `collectionRoot:${collectionId}`,
+          title: meta.title,
+          order: 'Y',
+          collectionId,
+        },
+        children: Object.entries(collection.items)
+          .filter(([key]) => {
+            const kvEntry = artifactCollectionsY[i].yKeyValue.get(key);
+
+            // 'null' is the root node, so this element belongs at root
+            if (kvEntry?.parentNodeId === null) return true;
+
+            return false;
+          })
+          .sort(([_, aVal], [__, bVal]) => sortTreeItems(aVal, bVal))
+          .map(([key]) => key),
+      } satisfies TreeItem<CollectionInternalTreeItem>;
+    });
+
+    for (const collectionRoot of collectionRoots) {
+      allItems[collectionRoot.index] = collectionRoot;
+    }
+
+    // Collection root node
+    allItems[COLLECTION_ROOT_ITEM_ID] = {
+      index: COLLECTION_ROOT_ITEM_ID,
+      data: {
+        type: 'collectionTreeRoot',
+        aliasId: COLLECTION_ROOT_ITEM_ID,
+        title: 'Collections',
+        order: 'A',
+      },
+      children: collectionRoots.map((collection) => collection.index),
+    };
+
+    return allItems;
+  }, [
+    personalYKeyValue,
+    _rerenderReducerValue,
+    leftPaneArtifactTreeShowUncategorized,
+  ]);
   const itemsRef = useRef<Record<TreeItemIndex, TreeItem<InternalTreeItem>>>(
     {},
   );
@@ -364,15 +826,27 @@ export const ArtifactTree = () => {
   /**
    * Uncategorize all descendants of the itemsToDelete
    */
-  const recursiveDelete = (itemsToDelete: TreeItem<InternalTreeItem>[]) => {
+  const recursiveRemoveFromTree = (
+    itemsToDelete: TreeItem<InternalTreeItem>[],
+  ) => {
     for (const itemToDelete of itemsToDelete) {
-      yKeyValue.delete(itemToDelete.data.id);
+      if (itemToDelete.data.type === 'collectionArtifact') {
+        const collectionId = itemToDelete.data.collectionId;
+        const collectionIdx = artifactCollections.findIndex(
+          (collection) => collection.id === collectionId,
+        );
+        artifactCollectionsY[collectionIdx].yKeyValue.delete(
+          itemToDelete.data.artifactId,
+        );
+      } else if (itemToDelete.data.type === 'personalArtifact') {
+        personalYKeyValue.delete(itemToDelete.data.artifactId);
+      }
 
       const children = itemToDelete.children?.map(
         (child) => items[child.toString()],
       );
       if (children?.length) {
-        recursiveDelete(children);
+        recursiveRemoveFromTree(children);
       }
     }
   };
@@ -381,24 +855,32 @@ export const ArtifactTree = () => {
     droppedItems: TreeItem<InternalTreeItem>[],
     target: DraggingPosition,
   ) => {
-    if (target.targetType === 'root') {
-      const parentItem = items[target.targetItem];
-      if (!parentItem.children)
-        throw new Error("ParentItem of an item doesn't have children somehow");
-      const lastParentChildOrder =
-        parentItem.children.at(parentItem.children.length - 1)?.toString() ||
-        'A';
-
-      for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
-
-        yKeyValue.set(item.data.id, {
-          parentNodeId: null,
-          order,
-        });
-      }
-    }
-    if (target.targetType === 'item') {
+    //if (target.targetType === 'root') {
+    //  // TODO: Dropping on a tree root should prompt the user to share _if_ the item is owned by the user and the tree is the collection tree
+    //
+    //  if (target.targetItem === PERSONAL_ROOT_ITEM_ID) {
+    //    const parentItem = items[target.targetItem];
+    //    if (!parentItem.children)
+    //      throw new Error("ParentItem of an item doesn't have children somehow");
+    //    const lastParentChildOrder =
+    //      parentItem.children.at(parentItem.children.length - 1)?.toString() ||
+    //      'A';
+    //
+    //    for (const item of droppedItems) {
+    //      const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+    //
+    //      if ('artifactId' in item.data) {
+    //        personalYKeyValue.set(item.data.artifactId, {
+    //          parentNodeId: null,
+    //          order,
+    //        });
+    //      }
+    //    }
+    //  } else {
+    //    // TODO: handle dropping on a collection root
+    //  }
+    //}
+    if (target.targetType === 'root' || target.targetType === 'item') {
       if (isItemUncategorized(target.targetItem.toString())) {
         // This is unexpected since we should have already prevented this in canDropAt
         const error = new Error('Cannot drop on uncategorized');
@@ -408,28 +890,136 @@ export const ArtifactTree = () => {
       }
 
       if (target.targetItem.toString() === UNCATEGORIZED_ITEM_ID) {
-        recursiveDelete(droppedItems);
+        recursiveRemoveFromTree(
+          droppedItems.filter((item) => item.data.type === 'personalArtifact'),
+        );
 
+        return;
+      }
+
+      const targetItem = items[target.targetItem];
+      if (
+        targetItem.data.type !== 'collection' &&
+        targetItem.data.type !== 'collectionArtifact' &&
+        targetItem.data.type !== 'personalArtifact' &&
+        targetItem.data.type !== 'personalTreeRoot'
+      ) {
+        return;
+      }
+
+      if (
+        droppedItems.filter((item) => item.data.type === 'collectionArtifact')
+          .length !== droppedItems.length &&
+        droppedItems.filter((item) => item.data.type === 'personalArtifact')
+          .length !== droppedItems.length
+      ) {
+        // We don't allow mixing collection artifacts with personal artifacts
         return;
       }
 
       const parentItem = items[target.targetItem];
       if (!parentItem.children)
         throw new Error("ParentItem of an item doesn't have children somehow");
-      const lastParentChildOrder =
+      let lastParentChildOrder =
         parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
 
+      console.log('dropped', droppedItems);
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+        if (
+          item.data.type === 'collectionArtifact' ||
+          item.data.type === 'personalArtifact'
+        ) {
+          // We move this pointer to keep order consistent
+          lastParentChildOrder = calculateOrderBetween(
+            lastParentChildOrder,
+            'Z',
+          );
 
-        yKeyValue.set(item.data.id, {
-          parentNodeId:
-            target.targetItem.toString() === ROOT_ITEM_ID
-              ? null
-              : target.targetItem.toString(),
-          order,
-        });
+          moveArtifact({
+            artifactId: item.data.artifactId,
+            newCollectionId:
+              ('collectionId' in targetItem.data
+                ? targetItem.data.collectionId
+                : null) || null,
+            session,
+            nodeVal: {
+              parentNodeId:
+                targetItem.data.type === 'collection' ||
+                targetItem.data.type === 'personalTreeRoot'
+                  ? null
+                  : target.targetItem.toString(),
+              order: lastParentChildOrder,
+            },
+          });
+        }
       }
+
+      //if (droppedItems.filter((item) => item.data.type === 'collectionArtifact').length === droppedItems.length) {
+      //  if (targetItem.data.type === 'personalArtifact') {
+      //    // TODO: Alert user that you can't move a collection to a personal artifact
+      //  }
+      //
+      //  if (targetItem.data.type === 'collection' || targetItem.data.type === 'collectionArtifact') {
+      //    // TODO: Check permissions when dropping onto a collection. Also, check if it's the same collection or a different collection
+      //  }
+      //}
+      //
+      //if (droppedItems.filter((item) => item.data.type === 'personalArtifact').length === droppedItems.length) {
+      //  // Dropped items are all personal artifacts
+      //  //
+      //  const targetItemType = targetItem.data.type;
+      //
+      //  if (targetItemType === 'collection' || targetItemType === 'collectionArtifact') {
+      //    // Dropping personal artifacts on a collection should add them to the collection
+      //    // but we need to prompt user if they want to share
+      //
+      //    const parentItem = items[target.targetItem];
+      //    if (!parentItem.children)
+      //      throw new Error("ParentItem of an item doesn't have children somehow");
+      //
+      //    const collectionId = targetItem.data.collectionId;
+      //    const lastParentChildOrder =
+      //      parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
+      //
+      //    for (const item of droppedItems) {
+      //      const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+      //
+      //      if ('artifactId' in item.data) {
+      //        const collectionId = targetItem.data.collectionId;
+      //        const collectionIdx = artifactCollections.findIndex(
+      //          (collection) => collection.id === collectionId,
+      //        );
+      //        artifactCollectionsY[collectionIdx].yKeyValue.set(item.data.artifactId, {
+      //          parentNodeId: targetItemType === 'collection' ? null : targetItem.data.artifactId.toString(),
+      //          order,
+      //        });
+      //      }
+      //    }
+      //  }
+      //
+      //  if (targetItem.data.type === 'personalArtifact') {
+      //    // No prompt needed, we're moving personal artifacts to personal artifacts
+      //    const parentItem = items[target.targetItem];
+      //    if (!parentItem.children)
+      //      throw new Error("ParentItem of an item doesn't have children somehow");
+      //    const lastParentChildOrder =
+      //      parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
+      //
+      //    for (const item of droppedItems) {
+      //      const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+      //
+      //      if ('artifactId' in item.data) {
+      //        personalYKeyValue.set(item.data.artifactId, {
+      //          parentNodeId:
+      //            target.targetItem.toString() === PERSONAL_ROOT_ITEM_ID
+      //              ? null
+      //              : target.targetItem.toString(),
+      //          order,
+      //        });
+      //      }
+      //    }
+      //  }
+      //}
     }
     if (target.targetType === 'between-items') {
       if (isItemUncategorized(target.parentItem.toString())) {
@@ -445,6 +1035,27 @@ export const ArtifactTree = () => {
       }
 
       const parentItem = items[target.parentItem];
+      if (
+        parentItem.data.type !== 'collection' &&
+        parentItem.data.type !== 'collectionArtifact' &&
+        parentItem.data.type !== 'personalArtifact' &&
+        parentItem.data.type !== 'personalTreeRoot'
+      ) {
+        return;
+      }
+
+      if (
+        droppedItems.filter((item) => item.data.type === 'collectionArtifact')
+          .length !== droppedItems.length &&
+        droppedItems.filter((item) => item.data.type === 'personalArtifact')
+          .length !== droppedItems.length
+      ) {
+        // We don't allow mixing collection artifacts with personal artifacts
+        return;
+      }
+
+      if (!parentItem.children)
+        throw new Error("ParentItem of an item doesn't have children somehow");
       let previousItemOrder =
         items[parentItem.children?.[target.childIndex - 1] || -1]?.data.order ||
         'A';
@@ -452,18 +1063,35 @@ export const ArtifactTree = () => {
         items[parentItem.children?.[target.childIndex] || -1]?.data.order ||
         'Z';
 
+      console.log('dropped', droppedItems);
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(previousItemOrder, nextItemOrder);
+        // We move this pointer to keep order consistent
+        previousItemOrder = calculateOrderBetween(
+          previousItemOrder,
+          nextItemOrder,
+        );
 
-        yKeyValue.set(item.data.id, {
-          parentNodeId:
-            target.parentItem.toString() === ROOT_ITEM_ID
-              ? null
-              : target.parentItem.toString(),
-          order,
-        });
-
-        previousItemOrder = order;
+        if (
+          item.data.type === 'collectionArtifact' ||
+          item.data.type === 'personalArtifact'
+        ) {
+          moveArtifact({
+            artifactId: item.data.artifactId,
+            newCollectionId:
+              ('collectionId' in parentItem.data
+                ? parentItem.data.collectionId
+                : null) || null,
+            session,
+            nodeVal: {
+              parentNodeId:
+                parentItem.data.type === 'collection' ||
+                parentItem.data.type === 'personalTreeRoot'
+                  ? null
+                  : target.parentItem.toString(),
+              order: previousItemOrder,
+            },
+          });
+        }
       }
     }
   };
@@ -476,12 +1104,12 @@ export const ArtifactTree = () => {
       // Allow drop on "uncategorized" itself
       return false;
     }
-    if (index === ROOT_ITEM_ID) {
+    if (index === PERSONAL_ROOT_ITEM_ID) {
       // Always allow drop on root
       return false;
     }
 
-    const kvEntry = yKeyValue.get(index);
+    const kvEntry = personalYKeyValue.get(index);
     // When an item isn't in the kv list, it's de-facto uncategorized since it has no capability to have a parent
     if (!kvEntry) return true;
 
@@ -492,6 +1120,8 @@ export const ArtifactTree = () => {
 
     return false;
   };
+
+  console.log(items);
 
   return (
     <StyleContainer>
@@ -512,31 +1142,40 @@ export const ArtifactTree = () => {
             const { props } =
               customDragData as CustomDragStateData<PaneableComponent.Artifact>;
 
+            const artifact = artifacts.find(
+              (artifact) => artifact.id === props.id,
+            );
+
+            if (!artifact || artifact.userId !== session.userId) {
+              // We don't support dragging shared artifacts from the pane view onto the tree at this time
+              return;
+            }
+
             el?.dragAndDropContext.onStartDraggingItems(
               [
                 {
-                  index: props.id,
+                  index: `personalTree:${props.id}`,
                   children: [],
                   isFolder: false,
                   canMove: true,
                   canRename: false,
                   data: {
-                    id: props.id,
-                    title:
-                      artifacts.find((artifact) => artifact.id === props.id)
-                        ?.title || 'Unknown',
+                    type: 'personalArtifact',
+                    aliasId: `personalTree:${props.id}`,
+                    artifactId: props.id,
+                    title: artifact?.title || 'Unknown',
                     order: 'X',
                   } satisfies InternalTreeItem,
                 },
               ],
-              TREE_ID,
+              PERSONAL_TREE_ID,
             );
           });
         }}
         items={items}
         getItemTitle={(item) => item.data.title}
         viewState={{
-          [TREE_ID]: {
+          [PERSONAL_TREE_ID]: {
             expandedItems,
             selectedItems,
           },
@@ -568,11 +1207,13 @@ export const ArtifactTree = () => {
                 return;
               }
 
+              if (!('artifactId' in item.data)) return;
+
               if (e.ctrlKey || e.metaKey) {
                 navigate(
                   undefined,
                   PaneableComponent.Artifact,
-                  { id: item.data.id },
+                  { id: item.data.artifactId },
                   PaneTransition.NewTab,
                   true,
                 );
@@ -580,19 +1221,22 @@ export const ArtifactTree = () => {
                 navigate(
                   undefined,
                   PaneableComponent.Artifact,
-                  { id: item.data.id },
+                  { id: item.data.artifactId },
                   PaneTransition.Push,
                   true,
                 );
               }
             },
             onDragStart: () => {
-              setCustomDragData({
-                component: PaneableComponent.Artifact,
-                props: {
-                  id: item.data.id,
-                },
-              });
+              if ('artifactId' in item.data) {
+                setCustomDragData({
+                  component: PaneableComponent.Artifact,
+                  props: {
+                    id: item.data.artifactId,
+                  },
+                });
+              }
+
               actions.startDragging();
             },
           }),
@@ -626,7 +1270,17 @@ export const ArtifactTree = () => {
           );
         }}
       >
-        <Tree treeId={TREE_ID} rootItem={ROOT_ITEM_ID} />
+        <div>
+          {props.renderPersonalSection(
+            <Tree treeId={PERSONAL_TREE_ID} rootItem={PERSONAL_ROOT_ITEM_ID} />,
+          )}
+          {props.renderCollectionSection(
+            <Tree
+              treeId={COLLECTION_TREE_ID}
+              rootItem={COLLECTION_ROOT_ITEM_ID}
+            />,
+          )}
+        </div>
       </ControlledTreeEnvironment>
     </StyleContainer>
   );

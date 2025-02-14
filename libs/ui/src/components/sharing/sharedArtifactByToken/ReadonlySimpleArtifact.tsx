@@ -33,7 +33,6 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     trpc.artifact.getArtifactEdgesById
       .query({
         id: props.artifactId,
-        shareToken: props.shareToken,
       })
       .then((result) => {
         setEdges(result);
@@ -75,7 +74,6 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     trpc.artifact.getArtifactYBinById
       .query({
         id: props.artifactId,
-        shareToken: props.shareToken,
       })
       .then((result) => {
         const yDoc = new YDoc();
@@ -122,7 +120,6 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
-            shareToken: props.shareToken,
           }).toString();
         }}
       />
@@ -149,7 +146,6 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
-            shareToken: props.shareToken,
           }).toString();
         }}
       />

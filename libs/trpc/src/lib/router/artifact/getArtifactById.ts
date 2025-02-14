@@ -5,9 +5,10 @@ import { artifactDetail } from '@feynote/prisma/types';
 import { ArtifactDTO } from '@feynote/global-types';
 import {
   artifactDetailToArtifactDTO,
-  hasArtifactAccess,
+  getArtifactAccessLevel,
 } from '@feynote/api-services';
 import { publicProcedure } from '../../trpc';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export const getArtifactById = publicProcedure
   .input(
@@ -30,13 +31,21 @@ export const getArtifactById = publicProcedure
       ...artifactDetail,
     });
 
-    if (
-      !artifact ||
-      !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-    ) {
+    if (!artifact) {
       throw new TRPCError({
-        message:
-          'Artifact does not exist or is not visible to the current user',
+        message: 'Artifact does not exist',
+        code: 'NOT_FOUND',
+      });
+    }
+
+    const accessLevel = await getArtifactAccessLevel({
+      currentUserId: ctx.session?.userId,
+      artifact: artifact.id,
+    });
+
+    if (accessLevel === ArtifactAccessLevel.noaccess) {
+      throw new TRPCError({
+        message: 'You do not have rights to view this artifact',
         code: 'NOT_FOUND',
       });
     }

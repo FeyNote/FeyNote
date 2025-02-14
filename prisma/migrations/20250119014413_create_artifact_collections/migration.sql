@@ -1,6 +1,12 @@
 -- CreateEnum
 CREATE TYPE "ArtifactCollectionAccessLevel" AS ENUM ('coowner', 'readwrite', 'readadd', 'readonly');
 
+-- AlterEnum
+ALTER TYPE "ArtifactAccessLevel" ADD VALUE 'noaccess';
+
+-- AlterTable
+ALTER TABLE "Artifact" ADD COLUMN     "artifactCollectionId" UUID;
+
 -- CreateTable
 CREATE TABLE "ArtifactCollection" (
     "id" UUID NOT NULL,
@@ -14,21 +20,11 @@ CREATE TABLE "ArtifactCollection" (
 );
 
 -- CreateTable
-CREATE TABLE "ArtifactCollectionArtifact" (
-    "id" UUID NOT NULL,
-    "artifactId" UUID NOT NULL,
-    "collectionId" UUID NOT NULL,
-    "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMPTZ(6) NOT NULL,
-
-    CONSTRAINT "ArtifactCollectionArtifact_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "ArtifactCollectionShare" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "artifactCollectionId" UUID NOT NULL,
+    "computedAccessLevels" JSONB NOT NULL,
     "accessLevel" "ArtifactCollectionAccessLevel" NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMPTZ(6) NOT NULL,
@@ -40,10 +36,7 @@ CREATE TABLE "ArtifactCollectionShare" (
 CREATE UNIQUE INDEX "ArtifactCollectionShare_artifactCollectionId_userId_key" ON "ArtifactCollectionShare"("artifactCollectionId", "userId");
 
 -- AddForeignKey
-ALTER TABLE "ArtifactCollectionArtifact" ADD CONSTRAINT "ArtifactCollectionArtifact_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "Artifact"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ArtifactCollectionArtifact" ADD CONSTRAINT "ArtifactCollectionArtifact_collectionId_fkey" FOREIGN KEY ("collectionId") REFERENCES "ArtifactCollection"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Artifact" ADD CONSTRAINT "Artifact_artifactCollectionId_fkey" FOREIGN KEY ("artifactCollectionId") REFERENCES "ArtifactCollection"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ArtifactCollectionShare" ADD CONSTRAINT "ArtifactCollectionShare_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

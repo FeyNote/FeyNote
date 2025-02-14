@@ -4,13 +4,13 @@ import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
-import { artifactDetail, fileSummary } from '@feynote/prisma/types';
+import { fileSummary } from '@feynote/prisma/types';
 import {
+  getArtifactAccessLevel,
   getCapabilitiesForUser,
-  hasArtifactAccess,
   uploadFileToS3,
 } from '@feynote/api-services';
-import { FilePurpose } from '@prisma/client';
+import { ArtifactAccessLevel, FilePurpose } from '@prisma/client';
 import { FileDTO } from '@feynote/global-types';
 import { Capability } from '@feynote/shared-utils';
 
@@ -29,18 +29,15 @@ export const createFile = authenticatedProcedure
     const id = input.id || crypto.randomUUID();
 
     if (input.artifactId) {
-      const artifact = await prisma.artifact.findUnique({
-        where: {
-          id: input.artifactId,
-        },
-        ...artifactDetail,
+      const accessLevel = await getArtifactAccessLevel({
+        artifact: input.artifactId,
+        currentUserId: ctx.session.userId,
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, ctx.session.userId)) {
+      if (accessLevel === ArtifactAccessLevel.noaccess) {
         throw new TRPCError({
-          message:
-            'Artifact does not exist or is not visible to the current user',
-          code: 'NOT_FOUND',
+          message: 'You do not have access to this artifact',
+          code: 'FORBIDDEN',
         });
       }
     }

@@ -15,9 +15,11 @@ export const getArtifacts = authenticatedProcedure.query(
       }),
       prisma.artifact.findMany({
         where: {
-          artifactShares: {
-            some: {
-              userId: ctx.session.userId,
+          artifactCollection: {
+            artifactCollectionShares: {
+              some: {
+                userId: ctx.session.userId,
+              },
             },
           },
         },

@@ -3,11 +3,15 @@ import { useTranslation } from 'react-i18next';
 
 interface Props {
   label?: string;
-  accessLevel: 'noaccess' | 'readwrite' | 'readonly' | 'coowner';
-  onChange: (level: 'noaccess' | 'readwrite' | 'readonly' | 'coowner') => void;
+  accessLevel: 'noaccess' | 'readwrite' | 'readonly' | 'readadd' | 'coowner';
+  onChange: (
+    level: 'noaccess' | 'readwrite' | 'readonly' | 'readadd' | 'coowner',
+  ) => void;
 }
 
-export const ArtifactSharingAccessLevel: React.FC<Props> = (props) => {
+export const ArtifactCollectionSharingAccessLevel: React.FC<Props> = (
+  props,
+) => {
   const { t } = useTranslation();
 
   return (
@@ -22,8 +26,14 @@ export const ArtifactSharingAccessLevel: React.FC<Props> = (props) => {
       <IonSelectOption value="readwrite">
         {t('artifactSharing.readwrite')}
       </IonSelectOption>
+      <IonSelectOption value="readadd">
+        {t('artifactSharing.readadd')}
+      </IonSelectOption>
       <IonSelectOption value="readonly">
         {t('artifactSharing.readonly')}
+      </IonSelectOption>
+      <IonSelectOption value="coowner">
+        {t('artifactSharing.owner')}
       </IonSelectOption>
     </IonSelect>
   );
