@@ -6,7 +6,7 @@ import {
   Display5eMonsterTool,
   Display5eObjectTool,
   DisplayUrlTool,
-} from '@feynote/openai';
+} from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
 import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';

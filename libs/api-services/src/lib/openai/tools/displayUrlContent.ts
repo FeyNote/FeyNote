@@ -15,30 +15,43 @@ import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
 
-const getTextFromHtml = (jsdom: JSDOM): string => {
-  const innerHtml = jsdom.window.document.body.innerHTML;
-  const domPurify = DOMPurify(jsdom.window);
-  const newLineOnlyNodes = ['br'];
-  const newLineCausingNodes = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7'];
+const newLineOnlyNodes = new Set(['br']);
+const newLineCausingNodes = new Set([
+  'div',
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'h7',
+]);
 
-  domPurify.addHook('afterSanitizeElements', function (node) {
-    if (!node.tagName) {
-      return;
-    }
+// DomPurify requires a window object to work since it's browser-native ported to nodejs
+const window = new JSDOM('').window;
+const domPurify = DOMPurify(window);
+domPurify.addHook('beforeSanitizeElements', function (node) {
+  const element = node as HTMLElement;
+  if (!node.nodeName) {
+    return;
+  }
 
-    // Newline-only nodes
-    if (newLineOnlyNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = '\n';
-    }
+  // Newline-only nodes
+  if (newLineOnlyNodes.has(node.nodeName.toLowerCase())) {
+    element.innerHTML = '\n';
+  }
 
-    // Newline-causing nodes
-    if (newLineCausingNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = node.innerHTML + '\n';
-    }
-  });
+  // Newline-causing nodes
+  if (newLineCausingNodes.has(node.nodeName.toLowerCase())) {
+    element.innerHTML = element.innerHTML + '\n';
+  }
+});
+
+const getTextFromHtml = (html: string): string => {
   const cleanedHtml = domPurify
-    .sanitize(innerHtml, {
-      ALLOWED_TAGS: [...newLineOnlyNodes, ...newLineCausingNodes],
+    .sanitize(html, {
+      ALLOWED_TAGS: [],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true,
     })
@@ -64,8 +77,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
     }
     const res = await axios.get(params.url, requestConfig);
-    const jsdom = new JSDOM(res.data);
-    const html = getTextFromHtml(jsdom);
+    const html = getTextFromHtml(res.data);
     const messages = [
       systemMessage.scrapeContent,
       { role: 'user', content: html } as CoreMessage,

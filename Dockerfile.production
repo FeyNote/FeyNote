@@ -26,4 +26,6 @@ ARG APP_VERSION
 # Include version build arg within the container env
 ENV APP_VERSION=$APP_VERSION
 
+RUN npx nx run-many -t build --parallel=6
+
 CMD echo "Must provide command to run containers"

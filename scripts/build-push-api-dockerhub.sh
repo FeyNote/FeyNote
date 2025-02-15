@@ -8,7 +8,7 @@ then
   exit 1
 fi
 
-docker build --build-arg APP_VERSION=$1 -f Dockerfile -t redchickenco/feynote:api-latest .
+docker build -f Dockerfile.production --build-arg APP_VERSION=$1 -f Dockerfile -t redchickenco/feynote:api-latest .
 
 # Only push to latest tag if tag is a versioned tag
 if [[ $1 == v* ]]

@@ -1,3 +1,22 @@
+x-common-api-env-vars: &common-api-env-vars
+  DATABASE_URL: postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+  SEARCH_PROVIDER: typesense
+  TYPESENSE_API_KEY: feynote
+  TYPESENSE_NODES: '[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+  WORKER_REDIS_HOST: queue-worker-valkey
+  WORKER_REDIS_PORT: '6379'
+  HOCUSPOCUS_REDIS_HOST: hocuspocus-valkey
+  HOCUSPOCUS_REDIS_PORT: '6379'
+  WEBSOCKET_REDIS_HOST: socketio-valkey
+  WEBSOCKET_REDIS_PORT: '6379'
+  STRIPE_API_KEY: sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
+  NODE_ENV: development
+  APP_VERSION: development
+  PROXY_ENABLED: 'false'
+  PROXY_URL: val
+  PROXY_USERNAME: val
+  PROXY_PASSWORD: val
+
 name: feynote
 services:
   proxy:
@@ -12,6 +31,7 @@ services:
       - frontend
       - backend
       - www
+    stop_grace_period: 1s
   frontend:
     build:
       context: .
@@ -21,9 +41,11 @@ services:
       - ./libs:/app/libs
     command: npx nx serve frontend
     environment:
-      - VITE_ENVIRONMENT=development
+      VITE_ENVIRONMENT: development
+      APP_VERSION: development
     depends_on:
       - backend
+    stop_grace_period: 1s
   www:
     build:
       context: .
@@ -33,10 +55,12 @@ services:
       - ./libs:/app/libs
     command: npx nx serve www
     environment:
-      - NODE_ENV=development
-      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      NODE_ENV: development
+      APP_VERSION: development
+      DATABASE_URL: postgresql://feynote:feynote@postgres:5432/feynote?schema=public
     depends_on:
       - backend
+    stop_grace_period: 1s
   hocuspocus:
     build:
       context: .
@@ -47,23 +71,8 @@ services:
       - ./prisma:/app/prisma
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
-      - SWC_NODE_PROJECT=./apps/hocuspocus/tsconfig.json
-      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
-      - SEARCH_PROVIDER=typesense
-      - TYPESENSE_API_KEY=feynote
-      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
-      - WORKER_REDIS_HOST=queue-worker-valkey
-      - WORKER_REDIS_PORT=6379
-      - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
-      - HOCUSPOCUS_REDIS_PORT=6379
-      - WEBSOCKET_REDIS_HOST=socketio-valkey
-      - WEBSOCKET_REDIS_PORT=6379
-      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
-      - NODE_ENV=development
-      - PROXY_ENABLED=false
-      - PROXY_URL=val
-      - PROXY_USERNAME=val
-      - PROXY_PASSWORD=val
+      SWC_NODE_PROJECT: ./apps/hocuspocus/tsconfig.json
+      <<: *common-api-env-vars
     env_file:
       - ./.env
     depends_on:
@@ -71,6 +80,7 @@ services:
       - typesense
       - queue-worker-valkey
       - hocuspocus-valkey
+    stop_grace_period: 1s
   backend:
     build:
       context: .
@@ -81,29 +91,15 @@ services:
       - ./prisma:/app/prisma
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/openai ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
-      - SWC_NODE_PROJECT=./apps/backend/tsconfig.json
-      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
-      - SEARCH_PROVIDER=typesense
-      - TYPESENSE_API_KEY=feynote
-      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
-      - WORKER_REDIS_HOST=queue-worker-valkey
-      - WORKER_REDIS_PORT=6379
-      - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
-      - HOCUSPOCUS_REDIS_PORT=6379
-      - WEBSOCKET_REDIS_HOST=socketio-valkey
-      - WEBSOCKET_REDIS_PORT=6379
-      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
-      - NODE_ENV=development
-      - PROXY_ENABLED=false
-      - PROXY_URL=val
-      - PROXY_USERNAME=val
-      - PROXY_PASSWORD=val
+      SWC_NODE_PROJECT: ./apps/backend/tsconfig.json
+      <<: *common-api-env-vars
     env_file:
       - ./.env
     depends_on:
       - postgres
       - typesense
       - queue-worker-valkey
+    stop_grace_period: 1s
   queue-worker:
     build:
       context: .
@@ -114,29 +110,15 @@ services:
       - ./prisma:/app/prisma
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
-      - SWC_NODE_PROJECT=./apps/queue-worker/tsconfig.json
-      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
-      - SEARCH_PROVIDER=typesense
-      - TYPESENSE_API_KEY=feynote
-      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
-      - WORKER_REDIS_HOST=queue-worker-valkey
-      - WORKER_REDIS_PORT=6379
-      - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
-      - HOCUSPOCUS_REDIS_PORT=6379
-      - WEBSOCKET_REDIS_HOST=socketio-valkey
-      - WEBSOCKET_REDIS_PORT=6379
-      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
-      - NODE_ENV=development
-      - PROXY_ENABLED=false
-      - PROXY_URL=val
-      - PROXY_USERNAME=val
-      - PROXY_PASSWORD=val
+      SWC_NODE_PROJECT: ./apps/queue-worker/tsconfig.json
+      <<: *common-api-env-vars
     env_file:
       - ./.env
     depends_on:
       - postgres
       - typesense
       - queue-worker-valkey
+    stop_grace_period: 1s
   websocket:
     build:
       context: .
@@ -147,23 +129,8 @@ services:
       - ./prisma:/app/prisma
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
-      - SWC_NODE_PROJECT=./apps/websocket/tsconfig.json
-      - DATABASE_URL=postgresql://feynote:feynote@postgres:5432/feynote?schema=public
-      - SEARCH_PROVIDER=typesense
-      - TYPESENSE_API_KEY=feynote
-      - 'TYPESENSE_NODES=[{"host": "typesense", "port": 8108, "protocol": "http"}]'
-      - WORKER_REDIS_HOST=queue-worker-valkey
-      - WORKER_REDIS_PORT=6379
-      - HOCUSPOCUS_REDIS_HOST=hocuspocus-valkey
-      - HOCUSPOCUS_REDIS_PORT=6379
-      - WEBSOCKET_REDIS_HOST=websocket-valkey
-      - WEBSOCKET_REDIS_PORT=6379
-      - STRIPE_API_KEY=sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
-      - NODE_ENV=development
-      - PROXY_ENABLED=false
-      - PROXY_URL=val
-      - PROXY_USERNAME=val
-      - PROXY_PASSWORD=val
+      SWC_NODE_PROJECT: ./apps/websocket/tsconfig.json
+      <<: *common-api-env-vars
     env_file:
       - ./.env
     depends_on:
@@ -171,14 +138,28 @@ services:
       - typesense
       - queue-worker-valkey
       - websocket-valkey
+    stop_grace_period: 1s
+  nxgraph:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - '4211:4211'
+    environment:
+      APP_VERSION: development
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: ./scripts/watchandrun.sh 'npx nx graph --host=0.0.0.0 --open=false' ./apps ./libs
+    stop_grace_period: 1s
   postgres:
     image: postgres:16.0
     ports:
       - 5432:5432
     environment:
-      - POSTGRES_DB=feynote
-      - POSTGRES_USER=feynote
-      - POSTGRES_PASSWORD=feynote
+      POSTGRES_DB: feynote
+      POSTGRES_USER: feynote
+      POSTGRES_PASSWORD: feynote
   typesense:
     image: typesense/typesense:0.25.2
     restart: on-failure
