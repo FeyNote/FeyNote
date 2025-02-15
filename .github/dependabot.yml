@@ -42,6 +42,10 @@ updates:
           - 'vite'
           - 'vite-*'
           - '@vitejs/*'
+      astro:
+        patterns:
+          - '@astrojs/*'
+          - 'astro'
       react:
         patterns:
           - 'react-dom'
