@@ -1,5 +1,4 @@
 import { CoreMessage, tool } from 'ai';
-import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
   getDisplayScrapeUrlSchema,
@@ -15,9 +14,8 @@ import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
 
-const getTextFromHtml = (jsdom: JSDOM): string => {
-  const innerHtml = jsdom.window.document.body.innerHTML;
-  const domPurify = DOMPurify(jsdom.window);
+const getTextFromHtml = (html: string): string => {
+  const domPurify = DOMPurify();
   const newLineOnlyNodes = ['br'];
   const newLineCausingNodes = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7'];
 
@@ -36,8 +34,9 @@ const getTextFromHtml = (jsdom: JSDOM): string => {
       node.outerHTML = node.innerHTML + '\n';
     }
   });
+
   const cleanedHtml = domPurify
-    .sanitize(innerHtml, {
+    .sanitize(html, {
       ALLOWED_TAGS: [...newLineOnlyNodes, ...newLineCausingNodes],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true,
@@ -64,8 +63,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
     }
     const res = await axios.get(params.url, requestConfig);
-    const jsdom = new JSDOM(res.data);
-    const html = getTextFromHtml(jsdom);
+    const html = getTextFromHtml(res.data);
     const messages = [
       systemMessage.scrapeContent,
       { role: 'user', content: html } as CoreMessage,
