@@ -25,9 +25,9 @@ interface Props {
   children: ReactNode;
 }
 
-export const GlobalPaneContextProviderWrapper = ({
+export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
   children,
-}: Props): JSX.Element => {
+}) => {
   const { layout, applyLayoutJson, resetLayout, saveLayout } = useFlexLayout();
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
 

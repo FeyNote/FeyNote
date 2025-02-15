@@ -207,7 +207,7 @@ export const Workspace: React.FC = () => {
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
 
-  const contextMenuPaneIdRef = useRef<string>();
+  const contextMenuPaneIdRef = useRef<string>(undefined);
   const PaneTabContextMenuWrapper = () => {
     const paneId = contextMenuPaneIdRef.current;
     const { navigate: globalNavigate, getPaneById } =
@@ -231,7 +231,7 @@ export const Workspace: React.FC = () => {
     );
   };
 
-  const popoverDismissRef = useRef<() => void>();
+  const popoverDismissRef = useRef<() => void>(undefined);
 
   const [present, dismiss] = useIonPopover(PaneTabContextMenuWrapper, {
     onDismiss: (data: unknown, role: string) => dismiss(data, role),

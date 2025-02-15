@@ -107,7 +107,7 @@ interface ArtifactTreeItemProps {
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
-  const popoverDismissRef = useRef<() => void>();
+  const popoverDismissRef = useRef<() => void>(undefined);
 
   const expandAll = () => {
     const expandedItems = new Set(props.expandedItemsRef.current);

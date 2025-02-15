@@ -20,7 +20,7 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLIonInputElement>(null);
-  const setCenterRef = useRef<(center: string) => void>();
+  const setCenterRef = useRef<(center: string) => void>(undefined);
 
   const isValid = !!isAllowedDateSpecifier(text);
 
