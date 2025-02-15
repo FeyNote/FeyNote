@@ -89,7 +89,7 @@ services:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/openai ./libs/global-types ./libs/config ./libs/shared-utils
+    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/backend/tsconfig.json
       <<: *common-api-env-vars
