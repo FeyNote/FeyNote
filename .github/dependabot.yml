@@ -42,6 +42,14 @@ updates:
           - 'vite'
           - 'vite-*'
           - '@vitejs/*'
+      react:
+        patterns:
+          - 'react-dom'
+          - '@types/react-dom'
+          - 'react'
+          - '@types/react'
+          - 'react-is'
+          - '@types/react-is'
       babel:
         patterns:
           - '@babel/*'
