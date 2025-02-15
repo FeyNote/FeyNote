@@ -20,8 +20,6 @@ COPY prisma prisma
 
 RUN npx prisma generate
 
-ENV NX_NO_CLOUD=true
-
 ARG APP_VERSION
 # Include version build arg within the container env
 ENV APP_VERSION=$APP_VERSION
