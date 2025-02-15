@@ -10,7 +10,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.1.0",
     "@astrojs/node": "^9.0.2",
-    "@astrojs/react": "^4.1.6",
+    "@astrojs/react": "^4.2.0",
     "@aws-sdk/client-s3": "^3.744.0",
     "@aws-sdk/client-ses": "^3.744.0",
     "@aws-sdk/lib-storage": "^3.744.0",
