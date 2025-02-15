@@ -1,5 +1,4 @@
 /* Ionic */
-import { IonApp } from '@ionic/react';
 import '@ionic/react/css/core.css';
 /* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
@@ -30,6 +29,7 @@ import {
   Workspace,
   initI18Next,
   PasswordReset,
+  IonApp,
 } from '@feynote/ui';
 
 initI18Next();

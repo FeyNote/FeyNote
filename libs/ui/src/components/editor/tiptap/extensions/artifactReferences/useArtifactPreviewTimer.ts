@@ -19,7 +19,7 @@ export const useArtifactPreviewTimer = (
   artifactId: string,
   isBroken: boolean,
 ) => {
-  const loadingPRef = useRef<Promise<unknown>>();
+  const loadingPRef = useRef<Promise<unknown>>(undefined);
   const [artifactYBin, setArtifactYBin] = useState<Uint8Array>();
   const [artifactInaccessible, setArtifactInaccessible] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -54,7 +54,7 @@ export const useArtifactPreviewTimer = (
     loadingPRef.current = loadArtifactYBin();
   };
 
-  const hoverTimeoutRef = useRef<NodeJS.Timeout>();
+  const hoverTimeoutRef = useRef<NodeJS.Timeout>(undefined);
   const onMouseOver = () => {
     load();
     clearTimeout(hoverTimeoutRef.current);

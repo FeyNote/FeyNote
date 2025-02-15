@@ -15,9 +15,9 @@ interface Props {
 
 const preferencesService = new PreferencesService();
 
-export const PreferencesContextProviderWrapper = ({
+export const PreferencesContextProviderWrapper: React.FC<Props> = ({
   children,
-}: Props): JSX.Element => {
+}) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const gotInitialLoadEvent = useRef(false);
 

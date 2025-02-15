@@ -56,7 +56,7 @@ interface Props {
 export const GraphRenderer: React.FC<Props> = (props) => {
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const forceGraphRef =
-    useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>();
+    useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(undefined);
   const { navigate, pane, isPaneFocused } = useContext(PaneContext);
   const [highlightNodes, setHighlightNodes] = useState(
     new Set<FeynoteGraphNode>(),

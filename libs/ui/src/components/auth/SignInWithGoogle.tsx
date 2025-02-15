@@ -16,7 +16,7 @@ const getGoogleRef = () => {
 
 export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
   const { setSession } = useContext(SessionContext);
-  const buttonRef = useRef<HTMLDivElement>();
+  const buttonRef = useRef<HTMLDivElement>(undefined);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const triggerGoogleButtonRender = useCallback(() => {

@@ -48,7 +48,7 @@ interface Props {
 export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
-  const setCenterRef = useRef<(center: string) => void>();
+  const setCenterRef = useRef<(center: string) => void>(undefined);
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';

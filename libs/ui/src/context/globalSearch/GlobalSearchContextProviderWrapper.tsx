@@ -86,9 +86,9 @@ const SEARCH_DELAY_MS = 20;
  */
 const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
 
-export const GlobalSearchContextProviderWrapper = ({
+export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
-}: Props): JSX.Element => {
+}) => {
   const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
