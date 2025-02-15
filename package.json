@@ -73,7 +73,7 @@
     "@types/dedent": "^0.7.2",
     "@types/dompurify": "^3.0.5",
     "@types/multer": "^1.4.12",
-    "ai": "^3.4.33",
+    "ai": "^4.1.40",
     "astro": "^5.1.10",
     "axios": "^1.7.9",
     "body-parser": "^1.20.3",
