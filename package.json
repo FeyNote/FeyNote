@@ -85,7 +85,7 @@
     "flexlayout-react": "^0.8.1",
     "google-auth-library": "^9.15.1",
     "https-proxy-agent": "^7.0.6",
-    "i18next": "^24.2.1",
+    "i18next": "^24.2.2",
     "idb": "^8.0.2",
     "ionicons": "^7.4.0",
     "ioredis": "^5.4.2",
