@@ -1,4 +1,5 @@
 import { CoreMessage, tool } from 'ai';
+import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
   getDisplayScrapeUrlSchema,
@@ -14,30 +15,42 @@ import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
 
+const newLineOnlyNodes = new Set(['br']);
+const newLineCausingNodes = new Set([
+  'p',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'h7',
+]);
+
+// DomPurify requires a window object to work since it's browser-native ported to nodejs
+const window = new JSDOM('').window;
+const domPurify = DOMPurify(window);
+domPurify.addHook('beforeSanitizeElements', function (node) {
+  const element = node as HTMLElement;
+  if (!node.nodeName) {
+    return;
+  }
+
+  // Newline-only nodes
+  if (newLineOnlyNodes.has(node.nodeName.toLowerCase())) {
+    element.innerHTML = '\n';
+  }
+
+  // Newline-causing nodes
+  if (newLineCausingNodes.has(node.nodeName.toLowerCase())) {
+    element.innerHTML = element.innerHTML + '\n';
+  }
+});
+
 const getTextFromHtml = (html: string): string => {
-  const domPurify = DOMPurify();
-  const newLineOnlyNodes = ['br'];
-  const newLineCausingNodes = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7'];
-
-  domPurify.addHook('afterSanitizeElements', function (node) {
-    if (!node.tagName) {
-      return;
-    }
-
-    // Newline-only nodes
-    if (newLineOnlyNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = '\n';
-    }
-
-    // Newline-causing nodes
-    if (newLineCausingNodes.includes(node.tagName.toLowerCase())) {
-      node.outerHTML = node.innerHTML + '\n';
-    }
-  });
-
   const cleanedHtml = domPurify
     .sanitize(html, {
-      ALLOWED_TAGS: [...newLineOnlyNodes, ...newLineCausingNodes],
+      ALLOWED_TAGS: [],
       ALLOWED_ATTR: [],
       KEEP_CONTENT: true,
     })
