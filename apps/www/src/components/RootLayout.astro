@@ -23,20 +23,23 @@ const { title } = Astro.props;
 
       .nav {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
+        justify-content: left;
         height: 40px;
         padding-left: 16px;
         padding-right: 16px;
       }
 
       .nav .title {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        margin-right: 30px;
         text-decoration: none;
       }
 
       .nav .nav-item {
         font-size: 1rem;
-        margin-left: 40px;
+        margin-right: 12px;
         text-decoration: none;
       }
 
@@ -80,10 +83,7 @@ const { title } = Astro.props;
       <a class="nav-item" href="https://discord.gg/Tz8trXrd4C">Discord</a>
       <a class="nav-item" href="/pricing">Pricing</a>
       <a class="nav-item" href="/features">Features</a>
-
-      <div class="go-to-app">
-        <GoToAppButton />
-      </div>
+      <a class="nav-item" href="https://docs.feynote.com">Docs</a>
     </div>
     <div class="content">
       <slot />
