@@ -17,6 +17,7 @@ import { Display5eObjectTool } from './display5eObject';
 
 const newLineOnlyNodes = new Set(['br']);
 const newLineCausingNodes = new Set([
+  'div',
   'p',
   'h1',
   'h2',
