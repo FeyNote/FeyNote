@@ -12,7 +12,6 @@ export const getArtifactAccessLevel = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -44,7 +43,6 @@ export const getArtifactAccessLevel = publicProcedure
 
       const accessLevel = _getArtifactAccessLevel(
         artifact,
-        input.shareToken,
         ctx.session?.userId,
       );
 

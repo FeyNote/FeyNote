@@ -14,12 +14,8 @@ export const getArtifactAccessLevel = (
       userId: string;
       accessLevel: ArtifactAccessLevel;
     }[];
-    artifactShareTokens: {
-      shareToken: string;
-      accessLevel: ArtifactAccessLevel;
-    }[];
+    linkAccessLevel: ArtifactAccessLevel | null;
   },
-  shareToken: string | undefined,
   userId: string | undefined,
 ): NegotiatedArtifactAccessLevel => {
   if (artifactSharingInfo.userId === userId) {
@@ -33,11 +29,8 @@ export const getArtifactAccessLevel = (
     return artifactShare.accessLevel;
   }
 
-  const artifactShareToken = artifactSharingInfo.artifactShareTokens.find(
-    (share) => share.shareToken === shareToken,
-  );
-  if (artifactShareToken) {
-    return artifactShareToken.accessLevel;
+  if (artifactSharingInfo.linkAccessLevel) {
+    return artifactSharingInfo.linkAccessLevel;
   }
 
   return 'none';

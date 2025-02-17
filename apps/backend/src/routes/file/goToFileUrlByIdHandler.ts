@@ -17,9 +17,6 @@ const schema = {
   params: z.object({
     id: z.string().uuid(),
   }),
-  query: z.object({
-    shareToken: z.string().optional(),
-  }),
 };
 
 export const goToFileUrlByIdHandler = defineExpressHandler(
@@ -52,14 +49,13 @@ export const goToFileUrlByIdHandler = defineExpressHandler(
 
       if (
         !artifact ||
-        !hasArtifactAccess(
-          artifact,
-          res.locals.session?.userId,
-          req.query.shareToken,
-        )
+        !hasArtifactAccess(artifact, res.locals.session?.userId)
       ) {
         throw new ForbiddenExpressError('You do not have access to this file');
       }
+    } else {
+      // Safety guard for any new file purposes (we don't want to accidentally no-perm files
+      throw new ForbiddenExpressError('You do not have access to this file');
     }
 
     const url = await getSignedUrlForFilePurpose({

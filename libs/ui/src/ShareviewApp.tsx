@@ -34,9 +34,6 @@ interface Props {
   id: string;
 }
 export const ShareviewApp: React.FC<Props> = (props) => {
-  const shareToken =
-    new URLSearchParams(window.location.search).get('shareToken') || undefined;
-
   const globalPaneContextValue = useMemo<GlobalPaneContextData>(
     () => ({
       navigateHistoryBack: () => undefined, // Noop
@@ -61,9 +58,6 @@ export const ShareviewApp: React.FC<Props> = (props) => {
           const id = (componentProps as PaneableComponentProps['Artifact']).id;
 
           const url = new URL(`/artifact/${id}`, window.location.href);
-          // TODO: the following will absolutely not work with the current shareToken implementation
-          // but this is an idea of what we'd do once we can share sets of artifacts under the same token
-          if (shareToken) url.searchParams.set('shareToken', shareToken);
 
           window.location.href = url.href;
         } else {
@@ -87,9 +81,6 @@ export const ShareviewApp: React.FC<Props> = (props) => {
           const id = (componentProps as PaneableComponentProps['Artifact']).id;
 
           const url = new URL(`/artifact/${id}`, window.location.href);
-          // TODO: the following will absolutely not work with the current shareToken implementation
-          // but this is an idea of what we'd do once we can share sets of artifacts under the same token
-          if (shareToken) url.searchParams.set('shareToken', shareToken);
 
           window.location.href = url.href;
         } else {
@@ -119,7 +110,7 @@ export const ShareviewApp: React.FC<Props> = (props) => {
       <PreferencesContextProviderWrapper>
         <GlobalPaneContext.Provider value={globalPaneContextValue}>
           <PaneContext.Provider value={paneContextValue}>
-            <ArtifactShareView artifactId={props.id} shareToken={shareToken} />
+            <ArtifactShareView artifactId={props.id} />
           </PaneContext.Provider>
         </GlobalPaneContext.Provider>
       </PreferencesContextProviderWrapper>

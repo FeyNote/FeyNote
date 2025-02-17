@@ -39,6 +39,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     ArtifactSharingManagementModal,
     {
       artifactId: props.artifactId,
+      connection: props.connection,
       dismiss: () => dismissSharingModal(),
     },
   );
@@ -125,7 +126,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
         </CompactIonItem>
       ))}
-      {!!artifact.artifactShareTokens.length && (
+      {!!artifact.linkAccessLevel && (
         <CompactIonItem
           lines="none"
           onClick={() => presentSharingModal()}
@@ -134,14 +135,13 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <NowrapIonLabel>{t('artifactRenderer.sharedByLink')}</NowrapIonLabel>
         </CompactIonItem>
       )}
-      {!artifact.artifactShares.length &&
-        !artifact.artifactShareTokens.length && (
-          <CompactIonItem lines="none">
-            <NowrapIonLabel>
-              {t('artifactRenderer.artifactShares.null')}
-            </NowrapIonLabel>
-          </CompactIonItem>
-        )}
+      {!artifact.artifactShares.length && !artifact.linkAccessLevel && (
+        <CompactIonItem lines="none">
+          <NowrapIonLabel>
+            {t('artifactRenderer.artifactShares.null')}
+          </NowrapIonLabel>
+        </CompactIonItem>
+      )}
       <CompactIonItem
         lines="none"
         button

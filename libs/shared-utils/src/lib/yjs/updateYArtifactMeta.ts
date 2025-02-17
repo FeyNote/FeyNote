@@ -10,5 +10,6 @@ export const updateYArtifactMeta = (yArtifact: YDoc, meta: YArtifactMeta) => {
     artifactMetaYMap.set('theme', meta.theme);
     artifactMetaYMap.set('type', meta.type);
     artifactMetaYMap.set('titleBodyMerge', meta.titleBodyMerge);
+    artifactMetaYMap.set('linkAccessLevel', meta.linkAccessLevel);
   });
 };

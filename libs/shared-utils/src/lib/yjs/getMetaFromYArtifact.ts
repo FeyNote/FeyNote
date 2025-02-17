@@ -1,7 +1,11 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from './ARTIFACT_META_KEY';
 import type { YArtifactMeta } from '@feynote/global-types';
-import type { ArtifactTheme, ArtifactType } from '@prisma/client';
+import type {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
 
 export const getMetaFromYArtifact = (yArtifact: YDoc) => {
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
@@ -12,6 +16,9 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     type:
       (artifactMetaYMap.get('type') as ArtifactType | undefined) ?? undefined,
     titleBodyMerge: (artifactMetaYMap.get('titleBodyMerge') as boolean) ?? true,
+    linkAccessLevel:
+      (artifactMetaYMap.get('linkAccessLevel') as ArtifactAccessLevel) ??
+      'noaccess',
   } satisfies Partial<YArtifactMeta>;
 
   return artifactMeta;

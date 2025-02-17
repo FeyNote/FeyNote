@@ -24,7 +24,6 @@ const PrintButton = styled(IonButton)`
 
 interface Props {
   artifactId: string;
-  shareToken?: string;
 }
 
 export const ArtifactShareView: React.FC<Props> = (props) => {
@@ -37,19 +36,14 @@ export const ArtifactShareView: React.FC<Props> = (props) => {
               color="dark"
               fill="clear"
               onClick={() => {
-                window.open(
-                  `/artifact/print/${props.artifactId}?shareToken=${props.shareToken}`,
-                );
+                window.open(`/artifact/print/${props.artifactId}`);
               }}
             >
               <IonIcon icon={print} slot="icon-only" />
             </PrintButton>
           </LogoActionContainer>
           <FloatingPresentation>
-            <ReadonlyArtifactViewer
-              artifactId={props.artifactId}
-              shareToken={props.shareToken}
-            />
+            <ReadonlyArtifactViewer artifactId={props.artifactId} />
           </FloatingPresentation>
         </Grid>
       </IonContent>

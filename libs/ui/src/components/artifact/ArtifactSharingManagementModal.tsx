@@ -1,4 +1,3 @@
-import type { ArtifactDTO } from '@feynote/global-types';
 import {
   IonButton,
   IonButtons,
@@ -13,19 +12,22 @@ import {
   IonSearchbar,
   IonTitle,
   IonToolbar,
-  useIonAlert,
 } from '@ionic/react';
-import { close, person, trash } from 'ionicons/icons';
+import { close, person } from 'ionicons/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { ArtifactSharingAccessLevel } from './ArtifactSharingAccessLevel';
-import { ArtifactSharingLinkAdd } from './ArtifactSharingLinkAdd';
+import { ArtifactLinkAccessLevelSelect } from './ArtifactLinkAccessLevelSelect';
 import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
 import styled from 'styled-components';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 
 const ShareLinkDisplay = styled.div`
   display: grid;
@@ -41,22 +43,14 @@ const ShareLinkDisplay = styled.div`
   }
 `;
 
-const accessLevelToI18n = {
-  coowner: 'artifactSharing.coowner',
-  noaccess: 'artifactSharing.noaccess',
-  readwrite: 'artifactSharing.readwrite',
-  readonly: 'artifactSharing.readonly',
-};
-
 interface Props {
   artifactId: string;
+  connection: CollaborationManagerConnection;
   dismiss: () => void;
 }
 
 export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [artifact, setArtifact] = useState<ArtifactDTO>();
-  const [presentAlert] = useIonAlert();
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<{
     id: string;
@@ -69,16 +63,15 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
     }[]
   >([]);
   const [searching, setSearching] = useState(false);
-  const [loading, setLoading] = useState(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const sharedUserIdsToAccessLevel = useMemo(() => {
-    if (!artifact) return new Map();
+  const { userAccessYKV } = useObserveYArtifactUserAccess(
+    props.connection.yjsDoc,
+  );
+  const { title, linkAccessLevel } = useObserveYArtifactMeta(
+    props.connection.yjsDoc,
+  );
 
-    return new Map(
-      artifact.artifactShares.map((el) => [el.userId, el.accessLevel]),
-    );
-  }, [artifact]);
   const knownUserEmailsById = useMemo(() => {
     return new Map(knownUsers.map((el) => [el.id, el.email]));
   }, [knownUsers]);
@@ -89,27 +82,13 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
       .then((result) => {
         setKnownUsers(result);
       })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
-  };
-  const getArtifact = async () => {
-    await trpc.artifact.getArtifactById
-      .query({
-        id: props.artifactId,
-      })
-      .then((result) => {
-        setArtifact(result);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
+      .catch(() => {
+        // Do nothing, we don't care about errors here
       });
   };
 
   useEffect(() => {
-    Promise.all([getKnownUsers(), getArtifact()]).then(() => {
-      setLoading(false);
-    });
+    getKnownUsers();
   }, []);
 
   useEffect(() => {
@@ -156,68 +135,25 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
     accessLevel: 'noaccess' | 'readwrite' | 'readonly' | 'coowner',
   ) => {
     if (accessLevel === 'noaccess') {
-      await trpc.artifactShare.deleteArtifactShare
-        .mutate({
-          userId,
-          artifactId: props.artifactId,
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
+      userAccessYKV.delete(userId);
     } else {
-      await trpc.artifactShare.upsertArtifactShare
-        .mutate({
-          userId,
-          artifactId: props.artifactId,
-          accessLevel,
-        })
-        .catch((error) => {
-          handleTRPCErrors(error);
-        });
-    }
-
-    await Promise.all([getArtifact(), getKnownUsers()]);
-  };
-
-  const onArtifactShareTokenDeleteClicked = async (shareTokenId: string) => {
-    presentAlert({
-      header: t('artifactSharing.links.delete.title'),
-      message: t('artifactSharing.links.delete.message'),
-      buttons: [
-        {
-          text: t('generic.cancel'),
-        },
-        {
-          text: t('generic.delete'),
-          handler: () => {
-            deleteArtifactShareToken(shareTokenId);
-          },
-        },
-      ],
-    });
-  };
-
-  const deleteArtifactShareToken = async (shareTokenId: string) => {
-    await trpc.artifactShareToken.deleteArtifactShareToken
-      .mutate({
-        id: shareTokenId,
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
+      userAccessYKV.set(userId, {
+        accessLevel,
       });
+    }
+  };
 
-    await getArtifact();
+  const linkAccessLevelChanged = () => {
+    props.connection.yjsDoc
+      .getMap(ARTIFACT_META_KEY)
+      .set('linkAccessLevel', linkAccessLevel);
   };
 
   const knownUsersNotSharedTo = knownUsers.filter(
-    (el) => !sharedUserIdsToAccessLevel.has(el.id),
+    (el) => !userAccessYKV.has(el.id),
   );
 
-  const buildShareUrl = (shareToken: string) => {
-    return `https://feynote.com/artifact/${props.artifactId}?shareToken=${shareToken}`;
-  };
-
-  if (loading || !artifact) return;
+  const shareUrl = `https://feynote.com/artifact/${props.artifactId}`;
 
   return (
     <IonPage>
@@ -239,45 +175,43 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             {t('artifactSharing.existing')}
             <InfoButton message={t('artifactSharing.existing.help')} />
           </IonListHeader>
-          {artifact.artifactShares.map((artifactShare) => (
-            <IonItem key={artifactShare.id} lines="none">
+          {userAccessYKV.yarray.map(({ key, val }) => (
+            <IonItem key={key} lines="none">
               <ArtifactSharingAccessLevel
-                label={knownUserEmailsById.get(artifactShare.userId)}
-                accessLevel={artifactShare.accessLevel || 'noaccess'}
+                label={knownUserEmailsById.get(key) || key}
+                accessLevel={val.accessLevel || 'noaccess'}
                 onChange={(accessLevel) =>
-                  onAccessLevelChanged(artifactShare.userId, accessLevel)
+                  onAccessLevelChanged(key, accessLevel)
                 }
               />
             </IonItem>
           ))}
-          {!artifact.artifactShares.length && (
+          {!userAccessYKV.yarray.length && (
             <IonItem>{t('artifactSharing.noShares')}</IonItem>
           )}
-        </IonCard>
-        {!!knownUsersNotSharedTo.length && (
-          <IonCard>
-            <IonListHeader>
-              <IonIcon icon={person} size="small" />
-              &nbsp;&nbsp;
-              {t('artifactSharing.knownUsers')}
-              <InfoButton message={t('artifactSharing.knownUsers.help')} />
-            </IonListHeader>
-            {knownUsersNotSharedTo.map((knownUser) => (
-              <IonItem key={knownUser.id} lines="none">
-                <ArtifactSharingAccessLevel
-                  label={knownUser.email}
-                  accessLevel={
-                    sharedUserIdsToAccessLevel.get(knownUser.id) || 'noaccess'
-                  }
-                  onChange={(accessLevel) =>
-                    onAccessLevelChanged(knownUser.id, accessLevel)
-                  }
-                />
-              </IonItem>
-            ))}
-          </IonCard>
-        )}
-        <IonCard>
+          {!!knownUsersNotSharedTo.length && (
+            <>
+              <IonListHeader>
+                <IonIcon icon={person} size="small" />
+                &nbsp;&nbsp;
+                {t('artifactSharing.knownUsers')}
+                <InfoButton message={t('artifactSharing.knownUsers.help')} />
+              </IonListHeader>
+              {knownUsersNotSharedTo.map((knownUser) => (
+                <IonItem key={knownUser.id} lines="none">
+                  <ArtifactSharingAccessLevel
+                    label={knownUser.email}
+                    accessLevel={
+                      userAccessYKV.get(knownUser.id)?.accessLevel || 'noaccess'
+                    }
+                    onChange={(accessLevel) =>
+                      onAccessLevelChanged(knownUser.id, accessLevel)
+                    }
+                  />
+                </IonItem>
+              ))}
+            </>
+          )}
           <IonListHeader>
             <IonIcon icon={person} size="small" />
             &nbsp;&nbsp;
@@ -294,12 +228,12 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
               debounce={200}
             ></IonSearchbar>
           </IonItem>
-          {!loading && !searching && !!searchText.length && !!searchResult && (
+          {!searching && !!searchText.length && !!searchResult && (
             <IonItem lines="none">
               <ArtifactSharingAccessLevel
                 label={searchResult.email}
                 accessLevel={
-                  sharedUserIdsToAccessLevel.get(searchResult.id) || 'noaccess'
+                  userAccessYKV.get(searchResult.id)?.accessLevel || 'noaccess'
                 }
                 onChange={(accessLevel) =>
                   onAccessLevelChanged(searchResult.id, accessLevel)
@@ -307,7 +241,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
               />
             </IonItem>
           )}
-          {!loading && !searching && !!searchText.length && !searchResult && (
+          {!searching && !!searchText.length && !searchResult && (
             <IonItem>
               <IonLabel>{t('artifactSharing.search.noResult')}</IonLabel>
             </IonItem>
@@ -318,6 +252,8 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             </IonItem>
           )}
         </IonCard>
+        <br />
+        <br />
         <IonCard>
           <IonListHeader>
             <IonIcon icon={person} size="small" />
@@ -325,54 +261,26 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
             {t('artifactSharing.links')}
             <InfoButton message={t('artifactSharing.links.help')} />
           </IonListHeader>
-          {artifact.artifactShareTokens.map((shareToken) => (
-            <IonItem key={shareToken.id} lines="none">
-              <IonLabel>
-                <ShareLinkDisplay>
-                  <a
-                    href={buildShareUrl(shareToken.shareToken)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    {buildShareUrl(shareToken.shareToken)}
-                  </a>
-                  <div>
-                    <CopyWithWebshareButton
-                      copyText={buildShareUrl(shareToken.shareToken)}
-                      webshareTitle={artifact.title}
-                      webshareURL={buildShareUrl(shareToken.shareToken)}
-                    />
-                    <IonButton
-                      color="danger"
-                      fill="clear"
-                      onClick={() =>
-                        onArtifactShareTokenDeleteClicked(shareToken.id)
-                      }
-                    >
-                      <IonIcon slot="icon-only" icon={trash} />
-                    </IonButton>
-                  </div>
-                  <p>
-                    {t(accessLevelToI18n[shareToken.accessLevel])}&nbsp;-&nbsp;
-                    {shareToken.allowAddToAccount
-                      ? t('artifactSharing.links.allowAddToAccount')
-                      : t('artifactSharing.links.noAddToAccount')}
-                  </p>
-                </ShareLinkDisplay>
-              </IonLabel>
-            </IonItem>
-          ))}
-          {!loading && !artifact.artifactShareTokens.length && (
-            <IonItem lines="none">
-              <IonLabel>{t('artifactSharing.links.null')}</IonLabel>
-            </IonItem>
-          )}
-          {!loading && (
-            <ArtifactSharingLinkAdd
-              artifactId={props.artifactId}
-              onAdded={() => getArtifact()}
-            />
-          )}
+          <ArtifactLinkAccessLevelSelect
+            artifactAccessLevel={linkAccessLevel || 'noaccess'}
+            setArtifactAccessLevel={linkAccessLevelChanged}
+          />
+          <IonItem lines="none">
+            <IonLabel>
+              <ShareLinkDisplay>
+                <a href={shareUrl} target="_blank" rel="noreferrer">
+                  {shareUrl}
+                </a>
+                <div>
+                  <CopyWithWebshareButton
+                    copyText={shareUrl}
+                    webshareTitle={title}
+                    webshareURL={shareUrl}
+                  />
+                </div>
+              </ShareLinkDisplay>
+            </IonLabel>
+          </IonItem>
         </IonCard>
       </IonContent>
     </IonPage>

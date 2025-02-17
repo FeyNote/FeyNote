@@ -13,16 +13,9 @@ export const getArtifactById = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(async ({ ctx, input }): Promise<ArtifactDTO> => {
-    if (!ctx.session && !input.shareToken) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-      });
-    }
-
     const artifact = await prisma.artifact.findUnique({
       where: {
         id: input.id,
@@ -30,10 +23,7 @@ export const getArtifactById = publicProcedure
       ...artifactDetail,
     });
 
-    if (
-      !artifact ||
-      !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-    ) {
+    if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
       throw new TRPCError({
         message:
           'Artifact does not exist or is not visible to the current user',
