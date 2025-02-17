@@ -5,7 +5,8 @@ import extract from 'extract-zip';
 import { FilePurpose } from '@prisma/client';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { createWriteStream, readdirSync } from 'fs';
+import { createWriteStream } from 'fs';
+import { readdir } from 'fs/promises';
 
 class FileLimitExceededError extends Error {
   constructor() {
@@ -39,7 +40,7 @@ export const downloadZipFromS3 = async (key: string) => {
     }
   }});
 
-  const filePaths = readdirSync(extractDest, { recursive: true }).map(
+  const filePaths = (await readdir(extractDest, { recursive: true })).map(
     (filePath) => join(extractDest, filePath.toString()),
   );
   return { filePaths, zipDest, extractDest };

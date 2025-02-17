@@ -1,5 +1,4 @@
-import { getImageQuality, proxyGetRequest, uploadFileToS3 } from "@feynote/api-services";
-import sharp from 'sharp';
+import { convertImageForStorage, proxyGetRequest, uploadFileToS3 } from "@feynote/api-services";
 import { basename, extname } from "path";
 import { Transform } from "stream";
 import { FilePurpose, Prisma } from "@prisma/client";
@@ -11,7 +10,12 @@ const UPLOAD_CONCURRENCY = 20;
 
 const limit = pLimit(UPLOAD_CONCURRENCY);
 
-export const replaceImageHttpTags = async (content: string, userId: string, fileUploadCountRef: { fileUploadCount: number }): Promise<{ updatedContent: string, files: Array<Prisma.FileCreateManyInput>}> => {
+export const replaceImageHttpTags = async (
+  content: string,
+  userId: string,
+  fileUploadCountRef: { fileUploadCount: number },
+  artifactId: string
+): Promise<{ updatedContent: string, files: Array<Prisma.FileCreateManyInput>}> => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />
   // 1. The full match
   // 2. The src url
@@ -23,7 +27,7 @@ export const replaceImageHttpTags = async (content: string, userId: string, file
       if (fileUploadCountRef.fileUploadCount < ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
         fileUploadCountRef.fileUploadCount += 1
 
-        const uploadPromise = limit(() => _uploadUserImageToS3FromSrc(imageSrc, userId, matchingGroups[0]));
+        const uploadPromise = limit(() => _uploadUserImageToS3FromSrc(imageSrc, userId, matchingGroups[0], artifactId));
         asyncHttpUploadEvents.push(uploadPromise);
         continue
       }
@@ -42,9 +46,14 @@ export const replaceImageHttpTags = async (content: string, userId: string, file
   return { updatedContent: content, files };
 }
 
-const _uploadUserImageToS3FromSrc = async (httpSrc: string, userId: string, stringToReplace: string) => {
+const _uploadUserImageToS3FromSrc = async (
+  httpSrc: string,
+  userId: string,
+  stringToReplace: string,
+  associatedArtifactId: string
+) => {
   try {
-    const response = await proxyGetRequest(httpSrc);
+    const response = await proxyGetRequest(httpSrc, { responseType: 'stream' });
     const stream = response.data
 
     let totalSize = 0;
@@ -79,24 +88,12 @@ const _uploadUserImageToS3FromSrc = async (httpSrc: string, userId: string, stri
         });
     });
 
-    const { maxResolution, quality } = await getImageQuality(userId);
-    const fileBuffer = await sharp(Buffer.concat(chunks))
-      .rotate()
-      .resize(maxResolution, maxResolution, {
-        fit: 'contain',
-        withoutEnlargement: true,
-      })
-      .jpeg({
-        quality,
-        mozjpeg: true,
-      })
-      .toBuffer();
-
+    const buffer = await convertImageForStorage(userId, Buffer.concat(chunks));
     const id = randomUUID();
     const purpose = FilePurpose.artifact;
     const mimetype = 'image/jpeg';
     const name = basename(httpSrc, extname(httpSrc));
-    const uploadResult = await uploadFileToS3(fileBuffer, mimetype, purpose);
+    const uploadResult = await uploadFileToS3(buffer, mimetype, purpose);
 
     const fileData = {
       id,
@@ -105,11 +102,12 @@ const _uploadUserImageToS3FromSrc = async (httpSrc: string, userId: string, stri
       mimetype,
       storageKey: uploadResult.key,
       purpose,
+      artifactId: associatedArtifactId,
       metadata: {
         uploadResult,
       },
     };
-    return { fileData, stringToReplace, replacementString: `<img fileId="${fileData.id}" />` };
+    return { fileData, stringToReplace, replacementString: `<img fileId="${id}" />` };
   } catch (e) {
     return { fileData: null, stringToReplace, replacementString: `<a href="${httpSrc}">${httpSrc}</a>` };
   }

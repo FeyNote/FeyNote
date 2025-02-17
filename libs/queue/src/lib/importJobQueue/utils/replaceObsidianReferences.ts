@@ -1,10 +1,20 @@
 import { parse, extname } from 'path';
 import { isImagePath } from './isImagePath';
+import { randomUUID } from 'crypto';
 
-export const replaceObsidianReferences = (content: string, docInfoMap: Map<string, {
-  id: string;
-  path: string;
-}>, imagesToCreate: {id: string, path: string}[]): string => {
+export const replaceObsidianReferences = (
+  content: string,
+  docInfoMap: Map<string, {
+    id: string;
+    path: string;
+  }>,
+  imageFilesToUpload: {
+    id: string;
+    associatedArtifactId: string;
+    path: string;
+  }[],
+  artifactId: string
+  ): string => {
     // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
     // 1. The full match
     // 2. The artifact path
@@ -29,14 +39,13 @@ export const replaceObsidianReferences = (content: string, docInfoMap: Map<strin
         }
       } else if (isImagePath(documentInfo.path)) {
         // What happens when the referenced image isn't present? i.e. markdown points to an image filepath that doesn't exist
-        replacementHtml = `<img fileId="${documentInfo.id}" />`;
-        // Ensure image is not already enqueued for creation
-        if (!imagesToCreate.some((image) => image.id === documentInfo.id)) {
-          imagesToCreate.push({
-            id: documentInfo.id,
-            path: documentInfo.path,
-          });
-        }
+        const id = randomUUID()
+        replacementHtml = `<img fileId="${id}" />`;
+        imageFilesToUpload.push({
+          id,
+          associatedArtifactId: artifactId,
+          path: documentInfo.path,
+        })
       }
 
       content = content.replace(matchingGroups[0], replacementHtml);

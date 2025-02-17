@@ -17,7 +17,7 @@ export * from './lib/s3/getSignedUrl';
 export * from './lib/s3/getSignedUrlForFilePurpose';
 export * from './lib/s3/uploadFileToS3';
 export * from './lib/s3/getImageQuality';
-export * from './lib/s3/uploadImageFromPathToS3';
+export * from './lib/s3/convertImageForStorage';
 export * from './lib/s3/streamFileFromS3';
 export * from './lib/s3/getFileFromS3';
 export * from './lib/session/getSessionFromAuthHeader';

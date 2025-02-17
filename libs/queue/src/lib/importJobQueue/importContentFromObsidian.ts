@@ -1,16 +1,17 @@
 import {
-  getCapabilitiesForUser,
-  uploadImageFromPathToS3,
+  convertImageForStorage,
+  uploadFileToS3,
 } from '@feynote/api-services';
 import { applyUpdate, encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import { generateJSON } from '@tiptap/html';
 import {
   ArtifactTheme,
   ArtifactType,
+  FilePurpose,
   Prisma,
 } from '@prisma/client';
-import { readFile } from 'fs/promises';
-import path, { extname, parse } from 'path';
+import { readFile, rm } from 'fs/promises';
+import path, { basename, extname, parse } from 'path';
 import { marked } from 'marked';
 import {
     addMissingBlockIds,
@@ -56,116 +57,120 @@ export const importContentFromObsidian = async (
     referenceIdToInfoMap.set(obsidianReferenceId, { id, path: filePath });
   })
 
-  const artifactsToCreate: Array<Prisma.ArtifactCreateManyInput> = [];
-  const imagesToCreate: {
+  const artifactsToCreate = Array<Prisma.ArtifactCreateManyInput>();
+  const imageFilesUploaded = Array<Prisma.FileCreateManyInput>();
+  const imageFilesToUpload: {
     id: string;
-    path: string;
-  }[] = [];
+    associatedArtifactId: string;
+    path: string
+  }[] = []
 
-  const imagePathToIdMap = new Map<string, string>();
   const fileUploadCountRef = {
     fileUploadCount: 0,
   };
   for await (const filePath of filePaths) {
     console.log(`\nFile Path:\n${filePath}\n`);
     if (extname(filePath) !== '.md') continue;
+    const obsidianReferenceId = getObsidianReferenceId(filePath, pathToRelativeReferences);
+    const artifactId = referenceIdToInfoMap.get(obsidianReferenceId)?.id ?? randomUUID();
 
     let markdown = await readFile(filePath, 'utf-8');
     console.log(`\n\n\nFile Read:\n${markdown}\n\n\n`);
     markdown = pushImgTagsToNewLine(markdown)
-    markdown = replaceObsidianReferences(markdown, referenceIdToInfoMap, imagesToCreate);
+    markdown = replaceObsidianReferences(markdown, referenceIdToInfoMap, imageFilesToUpload, artifactId);
     markdown = replaceObsidianHeadings(markdown);
-    markdown = replaceImageFileTags(markdown, imagePathToIdMap);
-    const replacementResult = await replaceImageHttpTags(markdown, userId, fileUploadCountRef);
+    markdown = replaceImageFileTags(markdown, referenceIdToInfoMap, imageFilesToUpload, artifactId);
+    const replacementResult = await replaceImageHttpTags(markdown, userId, fileUploadCountRef, artifactId);
+    imageFilesUploaded.push(...replacementResult.files);
     markdown = replacementResult.updatedContent;
 
+    // console.log(`\n\n\nMarkdown:\n${markdown}\n\n\n`);
     const html = await marked.parse(markdown);
-    console.log(`\n\n\nHTML:\n${html}\n\n\n`);
     const extensions = getTiptapServerExtensions();
     const tiptap = generateJSON(html, extensions);
+    addMissingBlockIds(tiptap);
     console.log(`\n\n\nTipTap:\n${JSON.stringify(tiptap, null, 2)}\n\n\n`);
+
+    const text = getTextForJSONContent(tiptap);
+    const title = parse(filePath).name;
+    const yDoc = constructYArtifact({
+      title,
+      theme: ArtifactTheme.default,
+      type: ArtifactType.tiptap,
+      titleBodyMerge: true,
+    });
+    const tiptapYContent = TiptapTransformer.toYdoc(
+      tiptap,
+      ARTIFACT_TIPTAP_BODY_KEY,
+      extensions,
+    );
+    applyUpdate(yDoc, encodeStateAsUpdate(tiptapYContent));
+    const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
+
+    artifactsToCreate.push({
+      id: artifactId,
+      userId,
+      title,
+      type: ArtifactType.tiptap,
+      text,
+      json: tiptap,
+      yBin,
+    });
   }
-    //addMissingBlockIds(tiptap);
-    //
-    //const text = getTextForJSONContent(tiptap);
-    //const title = parse(filePath).name;
-    //const yDoc = constructYArtifact({
-    //  title,
-    //  theme: ArtifactTheme.default,
-    //  type: ArtifactType.tiptap,
-    //  titleBodyMerge: true,
-    //});
-    //const tiptapYContent = TiptapTransformer.toYdoc(
-    //  tiptap,
-    //  ARTIFACT_TIPTAP_BODY_KEY,
-    //  extensions,
-    //);
-    //applyUpdate(yDoc, encodeStateAsUpdate(tiptapYContent));
-    //const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
-    //
-    //const obsidianReferenceId = getObsidianReferenceId(filePath, pathToRelativeReferences);
-    //const docInfo = referenceIdToInfoMap.get(obsidianReferenceId);
-  //  artifactsToCreate.push({
-  //    id: docInfo?.id ?? randomUUID(),
-  //    userId,
-  //    title,
-  //    type: ArtifactType.tiptap,
-  //    text,
-  //    json: tiptap,
-  //    yBin,
-  //  });
-  //});
-  //
-  //const userCapabilities = await getCapabilitiesForUser(userId);
-  //const files = [];
-  //for (const imageInfo of imagesToCreate) {
-  //  const { mimetype, purpose, uploadResult } = await uploadImageFromPathToS3(
-  //    imageInfo.path,
-  //    userCapabilities,
-  //  );
-  //
-  //  const fileData = {
-  //    id: imageInfo.id,
-  //    userId: userId,
-  //    name: parse(imageInfo.path).name,
-  //    mimetype: mimetype,
-  //    storageKey: uploadResult.key,
-  //    purpose: purpose,
-  //    metadata: {
-  //      uploadResult,
-  //    },
-  //  };
-  //  files.push(fileData);
-  //}
-  //const [_, createdArtifacts] = await prisma.$transaction([
-  //  prisma.file.createManyAndReturn({
-  //    data: files,
-  //    select: {
-  //      id: true
-  //    }
-  //  }),
-  //  prisma.artifact.createManyAndReturn({
-  //    data: artifactsToCreate,
-  //    select: {
-  //      id: true,
-  //      yBin: true,
-  //    },
-  //  })
-  //])
-  //
-  //for (const artifact of createdArtifacts) {
-  //  await enqueueArtifactUpdate({
-  //    artifactId: artifact.id,
-  //    userId,
-  //    triggeredByUserId: userId,
-  //    oldReadableUserIds: [],
-  //    newReadableUserIds: [userId],
-  //    oldYBinB64: Buffer.from(encodeStateAsUpdate(new YDoc())).toString(
-  //      'base64',
-  //    ),
-  //    newYBinB64: Buffer.from(artifact.yBin).toString('base64'),
-  //  });
-  //}
-  //rmSync(zipDest, { recursive: true });
-  //rmSync(extractDest, { recursive: true });
+
+  for await (const imageInfo of imageFilesToUpload) {
+    const buffer = await convertImageForStorage(userId, imageInfo.path);
+
+    const purpose = FilePurpose.artifact;
+    const mimetype = 'image/jpeg';
+    const name = basename(imageInfo.path, extname(imageInfo.path));
+    const uploadResult = await uploadFileToS3(buffer, mimetype, purpose);
+
+    const fileData = {
+      id: imageInfo.id,
+      artifactId: imageInfo.associatedArtifactId,
+      userId,
+      name,
+      mimetype,
+      storageKey: uploadResult.key,
+      purpose,
+      metadata: {
+        uploadResult,
+      },
+    };
+    imageFilesUploaded.push(fileData)
+  }
+  const { createdArtifacts } = await prisma.$transaction(async (tx) => {
+    const createdArtifacts = await tx.artifact.createManyAndReturn({
+      data: artifactsToCreate,
+      select: {
+        id: true,
+        yBin: true,
+      },
+    })
+    await tx.file.createManyAndReturn({
+      data: imageFilesUploaded,
+      select: {
+        id: true
+      }
+    })
+
+    return { createdArtifacts }
+  })
+
+  for (const artifact of createdArtifacts) {
+    await enqueueArtifactUpdate({
+      artifactId: artifact.id,
+      userId,
+      triggeredByUserId: userId,
+      oldReadableUserIds: [],
+      newReadableUserIds: [userId],
+      oldYBinB64: Buffer.from(encodeStateAsUpdate(new YDoc())).toString(
+        'base64',
+      ),
+      newYBinB64: Buffer.from(artifact.yBin).toString('base64'),
+    });
+  }
+  await rm(zipDest, { recursive: true });
+  await rm(extractDest, { recursive: true });
 };

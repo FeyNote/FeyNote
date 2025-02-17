@@ -9,7 +9,6 @@ import {
   uploadFileToS3,
   BadRequestExpressError,
   NotFoundExpressError,
-  getCapabilitiesForUser,
   getImageQuality,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
@@ -64,10 +63,7 @@ export const createFileHandler = defineExpressHandler(
       }
     }
 
-    const userCapabilities = await getCapabilitiesForUser(
-      res.locals.session.userId,
-    );
-    const { maxResolution, quality } = getImageQuality(userCapabilities);
+    const { maxResolution, quality } = await getImageQuality(res.locals.session.userId);
 
     let fileBuffer: Buffer = req.file.buffer;
     if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
