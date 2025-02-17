@@ -43,7 +43,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         if (!artifactMetaMap.get('type'))
           artifactMetaMap.set('type', artifact.type);
 
-        return args.document;
+        return;
       }
       case SupportedDocumentType.UserTree: {
         const user = await prisma.user.findUnique({
@@ -65,7 +65,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           applyUpdate(args.document, user.treeYBin);
         }
 
-        return args.document;
+        return;
       }
     }
   } catch (e) {
