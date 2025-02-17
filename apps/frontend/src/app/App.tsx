@@ -30,6 +30,7 @@ import {
   initI18Next,
   PasswordReset,
   IonApp,
+  PrintviewApp,
 } from '@feynote/ui';
 
 initI18Next();
@@ -92,6 +93,11 @@ export function App() {
         </IonApp>
       </GlobalPaneContextProviderWrapper>
     );
+  }
+
+  const printArtifactId = url.searchParams.get('printArtifactId');
+  if (printArtifactId) {
+    return <PrintviewApp id={printArtifactId} />;
   }
 
   if (!path.length || path[0] === '') {

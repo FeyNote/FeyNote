@@ -14,4 +14,5 @@ export { Workspace } from './Workspace';
 export { PasswordReset } from './components/auth/PasswordReset';
 export { initI18Next } from './i18n/initI18Next';
 export { ShareviewApp } from './ShareviewApp';
+export { PrintviewApp } from './PrintviewApp';
 export * from './IonicReact19Compat';

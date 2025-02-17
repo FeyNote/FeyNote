@@ -45,6 +45,12 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       });
   };
 
+  const onPrintArtifactClicked = () => {
+    window.open(
+      `${window.location.hostname}?printArtifactId=${props.artifactId}&autoPrint=true`,
+    );
+  };
+
   const onDuplicateArtifactClicked = () => {
     const { title, theme, type, titleBodyMerge } = getMetaFromYArtifact(
       props.connection.yjsDoc,
@@ -114,6 +120,9 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       </ContextMenuGroup>
       <ContextMenuGroupDivider />
       <ContextMenuGroup>
+        <ContextMenuItem onClick={onPrintArtifactClicked}>
+          {t('contextMenu.printArtifact')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={onDuplicateArtifactClicked}>
           {t('contextMenu.duplicateArtifact')}
         </ContextMenuItem>

@@ -15,6 +15,10 @@ export const ArtifactEditorStyles = styled.div`
   font-family: var(--sheet-font-family);
   color: var(--sheet-text-color);
 
+  @media print {
+    padding: 16px;
+  }
+
   .tiptap {
     padding-left: 16px;
     padding-right: 16px;
@@ -179,6 +183,10 @@ export const ArtifactEditorStyles = styled.div`
         url('https://static.feynote.com/assets/parchment-background-20240925.jpg');
     }
     box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
+
+    @media print {
+      box-shadow: none;
+    }
   }
 
   ${collaborationCursorExtensionStyles}
