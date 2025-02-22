@@ -139,7 +139,7 @@
     "@swc/plugin-styled-components": "^6.7.0",
     "@types/express": "4.17.21",
     "@types/jest": "29.5.14",
-    "@types/node": "22.13.4",
+    "@types/node": "22.13.5",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@types/react-is": "19.0.0",
