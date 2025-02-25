@@ -26,6 +26,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
     // This will be available in all future methods!
     const context = {
       userId: session.userId,
+      isOwner: false,
     };
 
     const [type, identifier] = splitDocumentName(args.documentName);
@@ -71,6 +72,10 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           args.connection.readOnly = true;
         }
 
+        if (artifact.userId === context.userId) {
+          context.isOwner = true;
+        }
+
         break;
       }
       case SupportedDocumentType.UserTree: {
@@ -80,6 +85,8 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           );
           throw new Error();
         }
+
+        context.isOwner = true;
 
         break;
       }

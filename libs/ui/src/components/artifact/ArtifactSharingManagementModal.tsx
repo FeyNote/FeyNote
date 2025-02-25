@@ -28,6 +28,7 @@ import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 const ShareLinkDisplay = styled.div`
   display: grid;
@@ -143,7 +144,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
     }
   };
 
-  const linkAccessLevelChanged = () => {
+  const linkAccessLevelChanged = (linkAccessLevel: ArtifactAccessLevel) => {
     props.connection.yjsDoc
       .getMap(ARTIFACT_META_KEY)
       .set('linkAccessLevel', linkAccessLevel);
