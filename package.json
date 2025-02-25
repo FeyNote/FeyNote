@@ -102,7 +102,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "starkdown": "^4.0.2",
-    "stripe": "^17.6.0",
+    "stripe": "^17.7.0",
     "styled-components": "6.1.15",
     "superjson": "^2.2.2",
     "tippy.js": "^6.3.7",
