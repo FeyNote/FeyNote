@@ -1,20 +1,21 @@
 import { memo, useEffect, useState } from 'react';
-import { ArtifactEditor } from '../../editor/ArtifactEditor';
-import { ArtifactCalendar } from '../../calendar/ArtifactCalendar';
+import { ArtifactEditor } from '../editor/ArtifactEditor';
+import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { applyUpdate, Doc as YDoc } from 'yjs';
-import { trpc } from '../../../utils/trpc';
+import { trpc } from '../../utils/trpc';
 import { useIonAlert } from '@ionic/react';
-import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
-import { getFileRedirectUrl } from '../../../utils/files/getFileRedirectUrl';
-import { ArtifactDraw } from '../../draw/ArtifactDraw';
+import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { Edge } from '@feynote/shared-utils';
-import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
-import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
+import { getEdgeStore } from '../../utils/edgesReferences/edgeStore';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifactId: string;
   shareToken?: string;
+  onReady?: () => void;
 }
 
 export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
@@ -117,6 +118,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       <ArtifactEditor
         artifactId={props.artifactId}
         editable={false}
+        onReady={props.onReady}
         yjsProvider={undefined}
         yDoc={yDoc}
         getFileUrl={(fileId) => {
@@ -134,6 +136,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       <ArtifactCalendar
         artifactId={props.artifactId}
         editable={false}
+        onReady={props.onReady}
         y={yDoc}
         viewType="fullsize"
       />
@@ -145,6 +148,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       <ArtifactDraw
         artifactId={props.artifactId}
         editable={false}
+        onReady={props.onReady}
         yDoc={yDoc}
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({

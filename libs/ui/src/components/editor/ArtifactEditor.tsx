@@ -20,6 +20,10 @@ export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
 const BottomSpacer = styled.div`
   height: 100px;
+
+  @media print {
+    display: none;
+  }
 `;
 
 type DocArgOptions =
@@ -81,7 +85,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   );
 
   return (
-    <>
+    <div data-print-target={`artifact:${props.artifactId}`}>
       {!titleBodyMerge && titleInput}
       <ArtifactEditorContainer>
         <ArtifactEditorStyles data-theme={theme}>
@@ -96,6 +100,6 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
       <BottomSpacer />
-    </>
+    </div>
   );
 });

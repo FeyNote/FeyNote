@@ -232,6 +232,7 @@
   "contextMenu.expandAll": "Expand all",
   "contextMenu.collapseAll": "Collapse all",
   "contextMenu.duplicateArtifact": "Duplicate Artifact",
+  "contextMenu.printArtifact": "Print Artifact",
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",

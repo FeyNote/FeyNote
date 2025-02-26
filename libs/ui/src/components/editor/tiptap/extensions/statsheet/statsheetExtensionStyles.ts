@@ -10,6 +10,8 @@ export const statsheetExtensionStyles = css`
   padding-left: 8px;
   padding-right: 8px;
 
+  break-inside: avoid;
+
   text-rendering: optimizeLegibility;
   background-color: #f2e5b5;
   background-image: url('https://static.feynote.com/assets/parchment-background-grayscale-20240925.jpg');

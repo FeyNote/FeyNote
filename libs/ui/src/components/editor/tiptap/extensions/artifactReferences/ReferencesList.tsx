@@ -176,7 +176,12 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     }
 
     const item = props.items.at(index);
-    if (!item) return;
+    if (!item) {
+      if (showCreateButton && index === props.items.length) {
+        createItem();
+      }
+      return;
+    }
 
     if (item.artifact.type === 'calendar') {
       setCreatingItem(true);

@@ -146,7 +146,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   );
 
   return (
-    <>
+    <div data-print-target={`artifact:${props.artifactId}`}>
       {!titleBodyMerge && titleInput}
       <ArtifactCalendarStyles data-theme={theme}>
         {titleBodyMerge && titleInput}
@@ -169,6 +169,6 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
         />
       </ArtifactCalendarStyles>
       <BottomSpacer />
-    </>
+    </div>
   );
 });
