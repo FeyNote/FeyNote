@@ -43,6 +43,7 @@ const TreeItemContainer = styled.div`
   .rct-tree-item-arrow {
     width: 20px;
     height: 20px;
+    flex-shrink: 0;
   }
 
   .rct-tree-item-arrow:has(svg) {
