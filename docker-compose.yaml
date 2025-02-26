@@ -26,6 +26,7 @@ services:
     ports:
       - '80:80'
       - '8080:8080'
+      - '8081:8081'
     command: nginx -g 'daemon off;'
     depends_on:
       - frontend
@@ -60,6 +61,18 @@ services:
       DATABASE_URL: postgresql://feynote:feynote@postgres:5432/feynote?schema=public
     depends_on:
       - backend
+    stop_grace_period: 1s
+  docs:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: npx nx serve docs
+    environment:
+      NODE_ENV: development
+      APP_VERSION: development
     stop_grace_period: 1s
   hocuspocus:
     build:
