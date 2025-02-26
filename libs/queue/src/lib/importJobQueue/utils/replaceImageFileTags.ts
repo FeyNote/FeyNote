@@ -6,11 +6,6 @@ export const replaceImageFileTags = (
     id: string;
     path: string;
   }>,
-  imageFilesToUpload: {
-    id: string;
-    associatedArtifactId: string;
-    path: string;
-  }[],
   artifactId: string
 ) => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />

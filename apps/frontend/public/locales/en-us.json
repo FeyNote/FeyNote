@@ -203,7 +203,11 @@
   "import.jobs.title": "Import Jobs",
   "import.jobs.nullState.title": "No Import Jobs",
   "import.jobs.nullState.message": "Import artifacts by selecting an import option below!",
+  "import.jobs.table.columns.status.failed": "Failed",
   "import.jobs.options.obsidian": "Import from Obsidian",
+  "import.jobs.options.logseq": "Import from Logseq",
+  "import.jobs.file.instructions.obsidian": "Please zip and select your obsidian vault file.",
+  "import.jobs.file.instructions.logseq": "Please select the JSON export of your graph.",
   "import.jobs.table.columns.title": "Title",
   "import.jobs.table.columns.status": "Status",
   "import.jobs.table.columns.type": "Type",
@@ -557,5 +561,7 @@
   "generic.cancel": "Cancel",
   "generic.delete": "Delete",
   "generic.warning": "Warning",
-  "generic.upload": "Upload"
+  "generic.upload": "Upload",
+  "generic.browse": "Browse",
+  "generic.submit": "Submit"
 }

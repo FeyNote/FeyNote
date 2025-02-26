@@ -1,6 +1,7 @@
 import { parse, extname } from 'path';
 import { isImagePath } from './isImagePath';
 import { randomUUID } from 'crypto';
+import type { StandarizedImportInfo } from '../StandarizedImportInfo';
 
 export const replaceObsidianReferences = (
   content: string,
@@ -8,12 +9,8 @@ export const replaceObsidianReferences = (
     id: string;
     path: string;
   }>,
-  imageFilesToUpload: {
-    id: string;
-    associatedArtifactId: string;
-    path: string;
-  }[],
-  artifactId: string
+  artifactId: string,
+  importInfo: StandarizedImportInfo
   ): string => {
     // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
     // 1. The full match
@@ -41,7 +38,7 @@ export const replaceObsidianReferences = (
         // What happens when the referenced image isn't present? i.e. markdown points to an image filepath that doesn't exist
         const id = randomUUID()
         replacementHtml = `<img fileId="${id}" />`;
-        imageFilesToUpload.push({
+        importInfo.imageFilesToUpload.push({
           id,
           associatedArtifactId: artifactId,
           path: documentInfo.path,

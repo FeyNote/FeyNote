@@ -52,12 +52,12 @@ export const Import: React.FC = () => {
           </IonAccordion>
           <IonAccordion value="second">
             <IonItem slot="header">
-              <IonLabel>Import from Logseq</IonLabel>
+              <IonLabel>{t('import.jobs.options.logseq')}</IonLabel>
             </IonItem>
             <div slot="content">
               <ImportFromFile
                 fetchImportJobs={fetchImportJobs}
-                type={ImportJobType.Obsidian}
+                type={ImportJobType.Logseq}
               />
             </div>
           </IonAccordion>

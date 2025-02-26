@@ -1,6 +1,6 @@
 import { IonButton, IonIcon, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { trpc } from '../../utils/trpc';
 import { ImportJobType } from '@prisma/client';
@@ -39,6 +39,13 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>();
   const [fileInputError, setFileInputError] = useState<string | null>(null);
+  const instructions = useMemo(() => {
+    if (props.type === ImportJobType.Obsidian) {
+      return t('import.jobs.file.instructions.obsidian');
+    } else {
+      return t('import.jobs.file.instructions.logseq');
+    }
+  }, [props.type, t])
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -94,9 +101,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   return (
     <div className="ion-padding">
       <Header>File Selection</Header>
-      <FileInstructions>
-        Please zip and select your obsidian vault file.
-      </FileInstructions>
+      <FileInstructions>{instructions}</FileInstructions>
       {file ? (
         <>
           <FileInfoContainer>
@@ -112,14 +117,14 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
           </FileInfoContainer>
           <div>
             <IonButton fill="outline" size="small" onClick={uploadFile}>
-              Submit
+              {t('generic.submit')}
             </IonButton>
           </div>
         </>
       ) : (
         <div>
           <IonButton size="small" onClick={toggleFileInput}>
-            Browse
+            {t('generic.browse')}
           </IonButton>
         </div>
       )}

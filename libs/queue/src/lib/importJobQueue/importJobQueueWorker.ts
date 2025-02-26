@@ -3,8 +3,10 @@ import { IMPORT_JOB_QUEUE_NAME } from './IMPORT_JOB_QUEUE_NAME';
 import { ImportJobQueueItem } from './ImportJobQueueItem';
 import { globalServerConfig } from '@feynote/config';
 import { ImportJobType, JobStatus } from '@prisma/client';
-import { importContentFromObsidian } from './importContentFromObsidian';
+import { obsidianToStandardizedImport } from './converters/obsidianToStandardizedImport';
 import { prisma } from '@feynote/prisma/client';
+import { importFromZip } from './importFromZip';
+import { logseqToStandardizedImport } from './converters/logseqToStandardizedImport';
 
 export const importJobQueueWorker = new Worker<ImportJobQueueItem, void>(
   IMPORT_JOB_QUEUE_NAME,
@@ -30,9 +32,22 @@ export const importJobQueueWorker = new Worker<ImportJobQueueItem, void>(
     let status: JobStatus = JobStatus.Success;
     try {
       switch (importJob.type) {
-        case ImportJobType.Obsidian:
-          await importContentFromObsidian(importJob.file.storageKey, userId);
-        break;
+        case ImportJobType.Obsidian: {
+          await importFromZip(
+            importJob.file.storageKey,
+            userId,
+            (filePaths) => obsidianToStandardizedImport(userId, filePaths)
+          );
+          break;
+        }
+        case ImportJobType.Logseq: {
+          await importFromZip(
+            importJob.file.storageKey,
+            userId,
+            (filePaths) => logseqToStandardizedImport(userId, filePaths)
+          );
+          break
+        }
         default:
           throw new Error(
             `Invalid job type provided by queue worker: ${args.data}`,

@@ -1,114 +1,28 @@
-import { convertImageForStorage, proxyGetRequest, uploadFileToS3 } from "@feynote/api-services";
-import { basename, extname } from "path";
-import { Transform } from "stream";
-import { FilePurpose, Prisma } from "@prisma/client";
-import pLimit from 'p-limit';
 import { randomUUID } from "crypto";
+import type { StandardizedImportInfo } from "../StandardizedImportInfo";
 
-const ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD = 5000
-const UPLOAD_CONCURRENCY = 20;
-
-const limit = pLimit(UPLOAD_CONCURRENCY);
-
-export const replaceImageHttpTags = async (
+export const replaceImageHttpTags = (
   content: string,
-  userId: string,
-  fileUploadCountRef: { fileUploadCount: number },
-  artifactId: string
-): Promise<{ updatedContent: string, files: Array<Prisma.FileCreateManyInput>}> => {
+  artifactId: string,
+  importInfo: StandardizedImportInfo
+): string => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />
   // 1. The full match
   // 2. The src url
   const imgRegex = /<img src="(.*?)".*?\/>/g
-  const asyncHttpUploadEvents: ReturnType<typeof _uploadUserImageToS3FromSrc>[] = [];
   for (const matchingGroups of content.matchAll(imgRegex)) {
     const imageSrc = matchingGroups[1];
     if (imageSrc.startsWith('http')) {
-      if (fileUploadCountRef.fileUploadCount < ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
-        fileUploadCountRef.fileUploadCount += 1
-
-        const uploadPromise = limit(() => _uploadUserImageToS3FromSrc(imageSrc, userId, matchingGroups[0], artifactId));
-        asyncHttpUploadEvents.push(uploadPromise);
-        continue
-      }
-      const replacementHtml = `<a href="${imageSrc}">${imageSrc}</a>`;
+      const fileId = randomUUID();
+      const replacementHtml = `<img data-fallback="${imageSrc}" fileId="${fileId}" />`
       content = content.replace(matchingGroups[0], replacementHtml);
+      importInfo.imageFilesToUpload.push({
+        id: fileId,
+        url: imageSrc,
+        associatedArtifactId: artifactId,
+      })
     }
   }
 
-  const results = await Promise.all(asyncHttpUploadEvents);
-  const files: Array<Prisma.FileCreateManyInput> = []
-  for (const { fileData, stringToReplace, replacementString } of results) {
-      if (fileData) files.push(fileData);
-      content = content.replace(stringToReplace, replacementString);
-  }
-
-  return { updatedContent: content, files };
-}
-
-const _uploadUserImageToS3FromSrc = async (
-  httpSrc: string,
-  userId: string,
-  stringToReplace: string,
-  associatedArtifactId: string
-) => {
-  try {
-    const response = await proxyGetRequest(httpSrc, { responseType: 'stream' });
-    const stream = response.data
-
-    let totalSize = 0;
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-    const fileSizeLimiter = new Transform({
-      transform(chunk, _, callback) {
-        totalSize += chunk.length;
-        if (totalSize > MAX_FILE_SIZE) {
-          console.log(`totalSize: ${totalSize}`);
-          callback(new Error('File size limit exceeded'));
-        } else {
-          callback(null, chunk);
-        }
-      }
-    });
-
-    const chunks: Uint8Array[] = [];
-    await new Promise<void>((resolve, reject) => {
-      stream
-        .pipe(fileSizeLimiter)
-        .on('data', (chunk: Uint8Array) => {
-          chunks.push(chunk);
-        })
-        .on('error', (err: unknown) => {
-          console.error('Stream error:', (err as Error).message);
-          reject();
-        })
-        .on('finish', () => {
-          console.log('File successfully written');
-          resolve();
-        });
-    });
-
-    const buffer = await convertImageForStorage(userId, Buffer.concat(chunks));
-    const id = randomUUID();
-    const purpose = FilePurpose.artifact;
-    const mimetype = 'image/jpeg';
-    const name = basename(httpSrc, extname(httpSrc));
-    const uploadResult = await uploadFileToS3(buffer, mimetype, purpose);
-
-    const fileData = {
-      id,
-      userId,
-      name,
-      mimetype,
-      storageKey: uploadResult.key,
-      purpose,
-      artifactId: associatedArtifactId,
-      metadata: {
-        uploadResult,
-      },
-    };
-    return { fileData, stringToReplace, replacementString: `<img fileId="${id}" />` };
-  } catch (e) {
-    return { fileData: null, stringToReplace, replacementString: `<a href="${httpSrc}">${httpSrc}</a>` };
-  }
+  return content;
 }
