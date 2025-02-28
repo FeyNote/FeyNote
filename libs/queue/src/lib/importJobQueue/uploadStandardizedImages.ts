@@ -1,5 +1,5 @@
 import { convertImageForStorage, proxyGetRequest, uploadFileToS3 } from "@feynote/api-services";
-import type { StandarizedImportInfo } from "./StandarizedImportInfo";
+import type { StandardizedImportInfo } from "./StandardizedImportInfo";
 import pLimit from 'p-limit';
 import { Transform } from "stream";
 import { basename, extname } from "path";
@@ -12,7 +12,7 @@ const limit = pLimit(UPLOAD_CONCURRENCY);
 
 export const uploadStandardizedImages = async (
   userId: string,
-  importInfo: StandarizedImportInfo,
+  importInfo: StandardizedImportInfo,
 ) => {
   let counter = 0;
   const results = await Promise.allSettled(importInfo.imageFilesToUpload.map(async (imageInfo) => {
@@ -63,6 +63,7 @@ export const uploadStandardizedImages = async (
         buffer = await convertImageForStorage(userId, Buffer.concat(chunks));
         fileName = basename(imageInfo.url, extname(imageInfo.url));
       } else {
+        // TODO: verify path exists
         buffer = await convertImageForStorage(userId, imageInfo.path);
         fileName = basename(imageInfo.path, extname(imageInfo.path));
       }

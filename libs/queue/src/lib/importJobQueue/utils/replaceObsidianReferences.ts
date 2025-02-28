@@ -1,7 +1,7 @@
 import { parse, extname } from 'path';
 import { isImagePath } from './isImagePath';
 import { randomUUID } from 'crypto';
-import type { StandarizedImportInfo } from '../StandarizedImportInfo';
+import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 
 export const replaceObsidianReferences = (
   content: string,
@@ -10,7 +10,7 @@ export const replaceObsidianReferences = (
     path: string;
   }>,
   artifactId: string,
-  importInfo: StandarizedImportInfo
+  importInfo: StandardizedImportInfo
   ): string => {
     // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
     // 1. The full match

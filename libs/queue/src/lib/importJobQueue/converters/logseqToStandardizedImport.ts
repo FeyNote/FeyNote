@@ -3,8 +3,13 @@ import { ArtifactTheme, ArtifactType, type Prisma } from "@prisma/client";
 import { ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
-import { extname } from "path";
+import { basename, extname } from "path";
 import type { StandardizedImportInfo } from "../StandardizedImportInfo";
+import marked from 'marked';
+import { generateJSON } from "@tiptap/core";
+import { randomUUID } from "crypto";
+import { isImagePath } from "../utils/isImagePath";
+import { replaceImageHttpTags } from "../utils/replaceImageHttpTags";
 
 interface LogseqBlock {
   id: string,
@@ -32,6 +37,13 @@ export const logseqToStandardizedImport = async (
     artifactsToCreate: [],
     imageFilesToUpload: [],
   }
+  const imagePathToId = new Map<string, string>();
+  for await (const filePath of filePaths) {
+    if (isImagePath(filePath)) {
+      imagePathToId.set(filePath, randomUUID());
+    }
+  }
+
   for await (const filePath of filePaths) {
     if (extname(filePath) === '.json') {
       const json = JSON.parse(await readFile(filePath, 'utf-8')) as LogseqGraph;
@@ -47,12 +59,21 @@ const handleLogseqGraph = async (
   json: LogseqGraph,
   userId: string,
 ) => {
+  const pageNameToIdMap = new Map<string, string>();
+  const blockIdToLogseqBlockMap = new Map<string, LogseqBlock>();
   for (const page of json.blocks) {
     const title = page['page-name'];
     const id = page.id;
-    const tiptap = await convertLogseqPageToTiptap(page.children);
+    pageNameToIdMap.set(title, id);
+  }
+
+  for (const page of json.blocks) {
+    const title = page['page-name'];
+    const id = page.id;
+    const html = await convertLogseqPageToHtml(page.children, id, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo);
 
     const extensions = getTiptapServerExtensions();
+    const tiptap = generateJSON(html, extensions);
     const text = getTextForJSONContent(tiptap);
     const yDoc = constructYArtifact({
       title,
@@ -80,31 +101,87 @@ const handleLogseqGraph = async (
   }
 }
 
-const convertLogseqPageToTiptap = async (blocks: LogseqBlock[]): Promise<Record<string, any>> => {
-  const tiptapBlocks: Record<string, any> = {};
+const convertLogseqPageToHtml = async (
+  blocks: LogseqBlock[],
+  artifactId: string,
+  pageNameToIdMap: Map<string, string>,
+  blockIdToLogseqBlockMap: Map<string, LogseqBlock>,
+  importInfo: StandardizedImportInfo,
+): Promise<string> => {
+  let htmlPage = ``
   for (const block of blocks) {
-    const tiptapBlock = convertLogseqBlockToTiptap(block);
-    tiptapBlock["content"] = await convertLogseqPageToTiptap(block.children);
-    tiptapBlocks[block.id] = tiptapBlock;
+    htmlPage += await convertLogseqBlockToHtml(block, artifactId, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo);
+    if (block.children.length) {
+      htmlPage += `<div data-content-type="blockGroup">${await convertLogseqPageToHtml(block.children, artifactId, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo)}</div>`
+    }
   }
-  return tiptapBlocks;
+  return htmlPage;
 }
 
-const convertLogseqBlockToTiptap = (block: LogseqBlock): Record<string, any> => {
+const convertLogseqBlockToHtml = async (
+  block: LogseqBlock,
+  artifactId: string,
+  pageNameToIdMap: Map<string, string>,
+  blockIdToLogseqBlockMap: Map<string, LogseqBlock>,
+  importInfo: StandardizedImportInfo,
+): Promise<string> => {
+  const content = replacePageReferences(block.content, pageNameToIdMap)
   switch (block.format) {
     case 'markdown':
-      return convertMarkdownToTiptap(block.content);
+      return convertMarkdownToHtml(content, artifactId, importInfo);
     case 'org':
-      return convertOrgToTiptap(block.content);
+      return content; // TODO FIX
     default:
       throw new Error(`Unrecognized block format: ${block.format}`);
   }
 }
 
-const convertMarkdownToTiptap = (markdown: string): Record<string, any> => {
-
+const replacePageReferences = (
+  content: string,
+  pageNameToIdMap: Map<string, string>,
+): string => {
+  // Returns two elements (the match and the src url) i.e. <img src="file.png" />
+  // 1. The full page reference; i.e. [[Page Name]]
+  // 2. The page name
+  const pageReferenceRegex = /\[\[(.*?)\]\]/g
+  for (const matchingGroups of content.matchAll(pageReferenceRegex)) {
+    const title = matchingGroups[1];
+    const id = pageNameToIdMap.get(title) || `00000000-0000-0000-0000-000000000000`
+    const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${id}" data-artifact-reference-text="${title}"></span>`;
+    content.replace(matchingGroups[0], replacementHtml);
+  }
+  return content
 }
 
-const convertOrgToTiptap = (markdown: string): Record<string, any> => {
+const convertMarkdownToHtml = async (markdown: string, artifactId: string, importInfo: StandardizedImportInfo): Promise<string> => {
+    markdown = replaceImageHttpTags(markdown, artifactId, importInfo);
+    markdown = replaceLogseqImageReferences(markdown, importInfo, artifactId);
+    const html = marked.parse(markdown);
+    return html
+}
 
+
+const replaceLogseqImageReferences = (content: string, importInfo: StandardizedImportInfo, artifactId: string): string => {
+  /**
+    * Returns five matching elements
+    * 0. The full match in format either <img src="file.png" /> or ![Title](path.png)
+    * 1. The full match in format <img src="file.png" />
+    * 2. The src url in format file.png
+    * 3. The full match in format ![Title](path.png)
+    * 4. The src url in format path.png
+  */
+  const imgRegex = /(<img src="(.*?)".*?\/>)|(\!\[.*?\]\((.*?)\))/g
+  for (const matchingGroups of content.matchAll(imgRegex)) {
+    const imageSrc = matchingGroups[2] || matchingGroups[4]
+    if (imageSrc.startsWith('http')) continue
+    const id = randomUUID();
+    importInfo.imageFilesToUpload.push({
+      id,
+      associatedArtifactId: artifactId,
+      path: basename(imageSrc),
+    })
+    const replacementHtml = `<img fileId="${id}" />`;
+    content = content.replace(matchingGroups[1] || matchingGroups[3], replacementHtml);
+  }
+  return content
 }

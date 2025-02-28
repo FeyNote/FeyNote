@@ -1,12 +1,14 @@
 import { randomUUID } from "crypto";
+import type { StandardizedImportInfo } from "../StandardizedImportInfo";
 
-export const replaceImageFileTags = (
+export const replaceObsidianImageFileTags = (
   content: string,
-  docInfoMap: Map<string, {
+  docInfoMap: Map<string, { //TODO: Clean this up to be just path
     id: string;
     path: string;
   }>,
-  artifactId: string
+  artifactId: string,
+  importInfo: StandardizedImportInfo
 ) => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />
   // 1. The full match
@@ -18,7 +20,7 @@ export const replaceImageFileTags = (
     const documentInfo = docInfoMap.get(imageSrc);
     if (!documentInfo) continue; // Referenced item does not exist
     const id = randomUUID();
-    imageFilesToUpload.push({
+    importInfo.imageFilesToUpload.push({
       id,
       associatedArtifactId: artifactId,
       path: documentInfo.path,
