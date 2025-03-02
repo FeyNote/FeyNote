@@ -13,7 +13,7 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
   const [titleBodyMerge, setTitleBodyMerge] = useState<boolean>();
   const [type, setType] = useState<ArtifactType>();
   const [linkAccessLevel, setLinkAccessLevel] = useState<
-    ArtifactAccessLevel | 'noaccess' | undefined
+    ArtifactAccessLevel | undefined
   >();
 
   useEffect(() => {

@@ -126,7 +126,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
         </CompactIonItem>
       ))}
-      {!!artifact.linkAccessLevel && (
+      {artifact.linkAccessLevel && artifact.linkAccessLevel !== 'noaccess' && (
         <CompactIonItem
           lines="none"
           onClick={() => presentSharingModal()}

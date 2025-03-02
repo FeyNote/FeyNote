@@ -56,7 +56,7 @@ export type ArtifactDTO = {
     };
     accessLevel: ArtifactAccessLevel;
   }[];
-  linkAccessLevel: ArtifactAccessLevel | null;
+  linkAccessLevel: ArtifactAccessLevel;
   user: {
     name: string;
   };

@@ -18,8 +18,8 @@ export async function updateArtifactAccess({
   artifactId: string;
   oldYUserAccess: YKeyValue<YArtifactUserAccess>;
   newYUserAccess: YKeyValue<YArtifactUserAccess>;
-  oldLinkAccessLevel: ArtifactAccessLevel | null;
-  newLinkAccessLevel: ArtifactAccessLevel | null;
+  oldLinkAccessLevel: ArtifactAccessLevel;
+  newLinkAccessLevel: ArtifactAccessLevel;
   tx: Prisma.TransactionClient;
 }): Promise<void> {
   const oldUserAccess = oldYUserAccess.yarray

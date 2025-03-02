@@ -11,6 +11,7 @@ import { onLoadDocument } from './onLoadDocument';
 import { beforeHandleMessage } from './beforeHandleMessage';
 import { onAuthenticate } from './onAuthenticate';
 import { onConnect } from './onConnect';
+import { onDisconnect } from './onDisconnect';
 
 const extensions: Extension[] = [];
 
@@ -44,6 +45,7 @@ const server = Server.configure({
   maxDebounce: globalServerConfig.hocuspocus.maxWriteDelayMs,
   timeout: globalServerConfig.hocuspocus.connectionTimeout,
   onConnect,
+  onDisconnect,
   onAuthenticate,
   beforeHandleMessage,
   onLoadDocument,

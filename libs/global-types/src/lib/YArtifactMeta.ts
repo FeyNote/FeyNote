@@ -9,5 +9,5 @@ export interface YArtifactMeta {
   theme: ArtifactTheme;
   type: ArtifactType;
   titleBodyMerge: boolean;
-  linkAccessLevel: ArtifactAccessLevel | 'noaccess';
+  linkAccessLevel: ArtifactAccessLevel;
 }

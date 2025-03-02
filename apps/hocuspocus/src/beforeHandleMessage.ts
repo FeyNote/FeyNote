@@ -3,13 +3,23 @@ import {
   IncomingMessage,
   MessageType,
 } from '@hocuspocus/server';
-import { messageYjsUpdate } from 'y-protocols/sync';
-import { applyUpdate, encodeStateAsUpdate, Doc as YDoc } from 'yjs';
-import { ARTIFACT_USER_ACCESS_KEY } from '@feynote/shared-utils';
+import { messageYjsSyncStep2, messageYjsUpdate } from 'y-protocols/sync';
+import {
+  applyUpdate,
+  encodeStateAsUpdate,
+  Doc as YDoc,
+  type YMapEvent,
+} from 'yjs';
+import {
+  ARTIFACT_META_KEY,
+  ARTIFACT_USER_ACCESS_KEY,
+} from '@feynote/shared-utils';
 import * as Sentry from '@sentry/node';
 
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
+import { memoizedShadowDocsByDocName } from './memoizedShadowDocsByDocName';
+import assert from 'assert';
 
 /**
  * Deconstruct the IncomingMessage.
@@ -18,13 +28,34 @@ import { SupportedDocumentType } from './SupportedDocumentType';
 export function deconstructIncomingMessage(update: Uint8Array) {
   const message = new IncomingMessage(update);
   // Note: The calls below *MUST* be in order for the message to parse correctly b/c of schema - [documentName][HocuspocusMessageType][YjsMessageType][yjs binary].
+
   const documentName = message.readVarString();
   const hocusPocusMessageType = message.readVarUint();
-  const yjsMessageType = message.readVarUint();
-  const yjsBinary = message.readVarUint8Array();
 
-  return { documentName, hocusPocusMessageType, yjsBinary, yjsMessageType };
+  let yjsMessageType: number | undefined;
+  let yjsBinary: Uint8Array | undefined;
+  if (hocusPocusMessageType === MessageType.Sync) {
+    yjsMessageType = message.readVarUint();
+    yjsBinary = message.readVarUint8Array();
+  }
+
+  return {
+    documentName,
+    hocusPocusMessageType,
+    yjsBinary,
+    yjsMessageType,
+  };
 }
+
+const getShadowDoc = (documentName: string, baseDoc: YDoc) => {
+  const existingShadowDoc = memoizedShadowDocsByDocName.get(documentName);
+  if (existingShadowDoc) return existingShadowDoc;
+
+  const shadowDoc = new YDoc();
+  applyUpdate(shadowDoc, encodeStateAsUpdate(baseDoc));
+  memoizedShadowDocsByDocName.set(documentName, shadowDoc);
+  return shadowDoc;
+};
 
 export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
   try {
@@ -32,45 +63,84 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
-        // We don't need to validate field updates for the owner since they can modify all
-        // if (args.context.isOwner) break;
+        try {
+          // Ensure received message is a document update, otherwise there is no need to validate meta/permissions
+          const { hocusPocusMessageType, yjsBinary, yjsMessageType } =
+            deconstructIncomingMessage(args.update);
 
-        // Ensure received message is a document update, otherwise there is no need to validate meta/permissions
-        const { hocusPocusMessageType, yjsBinary, yjsMessageType } =
-          deconstructIncomingMessage(args.update);
+          if (hocusPocusMessageType !== MessageType.Sync) return;
+          if (
+            yjsMessageType !== messageYjsUpdate &&
+            yjsMessageType !== messageYjsSyncStep2
+          )
+            return;
 
-        if (
-          hocusPocusMessageType !== MessageType.Sync ||
-          yjsMessageType !== messageYjsUpdate
-        )
-          return;
+          assert(yjsBinary, 'yjsBinary must be defined for sync message types');
 
-        console.log('hallo', args.context.isOwner, args.document);
+          // We only need to validate changes for non-owners, since we can relatively trust an owner not to corrupt their own document, and not doing this comparison improves memory consumption and performance
+          if (args.context.isOwner) {
+            // We still need to keep shadow doc up to date if it exists
+            const shadowDoc = memoizedShadowDocsByDocName.get(
+              args.documentName,
+            );
+            if (shadowDoc && yjsBinary) {
+              applyUpdate(shadowDoc, yjsBinary);
+            }
+            return;
+          }
 
-        const currentBin = encodeStateAsUpdate(args.document);
-        const updatedYDoc = new YDoc();
+          const shadowDoc = getShadowDoc(args.documentName, args.document);
 
-        applyUpdate(updatedYDoc, currentBin);
+          let illegalUpdatePerformed = false;
 
-        let illegalUpdatePerformed = false;
-        updatedYDoc.getArray(ARTIFACT_USER_ACCESS_KEY).observe(() => {
-          illegalUpdatePerformed = true;
-        });
+          const artifactMetaObserver = (event: YMapEvent<unknown>) => {
+            if (
+              event.keysChanged.has('userId') ||
+              event.keysChanged.has('linkAccessLevel')
+            ) {
+              illegalUpdatePerformed = true;
+            }
+          };
+          const artifactUserAccessObserver = () => {
+            illegalUpdatePerformed = true;
+          };
+          shadowDoc.getMap(ARTIFACT_META_KEY).observe(artifactMetaObserver);
+          shadowDoc
+            .getArray(ARTIFACT_USER_ACCESS_KEY)
+            .observe(artifactUserAccessObserver);
 
-        applyUpdate(updatedYDoc, yjsBinary);
+          applyUpdate(shadowDoc, yjsBinary);
 
-        if (illegalUpdatePerformed) {
-          const e = new Error('Illegal update performed');
-          console.error(e);
+          shadowDoc.getMap(ARTIFACT_META_KEY).unobserve(artifactMetaObserver);
+          shadowDoc
+            .getArray(ARTIFACT_USER_ACCESS_KEY)
+            .unobserve(artifactUserAccessObserver);
+
+          if (illegalUpdatePerformed) {
+            // We've corrupted the document state, so we need to reset it
+            memoizedShadowDocsByDocName.delete(args.documentName);
+
+            const e = new Error('Illegal update performed');
+            console.error(e);
+            Sentry.captureException(e, {
+              extra: {
+                userId: args.context.userId,
+                documentName: args.documentName,
+                yjsMessageType,
+                hocusPocusMessageType,
+              },
+            });
+            throw new Error();
+          }
+        } catch (e) {
+          console.error('Error while validating message', e);
           Sentry.captureException(e, {
             extra: {
               userId: args.context.userId,
               documentName: args.documentName,
-              yjsMessageType,
-              hocusPocusMessageType,
             },
           });
-          throw new Error();
+          throw e;
         }
 
         break;

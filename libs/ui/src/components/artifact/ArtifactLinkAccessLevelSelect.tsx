@@ -3,10 +3,8 @@ import { ArtifactAccessLevel } from '@prisma/client';
 import { useTranslation } from 'react-i18next';
 
 interface Props {
-  artifactAccessLevel: ArtifactAccessLevel | 'noaccess';
-  setArtifactAccessLevel: (
-    accessLevel: ArtifactAccessLevel | 'noaccess',
-  ) => void;
+  artifactAccessLevel: ArtifactAccessLevel;
+  setArtifactAccessLevel: (accessLevel: ArtifactAccessLevel) => void;
 }
 
 export const ArtifactLinkAccessLevelSelect: React.FC<Props> = (props) => {
@@ -15,7 +13,7 @@ export const ArtifactLinkAccessLevelSelect: React.FC<Props> = (props) => {
   return (
     <IonItem lines="none">
       <IonSelect
-        label={t('artifactSharing.links.create')}
+        label={t('artifactSharing.link.accessLevel')}
         value={props.artifactAccessLevel}
         onIonDismiss={(event) =>
           props.setArtifactAccessLevel(event.target.value)

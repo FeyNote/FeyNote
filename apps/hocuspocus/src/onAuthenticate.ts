@@ -58,7 +58,10 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         const artifactShare = artifact.artifactShares.find(
           (share) => share.userId === context.userId,
         );
-        if (artifact.userId !== context.userId && !artifactShare) {
+        if (
+          (artifact.userId !== context.userId && !artifactShare) ||
+          artifactShare?.accessLevel === ArtifactAccessLevel.noaccess
+        ) {
           console.log(
             'User attempted to connect to artifact that they do not have access to',
           );

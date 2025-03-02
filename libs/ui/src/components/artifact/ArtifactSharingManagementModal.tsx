@@ -259,29 +259,31 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           <IonListHeader>
             <IonIcon icon={person} size="small" />
             &nbsp;&nbsp;
-            {t('artifactSharing.links')}
-            <InfoButton message={t('artifactSharing.links.help')} />
+            {t('artifactSharing.link')}
+            <InfoButton message={t('artifactSharing.link.help')} />
           </IonListHeader>
           <ArtifactLinkAccessLevelSelect
             artifactAccessLevel={linkAccessLevel || 'noaccess'}
             setArtifactAccessLevel={linkAccessLevelChanged}
           />
-          <IonItem lines="none">
-            <IonLabel>
-              <ShareLinkDisplay>
-                <a href={shareUrl} target="_blank" rel="noreferrer">
-                  {shareUrl}
-                </a>
-                <div>
-                  <CopyWithWebshareButton
-                    copyText={shareUrl}
-                    webshareTitle={title}
-                    webshareURL={shareUrl}
-                  />
-                </div>
-              </ShareLinkDisplay>
-            </IonLabel>
-          </IonItem>
+          {linkAccessLevel !== 'noaccess' && (
+            <IonItem lines="none">
+              <IonLabel>
+                <ShareLinkDisplay>
+                  <a href={shareUrl} target="_blank" rel="noreferrer">
+                    {shareUrl}
+                  </a>
+                  <div>
+                    <CopyWithWebshareButton
+                      copyText={shareUrl}
+                      webshareTitle={title}
+                      webshareURL={shareUrl}
+                    />
+                  </div>
+                </ShareLinkDisplay>
+              </IonLabel>
+            </IonItem>
+          )}
         </IonCard>
       </IonContent>
     </IonPage>

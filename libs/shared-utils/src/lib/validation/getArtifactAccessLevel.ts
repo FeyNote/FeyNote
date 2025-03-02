@@ -1,12 +1,5 @@
 import { ArtifactAccessLevel } from '@prisma/client';
 
-export type NegotiatedArtifactAccessLevel =
-  | 'owner'
-  | 'coowner'
-  | 'readwrite'
-  | 'readonly'
-  | 'none';
-
 export const getArtifactAccessLevel = (
   artifactSharingInfo: {
     userId: string;
@@ -17,9 +10,9 @@ export const getArtifactAccessLevel = (
     linkAccessLevel: ArtifactAccessLevel | null;
   },
   userId: string | undefined,
-): NegotiatedArtifactAccessLevel => {
+): ArtifactAccessLevel => {
   if (artifactSharingInfo.userId === userId) {
-    return 'owner';
+    return 'coowner';
   }
 
   const artifactShare = artifactSharingInfo.artifactShares.find(
@@ -33,5 +26,5 @@ export const getArtifactAccessLevel = (
     return artifactSharingInfo.linkAccessLevel;
   }
 
-  return 'none';
+  return 'noaccess';
 };
