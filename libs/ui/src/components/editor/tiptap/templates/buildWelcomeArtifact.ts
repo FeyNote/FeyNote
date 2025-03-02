@@ -13,6 +13,7 @@ export const buildWelcomeArtifact = (options: {
     theme: 'default',
     type: 'tiptap',
     titleBodyMerge: true,
+    linkAccessLevel: 'noaccess',
   } as const satisfies YArtifactMeta;
 
   const jsonContent = {

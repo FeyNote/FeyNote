@@ -3,7 +3,11 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { enqueueArtifactUpdate } from '@feynote/queue';
 import { yArtifactMetaZodSchema } from '@feynote/api-services';
-import { ArtifactTheme, ArtifactType } from '@prisma/client';
+import {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
@@ -24,6 +28,7 @@ export const createArtifact = authenticatedProcedure
       type: z.nativeEnum(ArtifactType),
       theme: z.nativeEnum(ArtifactTheme),
       titleBodyMerge: z.boolean().optional(),
+      linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
       yBin: z.any().optional(),
     }),
   )
@@ -40,6 +45,7 @@ export const createArtifact = authenticatedProcedure
         theme: input.theme,
         type: input.type,
         titleBodyMerge: input.titleBodyMerge ?? true,
+        linkAccessLevel: input.linkAccessLevel ?? ArtifactAccessLevel.noaccess,
       } satisfies YArtifactMeta;
 
       if (input.yBin) {

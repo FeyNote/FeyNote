@@ -9,6 +9,7 @@ export const buildIntroducingReferencesArtifact = () => {
     theme: 'default',
     type: 'tiptap',
     titleBodyMerge: true,
+    linkAccessLevel: 'noaccess',
   } as const satisfies YArtifactMeta;
 
   const incomingReferenceBlockId = crypto.randomUUID();
