@@ -44,11 +44,6 @@ export const themeVariables = {
       font-weight: bold;
     }
 
-    p {
-      margin-top: 0;
-      margin-bottom: 0;
-    }
-
     hr {
       height: 2px;
       background-color: #c0ad6a;
