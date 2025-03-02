@@ -9,6 +9,8 @@ export const constructYArtifact = (meta: YArtifactMeta) => {
   yArtifact.transact(() => {
     const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
 
+    artifactMetaYMap.set('id', meta.id);
+    artifactMetaYMap.set('userId', meta.userId);
     artifactMetaYMap.set('title', meta.title);
     artifactMetaYMap.set('theme', meta.theme);
     artifactMetaYMap.set('type', meta.type);

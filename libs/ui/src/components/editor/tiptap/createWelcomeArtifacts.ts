@@ -19,8 +19,18 @@ export const createWelcomeArtifacts = async () => {
   await connection.syncedPromise;
   const treeYDoc = connection.yjsDoc;
 
-  const introducingReferencesTemplate = buildIntroducingReferencesArtifact();
+  const [{ id: welcomeId }, { id: introducingReferencesId }] =
+    await Promise.all([
+      trpc.artifact.getSafeArtifactId.query(),
+      trpc.artifact.getSafeArtifactId.query(),
+    ]);
+
+  const introducingReferencesTemplate = buildIntroducingReferencesArtifact({
+    id: introducingReferencesId,
+    userId: session.userId,
+  });
   const introducingReferences = await trpc.artifact.createArtifact.mutate({
+    id: introducingReferencesTemplate.result.id,
     title: introducingReferencesTemplate.result.title,
     type: introducingReferencesTemplate.result.type,
     theme: introducingReferencesTemplate.result.theme,
@@ -29,12 +39,15 @@ export const createWelcomeArtifacts = async () => {
   });
 
   const welcomeTemplate = buildWelcomeArtifact({
+    id: welcomeId,
+    userId: session.userId,
     relationArtifactId: introducingReferences.id,
     relationArtifactBlockId:
       introducingReferencesTemplate.meta.incomingReferenceBlockId,
   });
 
   const welcome = await trpc.artifact.createArtifact.mutate({
+    id: welcomeTemplate.result.id,
     title: welcomeTemplate.result.title,
     type: welcomeTemplate.result.type,
     theme: welcomeTemplate.result.theme,

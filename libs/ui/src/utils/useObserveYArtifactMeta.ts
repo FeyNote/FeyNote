@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { Doc as YDoc } from 'yjs';
 
 export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
+  const [id, setId] = useState<string>();
+  const [userId, setUserId] = useState<string>();
   const [title, setTitle] = useState<string>();
   const [theme, setTheme] = useState<ArtifactTheme>();
   const [titleBodyMerge, setTitleBodyMerge] = useState<boolean>();
@@ -21,6 +23,8 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
 
     const listener = () => {
       const yArtifactMeta = getMetaFromYArtifact(yArtifact);
+      setId(yArtifactMeta.id);
+      setUserId(yArtifactMeta.userId);
       setTitle(yArtifactMeta.title);
       setTheme(yArtifactMeta.theme);
       setTitleBodyMerge(yArtifactMeta.titleBodyMerge);
@@ -34,6 +38,8 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
   }, [yArtifact]);
 
   return {
+    id,
+    userId,
     title,
     theme,
     titleBodyMerge,

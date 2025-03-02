@@ -10,6 +10,7 @@ import {
 } from '@prisma/client';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import {
+  ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   constructYArtifact,
   getMetaFromYArtifact,
@@ -23,7 +24,7 @@ import { ArtifactJSON, YArtifactMeta } from '@feynote/global-types';
 export const createArtifact = authenticatedProcedure
   .input(
     z.object({
-      id: z.string().uuid().optional(),
+      id: z.string().uuid(),
       title: z.string(),
       type: z.nativeEnum(ArtifactType),
       theme: z.nativeEnum(ArtifactTheme),
@@ -41,6 +42,8 @@ export const createArtifact = authenticatedProcedure
     }> => {
       let yDoc: YDoc | undefined;
       const meta = {
+        id: input.id,
+        userId: ctx.session.userId,
         title: input.title,
         theme: input.theme,
         type: input.type,
@@ -58,6 +61,11 @@ export const createArtifact = authenticatedProcedure
 
         // We do not trust the client here and instead prefer to force the meta to be what was passed
         updateYArtifactMeta(yDoc, meta);
+        const _yDoc = yDoc; // Immutable reference for TS
+        _yDoc.transact(() => {
+          _yDoc.getMap(ARTIFACT_META_KEY).set('id', meta.id);
+          _yDoc.getMap(ARTIFACT_META_KEY).set('userId', meta.userId);
+        });
       } else {
         yDoc = constructYArtifact(meta);
       }

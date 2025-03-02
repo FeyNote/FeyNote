@@ -5,10 +5,14 @@ import { t } from 'i18next';
 
 // Must be passed a related artifact ID for an example reference
 export const buildWelcomeArtifact = (options: {
+  id: string;
+  userId: string;
   relationArtifactId: string;
   relationArtifactBlockId: string;
 }) => {
   const meta = {
+    id: crypto.randomUUID(),
+    userId: options.userId,
     title: t('template.welcome.title'),
     theme: 'default',
     type: 'tiptap',

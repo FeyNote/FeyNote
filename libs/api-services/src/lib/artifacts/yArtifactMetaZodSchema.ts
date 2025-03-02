@@ -7,6 +7,8 @@ import {
 import { ZodSchema, z } from 'zod';
 
 export const yArtifactMetaZodSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
   title: z.string(),
   theme: z.nativeEnum(ArtifactTheme),
   type: z.nativeEnum(ArtifactType),

@@ -11,6 +11,8 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
   const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
 
   const artifactMeta = {
+    id: (artifactMetaYMap.get('id') as string) ?? undefined,
+    userId: (artifactMetaYMap.get('userId') as string) ?? undefined,
     title: (artifactMetaYMap.get('title') as string) ?? '',
     theme: (artifactMetaYMap.get('theme') as ArtifactTheme) ?? 'default',
     type:
