@@ -185,7 +185,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         <IonLabel>
           {t('artifactRenderer.artifactSharedToYou.message', {
             name:
-              knownUsersById.get(artifactMeta.userId || '') ||
+              knownUsersById.get(artifactMeta.userId || '')?.email ||
               artifactMeta.userId,
           })}
           <br />
