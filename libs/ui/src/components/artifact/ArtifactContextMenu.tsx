@@ -12,12 +12,12 @@ import {
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { trpc } from '../../utils/trpc';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
+import { createArtifact } from '../../utils/createArtifact';
 
 interface Props {
   artifactId: string;
@@ -51,7 +51,7 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
     );
   };
 
-  const onDuplicateArtifactClicked = () => {
+  const onDuplicateArtifactClicked = async () => {
     const { title, theme, type, titleBodyMerge } = getMetaFromYArtifact(
       props.connection.yjsDoc,
     );
@@ -65,20 +65,23 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
 
     const newYBin = encodeStateAsUpdate(newYDoc);
 
-    trpc.artifact.createArtifact
-      .mutate({
-        title: newTitle,
-        theme,
-        type: type || 'tiptap',
-        titleBodyMerge,
-        yBin: newYBin,
-      })
-      .then(({ id }) => {
-        navigate(PaneableComponent.Artifact, { id }, PaneTransition.NewTab);
-      })
-      .catch((e) => {
-        handleTRPCErrors(e);
-      });
+    const artifact = await createArtifact({
+      title: newTitle,
+      type,
+      theme,
+      titleBodyMerge,
+      yBin: newYBin,
+    }).catch((e) => {
+      handleTRPCErrors(e);
+    });
+
+    if (!artifact) return;
+
+    navigate(
+      PaneableComponent.Artifact,
+      { id: artifact.id },
+      PaneTransition.NewTab,
+    );
   };
 
   return (

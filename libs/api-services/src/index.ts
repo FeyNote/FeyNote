@@ -9,6 +9,7 @@ export * from './lib/openai';
 
 export * from './lib/artifacts/artifactJsonZodSchema';
 export * from './lib/artifacts/createArtifactRevision';
+export * from './lib/artifacts/updateArtifactAccess';
 export * from './lib/artifacts/updateArtifactContentReferenceText';
 export * from './lib/artifacts/updateArtifactTitleReferenceText';
 export * from './lib/artifacts/updateArtifactOutgoingReferences';

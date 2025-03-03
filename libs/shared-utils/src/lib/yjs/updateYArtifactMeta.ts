@@ -1,8 +1,11 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from './ARTIFACT_META_KEY';
-import type { YArtifactMeta } from '@feynote/global-types';
+import type { UpdatableYArtifactMeta } from '@feynote/global-types';
 
-export const updateYArtifactMeta = (yArtifact: YDoc, meta: YArtifactMeta) => {
+export const updateYArtifactMeta = (
+  yArtifact: YDoc,
+  meta: UpdatableYArtifactMeta,
+) => {
   yArtifact.transact(() => {
     const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
 
@@ -10,5 +13,6 @@ export const updateYArtifactMeta = (yArtifact: YDoc, meta: YArtifactMeta) => {
     artifactMetaYMap.set('theme', meta.theme);
     artifactMetaYMap.set('type', meta.type);
     artifactMetaYMap.set('titleBodyMerge', meta.titleBodyMerge);
+    artifactMetaYMap.set('linkAccessLevel', meta.linkAccessLevel);
   });
 };

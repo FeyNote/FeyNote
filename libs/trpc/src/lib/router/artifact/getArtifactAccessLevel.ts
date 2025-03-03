@@ -3,16 +3,13 @@ import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail } from '@feynote/prisma/types';
 import { publicProcedure } from '../../trpc';
-import {
-  getArtifactAccessLevel as _getArtifactAccessLevel,
-  NegotiatedArtifactAccessLevel,
-} from '@feynote/shared-utils';
+import { getArtifactAccessLevel as _getArtifactAccessLevel } from '@feynote/shared-utils';
+import type { ArtifactAccessLevel } from '@prisma/client';
 
 export const getArtifactAccessLevel = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -20,7 +17,7 @@ export const getArtifactAccessLevel = publicProcedure
       ctx,
       input,
     }): Promise<{
-      accessLevel: NegotiatedArtifactAccessLevel;
+      accessLevel: ArtifactAccessLevel;
     }> => {
       if (!ctx.session) {
         throw new TRPCError({
@@ -44,7 +41,6 @@ export const getArtifactAccessLevel = publicProcedure
 
       const accessLevel = _getArtifactAccessLevel(
         artifact,
-        input.shareToken,
         ctx.session?.userId,
       );
 

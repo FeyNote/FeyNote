@@ -28,6 +28,7 @@ import {
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
+import { createArtifact } from '../../utils/createArtifact';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -112,11 +113,13 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   };
 
   const create = async () => {
-    const artifact = await trpc.artifact.createArtifact.mutate({
+    const artifact = await createArtifact({
       title: capitalizeEachWord(searchText).trim(),
-      type: 'tiptap',
-      theme: 'default',
+    }).catch((error) => {
+      handleTRPCErrors(error);
     });
+
+    if (!artifact) return;
 
     navigate(
       undefined, // Open in currently focused pane rather than in specific pane

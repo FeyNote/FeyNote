@@ -9,11 +9,13 @@ import { createArtifact } from './createArtifact';
 import { deleteArtifact } from './deleteArtifact';
 import { getArtifactYBinById } from './getArtifactYBinById';
 import { getArtifactEdgesById } from './getArtifactEdgesById';
+import { getSafeArtifactId } from './getSafeArtifactId';
 
 export const artifactRouter = trpcRouter({
   getArtifactById,
   getArtifactEdgesById,
   getArtifactYBinById,
+  getSafeArtifactId,
   getArtifacts,
   searchArtifacts,
   searchArtifactTitles,

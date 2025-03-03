@@ -9,9 +9,8 @@ import {
   useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../info/InfoButton';
-import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
+import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
@@ -26,6 +25,7 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { useIsEditable } from '../../utils/useAuthorizedScope';
 import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 import { ArtifactRightSidemenuReference } from './ArtifactRightSidemenuReference';
+import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
 
 interface Props {
   artifactId: string;
@@ -39,33 +39,46 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     ArtifactSharingManagementModal,
     {
       artifactId: props.artifactId,
+      connection: props.connection,
       dismiss: () => dismissSharingModal(),
     },
   );
   const { session } = useContext(SessionContext);
-  const { theme, titleBodyMerge } = useObserveYArtifactMeta(
-    props.connection.yjsDoc,
-  );
-  const [artifact, setArtifact] = useState<ArtifactDTO>();
+  const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { userAccessYKV, _rerenderReducerValue } =
+    useObserveYArtifactUserAccess(props.connection.yjsDoc);
+  const activeUserShares = useMemo(() => {
+    return userAccessYKV.yarray
+      .toArray()
+      .filter((el) => el.val.accessLevel !== 'noaccess');
+  }, [_rerenderReducerValue]);
   const { incomingEdges, outgoingEdges } = useEdgesForArtifactId(
     props.artifactId,
   );
 
-  useEffect(() => {
-    setArtifact(undefined);
-    trpc.artifact.getArtifactById
-      .query({
-        id: props.artifactId,
+  const [knownUsers, setKnownUsers] = useState<
+    {
+      id: string;
+      email: string;
+    }[]
+  >([]);
+  const knownUsersById = useMemo(() => {
+    return new Map(knownUsers.map((el) => [el.id, el]));
+  }, [knownUsers]);
+  const getKnownUsers = async () => {
+    await trpc.user.getKnownUsers
+      .query()
+      .then((result) => {
+        setKnownUsers(result);
       })
-      .then((response) => {
-        setArtifact(response);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
+      .catch(() => {
+        // Do nothing, we don't care about errors here
       });
-  }, [props.artifactId]);
+  };
 
-  const { handleTRPCErrors } = useHandleTRPCErrors();
+  useEffect(() => {
+    getKnownUsers();
+  }, []);
 
   const setMetaProp = (
     metaPropName: keyof YArtifactMeta,
@@ -107,7 +120,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     [outgoingEdges],
   );
 
-  const artifactSettings = artifact?.userId === session.userId && (
+  const artifactSettings = artifactMeta.userId === session.userId && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -115,27 +128,32 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         {t('artifactRenderer.artifactShares')}
         <InfoButton message={t('artifactRenderer.artifactShares.help')} />
       </IonListHeader>
-      {artifact.artifactShares.map((artifactShare) => (
+      {activeUserShares.map(({ key }) => (
         <CompactIonItem
           lines="none"
-          key={artifactShare.id}
+          key={key}
           onClick={() => presentSharingModal()}
           button
         >
-          <NowrapIonLabel>{artifactShare.user.name}</NowrapIonLabel>
+          <NowrapIonLabel>
+            {knownUsersById.get(key)?.email || key}
+          </NowrapIonLabel>
         </CompactIonItem>
       ))}
-      {!!artifact.artifactShareTokens.length && (
-        <CompactIonItem
-          lines="none"
-          onClick={() => presentSharingModal()}
-          button
-        >
-          <NowrapIonLabel>{t('artifactRenderer.sharedByLink')}</NowrapIonLabel>
-        </CompactIonItem>
-      )}
-      {!artifact.artifactShares.length &&
-        !artifact.artifactShareTokens.length && (
+      {artifactMeta.linkAccessLevel &&
+        artifactMeta.linkAccessLevel !== 'noaccess' && (
+          <CompactIonItem
+            lines="none"
+            onClick={() => presentSharingModal()}
+            button
+          >
+            <NowrapIonLabel>
+              {t('artifactRenderer.sharedByLink')}
+            </NowrapIonLabel>
+          </CompactIonItem>
+        )}
+      {!activeUserShares.length &&
+        artifactMeta.linkAccessLevel === 'noaccess' && (
           <CompactIonItem lines="none">
             <NowrapIonLabel>
               {t('artifactRenderer.artifactShares.null')}
@@ -155,32 +173,31 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     </IonCard>
   );
 
-  const artifactSharingStatus = artifact &&
-    artifact.userId !== session.userId && (
-      <IonCard>
-        <IonListHeader>
-          <IonIcon icon={person} size="small" />
-          &nbsp;&nbsp;
-          {t('artifactRenderer.artifactSharedToYou')}
-          <InfoButton
-            message={t('artifactRenderer.artifactSharedToYou.help')}
-          />
-        </IonListHeader>
-        <CompactIonItem lines="none">
-          <IonLabel>
-            {t('artifactRenderer.artifactSharedToYou.message', {
-              name: artifact.user.name,
-            })}
-            <br />
-            {t(
-              isEditable
-                ? 'artifactRenderer.artifactSharedToYou.readwrite'
-                : 'artifactRenderer.artifactSharedToYou.readonly',
-            )}
-          </IonLabel>
-        </CompactIonItem>
-      </IonCard>
-    );
+  const artifactSharingStatus = artifactMeta.userId !== session.userId && (
+    <IonCard>
+      <IonListHeader>
+        <IonIcon icon={person} size="small" />
+        &nbsp;&nbsp;
+        {t('artifactRenderer.artifactSharedToYou')}
+        <InfoButton message={t('artifactRenderer.artifactSharedToYou.help')} />
+      </IonListHeader>
+      <CompactIonItem lines="none">
+        <IonLabel>
+          {t('artifactRenderer.artifactSharedToYou.message', {
+            name:
+              knownUsersById.get(artifactMeta.userId || '')?.email ||
+              artifactMeta.userId,
+          })}
+          <br />
+          {t(
+            isEditable
+              ? 'artifactRenderer.artifactSharedToYou.readwrite'
+              : 'artifactRenderer.artifactSharedToYou.readonly',
+          )}
+        </IonLabel>
+      </CompactIonItem>
+    </IonCard>
+  );
 
   return (
     <>
@@ -194,7 +211,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <IonSelect
             label={t('artifactRenderer.theme')}
             labelPlacement="fixed"
-            value={theme}
+            value={artifactMeta.theme}
             onIonChange={(e) => {
               setMetaProp('theme', e.detail.value);
             }}
@@ -214,7 +231,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <IonCheckbox
             labelPlacement="end"
             justify="start"
-            checked={titleBodyMerge}
+            checked={artifactMeta.titleBodyMerge}
             onIonChange={async (event) => {
               setMetaProp('titleBodyMerge', event.target.checked);
             }}

@@ -3,10 +3,11 @@ import styled from 'styled-components';
 import { MdHorizontalRule, MdOutlineShortText, MdSearch } from 'react-icons/md';
 import { IoDocument } from 'react-icons/io5';
 import { t } from 'i18next';
-import { trpc } from '../../../../../utils/trpc';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalize } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
+import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
+import { createArtifact } from '../../../../../utils/createArtifact';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -91,6 +92,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [creatingItem, setCreatingItem] = useState(false);
   const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const showCreateButton =
     props.items.length !== 0 && !!props.query.trim().length;
@@ -153,19 +155,20 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     setCreatingItem(true);
 
     const title = capitalize(props.query);
-    trpc.artifact.createArtifact
-      .mutate({
-        title,
-        type: 'tiptap',
-        theme: 'default',
-      })
-      .then((artifact) => {
+
+    createArtifact({
+      title,
+    })
+      .then(({ id }) => {
         props.command({
-          artifactId: artifact.id,
+          artifactId: id,
           artifactBlockId: undefined,
           artifactDate: undefined,
           referenceText: title,
         });
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
       });
   };
 

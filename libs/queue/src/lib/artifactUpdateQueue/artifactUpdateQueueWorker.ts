@@ -7,6 +7,7 @@ import {
   updateArtifactContentReferenceText,
   updateArtifactOutgoingReferences,
   createArtifactRevision,
+  updateArtifactAccess,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { ArtifactType, Prisma } from '@prisma/client';
@@ -15,6 +16,7 @@ import {
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
+  getUserAccessFromYArtifact,
   TLDRAW_YDOC_STORE_KEY,
 } from '@feynote/shared-utils';
 import { searchProvider } from '@feynote/search';
@@ -56,6 +58,8 @@ export const artifactUpdateQueueWorker = new Worker<
       const newYMeta = getMetaFromYArtifact(newYjsDoc);
       const newTitle = newYMeta.title;
       const type = newYMeta.type;
+      const oldYUserAccess = getUserAccessFromYArtifact(oldYjsDoc);
+      const newYUserAccess = getUserAccessFromYArtifact(newYjsDoc);
 
       const newTLDrawData = newYjsDoc.getArray<{
         key: string;
@@ -109,6 +113,15 @@ export const artifactUpdateQueueWorker = new Worker<
               tx,
             );
           }
+
+          await updateArtifactAccess({
+            artifactId: args.data.artifactId,
+            oldYUserAccess,
+            newYUserAccess,
+            oldLinkAccessLevel: oldYMeta.linkAccessLevel,
+            newLinkAccessLevel: newYMeta.linkAccessLevel,
+            tx,
+          });
 
           await createArtifactRevision(args.data.artifactId, tx);
 

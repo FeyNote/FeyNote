@@ -285,21 +285,25 @@ registerRoute(
 registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
-    // Cache only
+    // Cache only, unless we do not have that artifact locally
     const input = getTrpcInputForEvent<{
       id: string;
-      shareToken?: string;
     }>(event);
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
 
-    if (input.shareToken) {
+    const manifestDb = await getManifestDb();
+
+    const localArtifactVersion = await manifestDb.get(
+      ObjectStoreName.ArtifactVersions,
+      input.id,
+    );
+    if (!localArtifactVersion) {
       const response = await fetch(event.request);
 
       return response;
     }
 
-    const manifestDb = await getManifestDb();
     const outgoingEdges = await manifestDb.getAllFromIndex(
       ObjectStoreName.Edges,
       'artifactId',
@@ -442,6 +446,32 @@ registerRoute(
 
       const limitedResults = results.slice(0, input.limit || 50);
       return encodeCacheResultForTrpc(limitedResults);
+    }
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getSafeArtifactId/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (_e) {
+      const manifestDb = await getManifestDb();
+
+      while (true) {
+        // We can at least check local artifacts which isn't globally guaranteed but oh well
+        const candidateId = crypto.randomUUID();
+        const artifact = await manifestDb.get(
+          ObjectStoreName.Artifacts,
+          candidateId,
+        );
+        if (!artifact) {
+          return encodeCacheResultForTrpc({ id: candidateId });
+        }
+      }
     }
   },
   'GET',

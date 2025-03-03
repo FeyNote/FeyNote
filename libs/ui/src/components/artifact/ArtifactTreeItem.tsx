@@ -67,10 +67,12 @@ const TreeItemContainer = styled.div`
 const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
 }>`
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: left;
+
+  flex-grow: 1;
   background-color: transparent;
   height: 32px;
   color: var(--ion-text-color);
