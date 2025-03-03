@@ -26,6 +26,7 @@ import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
 import ImageExtension from '@tiptap/extension-image';
 import LinkExtension from '@tiptap/extension-link';
+import FocusExtension from '@tiptap/extension-focus';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
@@ -43,6 +44,7 @@ import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
+import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 
 type DocArgOptions =
   | {
@@ -155,5 +157,7 @@ export const getTiptapExtensions = (args: {
       },
     }),
     ImageExtension,
+    FocusExtension,
+    ClipboardExtension,
   ];
 };

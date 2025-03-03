@@ -1,5 +1,6 @@
 import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
 import { spellSheetDefaultContent } from './spellSheetDefaultContent';
+import { renderStatsheetNodeView } from '../addStatsheetNodeView';
 
 export interface SpellSheetOptions {
   HTMLAttributes: Record<string, string>;
@@ -65,5 +66,9 @@ export const SpellSheetExtension = Node.create({
       'data-spellsheet': 'v1',
     });
     return ['div', attrs, 0];
+  },
+
+  addNodeView() {
+    return renderStatsheetNodeView;
   },
 });

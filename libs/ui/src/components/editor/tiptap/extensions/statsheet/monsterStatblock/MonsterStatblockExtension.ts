@@ -1,5 +1,6 @@
 import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
 import { monsterStatblockDefaultContent } from './monsterStatblockDefaultContent';
+import { renderStatsheetNodeView } from '../addStatsheetNodeView';
 
 export interface MonsterStatblockOptions {
   HTMLAttributes: Record<string, string>;
@@ -83,5 +84,9 @@ export const MonsterStatblockExtension = Node.create({
       'data-monster-statblock': 'v1',
     });
     return ['div', attrs, 0];
+  },
+
+  addNodeView() {
+    return renderStatsheetNodeView;
   },
 });
