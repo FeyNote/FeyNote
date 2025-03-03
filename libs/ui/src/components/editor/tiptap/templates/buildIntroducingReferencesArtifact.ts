@@ -8,7 +8,7 @@ export const buildIntroducingReferencesArtifact = (options: {
   userId: string;
 }) => {
   const meta = {
-    id,
+    id: options.id,
     userId: options.userId,
     title: t('template.introducingReferences.title'),
     theme: 'default',
