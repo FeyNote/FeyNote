@@ -172,7 +172,7 @@ export const HyperlinkExtension = Mark.create<HyperlinkOptions>({
           if (!this.options.modals.setHyperlink) {
             return chain()
               .setMark(this.name, attributes)
-              .setMeta('preventAutohyperlink', true)
+              .setMeta('preventAutoHyperlink', true)
               .run();
           } else {
             this.options.modals.setHyperlink({
@@ -222,7 +222,7 @@ export const HyperlinkExtension = Mark.create<HyperlinkOptions>({
         ({ chain }) => {
           return chain()
             .unsetMark(this.name, { extendEmptyMarkRange: true })
-            .setMeta('preventAutohyperlink', true)
+            .setMeta('preventAutoHyperlink', true)
             .run();
         },
     };

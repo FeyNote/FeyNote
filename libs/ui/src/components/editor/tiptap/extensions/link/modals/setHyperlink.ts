@@ -89,7 +89,7 @@ export function setHyperlinkModal(options: TSetHyperlinkModalOptions): void {
     return options.editor
       .chain()
       .setMark(options.extentionName, { href: sanitizeURL.href })
-      .setMeta('preventautohyperlink', true)
+      .setMeta('preventAutoHyperlink', true)
       .run();
   });
 }

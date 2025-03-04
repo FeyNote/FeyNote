@@ -3,12 +3,15 @@ import { MarkType } from '@tiptap/pm/model';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Editor } from '@tiptap/core';
 import Tooltip from './tippyHelper';
+import type { THyperlinkPreviewModalOptions } from '../modals/previewHyperlink';
 
 type ClickHandlerOptions = {
   type: MarkType;
   editor: Editor;
   validate?: (url: string) => boolean;
-  modal?: ((options: unknown) => void | HTMLElement) | null;
+  modal?:
+    | ((options: THyperlinkPreviewModalOptions) => void | HTMLElement)
+    | null;
 };
 
 export default function clickHandler(options: ClickHandlerOptions): Plugin {
@@ -52,6 +55,7 @@ export default function clickHandler(options: ClickHandlerOptions): Plugin {
           link,
           nodePos,
           tippy: tooltip,
+          extensionName: 'link',
           ...options,
         });
 
