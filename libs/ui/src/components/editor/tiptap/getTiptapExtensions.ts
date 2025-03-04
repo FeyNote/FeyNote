@@ -25,7 +25,6 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
 import ImageExtension from '@tiptap/extension-image';
-import LinkExtension from '@tiptap/extension-link';
 import FocusExtension from '@tiptap/extension-focus';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
@@ -45,6 +44,9 @@ import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
+import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
+import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
+import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 
 type DocArgOptions =
   | {
@@ -93,7 +95,16 @@ export const getTiptapExtensions = (args: {
     }),
     DropcursorExtension,
     GapcursorExtension,
-    LinkExtension,
+    HyperlinkExtension.configure({
+      hyperlinkOnPaste: false,
+      openOnClick: true,
+      modals: args.editable
+        ? {
+            previewHyperlink: previewHyperlinkModal,
+            setHyperlink: setHyperlinkModal,
+          }
+        : undefined,
+    }),
     TableExtension.configure({
       resizable: false,
       allowTableNodeSelection: false,

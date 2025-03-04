@@ -563,31 +563,8 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.setLink')}
         onClick={() => {
-          const previousUrl = props.editor.getAttributes('link').href;
-          const url = window.prompt('URL', previousUrl);
-          if (url === null) {
-            return;
-          }
-          if (url === '') {
-            props.editor
-              .chain()
-              .focus()
-              .extendMarkRange('link')
-              .unsetLink()
-              .run();
-            return;
-          }
-          props.editor
-            .chain()
-            .focus()
-            .extendMarkRange('link')
-            .setLink({ href: url })
-            .run();
+          props.editor.chain().focus().setHyperlink().run();
         }}
-        disabled={
-          !props.editor.can().setLink({ href: 'https://example.com' }) &&
-          !props.editor.can().unsetLink()
-        }
         $active={props.editor.isActive('link')}
       >
         <RiLink />
