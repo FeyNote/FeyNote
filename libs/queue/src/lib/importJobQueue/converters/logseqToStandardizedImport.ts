@@ -1,33 +1,17 @@
 import { readFile } from "fs/promises";
-import { ArtifactTheme, ArtifactType, type Prisma } from "@prisma/client";
-import { ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
+import { ArtifactTheme, ArtifactType } from "@prisma/client";
+import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
 import { basename, extname } from "path";
 import type { StandardizedImportInfo } from "../StandardizedImportInfo";
-import marked from 'marked';
-import { generateJSON } from "@tiptap/core";
+import { generateJSON } from "@tiptap/html";
 import { randomUUID } from "crypto";
 import { isImagePath } from "../utils/isImagePath";
 import { replaceImageHttpTags } from "../utils/replaceImageHttpTags";
-
-interface LogseqBlock {
-  id: string,
-  content: string,
-  format: 'markdown' | 'org',
-  children: LogseqBlock[],
-}
-
-interface LogseqPage {
-  id: string,
-  'page-name': string,
-  children: LogseqBlock[],
-}
-
-interface LogseqGraph {
-  version: number,
-  blocks: LogseqPage[],
-}
+import type { LogseqBlock, LogseqGraph } from "../LogseqGraph";
+import { marked } from 'marked';
+import { getLogseqReferenceIdToBlockMap, type ArtifactBlockInfo } from "../utils/getLogseqReferenceIdToBlockMap";
 
 export const logseqToStandardizedImport = async (
   userId: string,
@@ -60,20 +44,22 @@ const handleLogseqGraph = async (
   userId: string,
 ) => {
   const pageNameToIdMap = new Map<string, string>();
-  const blockIdToLogseqBlockMap = new Map<string, LogseqBlock>();
   for (const page of json.blocks) {
     const title = page['page-name'];
-    const id = page.id;
+    const id = randomUUID();
     pageNameToIdMap.set(title, id);
   }
 
+  const blockIdToBlockInfoMap = getLogseqReferenceIdToBlockMap(json.blocks, pageNameToIdMap);
+
   for (const page of json.blocks) {
     const title = page['page-name'];
-    const id = page.id;
-    const html = await convertLogseqPageToHtml(page.children, id, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo);
-
+    const id = pageNameToIdMap.get(title) || randomUUID();
+    const html = await convertLogseqPageToHtml(page.children, id, pageNameToIdMap, blockIdToBlockInfoMap, importInfo);
     const extensions = getTiptapServerExtensions();
     const tiptap = generateJSON(html, extensions);
+    addMissingBlockIds(tiptap);
+    console.log(`\n\nArtifact Titel: ${title}\nArtifact Id: ${id}\nconverted html:\n${html}\nGenerated Tiptap: ${JSON.stringify(tiptap, null, 4)}\n\n`)
     const text = getTextForJSONContent(tiptap);
     const yDoc = constructYArtifact({
       title,
@@ -105,14 +91,14 @@ const convertLogseqPageToHtml = async (
   blocks: LogseqBlock[],
   artifactId: string,
   pageNameToIdMap: Map<string, string>,
-  blockIdToLogseqBlockMap: Map<string, LogseqBlock>,
+  blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
   importInfo: StandardizedImportInfo,
 ): Promise<string> => {
   let htmlPage = ``
   for (const block of blocks) {
-    htmlPage += await convertLogseqBlockToHtml(block, artifactId, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo);
+    htmlPage += await convertLogseqBlockToHtml(block, artifactId, pageNameToIdMap, blockIdToBlockInfoMap, importInfo);
     if (block.children.length) {
-      htmlPage += `<div data-content-type="blockGroup">${await convertLogseqPageToHtml(block.children, artifactId, pageNameToIdMap, blockIdToLogseqBlockMap, importInfo)}</div>`
+      htmlPage += `<div data-content-type="blockGroup">${await convertLogseqPageToHtml(block.children, artifactId, pageNameToIdMap, blockIdToBlockInfoMap, importInfo)}</div>`
     }
   }
   return htmlPage;
@@ -122,15 +108,15 @@ const convertLogseqBlockToHtml = async (
   block: LogseqBlock,
   artifactId: string,
   pageNameToIdMap: Map<string, string>,
-  blockIdToLogseqBlockMap: Map<string, LogseqBlock>,
+  blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
   importInfo: StandardizedImportInfo,
 ): Promise<string> => {
   const content = replacePageReferences(block.content, pageNameToIdMap)
   switch (block.format) {
     case 'markdown':
-      return convertMarkdownToHtml(content, artifactId, importInfo);
+      return convertMarkdownToHtml(content, block.id, artifactId, importInfo, blockIdToBlockInfoMap);
     case 'org':
-      return content; // TODO FIX
+      return content; // TODO: FIX
     default:
       throw new Error(`Unrecognized block format: ${block.format}`);
   }
@@ -141,23 +127,52 @@ const replacePageReferences = (
   pageNameToIdMap: Map<string, string>,
 ): string => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />
-  // 1. The full page reference; i.e. [[Page Name]]
-  // 2. The page name
+  // 0. The full page reference; i.e. [[Page Name]]
+  // 1. The page name
   const pageReferenceRegex = /\[\[(.*?)\]\]/g
   for (const matchingGroups of content.matchAll(pageReferenceRegex)) {
     const title = matchingGroups[1];
     const id = pageNameToIdMap.get(title) || `00000000-0000-0000-0000-000000000000`
     const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${id}" data-artifact-reference-text="${title}"></span>`;
-    content.replace(matchingGroups[0], replacementHtml);
+    content = content.replace(matchingGroups[0], replacementHtml);
   }
   return content
 }
 
-const convertMarkdownToHtml = async (markdown: string, artifactId: string, importInfo: StandardizedImportInfo): Promise<string> => {
+const convertMarkdownToHtml = async (
+  markdown: string,
+  blockId: string,
+  artifactId: string,
+  importInfo: StandardizedImportInfo,
+  blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
+): Promise<string> => {
     markdown = replaceImageHttpTags(markdown, artifactId, importInfo);
     markdown = replaceLogseqImageReferences(markdown, importInfo, artifactId);
-    const html = marked.parse(markdown);
+    markdown = replaceLogseqBlockReferences(markdown, blockIdToBlockInfoMap);
+    let html = marked.parse(markdown);
+    const referencedBlockWithId = blockIdToBlockInfoMap.get(blockId);
+    if (referencedBlockWithId) {
+        html = `<span data-id="${referencedBlockWithId.id}">${html}</span>`;
+    }
     return html
+}
+
+const replaceLogseqBlockReferences = (content: string, blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>): string => {
+      // Returns two elements (the match and the src url) i.e. <img src="file.png" />
+      // 0. The block reference; i.e. ((Block Id))
+      // 1. The block id
+      const pageReferenceRegex = /\(\((.*?)\)\)/g
+      for (const matchingGroups of content.matchAll(pageReferenceRegex)) {
+        const referencedId = matchingGroups[1];
+        const blockInfo = blockIdToBlockInfoMap.get(referencedId);
+        if (!blockInfo) {
+          // Broken reference
+          continue
+        }
+        const replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockInfo.id} data-artifact-id="${blockInfo.artifactId}" data-artifact-reference-text="${blockInfo.referenceText}"></span>`;
+        content = content.replace(matchingGroups[0], replacementHtml);
+      }
+  return content
 }
 
 

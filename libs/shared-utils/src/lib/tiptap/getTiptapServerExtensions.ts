@@ -38,6 +38,17 @@ export const getTiptapServerExtensions = () => {
       content: 'block+',
       group: 'block',
       defining: true,
+      parseHTML() {
+        return [
+          {
+            tag: 'div',
+            getAttrs: (node) =>
+              node.getAttribute('data-content-type') === this.name && {
+                'data-content-type': node.getAttribute('data-content-type'),
+              },
+          },
+        ];
+      },
     }),
     HeadingExtension,
     TextExtension,

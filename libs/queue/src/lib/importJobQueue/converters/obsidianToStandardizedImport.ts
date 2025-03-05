@@ -19,7 +19,7 @@ import { randomUUID } from 'crypto';
 import { getObsidianReferenceId } from '../utils/getObsidianReferenceId';
 import { replaceObsidianReferences } from '../utils/replaceObsidianReferences';
 import { replaceObsidianHeadings } from '../utils/replaceObsidianHeadings';
-import { replaceImageFileTags } from '../utils/replaceImageFileTags';
+import { replaceObsidianImageFileTags } from '../utils/replaceImageFileTags';
 import { replaceImageHttpTags } from '../utils/replaceImageHttpTags';
 import { pushImgTagsToNewLine } from '../utils/pushImgTagsToNewLine';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
@@ -60,7 +60,7 @@ export const obsidianToStandardizedImport = async (
     markdown = pushImgTagsToNewLine(markdown)
     markdown = replaceObsidianReferences(markdown, referenceIdToInfoMap, artifactId, importInfo);
     markdown = replaceObsidianHeadings(markdown);
-    markdown = replaceImageFileTags(markdown, referenceIdToInfoMap, artifactId, importInfo);
+    markdown = replaceObsidianImageFileTags(markdown, referenceIdToInfoMap, artifactId, importInfo);
     markdown = replaceImageHttpTags(markdown, artifactId, importInfo);
 
     const html = await marked.parse(markdown);

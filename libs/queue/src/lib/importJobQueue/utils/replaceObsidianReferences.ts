@@ -13,11 +13,11 @@ export const replaceObsidianReferences = (
   importInfo: StandardizedImportInfo
   ): string => {
     // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
-    // 1. The full match
-    // 2. The artifact path
-    // 3. The Header Id (Needed for block references)
-    // 4. The |display text (Not used)
-    // 5. The display text (Reference Text)
+    // 0. The full match
+    // 1. The artifact path
+    // 2. The Header Id (Needed for block references)
+    // 3. The |display text (Not used)
+    // 4. The display text (Reference Text)
     const referenceRegex = /!?\[\[(.+?)(#\^\w{6})?(\|(.+))?\]\]/g;
     for (const matchingGroups of content.matchAll(referenceRegex)) {
       let replacementHtml = '';
