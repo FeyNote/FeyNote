@@ -272,7 +272,7 @@ export const HyperlinkExtension = Mark.create<HyperlinkOptions>({
           type: this.type,
           editor: this.editor,
           validate: this.options.validate,
-          modal: this.options.modals.previewHyperlink,
+          modal: this.options.modals?.previewHyperlink,
         }),
       );
     }
