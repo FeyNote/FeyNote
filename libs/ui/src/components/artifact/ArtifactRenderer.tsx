@@ -30,7 +30,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
 
-  useScrollBlockIntoView(props.scrollToBlockId, [editorReady]);
+  useScrollBlockIntoView(props.scrollToBlockId, [editorReady], undefined, true);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
 
   const { type } = useObserveYArtifactMeta(props.connection.yjsDoc);

@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
+import { animateHighlightBlock } from './animateHighlightBlock';
 
 export const useScrollBlockIntoView = (
   blockId: string | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do accept any!
   dependencies: any[],
-  containerRef?: React.RefObject<HTMLElement | null>,
+  containerRef: React.RefObject<HTMLElement | null> | undefined = undefined,
+  highlight = false,
 ) => {
   const scrollExecutedRef = useRef(false);
 
@@ -27,6 +29,9 @@ export const useScrollBlockIntoView = (
           block: 'center',
           inline: 'center',
         });
+        if (highlight) {
+          animateHighlightBlock(blockId);
+        }
         scrollExecutedRef.current = true;
       }
     });
