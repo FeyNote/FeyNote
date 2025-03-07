@@ -16,16 +16,19 @@ export const useScrollBlockIntoView = (
     // The consumer wants us to scroll only within a specific container, but it's not ready yet
     if (containerRef && !containerRef.current) return;
 
-    const el = (containerRef?.current || document).querySelector(
-      `[data-id="${blockId}"]`,
-    );
-    if (el) {
-      el.scrollIntoView({
-        behavior: 'instant',
-        block: 'center',
-        inline: 'center',
-      });
-      scrollExecutedRef.current = true;
-    }
+    // Wait for DOM flush
+    setTimeout(() => {
+      const el = (containerRef?.current || document).querySelector(
+        `[data-id="${blockId}"]`,
+      );
+      if (el) {
+        el.scrollIntoView({
+          behavior: 'instant',
+          block: 'center',
+          inline: 'center',
+        });
+        scrollExecutedRef.current = true;
+      }
+    });
   }, [blockId, containerRef?.current, ...dependencies]);
 };

@@ -570,6 +570,7 @@ export const ArtifactTree = () => {
             actions,
           ) => ({
             onClick: (e) => {
+              console.log('captured click');
               if (item.index === UNCATEGORIZED_ITEM_ID) {
                 actions.toggleExpandedState();
                 return;

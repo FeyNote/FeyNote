@@ -6,6 +6,7 @@ export interface Edge {
   targetArtifactId: string;
   targetArtifactBlockId: string | null;
   targetArtifactDate: string | null;
+  targetArtifactTitle: string | null;
   referenceText: string;
   isBroken: boolean;
 }

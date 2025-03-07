@@ -4,7 +4,7 @@ import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactContextMenu } from './ArtifactContextMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { ArtifactRightSidemenu } from './ArtifactRightSidemenu';
+import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { eventManager } from '../../context/events/EventManager';

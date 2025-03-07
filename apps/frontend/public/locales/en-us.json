@@ -233,6 +233,7 @@
   "contextMenu.collapseAll": "Collapse all",
   "contextMenu.duplicateArtifact": "Duplicate Artifact",
   "contextMenu.printArtifact": "Print Artifact",
+  "contextMenu.revealInArtifact": "Reveal in Artifact",
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
@@ -285,6 +286,16 @@
   "referencePreview.inaccessible.message": "Artifact has been deleted, is no longer shared with you, or could not be loaded.",
   "referencePreview.broken": "Broken Reference",
   "referencePreview.broken.message": "The artifact this link references no longer exists. The original reference text was:",
+
+  "artifactRightSideMenu.incoming.title.subtitle": "References this artifact {{count}} time(s)",
+  "artifactRightSideMenu.incoming.referencesText": "Reference to a block with text:",
+  "artifactRightSideMenu.incoming.referencesArtifact": "Reference to this artifact",
+  "artifactRightSideMenu.brokenReference": "Broken reference",
+  "artifactRightSideMenu.outgoing.title.subtitle": "{{count}} outgoing reference(s)",
+  "artifactRightSideMenu.outgoing.block": "\"{{text}}\"",
+  "artifactRightSideMenu.outgoing.block.subtitle": "Block within \"{{title}}\"",
+  "artifactRightSideMenu.outgoing.artifact": "Title reference",
+  "artifactRightSideMenu.outgoing.artifact.subtitle": "This artifact references \"{{title}}\"",
 
   "editor.referenceMenu.title": "Create Reference",
   "editor.referenceMenu.search": "Search for any text within your collection",
@@ -514,6 +525,7 @@
   "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
 
   "generic.error": "Error",
+  "generic.artifact": "Artifact",
   "generic.connectionError": "A network connectivity error occurred",
   "generic.unsavedChanges": "You have unsaved changes! If you leave this page, you will lose any modifications in-progress.",
   "generic.anonymous": "Anonymous",

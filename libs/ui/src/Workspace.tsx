@@ -28,7 +28,7 @@ import {
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
 
-const MENU_SIZE_PX = '240';
+const MENU_SIZE_PX = '300';
 
 const DockContainer = styled.div`
   position: relative;
