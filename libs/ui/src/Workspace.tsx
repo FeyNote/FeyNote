@@ -28,7 +28,11 @@ import {
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
 
-const MENU_SIZE_PX = '300';
+const MENU_SIZE_PX = 300;
+/**
+ * The minimum required screen size to allow user to have both menus open at once
+ */
+const MIN_SCREEN_DOUBLE_MENU_PX = MENU_SIZE_PX * 3.5;
 
 const DockContainer = styled.div`
   position: relative;
@@ -182,13 +186,13 @@ const MainGrid = styled.div<{
   ${(props) =>
     props.$leftMenuOpen &&
     `
-    --left-menu-size: ${MENU_SIZE_PX}px;
+    --left-menu-size: min(${MENU_SIZE_PX}px, 91vw);
   `}
   --right-menu-size: 0px;
   ${(props) =>
     props.$rightMenuOpen &&
     `
-    --right-menu-size: ${MENU_SIZE_PX}px;
+    --right-menu-size: min(${MENU_SIZE_PX}px, 91vw);
   `}
 
   grid-template-columns: var(--left-menu-size) auto var(--right-menu-size);
@@ -206,6 +210,20 @@ export const Workspace: React.FC = () => {
   const [rightMenuOpen, setRightMenuOpen] = useState(
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
+
+  const toggleLeftSideMenu = () => {
+    if (!leftMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {
+      setRightMenuOpen(false);
+    }
+    setLeftMenuOpen(!leftMenuOpen);
+  };
+
+  const toggleRightSideMenu = () => {
+    if (!rightMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {
+      setLeftMenuOpen(false);
+    }
+    setRightMenuOpen(!rightMenuOpen);
+  };
 
   const contextMenuPaneIdRef = useRef<string>(undefined);
   const PaneTabContextMenuWrapper = () => {
@@ -368,7 +386,7 @@ export const Workspace: React.FC = () => {
         <IonButton
           style={{ position: 'absolute', left: 0 }}
           fill="clear"
-          onClick={() => setLeftMenuOpen(!leftMenuOpen)}
+          onClick={toggleLeftSideMenu}
           size="small"
         >
           <div slot="icon-only">
@@ -378,7 +396,7 @@ export const Workspace: React.FC = () => {
         <IonButton
           style={{ position: 'absolute', right: 0 }}
           fill="clear"
-          onClick={() => setRightMenuOpen(!rightMenuOpen)}
+          onClick={toggleRightSideMenu}
           size="small"
         >
           <div slot="icon-only">
