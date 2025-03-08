@@ -7,9 +7,25 @@ export const collaborationCursorExtensionStyles = css`
     border-right: 1px solid #0d0d0d;
     margin-left: -1px;
     margin-right: -1px;
-    pointer-events: none;
+    // pointer-events: none;
     position: relative;
     word-break: normal;
+
+    &:hover {
+      .collaboration-cursor__label {
+        opacity: 1;
+        animation: none;
+      }
+    }
+  }
+
+  keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
 
   /* Render the username above the caret */
@@ -26,5 +42,9 @@ export const collaborationCursorExtensionStyles = css`
     top: -1.4em;
     user-select: none;
     white-space: nowrap;
+
+    opacity: 0;
+    animation: fadeOut;
+    animation-duration: 4s;
   }
 `;
