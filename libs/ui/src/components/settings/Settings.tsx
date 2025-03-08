@@ -405,6 +405,15 @@ export const Settings: React.FC = () => {
           </IonList>
         </IonCard>
         <br />
+        <IonItem>
+          <IonLabel>
+            <p>
+              {t('settings.version', {
+                version: (window as unknown as { version: string }).version,
+              })}
+            </p>
+          </IonLabel>
+        </IonItem>
       </IonContent>
     </IonPage>
   );
