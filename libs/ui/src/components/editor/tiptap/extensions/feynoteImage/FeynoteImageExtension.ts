@@ -77,7 +77,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       },
       width: {
         default: null,
-        parseHTML: (element) => element.getAttribute('width'),
+        parseHTML: (element) => element.getAttribute('data-width'),
         renderHTML: (attributes) => {
           if (
             !attributes.width ||
@@ -85,12 +85,12 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
           ) {
             return {};
           }
-          return { width: attributes.width };
+          return { 'data-width': attributes.width };
         },
       },
       height: {
         default: null,
-        parseHTML: (element) => element.getAttribute('height'),
+        parseHTML: (element) => element.getAttribute('data-height'),
         renderHTML: (attributes) => {
           if (
             !attributes.height ||
@@ -98,7 +98,16 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
           ) {
             return {};
           }
-          return { height: attributes.height };
+          return { 'data-height': attributes.height };
+        },
+      },
+      aspectRatio: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-aspect-ratio'),
+        renderHTML: (attributes) => {
+          return {
+            'data-aspect-ratio': attributes.aspectRatio,
+          };
         },
       },
       maintainAspectRatio: {
@@ -143,6 +152,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
   },
 
   addNodeView() {
+    let isLoaded = false;
     return ({ node, editor, getPos, HTMLAttributes }) => {
       const minWidthPx = this.options.minWidthPx;
       const minHeightPx = this.options.minHeightPx;
@@ -155,14 +165,29 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       resizeContainer.classList.add('resizable-image-resize-container');
       resizeContainer.setAttribute('draggable', 'true');
       resizeContainer.setAttribute('data-drag-handle', '');
+      if (node.attrs.width)
+        resizeContainer.style.maxWidth = `min(${node.attrs.width}px, 100%)`;
+      if (node.attrs.height)
+        resizeContainer.style.maxHeight = `${node.attrs.height}px`;
       blockContainer.append(resizeContainer);
 
       const img = document.createElement('img');
       img.src = this.options.getSrcForFileId(HTMLAttributes['data-file-id']);
       if (node.attrs.alt) img.alt = node.attrs.alt;
       if (node.attrs.title) img.title = node.attrs.title;
-      if (node.attrs.width) img.width = node.attrs.width;
-      if (node.attrs.height) img.height = node.attrs.height;
+      if (node.attrs.width)
+        img.style.maxWidth = `min(${node.attrs.width}px, 100%)`;
+      if (node.attrs.height) img.style.maxHeight = `${node.attrs.height}px`;
+
+      if (node.attrs.height && !isLoaded) {
+        // We do this to reduce pop-in when the image finishes loading
+        // it _is_ a guess, since we don't know how tall the image will actually be post-load since width also constrains
+        blockContainer.style.height = `${node.attrs.height}px`;
+      }
+      img.onload = () => {
+        isLoaded = true;
+        blockContainer.style.height = '';
+      };
 
       resizeContainer.append(img);
 
@@ -275,7 +300,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
         const initialYPosition = event.clientY;
         const currentWidth = img.width;
         const currentHeight = img.height;
-        let newWidth: number | null = currentWidth;
+        let newWidth = currentWidth;
         let newHeight = currentHeight;
         const widthTransform = direction[1] === 'w' ? -1 : 1;
         const heightTransform = direction[0] === 'n' ? -1 : 1;
@@ -285,31 +310,16 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
             currentWidth + widthTransform * (event.clientX - initialXPosition),
             minWidthPx,
           );
-          img.style.width = `${newWidth}px`;
+          resizeContainer.style.maxWidth = `min(${newWidth}px, 100%)`;
+          img.style.maxWidth = `min(${newWidth}px, 100%)`;
 
           newHeight = Math.max(
             currentHeight +
               heightTransform * (event.clientY - initialYPosition),
             minHeightPx,
           );
-          img.style.height = `${newHeight}px`;
-
-          if (node.attrs.maintainAspectRatio === true) {
-            // We prefer whichever is largest, so that the user feels like both moving their mouse sideways as well as vertically count for resizing the image
-            // even though the aspect ratio must be locked. We still only persist the height, and not width
-            const aspectRatio = currentWidth / currentHeight;
-
-            const newWidthRespectingHeight = newHeight * aspectRatio;
-            const newHeightRespectingWidth = newWidth / aspectRatio;
-
-            if (newWidthRespectingHeight > newHeightRespectingWidth) {
-              newWidth = newWidthRespectingHeight;
-              img.style.width = `${newWidth}px`;
-            } else {
-              newHeight = newHeightRespectingWidth;
-              img.style.height = `${newHeight}px`;
-            }
-          }
+          resizeContainer.style.maxHeight = `${newHeight}px`;
+          img.style.maxHeight = `${newHeight}px`;
 
           // If mouse is up, remove event listeners
           if (!event.buttons) removeListeners();
@@ -319,18 +329,14 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
           window.removeEventListener('mousemove', mouseMoveHandler);
           window.removeEventListener('mouseup', removeListeners);
 
-          img.style.width = '';
-          img.style.height = '';
-
-          newWidth = node.attrs.maintainAspectRatio === false ? newWidth : null;
-
           // Update the node attributes
           if (typeof getPos === 'function') {
             editor.view.dispatch(
               editor.view.state.tr.setNodeMarkup(getPos(), null, {
                 ...node.attrs,
-                width: newWidth,
-                height: newHeight,
+                width: img.width,
+                height: img.height,
+                aspectRatio: img.width / img.height,
               }),
             );
           }
