@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import ParagraphExtension from '@tiptap/extension-paragraph';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
 import ListItemExtension from '@tiptap/extension-list-item';
@@ -153,11 +154,18 @@ export const getTiptapExtensions = (args: {
               if (htmlContent) {
                 // if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
                 // you could extract the pasted file from this url string and upload it to a server for example
+                // I have not been able to find a case where I can actually trigger this condition, though.
                 console.log(
                   'Ignoring paste with htmlContent',
                   htmlContent,
                   files,
                 );
+                Sentry.captureMessage('Ignoring paste with htmlContent', {
+                  extra: {
+                    htmlContent,
+                    files,
+                  },
+                });
                 return false;
               }
 

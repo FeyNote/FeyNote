@@ -36,8 +36,9 @@ declare module '@tiptap/core' {
 export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
   name: 'feynoteImage',
 
-  inline: false,
   group: 'block',
+  content: '',
+  draggable: true,
 
   addOptions() {
     return {
@@ -47,8 +48,6 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       getSrcForFileId: () => '',
     };
   },
-
-  draggable: true,
 
   addAttributes() {
     return {
@@ -78,7 +77,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       },
       width: {
         default: null,
-        parseHTML: (element) => element.getAttribute('height'),
+        parseHTML: (element) => element.getAttribute('width'),
         renderHTML: (attributes) => {
           if (
             !attributes.width ||
@@ -138,10 +137,14 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       const minWidthPx = this.options.minWidthPx;
 
       // Create container
-      const container = document.createElement('div');
-      container.classList.add('resizable-image-container');
-      container.setAttribute('draggable', 'true');
-      container.setAttribute('data-drag-handle', '');
+      const blockContainer = document.createElement('div');
+      blockContainer.classList.add('resizable-image-container');
+
+      const resizeContainer = document.createElement('div');
+      resizeContainer.classList.add('resizable-image-resize-container');
+      resizeContainer.setAttribute('draggable', 'true');
+      resizeContainer.setAttribute('data-drag-handle', '');
+      blockContainer.append(resizeContainer);
 
       const img = document.createElement('img');
       img.src = this.options.getSrcForFileId(HTMLAttributes['data-file-id']);
@@ -150,24 +153,43 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       if (node.attrs.width) img.width = node.attrs.width;
       if (node.attrs.height) img.height = node.attrs.height;
 
-      container.append(img);
+      resizeContainer.append(img);
 
       let editing = false;
       let resizeHandles: HTMLDivElement[] = [];
       let borders: HTMLDivElement[] = [];
 
       // Toggle editing mode
-      container.addEventListener('click', () => {
+      resizeContainer.addEventListener('click', () => {
         if (!editing) {
           editing = true;
+          resizeContainer.classList.add('edit-mode');
           createResizeUI();
         }
       });
 
       // Handle clicks outside the container
       document.addEventListener('click', (event) => {
-        if (!container.contains(event.target as HTMLDivElement) && editing) {
+        if (
+          !resizeContainer.contains(event.target as HTMLDivElement) &&
+          editing
+        ) {
           editing = false;
+          resizeContainer.classList.remove('edit-mode');
+          removeResizeUI();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        // Handle escape or arrow keys
+        if (
+          event.key === 'Escape' ||
+          ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(
+            event.key,
+          )
+        ) {
+          editing = false;
+          resizeContainer.classList.remove('edit-mode');
           removeResizeUI();
         }
       });
@@ -189,7 +211,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
             border.style.setProperty(key, value);
           }
 
-          container.append(border);
+          resizeContainer.append(border);
           borders.push(border);
         }
 
@@ -216,7 +238,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
           }
 
           handle.addEventListener('mousedown', handleMouseDown);
-          container.append(handle);
+          resizeContainer.append(handle);
           resizeHandles.push(handle);
         }
       }
@@ -274,22 +296,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       }
 
       return {
-        dom: container,
-        update: (updatedNode) => {
-          if (updatedNode.attrs.src !== node.attrs.src) {
-            img.src = updatedNode.attrs.src;
-          }
-          if (updatedNode.attrs.width !== node.attrs.width) {
-            img.width = updatedNode.attrs.width;
-          }
-          if (updatedNode.attrs.height !== node.attrs.height) {
-            img.height = updatedNode.attrs.height;
-          }
-          return true;
-        },
-        destroy: () => {
-          // Clean up event listeners if needed
-        },
+        dom: blockContainer,
       };
     };
   },
