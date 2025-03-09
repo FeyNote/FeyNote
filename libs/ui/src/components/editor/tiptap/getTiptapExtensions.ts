@@ -24,7 +24,6 @@ import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
-import ImageExtension from '@tiptap/extension-image';
 import FocusExtension from '@tiptap/extension-focus';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
@@ -154,6 +153,11 @@ export const getTiptapExtensions = (args: {
               if (htmlContent) {
                 // if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
                 // you could extract the pasted file from this url string and upload it to a server for example
+                console.log(
+                  'Ignoring paste with htmlContent',
+                  htmlContent,
+                  files,
+                );
                 return false;
               }
 
@@ -167,7 +171,6 @@ export const getTiptapExtensions = (args: {
         return args.getFileUrl(fileId);
       },
     }),
-    ImageExtension,
     FocusExtension,
     ClipboardExtension,
   ];

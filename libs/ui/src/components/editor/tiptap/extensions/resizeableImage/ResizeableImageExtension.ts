@@ -1,89 +1,15 @@
-// Based on https://github.com/ueberdosis/tiptap/blob/main/packages/extension-image/src/image.ts
-// and this comment: https://github.com/ueberdosis/tiptap/issues/333#issuecomment-2701758790
+// src/lib/resizable-image.js
 
-import { mergeAttributes, Node } from '@tiptap/core';
+import { FeynoteImageExtension } from '../feynoteImage/FeynoteImageExtension';
 
-export interface FeynoteImageOptions {
-  getSrcForFileId: (fileId: string) => string;
-
-  minWidthPx: number;
-  minHeightPx: number;
-
-  /**
-   * HTML attributes to add to the image element.
-   * @default {}
-   * @example { class: 'foo' }
-   */
-  HTMLAttributes: Record<string, string>;
-}
-
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    feynoteImage: {
-      setFeynoteImage: (options: {
-        fileId: string;
-        storageKey: string;
-        alt?: string;
-        title?: string;
-      }) => ReturnType;
-    };
-  }
-}
-
-/**
- * This extension displays images stored on our backend.
- */
-export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
-  name: 'feynoteImage',
-
-  inline: false,
-  group: 'block',
-
-  addOptions() {
-    return {
-      minWidthPx: 60,
-      minHeightPx: 60,
-      HTMLAttributes: {},
-      getSrcForFileId: () => '',
-    };
-  },
-
-  draggable: true,
-
+export const ResizableImageExtension = FeynoteImageExtension.extend({
   addAttributes() {
     return {
-      fileId: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-file-id'),
-        renderHTML: (attributes) => {
-          return {
-            'data-file-id': attributes.fileId,
-          };
-        },
-      },
-      storageKey: {
-        default: null,
-        parseHTML: (element) => element.getAttribute('data-storage-key'),
-        renderHTML: (attributes) => {
-          return {
-            'data-storage-key': attributes.storageKey,
-          };
-        },
-      },
-      alt: {
-        default: null,
-      },
-      title: {
-        default: null,
-      },
+      ...this.parent?.(),
       width: {
         default: null,
-        parseHTML: (element) => element.getAttribute('height'),
         renderHTML: (attributes) => {
-          if (
-            !attributes.width ||
-            parseInt(attributes.width) < this.options.minWidthPx
-          ) {
+          if (!attributes.width) {
             return {};
           }
           return { width: attributes.width };
@@ -91,12 +17,8 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       },
       height: {
         default: null,
-        parseHTML: (element) => element.getAttribute('height'),
         renderHTML: (attributes) => {
-          if (
-            !attributes.height ||
-            parseInt(attributes.height) < this.options.minHeightPx
-          ) {
+          if (!attributes.height) {
             return {};
           }
           return { height: attributes.height };
@@ -104,51 +26,29 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
       },
     };
   },
-
-  parseHTML() {
-    return [
-      {
-        tag: 'img[data-file-id]',
-      },
-    ];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return [
-      'img',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-    ];
-  },
-
-  addCommands() {
-    return {
-      setFeynoteImage:
-        (options) =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: options,
-          });
-        },
-    };
-  },
-
   addNodeView() {
-    return ({ node, editor, getPos, HTMLAttributes }) => {
-      const minWidthPx = this.options.minWidthPx;
+    return ({ node, editor, getPos }) => {
+      const MIN_WIDTH = 60;
+      const BORDER_COLOR = '#0096fd';
 
       // Create container
       const container = document.createElement('div');
       container.classList.add('resizable-image-container');
       container.setAttribute('draggable', 'true');
       container.setAttribute('data-drag-handle', '');
+      container.style.position = 'relative';
+      container.style.display = 'inline-block';
+      container.style.lineHeight = '0px';
+      container.style.overflow = 'hidden';
 
+      // Create image
       const img = document.createElement('img');
-      img.src = this.options.getSrcForFileId(HTMLAttributes['data-file-id']);
+      img.src = node.attrs.src;
       if (node.attrs.alt) img.alt = node.attrs.alt;
       if (node.attrs.title) img.title = node.attrs.title;
       if (node.attrs.width) img.width = node.attrs.width;
       if (node.attrs.height) img.height = node.attrs.height;
+      img.style.cursor = 'default';
 
       container.append(img);
 
@@ -183,12 +83,11 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
 
         for (const pos of borderPositions) {
           const border = document.createElement('div');
-          border.classList.add('resizable-image-border');
-
+          border.style.position = 'absolute';
+          border.style.backgroundColor = BORDER_COLOR;
           for (const [key, value] of Object.entries(pos)) {
             border.style.setProperty(key, value);
           }
-
           container.append(border);
           borders.push(border);
         }
@@ -200,20 +99,17 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
           handle.setAttribute('role', 'button');
           handle.setAttribute('tabindex', '0');
           handle.setAttribute('data-direction', direction);
-          handle.classList.add('resizable-image-handle');
+          handle.style.position = 'absolute';
+          handle.style.height = '10px';
+          handle.style.width = '10px';
+          handle.style.backgroundColor = BORDER_COLOR;
+          handle.style.cursor = `${direction}-resize`;
 
-          if (direction === 'nw') {
-            handle.classList.add('top-left');
-          }
-          if (direction === 'ne') {
-            handle.classList.add('top-right');
-          }
-          if (direction === 'sw') {
-            handle.classList.add('bottom-left');
-          }
-          if (direction === 'se') {
-            handle.classList.add('bottom-right');
-          }
+          // Position the handle
+          if (direction[0] === 'n') handle.style.top = '0';
+          if (direction[0] === 's') handle.style.bottom = '0';
+          if (direction[1] === 'w') handle.style.left = '0';
+          if (direction[1] === 'e') handle.style.right = '0';
 
           handle.addEventListener('mousedown', handleMouseDown);
           container.append(handle);
@@ -246,7 +142,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
         function mouseMoveHandler(event: MouseEvent) {
           newWidth = Math.max(
             currentWidth + transform * (event.clientX - initialXPosition),
-            minWidthPx,
+            MIN_WIDTH,
           );
           img.style.width = `${newWidth}px`;
 

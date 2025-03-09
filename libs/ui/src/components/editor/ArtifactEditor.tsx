@@ -92,7 +92,29 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
           {titleBodyMerge && titleInput}
           <EditorContent editor={editor}></EditorContent>
           {editor && (
-            <BubbleMenu editor={editor}>
+            <BubbleMenu
+              editor={editor}
+              shouldShow={({ editor, state, from, to }) => {
+                const { doc, selection } = state;
+                const { empty } = selection;
+                const isEmptyTextBlock =
+                  !doc.textBetween(from, to).length &&
+                  selection.$from.parent.type.name === 'paragraph';
+                const isFeynoteImage =
+                  doc.nodeAt(from)?.type.name === 'feynoteImage';
+
+                if (
+                  !editor.isEditable ||
+                  empty ||
+                  isEmptyTextBlock ||
+                  isFeynoteImage
+                ) {
+                  return false;
+                }
+
+                return true;
+              }}
+            >
               <ArtifactBubbleMenuControls editor={editor} />
             </BubbleMenu>
           )}
