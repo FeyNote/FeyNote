@@ -161,7 +161,7 @@ export const FeynoteImageExtension = Node.create<FeynoteImageOptions>({
 
       // Toggle editing mode
       resizeContainer.addEventListener('click', () => {
-        if (!editing) {
+        if (!editing && editor.isEditable) {
           editing = true;
           resizeContainer.classList.add('edit-mode');
           createResizeUI();
