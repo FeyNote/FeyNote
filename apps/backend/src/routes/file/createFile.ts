@@ -83,7 +83,7 @@ export const createFileHandler = defineExpressHandler(
       fileBuffer = await sharp(req.file.buffer)
         .rotate()
         .resize(maxResolution, maxResolution, {
-          fit: 'contain',
+          fit: 'inside',
           withoutEnlargement: true,
         })
         .jpeg({
