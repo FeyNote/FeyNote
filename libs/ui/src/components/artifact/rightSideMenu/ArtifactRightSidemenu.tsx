@@ -120,8 +120,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     );
   }, [outgoingEdges]);
 
-  console.log(incomingEdgesByArtifactId, outgoingEdgesByArtifactId);
-
   const artifactSettings = artifactMeta.userId === session.userId && (
     <IonCard>
       <IonListHeader>
