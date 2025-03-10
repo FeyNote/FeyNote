@@ -65,12 +65,12 @@ export const ArtifactReferencesExtension =
           parseHTML: (element) =>
             element.getAttribute('data-artifact-block-id'),
           renderHTML: (attributes) => {
-            if (!attributes.artifactId) {
+            if (!attributes.artifactBlockId) {
               return {};
             }
 
             return {
-              'data-artifact-block-id': attributes.artifactId,
+              'data-artifact-block-id': attributes.artifactBlockId,
             };
           },
         },

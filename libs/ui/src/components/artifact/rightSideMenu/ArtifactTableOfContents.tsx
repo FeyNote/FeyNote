@@ -41,8 +41,6 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
     };
   }, []);
 
-  console.log(toc);
-
   if (!toc) {
     return null;
   }
