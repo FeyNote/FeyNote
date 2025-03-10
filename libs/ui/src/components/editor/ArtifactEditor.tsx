@@ -15,6 +15,7 @@ import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMe
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -44,6 +45,7 @@ type Props = {
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
 } & DocArgOptions;
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {

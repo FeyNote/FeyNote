@@ -11,7 +11,13 @@ import {
 import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import {
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type RefObject,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
 import { CollaborationManagerConnection } from '../../editor/collaborationManager';
@@ -27,10 +33,15 @@ import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesFo
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import { ArtifactTableOfContents } from './ArtifactTableOfContents';
 
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
+  onTocUpdateRef: RefObject<
+    ((content: TableOfContentData) => void) | undefined
+  >;
 }
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
@@ -244,6 +255,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           />
         </CompactIonItem>
       </IonCard>
+      <ArtifactTableOfContents
+        artifactId={props.artifactId}
+        connection={props.connection}
+        onTocUpdateRef={props.onTocUpdateRef}
+      />
       {artifactSettings}
       {artifactSharingStatus}
       {!!incomingEdgesByArtifactId.length && (

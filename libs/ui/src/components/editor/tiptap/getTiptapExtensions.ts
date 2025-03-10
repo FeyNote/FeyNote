@@ -25,6 +25,9 @@ import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
+import TableOfContentsExtension, {
+  type TableOfContentData,
+} from '@tiptap-pro/extension-table-of-contents';
 import FocusExtension from '@tiptap/extension-focus';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
@@ -66,6 +69,7 @@ export const getTiptapExtensions = (args: {
   collaborationUser: Record<string, string>;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
 }) => {
   return [
     DocumentExtension,
@@ -181,5 +185,14 @@ export const getTiptapExtensions = (args: {
     }),
     FocusExtension,
     ClipboardExtension,
+    ...(args.onTocUpdate
+      ? [
+          TableOfContentsExtension.configure({
+            onUpdate(content) {
+              args.onTocUpdate?.(content);
+            },
+          }),
+        ]
+      : []),
   ];
 };

@@ -13,6 +13,7 @@ import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
 import { useIsEditable } from '../../utils/useAuthorizedScope';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 
 interface Props {
   artifactId: string;
@@ -20,6 +21,7 @@ interface Props {
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
+  onTocUpdate?: (content: TableOfContentData) => void;
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
@@ -76,6 +78,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
         onTitleChange={props.onTitleChange}
+        onTocUpdate={props.onTocUpdate}
         handleFileUpload={async (editor, files, pos) => {
           for (const file of files) {
             const response = await uploadFileToApi({
