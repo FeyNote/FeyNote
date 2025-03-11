@@ -161,18 +161,24 @@ const DockContainer = styled.div`
 
 const Menu = styled.div<{
   $side: 'left' | 'right';
+  $open: boolean;
 }>`
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
 
   ${(props) =>
-    props.$side === 'left'
-      ? `
-    border-right: 1px solid var(--ion-card-background, #dddddd);
-  `
-      : `
-    border-left: 1px solid var(--ion-card-background, #dddddd);
+    props.$open &&
+    `
+    ${
+      props.$side === 'left'
+        ? `
+      border-right: 1px solid var(--ion-card-background, #dddddd);
+    `
+        : `
+      border-left: 1px solid var(--ion-card-background, #dddddd);
+    `
+    }
   `}
 `;
 
@@ -329,7 +335,7 @@ export const Workspace: React.FC = () => {
 
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
-      <Menu $side="left">
+      <Menu $side="left" $open={leftMenuOpen}>
         <MenuInner>
           <LeftSideMenu />
         </MenuInner>
@@ -426,7 +432,7 @@ export const Workspace: React.FC = () => {
           </MenuButton>
         )}
       </DockContainer>
-      <Menu $side="right">
+      <Menu $side="right" $open={rightMenuOpen}>
         <MenuInner>
           <RightSideMenu />
         </MenuInner>
