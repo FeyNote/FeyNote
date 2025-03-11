@@ -28,7 +28,6 @@ import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
 import TableOfContentsExtension, {
   type TableOfContentData,
 } from '@tiptap-pro/extension-table-of-contents';
-import FocusExtension from '@tiptap/extension-focus';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
@@ -50,6 +49,7 @@ import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
 import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
 import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
+import { FocusExtension } from './extensions/focus/FocusExtension';
 
 type DocArgOptions =
   | {
