@@ -13,6 +13,7 @@ import { scrollBlockIntoView } from '../../editor/scrollBlockIntoView';
 import { animateHighlightBlock } from '../../editor/animateHighlightBlock';
 
 interface Props {
+  paneId: string;
   currentArtifactId: string;
   edge: Edge;
   navigate: PaneContextData['navigate'];
@@ -95,10 +96,14 @@ export const ArtifactRightSidemenuReferenceContextMenu: React.FC<Props> = (
           <ContextMenuGroupDivider />
           <ContextMenuGroup>
             <ContextMenuItem
-              onClick={() => (
-                scrollBlockIntoView(artifactBlockId),
-                animateHighlightBlock(artifactBlockId)
-              )}
+              onClick={() => {
+                const paneElement = document.querySelector(
+                  `[data-pane-id="${props.paneId}"]`,
+                );
+
+                scrollBlockIntoView(artifactBlockId, paneElement);
+                animateHighlightBlock(artifactBlockId, paneElement);
+              }}
             >
               {t('contextMenu.revealInArtifact')}
             </ContextMenuItem>

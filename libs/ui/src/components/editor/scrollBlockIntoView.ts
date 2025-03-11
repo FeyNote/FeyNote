@@ -1,9 +1,13 @@
 export const scrollBlockIntoView = (
   blockId: string,
-  containerRef?: React.RefObject<HTMLElement | null>,
+  containerRef: React.RefObject<HTMLElement | null> | Element | null,
 ) => {
-  const el = (containerRef?.current || document).querySelector(
-    `[data-id="${blockId}"]`,
+  const element =
+    containerRef && 'current' in containerRef
+      ? containerRef.current
+      : containerRef;
+  const el = (element || document).querySelector(
+    `[id="${blockId}"],[data-id="${blockId}"],[data-toc-id="${blockId}"]`,
   );
 
   if (el) {
