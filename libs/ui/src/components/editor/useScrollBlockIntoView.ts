@@ -30,7 +30,7 @@ export const useScrollBlockIntoView = (
           inline: 'center',
         });
         if (highlight) {
-          animateHighlightBlock(blockId);
+          animateHighlightBlock(blockId, containerRef || null);
         }
         scrollExecutedRef.current = true;
       }

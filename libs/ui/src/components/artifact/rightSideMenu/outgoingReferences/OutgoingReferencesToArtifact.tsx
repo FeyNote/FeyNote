@@ -24,7 +24,7 @@ interface Props {
 }
 
 export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
-  const { navigate } = useContext(PaneContext);
+  const { pane, navigate } = useContext(PaneContext);
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -66,6 +66,7 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
   const { onContextMenu } = useContextMenu(
     ArtifactRightSidemenuReferenceContextMenu,
     {
+      paneId: pane.id,
       currentArtifactId: edge0.artifactId,
       edge: edge0,
       navigate,
