@@ -93,7 +93,7 @@
     "minisearch": "^7.1.2",
     "multer": "^1.4.5-lts.1",
     "react": "19.0.0",
-    "react-complex-tree": "^2.4.6",
+    "react-complex-tree": "^2.5.0",
     "react-dom": "19.0.0",
     "react-force-graph-2d": "^1.27.0",
     "react-i18next": "^15.4.1",
