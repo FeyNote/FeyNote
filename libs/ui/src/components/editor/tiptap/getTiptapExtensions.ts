@@ -189,7 +189,9 @@ export const getTiptapExtensions = (args: {
       ? [
           TableOfContentsExtension.configure({
             onUpdate(content) {
-              args.onTocUpdate?.(content);
+              setTimeout(() => {
+                args.onTocUpdate?.(content);
+              });
             },
           }),
         ]
