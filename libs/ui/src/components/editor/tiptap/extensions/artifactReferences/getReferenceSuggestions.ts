@@ -1,7 +1,7 @@
 import { trpc } from '../../../../../utils/trpc';
 import { ReferenceListItem } from './ReferenceListItem';
 
-const debounceMs = 150;
+const debounceMs = 200;
 /**
  * Used to prevent parallel calls from overwiting each other out of order if network requests are resolved
  * out of order in a fast typing situation.
@@ -78,7 +78,7 @@ export const getReferenceSuggestions = (mentionMenuOptsRef: {
         searching: false,
       });
 
-      return suggestionItems.slice(0, 20);
+      return suggestionItems.slice(0, 15);
     }
 
     return [];
