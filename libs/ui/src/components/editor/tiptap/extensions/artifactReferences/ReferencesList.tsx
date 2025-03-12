@@ -1,13 +1,26 @@
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import {
+  forwardRef,
+  useContext,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import styled from 'styled-components';
-import { MdHorizontalRule, MdOutlineShortText, MdSearch } from 'react-icons/md';
-import { IoDocument } from 'react-icons/io5';
+import {
+  MdDraw,
+  MdHorizontalRule,
+  MdOutlineShortText,
+  MdSearch,
+} from 'react-icons/md';
+import { IoCalendar, IoDocument } from 'react-icons/io5';
 import { t } from 'i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalize } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { createArtifact } from '../../../../../utils/createArtifact';
+import * as Sentry from '@sentry/react';
+import { SessionContext } from '../../../../../context/session/SessionContext';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -93,6 +106,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const [creatingItem, setCreatingItem] = useState(false);
   const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
   const { handleTRPCErrors } = useHandleTRPCErrors();
+  const { session } = useContext(SessionContext);
 
   const showCreateButton =
     props.items.length !== 0 && !!props.query.trim().length;
@@ -232,6 +246,85 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     );
   }
 
+  const referenceItemSubtitleI18n = (item: ReferenceItem) => {
+    const x = item.artifact.userId === session?.userId ? 'personal' : 'shared';
+    const i18nVals = {
+      block: {
+        personal: 'editor.referenceMenu.artifactBlock',
+        shared: 'editor.referenceMenu.artifactBlock.shared',
+      },
+      calendar: {
+        personal: 'editor.referenceMenu.artifact.calendar',
+        shared: 'editor.referenceMenu.artifact.calendar.shared',
+      },
+      tldraw: {
+        personal: 'editor.referenceMenu.artifact.tldraw',
+        shared: 'editor.referenceMenu.artifact.tldraw.shared',
+      },
+      tiptap: {
+        personal: 'editor.referenceMenu.artifact.tiptap',
+        shared: 'editor.referenceMenu.artifact.tiptap.shared',
+      },
+      genericArtifact: {
+        personal: 'editor.referenceMenu.artifact',
+        shared: 'editor.referenceMenu.artifact.shared',
+      },
+    };
+
+    if (item.artifactBlockId) {
+      return t(i18nVals.block[x], {
+        title: item.artifact.title,
+        userName: item.artifact.user.name,
+      });
+    }
+
+    switch (item.artifact.type) {
+      case 'calendar': {
+        return t(i18nVals.calendar[x], {
+          userName: item.artifact.user.name,
+        });
+      }
+      case 'tldraw': {
+        return t(i18nVals.tldraw[x], {
+          userName: item.artifact.user.name,
+        });
+      }
+      case 'tiptap': {
+        return t(i18nVals.tiptap[x], {
+          userName: item.artifact.user.name,
+        });
+      }
+      default: {
+        Sentry.captureMessage(`Unknown artifact type: ${item.artifact.type}`);
+        return t(i18nVals.genericArtifact[x], {
+          userName: item.artifact.user.name,
+        });
+      }
+    }
+  };
+
+  const referenceItemIcon = (item: ReferenceItem) => {
+    if (item.artifactBlockId) {
+      return <MdOutlineShortText size={18} />;
+    }
+
+    switch (item.artifact.type) {
+      case 'calendar': {
+        return <IoCalendar size={18} />;
+      }
+      case 'tldraw': {
+        return <MdDraw size={18} />;
+      }
+      case 'tiptap': {
+        return <IoDocument size={18} />;
+      }
+      default: {
+        Sentry.captureMessage(`Unknown artifact type: ${item.artifact.type}`);
+        return <IoDocument size={18} />;
+      }
+    }
+  };
+
   return (
     <SuggestionListContainer>
       {!calendarSelectInfo && (
@@ -247,22 +340,14 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
                 onClick={() => selectItem(index)}
               >
                 <SuggestionListItemIcon>
-                  {item.artifactBlockId ? (
-                    <MdOutlineShortText size={18} />
-                  ) : (
-                    <IoDocument size={18} />
-                  )}
+                  {referenceItemIcon(item)}
                 </SuggestionListItemIcon>
                 <SuggestionListItemText>
                   <SuggestionListItemTitle>
                     {item.referenceText}
                   </SuggestionListItemTitle>
                   <SuggestionListItemSubtitle>
-                    {item.artifactBlockId
-                      ? t('editor.referenceMenu.artifactBlock', {
-                          title: item.artifact.title,
-                        })
-                      : t('editor.referenceMenu.artifact')}
+                    {referenceItemSubtitleI18n(item)}
                   </SuggestionListItemSubtitle>
                 </SuggestionListItemText>
               </SuggestionListItem>
