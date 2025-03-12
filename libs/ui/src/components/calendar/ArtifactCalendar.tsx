@@ -43,6 +43,7 @@ interface Props {
   selectedDate?: string;
   onDayClicked?: (date: string) => void;
   onTitleChange?: (title: string) => void;
+  showBottomSpacer?: boolean;
 }
 
 export const ArtifactCalendar: React.FC<Props> = memo((props) => {
@@ -168,7 +169,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
           onDayClicked={props.onDayClicked}
         />
       </ArtifactCalendarStyles>
-      <BottomSpacer />
+      {props.showBottomSpacer && <BottomSpacer />}
     </div>
   );
 });

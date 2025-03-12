@@ -111,6 +111,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             sessionToken: session.token,
           }).toString();
         }}
+        showBottomSpacer={true}
       />
     );
   }
@@ -125,6 +126,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         viewType="fullsize"
         centerDate={props.scrollToDate}
         onTitleChange={props.onTitleChange}
+        showBottomSpacer={true}
       />
     );
   }

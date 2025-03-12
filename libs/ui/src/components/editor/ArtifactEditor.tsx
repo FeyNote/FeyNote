@@ -46,6 +46,7 @@ type Props = {
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
+  showBottomSpacer?: boolean;
 } & DocArgOptions;
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
@@ -123,7 +124,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
           {editor && <TableBubbleMenu editor={editor} />}
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
-      <BottomSpacer />
+      {props.showBottomSpacer && <BottomSpacer />}
     </div>
   );
 });
