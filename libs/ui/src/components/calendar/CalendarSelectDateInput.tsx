@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import type { TypedMap } from 'yjs-types';
 import { calendar, checkmark } from 'ionicons/icons';
 import { useEffect, useRef, useState } from 'react';
-import { isAllowedDateSpecifier } from './calendarDateSpecifierRegex';
 import { ArtifactCalendar } from './ArtifactCalendar';
 import { Doc as YDoc } from 'yjs';
 import { specifierToDatestamp } from './specifierToDatestamp';
@@ -22,7 +21,7 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
   const inputRef = useRef<HTMLIonInputElement>(null);
   const setCenterRef = useRef<(center: string) => void>(undefined);
 
-  const isValid = !!isAllowedDateSpecifier(text);
+  const isValid = !!specifierToDatestamp(text);
 
   const submit = () => {
     if (!isValid) return;
@@ -34,6 +33,14 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
     e.preventDefault();
 
     submit();
+  };
+
+  const onIonInput = (value: string) => {
+    if (value && isSessionCalendar(props.configMap) && !value.startsWith('#')) {
+      value = `#${value}`;
+    }
+
+    setText(value);
   };
 
   useEffect(() => {
@@ -71,7 +78,7 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
         placeholder={t(inputPlaceholderI18n)}
         ref={inputRef}
         onKeyUp={keyUpHandler}
-        onIonInput={(e) => setText(e.detail.value || '')}
+        onIonInput={(e) => onIonInput(e.detail.value || '')}
         value={text}
       >
         <IonIcon slot="start" icon={calendar} aria-hidden="true"></IonIcon>

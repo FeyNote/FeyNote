@@ -1,33 +1,27 @@
-import {
-  dashDelimitedDateSpecifier,
-  periodDelimitedDateSpecifier,
-  poundDaySpecifier,
-  slashDelimitedDateSpecifier,
-} from './calendarDateSpecifierRegex';
+import { dateSpecifier, daySpecifier } from './calendarDateSpecifierRegex';
 
 export const getYMDFromSpecifier = (specifier: string) => {
-  if (specifier.match(poundDaySpecifier)) {
-    const [_, day] = specifier.split(/#/);
-
+  const daySpecifierMatch = specifier.match(daySpecifier)?.at(1);
+  if (daySpecifierMatch) {
     return {
       year: 1,
       month: 1,
-      day: parseInt(day),
+      day: parseInt(daySpecifierMatch),
     };
   }
 
-  if (
-    specifier.match(dashDelimitedDateSpecifier) ||
-    specifier.match(periodDelimitedDateSpecifier) ||
-    specifier.match(slashDelimitedDateSpecifier)
-  ) {
-    const [year, month, day] = specifier.split(/[-/.]/);
-    const result = {
-      year: parseInt(year),
-      month: parseInt(month),
-      day: parseInt(day),
+  const dateSpecifierMatch = specifier.match(dateSpecifier);
+  if (dateSpecifierMatch) {
+    const [year, month, day] = dateSpecifierMatch
+      .slice(1, 4)
+      .map((x) => parseInt(x));
+
+    if (!year || !month || !day) return;
+
+    return {
+      year,
+      month,
+      day,
     };
-    if (!result.year || !result.month || !result.day) return;
-    return result;
   }
 };
