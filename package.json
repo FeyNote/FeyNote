@@ -75,7 +75,7 @@
     "@types/multer": "^1.4.12",
     "ai": "^3.4.33",
     "astro": "^5.4.3",
-    "axios": "^1.8.2",
+    "axios": "^1.8.3",
     "body-parser": "^1.20.3",
     "bullmq": "^5.42.0",
     "commander": "^13.1.0",
