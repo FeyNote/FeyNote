@@ -28,11 +28,20 @@ import {
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
 
-const MENU_SIZE_PX = '240';
+const MENU_SIZE_PX = 300;
+/**
+ * The minimum required screen size to allow user to have both menus open at once
+ */
+const MIN_SCREEN_DOUBLE_MENU_PX = MENU_SIZE_PX * 3.5;
+/**
+ * The minimum required screen size to show both menu buttons (too small and they overlap)
+ */
+const MIN_SCREEN_DOUBLE_MENU_BUTTON_PX = MENU_SIZE_PX + 100;
 
 const DockContainer = styled.div`
   position: relative;
   height: 100%;
+  overflow: hidden;
 
   .flexlayout__layout {
     --color-text: var(--ion-text-color, #000000);
@@ -152,23 +161,33 @@ const DockContainer = styled.div`
 
 const Menu = styled.div<{
   $side: 'left' | 'right';
+  $open: boolean;
 }>`
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
 
   ${(props) =>
-    props.$side === 'left'
-      ? `
-    border-right: 1px solid var(--ion-card-background, #dddddd);
-  `
-      : `
-    border-left: 1px solid var(--ion-card-background, #dddddd);
+    props.$open &&
+    `
+    ${
+      props.$side === 'left'
+        ? `
+      border-right: 1px solid var(--ion-card-background, #dddddd);
+    `
+        : `
+      border-left: 1px solid var(--ion-card-background, #dddddd);
+    `
+    }
   `}
 `;
 
 const MenuInner = styled.div`
   width: ${MENU_SIZE_PX}px;
+`;
+
+const MenuButton = styled(IonButton)`
+  background: var(--ion-card-background, #ffffff);
 `;
 
 const MainGrid = styled.div<{
@@ -182,13 +201,13 @@ const MainGrid = styled.div<{
   ${(props) =>
     props.$leftMenuOpen &&
     `
-    --left-menu-size: ${MENU_SIZE_PX}px;
+    --left-menu-size: min(${MENU_SIZE_PX}px, 90vw);
   `}
   --right-menu-size: 0px;
   ${(props) =>
     props.$rightMenuOpen &&
     `
-    --right-menu-size: ${MENU_SIZE_PX}px;
+    --right-menu-size: min(${MENU_SIZE_PX}px, 90vw);
   `}
 
   grid-template-columns: var(--left-menu-size) auto var(--right-menu-size);
@@ -206,6 +225,20 @@ export const Workspace: React.FC = () => {
   const [rightMenuOpen, setRightMenuOpen] = useState(
     getPreference(PreferenceNames.RightPaneStartOpen),
   );
+
+  const toggleLeftSideMenu = () => {
+    if (!leftMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {
+      setRightMenuOpen(false);
+    }
+    setLeftMenuOpen(!leftMenuOpen);
+  };
+
+  const toggleRightSideMenu = () => {
+    if (!rightMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {
+      setLeftMenuOpen(false);
+    }
+    setRightMenuOpen(!rightMenuOpen);
+  };
 
   const contextMenuPaneIdRef = useRef<string>(undefined);
   const PaneTabContextMenuWrapper = () => {
@@ -291,9 +324,18 @@ export const Workspace: React.FC = () => {
     };
   }, []);
 
+  const showLeftMenuButton =
+    window.innerWidth > MIN_SCREEN_DOUBLE_MENU_BUTTON_PX ||
+    !rightMenuOpen ||
+    leftMenuOpen;
+  const showRightMenuButton =
+    window.innerWidth > MIN_SCREEN_DOUBLE_MENU_BUTTON_PX ||
+    !leftMenuOpen ||
+    rightMenuOpen;
+
   return (
     <MainGrid $leftMenuOpen={leftMenuOpen} $rightMenuOpen={rightMenuOpen}>
-      <Menu $side="left">
+      <Menu $side="left" $open={leftMenuOpen}>
         <MenuInner>
           <LeftSideMenu />
         </MenuInner>
@@ -365,28 +407,32 @@ export const Workspace: React.FC = () => {
             };
           }}
         />
-        <IonButton
-          style={{ position: 'absolute', left: 0 }}
-          fill="clear"
-          onClick={() => setLeftMenuOpen(!leftMenuOpen)}
-          size="small"
-        >
-          <div slot="icon-only">
-            <LuPanelLeft />
-          </div>
-        </IonButton>
-        <IonButton
-          style={{ position: 'absolute', right: 0 }}
-          fill="clear"
-          onClick={() => setRightMenuOpen(!rightMenuOpen)}
-          size="small"
-        >
-          <div slot="icon-only">
-            <LuPanelRight />
-          </div>
-        </IonButton>
+        {showLeftMenuButton && (
+          <MenuButton
+            style={{ position: 'absolute', left: 0 }}
+            fill="clear"
+            onClick={toggleLeftSideMenu}
+            size="small"
+          >
+            <div slot="icon-only">
+              <LuPanelLeft />
+            </div>
+          </MenuButton>
+        )}
+        {showRightMenuButton && (
+          <MenuButton
+            style={{ position: 'absolute', right: 0 }}
+            fill="clear"
+            onClick={toggleRightSideMenu}
+            size="small"
+          >
+            <div slot="icon-only">
+              <LuPanelRight />
+            </div>
+          </MenuButton>
+        )}
       </DockContainer>
-      <Menu $side="right">
+      <Menu $side="right" $open={rightMenuOpen}>
         <MenuInner>
           <RightSideMenu />
         </MenuInner>

@@ -15,6 +15,7 @@ import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMe
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -44,6 +45,8 @@ type Props = {
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
+  showBottomSpacer?: boolean;
 } & DocArgOptions;
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
@@ -92,14 +95,36 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
           {titleBodyMerge && titleInput}
           <EditorContent editor={editor}></EditorContent>
           {editor && (
-            <BubbleMenu editor={editor}>
+            <BubbleMenu
+              editor={editor}
+              shouldShow={({ editor, state, from, to }) => {
+                const { doc, selection } = state;
+                const { empty } = selection;
+                const isEmptyTextBlock =
+                  !doc.textBetween(from, to).length &&
+                  selection.$from.parent.type.name === 'paragraph';
+                const isFeynoteImage =
+                  doc.nodeAt(from)?.type.name === 'feynoteImage';
+
+                if (
+                  !editor.isEditable ||
+                  empty ||
+                  isEmptyTextBlock ||
+                  isFeynoteImage
+                ) {
+                  return false;
+                }
+
+                return true;
+              }}
+            >
               <ArtifactBubbleMenuControls editor={editor} />
             </BubbleMenu>
           )}
           {editor && <TableBubbleMenu editor={editor} />}
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
-      <BottomSpacer />
+      {props.showBottomSpacer && <BottomSpacer />}
     </div>
   );
 });

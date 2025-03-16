@@ -8,28 +8,40 @@ import {
   IonSelectOption,
   useIonModal,
 } from '@ionic/react';
-import { InfoButton } from '../info/InfoButton';
+import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
-import { trpc } from '../../utils/trpc';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { trpc } from '../../../utils/trpc';
+import {
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type RefObject,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
-import { SessionContext } from '../../context/session/SessionContext';
-import { artifactThemeTitleI18nByName } from '../editor/artifactThemeTitleI18nByName';
+import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
+import { CollaborationManagerConnection } from '../../editor/collaborationManager';
+import { SessionContext } from '../../../context/session/SessionContext';
+import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
-import { CompactIonItem } from '../CompactIonItem';
-import { NowrapIonLabel } from '../NowrapIonLabel';
-import { ArtifactSharingManagementModal } from './ArtifactSharingManagementModal';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import { useIsEditable } from '../../utils/useAuthorizedScope';
-import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
-import { ArtifactRightSidemenuReference } from './ArtifactRightSidemenuReference';
-import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
+import { CompactIonItem } from '../../CompactIonItem';
+import { NowrapIonLabel } from '../../NowrapIonLabel';
+import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
+import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
+import { useIsEditable } from '../../../utils/useAuthorizedScope';
+import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
+import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
+import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
+import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import { ArtifactTableOfContents } from './ArtifactTableOfContents';
 
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
+  onTocUpdateRef: RefObject<
+    ((content: TableOfContentData) => void) | undefined
+  >;
 }
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
@@ -87,38 +99,37 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     props.connection.yjsDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
   };
 
-  const incomingArtifactReferenceTitles = useMemo(
-    () =>
-      Object.entries(
-        incomingEdges.reduce<{
-          [key: string]: string;
-        }>((acc, el) => {
-          // We don't want to show self-references in the incoming artifact references list
-          if (el.artifactId === props.artifactId) return acc;
+  const incomingEdgesByArtifactId = useMemo(() => {
+    return Object.entries(
+      incomingEdges.reduce<{ [key: string]: Edge[] }>((acc, el) => {
+        // We don't want to show self-references in the incoming artifact references list
+        if (el.artifactId === props.artifactId) return acc;
 
-          acc[el.artifactId] = el.artifactTitle;
-          return acc;
-        }, {}),
-      ),
-    [incomingEdges],
-  );
+        acc[el.artifactId] ||= [];
+        acc[el.artifactId].push(el);
+        return acc;
+      }, {}),
+    );
+  }, [incomingEdges]);
 
-  const artifactReferenceTitles = useMemo(
-    () =>
-      Object.entries(
-        outgoingEdges.reduce<{ [key: string]: string }>((acc, el) => {
-          // We don't want to show broken references in the referenced artifact list
-          if (el.isBroken) return acc;
+  const outgoingEdgesByArtifactId = useMemo(() => {
+    return Object.entries(
+      outgoingEdges.reduce<{ [key: string]: Edge[] }>((acc, el) => {
+        // We don't want to show broken references in the referenced artifact list
+        if (el.isBroken) return acc;
 
-          // We don't want to show self-references in the referenced artifact list
-          if (el.targetArtifactId === props.artifactId) return acc;
+        // We don't want to show self-references in the referenced artifact list
+        if (el.targetArtifactId === props.artifactId) return acc;
 
-          acc[el.targetArtifactId] = el.referenceText;
-          return acc;
-        }, {}),
-      ),
-    [outgoingEdges],
-  );
+        // We don't want to include broken references in the referenced artifact list (kinda TBD)
+        if (!el.targetArtifactTitle) return acc;
+
+        acc[el.targetArtifactId] ||= [];
+        acc[el.targetArtifactId].push(el);
+        return acc;
+      }, {}),
+    );
+  }, [outgoingEdges]);
 
   const artifactSettings = artifactMeta.userId === session.userId && (
     <IonCard>
@@ -244,9 +255,14 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           />
         </CompactIonItem>
       </IonCard>
+      <ArtifactTableOfContents
+        artifactId={props.artifactId}
+        connection={props.connection}
+        onTocUpdateRef={props.onTocUpdateRef}
+      />
       {artifactSettings}
       {artifactSharingStatus}
-      {!!incomingArtifactReferenceTitles.length && (
+      {!!incomingEdgesByArtifactId.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -256,18 +272,12 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.incomingArtifactReferences.help')}
             />
           </IonListHeader>
-          {incomingArtifactReferenceTitles.map(
-            ([otherArtifactId, otherArtifactTitle]) => (
-              <ArtifactRightSidemenuReference
-                key={otherArtifactId}
-                otherArtifactId={otherArtifactId}
-                otherArtifactTitle={otherArtifactTitle}
-              />
-            ),
-          )}
+          {incomingEdgesByArtifactId.map(([artifactId, edges]) => (
+            <IncomingReferencesFromArtifact key={artifactId} edges={edges} />
+          ))}
         </IonCard>
       )}
-      {!!artifactReferenceTitles.length && (
+      {!!outgoingEdgesByArtifactId.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />
@@ -277,15 +287,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               message={t('artifactRenderer.artifactReferences.help')}
             />
           </IonListHeader>
-          {artifactReferenceTitles.map(
-            ([otherArtifactId, otherArtifactTitle]) => (
-              <ArtifactRightSidemenuReference
-                key={otherArtifactId}
-                otherArtifactId={otherArtifactId}
-                otherArtifactTitle={otherArtifactTitle}
-              />
-            ),
-          )}
+          {outgoingEdgesByArtifactId.map(([artifactId, edges]) => (
+            <OutgoingReferencesToArtifact key={artifactId} edges={edges} />
+          ))}
         </IonCard>
       )}
     </>

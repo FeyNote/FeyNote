@@ -62,7 +62,7 @@ export const createFile = authenticatedProcedure
       fileBuffer = await sharp(fileBuffer)
         .rotate()
         .resize(maxResolution, maxResolution, {
-          fit: 'contain',
+          fit: 'inside',
           withoutEnlargement: true,
         })
         .jpeg({

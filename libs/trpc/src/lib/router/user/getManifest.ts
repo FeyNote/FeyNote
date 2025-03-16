@@ -65,6 +65,11 @@ export const getManifest = authenticatedProcedure.query(
             title: true,
           },
         },
+        targetArtifact: {
+          select: {
+            title: true,
+          },
+        },
       },
     });
 
@@ -76,6 +81,7 @@ export const getManifest = authenticatedProcedure.query(
         targetArtifactId: relationship.targetArtifactId,
         targetArtifactBlockId: relationship.targetArtifactBlockId,
         targetArtifactDate: relationship.targetArtifactDate,
+        targetArtifactTitle: relationship.targetArtifact?.title || null,
         referenceText: relationship.referenceText,
         artifactTitle: relationship.artifact.title,
         isBroken: !relationship.referenceTargetArtifactId,

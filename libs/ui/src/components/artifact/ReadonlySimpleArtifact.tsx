@@ -8,9 +8,10 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
-import { Edge } from '@feynote/shared-utils';
+import { Edge, type SessionDTO } from '@feynote/shared-utils';
 import { getEdgeStore } from '../../utils/edgesReferences/edgeStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 
 interface Props {
   artifactId: string;
@@ -26,6 +27,13 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   }>();
   const [yDoc, setYDoc] = useState<YDoc>();
   const { handleTRPCErrors } = useHandleTRPCErrors();
+  // TODO: We need a way to get the session token without the blocking session context approach currently. As it stands here, null is "you don't have a session", while undefined is "session not loaded yet"
+  const [session, setSession] = useState<SessionDTO | null | undefined>();
+  useEffect(() => {
+    appIdbStorageManager.getSession().then((session) => {
+      setSession(session);
+    });
+  }, []);
 
   const { type } = useObserveYArtifactMeta(yDoc || new YDoc());
 
@@ -108,7 +116,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
     });
   }, [edges]);
 
-  if (!edges || !yDoc) return;
+  if (!edges || !yDoc || session === undefined) return;
 
   if (type === 'tiptap') {
     return (
@@ -121,6 +129,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
+            sessionToken: session?.token || undefined,
           }).toString();
         }}
       />
@@ -149,6 +158,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         getFileUrl={(fileId) => {
           return getFileRedirectUrl({
             fileId,
+            sessionToken: session?.token || undefined,
           }).toString();
         }}
       />

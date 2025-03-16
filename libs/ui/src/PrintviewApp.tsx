@@ -51,6 +51,7 @@ export const PrintviewApp: React.FC<Props> = (props) => {
         },
       }),
       renamePane: () => undefined, // Noop
+      updatePaneProps: () => undefined, // Noop
       focusedPaneId: props.id,
       getSelectedTabForTabset: () => undefined, // Noop
       navigate: () => {

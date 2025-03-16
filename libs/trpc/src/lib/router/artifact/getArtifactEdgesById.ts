@@ -76,6 +76,11 @@ export const getArtifactEdgesById = publicProcedure
           targetArtifactDate: true,
           referenceTargetArtifactId: true,
           referenceText: true,
+          targetArtifact: {
+            select: {
+              title: true,
+            },
+          },
         },
       });
 
@@ -96,6 +101,7 @@ export const getArtifactEdgesById = publicProcedure
             isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: edge.artifact.title,
+            targetArtifactTitle: artifact.title,
           };
         }),
         outgoingEdges: outgoingEdges.map((edge) => {
@@ -109,6 +115,7 @@ export const getArtifactEdgesById = publicProcedure
             isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: artifact.title,
+            targetArtifactTitle: edge.targetArtifact?.title || null,
           };
         }),
       };

@@ -11,6 +11,7 @@ import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 interface Props {
   artifactId: string;
   yDoc: YDoc;
+  onReady?: () => void;
 }
 
 export const TiptapPreview: React.FC<Props> = (props) => {
@@ -23,6 +24,7 @@ export const TiptapPreview: React.FC<Props> = (props) => {
     editable: false,
     yjsProvider: undefined,
     yDoc: props.yDoc,
+    onReady: props.onReady,
     getFileUrl: (fileId) => {
       if (!session) return '';
       return getFileRedirectUrl({

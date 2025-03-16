@@ -4,11 +4,20 @@ import { useTranslation } from 'react-i18next';
 import type { TypedMap } from 'yjs-types';
 import { calendar, checkmark } from 'ionicons/icons';
 import { useEffect, useRef, useState } from 'react';
-import { isAllowedDateSpecifier } from './calendarDateSpecifierRegex';
 import { ArtifactCalendar } from './ArtifactCalendar';
 import { Doc as YDoc } from 'yjs';
 import { specifierToDatestamp } from './specifierToDatestamp';
 import { isSessionCalendar } from './isSessionCalendar';
+import styled from 'styled-components';
+
+const CalendarSelectDateGrid = styled.div`
+  display: grid;
+  grid-template-rows: 340px 1fr;
+`;
+
+const ArtifactCalendarContainer = styled.div`
+  overflow-y: auto;
+`;
 
 interface Props {
   yDoc: YDoc;
@@ -21,8 +30,9 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLIonInputElement>(null);
   const setCenterRef = useRef<(center: string) => void>(undefined);
+  const calendarContainerRef = useRef<HTMLDivElement>(null);
 
-  const isValid = !!isAllowedDateSpecifier(text);
+  const isValid = !!specifierToDatestamp(text);
 
   const submit = () => {
     if (!isValid) return;
@@ -34,6 +44,27 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
     e.preventDefault();
 
     submit();
+  };
+
+  const onIonInput = (value: string) => {
+    if (value && isSessionCalendar(props.configMap) && !value.startsWith('#')) {
+      value = `#${value}`;
+    }
+
+    setText(value);
+
+    const datestamp = specifierToDatestamp(value);
+    if (datestamp) {
+      const dayEl = calendarContainerRef.current?.querySelector(
+        `[data-date="${datestamp}"]`,
+      );
+
+      console.log(dayEl);
+      dayEl?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
   };
 
   useEffect(() => {
@@ -54,16 +85,18 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
     : 'calendar.selectDate.placeholder.gregorian';
 
   return (
-    <div>
-      <ArtifactCalendar
-        artifactId={undefined}
-        y={props.yDoc}
-        editable={false}
-        viewType="mini"
-        setCenterRef={setCenterRef}
-        selectedDate={specifierToDatestamp(text)}
-        onDayClicked={(datestamp: string) => setText(datestamp)}
-      />
+    <CalendarSelectDateGrid>
+      <ArtifactCalendarContainer ref={calendarContainerRef}>
+        <ArtifactCalendar
+          artifactId={undefined}
+          y={props.yDoc}
+          editable={false}
+          viewType="mini"
+          setCenterRef={setCenterRef}
+          selectedDate={specifierToDatestamp(text)}
+          onDayClicked={(datestamp: string) => setText(datestamp)}
+        />
+      </ArtifactCalendarContainer>
       <IonInput
         className="ion-padding-start ion-padding-end"
         label={t('calendar.selectDate.label')}
@@ -71,7 +104,7 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
         placeholder={t(inputPlaceholderI18n)}
         ref={inputRef}
         onKeyUp={keyUpHandler}
-        onIonInput={(e) => setText(e.detail.value || '')}
+        onIonInput={(e) => onIonInput(e.detail.value || '')}
         value={text}
       >
         <IonIcon slot="start" icon={calendar} aria-hidden="true"></IonIcon>
@@ -89,6 +122,6 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
           ></IonIcon>
         </IonButton>
       </IonInput>
-    </div>
+    </CalendarSelectDateGrid>
   );
 };

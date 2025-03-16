@@ -12,7 +12,7 @@ import { getRandomColor } from './getRandomColor';
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';
 
 const LEFT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 700;
-const RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 1300;
+const RIGHT_PANE_DEFAULT_OPEN_BREAKPOINT_PX = 1400;
 
 export class PreferencesService {
   // Preference defaults - user preferences loaded locally will override

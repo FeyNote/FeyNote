@@ -18,7 +18,7 @@ export const monsterStatsheetExtensionStyles = css`
 
     table:first-of-type {
       width: auto !important;
-      min-width: 325px !important;
+      min-width: min(325px, 100%) !important;
 
       th,
       tr,
