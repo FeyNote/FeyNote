@@ -144,7 +144,7 @@
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "@types/react-is": "19.0.0",
-    "@types/serviceworker": "^0.0.124",
+    "@types/serviceworker": "^0.0.125",
     "@types/styled-components": "5.1.34",
     "@typescript-eslint/eslint-plugin": "8.26.1",
     "@typescript-eslint/parser": "8.26.1",
