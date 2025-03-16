@@ -9,6 +9,7 @@ import {
 import { GlobalSearchContext } from './GlobalSearchContext';
 import {
   IonBackdrop,
+  IonButton,
   IonIcon,
   IonInput,
   IonItem,
@@ -16,7 +17,7 @@ import {
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { search } from 'ionicons/icons';
+import { open, search } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { SessionContext } from '../session/SessionContext';
@@ -45,6 +46,23 @@ const FloatingSearchContainer = styled.div`
   background-color: var(--ion-card-background, #ffffff);
   border-radius: 7px;
   overflow: hidden;
+`;
+
+const TitleContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+`;
+
+const TitleActionContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+  padding: 0;
+  font-size: 1.6rem;
 `;
 
 const SearchResultsContainer = styled.div`
@@ -134,6 +152,18 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       },
       PaneTransition.Push,
     );
+  };
+
+  const openPersistentSearch = () => {
+    navigate(
+      undefined, // Open in currently focused pane rather than in specific pane
+      PaneableComponent.PersistentSearch,
+      {
+        initialTerm: searchText || undefined,
+      },
+      PaneTransition.Push,
+    );
+    hide();
   };
 
   useEffect(() => {
@@ -234,7 +264,18 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       <SearchContainer>
         {session ? (
           <>
-            <h1>{t('globalSearch.title')}</h1>
+            <TitleContainer>
+              <Title>{t('globalSearch.title')}</Title>
+              <TitleActionContainer>
+                <IonButton
+                  fill="clear"
+                  onClick={openPersistentSearch}
+                  aria-label={t('globalSearch.openPersistentSearch')}
+                >
+                  <IonIcon size="small" slot="icon-only" icon={open} />
+                </IonButton>
+              </TitleActionContainer>
+            </TitleContainer>
 
             <FloatingSearchContainer>
               <SearchInput

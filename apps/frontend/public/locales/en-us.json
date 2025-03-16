@@ -214,6 +214,8 @@
   "recentArtifacts.sharedBy": "Shared by:",
   "recentArtifacts.reload": "Refresh Content",
 
+  "persistentSearch.title": "Global Search",
+
   "graph.title": "Graph",
   "graph.nullState.title": "No Artifacts",
   "graph.nullState.message": "Click the plus button in the bottom right corner to create one!",

@@ -282,6 +282,28 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
     layout.doAction(Actions.renameTab(paneId, name));
   };
 
+  const updatePaneProps = <T extends PaneableComponent>(
+    paneId: string,
+    component: T,
+    props: PaneableComponentProps[T],
+  ) => {
+    const { currentView } = getPaneById(paneId);
+    if (currentView.component !== component) {
+      throw new Error(
+        `Cannot update props for a different component. Expected to update props for ${component}, but was provided ${currentView.component}`,
+      );
+    }
+
+    layout.doAction(
+      Actions.updateNodeAttributes(paneId, {
+        config: {
+          ...currentView,
+          props,
+        },
+      }),
+    );
+  };
+
   const onActionListener = (action: Action) => {
     // Placeholder for now, but can be used to cancel actions
     // or react to actions
@@ -331,6 +353,7 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
       navigateHistoryForward,
       navigate,
       getPaneById,
+      updatePaneProps,
       renamePane,
       focusedPaneId,
       getSelectedTabForTabset,
