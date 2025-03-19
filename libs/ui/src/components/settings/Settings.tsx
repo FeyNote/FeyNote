@@ -409,7 +409,7 @@ export const Settings: React.FC = () => {
           <IonLabel>
             <p>
               {t('settings.version', {
-                version: (window as unknown as { version: string }).version,
+                version: import.meta.env.APP_VERSION,
               })}
             </p>
           </IonLabel>
