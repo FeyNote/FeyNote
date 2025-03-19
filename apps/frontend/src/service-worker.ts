@@ -1,6 +1,33 @@
+/// <reference lib="webworker" />
+
+/* eslint-disable import/first */
 /* eslint-disable no-restricted-globals */
 /* eslint-disable @nx/enforce-module-boundaries */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+declare let self: ServiceWorkerGlobalScope;
+
+import * as Sentry from '@sentry/browser';
+
+let environment = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT;
+if (environment !== 'development') {
+  const hostname = self.location.hostname;
+
+  if (environment === 'production' && hostname.includes('.beta.')) {
+    // We don't do separate builds for beta/production, so hostname check is the best
+    // approach
+    environment = 'beta';
+  }
+
+  Sentry.init({
+    release: import.meta.env.APP_VERSION,
+    environment,
+    dsn: 'https://cc4600dfc662cd10fce3f90e5aefdca2@o4508428193955840.ingest.us.sentry.io/4509005894385664',
+    transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
+
+    tracesSampleRate: 1,
+  });
+}
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
@@ -19,7 +46,6 @@ import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 
 cleanupOutdatedCaches();
-// @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
 precacheAndRoute(self.__WB_MANIFEST);
 
 const staticAssets = [
@@ -32,7 +58,7 @@ const staticAssets = [
   'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
   'https://static.feynote.com/assets/favicon-20240925.ico',
   'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png',
-  'https://cdn.tldraw.com/3.4.1/icons/icon/0_merged.svg',
+  'https://cdn.tldraw.com/3.10.3/icons/icon/0_merged.svg',
 
   // Fonts
   'https://static.feynote.com/fonts/mr-eaves/mr-eaves-small-caps.woff2',
@@ -163,10 +189,10 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
-self.addEventListener('install', (event: any) => {
+self.addEventListener('install', (event) => {
   console.log('Service Worker installed');
 
-  (self as any).skipWaiting();
+  self.skipWaiting();
   clientsClaim();
 
   event.waitUntil(

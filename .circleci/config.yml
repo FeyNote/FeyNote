@@ -70,16 +70,12 @@ jobs:
       - install-dependencies
       - run:
           name: build-frontend
-          command: npx nx build frontend --skip-nx-cache
+          command: |
+            export APP_VERSION=$CIRCLE_TAG
+            npx nx build frontend --skip-nx-cache
       - run:
           name: move-frontend-build
           command: mv dist/apps/frontend ./www
-      - run:
-          name: set-frontend-version
-          command: sed -i "s/window.version = \"development\";/window.version = \"${CIRCLE_TAG:=stg}\";/" www/index.html
-      # - run:
-      #     name: set-service-worker-version
-      #     command: sed -i "s/APP_VERSION = \"development\";/APP_VERSION = \"${CIRCLE_TAG:=stg}\";/" www/service-worker.js
       - run:
           name: push
           command: ./scripts/push-frontend-s3.sh ${CIRCLE_TAG:=stg}
