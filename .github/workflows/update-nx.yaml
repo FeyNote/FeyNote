@@ -1,6 +1,7 @@
 name: Update Nx
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 0 * * *' # every day at midnight
 
