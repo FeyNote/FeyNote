@@ -75,7 +75,7 @@
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
     "@types/multer": "^1.4.12",
-    "ai": "^3.4.33",
+    "ai": "^4.1.66",
     "astro": "^5.5.3",
     "axios": "^1.8.4",
     "body-parser": "^1.20.3",
