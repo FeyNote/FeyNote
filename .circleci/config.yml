@@ -79,6 +79,20 @@ jobs:
       - run:
           name: push
           command: ./scripts/push-frontend-s3.sh ${CIRCLE_TAG:=stg}
+  push_docs:
+    resource_class: medium
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - aws-cli/setup
+      - install-dependencies
+      - run:
+          name: build-docs
+          command: npx nx build docs --skip-nx-cache
+      - run:
+          name: push
+          command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
 
 workflows:
   version: 2
@@ -99,6 +113,14 @@ workflows:
             branches:
               ignore: /.*/
       - push_frontend:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - push_docs:
           requires:
             - build_and_test
           filters:
