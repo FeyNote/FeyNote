@@ -1,4 +1,4 @@
-x-common-api-env-vars: &common-api-env-vars
+x-common-env-vars: &common-env-vars
   DATABASE_URL: postgresql://feynote:feynote@postgres:5432/feynote?schema=public
   SEARCH_PROVIDER: typesense
   TYPESENSE_API_KEY: feynote
@@ -11,7 +11,9 @@ x-common-api-env-vars: &common-api-env-vars
   WEBSOCKET_REDIS_PORT: '6379'
   STRIPE_API_KEY: sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
   NODE_ENV: development
+  VITE_ENVIRONMENT: development
   APP_VERSION: development
+  VITE_APP_VERSION: development
   PROXY_ENABLED: 'false'
   PROXY_URL: val
   PROXY_USERNAME: val
@@ -42,8 +44,7 @@ services:
       - ./libs:/app/libs
     command: npx nx serve frontend
     environment:
-      VITE_ENVIRONMENT: development
-      APP_VERSION: development
+      <<: *common-env-vars
     depends_on:
       - backend
     stop_grace_period: 1s
@@ -56,9 +57,7 @@ services:
       - ./libs:/app/libs
     command: npx nx serve www
     environment:
-      NODE_ENV: development
-      APP_VERSION: development
-      DATABASE_URL: postgresql://feynote:feynote@postgres:5432/feynote?schema=public
+      <<: *common-env-vars
     depends_on:
       - backend
     stop_grace_period: 1s
@@ -71,8 +70,7 @@ services:
       - ./libs:/app/libs
     command: npx nx serve docs
     environment:
-      NODE_ENV: development
-      APP_VERSION: development
+      <<: *common-env-vars
     stop_grace_period: 1s
   hocuspocus:
     build:
@@ -85,7 +83,7 @@ services:
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/hocuspocus/tsconfig.json
-      <<: *common-api-env-vars
+      <<: *common-env-vars
     env_file:
       - ./.env
     depends_on:
@@ -105,7 +103,7 @@ services:
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/backend/tsconfig.json
-      <<: *common-api-env-vars
+      <<: *common-env-vars
     env_file:
       - ./.env
     depends_on:
@@ -124,7 +122,7 @@ services:
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/queue-worker/tsconfig.json
-      <<: *common-api-env-vars
+      <<: *common-env-vars
     env_file:
       - ./.env
     depends_on:
@@ -143,7 +141,7 @@ services:
     command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/websocket/tsconfig.json
-      <<: *common-api-env-vars
+      <<: *common-env-vars
     env_file:
       - ./.env
     depends_on:

@@ -20,7 +20,7 @@ if (environment !== 'development') {
   }
 
   Sentry.init({
-    release: import.meta.env.APP_VERSION,
+    release: import.meta.env.VITE_APP_VERSION,
     environment,
     dsn: 'https://cc4600dfc662cd10fce3f90e5aefdca2@o4508428193955840.ingest.us.sentry.io/4509005894385664',
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),

@@ -23,5 +23,6 @@ RUN npx prisma generate
 ARG APP_VERSION
 # Include version build arg within the container env
 ENV APP_VERSION=$APP_VERSION
+ENV VITE_APP_VERSION=$APP_VERSION
 
 CMD echo "Must provide command to run containers"

@@ -71,7 +71,7 @@ jobs:
       - run:
           name: build-frontend
           command: |
-            export APP_VERSION=$CIRCLE_TAG
+            export VITE_APP_VERSION=$CIRCLE_TAG
             npx nx build frontend --skip-nx-cache
       - run:
           name: move-frontend-build
