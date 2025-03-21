@@ -49,7 +49,11 @@ export const TableMenuControls: React.FC<Props> = (props) => {
 
       <MenuButton
         title={t('editor.tableBubbleMenu.deleteCol')}
-        onClick={() => props.editor.chain().focus().deleteColumn().run()}
+        onClick={() => {
+          // This is a fix for https://github.com/ueberdosis/tiptap/issues/6190
+          props.editor.commands.unsetFontFamily();
+          props.editor.chain().focus().unsetFontFamily().deleteColumn().run();
+        }}
         disabled={!props.editor.can().deleteColumn()}
       >
         <RiDeleteColumn />
