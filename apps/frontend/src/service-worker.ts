@@ -39,11 +39,11 @@ import {
   getManifestDb,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
-import superjson from 'superjson';
 import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
+import { customTrpcTransformer } from '@feynote/shared-utils';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
@@ -83,16 +83,16 @@ const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
   const encodedInput = event.url.searchParams.get('input');
   if (!encodedInput) return;
 
-  const input = superjson.parse<T>(encodedInput);
+  const input = customTrpcTransformer.deserialize(JSON.parse(encodedInput));
 
-  return input;
+  return input as T;
 };
 
 const encodeCacheResultForTrpc = (result: unknown) => {
   return new Response(
     JSON.stringify({
       result: {
-        data: superjson.serialize(result),
+        data: customTrpcTransformer.serialize(result),
       },
     }),
     {
@@ -109,9 +109,10 @@ const updateListCache = async (
   trpcResponse: Response,
 ) => {
   const json = await trpcResponse.json();
-  const deserialized = superjson.deserialize<
-    { id: string; updatedAt: string }[]
-  >(json.result.data);
+  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
+    id: string;
+    updatedAt: string;
+  }[];
   const manifestDb = await getManifestDb();
 
   const tx = manifestDb.transaction(objectStoreName, 'readwrite');
@@ -128,7 +129,9 @@ const updateSingleCache = async (
   trpcResponse: Response,
 ) => {
   const json = await trpcResponse.json();
-  const deserialized = superjson.deserialize<{ id: string }>(json.result.data);
+  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
+    id: string;
+  };
 
   const manifestDb = await getManifestDb();
   await manifestDb.put(objectStoreName, deserialized);
