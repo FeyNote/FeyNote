@@ -26,6 +26,7 @@ import {
 } from './context/globalPane/GlobalPaneContext';
 import { Model } from 'flexlayout-react';
 import { IonApp } from './IonicReact19Compat';
+import { ToastContextProvider } from './context/toast/ToastContextProvider';
 
 initI18Next();
 setupIonicReact();
@@ -107,14 +108,16 @@ export const ShareviewApp: React.FC<Props> = (props) => {
   );
 
   return (
-    <IonApp>
-      <PreferencesContextProviderWrapper>
-        <GlobalPaneContext.Provider value={globalPaneContextValue}>
-          <PaneContext.Provider value={paneContextValue}>
-            <ArtifactShareView artifactId={props.id} />
-          </PaneContext.Provider>
-        </GlobalPaneContext.Provider>
-      </PreferencesContextProviderWrapper>
-    </IonApp>
+    <ToastContextProvider>
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <GlobalPaneContext.Provider value={globalPaneContextValue}>
+            <PaneContext.Provider value={paneContextValue}>
+              <ArtifactShareView artifactId={props.id} />
+            </PaneContext.Provider>
+          </GlobalPaneContext.Provider>
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    </ToastContextProvider>
   );
 };

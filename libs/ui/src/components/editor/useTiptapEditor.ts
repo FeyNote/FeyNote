@@ -27,6 +27,7 @@ type UseArtifactEditorArgs = {
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
+  onRollDice?: (roll: string) => void;
 } & DocArgOptions;
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
@@ -63,6 +64,7 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
           yjsProvider: args.yjsProvider,
         },
     onTocUpdate: args.onTocUpdate,
+    onRollDice: args.onRollDice,
   });
 
   const editor = useEditor({

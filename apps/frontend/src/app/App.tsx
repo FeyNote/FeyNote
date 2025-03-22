@@ -25,6 +25,7 @@ import {
   GlobalSearchContextProviderWrapper,
   GlobalPaneContextProviderWrapper,
   SidemenuContextProviderWrapper,
+  ToastContextProvider,
   NotFound,
   Workspace,
   initI18Next,
@@ -82,16 +83,18 @@ export function App() {
   const passworeResetToken = url.searchParams.get('passwordResetToken');
   if (passworeResetToken) {
     return (
-      <GlobalPaneContextProviderWrapper>
-        <IonApp>
-          <PreferencesContextProviderWrapper>
-            <PasswordReset
-              passwordResetToken={passworeResetToken}
-              redirectPath={window.location.origin}
-            />
-          </PreferencesContextProviderWrapper>
-        </IonApp>
-      </GlobalPaneContextProviderWrapper>
+      <ToastContextProvider>
+        <GlobalPaneContextProviderWrapper>
+          <IonApp>
+            <PreferencesContextProviderWrapper>
+              <PasswordReset
+                passwordResetToken={passworeResetToken}
+                redirectPath={window.location.origin}
+              />
+            </PreferencesContextProviderWrapper>
+          </IonApp>
+        </GlobalPaneContextProviderWrapper>
+      </ToastContextProvider>
     );
   }
 
@@ -102,19 +105,21 @@ export function App() {
 
   if (!path.length || path[0] === '') {
     return (
-      <GlobalPaneContextProviderWrapper>
-        <IonApp>
-          <SidemenuContextProviderWrapper>
-            <PreferencesContextProviderWrapper>
-              <SessionContextProviderWrapper>
-                <GlobalSearchContextProviderWrapper>
-                  <Workspace />
-                </GlobalSearchContextProviderWrapper>
-              </SessionContextProviderWrapper>
-            </PreferencesContextProviderWrapper>
-          </SidemenuContextProviderWrapper>
-        </IonApp>
-      </GlobalPaneContextProviderWrapper>
+      <ToastContextProvider>
+        <GlobalPaneContextProviderWrapper>
+          <IonApp>
+            <SidemenuContextProviderWrapper>
+              <PreferencesContextProviderWrapper>
+                <SessionContextProviderWrapper>
+                  <GlobalSearchContextProviderWrapper>
+                    <Workspace />
+                  </GlobalSearchContextProviderWrapper>
+                </SessionContextProviderWrapper>
+              </PreferencesContextProviderWrapper>
+            </SidemenuContextProviderWrapper>
+          </IonApp>
+        </GlobalPaneContextProviderWrapper>
+      </ToastContextProvider>
     );
   }
 
