@@ -6,10 +6,10 @@ import { appIdbStorageManager } from './AppIdbStorageManager';
 import i18next from 'i18next';
 
 export const trpc = createTRPCProxyClient<AppRouter>({
-  transformer: superjson,
   links: [
     httpLink({
       url: getApiUrls().trpc,
+      transformer: superjson,
       headers: async () => {
         const session = await appIdbStorageManager.getSession();
         return {
