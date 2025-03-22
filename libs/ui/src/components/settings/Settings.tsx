@@ -410,7 +410,11 @@ export const Settings: React.FC = () => {
               lines="none"
               button
               onClick={() => {
-                navigate(PaneableComponent.Import, {}, PaneTransition.Push);
+                navigate(
+                  PaneableComponent.ImportExport,
+                  {},
+                  PaneTransition.Push,
+                );
               }}
               target="_blank"
               detail={true}

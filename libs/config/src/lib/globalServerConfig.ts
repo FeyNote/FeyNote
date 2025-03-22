@@ -13,7 +13,7 @@ export const globalServerConfig = {
     secretAccessKey: getEnvOrThrow('AWS_SECRET_ACCESS_KEY'),
     buckets: {
       artifact: getEnvOrThrow('AWS_BUCKET_ARTIFACT'),
-      import: getEnvOrThrow('AWS_BUCKET_IMPORT'),
+      job: getEnvOrThrow('AWS_BUCKET_IMPORT'),
     },
   },
   typesense: {

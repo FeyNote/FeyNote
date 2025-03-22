@@ -1,15 +1,12 @@
-import {
-  artifactUpdateQueueWorker,
-  importJobQueueWorker,
-} from '@feynote/queue';
+import { artifactUpdateQueueWorker, jobQueueWorker } from '@feynote/queue';
 import './instrument.ts';
 
 artifactUpdateQueueWorker.run();
-importJobQueueWorker.run();
+jobQueueWorker.run();
 
 const shutdown = async () => {
   await artifactUpdateQueueWorker.close();
-  await importJobQueueWorker.close();
+  await jobQueueWorker.close();
 
   process.exit(0);
 };

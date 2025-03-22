@@ -8,7 +8,7 @@ import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
 import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
-import { Import } from '../../components/import/Import';
+import { ImportExport } from '../../components/importExport/ImportExport';
 import { Contribute } from '../../components/payments/Contribute';
 
 export enum PaneableComponent {
@@ -22,7 +22,7 @@ export enum PaneableComponent {
   Graph = 'Graph',
   SharedContent = 'SharedContent',
   RecentArtifacts = 'RecentArtifacts',
-  Import = 'Import',
+  ImportExport = 'ImportExport',
 }
 
 export type PaneableComponentProps = {
@@ -36,7 +36,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
-  [PaneableComponent.Import]: ComponentProps<typeof Import>;
+  [PaneableComponent.ImportExport]: ComponentProps<typeof ImportExport>;
 };
 
 export const getPaneableComponent = <T extends PaneableComponent>(
@@ -53,7 +53,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Graph]: Graph,
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
-    [PaneableComponent.Import]: Import,
+    [PaneableComponent.ImportExport]: ImportExport,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
@@ -77,5 +77,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Graph]: 'graph.title',
   [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
-  [PaneableComponent.Import]: 'import.title',
+  [PaneableComponent.ImportExport]: 'importExport.title',
 } satisfies Record<PaneableComponent, string>;
