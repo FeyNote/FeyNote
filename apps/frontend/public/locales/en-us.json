@@ -240,6 +240,7 @@
 
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
+  "artifactRenderer.diceRoll.title": "Dice Roll Result",
   "artifactRenderer.settings": "Settings",
   "artifactRenderer.titleBodyMerge": "Theme title",
   "artifactRenderer.titleBodyMerge.help": "When checked, the title will have the same styling as the selected theme.",
@@ -550,6 +551,7 @@
   "generic.hide": "Hide",
   "generic.okay": "Okay",
   "generic.cancel": "Cancel",
+  "generic.close": "Close",
   "generic.delete": "Delete",
   "generic.warning": "Warning"
 }

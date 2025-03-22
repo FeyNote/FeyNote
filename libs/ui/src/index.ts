@@ -3,6 +3,7 @@ export { PreferencesContextProviderWrapper } from './context/preferences/Prefere
 export { GlobalSearchContextProviderWrapper } from './context/globalSearch/GlobalSearchContextProviderWrapper';
 export { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPaneContextProviderWrapper';
 export { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
+export { ToastContextProvider } from './context/toast/ToastContextProvider';
 export { Artifact } from './components/artifact/Artifact';
 export { SyncManager } from './utils/SyncManager';
 export { SearchManager } from './utils/SearchManager';

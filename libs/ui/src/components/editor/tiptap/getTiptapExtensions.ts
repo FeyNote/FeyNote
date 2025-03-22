@@ -50,6 +50,7 @@ import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
 import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
 import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 import { FocusExtension } from './extensions/focus/FocusExtension';
+import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
 
 type DocArgOptions =
   | {
@@ -70,6 +71,7 @@ export const getTiptapExtensions = (args: {
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
+  onRollDice?: (roll: string) => void;
 }) => {
   return [
     DocumentExtension,
@@ -196,5 +198,8 @@ export const getTiptapExtensions = (args: {
           }),
         ]
       : []),
+    DiceDecorationExtension.configure({
+      onRollDice: args.onRollDice,
+    }),
   ];
 };
