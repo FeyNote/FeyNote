@@ -13,7 +13,18 @@ export const getThreads = authenticatedProcedure.query(
     const threadDTOs = threads.map((thread) => ({
       id: thread.id,
       title: thread.title || undefined,
-      messages: thread.messages as unknown as ThreadDTOMessage[],
+      messages: (thread.messages as unknown as ThreadDTOMessage[]).map(
+        (message) => ({
+          id: message.id,
+          json: {
+            ...message.json,
+            createdAt: message.json.createdAt
+              ? new Date(message.json.createdAt)
+              : undefined,
+          },
+          createdAt: message.createdAt,
+        }),
+      ),
     }));
 
     return threadDTOs satisfies ThreadDTO[];
