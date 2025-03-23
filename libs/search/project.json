@@ -24,6 +24,12 @@
       "options": {
         "jestConfig": "libs/search/jest.config.ts"
       }
+    },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --import @swc-node/register/esm-register ./libs/search/src/lib/migrate.ts"
+      }
     }
   },
   "tags": []
