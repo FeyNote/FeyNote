@@ -24,19 +24,15 @@ export class TypeSense implements SearchProvider {
     connectionTimeoutSeconds: 10,
   });
 
-  constructor() {
-    this.init();
-  }
+  async migrate() {
+    console.log('Starting Typesense migrations');
 
-  private async init() {
-    console.log('Establishing a connection to typesense');
     const doesArtifactIndexExist = await this.client
       .collections(Indexes.Artifact)
       .exists();
     const doesBlockIndexExist = await this.client
       .collections(Indexes.Block)
       .exists();
-    console.log('Established a connection to typesense');
 
     if (!doesArtifactIndexExist) {
       await this.createArtifactIndex();
@@ -44,6 +40,8 @@ export class TypeSense implements SearchProvider {
     if (!doesBlockIndexExist) {
       await this.createBlockIndex();
     }
+
+    console.log('Typesense migrations complete');
   }
 
   async indexArtifact(artifact: IndexableArtifact) {

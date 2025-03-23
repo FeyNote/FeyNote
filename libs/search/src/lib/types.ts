@@ -18,6 +18,7 @@ export interface IndexableArtifact {
 }
 
 export interface SearchProvider {
+  migrate: () => Promise<void>;
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
   indexBlocks: (artifact: IndexableArtifact) => Promise<void>;
   deleteArtifacts: (artifactIds: string[]) => Promise<void>;
