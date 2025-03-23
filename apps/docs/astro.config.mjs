@@ -12,6 +12,16 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'FeyNote Docs',
+      head: [
+        {
+          tag: 'script',
+          attrs: {
+            defer: true,
+            src: 'https://cloud.umami.is/script.js',
+            'data-website-id': '921628de-7259-4592-ae46-667d8d1f8b46',
+          },
+        },
+      ],
       logo: {
         src: './src/assets/feynote-icon-20240925.png',
       },
