@@ -124,7 +124,7 @@
   "settings.preferencesSync.message": "You must select whether you want to override the synced settings in the cloud with the local settings on this device, or override the settings on this device with the settings from the cloud.",
   "settings.preferencesSync.local": "Keep Local Settings",
   "settings.preferencesSync.remote": "Keep Cloud Settings",
-  "settings.import": "Import Artifact Data",
+  "settings.importExport": "Import/Export Artifact Data",
 
   "contribute.title": "Contribute",
   "contribute.description": "FeyNote is a small project we made to fulfill our TTRPG needs. We want to make the platform accessible to anyone, but we also need your support. We only charge for features that are costly for us to host.",
@@ -201,6 +201,7 @@
 
   "importExport.title": "Import/Export Artifacts",
   "importExport.jobs.title": "Import/Export Jobs",
+  "importExport.export": "Export",
   "importExport.jobs.nullState.title": "No Jobs",
   "importExport.jobs.nullState.message": "Import/Export artifacts by selecting an import option below!",
   "importExport.jobs.table.columns.status.failed": "Failed",

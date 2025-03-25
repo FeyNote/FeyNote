@@ -201,6 +201,21 @@ export const Settings: React.FC = () => {
               &nbsp;&nbsp;
               {t('settings.interface')}
             </IonListHeader>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(
+                  PaneableComponent.ImportExport,
+                  {},
+                  PaneTransition.Push,
+                );
+              }}
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.importExport')}
+            </IonItem>
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
@@ -405,21 +420,6 @@ export const Settings: React.FC = () => {
                   {t('settings.preferencesSync')}
                 </IonLabel>
               </IonToggle>
-            </IonItem>
-            <IonItem
-              lines="none"
-              button
-              onClick={() => {
-                navigate(
-                  PaneableComponent.ImportExport,
-                  {},
-                  PaneTransition.Push,
-                );
-              }}
-              target="_blank"
-              detail={true}
-            >
-              {t('settings.import')}
             </IonItem>
           </IonList>
         </IonCard>

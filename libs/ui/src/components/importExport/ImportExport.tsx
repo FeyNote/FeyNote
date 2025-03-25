@@ -1,10 +1,12 @@
 import {
   IonAccordion,
   IonAccordionGroup,
+  IonButton,
   IonContent,
   IonItem,
   IonLabel,
   IonPage,
+  IonText,
 } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { trpc } from '../../utils/trpc';
 import {
+    ExportJobType,
   ImportJobType,
   type ExportJob,
   type ImportJob,
@@ -34,6 +37,11 @@ export const ImportExport: React.FC = () => {
     setJobs(importJobDTOs);
     progress.dismiss();
   };
+
+  const beginExport = async (type: ExportJobType) => {
+    const jobId = await trpc.job.createExportJob.mutate({ type });
+    await trpc.job.startJob.mutate({ id: jobId });
+  }
 
   return (
     <IonPage>
@@ -73,13 +81,18 @@ export const ImportExport: React.FC = () => {
             <IonItem slot="header">
               <IonLabel>{t('importExport.jobs.options.markdown')}</IonLabel>
             </IonItem>
-            <div slot="content">Export as Markdown</div>
+            <div slot="content">
+              <IonText>{t('importExport.jobs.options.markdown.subtext')}</IonText>
+              <IonButton onClick={() => beginExport(ExportJobType.Markdown)}>{t('importExport.export')}</IonButton>
+            </div>
           </IonAccordion>
           <IonAccordion value="fourth">
             <IonItem slot="header">
               <IonLabel>{t('importExport.jobs.options.json')}</IonLabel>
             </IonItem>
-            <div slot="content">Export as JSON</div>
+            <div slot="content">
+              <IonButton onClick={() => beginExport(ExportJobType.Json)}>{t('importExport.export')}</IonButton>
+            </div>
           </IonAccordion>
         </IonAccordionGroup>
       </IonContent>

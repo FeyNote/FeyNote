@@ -41,9 +41,9 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const [fileInputError, setFileInputError] = useState<string | null>(null);
   const instructions = useMemo(() => {
     if (props.type === ImportJobType.Obsidian) {
-      return t('import.jobs.file.instructions.obsidian');
+      return t('importExport.jobs.file.instructions.obsidian');
     } else {
-      return t('import.jobs.file.instructions.logseq');
+      return t('importExport.jobs.file.instructions.logseq');
     }
   }, [props.type, t]);
 
@@ -52,11 +52,11 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
     const selectedfile = e.target.files[0];
     if (!ALLOWED_FILE_TYPES.includes(selectedfile.type))
       return setFileInputError(
-        `${t('import.file.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
+        `${t('importExport.file.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
       );
     if (selectedfile.size >= FILE_SIZE_LIMIT)
       return setFileInputError(
-        `${t('import.file.input.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        `${t('importExport.file.input.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
       );
     setFile(selectedfile);
     setFileInputError(null);
