@@ -2,6 +2,9 @@ export const CAPABILITY_GRACE_PERIOD_DAYS = 7;
 export const MULTIPLE_IMAGES_UNLOCKED_LIMIT = 10;
 
 export enum Capability {
+  LargeFiles = 'largeFiles',
+  UltraLargeFiles = 'ultraLargeFiles',
+
   HighResImages = 'highResImages',
   UltraHighResImages = 'ultraHighResImages',
 
@@ -28,22 +31,35 @@ export const SUBSCRIPTION_MODELS = {
   [SubscriptionModelName.Tier1Monthly]: {
     title: 'Supporter (Monthly)',
     expiresInDays: 31,
-    capabilities: [Capability.HighResImages, Capability.AssistantMoreMessages],
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantMoreMessages,
+    ],
   },
   [SubscriptionModelName.Tier1Yearly]: {
     title: 'Supporter (Yearly)',
     expiresInDays: 365,
-    capabilities: [Capability.HighResImages, Capability.AssistantMoreMessages],
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantMoreMessages,
+    ],
   },
   [SubscriptionModelName.Tier1Forever]: {
     title: 'Supporter (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
-    capabilities: [Capability.HighResImages, Capability.AssistantMoreMessages],
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantMoreMessages,
+    ],
   },
   [SubscriptionModelName.Tier2Monthly]: {
     title: 'Supporter+ (Monthly)',
     expiresInDays: 31,
     capabilities: [
+      Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantUnlimitedMessages,
     ],
@@ -52,6 +68,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Supporter+ (Yearly)',
     expiresInDays: 365,
     capabilities: [
+      Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantUnlimitedMessages,
     ],
@@ -60,6 +77,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Supporter+ (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
+      Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantUnlimitedMessages,
     ],

@@ -2,7 +2,6 @@ import './instrument.ts';
 
 import express from 'express';
 import * as trpcExpress from '@trpc/server/adapters/express';
-import bodyParser from 'body-parser';
 import cors from 'cors';
 
 import { appRouter, createContext } from '@feynote/trpc';
@@ -11,20 +10,6 @@ import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
 
 const app = express();
-app.use(bodyParser.urlencoded());
-app.use(
-  bodyParser.json({
-    limit: '100MB',
-    verify: (req, res, buf) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const url = (req as any).originalUrl;
-      if (url.startsWith('/stripe/webhook')) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (req as any).rawBody = buf.toString();
-      }
-    },
-  }),
-);
 
 const defaultCorsAllowlist = [
   'https://feynote.com',
@@ -55,9 +40,25 @@ const corsOptions = {
 app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
-app.use('/message', messageRouter);
-app.use('/file', fileRouter);
-app.use('/stripe', stripeRouter);
+const urlEncodedMiddleware = express.urlencoded({
+  extended: true,
+});
+
+const jsonMiddleware = express.json({
+  limit: '100MB',
+  verify: (req, res, buf) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const url = (req as any).originalUrl;
+    if (url.startsWith('/stripe/webhook')) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (req as any).rawBody = buf.toString();
+    }
+  },
+});
+
+app.use('/message', urlEncodedMiddleware, jsonMiddleware, messageRouter);
+app.use('/file', urlEncodedMiddleware, jsonMiddleware, fileRouter);
+app.use('/stripe', urlEncodedMiddleware, jsonMiddleware, stripeRouter);
 
 app.use(
   '/trpc',

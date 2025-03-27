@@ -6,6 +6,7 @@ export enum ObjectStoreName {
   PendingArtifacts = 'pendingArtifacts',
   ArtifactVersions = 'artifactVersions',
   AuthorizedCollaborationScopes = 'authorizedCollaborationScopes',
+  PendingFiles = 'pendingFiles',
   Edges = 'edges',
   KV = 'kvStore',
 }
@@ -17,7 +18,7 @@ export enum KVStoreKeys {
 }
 
 const connect = () => {
-  return openDB(`manifest`, 2, {
+  return openDB(`manifest`, 3, {
     upgrade: (db, previousVersion, newVersion) => {
       console.log(
         `Manifest DB upgrading from ${previousVersion} to ${newVersion}`,
@@ -67,11 +68,26 @@ const connect = () => {
             keyPath: 'key',
           });
 
+          db.createObjectStore(ObjectStoreName.PendingFiles, {
+            keyPath: 'id',
+          });
+
           return;
         }
         case 1: {
           db.createObjectStore(ObjectStoreName.AuthorizedCollaborationScopes, {
             keyPath: 'docName',
+          });
+
+          db.createObjectStore(ObjectStoreName.PendingFiles, {
+            keyPath: 'id',
+          });
+
+          return;
+        }
+        case 2: {
+          db.createObjectStore(ObjectStoreName.PendingFiles, {
+            keyPath: 'id',
           });
 
           return;

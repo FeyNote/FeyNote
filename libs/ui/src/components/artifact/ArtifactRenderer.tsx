@@ -144,7 +144,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,
-            sessionToken: session.token,
           });
           return response;
         }}
