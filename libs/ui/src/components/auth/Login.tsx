@@ -65,7 +65,7 @@ export const Login: React.FC<Props> = (props) => {
   const submitTriggerReset = () => {
     if (!email) {
       presentAlert({
-        header: t('auth.login.forgot.noEmail'),
+        message: t('auth.login.forgot.noEmail'),
         buttons: [t('generic.okay')],
       });
       return;

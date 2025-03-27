@@ -3,12 +3,18 @@ import { JSONContent } from '@tiptap/core';
 import { templateBuilderHelper } from './templateBuilderHelper';
 import { t } from 'i18next';
 
-export const buildIntroducingReferencesArtifact = () => {
+export const buildIntroducingReferencesArtifact = (options: {
+  id: string;
+  userId: string;
+}) => {
   const meta = {
+    id: options.id,
+    userId: options.userId,
     title: t('template.introducingReferences.title'),
     theme: 'default',
     type: 'tiptap',
     titleBodyMerge: true,
+    linkAccessLevel: 'noaccess',
   } as const satisfies YArtifactMeta;
 
   const incomingReferenceBlockId = crypto.randomUUID();

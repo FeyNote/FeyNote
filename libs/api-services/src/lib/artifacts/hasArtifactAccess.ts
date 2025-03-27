@@ -6,25 +6,23 @@ type ArtifactInfoWithPermissions = {
     userId: string;
     accessLevel: ArtifactAccessLevel;
   }[];
-  artifactShareTokens: {
-    shareToken: string;
-    accessLevel: ArtifactAccessLevel;
-  }[];
+  linkAccessLevel: ArtifactAccessLevel | null;
 };
 
 export const hasArtifactAccess = (
   artifact: ArtifactInfoWithPermissions,
   userId?: string,
-  shareToken?: string,
 ) => {
   const isOwner = artifact.userId === userId;
   const isSharedTo = artifact.artifactShares.some(
     (share) => share.userId === userId,
   );
-  const shareTokenValid = artifact.artifactShareTokens.some(
-    (token) => token.shareToken === shareToken,
-  );
-  const hasAccess = isOwner || isSharedTo || shareTokenValid;
+  const isPubliclyAccessible =
+    artifact.linkAccessLevel === ArtifactAccessLevel.readonly ||
+    artifact.linkAccessLevel === ArtifactAccessLevel.readwrite ||
+    artifact.linkAccessLevel === ArtifactAccessLevel.coowner;
+
+  const hasAccess = isOwner || isSharedTo || isPubliclyAccessible;
 
   return hasAccess;
 };

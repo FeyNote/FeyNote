@@ -63,14 +63,16 @@ export const createFileHandler = defineExpressHandler(
       }
     }
 
-    const { maxResolution, quality } = await getImageQuality(res.locals.session.userId);
+    const { maxResolution, quality } = await getImageQuality(
+      res.locals.session.userId,
+    );
 
     let fileBuffer: Buffer = req.file.buffer;
     if (['image/png', 'image/jpeg'].includes(req.query.mimetype)) {
       fileBuffer = await sharp(req.file.buffer)
         .rotate()
         .resize(maxResolution, maxResolution, {
-          fit: 'contain',
+          fit: 'inside',
           withoutEnlargement: true,
         })
         .jpeg({

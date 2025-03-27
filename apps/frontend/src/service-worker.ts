@@ -1,6 +1,33 @@
+/// <reference lib="webworker" />
+
+/* eslint-disable import/first */
 /* eslint-disable no-restricted-globals */
 /* eslint-disable @nx/enforce-module-boundaries */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+declare let self: ServiceWorkerGlobalScope;
+
+import * as Sentry from '@sentry/browser';
+
+let environment = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT;
+if (environment !== 'development') {
+  const hostname = self.location.hostname;
+
+  if (environment === 'production' && hostname.includes('.beta.')) {
+    // We don't do separate builds for beta/production, so hostname check is the best
+    // approach
+    environment = 'beta';
+  }
+
+  Sentry.init({
+    release: import.meta.env.VITE_APP_VERSION,
+    environment,
+    dsn: 'https://cc4600dfc662cd10fce3f90e5aefdca2@o4508428193955840.ingest.us.sentry.io/4509005894385664',
+    transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
+
+    tracesSampleRate: 1,
+  });
+}
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
@@ -12,14 +39,13 @@ import {
   getManifestDb,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
-import superjson from 'superjson';
 import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
+import { customTrpcTransformer } from '@feynote/shared-utils';
 
 cleanupOutdatedCaches();
-// @ts-expect-error We cannot cast here since the literal "self.__WB_MANIFEST" is regexed by vite PWA
 precacheAndRoute(self.__WB_MANIFEST);
 
 const staticAssets = [
@@ -32,7 +58,7 @@ const staticAssets = [
   'https://static.feynote.com/assets/fa-map-pin-solid-tldrawscale-20241219.svg',
   'https://static.feynote.com/assets/favicon-20240925.ico',
   'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png',
-  'https://cdn.tldraw.com/3.4.1/icons/icon/0_merged.svg',
+  'https://cdn.tldraw.com/3.10.3/icons/icon/0_merged.svg',
 
   // Fonts
   'https://static.feynote.com/fonts/mr-eaves/mr-eaves-small-caps.woff2',
@@ -57,16 +83,16 @@ const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
   const encodedInput = event.url.searchParams.get('input');
   if (!encodedInput) return;
 
-  const input = superjson.parse<T>(encodedInput);
+  const input = customTrpcTransformer.deserialize(JSON.parse(encodedInput));
 
-  return input;
+  return input as T;
 };
 
 const encodeCacheResultForTrpc = (result: unknown) => {
   return new Response(
     JSON.stringify({
       result: {
-        data: superjson.serialize(result),
+        data: customTrpcTransformer.serialize(result),
       },
     }),
     {
@@ -83,9 +109,10 @@ const updateListCache = async (
   trpcResponse: Response,
 ) => {
   const json = await trpcResponse.json();
-  const deserialized = superjson.deserialize<
-    { id: string; updatedAt: string }[]
-  >(json.result.data);
+  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
+    id: string;
+    updatedAt: string;
+  }[];
   const manifestDb = await getManifestDb();
 
   const tx = manifestDb.transaction(objectStoreName, 'readwrite');
@@ -102,7 +129,9 @@ const updateSingleCache = async (
   trpcResponse: Response,
 ) => {
   const json = await trpcResponse.json();
-  const deserialized = superjson.deserialize<{ id: string }>(json.result.data);
+  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
+    id: string;
+  };
 
   const manifestDb = await getManifestDb();
   await manifestDb.put(objectStoreName, deserialized);
@@ -163,10 +192,10 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
-self.addEventListener('install', (event: any) => {
+self.addEventListener('install', (event) => {
   console.log('Service Worker installed');
 
-  (self as any).skipWaiting();
+  self.skipWaiting();
   clientsClaim();
 
   event.waitUntil(
@@ -285,21 +314,25 @@ registerRoute(
 registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
-    // Cache only
+    // Cache only, unless we do not have that artifact locally
     const input = getTrpcInputForEvent<{
       id: string;
-      shareToken?: string;
     }>(event);
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
 
-    if (input.shareToken) {
+    const manifestDb = await getManifestDb();
+
+    const localArtifactVersion = await manifestDb.get(
+      ObjectStoreName.ArtifactVersions,
+      input.id,
+    );
+    if (!localArtifactVersion) {
       const response = await fetch(event.request);
 
       return response;
     }
 
-    const manifestDb = await getManifestDb();
     const outgoingEdges = await manifestDb.getAllFromIndex(
       ObjectStoreName.Edges,
       'artifactId',
@@ -442,6 +475,32 @@ registerRoute(
 
       const limitedResults = results.slice(0, input.limit || 50);
       return encodeCacheResultForTrpc(limitedResults);
+    }
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getSafeArtifactId/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (_e) {
+      const manifestDb = await getManifestDb();
+
+      while (true) {
+        // We can at least check local artifacts which isn't globally guaranteed but oh well
+        const candidateId = crypto.randomUUID();
+        const artifact = await manifestDb.get(
+          ObjectStoreName.Artifacts,
+          candidateId,
+        );
+        if (!artifact) {
+          return encodeCacheResultForTrpc({ id: candidateId });
+        }
+      }
     }
   },
   'GET',

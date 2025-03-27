@@ -60,6 +60,14 @@ export interface GlobalPaneContextData {
    */
   renamePane: (paneId: string, name: string) => void;
   /**
+   * Update props for a given pane
+   */
+  updatePaneProps: <T extends PaneableComponent>(
+    paneId: string,
+    component: T,
+    props: PaneableComponentProps[T],
+  ) => void;
+  /**
    * The paneid we currently consider has the user's focus within it
    */
   focusedPaneId: string;

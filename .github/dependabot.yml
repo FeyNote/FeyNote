@@ -3,9 +3,17 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
-    open-pull-requests-limit: 20
+      interval: 'daily'
+    open-pull-requests-limit: 50
     groups:
+      dedent:
+        patterns:
+          - 'dedent'
+          - '@types/dedent'
+      multer:
+        patterns:
+          - 'multer'
+          - '@types/multer'
       tiptap:
         patterns:
           - '@tiptap*'
@@ -42,6 +50,18 @@ updates:
           - 'vite'
           - 'vite-*'
           - '@vitejs/*'
+      astro:
+        patterns:
+          - '@astrojs/*'
+          - 'astro'
+      react:
+        patterns:
+          - 'react-dom'
+          - '@types/react-dom'
+          - 'react'
+          - '@types/react'
+          - 'react-is'
+          - '@types/react-is'
       babel:
         patterns:
           - '@babel/*'
@@ -50,6 +70,17 @@ updates:
           - 'yjs'
           - 'yjs-*'
           - 'y-*'
+      ai-sdk:
+        patterns:
+          - 'ai'
+          - '@ai-sdk/*'
+      ionic:
+        patterns:
+          - '@ionic/*'
+          - 'ionicons'
+      swc:
+        patterns:
+          - '@swc*'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI

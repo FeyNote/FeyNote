@@ -2,10 +2,10 @@ import * as Sentry from '@sentry/node';
 import { initTRPC } from '@trpc/server';
 
 import { Context } from './context';
-import superjson from 'superjson';
+import { customTrpcTransformer } from '@feynote/shared-utils';
 
 const t = initTRPC.context<Context>().create({
-  transformer: superjson,
+  transformer: customTrpcTransformer,
 });
 
 const sentryMiddleware = t.middleware(

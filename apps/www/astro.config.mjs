@@ -10,12 +10,14 @@ export default defineConfig({
   },
   // Adds React support
   integrations: [react()],
-  // Hybrid output mode and node adapter for server-side rendering
-  output: 'hybrid',
+  output: 'server',
   adapter: node({
     mode: 'standalone',
   }),
   vite: {
+    server: {
+      allowedHosts: true,
+    },
     ssr: {
       // This marks the `path-to-regexp` package as external, so it won't be bundled in the server build
       // Necessary for how we render Ionic within Astro

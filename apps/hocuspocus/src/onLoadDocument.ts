@@ -4,6 +4,9 @@ import { applyUpdate } from 'yjs';
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import type { TypedMap } from 'yjs-types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
@@ -16,6 +19,8 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
             id: identifier,
           },
           select: {
+            id: true,
+            userId: true,
             title: true,
             theme: true,
             type: true,
@@ -30,7 +35,22 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
 
         applyUpdate(args.document, artifact.yBin);
 
-        return args.document;
+        const artifactMetaMap = args.document.getMap(
+          ARTIFACT_META_KEY,
+        ) as TypedMap<Partial<YArtifactMeta>>;
+        if (!artifactMetaMap.get('id')) artifactMetaMap.set('id', artifact.id);
+        if (!artifactMetaMap.get('userId'))
+          artifactMetaMap.set('userId', artifact.userId);
+        if (!artifactMetaMap.get('title'))
+          artifactMetaMap.set('title', artifact.title);
+        if (!artifactMetaMap.get('theme'))
+          artifactMetaMap.set('theme', artifact.theme);
+        if (!artifactMetaMap.get('type'))
+          artifactMetaMap.set('type', artifact.type);
+        if (!artifactMetaMap.get('linkAccessLevel'))
+          artifactMetaMap.set('linkAccessLevel', 'noaccess');
+
+        return;
       }
       case SupportedDocumentType.UserTree: {
         const user = await prisma.user.findUnique({
@@ -52,7 +72,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           applyUpdate(args.document, user.treeYBin);
         }
 
-        return args.document;
+        return;
       }
     }
   } catch (e) {

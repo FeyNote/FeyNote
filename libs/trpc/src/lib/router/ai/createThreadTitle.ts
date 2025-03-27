@@ -2,7 +2,11 @@ import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
-import { generateAssistantText, AIModel, systemMessage } from '@feynote/openai';
+import {
+  generateAssistantText,
+  AIModel,
+  systemMessage,
+} from '@feynote/api-services';
 import { threadSummary } from '@feynote/prisma/types';
 import type { CoreMessage } from 'ai';
 

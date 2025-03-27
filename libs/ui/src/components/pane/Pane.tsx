@@ -55,7 +55,7 @@ export const Pane: React.FC<Props> = memo((props) => {
   const DisplayComponent = getPaneableComponent(pane.currentView.component);
 
   return (
-    <PaneContainer>
+    <PaneContainer data-pane-id={props.id}>
       <PaneContext.Provider value={contextValue}>
         <ComponentWrapper key={pane.currentView.navigationEventId}>
           {/** Cast to any since we have no good way of generic-typing props stored in FlexLayout config and having them spit out here */}

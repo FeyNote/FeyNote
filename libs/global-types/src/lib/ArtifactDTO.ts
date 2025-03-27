@@ -56,12 +56,7 @@ export type ArtifactDTO = {
     };
     accessLevel: ArtifactAccessLevel;
   }[];
-  artifactShareTokens: {
-    id: string;
-    shareToken: string;
-    allowAddToAccount: boolean;
-    accessLevel: ArtifactAccessLevel;
-  }[];
+  linkAccessLevel: ArtifactAccessLevel;
   user: {
     name: string;
   };

@@ -5,3 +5,4 @@ export * from './lib/ThreadDTO';
 export * from './lib/WebsocketMessageEvent';
 export * from './lib/WebsocketMessageJSON';
 export * from './lib/YArtifactMeta';
+export * from './lib/YArtifactUserAccess';

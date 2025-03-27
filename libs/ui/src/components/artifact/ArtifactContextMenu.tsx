@@ -12,9 +12,16 @@ import {
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { getMetaFromYArtifact } from '@feynote/shared-utils';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
+import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
+import { createArtifact } from '../../utils/createArtifact';
 
 interface Props {
   artifactId: string;
+  connection: CollaborationManagerConnection;
   pane: PaneContextData['pane'];
   navigate: PaneContextData['navigate'];
 }
@@ -24,6 +31,7 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
   const { pane, navigate } = props;
 
   const { deleteArtifact } = useArtifactDelete();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const onDeleteArtifactClicked = () => {
     deleteArtifact(props.artifactId)
@@ -35,6 +43,45 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
 
         throw e;
       });
+  };
+
+  const onPrintArtifactClicked = () => {
+    window.open(
+      `${window.location.hostname}?printArtifactId=${props.artifactId}&autoPrint=true`,
+    );
+  };
+
+  const onDuplicateArtifactClicked = async () => {
+    const { title, theme, type, titleBodyMerge } = getMetaFromYArtifact(
+      props.connection.yjsDoc,
+    );
+
+    const newTitle = t('artifact.duplicateTitle', { title });
+    const oldYBin = encodeStateAsUpdate(props.connection.yjsDoc);
+    const newYDoc = new YDoc();
+    applyUpdate(newYDoc, oldYBin);
+
+    randomizeContentUUIDsInYDoc(newYDoc);
+
+    const newYBin = encodeStateAsUpdate(newYDoc);
+
+    const artifact = await createArtifact({
+      title: newTitle,
+      type,
+      theme,
+      titleBodyMerge,
+      yBin: newYBin,
+    }).catch((e) => {
+      handleTRPCErrors(e);
+    });
+
+    if (!artifact) return;
+
+    navigate(
+      PaneableComponent.Artifact,
+      { id: artifact.id },
+      PaneTransition.NewTab,
+    );
   };
 
   return (
@@ -76,6 +123,12 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       </ContextMenuGroup>
       <ContextMenuGroupDivider />
       <ContextMenuGroup>
+        <ContextMenuItem onClick={onPrintArtifactClicked}>
+          {t('contextMenu.printArtifact')}
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onDuplicateArtifactClicked}>
+          {t('contextMenu.duplicateArtifact')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={onDeleteArtifactClicked}>
           {t('generic.delete')}
         </ContextMenuItem>

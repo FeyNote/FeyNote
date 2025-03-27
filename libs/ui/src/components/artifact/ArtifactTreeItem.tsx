@@ -6,6 +6,7 @@ import { IonContent, useIonPopover } from '@ionic/react';
 import { InternalTreeItem, UNCATEGORIZED_ITEM_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
+import { IoChevronDown, IoChevronForward } from 'react-icons/io5';
 
 const TreeListItem = styled.li<{
   $draggingOver: boolean;
@@ -42,6 +43,7 @@ const TreeItemContainer = styled.div`
   .rct-tree-item-arrow {
     width: 20px;
     height: 20px;
+    flex-shrink: 0;
   }
 
   .rct-tree-item-arrow:has(svg) {
@@ -57,22 +59,20 @@ const TreeItemContainer = styled.div`
   }
 
   .rct-tree-item-arrow svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .rct-tree-item-arrow-path {
-    fill: var(--ion-text-color);
+    width: 18px;
+    height: 18px;
   }
 `;
 
 const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
 }>`
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   text-align: left;
+
+  flex-grow: 1;
   background-color: transparent;
   height: 32px;
   color: var(--ion-text-color);
@@ -110,7 +110,7 @@ interface ArtifactTreeItemProps {
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
-  const popoverDismissRef = useRef<() => void>();
+  const popoverDismissRef = useRef<() => void>(undefined);
 
   const expandAll = () => {
     const expandedItems = new Set(props.expandedItemsRef.current);
@@ -152,14 +152,29 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     </IonContent>
   );
 
-  const [present, dismiss] = useIonPopover(popoverContents, {
-    onDismiss: (data: unknown, role: string) => dismiss(data, role),
-  });
-  popoverDismissRef.current = dismiss;
+  const [presentContextMenuPopover, dismissContextMenuPopover] = useIonPopover(
+    popoverContents,
+    {
+      onDismiss: (data: unknown, role: string) =>
+        dismissContextMenuPopover(data, role),
+    },
+  );
+  popoverDismissRef.current = dismissContextMenuPopover;
 
   const interactiveElementProps =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
     props.treeRenderProps.context.interactiveElementProps as any;
+
+  const onContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID) return;
+
+    presentContextMenuPopover({
+      event: e.nativeEvent,
+    });
+  };
 
   return (
     <>
@@ -172,7 +187,21 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         className={`rct-tree-item-li`}
       >
         <TreeItemContainer>
-          {props.treeRenderProps.arrow}
+          {props.treeRenderProps.item.isFolder ? (
+            <div
+              {...props.treeRenderProps.context.arrowProps}
+              className={`rct-tree-item-arrow`}
+              onContextMenu={onContextMenu}
+            >
+              {props.treeRenderProps.context.isExpanded ? (
+                <IoChevronDown />
+              ) : (
+                <IoChevronForward />
+              )}
+            </div>
+          ) : (
+            <div className={`rct-tree-item-arrow`} />
+          )}
           <TreeItemButton
             {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
             {...interactiveElementProps}
@@ -180,17 +209,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
               props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
             }
             className={`rct-tree-item-button`}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-
-              if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID)
-                return;
-
-              present({
-                event: e.nativeEvent,
-              });
-            }}
+            onContextMenu={onContextMenu}
           >
             {props.treeRenderProps.title}
           </TreeItemButton>

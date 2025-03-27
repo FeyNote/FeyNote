@@ -5,9 +5,12 @@ import { applyTiptapJSONToYArtifact } from '../applyTiptapJSONToYArtifact';
 import { encodeStateAsUpdate } from 'yjs';
 
 export interface TemplateResult {
+  id: YArtifactMeta['id'];
+  userId: YArtifactMeta['userId'];
   title: YArtifactMeta['title'];
   type: YArtifactMeta['type'];
   titleBodyMerge: YArtifactMeta['titleBodyMerge'];
+  linkAccessLevel: YArtifactMeta['linkAccessLevel'];
   theme: YArtifactMeta['theme'];
   json: {
     tiptapBody: JSONContent;
@@ -24,9 +27,12 @@ export const templateBuilderHelper = (
   applyTiptapJSONToYArtifact(yDoc, tiptapJSON);
 
   return {
+    id: meta.id,
+    userId: meta.userId,
     title: meta.title,
     type: meta.type,
     titleBodyMerge: meta.titleBodyMerge,
+    linkAccessLevel: meta.linkAccessLevel,
     theme: meta.theme,
     json: {
       tiptapBody: tiptapJSON,

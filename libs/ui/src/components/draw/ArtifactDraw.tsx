@@ -313,7 +313,10 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   };
 
   return (
-    <ArtifactDrawContainer $titleBodyMerge={titleBodyMerge}>
+    <ArtifactDrawContainer
+      $titleBodyMerge={titleBodyMerge}
+      data-print-target={`artifact:${props.artifactId}`}
+    >
       {!titleBodyMerge && titleInput}
       <StyledArtifactDrawStyles
         data-theme={theme}

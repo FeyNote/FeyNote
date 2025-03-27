@@ -15,7 +15,6 @@ export const getFileUrlById = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(async ({ ctx, input }): Promise<string> => {
@@ -44,10 +43,7 @@ export const getFileUrlById = publicProcedure
         ...artifactDetail,
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
         throw new TRPCError({
           message: 'You do not have access to this file',
           code: 'FORBIDDEN',

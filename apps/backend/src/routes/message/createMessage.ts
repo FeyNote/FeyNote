@@ -5,7 +5,7 @@ import {
   Display5eMonsterTool,
   Display5eObjectTool,
   DisplayUrlTool,
-} from '@feynote/openai';
+} from '@feynote/api-services';
 import { Request, Response } from 'express';
 import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';
 import { ToolName } from '@feynote/shared-utils';

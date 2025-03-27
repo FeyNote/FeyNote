@@ -131,7 +131,9 @@ export class SyncManager {
         if (
           !localEdge ||
           localEdge.referenceText !== edge.referenceText ||
-          localEdge.isBroken !== edge.isBroken
+          localEdge.isBroken !== edge.isBroken ||
+          localEdge.artifactTitle !== edge.artifactTitle ||
+          localEdge.targetArtifactTitle !== edge.targetArtifactTitle
         ) {
           await edgesStore.put({
             ...edge,

@@ -9,6 +9,7 @@ import {
 import { GlobalSearchContext } from './GlobalSearchContext';
 import {
   IonBackdrop,
+  IonButton,
   IonIcon,
   IonInput,
   IonItem,
@@ -16,10 +17,9 @@ import {
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { search } from 'ionicons/icons';
+import { open, search } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useProgressBar } from '../../utils/useProgressBar';
 import { SessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
@@ -28,6 +28,7 @@ import {
   PaneTransition,
 } from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
+import { createArtifact } from '../../utils/createArtifact';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -47,6 +48,23 @@ const FloatingSearchContainer = styled.div`
   overflow: hidden;
 `;
 
+const TitleContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+`;
+
+const TitleActionContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Title = styled.h2`
+  margin: 0;
+  padding: 0;
+  font-size: 1.6rem;
+`;
+
 const SearchResultsContainer = styled.div`
   max-height: 50vh;
   overflow-y: auto;
@@ -60,6 +78,13 @@ const SearchInput = styled(IonInput)`
   --padding-end: 10px;
   --padding-top: 20px;
   --padding-bottom: 20px;
+`;
+
+const SearchResult = styled(IonItem)<{
+  $selected: boolean;
+}>`
+  ${(props) =>
+    props.$selected && `--background: var(--ion-background-color-step-100);`}
 `;
 
 const Backdrop = styled(IonBackdrop)`
@@ -86,23 +111,22 @@ const SEARCH_DELAY_MS = 20;
  */
 const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
 
-export const GlobalSearchContextProviderWrapper = ({
+export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
-}: Props): JSX.Element => {
+}) => {
   const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [searchedText, setSearchedText] = useState('');
   const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
+  const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
+  const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const { startProgressBar, ProgressBar } = useProgressBar();
   const { t } = useTranslation();
   const inputRef = useRef<HTMLIonInputElement>(null);
 
   const trigger = () => {
     setSearchText('');
-    setSearchedText('');
     setSearchResults([]);
     setShow(true);
   };
@@ -112,11 +136,13 @@ export const GlobalSearchContextProviderWrapper = ({
   };
 
   const create = async () => {
-    const artifact = await trpc.artifact.createArtifact.mutate({
+    const artifact = await createArtifact({
       title: capitalizeEachWord(searchText).trim(),
-      type: 'tiptap',
-      theme: 'default',
+    }).catch((error) => {
+      handleTRPCErrors(error);
     });
+
+    if (!artifact) return;
 
     navigate(
       undefined, // Open in currently focused pane rather than in specific pane
@@ -128,8 +154,22 @@ export const GlobalSearchContextProviderWrapper = ({
     );
   };
 
+  const openPersistentSearch = () => {
+    navigate(
+      undefined, // Open in currently focused pane rather than in specific pane
+      PaneableComponent.PersistentSearch,
+      {
+        initialTerm: searchText || undefined,
+      },
+      PaneTransition.Push,
+    );
+    hide();
+  };
+
   useEffect(() => {
     if (show) {
+      setSelectedIdx(0);
+
       setTimeout(() => {
         inputRef.current?.setFocus();
       });
@@ -146,13 +186,42 @@ export const GlobalSearchContextProviderWrapper = ({
         event.stopPropagation();
         hide();
       }
+      if (event.key === 'ArrowUp' && show) {
+        event.preventDefault();
+        setSelectedIdx((prev) => Math.max(prev - 1, 0));
+      }
+      if (event.key === 'ArrowDown' && show) {
+        event.preventDefault();
+        setSelectedIdx((prev) => Math.min(prev + 1, maxSelectedIdx));
+      }
+      if (event.key === 'Enter' && show) {
+        event.preventDefault();
+        if (selectedIdx < searchResults.length) {
+          navigate(
+            undefined, // Open in currently focused pane rather than in specific pane
+            PaneableComponent.Artifact,
+            { id: searchResults[selectedIdx].id },
+            PaneTransition.Push,
+          );
+          hide();
+        } else {
+          create();
+          hide();
+        }
+      }
     };
     document.addEventListener('keydown', listener);
 
     return () => {
       document.removeEventListener('keydown', listener);
     };
-  }, [show]);
+  }, [show, searchResults, selectedIdx, maxSelectedIdx]);
+
+  useEffect(() => {
+    if (selectedIdx > maxSelectedIdx) {
+      setSelectedIdx(maxSelectedIdx);
+    }
+  }, [searchResults]);
 
   useEffect(() => {
     if (!searchText.trim().length) {
@@ -162,7 +231,6 @@ export const GlobalSearchContextProviderWrapper = ({
 
     let cancelled = false;
     const timeout = setTimeout(() => {
-      const progress = startProgressBar();
       trpc.artifact.searchArtifacts
         .query({
           query: searchText,
@@ -171,14 +239,9 @@ export const GlobalSearchContextProviderWrapper = ({
         .then((results) => {
           if (cancelled) return;
           setSearchResults(results);
-          setSearchedText(searchText);
         })
         .catch((error) => {
           handleTRPCErrors(error);
-        })
-        .finally(() => {
-          if (cancelled) return;
-          progress.dismiss();
         });
     }, SEARCH_DELAY_MS);
 
@@ -201,7 +264,18 @@ export const GlobalSearchContextProviderWrapper = ({
       <SearchContainer>
         {session ? (
           <>
-            <h1>{t('globalSearch.title')}</h1>
+            <TitleContainer>
+              <Title>{t('globalSearch.title')}</Title>
+              <TitleActionContainer>
+                <IonButton
+                  fill="clear"
+                  onClick={openPersistentSearch}
+                  aria-label={t('globalSearch.openPersistentSearch')}
+                >
+                  <IonIcon size="small" slot="icon-only" icon={open} />
+                </IonButton>
+              </TitleActionContainer>
+            </TitleContainer>
 
             <FloatingSearchContainer>
               <SearchInput
@@ -218,12 +292,13 @@ export const GlobalSearchContextProviderWrapper = ({
                 ></IonIcon>
               </SearchInput>
 
-              {ProgressBar}
               <SearchResultsContainer>
-                {searchResults.map((searchResult) => (
-                  <IonItem
+                {searchResults.map((searchResult, idx) => (
+                  <SearchResult
                     lines="none"
                     key={searchResult.id}
+                    $selected={selectedIdx === idx}
+                    onMouseOver={() => setSelectedIdx(idx)}
                     onClick={() => {
                       navigate(
                         undefined, // Open in currently focused pane rather than in specific pane
@@ -244,12 +319,14 @@ export const GlobalSearchContextProviderWrapper = ({
                         ) || t('artifact.title')}
                       </p>
                     </IonLabel>
-                  </IonItem>
+                  </SearchResult>
                 ))}
-                {!!searchText.length && searchText === searchedText && (
-                  <IonItem
+                {!!searchText.length && (
+                  <SearchResult
                     lines="none"
+                    $selected={selectedIdx === maxSelectedIdx}
                     onClick={() => (create(), hide())}
+                    onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
                     button
                   >
                     <IonLabel>
@@ -267,18 +344,8 @@ export const GlobalSearchContextProviderWrapper = ({
                         )}
                       </p>
                     </IonLabel>
-                  </IonItem>
+                  </SearchResult>
                 )}
-                {!searchResults.length &&
-                  !!searchText.length &&
-                  searchText !== searchedText && (
-                    <IonItem lines="none">
-                      <IonLabel>
-                        {t('editor.referenceMenu.searching.title')}
-                        <p>{t('editor.referenceMenu.searching.subtitle')}</p>
-                      </IonLabel>
-                    </IonItem>
-                  )}
               </SearchResultsContainer>
             </FloatingSearchContainer>
           </>

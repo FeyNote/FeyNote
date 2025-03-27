@@ -1,4 +1,4 @@
-import { IonApp, setupIonicReact } from '@ionic/react';
+import { setupIonicReact } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
@@ -13,7 +13,7 @@ import '@ionic/react/css/palettes/dark.class.css';
 import './css/global.css';
 import { initI18Next } from './i18n/initI18Next';
 import { PreferencesContextProviderWrapper } from './context/preferences/PreferencesContextProviderWrapper';
-import { ArtifactShareView } from './components/sharing/sharedArtifactByToken/ArtifactShareView';
+import { ArtifactShareView } from './components/sharing/ArtifactShareView';
 import { useMemo } from 'react';
 import { PaneContext, PaneContextData } from './context/pane/PaneContext';
 import {
@@ -25,6 +25,8 @@ import {
   GlobalPaneContextData,
 } from './context/globalPane/GlobalPaneContext';
 import { Model } from 'flexlayout-react';
+import { IonApp } from './IonicReact19Compat';
+import { ToastContextProvider } from './context/toast/ToastContextProvider';
 
 initI18Next();
 setupIonicReact();
@@ -33,9 +35,6 @@ interface Props {
   id: string;
 }
 export const ShareviewApp: React.FC<Props> = (props) => {
-  const shareToken =
-    new URLSearchParams(window.location.search).get('shareToken') || undefined;
-
   const globalPaneContextValue = useMemo<GlobalPaneContextData>(
     () => ({
       navigateHistoryBack: () => undefined, // Noop
@@ -53,6 +52,7 @@ export const ShareviewApp: React.FC<Props> = (props) => {
         },
       }),
       renamePane: () => undefined, // Noop
+      updatePaneProps: () => undefined, // Noop
       focusedPaneId: props.id,
       getSelectedTabForTabset: () => undefined, // Noop
       navigate: (_, componentName, componentProps) => {
@@ -60,9 +60,6 @@ export const ShareviewApp: React.FC<Props> = (props) => {
           const id = (componentProps as PaneableComponentProps['Artifact']).id;
 
           const url = new URL(`/artifact/${id}`, window.location.href);
-          // TODO: the following will absolutely not work with the current shareToken implementation
-          // but this is an idea of what we'd do once we can share sets of artifacts under the same token
-          if (shareToken) url.searchParams.set('shareToken', shareToken);
 
           window.location.href = url.href;
         } else {
@@ -86,9 +83,6 @@ export const ShareviewApp: React.FC<Props> = (props) => {
           const id = (componentProps as PaneableComponentProps['Artifact']).id;
 
           const url = new URL(`/artifact/${id}`, window.location.href);
-          // TODO: the following will absolutely not work with the current shareToken implementation
-          // but this is an idea of what we'd do once we can share sets of artifacts under the same token
-          if (shareToken) url.searchParams.set('shareToken', shareToken);
 
           window.location.href = url.href;
         } else {
@@ -114,14 +108,16 @@ export const ShareviewApp: React.FC<Props> = (props) => {
   );
 
   return (
-    <IonApp>
-      <PreferencesContextProviderWrapper>
-        <GlobalPaneContext.Provider value={globalPaneContextValue}>
-          <PaneContext.Provider value={paneContextValue}>
-            <ArtifactShareView artifactId={props.id} shareToken={shareToken} />
-          </PaneContext.Provider>
-        </GlobalPaneContext.Provider>
-      </PreferencesContextProviderWrapper>
-    </IonApp>
+    <ToastContextProvider>
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <GlobalPaneContext.Provider value={globalPaneContextValue}>
+            <PaneContext.Provider value={paneContextValue}>
+              <ArtifactShareView artifactId={props.id} />
+            </PaneContext.Provider>
+          </GlobalPaneContext.Provider>
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    </ToastContextProvider>
   );
 };

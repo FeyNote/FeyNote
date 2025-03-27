@@ -13,5 +13,5 @@ then
 fi
 
 aws s3 sync www s3://feynote-public/frontend/$TAG/ \
-  --cache-control "public, max-age=3600, must-revalidate"
+  --cache-control "public, max-age=900, must-revalidate"
 

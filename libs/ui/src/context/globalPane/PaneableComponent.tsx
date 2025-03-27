@@ -10,6 +10,7 @@ import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
 import { ImportExport } from '../../components/importExport/ImportExport';
 import { Contribute } from '../../components/payments/Contribute';
+import { PersistentSearch } from '../../components/search/PersistentSearch';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -23,6 +24,7 @@ export enum PaneableComponent {
   SharedContent = 'SharedContent',
   RecentArtifacts = 'RecentArtifacts',
   ImportExport = 'ImportExport',
+  PersistentSearch = 'PersistentSearch',
 }
 
 export type PaneableComponentProps = {
@@ -37,6 +39,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
   [PaneableComponent.ImportExport]: ComponentProps<typeof ImportExport>;
+  [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
 };
 
 export const getPaneableComponent = <T extends PaneableComponent>(
@@ -54,6 +57,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
     [PaneableComponent.ImportExport]: ImportExport,
+    [PaneableComponent.PersistentSearch]: PersistentSearch,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
@@ -78,4 +82,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
   [PaneableComponent.ImportExport]: 'importExport.title',
+  [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
 } satisfies Record<PaneableComponent, string>;

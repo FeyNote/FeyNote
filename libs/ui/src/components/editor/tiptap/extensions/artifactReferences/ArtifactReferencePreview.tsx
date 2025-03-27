@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useContext, useMemo, useRef } from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
 import { TiptapPreview } from '../../../TiptapPreview';
@@ -51,6 +51,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const { session } = useContext(SessionContext);
+  const [ready, setReady] = useState(false);
 
   const yDoc = useMemo(() => {
     const yDoc = new YDoc();
@@ -64,14 +65,18 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
 
   const artifactMeta = useObserveYArtifactMeta(yDoc);
 
-  useScrollBlockIntoView(props.artifactBlockId, [], containerRef);
-  useScrollDateIntoView(props.artifactDate, [], containerRef);
+  useScrollBlockIntoView(props.artifactBlockId, [ready], containerRef);
+  useScrollDateIntoView(props.artifactDate, [ready], containerRef);
 
   const previewContent = (
     <>
       <Header>{artifactMeta.title}</Header>
       {artifactMeta.type === 'tiptap' && (
-        <TiptapPreview artifactId={props.artifactId} yDoc={yDoc} />
+        <TiptapPreview
+          artifactId={props.artifactId}
+          yDoc={yDoc}
+          onReady={() => setReady(true)}
+        />
       )}
       {artifactMeta.type === 'calendar' && (
         <ArtifactCalendar
@@ -80,6 +85,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
           centerDate={props.artifactDate}
           editable={false}
           viewType="fullsize"
+          onReady={() => setReady(true)}
         />
       )}
       {artifactMeta.type === 'tldraw' && (
@@ -94,6 +100,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
               sessionToken: session.token,
             }).toString();
           }}
+          onReady={() => setReady(true)}
         />
       )}
     </>

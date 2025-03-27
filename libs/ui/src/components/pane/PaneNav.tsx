@@ -29,11 +29,11 @@ export const PaneNav: React.FC<Props> = (props) => {
   const { navigateHistoryBack, navigateHistoryForward, pane, renamePane } =
     useContext(PaneContext);
 
-  const popoverDismissRef = useRef<() => void>();
+  const popoverDismissRef = useRef<() => void>(undefined);
 
   const popoverContents = (
     <IonContent onClick={popoverDismissRef.current}>
-      {props.popoverContents || <DefaultContextMenu />}
+      {props.popoverContents || <DefaultContextMenu paneId={pane.id} />}
     </IonContent>
   );
 

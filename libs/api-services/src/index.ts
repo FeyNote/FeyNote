@@ -3,14 +3,20 @@ export * from './lib/user/register';
 export * from './lib/user/login';
 export * from './lib/user/upsertLogin';
 export * from './lib/user/triggerPasswordReset';
+
 export * from './lib/error';
+export * from './lib/openai';
+
 export * from './lib/artifacts/artifactJsonZodSchema';
 export * from './lib/artifacts/createArtifactRevision';
+export * from './lib/artifacts/updateArtifactAccess';
 export * from './lib/artifacts/updateArtifactContentReferenceText';
 export * from './lib/artifacts/updateArtifactTitleReferenceText';
 export * from './lib/artifacts/updateArtifactOutgoingReferences';
+
 export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
+
 export * from './lib/s3/FILE_PURPOSE_TO_BUCKET';
 export * from './lib/s3/generateS3Key';
 export * from './lib/s3/getSignedUrl';
@@ -20,11 +26,15 @@ export * from './lib/s3/getImageQuality';
 export * from './lib/s3/convertImageForStorage';
 export * from './lib/s3/streamFileFromS3';
 export * from './lib/s3/getFileFromS3';
+
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';
+
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
+
 export * from './lib/dto/artifactDetailToArtifactDTO';
+
 export * from './lib/payments/getSubscriptionsForUser';
 export * from './lib/payments/getCapabilitiesForSubscription';
 export * from './lib/payments/getCapabilitiesForUser';

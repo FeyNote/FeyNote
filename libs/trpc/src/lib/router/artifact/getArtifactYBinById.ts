@@ -8,7 +8,6 @@ export const getArtifactYBinById = publicProcedure
   .input(
     z.object({
       id: z.string().uuid(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -18,12 +17,6 @@ export const getArtifactYBinById = publicProcedure
     }): Promise<{
       yBin: Uint8Array;
     }> => {
-      if (!ctx.session && !input.shareToken) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-        });
-      }
-
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.id,
@@ -43,21 +36,11 @@ export const getArtifactYBinById = publicProcedure
               accessLevel: true,
             },
           },
-          artifactShareTokens: {
-            select: {
-              id: true,
-              shareToken: true,
-              allowAddToAccount: true,
-              accessLevel: true,
-            },
-          },
+          linkAccessLevel: true,
         },
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
         throw new TRPCError({
           message:
             'Artifact does not exist or is not visible to the current user',

@@ -1,0 +1,9 @@
+body {
+  position: initial !important;
+  max-height: initial !important;
+  overflow: auto !important;
+}
+
+.ion-page {
+  contain: none !important;
+}

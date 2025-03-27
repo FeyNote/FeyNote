@@ -26,6 +26,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
     // This will be available in all future methods!
     const context = {
       userId: session.userId,
+      isOwner: false,
     };
 
     const [type, identifier] = splitDocumentName(args.documentName);
@@ -57,7 +58,10 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         const artifactShare = artifact.artifactShares.find(
           (share) => share.userId === context.userId,
         );
-        if (artifact.userId !== context.userId && !artifactShare) {
+        if (
+          (artifact.userId !== context.userId && !artifactShare) ||
+          artifactShare?.accessLevel === ArtifactAccessLevel.noaccess
+        ) {
           console.log(
             'User attempted to connect to artifact that they do not have access to',
           );
@@ -71,6 +75,10 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           args.connection.readOnly = true;
         }
 
+        if (artifact.userId === context.userId) {
+          context.isOwner = true;
+        }
+
         break;
       }
       case SupportedDocumentType.UserTree: {
@@ -80,6 +88,8 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           );
           throw new Error();
         }
+
+        context.isOwner = true;
 
         break;
       }

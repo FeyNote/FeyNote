@@ -77,11 +77,15 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
           fileId: id,
         });
 
-        return url.toString();
+        return {
+          src: url.toString(),
+        };
       } catch (e) {
         console.error(e);
 
-        return '';
+        return {
+          src: '',
+        };
       }
     },
 

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/react';
 import ParagraphExtension from '@tiptap/extension-paragraph';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
 import ListItemExtension from '@tiptap/extension-list-item';
@@ -24,8 +25,9 @@ import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
 import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
-import ImageExtension from '@tiptap/extension-image';
-import LinkExtension from '@tiptap/extension-link';
+import TableOfContentsExtension, {
+  type TableOfContentData,
+} from '@tiptap-pro/extension-table-of-contents';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
@@ -43,6 +45,12 @@ import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
+import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
+import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
+import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
+import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
+import { FocusExtension } from './extensions/focus/FocusExtension';
+import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
 
 type DocArgOptions =
   | {
@@ -62,6 +70,8 @@ export const getTiptapExtensions = (args: {
   collaborationUser: Record<string, string>;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
+  onRollDice?: (roll: string) => void;
 }) => {
   return [
     DocumentExtension,
@@ -91,7 +101,16 @@ export const getTiptapExtensions = (args: {
     }),
     DropcursorExtension,
     GapcursorExtension,
-    LinkExtension,
+    HyperlinkExtension.configure({
+      hyperlinkOnPaste: false,
+      openOnClick: true,
+      modals: args.editable
+        ? {
+            previewHyperlink: previewHyperlinkModal,
+            setHyperlink: setHyperlinkModal,
+          }
+        : undefined,
+    }),
     TableExtension.configure({
       resizable: false,
       allowTableNodeSelection: false,
@@ -141,6 +160,18 @@ export const getTiptapExtensions = (args: {
               if (htmlContent) {
                 // if there is htmlContent, stop manual insertion & let other extensions handle insertion via inputRule
                 // you could extract the pasted file from this url string and upload it to a server for example
+                // I have not been able to find a case where I can actually trigger this condition, though.
+                console.log(
+                  'Ignoring paste with htmlContent',
+                  htmlContent,
+                  files,
+                );
+                Sentry.captureMessage('Ignoring paste with htmlContent', {
+                  extra: {
+                    htmlContent,
+                    files,
+                  },
+                });
                 return false;
               }
 
@@ -154,6 +185,21 @@ export const getTiptapExtensions = (args: {
         return args.getFileUrl(fileId);
       },
     }),
-    ImageExtension,
+    FocusExtension,
+    ClipboardExtension,
+    ...(args.onTocUpdate
+      ? [
+          TableOfContentsExtension.configure({
+            onUpdate(content) {
+              setTimeout(() => {
+                args.onTocUpdate?.(content);
+              });
+            },
+          }),
+        ]
+      : []),
+    DiceDecorationExtension.configure({
+      onRollDice: args.onRollDice,
+    }),
   ];
 };

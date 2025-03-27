@@ -8,6 +8,7 @@ import { useContext, useEffect, useMemo } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { getTiptapExtensions } from './tiptap/getTiptapExtensions';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 
 type DocArgOptions =
   | {
@@ -25,6 +26,8 @@ type UseArtifactEditorArgs = {
   onReady?: () => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
+  onRollDice?: (roll: string) => void;
 } & DocArgOptions;
 
 export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
@@ -60,6 +63,8 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
       : {
           yjsProvider: args.yjsProvider,
         },
+    onTocUpdate: args.onTocUpdate,
+    onRollDice: args.onRollDice,
   });
 
   const editor = useEditor({

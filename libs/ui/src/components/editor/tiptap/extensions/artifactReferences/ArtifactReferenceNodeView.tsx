@@ -77,6 +77,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         onMouseOut={onMouseOut}
       >
         <ArtifactReferenceLink
+          data-id={props.node.attrs.id}
           onClick={(event) => (
             event.preventDefault(),
             event.stopPropagation(),

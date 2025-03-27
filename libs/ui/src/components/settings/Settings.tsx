@@ -424,6 +424,15 @@ export const Settings: React.FC = () => {
           </IonList>
         </IonCard>
         <br />
+        <IonItem>
+          <IonLabel>
+            <p>
+              {t('settings.version', {
+                version: import.meta.env.VITE_APP_VERSION,
+              })}
+            </p>
+          </IonLabel>
+        </IonItem>
       </IonContent>
     </IonPage>
   );

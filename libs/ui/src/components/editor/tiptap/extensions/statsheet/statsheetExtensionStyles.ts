@@ -4,11 +4,14 @@ import { themeVariables } from '../../../themeVariables';
 export const statsheetExtensionStyles = css`
   ${themeVariables.classic}
 
+  position: relative;
   width: min(375px, 100%);
   padding-top: 12px;
   padding-bottom: 12px;
   padding-left: 8px;
   padding-right: 8px;
+
+  break-inside: avoid;
 
   text-rendering: optimizeLegibility;
   background-color: #f2e5b5;
@@ -125,5 +128,89 @@ export const statsheetExtensionStyles = css`
       padding: initial;
       min-width: initial;
     }
+  }
+
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+      visibility: visible;
+    }
+    99% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      visibility: hidden;
+    }
+    1% {
+      opacity: 0;
+      visibility: visible;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .statsheet-action-buttons {
+    display: flex;
+    position: absolute;
+    top: -30px;
+    right: -5px;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+
+    background: var(--ion-background-color-step-250, #ffffff);
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
+    padding: 2px 3px;
+    border-radius: 4px;
+
+    visibility: hidden;
+    opacity: 0;
+    transition:
+      opacity 0.1s,
+      visibility 0.2s;
+    transition-delay: 0.1s;
+
+    .statsheet-action-button {
+      width: 24px;
+      height: 24px;
+      background: none;
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px;
+      border-radius: 4px;
+
+      &:hover {
+        background: var(--ion-background-color, #cccccc);
+      }
+
+      i {
+        width: 100%;
+        height: 100%;
+
+        stroke: black;
+        stroke-width: 10px;
+        stroke-dasharray: 2, 2;
+        stroke-linejoin: round;
+        fill: var(--ion-text-color);
+      }
+    }
+  }
+
+  &.has-focus .statsheet-action-buttons {
+    visibility: visible;
+    opacity: 1;
   }
 `;

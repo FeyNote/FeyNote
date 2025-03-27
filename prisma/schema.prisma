@@ -47,22 +47,22 @@ model Session {
 }
 
 model Artifact {
-  id        String        @id @default(uuid()) @db.Uuid
-  title     String
-  type      ArtifactType  @default(tiptap)
-  theme     ArtifactTheme @default(default)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String        @db.Uuid
-  text      String
-  json      Json
-  yBin      Bytes         @db.ByteA
-  createdAt DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
+  id              String              @id @default(uuid()) @db.Uuid
+  title           String
+  type            ArtifactType        @default(tiptap)
+  theme           ArtifactTheme       @default(default)
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String              @db.Uuid
+  text            String
+  json            Json
+  yBin            Bytes               @db.ByteA
+  linkAccessLevel ArtifactAccessLevel @default(noaccess)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(6)
 
-  artifactReferences         ArtifactReference[]  @relation("artifactReferenceSourceArtifact")
-  incomingArtifactReferences ArtifactReference[]  @relation("artifactReferenceTargetArtifact")
+  artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
+  incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
   artifactShares             ArtifactShare[]
-  artifactShareTokens        ArtifactShareToken[]
   files                      File[]
 }
 
@@ -117,22 +117,11 @@ model ArtifactShare {
   @@unique([artifactId, userId])
 }
 
-model ArtifactShareToken {
-  id                String              @id @default(uuid()) @db.Uuid
-  shareToken        String
-  allowAddToAccount Boolean
-  artifact          Artifact            @relation(fields: [artifactId], references: [id], onDelete: Cascade)
-  artifactId        String              @db.Uuid
-  accessLevel       ArtifactAccessLevel
-  createdAt         DateTime            @default(now()) @db.Timestamptz(6)
-  updatedAt         DateTime            @updatedAt @db.Timestamptz(6)
-  expiresAt         DateTime?           @db.Timestamptz(6)
-}
-
 enum ArtifactAccessLevel {
   coowner
   readwrite
   readonly
+  noaccess
 }
 
 enum ArtifactType {

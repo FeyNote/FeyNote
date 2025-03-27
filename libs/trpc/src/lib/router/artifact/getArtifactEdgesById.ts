@@ -9,7 +9,6 @@ export const getArtifactEdgesById = publicProcedure
   .input(
     z.object({
       id: z.string(),
-      shareToken: z.string().optional(),
     }),
   )
   .query(
@@ -20,12 +19,6 @@ export const getArtifactEdgesById = publicProcedure
       outgoingEdges: Edge[];
       incomingEdges: Edge[];
     }> => {
-      if (!ctx.session && !input.shareToken) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-        });
-      }
-
       const artifact = await prisma.artifact.findUnique({
         where: {
           id: input.id,
@@ -39,19 +32,11 @@ export const getArtifactEdgesById = publicProcedure
               accessLevel: true,
             },
           },
-          artifactShareTokens: {
-            select: {
-              shareToken: true,
-              accessLevel: true,
-            },
-          },
+          linkAccessLevel: true,
         },
       });
 
-      if (
-        !artifact ||
-        !hasArtifactAccess(artifact, ctx.session?.userId, input.shareToken)
-      ) {
+      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
         throw new TRPCError({
           message:
             'Artifact does not exist or is not visible to the current user',
@@ -91,6 +76,11 @@ export const getArtifactEdgesById = publicProcedure
           targetArtifactDate: true,
           referenceTargetArtifactId: true,
           referenceText: true,
+          targetArtifact: {
+            select: {
+              title: true,
+            },
+          },
         },
       });
 
@@ -111,6 +101,7 @@ export const getArtifactEdgesById = publicProcedure
             isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: edge.artifact.title,
+            targetArtifactTitle: artifact.title,
           };
         }),
         outgoingEdges: outgoingEdges.map((edge) => {
@@ -124,6 +115,7 @@ export const getArtifactEdgesById = publicProcedure
             isBroken: !edge.referenceTargetArtifactId,
             referenceText: edge.referenceText,
             artifactTitle: artifact.title,
+            targetArtifactTitle: edge.targetArtifact?.title || null,
           };
         }),
       };

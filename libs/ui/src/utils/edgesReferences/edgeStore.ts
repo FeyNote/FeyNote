@@ -118,6 +118,7 @@ class EdgeStore {
       targetArtifactId: edge.targetArtifactId,
       targetArtifactBlockId: edge.targetArtifactBlockId || null,
       targetArtifactDate: edge.targetArtifactDate || null,
+      targetArtifactTitle: edge.targetArtifactTitle || null,
       referenceText: edge.referenceText,
       isBroken: edge.isBroken,
     };

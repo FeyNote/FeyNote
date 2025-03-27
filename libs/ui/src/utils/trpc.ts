@@ -1,15 +1,15 @@
 import type { AppRouter } from '@feynote/trpc';
 import { createTRPCProxyClient, httpLink } from '@trpc/client';
-import superjson from 'superjson';
 import { getApiUrls } from './getApiUrls';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import i18next from 'i18next';
+import { customTrpcTransformer } from '@feynote/shared-utils';
 
 export const trpc = createTRPCProxyClient<AppRouter>({
-  transformer: superjson,
   links: [
     httpLink({
       url: getApiUrls().trpc,
+      transformer: customTrpcTransformer,
       headers: async () => {
         const session = await appIdbStorageManager.getSession();
         return {

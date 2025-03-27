@@ -43,12 +43,13 @@ interface Props {
   selectedDate?: string;
   onDayClicked?: (date: string) => void;
   onTitleChange?: (title: string) => void;
+  showBottomSpacer?: boolean;
 }
 
 export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const yDoc = props.y instanceof YDoc ? props.y : props.y.document;
-  const setCenterRef = useRef<(center: string) => void>();
+  const setCenterRef = useRef<(center: string) => void>(undefined);
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
@@ -146,7 +147,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   );
 
   return (
-    <>
+    <div data-print-target={`artifact:${props.artifactId}`}>
       {!titleBodyMerge && titleInput}
       <ArtifactCalendarStyles data-theme={theme}>
         {titleBodyMerge && titleInput}
@@ -168,7 +169,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
           onDayClicked={props.onDayClicked}
         />
       </ArtifactCalendarStyles>
-      <BottomSpacer />
-    </>
+      {props.showBottomSpacer && <BottomSpacer />}
+    </div>
   );
 });

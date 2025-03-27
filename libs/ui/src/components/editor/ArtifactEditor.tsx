@@ -1,7 +1,9 @@
-import { memo, MutableRefObject } from 'react';
+import { memo, MutableRefObject, useRef } from 'react';
 import { BubbleMenu, EditorContent } from '@tiptap/react';
 import { Editor, JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
+// @ts-expect-error This package does not have any types on it's alpha release (which we want since it's bundle size is much smaller)
+import { DiceRoll } from '@dice-roller/rpg-dice-roller';
 
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { useArtifactEditor } from './useTiptapEditor';
@@ -15,11 +17,17 @@ import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMe
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import { useToastContext } from '../../context/toast/ToastContext';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
 const BottomSpacer = styled.div`
   height: 100px;
+
+  @media print {
+    display: none;
+  }
 `;
 
 type DocArgOptions =
@@ -40,19 +48,45 @@ type Props = {
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => string;
+  onTocUpdate?: (content: TableOfContentData) => void;
+  showBottomSpacer?: boolean;
 } & DocArgOptions;
 
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
+  const onRollDiceRef = useRef<(notation: string) => void>(() => {
+    // noop
+  });
   const yDoc = props.yDoc || props.yjsProvider.document;
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
   const titleBodyMerge = yMeta.titleBodyMerge ?? true;
+  const toastCtrl = useToastContext();
 
   const { t } = useTranslation();
 
+  onRollDiceRef.current = (notation: string) => {
+    // Dice roller does not support kh/kl, only kh1/kl1
+    notation = notation.replaceAll(/kh\b/g, 'kh1').replaceAll(/kl\b/g, 'kl1');
+    // Dice roller does not support "+4 to hit", only 1d20+4
+    notation = notation.replaceAll(/^(\+\d+) to hit$/g, '1d20$1');
+    // Dice roller does not support "+4", only 1d20+4
+    notation = notation.replaceAll(/^(\+\d+)$/g, '1d20$1');
+
+    const diceRoll = new DiceRoll(notation);
+
+    toastCtrl.showToast({
+      title: t('artifactRenderer.diceRoll.title'),
+      body: diceRoll.toString(),
+      showClose: true,
+    });
+  };
+
   const editor = useArtifactEditor({
     ...props,
+    onRollDice: (notation: string) => {
+      onRollDiceRef.current(notation);
+    },
   });
 
   if (props.setContentRef) {
@@ -81,21 +115,44 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   );
 
   return (
-    <>
+    <div data-print-target={`artifact:${props.artifactId}`}>
       {!titleBodyMerge && titleInput}
       <ArtifactEditorContainer>
         <ArtifactEditorStyles data-theme={theme}>
           {titleBodyMerge && titleInput}
           <EditorContent editor={editor}></EditorContent>
           {editor && (
-            <BubbleMenu editor={editor}>
+            <BubbleMenu
+              editor={editor}
+              shouldShow={({ editor, state, from, to }) => {
+                const { doc, selection } = state;
+                const { empty } = selection;
+                const isEmptyTextBlock =
+                  !doc.textBetween(from, to).length &&
+                  selection.$from.parent.type.name === 'paragraph';
+                const isFeynoteImage =
+                  doc.nodeAt(from)?.type.name === 'feynoteImage';
+
+                if (
+                  !editor.isEditable ||
+                  empty ||
+                  isEmptyTextBlock ||
+                  isFeynoteImage
+                ) {
+                  return false;
+                }
+
+                return true;
+              }}
+            >
               <ArtifactBubbleMenuControls editor={editor} />
             </BubbleMenu>
           )}
           {editor && <TableBubbleMenu editor={editor} />}
         </ArtifactEditorStyles>
       </ArtifactEditorContainer>
-      <BottomSpacer />
-    </>
+
+      {props.showBottomSpacer && <BottomSpacer />}
+    </div>
   );
 });

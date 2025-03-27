@@ -7,6 +7,9 @@ import { monsterStatsheetExtensionStyles } from './tiptap/extensions/statsheet/m
 import { spellSheetExtensionStyles } from './tiptap/extensions/statsheet/spellSheet/spellSheetExtensionStyles';
 import { ttrpgNoteExtensionStyles } from './tiptap/extensions/ttrpgNote/ttrpgNoteExtensionStyles';
 import { themeVariables } from './themeVariables';
+import { hyperlinkExtensionStyles } from './tiptap/extensions/link/hyperlinkExtensionStyles';
+import { feynoteImageExtensionStyles } from './tiptap/extensions/feynoteImage/feynoteImageExtensionStyles';
+import { diceDecorationExtensionStyles } from './tiptap/extensions/diceDecoration/diceDecorationExtensionStyles';
 
 export const ArtifactEditorStyles = styled.div`
   ${themeVariables.default}
@@ -14,6 +17,10 @@ export const ArtifactEditorStyles = styled.div`
   text-rendering: optimizeLegibility;
   font-family: var(--sheet-font-family);
   color: var(--sheet-text-color);
+
+  @media print {
+    padding: 16px;
+  }
 
   .tiptap {
     padding-left: 16px;
@@ -174,10 +181,15 @@ export const ArtifactEditorStyles = styled.div`
     background: url('https://static.feynote.com/assets/parchment-background-20240925.jpg');
     background-color: #eee5ce;
     .dark & {
-      background: linear-gradient(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.09)),
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.09), rgba(0, 0, 0, 0.09)),
         url('https://static.feynote.com/assets/parchment-background-20240925.jpg');
     }
     box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.4);
+
+    @media print {
+      box-shadow: none;
+    }
   }
 
   ${collaborationCursorExtensionStyles}
@@ -187,4 +199,7 @@ export const ArtifactEditorStyles = styled.div`
   ${monsterStatsheetExtensionStyles}
   ${spellSheetExtensionStyles}
   ${ttrpgNoteExtensionStyles}
+  ${hyperlinkExtensionStyles}
+  ${feynoteImageExtensionStyles}
+  ${diceDecorationExtensionStyles}
 `;

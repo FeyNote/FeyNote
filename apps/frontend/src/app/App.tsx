@@ -1,5 +1,4 @@
 /* Ionic */
-import { IonApp } from '@ionic/react';
 import '@ionic/react/css/core.css';
 /* Basic CSS for apps built with Ionic */
 import '@ionic/react/css/normalize.css';
@@ -26,10 +25,13 @@ import {
   GlobalSearchContextProviderWrapper,
   GlobalPaneContextProviderWrapper,
   SidemenuContextProviderWrapper,
+  ToastContextProvider,
   NotFound,
   Workspace,
   initI18Next,
   PasswordReset,
+  IonApp,
+  PrintviewApp,
 } from '@feynote/ui';
 
 initI18Next();
@@ -81,34 +83,43 @@ export function App() {
   const passworeResetToken = url.searchParams.get('passwordResetToken');
   if (passworeResetToken) {
     return (
-      <GlobalPaneContextProviderWrapper>
-        <IonApp>
-          <PreferencesContextProviderWrapper>
-            <PasswordReset
-              passwordResetToken={passworeResetToken}
-              redirectPath={window.location.origin}
-            />
-          </PreferencesContextProviderWrapper>
-        </IonApp>
-      </GlobalPaneContextProviderWrapper>
+      <ToastContextProvider>
+        <GlobalPaneContextProviderWrapper>
+          <IonApp>
+            <PreferencesContextProviderWrapper>
+              <PasswordReset
+                passwordResetToken={passworeResetToken}
+                redirectPath={window.location.origin}
+              />
+            </PreferencesContextProviderWrapper>
+          </IonApp>
+        </GlobalPaneContextProviderWrapper>
+      </ToastContextProvider>
     );
+  }
+
+  const printArtifactId = url.searchParams.get('printArtifactId');
+  if (printArtifactId) {
+    return <PrintviewApp id={printArtifactId} />;
   }
 
   if (!path.length || path[0] === '') {
     return (
-      <GlobalPaneContextProviderWrapper>
-        <IonApp>
-          <SidemenuContextProviderWrapper>
-            <PreferencesContextProviderWrapper>
-              <SessionContextProviderWrapper>
-                <GlobalSearchContextProviderWrapper>
-                  <Workspace />
-                </GlobalSearchContextProviderWrapper>
-              </SessionContextProviderWrapper>
-            </PreferencesContextProviderWrapper>
-          </SidemenuContextProviderWrapper>
-        </IonApp>
-      </GlobalPaneContextProviderWrapper>
+      <ToastContextProvider>
+        <GlobalPaneContextProviderWrapper>
+          <IonApp>
+            <SidemenuContextProviderWrapper>
+              <PreferencesContextProviderWrapper>
+                <SessionContextProviderWrapper>
+                  <GlobalSearchContextProviderWrapper>
+                    <Workspace />
+                  </GlobalSearchContextProviderWrapper>
+                </SessionContextProviderWrapper>
+              </PreferencesContextProviderWrapper>
+            </SidemenuContextProviderWrapper>
+          </IonApp>
+        </GlobalPaneContextProviderWrapper>
+      </ToastContextProvider>
     );
   }
 

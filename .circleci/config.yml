@@ -1,20 +1,7 @@
 version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@5.1.0
-commands:
-  install-dependencies:
-    steps:
-      - restore_cache:
-          keys:
-            - dependency-cache-v2-{{ checksum "package-lock.json" }}
-            - dependency-cache-v2-
-      - run:
-          name: install-deps
-          command: 'npm ci'
-      - save_cache:
-          key: dependency-cache-v2-{{ checksum "package-lock.json" }}
-          paths:
-            - ./node_modules
+  node: circleci/node@7.1.0
 jobs:
   build_and_test:
     resource_class: medium
@@ -35,7 +22,7 @@ jobs:
           POSTGRES_DB: dnd-assistant
     steps:
       - checkout
-      - install-dependencies
+      - node/install-packages
       - run:
           name: prettier
           command: npx prettier --check .
@@ -67,22 +54,32 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup
-      - install-dependencies
+      - node/install-packages
       - run:
           name: build-frontend
-          command: npx nx build frontend --skip-nx-cache
+          command: |
+            export VITE_APP_VERSION=$CIRCLE_TAG
+            npx nx build frontend --skip-nx-cache
       - run:
           name: move-frontend-build
           command: mv dist/apps/frontend ./www
       - run:
-          name: set-frontend-version
-          command: sed -i "s/window.version = \"development\";/window.version = \"${CIRCLE_TAG:=stg}\";/" www/index.html
-      # - run:
-      #     name: set-service-worker-version
-      #     command: sed -i "s/APP_VERSION = \"development\";/APP_VERSION = \"${CIRCLE_TAG:=stg}\";/" www/service-worker.js
-      - run:
           name: push
           command: ./scripts/push-frontend-s3.sh ${CIRCLE_TAG:=stg}
+  push_docs:
+    resource_class: medium
+    docker:
+      - image: cimg/node:22.11
+    steps:
+      - checkout
+      - aws-cli/setup
+      - node/install-packages
+      - run:
+          name: build-docs
+          command: npx nx build docs --skip-nx-cache
+      - run:
+          name: push
+          command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
 
 workflows:
   version: 2
@@ -103,6 +100,14 @@ workflows:
             branches:
               ignore: /.*/
       - push_frontend:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - push_docs:
           requires:
             - build_and_test
           filters:
