@@ -397,7 +397,6 @@ registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/file\.createFile/,
   async (event) => {
     const clonedRequest = event.request.clone();
-    console.log('going to create file!');
     try {
       const response = await fetch(event.request);
 
@@ -410,7 +409,6 @@ registerRoute(
       const fileContentsUint8 = await readableStreamToUint8Array(
         input.fileContents,
       );
-      console.log('woot woot', input);
 
       await bgSyncQueue.pushRequest({
         request: clonedRequest2,
@@ -420,16 +418,12 @@ registerRoute(
         },
       });
 
-      console.log('pushed to queue', input);
-
       const manifestDb = await getManifestDb();
       await manifestDb.put(ObjectStoreName.PendingFiles, {
         ...input,
         fileContents: null,
         fileContentsUint8,
       });
-
-      console.log('added to DB', input);
 
       return encodeCacheResultForTrpc({
         id: input.id,

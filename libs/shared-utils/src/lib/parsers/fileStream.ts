@@ -24,7 +24,7 @@ export async function decodeFileStream(
   fileContents: ReadableStream<Uint8Array>;
 }> {
   const reader = input.getReader();
-  let leftover = new Uint8Array(0);
+  let leftover = new Uint8Array<ArrayBufferLike>(new ArrayBuffer(0));
 
   /**
    * Reads exactly `n` bytes from the stream (combining leftover and new chunks),
