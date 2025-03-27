@@ -5,6 +5,7 @@ export const turndown = (html: string, artifactSummary: ArtifactReferenceSummary
   const turndownService = new TurndownService();
   turndownService.addRule('ReplaceReferences', {
     filter: ['span'],
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     replacement: function (content, node: any) {
       const referenceArtifactId = node.getAttribute('data-artifact-id')
       const artifactReference = artifactSummary.artifactReferences.find((ref) => ref.targetArtifactId === referenceArtifactId)

@@ -4,7 +4,7 @@ import { generateHTML } from "@tiptap/html"
 import { applyUpdate, Doc } from "yjs"
 import { turndown } from "./turndownService"
 
-interface ArtifactExport {
+export interface ArtifactExport {
   title: string
   content: string
 }
@@ -15,7 +15,8 @@ export const transformArtifactsToArtifactExports = (artifactSummaries: ArtifactR
     applyUpdate(yDoc, artifactSummary.yBin)
     const tiptap = getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY)
     console.log(tiptap)
-    const title = getMetaFromYArtifact(yDoc).title
+    let title = getMetaFromYArtifact(yDoc).title
+    title += type === ExportJobType.Markdown ? '.md' : '.json'
 
     switch (type) {
       case ExportJobType.Markdown: {
