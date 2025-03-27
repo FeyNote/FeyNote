@@ -4,6 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import {
+  FileSizeLimitError,
   hasArtifactAccess,
   transformAndUploadFileToS3ForUser,
 } from '@feynote/api-services';
@@ -42,12 +43,24 @@ export const createFile = authenticatedProcedure
       }
     }
 
-    const uploadResult = await transformAndUploadFileToS3ForUser({
-      userId: ctx.session.userId,
-      file: Readable.fromWeb(input.fileContents as NodeWebReadableStream),
-      purpose: input.purpose,
-      mimetype: input.mimetype,
-    });
+    let uploadResult;
+    try {
+      uploadResult = await transformAndUploadFileToS3ForUser({
+        userId: ctx.session.userId,
+        file: Readable.fromWeb(input.fileContents as NodeWebReadableStream),
+        purpose: input.purpose,
+        mimetype: input.mimetype,
+      });
+    } catch (e) {
+      if (e instanceof FileSizeLimitError) {
+        throw new TRPCError({
+          message: 'File size exceeds maximum allowed size',
+          code: 'PAYLOAD_TOO_LARGE',
+        });
+      }
+
+      throw e;
+    }
 
     const file = await prisma.file.create({
       data: {

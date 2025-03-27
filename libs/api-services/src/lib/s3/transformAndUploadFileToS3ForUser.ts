@@ -4,6 +4,12 @@ import { getFileLimitsForUser } from './getFileLimitsForUser';
 import { uploadFileToS3 } from './uploadFileToS3';
 import { transformImage } from './transformImage';
 
+export class FileSizeLimitError extends Error {
+  constructor() {
+    super('File size exceeds maximum allowed size');
+  }
+}
+
 const IMAGE_FILE_TYPES = [
   'image/jpeg',
   'image/png',
@@ -38,37 +44,49 @@ export async function transformAndUploadFileToS3ForUser(args: {
     args.file.pipe(filePipeline);
   }
 
-  let totalBytes = 0;
-  const limitedFilePipeline = new PassThrough();
+  return new Promise<ReturnType<typeof uploadFileToS3>>((resolve, reject) => {
+    let totalBytes = 0;
+    const limitedFilePipeline = new PassThrough();
+    const sizeLimitError = new FileSizeLimitError();
 
-  const sizeLimitError = new Error('File size exceeds maximum allowed size');
+    const limiter = new Writable({
+      write(chunk, _enc, cb) {
+        totalBytes += chunk.length;
+        if (totalBytes > maxFileSize) {
+          cb(sizeLimitError);
+          filePipeline.destroy(sizeLimitError); // stop reading
+          limitedFilePipeline.destroy(sizeLimitError); // stop writing
+        } else {
+          const ok = limitedFilePipeline.write(chunk);
+          cb();
+          if (!ok) {
+            filePipeline.pause();
+            limitedFilePipeline.once('drain', () => filePipeline.resume());
+          }
+        }
+      },
+      final(cb) {
+        limitedFilePipeline.end();
+        cb();
+      },
+    });
 
-  const limiter = new Writable({
-    write(chunk, _enc, cb) {
-      totalBytes += chunk.length;
-      if (totalBytes > maxFileSize) {
-        cb(sizeLimitError); // reject immediately
-        filePipeline.destroy(sizeLimitError);
-        limitedFilePipeline.end(); // close downstream
-      } else {
-        limitedFilePipeline.write(chunk, cb);
-      }
-    },
+    const onError = (err: Error) => {
+      filePipeline.destroy(err);
+      limitedFilePipeline.destroy(err);
+      limiter.destroy(err);
+
+      reject(err);
+    };
+
+    // All pipelines _must_ have error handlers since each
+    // pipe can emit it's own error and will be considered uncaught (server crash)
+    filePipeline.on('error', onError);
+    limitedFilePipeline.on('error', onError);
+    limiter.on('error', onError);
+
+    filePipeline.pipe(limiter);
+
+    resolve(uploadFileToS3(limitedFilePipeline, args.mimetype, args.purpose));
   });
-
-  filePipeline.pipe(limiter);
-  filePipeline.on('end', () => {
-    limitedFilePipeline.end();
-  });
-  filePipeline.on('error', (err) => {
-    limitedFilePipeline.destroy(err);
-  });
-
-  const uploadResult = await uploadFileToS3(
-    limitedFilePipeline,
-    args.mimetype,
-    args.purpose,
-  );
-
-  return uploadResult;
 }
