@@ -241,6 +241,7 @@
   "artifactRenderer.title.label": "Artifact Name",
   "artifactRenderer.title.placeholder": "Olympus",
   "artifactRenderer.uploadingFile": "Uploading...",
+  "artifactRenderer.fileTooLarge": "File is too large",
   "artifactRenderer.diceRoll.title": "Dice Roll Result",
   "artifactRenderer.settings": "Settings",
   "artifactRenderer.titleBodyMerge": "Theme title",

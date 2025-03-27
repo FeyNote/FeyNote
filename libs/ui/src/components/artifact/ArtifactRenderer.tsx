@@ -161,7 +161,9 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
                 .focus()
                 .run();
             } catch (e) {
-              handleTRPCErrors(e);
+              handleTRPCErrors(e, {
+                413: t('artifactRenderer.fileTooLarge'),
+              });
             }
           }
           setIsUploadingFile(false);
@@ -201,11 +203,21 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         collaborationConnection={props.connection}
         onTitleChange={props.onTitleChange}
         handleFileUpload={async (file) => {
+          setIsUploadingFile(true);
           const response = await uploadFileToApi({
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,
-          });
+          })
+            .catch((e) => {
+              handleTRPCErrors(e, {
+                413: t('artifactRenderer.fileTooLarge'),
+              });
+              throw e;
+            })
+            .finally(() => {
+              setIsUploadingFile(false);
+            });
           return response;
         }}
         getFileUrl={(fileId) => {
