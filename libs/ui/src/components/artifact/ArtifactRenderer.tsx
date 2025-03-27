@@ -85,7 +85,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
               file,
               purpose: 'artifact',
               artifactId: props.artifactId,
-              sessionToken: session.token,
             });
             if (pos === undefined) {
               pos = editor.state.selection.anchor;
@@ -144,7 +143,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,
-            sessionToken: session.token,
           });
           return response;
         }}

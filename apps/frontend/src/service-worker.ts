@@ -32,15 +32,19 @@ if (environment !== 'development') {
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
   getManifestDb,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
-import { CacheFirst, NetworkFirst } from 'workbox-strategies';
+import {
+  decodeFileStream,
+  readableStreamToUint8Array,
+} from '../../../libs/shared-utils/src/lib/parsers/fileStream';
+import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { Queue } from 'workbox-background-sync';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { customTrpcTransformer } from '@feynote/shared-utils';
@@ -79,6 +83,51 @@ const syncManagerP = Promise.all([getManifestDb(), searchManagerP]).then(
   ([manifestDb, searchManager]) => new SyncManager(manifestDb, searchManager),
 );
 
+const OFFLINE_BGSYNC_RETENTION_DAYS = 30;
+const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
+  forceSyncFallback: true,
+  maxRetentionTime: OFFLINE_BGSYNC_RETENTION_DAYS * 24 * 60,
+  onSync: async ({ queue }) => {
+    console.log('BGSyncQueue onSync', queue.size);
+    const manifestDb = await getManifestDb();
+
+    let entry;
+    while ((entry = await queue.shiftRequest())) {
+      try {
+        const response = await fetch(entry.request);
+        if (response.status >= 200 && response.status < 300) {
+          if (
+            entry.metadata &&
+            'type' in entry.metadata &&
+            entry.metadata.type === 'trpc.file.createFile' &&
+            'storedAsId' in entry.metadata
+          ) {
+            try {
+              await manifestDb.delete(
+                ObjectStoreName.PendingFiles,
+                entry.metadata.storedAsId as string,
+              );
+            } catch (e) {
+              console.error(
+                'Failed to delete file from local db after successful upload',
+                e,
+              );
+            }
+          }
+        } else {
+          await queue.pushRequest(entry);
+
+          throw new Error('Queue sync failed due to server error');
+        }
+      } catch (error) {
+        await queue.pushRequest(entry);
+
+        console.error('Replay failed for request', entry.request, error);
+      }
+    }
+  },
+});
+
 const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
   const encodedInput = event.url.searchParams.get('input');
   if (!encodedInput) return;
@@ -103,6 +152,40 @@ const encodeCacheResultForTrpc = (result: unknown) => {
     },
   );
 };
+
+async function tryStoreInCacheWithQuotaPurge(
+  cache: Cache,
+  request: Request,
+  response: Response,
+  maxCacheEntries = 50,
+) {
+  try {
+    await limitCacheToMaxEntries(cache, maxCacheEntries - 1);
+    await cache.put(request, response.clone());
+  } catch (err: any) {
+    if (
+      err instanceof DOMException &&
+      (err.name === 'QuotaExceededError' ||
+        err.name === 'NS_ERROR_DOM_QUOTA_REACHED')
+    ) {
+      await purgeOldestEntries(cache);
+    }
+  }
+}
+
+async function purgeOldestEntries(cache: Cache, maxToDelete = 5) {
+  const requests = await cache.keys();
+  for (let i = 0; i < Math.min(maxToDelete, requests.length); i++) {
+    await cache.delete(requests[i]);
+  }
+}
+
+async function limitCacheToMaxEntries(cache: Cache, maxEntries = 50) {
+  const requests = await cache.keys();
+  if (requests.length > maxEntries) {
+    await purgeOldestEntries(cache, requests.length - maxEntries);
+  }
+}
 
 const updateListCache = async (
   objectStoreName: ObjectStoreName,
@@ -260,20 +343,113 @@ registerRoute(
 // Artifact assets are immutable. Should be cached indefinitely, but we need to limit them so
 // we don't "anger" the browser by caching too much
 const ARTIFACT_ASSET_CACHE_NAME = 'artifact-asset-cache';
+const ARTIFACT_ASSET_CACHE_MAX_ENTRIES = 100;
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/file\/.*?\/redirect/,
-  new CacheFirst({
-    cacheName: ARTIFACT_ASSET_CACHE_NAME,
-    plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200, 302],
-      }),
-      new ExpirationPlugin({
-        maxEntries: 500,
-        purgeOnQuotaError: true, // Clear the image cache if we exceed the browser cache limit
-      }),
-    ],
-  }),
+  /((https:\/\/api\.feynote\.com)|(\/api))\/file\/(.*?)\/redirect/,
+  async (event) => {
+    const fileId = event.url.pathname.match(/\/file\/(.*?)\/redirect/)?.[1];
+    if (!fileId) throw new Error('No fileId found in URL');
+
+    const manifestDb = await getManifestDb();
+    const pendingFile = await manifestDb.get(
+      ObjectStoreName.PendingFiles,
+      fileId,
+    );
+
+    if (pendingFile) {
+      return new Response(pendingFile.fileContentsUint8, {
+        headers: {
+          'Content-Type': pendingFile.mimetype,
+          'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
+          swcache: 'true',
+          'Accept-Ranges': 'bytes',
+          'Content-Length': pendingFile.fileSize.toString(),
+        },
+      });
+    }
+
+    // Try to see if we have anything in the cache
+    const cache = await caches.open(ARTIFACT_ASSET_CACHE_NAME);
+    const cachedResponse = await cache.match(event.request);
+    if (cachedResponse) return cachedResponse;
+
+    // Fall back to server
+    const response = await fetch(event.request);
+    if (
+      response.status === 0 ||
+      response.status === 200 ||
+      response.status === 302
+    ) {
+      await tryStoreInCacheWithQuotaPurge(
+        cache,
+        event.request,
+        response,
+        ARTIFACT_ASSET_CACHE_MAX_ENTRIES,
+      );
+    }
+
+    return response;
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/file\.createFile/,
+  async (event) => {
+    const clonedRequest = event.request.clone();
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (_e) {
+      // We need a second instance of the cloned request so we can store it in the bgSyncQueue
+      const clonedRequest2 = clonedRequest.clone();
+      const blob = await clonedRequest.blob();
+      const input = await decodeFileStream(blob.stream());
+      const fileContentsUint8 = await readableStreamToUint8Array(
+        input.fileContents,
+      );
+
+      await bgSyncQueue.pushRequest({
+        request: clonedRequest2,
+        metadata: {
+          type: 'trpc.file.createFile',
+          storedAsId: input.id,
+        },
+      });
+
+      const manifestDb = await getManifestDb();
+      await manifestDb.put(ObjectStoreName.PendingFiles, {
+        ...input,
+        fileContents: null,
+        fileContentsUint8,
+      });
+
+      return encodeCacheResultForTrpc({
+        id: input.id,
+        name: input.fileName,
+        mimetype: input.mimetype,
+        storageKey: 'UPLOADED_OFFLINE',
+      });
+    }
+  },
+  'POST',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/file\.getSafeFileId/,
+  async (event) => {
+    try {
+      const response = await fetch(event.request);
+
+      return response;
+    } catch (_e) {
+      // When offline we rely on the very low chance of a uuid collision
+      const candidateId = crypto.randomUUID();
+      return encodeCacheResultForTrpc({ id: candidateId });
+    }
+  },
+  'GET',
 );
 
 registerRoute(
