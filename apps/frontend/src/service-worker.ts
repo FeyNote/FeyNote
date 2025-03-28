@@ -47,7 +47,7 @@ import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { customTrpcTransformer } from '@feynote/shared-utils';
+import { customTrpcTransformer } from '../../../libs/shared-utils/src/lib/customTrpcTransformer';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
