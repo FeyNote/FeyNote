@@ -30,6 +30,7 @@ export const createArtifact = authenticatedProcedure
       theme: z.nativeEnum(ArtifactTheme),
       titleBodyMerge: z.boolean().optional(),
       linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
+      deletedAt: z.date().optional(),
       yBin: z.any().optional(),
     }),
   )
@@ -49,6 +50,7 @@ export const createArtifact = authenticatedProcedure
         type: input.type,
         titleBodyMerge: input.titleBodyMerge ?? true,
         linkAccessLevel: input.linkAccessLevel ?? ArtifactAccessLevel.noaccess,
+        deletedAt: input.deletedAt?.toISOString() ?? null,
       } satisfies YArtifactMeta;
 
       if (input.yBin) {

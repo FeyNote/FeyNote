@@ -59,27 +59,5 @@ export const deleteArtifact = authenticatedProcedure
 
     await searchProvider.deleteArtifacts([input.id]);
 
-    try {
-      await enqueueOutgoingWebsocketMessage({
-        room: wsRoomNameForUserId(artifact.userId),
-        event: WebsocketMessageEvent.ArtifactDeleted,
-        json: {
-          artifactId: input.id,
-        },
-      });
-      for (const artifactShare of artifact.artifactShares) {
-        await enqueueOutgoingWebsocketMessage({
-          room: wsRoomNameForUserId(artifactShare.userId),
-          event: WebsocketMessageEvent.ArtifactDeleted,
-          json: {
-            artifactId: input.id,
-          },
-        });
-      }
-    } catch (e) {
-      console.error(e);
-      Sentry.captureException(e);
-    }
-
     return 'Ok';
   });

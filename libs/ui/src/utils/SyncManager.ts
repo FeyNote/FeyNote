@@ -69,14 +69,11 @@ export class SyncManager {
     );
     this.syncManifest();
 
-    eventManager.addEventListener(
-      [EventName.ArtifactUpdated, EventName.ArtifactDeleted],
-      () => {
-        if (ENABLE_VERBOSE_SYNC_LOGGING)
-          console.log('Artifact updated, queueing sync');
-        syncManifestDebouncer.call();
-      },
-    );
+    eventManager.addEventListener([EventName.ArtifactUpdated], () => {
+      if (ENABLE_VERBOSE_SYNC_LOGGING)
+        console.log('Artifact updated, queueing sync');
+      syncManifestDebouncer.call();
+    });
   }
 
   getDocName(artifactId: string): string {

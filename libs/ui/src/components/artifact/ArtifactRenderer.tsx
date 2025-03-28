@@ -4,7 +4,6 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
-import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +15,7 @@ import { useIsEditable } from '../../utils/useAuthorizedScope';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
+import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 
 const FileUploadOverlay = styled.div`
   position: absolute;
@@ -75,7 +75,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady], undefined, true);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
 
-  const { type } = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { type, deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
   useEffect(() => {
     props.connection.syncedPromise
@@ -96,15 +96,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
       });
   }, [props.connection]);
 
-  useEffect(() => {
-    const cleanup = incrementVersionForChangesOnArtifact(
-      props.artifactId,
-      props.connection.yjsDoc,
-    );
-
-    return () => cleanup();
-  }, [props.connection]);
-
   if (!collabReady || !type) {
     return null;
   }
@@ -112,6 +103,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const render = (renderer: React.ReactNode) => {
     return (
       <>
+        {deletedAt && <ArtifactDeletedBanner deletedAt={deletedAt} />}
         {renderer}
         {isUploadingFile && (
           <FileUploadOverlay>

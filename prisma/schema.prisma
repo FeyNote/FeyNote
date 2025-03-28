@@ -58,6 +58,7 @@ model Artifact {
   linkAccessLevel ArtifactAccessLevel @default(noaccess)
   createdAt       DateTime            @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime            @updatedAt @db.Timestamptz(6)
+  deletedAt       DateTime?           @db.Timestamptz(6)
 
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")

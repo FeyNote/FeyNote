@@ -6,6 +6,7 @@ import { getApiUrls } from '../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
 import type { SessionDTO } from '@feynote/shared-utils';
+import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 10000;
 
@@ -58,6 +59,10 @@ class CollaborationManager {
       websocketProvider: this.ws,
     });
 
+    if (docName.startsWith('artifact:')) {
+      incrementVersionForChangesOnArtifact(docName.split(':')[1], yjsDoc);
+    }
+
     const authorizedScopePromise = new Promise<string>((resolve) => {
       tiptapCollabProvider.authenticatedHandler = (scope) => {
         resolve(scope);
@@ -98,6 +103,7 @@ class CollaborationManager {
     this.connectionByDocName.forEach((connection) => {
       connection.indexeddbProvider.destroy();
       connection.tiptapCollabProvider.destroy();
+      connection.yjsDoc.destroy();
     });
   }
 

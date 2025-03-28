@@ -6,9 +6,12 @@ import type {
   ArtifactTheme,
   ArtifactType,
 } from '@prisma/client';
+import type { TypedMap } from 'yjs-types';
 
 export const getMetaFromYArtifact = (yArtifact: YDoc) => {
-  const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY);
+  const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY) as TypedMap<
+    Partial<YArtifactMeta>
+  >;
 
   const artifactMeta = {
     id: (artifactMetaYMap.get('id') as string) ?? undefined,
@@ -21,6 +24,7 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     linkAccessLevel:
       (artifactMetaYMap.get('linkAccessLevel') as ArtifactAccessLevel) ??
       'noaccess',
+    deletedAt: artifactMetaYMap.get('deletedAt') ?? null,
   } satisfies Partial<YArtifactMeta>;
 
   return artifactMeta;

@@ -1,5 +1,5 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useContext, useEffect, useRef } from 'react';
+import { useContext, useRef } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactContextMenu } from './ArtifactContextMenu';
@@ -7,11 +7,6 @@ import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import { eventManager } from '../../context/events/EventManager';
-import { EventName } from '../../context/events/EventName';
-import { EventData } from '../../context/events/EventData';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
@@ -34,25 +29,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
   const connection = collaborationManager.get(`artifact:${props.id}`, session);
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
-
-  useEffect(() => {
-    const deleteHandler = (
-      _: EventName,
-      data: EventData[EventName.ArtifactDeleted],
-    ) => {
-      if (data.artifactId === props.id) {
-        navigate(PaneableComponent.Dashboard, {}, PaneTransition.Reset);
-      }
-    };
-    eventManager.addEventListener(EventName.ArtifactDeleted, deleteHandler);
-
-    return () => {
-      eventManager.removeEventListener(
-        EventName.ArtifactDeleted,
-        deleteHandler,
-      );
-    };
-  }, [props.id]);
 
   return (
     <IonPage>

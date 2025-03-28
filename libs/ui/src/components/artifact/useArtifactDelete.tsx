@@ -1,7 +1,9 @@
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { collaborationManager } from '../editor/collaborationManager';
+import { useContext } from 'react';
+import { SessionContext } from '../../context/session/SessionContext';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 
 export class ArtifactDeleteDeclinedError extends Error {
   constructor() {
@@ -12,20 +14,18 @@ export class ArtifactDeleteDeclinedError extends Error {
 export const useArtifactDelete = () => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const { handleTRPCErrors } = useHandleTRPCErrors();
+  const { session } = useContext(SessionContext);
 
   const _deleteArtifact = async (artifactId: string): Promise<void> => {
-    return trpc.artifact.deleteArtifact
-      .mutate({
-        id: artifactId,
-      })
-      .then(() => {
-        return;
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-        throw error;
-      });
+    const connection = collaborationManager.get(
+      `artifact:${artifactId}`,
+      session,
+    );
+    await connection.syncedPromise;
+
+    connection.yjsDoc
+      .getMap(ARTIFACT_META_KEY)
+      .set('deletedAt', new Date().toISOString());
   };
 
   const deleteArtifact = (artifactId: string) => {
