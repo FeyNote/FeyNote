@@ -71,7 +71,7 @@
     "@tiptap/extension-underline": "2.11.5",
     "@tiptap/react": "2.11.5",
     "@tiptap/suggestion": "2.11.5",
-    "@trpc/client": "^11.0.0",
+    "@trpc/client": "^11.0.1",
     "@trpc/server": "^11.0.0",
     "@types/cors": "^2.8.17",
     "@types/dedent": "^0.7.2",
