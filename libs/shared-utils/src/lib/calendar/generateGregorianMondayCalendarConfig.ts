@@ -4,7 +4,7 @@ import type { YCalendarConfig } from './YCalendarConfig';
 export const generateGregorianMondayCalendarConfig = (): YCalendarConfig => {
   return {
     preset: 'gregorian-monday',
-    calendarStartDayOfWeek: 0, // Zero-indexed
+    calendarStartDayOfWeek: 6, // Zero-indexed
     daysInWeek: 7,
     monthsInYear: 12,
     defaultCenter: null,
@@ -25,13 +25,13 @@ export const generateGregorianMondayCalendarConfig = (): YCalendarConfig => {
       'December',
     ]),
     dayOfWeekNames: YArray.from([
-      'Sunday',
       'Monday',
       'Tuesday',
       'Wednesday',
       'Thursday',
       'Friday',
       'Saturday',
+      'Sunday',
     ]),
   } satisfies YCalendarConfig;
 };
