@@ -175,7 +175,7 @@
     "typescript": "^5.8.2",
     "vite": "6.2.1",
     "vite-plugin-dts": "4.5.3",
-    "vite-plugin-pwa": "^0.21.2",
+    "vite-plugin-pwa": "^1.0.0",
     "yjs-types": "^0.0.1"
   },
   "lint-staged": {
