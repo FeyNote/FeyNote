@@ -171,7 +171,7 @@
     "nx": "20.7.0",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
-    "ts-jest": "^29.3.0",
+    "ts-jest": "^29.3.1",
     "typescript": "^5.8.2",
     "vite": "6.2.1",
     "vite-plugin-dts": "4.5.3",
