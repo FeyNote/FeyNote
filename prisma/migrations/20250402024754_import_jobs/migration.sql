@@ -7,6 +7,9 @@ CREATE TYPE "JobStatus" AS ENUM ('NotStarted', 'Failed', 'Success', 'InProgress'
 -- AlterEnum
 ALTER TYPE "FilePurpose" ADD VALUE 'job';
 
+-- AlterTable
+ALTER TABLE "File" ADD COLUMN     "jobId" UUID;
+
 -- CreateTable
 CREATE TABLE "Job" (
     "id" UUID NOT NULL,
@@ -19,6 +22,9 @@ CREATE TABLE "Job" (
 
     CONSTRAINT "Job_pkey" PRIMARY KEY ("id")
 );
+
+-- AddForeignKey
+ALTER TABLE "File" ADD CONSTRAINT "File_jobId_fkey" FOREIGN KEY ("jobId") REFERENCES "Job"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Job" ADD CONSTRAINT "Job_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

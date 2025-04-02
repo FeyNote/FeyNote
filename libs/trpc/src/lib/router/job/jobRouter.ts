@@ -2,6 +2,7 @@ import { router as trpcRouter } from '../../trpc';
 import { createImportJob } from './createImportJob';
 import { createExportJob } from './createExportJob';
 import { getImportExportJobs } from './getImportExportJobs';
+import { getImportExportJob } from './getImportExportJob';
 import { startJob } from './startJob';
 
 export const jobRouter = trpcRouter({
@@ -9,4 +10,5 @@ export const jobRouter = trpcRouter({
   createExportJob,
   startJob,
   getImportExportJobs,
+  getImportExportJob,
 });

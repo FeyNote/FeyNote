@@ -22,7 +22,6 @@ export enum ExportJobType {
 
 export interface JobMeta {
   exportType?: ExportJobType;
-  s3Key?: string;
 }
 
 export type ImportJob = Omit<
@@ -31,7 +30,6 @@ export type ImportJob = Omit<
 > & {
   meta: {
     importType: ImportJobType;
-    s3Key: string;
     title: string;
   };
   type: typeof JobType.Import;
@@ -43,7 +41,6 @@ export type ExportJob = Omit<
 > & {
   meta: {
     exportType: ExportJobType;
-    s3Key?: string;
   };
   type: typeof JobType.Export;
 };

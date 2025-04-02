@@ -3,22 +3,20 @@ import { artifactReferenceSummary, type ArtifactReferenceSummary } from "@feynot
 
 interface ExportArtifactInfo {
     userId: string,
-    iterations: number,
-    callback: (artifacts: ArtifactReferenceSummary[]) => void
-    take?: number,
+    offset: number,
+    batchSize: number,
 }
 
 export const getUserArtifacts = async ({
     userId,
-    iterations,
-    callback,
-    take = 100,
-  }: ExportArtifactInfo) => {
+    offset,
+    batchSize,
+  }: ExportArtifactInfo): Promise<ArtifactReferenceSummary[]> => {
   const artifactSummaries = await prisma.artifact.findMany({
     where: { userId },
     ...artifactReferenceSummary,
-    take,
-    skip: iterations * take,
+    take: batchSize,
+    skip: offset,
   })
-  return callback(artifactSummaries)
+  return artifactSummaries;
 }

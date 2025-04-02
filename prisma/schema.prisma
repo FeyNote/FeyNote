@@ -141,6 +141,8 @@ model File {
   user       User        @relation(fields: [userId], references: [id])
   artifactId String?     @db.Uuid
   artifact   Artifact?   @relation(fields: [artifactId], references: [id])
+  jobId     String?     @db.Uuid
+  job   Job?   @relation(fields: [jobId], references: [id])
   mimetype   String
   name       String
   storageKey String
@@ -224,6 +226,7 @@ model Job {
   type      JobType
   meta      Json?
   status    JobStatus
+  files                      File[]
   createdAt DateTime      @default(now()) @db.Timestamptz(6)
   updatedAt DateTime      @updatedAt @db.Timestamptz(6)
 }

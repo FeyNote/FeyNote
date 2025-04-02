@@ -16,11 +16,15 @@ import { useEffect, useState } from 'react';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { trpc } from '../../utils/trpc';
 import {
-    ExportJobType,
+  ExportJobType,
   ImportJobType,
   type ExportJob,
   type ImportJob,
 } from '@feynote/prisma/types';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
+import type { EventData } from '../../context/events/EventData';
+import { JobType } from '@prisma/client';
 
 export const ImportExport: React.FC = () => {
   const { t } = useTranslation();
@@ -29,12 +33,31 @@ export const ImportExport: React.FC = () => {
 
   useEffect(() => {
     fetchImportJobs();
+    const jobHandler = async (
+      _: EventName,
+      data: EventData[EventName.JobCompleted],
+    ) => {
+      const importExportJobs = await trpc.job.getImportExportJobs.query();
+      setJobs(importExportJobs);
+      const eventJob = importExportJobs.find((job) => job.id === data.jobId);
+      if (!eventJob) return
+      if (eventJob.type === JobType.Export) {
+        const url = await trpc.file.getFileUrlByJobId.query({ jobId: eventJob.id })
+        if (!url) return
+        window.open(url, '_blank')
+      }
+    }
+
+    eventManager.addEventListener(EventName.JobCompleted, jobHandler);
+    return () => {
+      eventManager.removeEventListener(EventName.JobCompleted, jobHandler);
+    };
   }, []);
 
   const fetchImportJobs = async () => {
     const progress = startProgressBar();
-    const importJobDTOs = await trpc.job.getImportExportJobs.query();
-    setJobs(importJobDTOs);
+    const importExportJobs = await trpc.job.getImportExportJobs.query();
+    setJobs(importExportJobs);
     progress.dismiss();
   };
 

@@ -10,6 +10,8 @@ import {
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
+import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
   JOB_QUEUE_NAME,
@@ -54,6 +56,13 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
         status,
       },
     });
+    enqueueOutgoingWebsocketMessage({
+      room: wsRoomNameForUserId(userId),
+      event: WebsocketMessageEvent.JobCompleted,
+      json: {
+        jobId: job.id,
+      },
+    })
   },
   {
     autorun: false,

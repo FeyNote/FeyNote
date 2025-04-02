@@ -13,4 +13,7 @@ export type WebsocketMessageJSON = {
       references: boolean;
     };
   };
+  [WebsocketMessageEvent.JobCompleted]: {
+    jobId: string;
+  };
 };
