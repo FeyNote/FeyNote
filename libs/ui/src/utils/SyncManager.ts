@@ -1,4 +1,4 @@
-import { deleteDB, IDBPDatabase } from 'idb';
+import { deleteDB } from 'idb';
 import type { SearchManager } from './SearchManager';
 import {
   HocuspocusProvider,
@@ -21,7 +21,7 @@ import {
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
-import { ObjectStoreName } from './localDb';
+import { getManifestDb, ObjectStoreName } from './localDb';
 import { waitFor } from './waitFor';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import { websocketClient } from '../context/events/websocketClient';
@@ -54,10 +54,7 @@ const SYNC_BATCH_RATE_LIMIT_WAIT = 1 * 1000;
 export class SyncManager {
   private currentSyncPromise: Promise<void> | null = null;
 
-  constructor(
-    private manifestDb: IDBPDatabase,
-    private searchManager: SearchManager,
-  ) {
+  constructor(private searchManager: SearchManager) {
     const syncManifestDebouncer = new ImmediateDebouncer(
       () => {
         this.syncManifest();
@@ -108,13 +105,14 @@ export class SyncManager {
     console.log(`Beginning sync for ${session.email}`);
 
     await this.searchManager.onReady();
+    const manifestDb = await getManifestDb();
 
     try {
       const latestManifest = await trpc.user.getManifest.query();
 
       // ==== Update Artifact References ====
       const modifiedEdgeArtifactIds = new Set<string>();
-      const edgesTx = this.manifestDb.transaction(
+      const edgesTx = manifestDb.transaction(
         ObjectStoreName.Edges,
         'readwrite',
       );
@@ -160,7 +158,7 @@ export class SyncManager {
       });
 
       // ==== Update Artifacts ====
-      const localArtifactVersionsRecords = await this.manifestDb.getAll(
+      const localArtifactVersionsRecords = await manifestDb.getAll(
         ObjectStoreName.ArtifactVersions,
       );
       const localArtifactVersions: Record<string, number> = {};
@@ -175,7 +173,7 @@ export class SyncManager {
       )) {
         if (!localArtifactVersions[artifactId]) {
           // Exists on server, but does not exist on client
-          await this.manifestDb.add(ObjectStoreName.ArtifactVersions, {
+          await manifestDb.add(ObjectStoreName.ArtifactVersions, {
             id: artifactId,
             version,
           });
@@ -186,7 +184,7 @@ export class SyncManager {
             );
         } else if (localArtifactVersions[artifactId] !== version) {
           // Exists on server, but versions do not match
-          await this.manifestDb.put(ObjectStoreName.ArtifactVersions, {
+          await manifestDb.put(ObjectStoreName.ArtifactVersions, {
             id: artifactId,
             version,
           });
@@ -226,10 +224,7 @@ export class SyncManager {
         if (!latestManifest.artifactVersions[artifactId]) {
           // Exists on client, but does not exist on server
 
-          await this.manifestDb.delete(
-            ObjectStoreName.ArtifactVersions,
-            artifactId,
-          );
+          await manifestDb.delete(ObjectStoreName.ArtifactVersions, artifactId);
           await this.searchManager.unindexArtifact(artifactId);
           try {
             await deleteDB(`artifact:${artifactId}`);
@@ -369,7 +364,8 @@ export class SyncManager {
       );
     }
 
-    this.manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
+    const manifestDb = await getManifestDb();
+    await manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
       id: artifactId,
       meta: doc.getMap(ARTIFACT_META_KEY).toJSON(),
       yDoc: encodeStateAsUpdate(doc),
