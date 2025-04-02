@@ -5,6 +5,7 @@ import { uint8ArrayToBase64, base64ToUint8Array } from 'uint8array-extras';
 const dateFields = new Set([
   'createdAt',
   'updatedAt',
+  'deletedAt',
   'extendableUntil',
   'expiresAt',
   'artifactDeletedAt',

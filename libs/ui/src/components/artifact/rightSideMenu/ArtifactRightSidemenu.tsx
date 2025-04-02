@@ -131,7 +131,56 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     );
   }, [outgoingEdges]);
 
-  const artifactSettings = artifactMeta.userId === session.userId && (
+  const aritfactSettings = artifactMeta.userId === session.userId &&
+    !artifactMeta.deletedAt && (
+      <IonCard>
+        <IonListHeader>
+          <IonIcon icon={cog} size="small" />
+          &nbsp;&nbsp;
+          {t('artifactRenderer.settings')}
+        </IonListHeader>
+        <CompactIonItem lines="none" button>
+          <IonSelect
+            label={t('artifactRenderer.theme')}
+            labelPlacement="fixed"
+            value={artifactMeta.theme}
+            onIonChange={(e) => {
+              setMetaProp('theme', e.detail.value);
+            }}
+          >
+            {Object.keys(artifactThemeTitleI18nByName).map((el) => (
+              <IonSelectOption key={el} value={el}>
+                {t(
+                  artifactThemeTitleI18nByName[
+                    el as keyof typeof artifactThemeTitleI18nByName
+                  ],
+                )}
+              </IonSelectOption>
+            ))}
+          </IonSelect>
+        </CompactIonItem>
+        <CompactIonItem button lines="none">
+          <IonCheckbox
+            labelPlacement="end"
+            justify="start"
+            checked={artifactMeta.titleBodyMerge}
+            onIonChange={async (event) => {
+              setMetaProp('titleBodyMerge', event.target.checked);
+            }}
+          >
+            {t('artifactRenderer.titleBodyMerge')}
+          </IonCheckbox>
+          <InfoButton
+            slot="end"
+            message={t('artifactRenderer.titleBodyMerge.help')}
+          />
+        </CompactIonItem>
+      </IonCard>
+    );
+
+  const isOwner = artifactMeta.userId === session.userId;
+  const isDeleted = !!artifactMeta.deletedAt;
+  const artifactSharingSettings = isOwner && !isDeleted && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -184,7 +233,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     </IonCard>
   );
 
-  const artifactSharingStatus = artifactMeta.userId !== session.userId && (
+  const artifactSharingStatus = !isOwner && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -212,55 +261,13 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
-      <IonCard>
-        <IonListHeader>
-          <IonIcon icon={cog} size="small" />
-          &nbsp;&nbsp;
-          {t('artifactRenderer.settings')}
-        </IonListHeader>
-        <CompactIonItem lines="none" button>
-          <IonSelect
-            label={t('artifactRenderer.theme')}
-            labelPlacement="fixed"
-            value={artifactMeta.theme}
-            onIonChange={(e) => {
-              setMetaProp('theme', e.detail.value);
-            }}
-          >
-            {Object.keys(artifactThemeTitleI18nByName).map((el) => (
-              <IonSelectOption key={el} value={el}>
-                {t(
-                  artifactThemeTitleI18nByName[
-                    el as keyof typeof artifactThemeTitleI18nByName
-                  ],
-                )}
-              </IonSelectOption>
-            ))}
-          </IonSelect>
-        </CompactIonItem>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={artifactMeta.titleBodyMerge}
-            onIonChange={async (event) => {
-              setMetaProp('titleBodyMerge', event.target.checked);
-            }}
-          >
-            {t('artifactRenderer.titleBodyMerge')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.titleBodyMerge.help')}
-          />
-        </CompactIonItem>
-      </IonCard>
+      {aritfactSettings}
       <ArtifactTableOfContents
         artifactId={props.artifactId}
         connection={props.connection}
         onTocUpdateRef={props.onTocUpdateRef}
       />
-      {artifactSettings}
+      {artifactSharingSettings}
       {artifactSharingStatus}
       {!!incomingEdgesByArtifactId.length && (
         <IonCard>

@@ -11,6 +11,11 @@ import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import { useArtifactDelete } from './useArtifactDelete';
+import { useIsEditable } from '../../utils/useAuthorizedScope';
+import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import type { TypedMap } from 'yjs-types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 interface ArtifactProps {
   id: string;
@@ -29,6 +34,19 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
   const connection = collaborationManager.get(`artifact:${props.id}`, session);
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
+  const { deleteArtifact } = useArtifactDelete();
+  const { isEditable } = useIsEditable(connection);
+
+  const undelete = () => {
+    if (isEditable) {
+      const yDoc = connection.yjsDoc;
+      yDoc.transact(() => {
+        (
+          yDoc.getMap(ARTIFACT_META_KEY) as TypedMap<Partial<YArtifactMeta>>
+        ).set('deletedAt', null);
+      });
+    }
+  };
 
   return (
     <IonPage>
@@ -37,6 +55,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         popoverContents={
           <ArtifactContextMenu
             artifactId={props.id}
+            isEditable={isEditable}
+            triggerDelete={() => deleteArtifact(props.id)}
+            triggerUndelete={undelete}
             connection={connection}
             pane={pane}
             navigate={navigate}
@@ -50,11 +71,13 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         <ArtifactRenderer
           artifactId={props.id}
           connection={connection}
+          isEditable={isEditable}
           scrollToBlockId={props.focusBlockId}
           scrollToDate={props.focusDate}
           onTocUpdate={(content) => {
             onTocUpdateRef.current?.(content);
           }}
+          undelete={() => undelete()}
         />
       </IonContent>
       {isPaneFocused &&

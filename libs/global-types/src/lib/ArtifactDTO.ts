@@ -17,6 +17,7 @@ export type ArtifactDTO = {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
   previewText: string;
   artifactReferences: {
     artifactId: string;

@@ -171,7 +171,7 @@ export const ArtifactTree = () => {
     trpc.artifact.getArtifacts
       .query()
       .then((artifacts) => {
-        setArtifacts(artifacts);
+        setArtifacts(artifacts.filter((artifact) => !artifact.deletedAt));
         triggerRerender();
       })
       .catch(() => {

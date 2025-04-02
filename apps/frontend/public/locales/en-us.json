@@ -225,6 +225,9 @@
   "artifact.delete.header": "Delete Artifact",
   "artifact.delete.message": "Are you sure? This action is irreversible.",
   "artifact.duplicateTitle": "Copy of {{title}}",
+  "artifact.deletedBanner.message": "This artifact was deleted on {{date}}.",
+  "artifact.deletedBanner.messageEditable": "This artifact was deleted on {{date}}. Click to restore.",
+  "artifact.deleted.undelete": "Restore",
   "artifactField.imageAlt": "Image attached to artifact",
   "artifactField.noImages": "No images",
 

@@ -9,6 +9,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
     userId: true,
     createdAt: true,
     updatedAt: true,
+    deletedAt: true,
     text: true,
     artifactReferences: {
       select: {
