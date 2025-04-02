@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 import { IDBPDatabase, openDB } from 'idb';
 
 export enum ObjectStoreName {
@@ -17,8 +19,33 @@ export enum KVStoreKeys {
   LastSessionUserId = 'lastSessionUserId',
 }
 
+const MIGRATION_VERSION = 3;
+
 const connect = () => {
-  return openDB(`manifest`, 3, {
+  const dbP = openDB(`manifest`, MIGRATION_VERSION, {
+    blocking: async () => {
+      dbP.then((db) => {
+        db.close();
+
+        // This script can be used from a service worker, and if so we
+        // want to trigger an update of the service worker to the latest
+        // else reload the page.
+        if (
+          'registration' in self &&
+          self.registration instanceof ServiceWorkerRegistration
+        ) {
+          // We're in a service worker
+          self.registration.update();
+        } else {
+          // We're in a window
+          const confirmed = prompt(
+            'A new version of the app is available. The app will refresh to load the new version',
+          );
+          if (confirmed) self.location.reload();
+          else alert('The app will not work correctly until it is refreshed');
+        }
+      });
+    },
     upgrade: (db, previousVersion, newVersion) => {
       console.log(
         `Manifest DB upgrading from ${previousVersion} to ${newVersion}`,
@@ -95,6 +122,8 @@ const connect = () => {
       }
     },
   });
+
+  return dbP;
 };
 
 let manifestDbP: Promise<IDBPDatabase> | undefined = undefined;
