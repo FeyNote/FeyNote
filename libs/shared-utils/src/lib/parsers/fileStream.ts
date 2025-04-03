@@ -1,4 +1,6 @@
-import { FilePurpose } from '@prisma/client';
+import type { FilePurpose } from '@prisma/client';
+
+const filePurposes = ['artifact'] satisfies FilePurpose[];
 
 /*
  * Expects input in the form:
@@ -145,7 +147,7 @@ export async function decodeFileStream(
     },
   });
 
-  if (!FilePurpose[purpose as keyof typeof FilePurpose]) {
+  if (!filePurposes.includes(purpose as FilePurpose)) {
     throw new Error(`Invalid file purpose: ${purpose}`);
   }
 
