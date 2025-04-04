@@ -83,7 +83,7 @@
     "commander": "^13.1.0",
     "cors": "^2.8.5",
     "dedent": "^1.5.3",
-    "dompurify": "^3.2.4",
+    "dompurify": "^3.2.5",
     "express": "4.21.2",
     "flexlayout-react": "^0.8.8",
     "google-auth-library": "^9.15.1",
