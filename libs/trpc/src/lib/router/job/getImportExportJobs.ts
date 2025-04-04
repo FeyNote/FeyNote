@@ -13,7 +13,7 @@ export const getImportExportJobs = authenticatedProcedure.query(
     const importExportJobs = await prisma.job.findMany({
       where: {
         userId: ctx.session.userId,
-        type: JobType.Import || JobType.Export,
+        OR: [{ type: JobType.Import }, { type: JobType.Export }],
       },
       ...jobSummary,
     });

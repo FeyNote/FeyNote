@@ -79,6 +79,7 @@ export const createImportJob = authenticatedProcedure
           purpose,
           mimetype: input.mimetype,
           name: input.name,
+          jobId: importJob.id,
           metadata: {},
         },
       });

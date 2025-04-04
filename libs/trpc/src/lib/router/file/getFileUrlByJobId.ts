@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import {
-  getSignedUrlForFilePurpose,
-} from '@feynote/api-services';
+import { getSignedUrlForFilePurpose } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { FilePurpose } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
@@ -18,7 +16,7 @@ export const getFileUrlByJobId = authenticatedProcedure
   .query(async ({ ctx, input }): Promise<string> => {
     const file = await prisma.file.findFirst({
       where: {
-        id: input.jobId,
+        jobId: input.jobId,
         userId: ctx.session.userId,
         purpose: FilePurpose.job,
       },
@@ -36,7 +34,7 @@ export const getFileUrlByJobId = authenticatedProcedure
       operation: 'getObject',
       purpose: file.purpose,
       expiresInSeconds: SIGNED_URL_EXPIRATION_SECONDS,
-    })
+    });
 
     return url;
   });

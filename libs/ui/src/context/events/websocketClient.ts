@@ -43,5 +43,8 @@ socket.on(EventName.ArtifactUpdated, (data) => {
 socket.on(EventName.ArtifactDeleted, (data) => {
   eventManager.broadcast(EventName.ArtifactDeleted, data);
 });
+socket.on(EventName.JobCompleted, (data) => {
+  eventManager.broadcast(EventName.JobCompleted, data);
+});
 
 export const websocketClient = socket;

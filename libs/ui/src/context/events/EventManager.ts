@@ -67,6 +67,7 @@ export class EventManager {
   }
 
   broadcast<T extends EventName>(eventName: T, data: EventData[T]) {
+    console.log(`Broadcasting event: ${eventName}, data: ${data}`);
     this.eventListeners[eventName].forEach((listener) =>
       listener(eventName, data),
     );

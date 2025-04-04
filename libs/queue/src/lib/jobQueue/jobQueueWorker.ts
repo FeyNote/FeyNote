@@ -10,7 +10,10 @@ import {
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
-import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
@@ -32,20 +35,18 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
     try {
       switch (job.type) {
         case JobType.Import: {
-          importJobHandler(job, userId);
+          await importJobHandler(job, userId);
           break;
         }
         case JobType.Export: {
-          exportJobHandler(job, userId);
+          await exportJobHandler(job, userId);
           break;
         }
         default:
-          throw new Error(
-            `Invalid job type provided by queue worker: ${args.data}`,
-          );
+          throw new Error(`Invalid job type: ${args.data}`);
       }
     } catch (e) {
-      console.error(`Failed processing import job ${args.id}`, e);
+      console.error(`Failed processing job ${args.id}`, e);
       status = JobStatus.Failed;
     }
     await prisma.job.update({
@@ -62,7 +63,8 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       json: {
         jobId: job.id,
       },
-    })
+    });
+    console.error(`Finished processing job ${args.id}`);
   },
   {
     autorun: false,
