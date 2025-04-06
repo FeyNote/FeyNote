@@ -3,7 +3,6 @@ import MiniSearch, {
   type Query,
   type SearchResult,
 } from 'minisearch';
-import { IDBPDatabase } from 'idb';
 import { Doc as YDoc } from 'yjs';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
@@ -12,7 +11,7 @@ import {
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
-import { KVStoreKeys, ObjectStoreName } from './localDb';
+import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 
 /**
@@ -59,7 +58,7 @@ export class SearchManager {
   private saveTimeout: NodeJS.Timeout | undefined;
   private maxSaveTimeout: NodeJS.Timeout | undefined;
 
-  constructor(private manifestDb: IDBPDatabase) {
+  constructor() {
     this.miniSearch = new MiniSearch(this.miniSearchOptions);
   }
 
@@ -78,7 +77,8 @@ export class SearchManager {
   async populateFromLocalDb() {
     performance.mark('startIndexLoad');
 
-    const indexRecord = await this.manifestDb.get(
+    const manifestDb = await getManifestDb();
+    const indexRecord = await manifestDb.get(
       ObjectStoreName.KV,
       KVStoreKeys.SearchIndex,
     );
@@ -301,15 +301,14 @@ export class SearchManager {
     clearTimeout(this.saveTimeout);
     clearTimeout(this.maxSaveTimeout);
 
-    if (
-      await this.manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)
-    ) {
-      await this.manifestDb.put(ObjectStoreName.KV, {
+    const manifestDb = await getManifestDb();
+    if (await manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)) {
+      await manifestDb.put(ObjectStoreName.KV, {
         key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });
     } else {
-      await this.manifestDb.add(ObjectStoreName.KV, {
+      await manifestDb.add(ObjectStoreName.KV, {
         key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });

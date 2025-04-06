@@ -31,7 +31,7 @@ if (environment !== 'development') {
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
+import { RouteHandlerCallbackOptions } from 'workbox-core';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
@@ -76,12 +76,8 @@ const staticAssets = [
 ];
 precacheAndRoute(staticAssets);
 
-const searchManagerP = getManifestDb().then(
-  (manifestDb) => new SearchManager(manifestDb),
-);
-const syncManagerP = Promise.all([getManifestDb(), searchManagerP]).then(
-  ([manifestDb, searchManager]) => new SyncManager(manifestDb, searchManager),
-);
+const searchManager = new SearchManager();
+const syncManager = new SyncManager(searchManager);
 
 const OFFLINE_BGSYNC_RETENTION_DAYS = 30;
 const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
@@ -275,40 +271,39 @@ const cacheSingleResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
-self.addEventListener('install', (event) => {
+self.addEventListener('install', () => {
   console.log('Service Worker installed');
 
   self.skipWaiting();
-  clientsClaim();
-
-  event.waitUntil(
-    caches
-      .delete(APP_SRC_CACHE_NAME)
-      .then(() =>
-        caches
-          .open(APP_SRC_CACHE_NAME)
-          .then((cache) => cache.addAll(APP_SRC_PRECACHE_URLS)),
-      ),
-  );
 });
 
-self.addEventListener('activate', () => {
+self.addEventListener('activate', (event) => {
   console.log('Service Worker activated');
+
+  event.waitUntil(
+    (async () => {
+      await self.clients.claim();
+
+      await caches
+        .delete(APP_SRC_CACHE_NAME)
+        .then(() =>
+          caches
+            .open(APP_SRC_CACHE_NAME)
+            .then((cache) => cache.addAll(APP_SRC_PRECACHE_URLS)),
+        );
+    })(),
+  );
 });
 
 self.addEventListener('sync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(
-      syncManagerP.then((syncManager) => syncManager.syncManifest()),
-    );
+    event.waitUntil(syncManager.syncManifest());
   }
 });
 
 self.addEventListener('periodicSync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(
-      syncManagerP.then((syncManager) => syncManager.syncManifest()),
-    );
+    event.waitUntil(syncManager.syncManifest());
   }
 });
 
@@ -557,7 +552,6 @@ registerRoute(
       );
       if (!input || !input.query) throw new Error('No query provided');
 
-      const searchManager = await searchManagerP;
       const searchResults = searchManager.search(input.query);
       const artifactIds = new Set(
         searchResults.map((searchResult) => searchResult.artifactId),
@@ -593,7 +587,6 @@ registerRoute(
       );
       if (!input || !input.query) throw new Error('No query provided');
 
-      const searchManager = await searchManagerP;
       const searchResults = searchManager.search(input.query);
       const artifactIds = new Set(
         searchResults
@@ -631,7 +624,6 @@ registerRoute(
       );
       if (!input || !input.query) throw new Error('No query provided');
 
-      const searchManager = await searchManagerP;
       const searchResults = searchManager.search(input.query);
       const artifactIds = new Set(
         searchResults
