@@ -155,7 +155,7 @@
     "babel-jest": "^29.7.0",
     "babel-plugin-styled-components": "2.1.4",
     "esbuild": "^0.19.2",
-    "eslint": "9.23.0",
+    "eslint": "9.24.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-plugin-import": "2.31.0",
     "eslint-plugin-jsx-a11y": "6.10.2",
