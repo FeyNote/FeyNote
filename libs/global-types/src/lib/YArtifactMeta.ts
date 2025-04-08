@@ -12,6 +12,7 @@ export interface YArtifactMeta {
   type: ArtifactType;
   titleBodyMerge: boolean;
   linkAccessLevel: ArtifactAccessLevel;
+  deletedAt: string | null;
 }
 
 export interface UpdatableYArtifactMeta {
@@ -20,4 +21,5 @@ export interface UpdatableYArtifactMeta {
   type: ArtifactType;
   titleBodyMerge: boolean;
   linkAccessLevel: ArtifactAccessLevel;
+  deletedAt: string | null;
 }

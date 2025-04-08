@@ -125,24 +125,28 @@ export const artifactUpdateQueueWorker = new Worker<
 
           await createArtifactRevision(args.data.artifactId, tx);
 
-          const indexableArtifact = {
-            id: args.data.artifactId,
-            userId: args.data.userId,
-            oldState: {
-              title: oldTitle,
-              readableUserIds: oldReadableUserIds,
-              text: oldText,
-              jsonContent: oldJSONContent,
-            },
-            newState: {
-              title: newTitle,
-              readableUserIds: newReadableUserIds,
-              text: newText,
-              jsonContent: newJSONContent,
-            },
-          };
+          if (newYMeta.deletedAt) {
+            await searchProvider.deleteArtifacts([args.data.artifactId]);
+          } else {
+            const indexableArtifact = {
+              id: args.data.artifactId,
+              userId: args.data.userId,
+              oldState: {
+                title: oldTitle,
+                readableUserIds: oldReadableUserIds,
+                text: oldText,
+                jsonContent: oldJSONContent,
+              },
+              newState: {
+                title: newTitle,
+                readableUserIds: newReadableUserIds,
+                text: newText,
+                jsonContent: newJSONContent,
+              },
+            };
 
-          await searchProvider.indexArtifact(indexableArtifact);
+            await searchProvider.indexArtifact(indexableArtifact);
+          }
 
           return {
             referencesMutatedCount,
@@ -169,6 +173,7 @@ export const artifactUpdateQueueWorker = new Worker<
                 readableUserIds:
                   oldReadableUserIds.join(',') !== newReadableUserIds.join(','),
                 references: referencesMutatedCount > 0,
+                deletedAt: oldYMeta.deletedAt !== newYMeta.deletedAt,
               },
             },
           });

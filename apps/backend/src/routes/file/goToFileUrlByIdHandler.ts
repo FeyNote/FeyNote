@@ -24,7 +24,7 @@ export const goToFileUrlByIdHandler = defineExpressHandler(
     schema,
     authentication: AuthenticationEnforcement.Optional,
   },
-  async (req, res) => {
+  async function _goToFileUrlByIdHandler(req, res) {
     const file = await prisma.file.findUnique({
       where: {
         id: req.params.id,

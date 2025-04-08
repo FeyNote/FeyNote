@@ -3,8 +3,7 @@ import MiniSearch, {
   type Query,
   type SearchResult,
 } from 'minisearch';
-import { IDBPDatabase } from 'idb';
-import { Doc } from 'yjs';
+import { Doc as YDoc } from 'yjs';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getJSONContentMapById,
@@ -12,7 +11,7 @@ import {
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
-import { KVStoreKeys, ObjectStoreName } from './localDb';
+import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 
 /**
@@ -36,6 +35,7 @@ export interface StoredSearchFields {
   blockId: string | undefined;
   previewText: string;
   artifactTitle: string | undefined;
+  artifactDeletedAt: string | undefined;
 }
 
 export class SearchManager {
@@ -46,28 +46,39 @@ export class SearchManager {
   >();
   private miniSearchOptions = {
     fields: ['text'],
-    storeFields: ['artifactId', 'blockId', 'artifactTitle', 'previewText'],
+    storeFields: [
+      'artifactId',
+      'blockId',
+      'artifactTitle',
+      'previewText',
+      'artifactDeletedAt',
+    ],
   } satisfies Options;
   private initPromise = this.populateFromLocalDb();
   private saveTimeout: NodeJS.Timeout | undefined;
   private maxSaveTimeout: NodeJS.Timeout | undefined;
 
-  constructor(private manifestDb: IDBPDatabase) {
+  constructor() {
     this.miniSearch = new MiniSearch(this.miniSearchOptions);
   }
 
   search(text: Query): (SearchResult & StoredSearchFields)[] {
-    return Array.from(
+    const results = Array.from(
       this.miniSearch.search(text, {
         prefix: true,
       }),
     ) as (SearchResult & StoredSearchFields)[]; // Thanks minisearch typings...
+
+    return results.filter((result) => {
+      return !result.artifactDeletedAt;
+    });
   }
 
   async populateFromLocalDb() {
     performance.mark('startIndexLoad');
 
-    const indexRecord = await this.manifestDb.get(
+    const manifestDb = await getManifestDb();
+    const indexRecord = await manifestDb.get(
       ObjectStoreName.KV,
       KVStoreKeys.SearchIndex,
     );
@@ -176,13 +187,13 @@ export class SearchManager {
    */
   async indexPartialArtifact(
     artifactId: string,
-    doc: Doc,
+    yDoc: YDoc,
     blockIds: string[] | 'all',
   ): Promise<void> {
     await this.initPromise;
 
     const artifactJsonContent = getTiptapContentFromYjsDoc(
-      doc,
+      yDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
     );
     const jsonContentById = getJSONContentMapById(artifactJsonContent);
@@ -193,7 +204,7 @@ export class SearchManager {
       blockIds = Object.keys(jsonContentById);
     }
 
-    const artifactMeta = getMetaFromYArtifact(doc);
+    const artifactMeta = getMetaFromYArtifact(yDoc);
     const artifactIndexId = this.getIndexId(artifactId, undefined);
     const knownBlockIds =
       this.knownBlockIdsByArtifactId.get(artifactId) || new Set();
@@ -208,6 +219,7 @@ export class SearchManager {
         text: artifactMeta.title,
         artifactTitle: artifactMeta.title,
         previewText: artifactMeta.title,
+        artifactDeletedAt: artifactMeta.deletedAt,
       };
       if (this.miniSearch.has(artifactIndexId)) {
         this.miniSearch.replace(artifactIndexDoc);
@@ -251,6 +263,7 @@ export class SearchManager {
           text: blockText,
           artifactTitle: artifactMeta.title,
           previewText: blockText.substring(0, 100),
+          artifactDeletedAt: artifactMeta.deletedAt,
         };
         if (this.miniSearch.has(blockIndexId)) {
           this.miniSearch.replace(artifactBlockIndexDoc);
@@ -288,15 +301,14 @@ export class SearchManager {
     clearTimeout(this.saveTimeout);
     clearTimeout(this.maxSaveTimeout);
 
-    if (
-      await this.manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)
-    ) {
-      await this.manifestDb.put(ObjectStoreName.KV, {
+    const manifestDb = await getManifestDb();
+    if (await manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)) {
+      await manifestDb.put(ObjectStoreName.KV, {
         key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });
     } else {
-      await this.manifestDb.add(ObjectStoreName.KV, {
+      await manifestDb.add(ObjectStoreName.KV, {
         key: KVStoreKeys.SearchIndex,
         value: JSON.stringify(this.miniSearch),
       });

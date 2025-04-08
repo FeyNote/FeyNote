@@ -49,6 +49,8 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           artifactMetaMap.set('type', artifact.type);
         if (!artifactMetaMap.get('linkAccessLevel'))
           artifactMetaMap.set('linkAccessLevel', 'noaccess');
+        if (!artifactMetaMap.get('deletedAt'))
+          artifactMetaMap.set('deletedAt', null);
 
         return;
       }

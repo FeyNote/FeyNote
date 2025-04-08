@@ -17,24 +17,11 @@
         "tsConfig": "apps/queue-worker/tsconfig.app.json",
         "assets": ["apps/queue-worker/src/assets"],
         "generatePackageJson": true,
-        "esbuildOptions": {
-          "sourcemap": true,
-          "outExtension": {
-            ".js": ".js"
-          },
-          "external": ["@sentry/profiling-node"]
-        }
+        "esbuildConfig": "apps/queue-worker/esbuild.config.ts"
       },
       "configurations": {
         "development": {},
-        "production": {
-          "esbuildOptions": {
-            "sourcemap": false,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
+        "production": {}
       }
     },
     "serve": {

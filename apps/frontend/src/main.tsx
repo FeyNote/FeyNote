@@ -3,7 +3,7 @@
 import * as Sentry from '@sentry/react';
 
 let environment = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT;
-if (environment === 'development') {
+if (environment !== 'development') {
   const hostname = window.location.hostname;
 
   if (environment === 'production' && hostname.includes('.beta.')) {
@@ -30,6 +30,12 @@ if (environment === 'development') {
     // Session Replay
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1,
+
+    initialScope: {
+      extra: {
+        source: 'webapp',
+      },
+    },
   });
 }
 

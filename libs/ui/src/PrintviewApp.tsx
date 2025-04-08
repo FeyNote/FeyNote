@@ -24,6 +24,7 @@ import {
 import { Model } from 'flexlayout-react';
 import { IonApp } from './IonicReact19Compat';
 import { ReadonlyArtifactViewer } from './components/artifact/ReadonlySimpleArtifact';
+import { ToastContextProvider } from './context/toast/ToastContextProvider';
 
 initI18Next();
 setupIonicReact();
@@ -104,14 +105,16 @@ export const PrintviewApp: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonApp>
-      <PreferencesContextProviderWrapper>
-        <GlobalPaneContext.Provider value={globalPaneContextValue}>
-          <PaneContext.Provider value={paneContextValue}>
-            <ReadonlyArtifactViewer artifactId={props.id} onReady={onReady} />
-          </PaneContext.Provider>
-        </GlobalPaneContext.Provider>
-      </PreferencesContextProviderWrapper>
-    </IonApp>
+    <ToastContextProvider>
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <GlobalPaneContext.Provider value={globalPaneContextValue}>
+            <PaneContext.Provider value={paneContextValue}>
+              <ReadonlyArtifactViewer artifactId={props.id} onReady={onReady} />
+            </PaneContext.Provider>
+          </GlobalPaneContext.Provider>
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    </ToastContextProvider>
   );
 };

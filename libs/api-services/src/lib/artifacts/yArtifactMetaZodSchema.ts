@@ -14,4 +14,5 @@ export const yArtifactMetaZodSchema = z.object({
   type: z.nativeEnum(ArtifactType),
   titleBodyMerge: z.boolean(),
   linkAccessLevel: z.nativeEnum(ArtifactAccessLevel),
+  deletedAt: z.string().nullable(),
 }) satisfies ZodSchema<YArtifactMeta>;

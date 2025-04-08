@@ -35,7 +35,9 @@ const TreeListItem = styled.li<{
   `}
 `;
 
-const TreeItemContainer = styled.div`
+const TreeItemContainer = styled.div<{
+  $isUncategorized: boolean;
+}>`
   display: flex;
   align-items: center;
   padding-left: 8px;
@@ -51,7 +53,16 @@ const TreeItemContainer = styled.div`
     align-items: center;
     justify-content: center;
     border-radius: 4px;
-    cursor: pointer;
+    ${(props) =>
+      props.$isUncategorized &&
+      `
+      cursor: default;
+    `}
+    ${(props) =>
+      !props.$isUncategorized &&
+      `
+      cursor: pointer;
+    `}
 
     &:hover {
       background-color: var(--ion-background-color);
@@ -80,11 +91,17 @@ const TreeItemButton = styled.button<{
   border-radius: 5px;
   padding-left: 8px;
   padding-right: 8px;
-  cursor: pointer;
 
-  ${({ $isUncategorized }) =>
-    !$isUncategorized &&
+  ${(props) =>
+    props.$isUncategorized &&
     `
+    cursor: default;
+  `}
+
+  ${(props) =>
+    !props.$isUncategorized &&
+    `
+    cursor: pointer;
     &:hover {
       background-color: var(--ion-background-color);
     }
@@ -186,7 +203,11 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
       >
-        <TreeItemContainer>
+        <TreeItemContainer
+          $isUncategorized={
+            props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+          }
+        >
           {props.treeRenderProps.item.isFolder ? (
             <div
               {...props.treeRenderProps.context.arrowProps}

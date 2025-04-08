@@ -50,3 +50,5 @@ apps/www/dist
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+# Sentry Config File
+.env.sentry-build-plugin

@@ -1,16 +1,21 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   root: __dirname,
   build: {
     outDir: '../../dist/apps/frontend',
     reportCompressedSize: true,
+
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+
+    sourcemap: process.env.SOURCEMAP_UPLOAD === 'true', // We only want to take the extra time to build sourcemaps if we're shipping a version
   },
   cacheDir: '../../node_modules/.vite/frontend',
 
@@ -90,6 +95,22 @@ export default defineConfig({
         ],
       },
     }),
+    sentryVitePlugin({
+      org: 'redchickenco',
+      project: 'feynote-app',
+      disable: process.env.SOURCEMAP_UPLOAD !== 'true', // We only want to take the extra time to build sourcemaps if we're shipping a version
+      release: {
+        name: process.env.VITE_APP_VERSION,
+      },
+    }),
+    ...(process.env.ENABLE_BUNDLE_ANALYZER === 'true'
+      ? [
+          visualizer({
+            emitFile: true,
+            filename: 'stats.html',
+          }),
+        ]
+      : []),
   ],
 
   // Uncomment this if you are using workers.

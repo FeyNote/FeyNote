@@ -5,7 +5,7 @@ import { globalServerConfig } from '@feynote/config';
 
 Sentry.init({
   dsn: globalServerConfig.sentry.websocket.dsn,
-  integrations: [nodeProfilingIntegration()],
+  integrations: [nodeProfilingIntegration(), Sentry.prismaIntegration()],
   tracesSampleRate: globalServerConfig.sentry.websocket.samplingRate,
   environment: process.env.NODE_ENV,
   beforeSend(event) {
@@ -13,5 +13,10 @@ Sentry.init({
     if (globalServerConfig.sentry.websocket.samplingRate === 0) return null;
 
     return event;
+  },
+  initialScope: {
+    extra: {
+      source: 'websocket',
+    },
   },
 });

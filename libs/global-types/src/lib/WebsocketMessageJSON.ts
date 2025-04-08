@@ -1,9 +1,6 @@
 import type { WebsocketMessageEvent } from './WebsocketMessageEvent';
 
 export type WebsocketMessageJSON = {
-  [WebsocketMessageEvent.ArtifactDeleted]: {
-    artifactId: string;
-  };
   [WebsocketMessageEvent.ArtifactUpdated]: {
     artifactId: string;
     updated: {
@@ -11,6 +8,7 @@ export type WebsocketMessageJSON = {
       text: boolean;
       readableUserIds: boolean;
       references: boolean;
+      deletedAt: boolean;
     };
   };
   [WebsocketMessageEvent.JobCompleted]: {

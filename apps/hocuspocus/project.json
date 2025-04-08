@@ -17,24 +17,11 @@
         "tsConfig": "apps/hocuspocus/tsconfig.app.json",
         "assets": ["apps/hocuspocus/src/assets"],
         "generatePackageJson": true,
-        "esbuildOptions": {
-          "sourcemap": true,
-          "outExtension": {
-            ".js": ".js"
-          },
-          "external": ["@sentry/profiling-node"]
-        }
+        "esbuildConfig": "apps/hocuspocus/esbuild.config.ts"
       },
       "configurations": {
         "development": {},
-        "production": {
-          "esbuildOptions": {
-            "sourcemap": false,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
+        "production": {}
       }
     },
     "serve": {

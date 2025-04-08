@@ -7,7 +7,7 @@ import { publicProcedure } from '../../trpc';
  */
 const SAFETY_LIMIT = 15;
 
-export const getSafeArtifactId = publicProcedure.query(
+export const getSafeFileId = publicProcedure.query(
   async (): Promise<{
     id: string;
   }> => {
@@ -18,7 +18,7 @@ export const getSafeArtifactId = publicProcedure.query(
         throw new Error('Exceeded number of attempts to find an ID');
       }
 
-      const artifact = await prisma.artifact.findUnique({
+      const file = await prisma.file.findUnique({
         where: {
           id: candidateId,
         },
@@ -27,7 +27,7 @@ export const getSafeArtifactId = publicProcedure.query(
         },
       });
 
-      if (!artifact) {
+      if (!file) {
         break;
       }
 

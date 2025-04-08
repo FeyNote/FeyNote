@@ -1,8 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import {
-  ArtifactDeleteDeclinedError,
-  useArtifactDelete,
-} from './useArtifactDelete';
 import { PaneContextData } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import {
@@ -18,32 +14,24 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
 import { createArtifact } from '../../utils/createArtifact';
+import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 
 interface Props {
   artifactId: string;
+  triggerDelete: () => void;
+  triggerUndelete: () => void;
   connection: CollaborationManagerConnection;
   pane: PaneContextData['pane'];
   navigate: PaneContextData['navigate'];
+  isEditable: boolean;
 }
 
 export const ArtifactContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { pane, navigate } = props;
 
-  const { deleteArtifact } = useArtifactDelete();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-
-  const onDeleteArtifactClicked = () => {
-    deleteArtifact(props.artifactId)
-      .then(() => {
-        navigate(PaneableComponent.Dashboard, {}, PaneTransition.Replace);
-      })
-      .catch((e) => {
-        if (e instanceof ArtifactDeleteDeclinedError) return;
-
-        throw e;
-      });
-  };
+  const { deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
   const onPrintArtifactClicked = () => {
     window.open(
@@ -129,9 +117,16 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
         <ContextMenuItem onClick={onDuplicateArtifactClicked}>
           {t('contextMenu.duplicateArtifact')}
         </ContextMenuItem>
-        <ContextMenuItem onClick={onDeleteArtifactClicked}>
-          {t('generic.delete')}
-        </ContextMenuItem>
+        {props.isEditable && !deletedAt && (
+          <ContextMenuItem onClick={props.triggerDelete}>
+            {t('generic.delete')}
+          </ContextMenuItem>
+        )}
+        {props.isEditable && deletedAt && (
+          <ContextMenuItem onClick={props.triggerUndelete}>
+            {t('artifact.deleted.undelete')}
+          </ContextMenuItem>
+        )}
       </ContextMenuGroup>
     </ContextMenuContainer>
   );

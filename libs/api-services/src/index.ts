@@ -21,6 +21,8 @@ export * from './lib/s3/FILE_PURPOSE_TO_BUCKET';
 export * from './lib/s3/generateS3Key';
 export * from './lib/s3/getSignedUrl';
 export * from './lib/s3/getSignedUrlForFilePurpose';
+export * from './lib/s3/transformAndUploadFileToS3ForUser';
+export * from './lib/s3/transformImage';
 export * from './lib/s3/uploadFileToS3';
 export * from './lib/s3/getImageQuality';
 export * from './lib/s3/convertImageForStorage';

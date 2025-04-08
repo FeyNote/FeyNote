@@ -31,7 +31,12 @@ jobs:
           command: npx prisma migrate dev
       - run:
           name: lint, typecheck, test, build
-          command: npx nx run-many --targets=lint,typecheck,test,build
+          command: |
+            export ENABLE_BUNDLE_ANALYZER=true
+            npx nx run-many --targets=lint,typecheck,test,build
+      - store_artifacts:
+          path: ./dist/apps/frontend/stats.html
+          destination: frontend-bundle-stats.html
   push_backend:
     resource_class: medium
     docker:
@@ -46,7 +51,9 @@ jobs:
           command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
       - run:
           name: push
-          command: ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
+          command: |
+            export SOURCEMAP_UPLOAD=true
+            ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
   push_frontend:
     resource_class: medium
     docker:
@@ -59,6 +66,8 @@ jobs:
           name: build-frontend
           command: |
             export VITE_APP_VERSION=$CIRCLE_TAG
+            export SOURCEMAP_UPLOAD=true
+            export NODE_OPTIONS=--max-old-space-size=8192
             npx nx build frontend --skip-nx-cache
       - run:
           name: move-frontend-build

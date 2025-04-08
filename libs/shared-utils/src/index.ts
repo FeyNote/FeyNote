@@ -8,6 +8,7 @@ export * from './lib/validation/getArtifactAccessLevel';
 export * from './lib/validation/validateEmail';
 export * from './lib/validation/validatePassword';
 export * from './lib/parsers/markdownToTxt';
+export * from './lib/parsers/fileStream';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
 export * from './lib/text/capitalizeEachWord';

@@ -26,7 +26,7 @@ export const Graph: React.FC = () => {
     await trpc.artifact.getArtifacts
       .query()
       .then((_artifacts) => {
-        setArtifacts(_artifacts);
+        setArtifacts(_artifacts.filter((artifact) => !artifact.deletedAt));
       })
       .catch((error) => {
         handleTRPCErrors(error);
