@@ -2,7 +2,10 @@ import { type ExportJob } from '@feynote/prisma/types';
 import { transformArtifactsToArtifactExports } from './transformArtifactsToExportFormat';
 import { getUserArtifacts } from './getUserArtifacts';
 import ZipStream from 'zip-stream';
-import { uploadFileToS3 } from '@feynote/api-services';
+import {
+  getSignedFileUrlsForUser,
+  uploadFileToS3,
+} from '@feynote/api-services';
 import { FilePurpose } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import { PassThrough } from 'stream';
@@ -13,6 +16,7 @@ export const exportJobHandler = async (job: ExportJob, userId: string) => {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
+  const userFileToS3Map = await getSignedFileUrlsForUser(userId);
   const mimetype = 'application/zip';
   const zipStream = new ZipStream();
   const passThrough = new PassThrough();
@@ -50,6 +54,7 @@ export const exportJobHandler = async (job: ExportJob, userId: string) => {
       const artifactExports = transformArtifactsToArtifactExports(
         artifacts,
         jobType,
+        userFileToS3Map,
       );
 
       for (const artifactExport of artifactExports) {
@@ -68,11 +73,15 @@ export const exportJobHandler = async (job: ExportJob, userId: string) => {
       offset += batchSize;
     } while (hasMore);
   } catch (err) {
-    zipStream.end(err);
-    zipStream.destroy();
-    passThrough.end(err);
-    pipeProcessingP.catch((e) => console.error(e));
-    uploadP.catch((e) => console.error(e));
+    const error = err instanceof Error ? err : new Error('Unknown error');
+    pipeProcessingP.catch(() => {
+      // noop
+    });
+    uploadP.catch(() => {
+      // noop
+    });
+    zipStream.destroy(error);
+    passThrough.destroy(error);
 
     throw err;
   }

@@ -26,6 +26,7 @@ export * from './lib/s3/getImageQuality';
 export * from './lib/s3/convertImageForStorage';
 export * from './lib/s3/streamFileFromS3';
 export * from './lib/s3/getFileFromS3';
+export * from './lib/s3/getSignedFileUrlsForUser';
 
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';

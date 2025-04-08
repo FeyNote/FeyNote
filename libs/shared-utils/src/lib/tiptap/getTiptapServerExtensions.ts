@@ -29,7 +29,11 @@ import ImageExtension from '@tiptap/extension-image';
 import LinkExtension from '@tiptap/extension-link';
 import HeadingExtension from '@tiptap/extension-heading';
 
-export const getTiptapServerExtensions = () => {
+interface Props {
+  userFileToS3Map?: Map<string, string>;
+}
+
+export const getTiptapServerExtensions = ({ userFileToS3Map }: Props) => {
   return [
     DocumentExtension,
     ParagraphExtension,
@@ -48,6 +52,16 @@ export const getTiptapServerExtensions = () => {
               },
           },
         ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        const attrs = mergeAttributes(
+          this.options.HTMLAttributes,
+          HTMLAttributes,
+          {
+            'data-content-type': this.name,
+          },
+        );
+        return ['ul', ['li', attrs, 0]];
       },
     }),
     HeadingExtension,
@@ -145,13 +159,17 @@ export const getTiptapServerExtensions = () => {
       },
     }).configure({
       renderHTML({ options, node }) {
-        let displayText = `${options.suggestion.char}${node.attrs['referenceText']}`;
+        let displayText = `{{${node.attrs['referenceText']} ${node.attrs['artifactId']}}}`;
 
         if (node.attrs['artifactDate']) {
           displayText += ` ${node.attrs['artifactDate']}`;
         }
 
-        return ['span', mergeAttributes({}, options.HTMLAttributes), displayText];
+        return [
+          'span',
+          mergeAttributes({}, options.HTMLAttributes),
+          displayText,
+        ];
       },
       renderText({ options, node }) {
         let displayText = `${options.suggestion.char}${node.attrs['referenceText']}`;
@@ -186,7 +204,6 @@ export const getTiptapServerExtensions = () => {
           },
         };
       },
-
       parseHTML() {
         return [
           {
@@ -202,9 +219,13 @@ export const getTiptapServerExtensions = () => {
       },
 
       renderHTML({ HTMLAttributes }) {
-        const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-          'data-monster-statblock': 'v1',
-        });
+        const attrs = mergeAttributes(
+          this.options.HTMLAttributes,
+          HTMLAttributes,
+          {
+            'data-monster-statblock': 'v1',
+          },
+        );
         return ['div', attrs, 0];
       },
     }),
@@ -228,9 +249,13 @@ export const getTiptapServerExtensions = () => {
       },
 
       renderHTML({ HTMLAttributes }) {
-        const attrs = mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-          'data-spellsheet': 'v1',
-        });
+        const attrs = mergeAttributes(
+          this.options.HTMLAttributes,
+          HTMLAttributes,
+          {
+            'data-spellsheet': 'v1',
+          },
+        );
         return ['div', attrs, 0];
       },
     }),
@@ -268,7 +293,7 @@ export const getTiptapServerExtensions = () => {
       addAttributes() {
         return {
           fileId: {
-            parseHTML: element => element.getAttribute('fileId'),
+            parseHTML: (element) => element.getAttribute('fileId'),
             default: null,
           },
           storageKey: {
@@ -282,26 +307,38 @@ export const getTiptapServerExtensions = () => {
           },
         };
       },
-
       parseHTML() {
         return [
           {
             tag: 'img[fileId]',
-          }
-        ]
+          },
+        ];
       },
-
-      renderHTML({ HTMLAttributes }) {
-        const calculatedAttributes = {
-          src: this.options.getSrcForFileId(HTMLAttributes['fileId']),
+      addOptions() {
+        return {
+          minWidthPx: 60,
+          minHeightPx: 60,
+          HTMLAttributes: {},
+          getSrcForFileId: () => '',
         };
+      },
+      renderHTML({ HTMLAttributes }) {
+        const fileId = HTMLAttributes['fileId'];
+        const alt =
+          HTMLAttributes['alt'] ||
+          HTMLAttributes['title'] ||
+          HTMLAttributes['fileId'];
+        let src = this.options.getSrcForFileId(fileId);
+        if (userFileToS3Map?.has(fileId)) {
+          src = userFileToS3Map.get(fileId);
+        }
+
         return [
           'img',
-          mergeAttributes(
-            this.options.HTMLAttributes,
-            HTMLAttributes,
-            calculatedAttributes,
-          ),
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+            src,
+            alt,
+          }),
         ];
       },
     }),

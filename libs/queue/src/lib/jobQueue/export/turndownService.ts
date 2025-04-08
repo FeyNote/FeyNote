@@ -1,22 +1,12 @@
-import type { ArtifactReferenceSummary } from '@feynote/prisma/types';
 import TurndownService from 'turndown';
+// @ts-expect-error This package does not have any typings
+import turndownPluginGfm from 'turndown-plugin-gfm';
 
-export const turndown = (html: string, artifactSummary: ArtifactReferenceSummary) => {
+export const turndown = (html: string) => {
   const turndownService = new TurndownService();
-  turndownService.addRule('ReplaceReferences', {
-    filter: ['span'],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    replacement: function (content, node: any) {
-      const referenceArtifactId = node.getAttribute('data-artifact-id')
-      const artifactReference = artifactSummary.artifactReferences.find((ref) => ref.targetArtifactId === referenceArtifactId)
-      if (!referenceArtifactId || !artifactReference) return content
-      const referenceBlock = {
-        referenceArtifactId,
-        referenceText: artifactReference.referenceText,
-      }
-      return `[${content}]{${JSON.stringify(referenceBlock)}}`
-    }
-  })
-  const markdown = turndownService.turndown(html)
-  return markdown
-}
+  const tables = turndownPluginGfm.tables;
+  const strikethrough = turndownPluginGfm.strikethrough;
+  turndownService.use([tables, strikethrough]);
+  const markdown = turndownService.turndown(html);
+  return markdown;
+};
