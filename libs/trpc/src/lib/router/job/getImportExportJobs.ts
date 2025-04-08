@@ -15,6 +15,9 @@ export const getImportExportJobs = authenticatedProcedure.query(
         userId: ctx.session.userId,
         OR: [{ type: JobType.Import }, { type: JobType.Export }],
       },
+      orderBy: {
+        createdAt: 'desc',
+      },
       ...jobSummary,
     });
     return importExportJobs.map(prismaJobSummaryToJobSummary);

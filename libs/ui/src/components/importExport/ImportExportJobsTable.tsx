@@ -33,35 +33,36 @@ const ImportJobsContainer = styled.div`
 `;
 
 interface Props {
-  importJobs: (ImportJob | ExportJob)[];
-  fetchImportJobs: () => Promise<void>;
+  jobs: (ImportJob | ExportJob)[];
 }
 
 export const ImportJobsTable: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const capitalizeFirstLeter = (str: string): string => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  };
 
   return (
     <ImportJobsContainer>
-      <h2>{t('importExport.jobs.title')}</h2>
+      <h2>{t('importExport.table.title')}</h2>
       <ImportJobGrid>
-        <GridHeader>{t('importExport.jobs.table.columns.type')}</GridHeader>
-        <GridHeader>
-          {t('importExport.jobs.table.columns.createdAt')}
-        </GridHeader>
-        <GridHeader>{t('importExport.jobs.table.columns.status')}</GridHeader>
-        {props.importJobs.map((job, idx) => {
+        <GridHeader>{t('importExport.table.columns.type')}</GridHeader>
+        <GridHeader>{t('importExport.table.columns.subtype')}</GridHeader>
+        <GridHeader>{t('importExport.table.columns.status')}</GridHeader>
+        <GridHeader>{t('importExport.table.columns.createdAt')}</GridHeader>
+        {props.jobs.map((job, idx) => {
           let status = (
             <IonIcon
               icon={ellipsisHorizontalCircle}
               size="large"
-              title={t('importExport.jobs.table.columns.status.notStarted')}
+              title={t('importExport.table.columns.status.notStarted')}
             />
           );
           switch (job.status) {
             case JobStatus.Success:
               status = (
                 <IonIcon
-                  title={t('importExport.jobs.table.columns.status.success')}
+                  title={t('importExport.table.columns.status.success')}
                   color="success"
                   icon={checkmarkCircle}
                   size="large"
@@ -74,7 +75,7 @@ export const ImportJobsTable: React.FC<Props> = (props) => {
             case JobStatus.Failed:
               status = (
                 <IonIcon
-                  title={t('importExport.jobs.table.columns.status.failed')}
+                  title={t('importExport.table.columns.status.failed')}
                   color="danger"
                   icon={alertCircle}
                   size="large"
@@ -82,11 +83,14 @@ export const ImportJobsTable: React.FC<Props> = (props) => {
               );
               break;
           }
+          const subtype =
+            job.type === 'Import' ? job.meta.importType : job.meta.exportType;
           return (
             <Fragment key={idx}>
-              <div key={`${idx}-1`}>{job.type}</div>
-              <div key={`${idx}-2`}>{job.createdAt.toLocaleString()}</div>
+              <div key={`${idx}-1`}>{capitalizeFirstLeter(job.type)}</div>
+              <div key={`${idx}-2`}>{capitalizeFirstLeter(subtype)}</div>
               <div key={`${idx}-3`}>{status}</div>
+              <div key={`${idx}-4`}>{job.createdAt.toLocaleString()}</div>
             </Fragment>
           );
         })}

@@ -6,7 +6,7 @@ import { trpc } from '../../utils/trpc';
 import { closeOutline } from 'ionicons/icons';
 import { ImportJobType } from '@feynote/prisma/types';
 
-const FileErrorText = styled.p`
+const ActionErrorText = styled.p`
   font-size: 0.8rem;
 `;
 
@@ -14,20 +14,20 @@ const Header = styled.h3`
   margin-top: 0;
 `;
 
-const FileInstructions = styled(IonText)`
+const Subtext = styled(IonText)`
   opacity: 0.6;
   padding-bottom: 8px;
   display: block;
 `;
 
-const FileInfoContainer = styled.div`
+const Container = styled.div`
   display: flex;
   align-items: center;
 `;
 
 interface Props {
   type: ImportJobType;
-  fetchImportJobs: () => void;
+  fetchJobs: () => void;
 }
 
 const FILE_SIZE_LIMIT = 5000000; //5MB
@@ -41,9 +41,9 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const [fileInputError, setFileInputError] = useState<string | null>(null);
   const instructions = useMemo(() => {
     if (props.type === ImportJobType.Obsidian) {
-      return t('importExport.jobs.file.instructions.obsidian');
+      return t('importExport.file.instructions.obsidian');
     } else {
-      return t('importExport.jobs.file.instructions.logseq');
+      return t('importExport.file.instructions.logseq');
     }
   }, [props.type, t]);
 
@@ -52,11 +52,11 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
     const selectedfile = e.target.files[0];
     if (!ALLOWED_FILE_TYPES.includes(selectedfile.type))
       return setFileInputError(
-        `${t('importExport.file.input.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
+        `${t('importExport.file.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
       );
     if (selectedfile.size >= FILE_SIZE_LIMIT)
       return setFileInputError(
-        `${t('importExport.file.input.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        `${t('importExport.file.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
       );
     setFile(selectedfile);
     setFileInputError(null);
@@ -93,7 +93,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
         id: importJobId,
       });
       clearFileSelection();
-      props.fetchImportJobs();
+      props.fetchJobs();
     } catch (e) {
       console.error(e);
     }
@@ -101,11 +101,11 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
 
   return (
     <div className="ion-padding">
-      <Header>File Selection</Header>
-      <FileInstructions>{instructions}</FileInstructions>
+      <Header>{t('importExport.file.header')}</Header>
+      <Subtext>{instructions}</Subtext>
       {file ? (
         <>
-          <FileInfoContainer>
+          <Container>
             <IonText color="dark">{file.name}</IonText>
             <IonButton
               size="small"
@@ -115,7 +115,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
             >
               <IonIcon slot="icon-only" icon={closeOutline} size="small" />
             </IonButton>
-          </FileInfoContainer>
+          </Container>
           <div>
             <IonButton fill="outline" size="small" onClick={uploadFile}>
               {t('generic.submit')}
@@ -131,7 +131,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
       )}
       {fileInputError && (
         <IonText color="danger">
-          <FileErrorText>{fileInputError}</FileErrorText>
+          <ActionErrorText>{fileInputError}</ActionErrorText>
         </IonText>
       )}
       <input
