@@ -18,6 +18,7 @@ export const buildWelcomeArtifact = (options: {
     type: 'tiptap',
     titleBodyMerge: true,
     linkAccessLevel: 'noaccess',
+    deletedAt: null,
   } as const satisfies YArtifactMeta;
 
   const jsonContent = {

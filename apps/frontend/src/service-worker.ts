@@ -22,10 +22,16 @@ if (environment !== 'development') {
   Sentry.init({
     release: import.meta.env.VITE_APP_VERSION,
     environment,
-    dsn: 'https://cc4600dfc662cd10fce3f90e5aefdca2@o4508428193955840.ingest.us.sentry.io/4509005894385664',
+    dsn: 'https://c33be4806db6ac96de06c5de2f8ebc85@o4508428193955840.ingest.us.sentry.io/4508428202606592',
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
 
     tracesSampleRate: 1,
+
+    initialScope: {
+      extra: {
+        source: 'serviceworker',
+      },
+    },
   });
 }
 

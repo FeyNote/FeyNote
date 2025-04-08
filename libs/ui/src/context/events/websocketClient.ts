@@ -40,8 +40,5 @@ socket.on('reconnect', () => {
 socket.on(EventName.ArtifactUpdated, (data) => {
   eventManager.broadcast(EventName.ArtifactUpdated, data);
 });
-socket.on(EventName.ArtifactDeleted, (data) => {
-  eventManager.broadcast(EventName.ArtifactDeleted, data);
-});
 
 export const websocketClient = socket;

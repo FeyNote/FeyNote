@@ -30,6 +30,12 @@ if (environment !== 'development') {
     // Session Replay
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1,
+
+    initialScope: {
+      extra: {
+        source: 'webapp',
+      },
+    },
   });
 }
 

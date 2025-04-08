@@ -17,24 +17,11 @@
         "tsConfig": "apps/websocket/tsconfig.app.json",
         "assets": ["apps/websocket/src/assets"],
         "generatePackageJson": true,
-        "esbuildOptions": {
-          "sourcemap": true,
-          "outExtension": {
-            ".js": ".js"
-          },
-          "external": ["@sentry/profiling-node"]
-        }
+        "esbuildConfig": "apps/websocket/esbuild.config.ts"
       },
       "configurations": {
         "development": {},
-        "production": {
-          "esbuildOptions": {
-            "sourcemap": false,
-            "outExtension": {
-              ".js": ".js"
-            }
-          }
-        }
+        "production": {}
       }
     },
     "serve": {

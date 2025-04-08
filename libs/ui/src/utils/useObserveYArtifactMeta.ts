@@ -1,3 +1,4 @@
+import type { YArtifactMeta } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, getMetaFromYArtifact } from '@feynote/shared-utils';
 import type {
   ArtifactAccessLevel,
@@ -7,7 +8,9 @@ import type {
 import { useEffect, useState } from 'react';
 import { Doc as YDoc } from 'yjs';
 
-export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
+export const useObserveYArtifactMeta = (
+  yArtifact: YDoc,
+): Partial<YArtifactMeta> => {
   const [id, setId] = useState<string>();
   const [userId, setUserId] = useState<string>();
   const [title, setTitle] = useState<string>();
@@ -17,6 +20,7 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
   const [linkAccessLevel, setLinkAccessLevel] = useState<
     ArtifactAccessLevel | undefined
   >();
+  const [deletedAt, setDeletedAt] = useState<string | null>();
 
   useEffect(() => {
     const artifactMetaMap = yArtifact.getMap(ARTIFACT_META_KEY);
@@ -30,6 +34,7 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
       setTitleBodyMerge(yArtifactMeta.titleBodyMerge);
       setType(yArtifactMeta.type);
       setLinkAccessLevel(yArtifactMeta.linkAccessLevel);
+      setDeletedAt(yArtifactMeta.deletedAt);
     };
 
     listener();
@@ -45,5 +50,6 @@ export const useObserveYArtifactMeta = (yArtifact: YDoc) => {
     titleBodyMerge,
     type,
     linkAccessLevel,
+    deletedAt,
   };
 };

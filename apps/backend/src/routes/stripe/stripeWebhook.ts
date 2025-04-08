@@ -33,7 +33,7 @@ export const stripeWebhookHandler = defineExpressHandler(
     schema,
     authentication: AuthenticationEnforcement.None,
   },
-  async (req) => {
+  async function _stripeWebhookHandler(req) {
     const stripeSignature = req.headers['stripe-signature'];
     if (!stripeSignature) {
       Sentry.captureMessage(

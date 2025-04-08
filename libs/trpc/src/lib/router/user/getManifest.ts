@@ -1,4 +1,4 @@
-import { getEdgeId, Manifest } from '@feynote/shared-utils';
+import { getEdgeId, Manifest, type Edge } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 
@@ -10,6 +10,8 @@ export const getManifest = authenticatedProcedure.query(
       },
       select: {
         id: true,
+        title: true,
+        deletedAt: true,
         updatedAt: true,
       },
     });
@@ -22,6 +24,8 @@ export const getManifest = authenticatedProcedure.query(
         artifact: {
           select: {
             id: true,
+            title: true,
+            deletedAt: true,
             updatedAt: true,
           },
         },
@@ -32,6 +36,12 @@ export const getManifest = authenticatedProcedure.query(
       artifactsPromise,
       artifactSharesPromise,
     ]);
+
+    const allArtifactsMap = new Map(
+      artifacts
+        .concat(artifactShares.map((artifactShare) => artifactShare.artifact))
+        .map((artifact) => [artifact.id, artifact]),
+    );
 
     const allArtifactIds = artifacts
       .map((artifact) => artifact.id)
@@ -60,32 +70,36 @@ export const getManifest = authenticatedProcedure.query(
         targetArtifactBlockId: true,
         targetArtifactDate: true,
         referenceText: true,
-        artifact: {
-          select: {
-            title: true,
-          },
-        },
-        targetArtifact: {
-          select: {
-            title: true,
-          },
-        },
       },
     });
 
+    const edges: Edge[] = [];
+    for (const relation of relationships) {
+      const artifact = allArtifactsMap.get(relation.artifactId);
+      if (!artifact) continue; // To satisfy typescript, but this should never actually happen since our query filters by artifactId
+      const targetArtifact = allArtifactsMap.get(relation.targetArtifactId);
+
+      // We don't want artifacts that are deleted to show up as pointing to your artifact
+      // since that would be annoying -- you'd have to go and remove all references in a deleted artifact
+      // to get it to stop showing up as a zombie
+      if (artifact.deletedAt) continue;
+
+      edges.push({
+        id: getEdgeId(relation),
+        artifactId: relation.artifactId,
+        artifactBlockId: relation.artifactBlockId,
+        targetArtifactId: relation.targetArtifactId,
+        targetArtifactBlockId: relation.targetArtifactBlockId,
+        targetArtifactDate: relation.targetArtifactDate,
+        targetArtifactTitle: targetArtifact?.title || null,
+        referenceText: relation.referenceText,
+        artifactTitle: artifact.title,
+        isBroken: !relation.referenceTargetArtifactId,
+      });
+    }
+
     const manifest: Manifest = {
-      edges: relationships.map((relationship) => ({
-        id: getEdgeId(relationship),
-        artifactId: relationship.artifactId,
-        artifactBlockId: relationship.artifactBlockId,
-        targetArtifactId: relationship.targetArtifactId,
-        targetArtifactBlockId: relationship.targetArtifactBlockId,
-        targetArtifactDate: relationship.targetArtifactDate,
-        targetArtifactTitle: relationship.targetArtifact?.title || null,
-        referenceText: relationship.referenceText,
-        artifactTitle: relationship.artifact.title,
-        isBroken: !relationship.referenceTargetArtifactId,
-      })),
+      edges,
       artifactVersions: {},
     };
 

@@ -4,7 +4,6 @@ import { SessionContext } from '../../context/session/SessionContext';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
-import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
@@ -12,10 +11,10 @@ import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
-import { useIsEditable } from '../../utils/useAuthorizedScope';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
+import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 
 const FileUploadOverlay = styled.div`
   position: absolute;
@@ -56,14 +55,15 @@ const Spinner = styled.div`
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
+  isEditable: boolean;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
   onTocUpdate?: (content: TableOfContentData) => void;
+  undelete?: () => void;
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
-  const { isEditable } = useIsEditable(props.connection);
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -75,7 +75,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   useScrollBlockIntoView(props.scrollToBlockId, [editorReady], undefined, true);
   useScrollDateIntoView(props.scrollToDate, [editorReady]);
 
-  const { type } = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { type, deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
   useEffect(() => {
     props.connection.syncedPromise
@@ -96,15 +96,6 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
       });
   }, [props.connection]);
 
-  useEffect(() => {
-    const cleanup = incrementVersionForChangesOnArtifact(
-      props.artifactId,
-      props.connection.yjsDoc,
-    );
-
-    return () => cleanup();
-  }, [props.connection]);
-
   if (!collabReady || !type) {
     return null;
   }
@@ -112,6 +103,13 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const render = (renderer: React.ReactNode) => {
     return (
       <>
+        {deletedAt && (
+          <ArtifactDeletedBanner
+            undelete={props.undelete}
+            deletedAt={deletedAt}
+            isEditable={props.isEditable}
+          />
+        )}
         {renderer}
         {isUploadingFile && (
           <FileUploadOverlay>
@@ -129,7 +127,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return render(
       <ArtifactEditor
         artifactId={props.artifactId}
-        editable={isEditable}
+        editable={props.isEditable && !deletedAt}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
@@ -183,7 +181,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return render(
       <ArtifactCalendar
         artifactId={props.artifactId}
-        editable={isEditable}
+        editable={props.isEditable && !deletedAt}
         onReady={() => setEditorReady(true)}
         y={props.connection.tiptapCollabProvider}
         viewType="fullsize"
@@ -198,7 +196,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return render(
       <ArtifactDraw
         artifactId={props.artifactId}
-        editable={isEditable}
+        editable={props.isEditable && !deletedAt}
         onReady={() => setEditorReady(true)}
         collaborationConnection={props.connection}
         onTitleChange={props.onTitleChange}
