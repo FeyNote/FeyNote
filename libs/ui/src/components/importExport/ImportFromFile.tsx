@@ -30,7 +30,7 @@ interface Props {
   fetchJobs: () => void;
 }
 
-const FILE_SIZE_LIMIT = 5000000; //5MB
+const FILE_SIZE_LIMIT = 500000000; //500MB
 const ALLOWED_FILE_TYPES = ['application/zip', 'application/x-zip-compressed'];
 const ALLOWED_FILE_TYPES_STR = ALLOWED_FILE_TYPES.join(', ');
 
