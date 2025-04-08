@@ -10,14 +10,13 @@ import { JobType } from '@prisma/client';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-export const getImportExportJob = authenticatedProcedure.
-  input(
+export const getImportExportJob = authenticatedProcedure
+  .input(
     z.object({
       id: z.string(),
     }),
-  ).
-  query(
-  async ({ input, ctx }): Promise<(ImportJob | ExportJob)> => {
+  )
+  .query(async ({ input, ctx }): Promise<ImportJob | ExportJob> => {
     const importExportJob = await prisma.job.findUnique({
       where: {
         id: input.id,
@@ -32,5 +31,4 @@ export const getImportExportJob = authenticatedProcedure.
       });
     }
     return prismaJobSummaryToJobSummary(importExportJob);
-  },
-);
+  });

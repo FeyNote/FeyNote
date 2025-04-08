@@ -2,9 +2,7 @@ import { Capability } from '@feynote/shared-utils';
 import { getCapabilitiesForUser } from '../payments/getCapabilitiesForUser';
 
 export const getImageQuality = async (userId: string) => {
-  const userCapabilities = await getCapabilitiesForUser(
-    userId,
-  );
+  const userCapabilities = await getCapabilitiesForUser(userId);
   let maxResolution = 1024;
   let quality = 65;
   if (userCapabilities.has(Capability.HighResImages)) {

@@ -1,9 +1,15 @@
 import { jsonContentForEach } from './jsonContentForEach';
 import { generateJSON } from '@tiptap/core';
 
-export const addMissingBlockIds = (tiptap: Record<string, typeof generateJSON>) => {
+export const addMissingBlockIds = (
+  tiptap: Record<string, typeof generateJSON>,
+) => {
   jsonContentForEach(tiptap, (node) => {
-    if (node['type'] === 'paragraph' || node['type'] === 'heading' || node['type'] === 'artifactReference') {
+    if (
+      node['type'] === 'paragraph' ||
+      node['type'] === 'heading' ||
+      node['type'] === 'artifactReference'
+    ) {
       if (!node['attrs']) {
         node['attrs'] = {};
       }
@@ -11,5 +17,5 @@ export const addMissingBlockIds = (tiptap: Record<string, typeof generateJSON>) 
         node['attrs']['id'] = crypto.randomUUID();
       }
     }
-  })
-}
+  });
+};

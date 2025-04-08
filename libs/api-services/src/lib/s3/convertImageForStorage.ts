@@ -1,7 +1,10 @@
-import sharp from 'sharp'
+import sharp from 'sharp';
 import { getImageQuality } from './getImageQuality';
 
-export const convertImageForStorage = async (userId: string, input: Buffer | string) => {
+export const convertImageForStorage = async (
+  userId: string,
+  input: Buffer | string,
+) => {
   const { maxResolution, quality } = await getImageQuality(userId);
   const fileBuffer = await sharp(input)
     .rotate()
@@ -15,4 +18,4 @@ export const convertImageForStorage = async (userId: string, input: Buffer | str
     })
     .toBuffer();
   return fileBuffer;
-}
+};
