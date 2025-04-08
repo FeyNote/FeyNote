@@ -101,7 +101,7 @@ export const obsidianToStandardizedImport = async (
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
       titleBodyMerge: true,
-      linkAccessLevel: ArtifactAccessLevel.coowner,
+      linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
