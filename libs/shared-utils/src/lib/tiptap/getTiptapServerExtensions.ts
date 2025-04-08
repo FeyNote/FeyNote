@@ -1,4 +1,4 @@
-import { mergeAttributes, Node } from '@tiptap/core';
+import { Mark, mergeAttributes, Node } from '@tiptap/core';
 import TableExtension from '@tiptap/extension-table';
 import Mention from '@tiptap/extension-mention';
 import ParagraphExtension from '@tiptap/extension-paragraph';
@@ -26,7 +26,6 @@ import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import { UniqueID } from '@tiptap-pro/extension-unique-id';
 import ImageExtension from '@tiptap/extension-image';
-import LinkExtension from '@tiptap/extension-link';
 import HeadingExtension from '@tiptap/extension-heading';
 
 interface Props {
@@ -37,6 +36,61 @@ export const getTiptapServerExtensions = (props: Props) => {
   return [
     DocumentExtension,
     ParagraphExtension,
+    Mark.create({
+      name: 'link',
+
+      priority: 1000,
+
+      keepOnSplit: false,
+      inclusive() {
+        return this.options.autoHyperlink;
+      },
+
+      addOptions() {
+        return {
+          openOnClick: true,
+          hyperlinkOnPaste: true,
+          autoHyperlink: true,
+          protocols: [],
+          HTMLAttributes: {
+            target: '_blank',
+            rel: 'noopener noreferrer nofollow',
+            class: '',
+          },
+          modals: {
+            previewHyperlink: null,
+            setHyperlink: null,
+          },
+          validate: undefined,
+        };
+      },
+
+      addAttributes() {
+        return {
+          href: {
+            default: null,
+          },
+          target: {
+            default: this.options.HTMLAttributes.target,
+          },
+          class: {
+            default: this.options.HTMLAttributes.class,
+          },
+        };
+      },
+
+      parseHTML() {
+        return [{ tag: 'a[href]:not([href *= "javascript:" i])' }];
+      },
+
+      renderHTML({ HTMLAttributes }) {
+        return [
+          'a',
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+          0,
+        ];
+      },
+    }),
     Node.create({
       name: 'blockGroup',
       content: 'block+',
@@ -88,7 +142,6 @@ export const getTiptapServerExtensions = (props: Props) => {
     }),
     DropcursorExtension,
     GapcursorExtension,
-    LinkExtension,
     TableExtension,
     TableRowExtension,
     TableHeaderExtension,
