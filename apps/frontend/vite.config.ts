@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
@@ -8,9 +9,12 @@ export default defineConfig({
   build: {
     outDir: '../../dist/apps/frontend',
     reportCompressedSize: true,
+
     commonjsOptions: {
       transformMixedEsModules: true,
     },
+
+    sourcemap: true,
   },
   cacheDir: '../../node_modules/.vite/frontend',
 
@@ -89,6 +93,10 @@ export default defineConfig({
           },
         ],
       },
+    }),
+    sentryVitePlugin({
+      org: 'redchickenco',
+      project: 'feynote-app',
     }),
   ],
 
