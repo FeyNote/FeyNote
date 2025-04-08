@@ -5,7 +5,7 @@ import { globalServerConfig } from '@feynote/config';
 
 Sentry.init({
   dsn: globalServerConfig.sentry.queueWorker.dsn,
-  integrations: [nodeProfilingIntegration()],
+  integrations: [nodeProfilingIntegration(), Sentry.prismaIntegration()],
   tracesSampleRate: globalServerConfig.sentry.queueWorker.samplingRate,
   environment: process.env.NODE_ENV,
   beforeSend(event) {

@@ -10,7 +10,7 @@ trpcFilteredErrorNames.delete('INTERNAL_SERVER_ERROR');
 
 Sentry.init({
   dsn: globalServerConfig.sentry.api.dsn,
-  integrations: [nodeProfilingIntegration()],
+  integrations: [nodeProfilingIntegration(), Sentry.prismaIntegration()],
   tracesSampleRate: globalServerConfig.sentry.api.samplingRate,
   environment: process.env.NODE_ENV,
   beforeSend(event, hint) {
