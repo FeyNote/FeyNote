@@ -33,7 +33,7 @@ interface Props {
   userFileToS3Map?: Map<string, string>;
 }
 
-export const getTiptapServerExtensions = ({ userFileToS3Map }: Props) => {
+export const getTiptapServerExtensions = (props: Props) => {
   return [
     DocumentExtension,
     ParagraphExtension,
@@ -329,8 +329,8 @@ export const getTiptapServerExtensions = ({ userFileToS3Map }: Props) => {
           HTMLAttributes['title'] ||
           HTMLAttributes['fileId'];
         let src = this.options.getSrcForFileId(fileId);
-        if (userFileToS3Map?.has(fileId)) {
-          src = userFileToS3Map.get(fileId);
+        if (props.userFileToS3Map?.has(fileId)) {
+          src = props.userFileToS3Map.get(fileId);
         }
 
         return [

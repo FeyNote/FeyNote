@@ -1,5 +1,9 @@
 import { readFile } from 'fs/promises';
-import { ArtifactTheme, ArtifactType } from '@prisma/client';
+import {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
 import {
   addMissingBlockIds,
   ARTIFACT_TIPTAP_BODY_KEY,
@@ -205,15 +209,20 @@ const handleLogseqGraph = async (
       importInfo,
       baseImageNameToPath,
     );
-    const extensions = getTiptapServerExtensions();
+    const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
     const text = getTextForJSONContent(tiptap);
+
     const yDoc = constructYArtifact({
+      id,
+      userId,
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
       titleBodyMerge: true,
+      linkAccessLevel: ArtifactAccessLevel.coowner,
+      deletedAt: null,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
       tiptap,
