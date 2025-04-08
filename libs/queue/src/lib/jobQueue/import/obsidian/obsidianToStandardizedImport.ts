@@ -1,6 +1,10 @@
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { generateJSON } from '@tiptap/html';
-import { ArtifactTheme, ArtifactType } from '@prisma/client';
+import {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
 import { readFile } from 'fs/promises';
 import path, { extname, parse } from 'path';
 import { marked } from 'marked';
@@ -83,17 +87,22 @@ export const obsidianToStandardizedImport = async (
     markdown = replaceObsidianImageHttpTags(markdown, artifactId, importInfo);
 
     const html = await marked.parse(markdown);
-    const extensions = getTiptapServerExtensions();
+    const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
 
     const text = getTextForJSONContent(tiptap);
     const title = parse(filePath).name;
+
     const yDoc = constructYArtifact({
+      id: randomUUID(), // TODO: Use the getSafeFileId function here
+      userId,
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
       titleBodyMerge: true,
+      linkAccessLevel: ArtifactAccessLevel.coowner,
+      deletedAt: null,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
       tiptap,

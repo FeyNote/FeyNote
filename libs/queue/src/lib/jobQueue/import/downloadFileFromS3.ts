@@ -13,7 +13,7 @@ export const downloadFileFromS3 = async (key: string) => {
   const fileDest = join(tempDir, `${Date.now()}-${Math.random()}`);
   const fileStream = createWriteStream(fileDest);
 
-  await new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     stream.pipe(fileStream).on('finish', resolve).on('error', reject);
   });
 
