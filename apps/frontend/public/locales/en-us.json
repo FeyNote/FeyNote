@@ -209,7 +209,7 @@
   "importExport.options.json": "Export to Json",
   "importExport.file.header": "File Selection",
   "importExport.file.instructions.obsidian": "Please select a zipped copy of your obsidian vault file.",
-  "importExport.file.instructions.logseq": "Please select a zipped JSON export of your graph alongside your logseq assets directory if you wish to preserve images.",
+  "importExport.file.instructions.logseq": "Please select a zipped JSON export of your graph alongside your logseq assets directory if you wish to preserve images. (Note: Support for org mode is in-progress, and only artifacts of markdown format will be imported)",
   "importExport.file.error.type": "Invalid file type selected. File must be of type(s);",
   "importExport.file.error.size": "File size limit exceeded. File must have a size of under;",
   "importExport.download.header": "Download Zip",
