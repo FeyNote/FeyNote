@@ -14,7 +14,7 @@ export default defineConfig({
       transformMixedEsModules: true,
     },
 
-    sourcemap: true,
+    sourcemap: !!process.env.VITE_APP_VERSION, // We only want to take the extra time to build sourcemaps if we're shipping a version
   },
   cacheDir: '../../node_modules/.vite/frontend',
 
@@ -97,6 +97,10 @@ export default defineConfig({
     sentryVitePlugin({
       org: 'redchickenco',
       project: 'feynote-app',
+      disable: !process.env.VITE_APP_VERSION, // We only want to take the extra time to build sourcemaps if we're shipping a version
+      release: {
+        name: process.env.VITE_APP_VERSION,
+      },
     }),
   ],
 
