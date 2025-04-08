@@ -173,6 +173,7 @@
     "nx": "20.7.1",
     "prettier": "^3.5.3",
     "prisma": "^6.5.0",
+    "rollup-plugin-visualizer": "^5.14.0",
     "ts-jest": "^29.3.1",
     "typescript": "^5.8.2",
     "vite": "6.2.1",
