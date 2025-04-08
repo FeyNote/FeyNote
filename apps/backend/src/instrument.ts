@@ -28,4 +28,9 @@ Sentry.init({
 
     return event;
   },
+  initialScope: {
+    extra: {
+      source: 'api',
+    },
+  },
 });

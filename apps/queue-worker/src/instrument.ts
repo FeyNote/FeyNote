@@ -14,4 +14,9 @@ Sentry.init({
 
     return event;
   },
+  initialScope: {
+    extra: {
+      source: 'queueworker',
+    },
+  },
 });
