@@ -47,6 +47,9 @@ export const getArtifactEdgesById = publicProcedure
       const incomingEdgesPromise = prisma.artifactReference.findMany({
         where: {
           targetArtifactId: input.id,
+          artifact: {
+            deletedAt: null,
+          },
         },
         select: {
           artifactId: true,
