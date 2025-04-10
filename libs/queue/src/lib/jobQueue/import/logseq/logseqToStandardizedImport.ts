@@ -106,7 +106,7 @@ const convertMarkdownToHtml = async (
   let html = marked.parse(markdown);
   const referencedBlockWithId = blockIdToBlockInfoMap.get(blockId);
   if (referencedBlockWithId) {
-    html = `<span data-id="${referencedBlockWithId.id}">${html}</span>`;
+    html = `<p data-id="${referencedBlockWithId.id}">${html}</p>`;
   }
   return html;
 };

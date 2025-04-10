@@ -87,9 +87,11 @@ export const obsidianToStandardizedImport = async (
     markdown = replaceObsidianImageHttpTags(markdown, artifactId, importInfo);
 
     const html = await marked.parse(markdown);
+    console.log(`html: ${html}`);
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
+    console.log(`tiptap: ${JSON.stringify(tiptap, null, 2)}`);
 
     const text = getTextForJSONContent(tiptap);
     const title = parse(filePath).name;
