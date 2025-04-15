@@ -1,12 +1,10 @@
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
-import { ArtifactEditorStyles } from './ArtifactEditorStyles';
-import { EditorContent } from '@tiptap/react';
-import { useArtifactEditor } from './useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useContext } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { TiptapEditor } from './TiptapEditor';
 
 interface Props {
   artifactId: string;
@@ -19,26 +17,21 @@ export const TiptapPreview: React.FC<Props> = (props) => {
 
   const artifactMeta = getMetaFromYArtifact(props.yDoc);
 
-  const editor = useArtifactEditor({
-    artifactId: props.artifactId,
-    editable: false,
-    yjsProvider: undefined,
-    yDoc: props.yDoc,
-    onReady: props.onReady,
-    getFileUrl: (fileId) => {
-      if (!session) return '';
-      return getFileRedirectUrl({
-        fileId,
-        sessionToken: session.token,
-      }).toString();
-    },
-  });
-
   return (
     <ArtifactEditorContainer>
-      <ArtifactEditorStyles data-theme={artifactMeta.theme}>
-        <EditorContent editor={editor}></EditorContent>
-      </ArtifactEditorStyles>
+      <TiptapEditor
+        artifactId={props.artifactId}
+        editable={false}
+        yDoc={props.yDoc}
+        theme={artifactMeta.theme}
+        getFileUrl={(fileId) => {
+          if (!session) return '';
+          return getFileRedirectUrl({
+            fileId,
+            sessionToken: session.token,
+          }).toString();
+        }}
+      />
     </ArtifactEditorContainer>
   );
 };

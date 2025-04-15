@@ -12,16 +12,28 @@ export const useAppThemeWatcher = (preferences: AppPreferences) => {
   const userPreferredTheme = preferences[PreferenceNames.Theme];
 
   const updateTheme = (browserPrefersDark: boolean) => {
+    let theme = AppTheme.Light;
     if (userPreferredTheme === AppTheme.Default && browserPrefersDark) {
       // User has no preference, respect navigator theme
-      document.documentElement.classList.toggle('ion-palette-dark', true);
+      theme = AppTheme.Dark;
     } else {
       // Respect user preference for theme -- future theme support would go here
-      document.documentElement.classList.toggle(
-        'ion-palette-dark',
-        userPreferredTheme === AppTheme.Dark,
-      );
+      theme = userPreferredTheme;
     }
+
+    // Made it through with no preference, but we need to decide. Our default is light.
+    if (theme === AppTheme.Default) {
+      theme = AppTheme.Light;
+    }
+
+    document.documentElement.classList.toggle(
+      'ion-palette-light',
+      theme === AppTheme.Light,
+    );
+    document.documentElement.classList.toggle(
+      'ion-palette-dark',
+      theme === AppTheme.Dark,
+    );
   };
 
   useEffect(() => {

@@ -28,9 +28,14 @@ type UseArtifactEditorArgs = {
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
   onRollDice?: (roll: string) => void;
+  onIncomingReferenceCounterMouseOver?: (
+    event: MouseEvent,
+    blockId: string,
+  ) => void;
+  onIncomingReferenceCounterMouseOut?: (event: MouseEvent) => void;
 } & DocArgOptions;
 
-export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
+export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
@@ -65,6 +70,9 @@ export const useArtifactEditor = (args: UseArtifactEditorArgs) => {
         },
     onTocUpdate: args.onTocUpdate,
     onRollDice: args.onRollDice,
+    onIncomingReferenceCounterMouseOver:
+      args.onIncomingReferenceCounterMouseOver,
+    onIncomingReferenceCounterMouseOut: args.onIncomingReferenceCounterMouseOut,
   });
 
   const editor = useEditor({

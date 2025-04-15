@@ -1,5 +1,6 @@
 import { Edge, getEdgeId, GetEdgeIdArgs } from '@feynote/shared-utils';
 import { trpc } from '../trpc';
+import { getManifestDb, ObjectStoreName } from '../localDb';
 
 class EdgeStore {
   private readonly CLEANUP_INTERVAL_SECONDS = 60;
@@ -8,11 +9,6 @@ class EdgeStore {
    * For communicating with the service worker (it publishes on this channel every sync)
    */
   private broadcastChannel = new BroadcastChannel('edges.updated');
-  /**
-   * For keeping track of what edges we actually care about so we don't
-   * have to keep all edges in the user's collection in memory
-   */
-  private watchedEdges = new Set<string>();
   /**
    * Pseudo-react context like, that keeps track of what listeners are interested in what artifacts
    */
@@ -28,21 +24,34 @@ class EdgeStore {
   // These maps represent edges as a total source of truth
   private outgoingEdgesByArtifactId = new Map<string, Edge[]>();
   private incomingEdgesByArtifactId = new Map<string, Edge[]>();
+  /**
+   * First level of map is the artifactId, second level is the blockId
+   * We store this for performant lookups
+   */
+  private incomingEdgesByBlockIdByArtifactId = new Map<
+    string,
+    Map<string, Edge[]>
+  >();
 
   constructor() {
     // Cleanup unwatched edges from memory
     setInterval(() => {
+      const cleanedIds = new Set<string>();
       for (const artifactId of this.localOutgoingEdgesByArtifactId.keys()) {
-        if (!this.listenersByArtifactId[artifactId]) {
-          this.watchedEdges.delete(artifactId);
+        if (!this.hasListeners(artifactId)) {
           this.localOutgoingEdgesByArtifactId.delete(artifactId);
+          cleanedIds.add(artifactId);
         }
       }
       for (const artifactId of this.localIncomingEdgesByArtifactId.keys()) {
-        if (!this.listenersByArtifactId[artifactId]) {
-          this.watchedEdges.delete(artifactId);
+        if (!this.hasListeners(artifactId)) {
           this.localIncomingEdgesByArtifactId.delete(artifactId);
+          cleanedIds.add(artifactId);
         }
+      }
+
+      for (const artifactId of cleanedIds) {
+        this.updateTrackedEdges(artifactId);
       }
     }, this.CLEANUP_INTERVAL_SECONDS);
 
@@ -50,7 +59,7 @@ class EdgeStore {
       const aritfactIdsWithUpdatedEdges = event.data.modifiedEdgeArtifactIds;
 
       for (const artifactId of aritfactIdsWithUpdatedEdges) {
-        if (this.watchedEdges.has(artifactId)) {
+        if (this.hasListeners(artifactId)) {
           await this.loadArtifactEdges(artifactId);
 
           this.notifyArtifactListeners(artifactId);
@@ -93,6 +102,27 @@ class EdgeStore {
       artifactId,
       Array.from(incomingEdgesMap.values()),
     );
+
+    const incomingEdgesByBlockId = new Map<string, Edge[]>();
+    for (const edge of this.incomingEdgesByArtifactId.get(artifactId) || []) {
+      const blockId = edge.targetArtifactBlockId;
+      if (!blockId) {
+        continue;
+      }
+
+      if (!incomingEdgesByBlockId.has(blockId)) {
+        incomingEdgesByBlockId.set(blockId, []);
+      }
+      incomingEdgesByBlockId.get(blockId)?.push(edge);
+    }
+    if (incomingEdgesByBlockId.size === 0) {
+      this.incomingEdgesByBlockIdByArtifactId.delete(artifactId);
+    } else {
+      this.incomingEdgesByBlockIdByArtifactId.set(
+        artifactId,
+        incomingEdgesByBlockId,
+      );
+    }
   }
 
   private notifyArtifactListeners(artifactId: string) {
@@ -213,6 +243,41 @@ class EdgeStore {
     };
   }
 
+  public getIncomingEdgesForBlockInstant(args: {
+    artifactId: string;
+    blockId: string;
+  }): Edge[] {
+    return (
+      this.incomingEdgesByBlockIdByArtifactId
+        .get(args.artifactId)
+        ?.get(args.blockId) || []
+    );
+  }
+
+  public async getEdge(args: GetEdgeIdArgs): Promise<Edge | undefined> {
+    const edgeId = getEdgeId(args);
+
+    const incomingEdge = this.incomingEdgesByArtifactId
+      .get(args.targetArtifactId)
+      ?.find((edge) => getEdgeId(edge) === edgeId);
+    const outgoingEdge = this.outgoingEdgesByArtifactId
+      .get(args.artifactId)
+      ?.find((edge) => getEdgeId(edge) === edgeId);
+
+    if (incomingEdge || outgoingEdge) {
+      return incomingEdge || outgoingEdge;
+    }
+
+    const manifestDb = await getManifestDb();
+    const edge = await manifestDb
+      .get(ObjectStoreName.Edges, edgeId)
+      .catch(() => {
+        return undefined;
+      });
+
+    return edge;
+  }
+
   public getEdgeInstant(args: GetEdgeIdArgs): Edge | undefined {
     const edgeId = getEdgeId(args);
 
@@ -226,12 +291,17 @@ class EdgeStore {
     return incomingEdge || outgoingEdge;
   }
 
+  public hasListeners(artifactId: string) {
+    return !!this.listenersByArtifactId[artifactId]?.size;
+  }
+
   public listenForArtifactId(artifactId: string, listener: () => void) {
+    const hasListeners = this.hasListeners(artifactId);
+
     this.listenersByArtifactId[artifactId] ||= new Set();
     this.listenersByArtifactId[artifactId].add(listener);
 
-    if (!this.watchedEdges.has(artifactId)) {
-      this.watchedEdges.add(artifactId);
+    if (!hasListeners) {
       this.loadArtifactEdges(artifactId).then(() => {
         this.notifyArtifactListeners(artifactId);
       });

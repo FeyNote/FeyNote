@@ -78,6 +78,9 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
       >
         <ArtifactReferenceLink
           data-id={props.node.attrs.id}
+          data-target-artifact-id={targetArtifactId}
+          data-target-artifact-block-id={targetArtifactBlockId}
+          data-target-artifact-date={targetArtifactDate}
           onClick={(event) => (
             event.preventDefault(),
             event.stopPropagation(),

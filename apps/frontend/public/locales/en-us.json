@@ -266,6 +266,8 @@
   "artifactRenderer.artifactSharedToYou.readonly": "You have read-only access.",
   "artifactRenderer.theme": "Theme",
 
+  "incomingReferencesInlinePreview.header": "Incoming References to This Block",
+
   "artifactSharing.title": "Manage Artifact Access",
   "artifactSharing.existing": "Users With Access",
   "artifactSharing.existing.help": "This list shows all users who have access to this artifact and their associated access level. You can change the access level to revoke or change their ability to change this asset.",
