@@ -16,7 +16,6 @@ import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { basename, extname } from 'path';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 import { generateJSON } from '@tiptap/html';
-import { randomUUID } from 'crypto';
 import { isImagePath } from '../isImagePath';
 import type { LogseqBlock, LogseqGraph } from './LogseqGraph';
 import { marked } from 'marked';
@@ -24,13 +23,14 @@ import {
   getLogseqReferenceIdToBlockMap,
   type ArtifactBlockInfo,
 } from './getLogseqReferenceIdToBlockMap';
+import { getSafeArtifactId, getSafeFileId } from '@feynote/api-services';
 
-const replaceLogseqImageReferences = (
+const replaceLogseqImageReferences = async (
   content: string,
   importInfo: StandardizedImportInfo,
   artifactId: string,
   baseImageNameToPath: Map<string, string>,
-): string => {
+): Promise<string> => {
   /**
    * Returns five matching elements
    * 0. The full match in format either <img src="file.png" /> or ![Title](path.png){} ({} is optional)
@@ -44,7 +44,7 @@ const replaceLogseqImageReferences = (
   for (const matchingGroups of content.matchAll(imgRegex)) {
     const imageSrc = matchingGroups[2] || matchingGroups[5];
     let replacementHtml = '';
-    const id = randomUUID();
+    const id = (await getSafeFileId()).id;
     if (imageSrc.startsWith('http')) {
       importInfo.imageFilesToUpload.push({
         id,
@@ -96,7 +96,7 @@ const convertMarkdownToHtml = async (
   blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
   baseImageNameToPath: Map<string, string>,
 ): Promise<string> => {
-  markdown = replaceLogseqImageReferences(
+  markdown = await replaceLogseqImageReferences(
     markdown,
     importInfo,
     artifactId,
@@ -189,7 +189,7 @@ const handleLogseqGraph = async (
   const pageNameToIdMap = new Map<string, string>();
   for (const page of json.blocks) {
     const title = page['page-name'];
-    const id = randomUUID();
+    const id = (await getSafeArtifactId()).id;
     pageNameToIdMap.set(title, id);
   }
 
@@ -200,7 +200,7 @@ const handleLogseqGraph = async (
 
   for (const page of json.blocks) {
     const title = page['page-name'];
-    const id = pageNameToIdMap.get(title) || randomUUID();
+    const id = pageNameToIdMap.get(title) || (await getSafeArtifactId()).id;
     const html = await convertLogseqPageToHtml(
       page.children,
       id,

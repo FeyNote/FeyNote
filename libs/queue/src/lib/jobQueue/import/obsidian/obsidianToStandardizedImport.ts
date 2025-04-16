@@ -16,14 +16,16 @@ import {
   getTiptapServerExtensions,
 } from '@feynote/shared-utils';
 import { TiptapTransformer } from '@hocuspocus/transformer';
-import { randomUUID } from 'crypto';
 import { getObsidianReferenceId } from './getObsidianReferenceId';
 import { replaceObsidianReferences } from './replaceObsidianReferences';
-import { replaceObsidianHeadings } from './replaceObsidianHeadings';
+import { replaceObsidianHeadingReferences } from './replaceObsidianHeadingReferences';
 import { replaceObsidianImageFileTags } from './replaceObsidianImageFileTags';
 import { replaceObsidianImageHttpTags } from './replaceObsidianImageHttpTags';
 import { pushImgTagsToNewLine } from './pushImgTagsToNewLine';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
+import { getSafeArtifactId } from '@feynote/api-services';
+import { replaceObsidianParagraphReferences } from './replaceObsidianParagraphReferences';
+import { populateHeadingBlockIds } from './populateHeadingBlockIds';
 
 export const obsidianToStandardizedImport = async (
   userId: string,
@@ -48,17 +50,32 @@ export const obsidianToStandardizedImport = async (
     string,
     {
       id: string;
-      path: string;
+      blockId?: string;
     }
   >();
-  filePaths.forEach((filePath) => {
+
+  // Due to obsidian having two different ways in which heading references can be shown we must preprocess the
+  // block ids to all heading references
+  for await (const filePath of filePaths) {
+    if (extname(filePath) !== '.md') continue;
+    const markdown = await readFile(filePath, 'utf-8');
     const obsidianReferenceId = getObsidianReferenceId(
       filePath,
       pathToRelativeReferences,
     );
-    const id = randomUUID();
-    referenceIdToInfoMap.set(obsidianReferenceId, { id, path: filePath });
-  });
+    const artifactId =
+      referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
+      (await getSafeArtifactId()).id;
+    referenceIdToInfoMap.set(obsidianReferenceId, {
+      id: artifactId,
+    });
+    populateHeadingBlockIds(
+      markdown,
+      referenceIdToInfoMap,
+      obsidianReferenceId,
+      artifactId,
+    );
+  }
 
   for await (const filePath of filePaths) {
     if (extname(filePath) !== '.md') continue;
@@ -67,37 +84,47 @@ export const obsidianToStandardizedImport = async (
       pathToRelativeReferences,
     );
     const artifactId =
-      referenceIdToInfoMap.get(obsidianReferenceId)?.id ?? randomUUID();
-
+      referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
+      (await getSafeArtifactId()).id;
+    referenceIdToInfoMap.set(obsidianReferenceId, {
+      id: artifactId,
+    });
     let markdown = await readFile(filePath, 'utf-8');
     markdown = pushImgTagsToNewLine(markdown);
-    markdown = replaceObsidianReferences(
+    markdown = await replaceObsidianReferences(markdown, referenceIdToInfoMap);
+    markdown = replaceObsidianHeadingReferences(
       markdown,
       referenceIdToInfoMap,
+      obsidianReferenceId,
+    );
+    markdown = replaceObsidianParagraphReferences(
+      markdown,
+      artifactId,
+      referenceIdToInfoMap,
+      obsidianReferenceId,
+    );
+    markdown = await replaceObsidianImageFileTags(
+      markdown,
+      artifactId,
+      filePath,
+      importInfo,
+    );
+    markdown = await replaceObsidianImageHttpTags(
+      markdown,
       artifactId,
       importInfo,
     );
-    markdown = replaceObsidianHeadings(markdown);
-    markdown = replaceObsidianImageFileTags(
-      markdown,
-      referenceIdToInfoMap,
-      artifactId,
-      importInfo,
-    );
-    markdown = replaceObsidianImageHttpTags(markdown, artifactId, importInfo);
-
     const html = await marked.parse(markdown);
-    console.log(`html: ${html}`);
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
-    console.log(`tiptap: ${JSON.stringify(tiptap, null, 2)}`);
 
     const text = getTextForJSONContent(tiptap);
     const title = parse(filePath).name;
+    const fileId = await getSafeArtifactId();
 
     const yDoc = constructYArtifact({
-      id: randomUUID(), // TODO: Use the getSafeFileId function here
+      id: fileId.id,
       userId,
       title,
       theme: ArtifactTheme.default,

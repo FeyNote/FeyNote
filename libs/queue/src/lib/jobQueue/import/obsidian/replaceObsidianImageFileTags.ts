@@ -1,33 +1,24 @@
-import { randomUUID } from 'crypto';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
+import { getSafeFileId } from '@feynote/api-services';
 
-export const replaceObsidianImageFileTags = (
+export const replaceObsidianImageFileTags = async (
   content: string,
-  docInfoMap: Map<
-    string,
-    {
-      //TODO: Clean this up to be just path
-      id: string;
-      path: string;
-    }
-  >,
   artifactId: string,
+  filePath: string,
   importInfo: StandardizedImportInfo,
 ) => {
   // Returns two elements (the match and the src url) i.e. <img src="file.png" />
-  // 1. The full match
-  // 2. The src url
+  // 0. The full match
+  // 1. The src url
   const imgRegex = /<img src="(.*?)".*?\/>/g;
   for (const matchingGroups of content.matchAll(imgRegex)) {
-    const imageSrc = matchingGroups[1];
-    if (imageSrc.startsWith('http')) continue;
-    const documentInfo = docInfoMap.get(imageSrc);
-    if (!documentInfo) continue; // Referenced item does not exist
-    const id = randomUUID();
+    const imagePath = matchingGroups[1];
+    if (imagePath.startsWith('http')) continue;
+    const id = (await getSafeFileId()).id;
     importInfo.imageFilesToUpload.push({
       id,
       associatedArtifactId: artifactId,
-      path: documentInfo.path,
+      path: filePath,
     });
     const replacementHtml = `<img fileId="${id}" />`;
     content = content.replace(matchingGroups[0], replacementHtml);

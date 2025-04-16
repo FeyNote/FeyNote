@@ -29,12 +29,14 @@ export * from './lib/s3/convertImageForStorage';
 export * from './lib/s3/streamFileFromS3';
 export * from './lib/s3/getFileFromS3';
 export * from './lib/s3/getSignedFileUrlsForUser';
+export * from './lib/s3/getSafeFileId';
 
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';
 
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
+export * from './lib/artifacts/getSafeArtifactId';
 
 export * from './lib/dto/artifactDetailToArtifactDTO';
 
