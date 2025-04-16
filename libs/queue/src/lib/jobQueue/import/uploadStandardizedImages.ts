@@ -1,13 +1,13 @@
 import {
-  convertImageForStorage,
   proxyGetRequest,
-  uploadFileToS3,
+  transformAndUploadFileToS3ForUser,
 } from '@feynote/api-services';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
 import pLimit from 'p-limit';
-import { Transform } from 'stream';
 import { basename, extname } from 'path';
 import { FilePurpose } from '@prisma/client';
+import { Readable } from 'stream';
+import { createReadStream } from 'fs';
 
 const ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD = 5000;
 const UPLOAD_CONCURRENCY = 20;
@@ -28,55 +28,29 @@ export const uploadStandardizedImages = async (
           throw new Error('Too many http links');
         }
 
-        let buffer, fileName;
+        let fileName: string;
+        let file = new Readable();
         if ('url' in imageInfo) {
           const response = await proxyGetRequest(imageInfo.url, {
             responseType: 'stream',
           });
-          const stream = response.data;
 
-          let totalSize = 0;
-          const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-
-          const fileSizeLimiter = new Transform({
-            transform(chunk, _, callback) {
-              totalSize += chunk.length;
-              if (totalSize > MAX_FILE_SIZE) {
-                callback(new Error('File size limit exceeded'));
-              } else {
-                callback(null, chunk);
-              }
-            },
-          });
-
-          const chunks: Uint8Array[] = [];
-          await new Promise<void>((resolve, reject) => {
-            stream
-              .pipe(fileSizeLimiter)
-              .on('data', (chunk: Uint8Array) => {
-                chunks.push(chunk);
-              })
-              .on('error', (err: unknown) => {
-                console.error('Stream error:', (err as Error).message);
-                reject();
-              })
-              .on('finish', () => {
-                console.log('File successfully written');
-                resolve();
-              });
-          });
-
-          buffer = await convertImageForStorage(userId, Buffer.concat(chunks));
+          file = response.data;
           fileName = basename(imageInfo.url, extname(imageInfo.url));
         } else {
           console.log('Recieved Image Info:', JSON.stringify(imageInfo) + '\n');
-          buffer = await convertImageForStorage(userId, imageInfo.path);
           fileName = basename(imageInfo.path, extname(imageInfo.path));
+          file = createReadStream(imageInfo.path);
         }
 
         const purpose = FilePurpose.artifact;
         const mimetype = 'image/jpeg';
-        const uploadResult = await uploadFileToS3(buffer, mimetype, purpose);
+        const uploadResult = await transformAndUploadFileToS3ForUser({
+          userId,
+          file: file,
+          purpose,
+          mimetype,
+        });
 
         const fileData = {
           id: imageInfo.id,

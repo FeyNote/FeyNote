@@ -78,7 +78,6 @@ export const obsidianToStandardizedImport = async (
   }
 
   for await (const filePath of filePaths) {
-    console.log(`filePath: ${filePath}`);
     if (extname(filePath) !== '.md') continue;
     const obsidianReferenceId = getObsidianReferenceId(
       filePath,

@@ -19,7 +19,7 @@ export const replaceObsidianImageFileTags = async (
     importInfo.imageFilesToUpload.push({
       id,
       associatedArtifactId: artifactId,
-      path: path.join(pathToObsidianVaultDir, imagePath),
+      path: path.join('/' + pathToObsidianVaultDir, imagePath),
     });
     const replacementHtml = `<img fileId="${id}" />`;
     content = content.replace(matchingGroups[0], replacementHtml);

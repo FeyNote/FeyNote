@@ -25,7 +25,6 @@ export * from './lib/s3/transformAndUploadFileToS3ForUser';
 export * from './lib/s3/transformImage';
 export * from './lib/s3/uploadFileToS3';
 export * from './lib/s3/getImageQuality';
-export * from './lib/s3/convertImageForStorage';
 export * from './lib/s3/streamFileFromS3';
 export * from './lib/s3/getFileFromS3';
 export * from './lib/s3/getSignedFileUrlsForUser';
