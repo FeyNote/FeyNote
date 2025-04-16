@@ -69,7 +69,7 @@ export const uploadStandardizedImages = async (
           buffer = await convertImageForStorage(userId, Buffer.concat(chunks));
           fileName = basename(imageInfo.url, extname(imageInfo.url));
         } else {
-          // TODO: verify path exists
+          console.log('Recieved Image Info:', JSON.stringify(imageInfo) + '\n');
           buffer = await convertImageForStorage(userId, imageInfo.path);
           fileName = basename(imageInfo.path, extname(imageInfo.path));
         }

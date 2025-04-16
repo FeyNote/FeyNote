@@ -42,7 +42,7 @@ export const obsidianToStandardizedImport = async (
   );
   if (!obsidianConfigDirPath)
     throw Error('No .obsidian folder found in the zip file');
-  const pathToRelativeReferences = path.join(
+  const pathToObsidianVaultDir = path.join(
     ...obsidianConfigDirPath.split(path.sep).slice(0, -1),
   );
 
@@ -61,7 +61,7 @@ export const obsidianToStandardizedImport = async (
     const markdown = await readFile(filePath, 'utf-8');
     const obsidianReferenceId = getObsidianReferenceId(
       filePath,
-      pathToRelativeReferences,
+      pathToObsidianVaultDir,
     );
     const artifactId =
       referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
@@ -78,10 +78,11 @@ export const obsidianToStandardizedImport = async (
   }
 
   for await (const filePath of filePaths) {
+    console.log(`filePath: ${filePath}`);
     if (extname(filePath) !== '.md') continue;
     const obsidianReferenceId = getObsidianReferenceId(
       filePath,
-      pathToRelativeReferences,
+      pathToObsidianVaultDir,
     );
     const artifactId =
       referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
@@ -91,7 +92,13 @@ export const obsidianToStandardizedImport = async (
     });
     let markdown = await readFile(filePath, 'utf-8');
     markdown = pushImgTagsToNewLine(markdown);
-    markdown = await replaceObsidianReferences(markdown, referenceIdToInfoMap);
+    markdown = await replaceObsidianReferences(
+      markdown,
+      referenceIdToInfoMap,
+      artifactId,
+      pathToObsidianVaultDir,
+      importInfo,
+    );
     markdown = replaceObsidianHeadingReferences(
       markdown,
       referenceIdToInfoMap,
@@ -106,8 +113,8 @@ export const obsidianToStandardizedImport = async (
     markdown = await replaceObsidianImageFileTags(
       markdown,
       artifactId,
-      filePath,
       importInfo,
+      pathToObsidianVaultDir,
     );
     markdown = await replaceObsidianImageHttpTags(
       markdown,

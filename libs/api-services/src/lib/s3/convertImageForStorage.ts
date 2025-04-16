@@ -6,16 +6,22 @@ export const convertImageForStorage = async (
   input: Buffer | string,
 ) => {
   const { maxResolution, quality } = await getImageQuality(userId);
-  const fileBuffer = await sharp(input)
-    .rotate()
-    .resize(maxResolution, maxResolution, {
-      fit: 'contain',
-      withoutEnlargement: true,
-    })
-    .jpeg({
-      quality,
-      mozjpeg: true,
-    })
-    .toBuffer();
-  return fileBuffer;
+  try {
+    const fileBuffer = await sharp(input)
+      .rotate()
+      .resize(maxResolution, maxResolution, {
+        fit: 'contain',
+        withoutEnlargement: true,
+      })
+      .jpeg({
+        quality,
+        mozjpeg: true,
+      })
+      .toBuffer();
+
+    return fileBuffer;
+  } catch (e) {
+    console.log(e);
+    throw new Error('ahhh');
+  }
 };

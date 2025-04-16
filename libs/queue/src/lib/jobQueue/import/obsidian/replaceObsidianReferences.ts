@@ -1,5 +1,8 @@
-import { getSafeArtifactId } from '@feynote/api-services';
+import { getSafeArtifactId, getSafeFileId } from '@feynote/api-services';
 import { randomUUID } from 'crypto';
+import { isImagePath } from '../isImagePath';
+import type { StandardizedImportInfo } from '../StandardizedImportInfo';
+import { join } from 'path';
 
 export const replaceObsidianReferences = async (
   content: string,
@@ -10,6 +13,9 @@ export const replaceObsidianReferences = async (
       blockId?: string;
     }
   >,
+  artifactId: string,
+  pathToObsidianVaultDir: string,
+  importInfo: StandardizedImportInfo,
 ): Promise<string> => {
   // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
   // 0. The full match
@@ -20,25 +26,40 @@ export const replaceObsidianReferences = async (
   const referenceRegex = /!?\[\[(.+?)(#([^|]*?))?(\|.*?)?\]\]/g;
   for (const matchingGroups of content.matchAll(referenceRegex)) {
     const obsidianArtifactId = matchingGroups[1];
+    if (isImagePath(obsidianArtifactId)) {
+      const fileId = (await getSafeFileId()).id;
+      const path = join('/' + pathToObsidianVaultDir, obsidianArtifactId);
+      importInfo.imageFilesToUpload.push({
+        id: fileId,
+        associatedArtifactId: artifactId,
+        path,
+      });
+
+      const replacementHtml = `<img fileId="${fileId}" />`;
+      content = content.replace(matchingGroups[0], replacementHtml);
+      continue;
+    }
+
     const artifactInfo = docInfoMap.get(obsidianArtifactId);
-    const artifactId = artifactInfo?.id ?? (await getSafeArtifactId()).id;
+    const refrencedArtifactId =
+      artifactInfo?.id ?? (await getSafeArtifactId()).id;
     if (!artifactInfo) {
       docInfoMap.set(obsidianArtifactId, {
-        id: artifactId,
+        id: refrencedArtifactId,
       });
     }
     const headingReference = matchingGroups[3];
-    let replacementHtml = `<span data-type="artifactReference" data-artifact-id="${artifactId}"></span>`;
+    let replacementHtml = `<span data-type="artifactReference" data-artifact-id="${refrencedArtifactId}"></span>`;
     if (headingReference) {
       const obsidianBlockId = obsidianArtifactId + headingReference;
       const blockId = docInfoMap.get(obsidianBlockId)?.blockId ?? randomUUID();
       if (!docInfoMap.has(obsidianBlockId)) {
         docInfoMap.set(obsidianBlockId, {
-          id: artifactId,
+          id: refrencedArtifactId,
           blockId,
         });
       }
-      replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockId} data-artifact-id="${artifactId}"></span>`;
+      replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockId} data-artifact-id="${refrencedArtifactId}"></span>`;
     }
     content = content.replace(matchingGroups[0], replacementHtml);
   }
