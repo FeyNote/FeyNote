@@ -247,8 +247,6 @@
   "artifactRenderer.fileTooLarge": "File is too large",
   "artifactRenderer.diceRoll.title": "Dice Roll Result",
   "artifactRenderer.settings": "Settings",
-  "artifactRenderer.titleBodyMerge": "Theme title",
-  "artifactRenderer.titleBodyMerge.help": "When checked, the title will have the same styling as the selected theme.",
   "artifactRenderer.tableOfContents": "Table of Contents",
   "artifactRenderer.incomingArtifactReferences": "Referenced By",
   "artifactRenderer.incomingArtifactReferences.help": "The artifacts listed here reference the artifact you're viewing somewhere in their content.",

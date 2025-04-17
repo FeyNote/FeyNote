@@ -1,6 +1,5 @@
 import {
   IonCard,
-  IonCheckbox,
   IonIcon,
   IonLabel,
   IonListHeader,
@@ -158,22 +157,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               </IonSelectOption>
             ))}
           </IonSelect>
-        </CompactIonItem>
-        <CompactIonItem button lines="none">
-          <IonCheckbox
-            labelPlacement="end"
-            justify="start"
-            checked={artifactMeta.titleBodyMerge}
-            onIonChange={async (event) => {
-              setMetaProp('titleBodyMerge', event.target.checked);
-            }}
-          >
-            {t('artifactRenderer.titleBodyMerge')}
-          </IonCheckbox>
-          <InfoButton
-            slot="end"
-            message={t('artifactRenderer.titleBodyMerge.help')}
-          />
         </CompactIonItem>
       </IonCard>
     );

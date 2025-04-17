@@ -2,7 +2,6 @@ import { memo, MutableRefObject } from 'react';
 import { Editor, JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 
-import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import { IonItem } from '@ionic/react';
@@ -12,6 +11,7 @@ import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
+import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -55,7 +55,6 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
 
   const setMetaProp = (metaPropName: string, value: string) => {
     yDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
@@ -78,14 +77,9 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
 
   return (
     <div data-print-target={`artifact:${props.artifactId}`}>
-      {titleBodyMerge && (
-        <ArtifactEditorStyles data-theme={theme}>
-          {titleInput}
-        </ArtifactEditorStyles>
-      )}
-      {!titleBodyMerge && titleInput}
-
-      <TiptapEditor {...props} theme={theme} />
+      <ArtifactEditorContainer>
+        <TiptapEditor {...props} theme={theme} prepend={titleInput} />
+      </ArtifactEditorContainer>
 
       {props.showBottomSpacer && <BottomSpacer />}
     </div>

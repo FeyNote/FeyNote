@@ -41,6 +41,7 @@ type Props = {
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
   editorRef?: MutableRefObject<Editor | null>;
+  prepend?: React.ReactNode;
 } & DocArgOptions;
 
 export const TiptapEditor = (props: Props) => {
@@ -104,6 +105,8 @@ export const TiptapEditor = (props: Props) => {
 
   return (
     <ArtifactEditorStyles data-theme={props.theme}>
+      {props.prepend}
+
       <EditorContent editor={editor}></EditorContent>
       {editor && props.editable && (
         <BubbleMenu

@@ -9,7 +9,6 @@ export interface TemplateResult {
   userId: YArtifactMeta['userId'];
   title: YArtifactMeta['title'];
   type: YArtifactMeta['type'];
-  titleBodyMerge: YArtifactMeta['titleBodyMerge'];
   linkAccessLevel: YArtifactMeta['linkAccessLevel'];
   theme: YArtifactMeta['theme'];
   json: {
@@ -31,7 +30,6 @@ export const templateBuilderHelper = (
     userId: meta.userId,
     title: meta.title,
     type: meta.type,
-    titleBodyMerge: meta.titleBodyMerge,
     linkAccessLevel: meta.linkAccessLevel,
     theme: meta.theme,
     json: {
