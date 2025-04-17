@@ -24,7 +24,7 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
     };
   }, []);
 
-  if (!toc) {
+  if (!toc?.length) {
     return null;
   }
 
