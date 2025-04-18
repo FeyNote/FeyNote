@@ -20,7 +20,7 @@ export const hyperlinkExtensionStyles = css`
   .hyperlink-edit-modal {
     font-family: var(--ion-font-family, inherit);
     font-size: 0.75rem;
-    background: var(--ion-background-color-step-250, #ffffff);
+    background: var(--ion-background-color-step-150, #ffffff);
     border-radius: 10px;
     // border: 1px solid #dadce0;
     display: flex;
@@ -83,11 +83,14 @@ export const hyperlinkExtensionStyles = css`
       width: 100%;
       input {
         outline: none;
-        border: none;
         border-radius: 6px;
         padding: 6px 10px;
         margin-bottom: 3px;
         width: 100%;
+
+        background: none;
+        border: 1px solid var(--ion-background-color-step-250);
+
         &:last-of-type {
           margin-bottom: 0;
         }
