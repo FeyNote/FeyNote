@@ -53,7 +53,6 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
   const { t } = useTranslation();
   const { incomingEdges } = useEdgesForArtifactId(props.artifactId);
 
@@ -148,9 +147,9 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
 
   return (
     <div data-print-target={`artifact:${props.artifactId}`}>
-      {!titleBodyMerge && titleInput}
       <ArtifactCalendarStyles data-theme={theme}>
-        {titleBodyMerge && titleInput}
+        {titleInput}
+
         {props.editable && (
           <CalendarConfig
             yDoc={yDoc}

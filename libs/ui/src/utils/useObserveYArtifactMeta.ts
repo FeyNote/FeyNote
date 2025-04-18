@@ -15,7 +15,6 @@ export const useObserveYArtifactMeta = (
   const [userId, setUserId] = useState<string>();
   const [title, setTitle] = useState<string>();
   const [theme, setTheme] = useState<ArtifactTheme>();
-  const [titleBodyMerge, setTitleBodyMerge] = useState<boolean>();
   const [type, setType] = useState<ArtifactType>();
   const [linkAccessLevel, setLinkAccessLevel] = useState<
     ArtifactAccessLevel | undefined
@@ -31,7 +30,6 @@ export const useObserveYArtifactMeta = (
       setUserId(yArtifactMeta.userId);
       setTitle(yArtifactMeta.title);
       setTheme(yArtifactMeta.theme);
-      setTitleBodyMerge(yArtifactMeta.titleBodyMerge);
       setType(yArtifactMeta.type);
       setLinkAccessLevel(yArtifactMeta.linkAccessLevel);
       setDeletedAt(yArtifactMeta.deletedAt);
@@ -47,7 +45,6 @@ export const useObserveYArtifactMeta = (
     userId,
     title,
     theme,
-    titleBodyMerge,
     type,
     linkAccessLevel,
     deletedAt,

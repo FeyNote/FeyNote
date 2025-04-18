@@ -1,13 +1,15 @@
-import { EditorContent, JSONContent } from '@tiptap/react';
-import { ArtifactEditorStyles } from '../editor/ArtifactEditorStyles';
+import { JSONContent, type Editor } from '@tiptap/react';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
-import { useArtifactEditor } from '../editor/useTiptapEditor';
 import { Doc as YDoc } from 'yjs';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { copyOutline } from 'ionicons/icons';
 import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
+import {
+  TiptapEditor,
+  type ArtifactEditorSetContent,
+} from '../editor/TiptapEditor';
 
 const AIFCEditorContainer = styled.div`
   margin: 8px 0;
@@ -18,33 +20,44 @@ interface Props {
 }
 
 export const AIEditor: React.FC<Props> = (props) => {
+  const editorRef = useRef<Editor | null>(null);
+  const setContentRef = useRef<ArtifactEditorSetContent | undefined>(undefined);
+
   const yDoc = useMemo(() => {
     return new YDoc();
   }, []);
 
-  const editor = useArtifactEditor({
-    artifactId: undefined,
-    editable: false,
-    yDoc,
-    getFileUrl: () => '', // We don't currently support embedded images within the AI Editor
-  });
+  const updateContent = () => {
+    setContentRef.current?.(props.editorContent);
+  };
 
   useEffect(() => {
-    editor?.commands.setContent(props.editorContent);
+    updateContent();
   }, [props.editorContent]);
 
-  if (editor && props.editorContent) {
+  if (props.editorContent) {
     return (
       <AIFCEditorContainer>
         <ArtifactEditorContainer>
-          <ArtifactEditorStyles>
-            <EditorContent editor={editor}></EditorContent>
-          </ArtifactEditorStyles>
+          <TiptapEditor
+            artifactId={undefined}
+            editable={false}
+            yDoc={yDoc}
+            theme="default"
+            getFileUrl={() => ''} // We don't currently support embedded images within the AI Editor
+            setContentRef={setContentRef}
+            onReady={() => {
+              updateContent();
+            }}
+            editorRef={editorRef}
+          />
         </ArtifactEditorContainer>
         <IonButtons>
           <IonButton
             size="small"
-            onClick={() => copyToClipboard({ html: editor.getHTML() })}
+            onClick={() =>
+              copyToClipboard({ html: editorRef.current?.getHTML() })
+            }
           >
             <IonIcon icon={copyOutline} />
           </IonButton>

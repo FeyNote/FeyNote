@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 import { useContext, useMemo, useRef, useState } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
-import { BoundedFloatingWindow } from '../../../../BoundedFloatingWindow';
 import { TiptapPreview } from '../../../TiptapPreview';
 import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
@@ -11,6 +10,7 @@ import { SessionContext } from '../../../../../context/session/SessionContext';
 import { getFileRedirectUrl } from '../../../../../utils/files/getFileRedirectUrl';
 import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
+import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWindow';
 
 export interface ReferencePreviewInfo {
   artifactYBin: Uint8Array | undefined;
@@ -22,16 +22,12 @@ const PREVIEW_WIDTH_PX = 600;
 const PREVIEW_MIN_HEIGHT_PX = 100;
 const PREVIEW_MAX_HEIGHT_PX = 300;
 
-const StyledBoundedFloatingWindow = styled(BoundedFloatingWindow)`
-  overflow-y: auto;
-  background: var(--ion-background-color, #ffffff);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.3);
-  padding: 10px;
-`;
-
-const Header = styled.h4`
-  margin-top: 8px;
+const Header = styled.h1`
+  font-size: 1.2rem;
+  margin: 0;
+  margin-top: 4px;
   margin-bottom: 16px;
+  padding: 0;
 `;
 
 interface Props {

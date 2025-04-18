@@ -40,7 +40,7 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
   };
 
   const onDuplicateArtifactClicked = async () => {
-    const { title, theme, type, titleBodyMerge } = getMetaFromYArtifact(
+    const { title, theme, type } = getMetaFromYArtifact(
       props.connection.yjsDoc,
     );
 
@@ -57,7 +57,6 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
       title: newTitle,
       type,
       theme,
-      titleBodyMerge,
       yBin: newYBin,
     }).catch((e) => {
       handleTRPCErrors(e);

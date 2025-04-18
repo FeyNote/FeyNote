@@ -5,7 +5,6 @@ export const createArtifact = async (opts: {
   title: string;
   type?: ArtifactType;
   theme?: ArtifactTheme;
-  titleBodyMerge?: boolean;
   yBin?: Uint8Array;
 }) => {
   // In preparation for local-first artifact creation
@@ -16,7 +15,6 @@ export const createArtifact = async (opts: {
     title: opts.title,
     type: opts.type || 'tiptap',
     theme: opts.theme || 'default',
-    titleBodyMerge: opts.titleBodyMerge,
     yBin: opts.yBin,
   });
 

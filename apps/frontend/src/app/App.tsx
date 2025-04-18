@@ -15,6 +15,7 @@ import '@ionic/react/css/display.css';
 import { setupIonicReact } from '@ionic/react';
 
 import '@ionic/react/css/palettes/dark.class.css';
+import './light.class.css';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import '../../../../libs/ui/src/css/global.css';
 

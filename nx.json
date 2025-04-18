@@ -15,6 +15,10 @@
         "{workspaceRoot}/eslint.config.js"
       ]
     },
+    "lint-locales": {
+      "cache": true,
+      "inputs": ["default"]
+    },
     "e2e": { "cache": true },
     "@nx/jest:jest": {
       "cache": true,

@@ -34,7 +34,6 @@ export const createWelcomeArtifacts = async () => {
     title: introducingReferencesTemplate.result.title,
     type: introducingReferencesTemplate.result.type,
     theme: introducingReferencesTemplate.result.theme,
-    titleBodyMerge: introducingReferencesTemplate.result.titleBodyMerge,
     yBin: introducingReferencesTemplate.result.yBin,
   });
 
@@ -51,7 +50,6 @@ export const createWelcomeArtifacts = async () => {
     title: welcomeTemplate.result.title,
     type: welcomeTemplate.result.type,
     theme: welcomeTemplate.result.theme,
-    titleBodyMerge: welcomeTemplate.result.titleBodyMerge,
     yBin: welcomeTemplate.result.yBin,
   });
 

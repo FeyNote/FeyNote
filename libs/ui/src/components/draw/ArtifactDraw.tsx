@@ -105,19 +105,15 @@ const customAssetUrls: TLUiAssetUrlOverrides = {
   },
 };
 
-const ArtifactDrawContainer = styled.div<{ $titleBodyMerge: boolean }>`
+const ArtifactDrawContainer = styled.div`
   display: grid;
   height: 100%;
-  grid-template-rows: ${(props) =>
-    props.$titleBodyMerge ? 'auto' : 'min-content auto'};
+  grid-template-rows: auto;
 `;
 
-const StyledArtifactDrawStyles = styled(ArtifactDrawStyles)<{
-  $titleBodyMerge: boolean;
-}>`
+const StyledArtifactDrawStyles = styled(ArtifactDrawStyles)`
   display: grid;
-  grid-template-rows: ${(props) =>
-    props.$titleBodyMerge ? 'min-content auto' : 'auto'};
+  grid-template-rows: min-content auto;
 `;
 
 type DocArgOptions =
@@ -144,7 +140,6 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
   const { t } = useTranslation();
@@ -313,16 +308,9 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   };
 
   return (
-    <ArtifactDrawContainer
-      $titleBodyMerge={titleBodyMerge}
-      data-print-target={`artifact:${props.artifactId}`}
-    >
-      {!titleBodyMerge && titleInput}
-      <StyledArtifactDrawStyles
-        data-theme={theme}
-        $titleBodyMerge={titleBodyMerge}
-      >
-        {titleBodyMerge && titleInput}
+    <ArtifactDrawContainer data-print-target={`artifact:${props.artifactId}`}>
+      <StyledArtifactDrawStyles data-theme={theme}>
+        {titleInput}
 
         <TLDrawArtifactIdContext.Provider value={props.artifactId}>
           <Tldraw
