@@ -30,10 +30,10 @@ jobs:
           name: migrate
           command: npx prisma migrate dev
       - run:
-          name: lint, typecheck, test, build
+          name: lint, lint-locales, typecheck, test, build
           command: |
             export ENABLE_BUNDLE_ANALYZER=true
-            npx nx run-many --targets=lint,typecheck,test,build
+            npx nx run-many --targets=lint,lint-locales,typecheck,test,build
       - store_artifacts:
           path: ./dist/apps/frontend/stats.html
           destination: frontend-bundle-stats.html
