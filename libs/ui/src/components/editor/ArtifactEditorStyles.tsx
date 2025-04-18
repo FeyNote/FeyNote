@@ -185,6 +185,7 @@ export const ArtifactEditorStyles = styled.div`
     top: 0;
     right: 0;
     background: var(--ion-background-color-step-100);
+    color: var(--ion-text-color-step-100);
     border-radius: 50%;
     width: 1rem;
     height: 1rem;
