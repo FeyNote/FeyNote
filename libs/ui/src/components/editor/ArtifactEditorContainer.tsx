@@ -7,7 +7,7 @@ export const ArtifactEditorContainer = styled(IonCard)`
 
   margin-left: 0;
   margin-right: 0;
-  margin-top: 0;
+  margin-top: 3px; // We need this to prevent the card shadow from being clipped by the nav
 
   @media print {
     box-shadow: none;
