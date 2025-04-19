@@ -18,6 +18,7 @@ import {
   ARTIFACT_TIPTAP_BODY_KEY,
   Edge,
   getEdgeId,
+  getMetaFromYArtifact,
   getTiptapIdsFromYEvent,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
@@ -364,7 +365,7 @@ export class SyncManager {
     const manifestDb = await getManifestDb();
     await manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
       id: artifactId,
-      meta: doc.getMap(ARTIFACT_META_KEY).toJSON(),
+      meta: getMetaFromYArtifact(doc),
       yDoc: encodeStateAsUpdate(doc),
     });
 
