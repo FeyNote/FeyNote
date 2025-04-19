@@ -191,7 +191,7 @@ export class TypeSense implements SearchProvider {
         prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
-        highlight_affix_num_tokens: 20,
+        highlight_affix_num_tokens: 15,
       });
 
     if (!results.hits) return [];
@@ -232,10 +232,23 @@ export class TypeSense implements SearchProvider {
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
       });
+
     if (!results.hits) return [];
 
     return results.hits.map((hit) => {
-      return hit.document.id;
+      const snippet = hit.highlight.title?.snippet;
+
+      const highlight = snippet
+        ? sanitizeHtml(snippet, {
+            allowedTags: ['mark'],
+            allowedAttributes: {},
+          })
+        : undefined;
+
+      return {
+        document: hit.document,
+        highlight,
+      };
     });
   }
   async searchArtifactBlocks(
@@ -255,6 +268,7 @@ export class TypeSense implements SearchProvider {
         prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
+        highlight_affix_num_tokens: 15,
       });
     if (!results.hits) return [];
 

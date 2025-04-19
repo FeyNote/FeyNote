@@ -22,6 +22,11 @@ export interface SearchArtifactsResult {
   highlight?: string;
 }
 
+export interface SearchArtifactTitlesResult {
+  document: ArtifactIndexDocument;
+  highlight?: string;
+}
+
 export interface SearchArtifactBlocksResult {
   document: BlockIndexDocument;
   highlight?: string;
@@ -47,7 +52,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<string[]>;
+  ) => Promise<SearchArtifactTitlesResult[]>;
   searchArtifactBlocks: (
     userId: string,
     query: string,
