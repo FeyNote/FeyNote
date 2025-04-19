@@ -22,6 +22,11 @@ export interface SearchArtifactsResult {
   highlight?: string;
 }
 
+export interface SearchArtifactBlocksResult {
+  document: BlockIndexDocument;
+  highlight?: string;
+}
+
 export interface SearchProvider {
   migrate: () => Promise<void>;
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
@@ -50,7 +55,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<BlockIndexDocument[]>;
+  ) => Promise<SearchArtifactBlocksResult[]>;
 }
 
 export interface ArtifactIndexDocument {

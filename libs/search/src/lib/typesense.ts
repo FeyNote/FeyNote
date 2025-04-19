@@ -259,7 +259,19 @@ export class TypeSense implements SearchProvider {
     if (!results.hits) return [];
 
     return results.hits.map((hit) => {
-      return hit.document;
+      const snippet = hit.highlight.text?.snippet;
+
+      const highlight = snippet
+        ? sanitizeHtml(snippet, {
+            allowedTags: ['mark'],
+            allowedAttributes: {},
+          })
+        : undefined;
+
+      return {
+        document: hit.document,
+        highlight,
+      };
     });
   }
 

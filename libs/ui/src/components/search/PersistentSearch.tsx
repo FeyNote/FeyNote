@@ -60,7 +60,7 @@ const SEARCH_DELAY_MS = 20;
 /**
  * Number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
+const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 135;
 
 /**
  * How long to wait before updating the persistent search text in the pane context
@@ -78,6 +78,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const [searchResults, setSearchResults] = useState<
     {
       artifact: ArtifactDTO;
+      blockId?: string;
       highlight?: string;
     }[]
   >([]);
@@ -133,14 +134,22 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     );
   };
 
-  const open = (event: MouseEvent | KeyboardEvent, artifactId: string) => {
+  const open = (
+    event: MouseEvent | KeyboardEvent,
+    artifactId: string,
+    blockId: string | undefined,
+  ) => {
     persistSearchTextToPaneState();
 
     const paneTransition =
       event.ctrlKey || event.metaKey
         ? PaneTransition.NewTab
         : PaneTransition.Push;
-    navigate(PaneableComponent.Artifact, { id: artifactId }, paneTransition);
+    navigate(
+      PaneableComponent.Artifact,
+      { id: artifactId, focusBlockId: blockId },
+      paneTransition,
+    );
   };
 
   useEffect(() => {
@@ -189,13 +198,64 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
 
     let cancelled = false;
     const timeout = setTimeout(() => {
-      trpc.artifact.searchArtifacts
-        .query({
+      Promise.all([
+        trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
-        })
-        .then((results) => {
+        }),
+        trpc.artifact.searchArtifactBlocks.query({
+          query: searchText,
+          limit: SEARCH_RESULT_LIMIT,
+        }),
+      ])
+        .then(([titleResults, blockResults]) => {
           if (cancelled) return;
+
+          const artifactIdsOrdered: string[] = [];
+          const resultByArtifactId = new Map<
+            string,
+            {
+              artifact: ArtifactDTO;
+              blockId?: string;
+              highlight?: string;
+            }
+          >();
+
+          // We only want the first (most relevant) result for each artifact
+          for (const result of blockResults) {
+            if (!resultByArtifactId.has(result.artifact.id)) {
+              artifactIdsOrdered.push(result.artifact.id);
+              resultByArtifactId.set(result.artifact.id, {
+                artifact: result.artifact,
+                blockId: result.blockId,
+                highlight: result.highlight || result.blockText,
+              });
+            }
+          }
+          for (const result of titleResults) {
+            if (!resultByArtifactId.has(result.id)) {
+              artifactIdsOrdered.push(result.id);
+              resultByArtifactId.set(result.id, {
+                artifact: result,
+                highlight: result.previewText,
+              });
+            }
+          }
+
+          const results: {
+            artifact: ArtifactDTO;
+            blockId?: string;
+            highlight?: string;
+          }[] = [];
+
+          for (const artifactId of artifactIdsOrdered) {
+            const result = resultByArtifactId.get(artifactId);
+            // This should always be true, but typeguard nonetheless
+            if (result) {
+              results.push(result);
+            }
+          }
+
           setSearchResults(results);
         })
         .catch((error) => {
@@ -228,7 +288,9 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
               key={searchResult.artifact.id}
               $selected={selectedIdx === idx}
               onMouseOver={() => setSelectedIdx(idx)}
-              onClick={(event) => open(event, searchResult.artifact.id)}
+              onClick={(event) =>
+                open(event, searchResult.artifact.id, searchResult.blockId)
+              }
               button
             >
               <IonLabel>

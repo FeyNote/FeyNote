@@ -36,7 +36,7 @@ const SearchContainer = styled.div`
   top: 20%;
   z-index: 3;
 
-  width: min(450px, 97%);
+  width: min(500px, 97%);
 
   transform: translateX(-50%);
 `;
@@ -127,6 +127,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const [searchResults, setSearchResults] = useState<
     {
       artifact: ArtifactDTO;
+      blockId?: string;
       highlight?: string;
     }[]
   >([]);
@@ -217,7 +218,10 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
           navigate(
             undefined, // Open in currently focused pane rather than in specific pane
             PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].artifact.id },
+            {
+              id: searchResults[selectedIdx].artifact.id,
+              focusBlockId: searchResults[selectedIdx].blockId,
+            },
             PaneTransition.Push,
           );
           hide();
@@ -248,13 +252,64 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
     let cancelled = false;
     const timeout = setTimeout(() => {
-      trpc.artifact.searchArtifacts
-        .query({
+      Promise.all([
+        trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
-        })
-        .then((results) => {
+        }),
+        trpc.artifact.searchArtifactBlocks.query({
+          query: searchText,
+          limit: SEARCH_RESULT_LIMIT,
+        }),
+      ])
+        .then(([titleResults, blockResults]) => {
           if (cancelled) return;
+
+          const artifactIdsOrdered: string[] = [];
+          const resultByArtifactId = new Map<
+            string,
+            {
+              artifact: ArtifactDTO;
+              blockId?: string;
+              highlight?: string;
+            }
+          >();
+
+          // We only want the first (most relevant) result for each artifact
+          for (const result of blockResults) {
+            if (!resultByArtifactId.has(result.artifact.id)) {
+              artifactIdsOrdered.push(result.artifact.id);
+              resultByArtifactId.set(result.artifact.id, {
+                artifact: result.artifact,
+                blockId: result.blockId,
+                highlight: result.highlight || result.blockText,
+              });
+            }
+          }
+          for (const result of titleResults) {
+            if (!resultByArtifactId.has(result.id)) {
+              artifactIdsOrdered.push(result.id);
+              resultByArtifactId.set(result.id, {
+                artifact: result,
+                highlight: result.previewText,
+              });
+            }
+          }
+
+          const results: {
+            artifact: ArtifactDTO;
+            blockId?: string;
+            highlight?: string;
+          }[] = [];
+
+          for (const artifactId of artifactIdsOrdered) {
+            const result = resultByArtifactId.get(artifactId);
+            // This should always be true, but typeguard nonetheless
+            if (result) {
+              results.push(result);
+            }
+          }
+
           setSearchResults(results);
         })
         .catch((error) => {
@@ -320,7 +375,10 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                       navigate(
                         undefined, // Open in currently focused pane rather than in specific pane
                         PaneableComponent.Artifact,
-                        { id: searchResult.artifact.id },
+                        {
+                          id: searchResult.artifact.id,
+                          focusBlockId: searchResult.blockId,
+                        },
                         PaneTransition.Push,
                       );
                       hide();
