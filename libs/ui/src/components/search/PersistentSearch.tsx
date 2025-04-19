@@ -67,6 +67,11 @@ const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
  */
 const PANE_PERSIST_SEARCH_TEXT_DELAY_MS = 200;
 
+/**
+ * Maximum number of highlights to display in the result preview
+ */
+const MAX_DISPLAYED_HIGHLIGHT_COUNT = 5;
+
 interface Props {
   initialTerm?: string;
 }
@@ -79,7 +84,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     {
       artifact: ArtifactDTO;
       blockId?: string;
-      highlight?: string;
+      highlights: string[];
       previewText: string;
     }[]
   >([]);
@@ -216,51 +221,46 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
         .then(([titleResults, blockResults]) => {
           if (cancelled) return;
 
-          const artifactIdsOrdered: string[] = [];
-          const resultByArtifactId = new Map<
-            string,
-            {
-              artifact: ArtifactDTO;
-              blockId?: string;
-              highlight?: string;
-              previewText: string;
-            }
-          >();
-
-          // We only want the first (most relevant) result for each artifact
-          for (const result of blockResults) {
-            if (!resultByArtifactId.has(result.artifact.id)) {
-              artifactIdsOrdered.push(result.artifact.id);
-              resultByArtifactId.set(result.artifact.id, {
-                artifact: result.artifact,
-                blockId: result.blockId,
-                highlight: result.highlight,
-                previewText: result.blockText,
-              });
-            }
-          }
-          for (const result of titleResults) {
-            if (!resultByArtifactId.has(result.artifact.id)) {
-              artifactIdsOrdered.push(result.artifact.id);
-              resultByArtifactId.set(result.artifact.id, {
-                artifact: result.artifact,
-                previewText: result.artifact.previewText,
-              });
-            }
-          }
-
           const results: {
             artifact: ArtifactDTO;
             blockId?: string;
-            highlight?: string;
+            highlights: string[];
             previewText: string;
           }[] = [];
+          const resultsByArtifactId = new Map<string, (typeof results)[0]>();
 
-          for (const artifactId of artifactIdsOrdered) {
-            const result = resultByArtifactId.get(artifactId);
-            // This should always be true, but typeguard nonetheless
-            if (result) {
+          // We merge all the results under the same artifact entry in the UI, but we want to preserve as many highlights as we can
+          for (const blockResult of blockResults) {
+            const existingResult = resultsByArtifactId.get(
+              blockResult.artifact.id,
+            );
+            if (existingResult) {
+              if (blockResult.highlight) {
+                existingResult.highlights.push(blockResult.highlight);
+              }
+            } else {
+              const result = {
+                artifact: blockResult.artifact,
+                blockId: blockResult.blockId,
+                highlights: blockResult.highlight
+                  ? [blockResult.highlight]
+                  : [],
+                previewText: blockResult.blockText,
+              };
               results.push(result);
+              resultsByArtifactId.set(blockResult.artifact.id, result);
+            }
+          }
+          // We only want to display title results if there are no block results for that artifact
+          for (const titleResult of titleResults) {
+            if (!resultsByArtifactId.has(titleResult.artifact.id)) {
+              const result = {
+                artifact: titleResult.artifact,
+                highlights: [],
+                previewText: titleResult.artifact.previewText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(titleResult.artifact.id, result);
             }
           }
 
@@ -303,14 +303,16 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
             >
               <IonLabel>
                 {searchResult.artifact.title}
-                {searchResult.highlight && (
-                  <ResultWithHighlightsWrapper
-                    dangerouslySetInnerHTML={{
-                      __html: '…' + searchResult.highlight + '…',
-                    }}
-                  ></ResultWithHighlightsWrapper>
-                )}
-                {!searchResult.highlight && (
+                {searchResult.highlights
+                  .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
+                  .map((highlight) => (
+                    <ResultWithHighlightsWrapper
+                      dangerouslySetInnerHTML={{
+                        __html: '…' + highlight + '…',
+                      }}
+                    ></ResultWithHighlightsWrapper>
+                  ))}
+                {!searchResult.highlights.length && (
                   <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
                 )}
               </IonLabel>
