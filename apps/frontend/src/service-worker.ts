@@ -559,18 +559,23 @@ registerRoute(
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchResults = searchManager.search(input.query);
-      const artifactIds = new Set(
-        searchResults.map((searchResult) => searchResult.artifactId),
-      );
 
       const manifestDb = await getManifestDb();
       const results = [];
-      for (const artifactId of artifactIds) {
+      for (const searchResult of searchResults) {
         const artifact = await manifestDb.get(
           ObjectStoreName.Artifacts,
-          artifactId,
+          searchResult.artifactId,
         );
-        results.push(artifact);
+        results.push({
+          artifact,
+          // We have no highlighting support while offline at this time.
+          // It would require loading each search result's yBin from indexeddb,
+          // applying it to a yDoc, converting it to tiptap json, getting all text,
+          // and then correlating the match text from minisearch
+          // The above is too heavy a lift.
+          highlight: undefined,
+        });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);

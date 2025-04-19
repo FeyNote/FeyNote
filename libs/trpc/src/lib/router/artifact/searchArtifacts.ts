@@ -6,6 +6,11 @@ import { ArtifactDTO } from '@feynote/global-types';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
+interface SearchArtifactsResult {
+  artifact: ArtifactDTO;
+  highlight?: string;
+}
+
 export const searchArtifacts = authenticatedProcedure
   .input(
     z.object({
@@ -13,19 +18,22 @@ export const searchArtifacts = authenticatedProcedure
       limit: z.number().min(1).max(100).optional(),
     }),
   )
-  .query(async ({ input, ctx }): Promise<ArtifactDTO[]> => {
-    const resultArtifactIds = await searchProvider.searchArtifacts(
+  .query(async ({ input, ctx }): Promise<SearchArtifactsResult[]> => {
+    const searchResults = await searchProvider.searchArtifacts(
       ctx.session.userId,
       input.query,
       {
         prefix: true,
-        limit: input.limit,
+        limit: input.limit || 50,
       },
+    );
+    const searchResultArtifactIds = searchResults.map(
+      (result) => result.document.id,
     );
 
     const artifacts = await prisma.artifact.findMany({
       where: {
-        id: { in: resultArtifactIds },
+        id: { in: searchResultArtifactIds },
       },
       ...artifactDetail,
     });
@@ -33,11 +41,14 @@ export const searchArtifacts = authenticatedProcedure
       artifacts.map((artifact) => [artifact.id, artifact]),
     );
 
-    const results: ArtifactDTO[] = [];
-    for (const resultArtifactId of resultArtifactIds) {
-      const artifact = artifactsById.get(resultArtifactId);
+    const results: SearchArtifactsResult[] = [];
+    for (const searchResult of searchResults) {
+      const artifact = artifactsById.get(searchResult.document.id);
       if (artifact) {
-        results.push(artifactDetailToArtifactDTO(ctx.session.userId, artifact));
+        results.push({
+          artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
+          highlight: searchResult.highlight,
+        });
       }
     }
 

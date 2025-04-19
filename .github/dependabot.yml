@@ -83,6 +83,10 @@ updates:
       swc:
         patterns:
           - '@swc*'
+      sanitizehtml:
+        patterns:
+          - 'sanitize-html'
+          - '@types/sanitize-html'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI

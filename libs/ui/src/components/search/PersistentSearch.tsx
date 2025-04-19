@@ -40,6 +40,13 @@ const SearchResult = styled(IonItem)<{
     props.$selected && `--background: var(--ion-background-color-step-100);`}
 `;
 
+const ResultWithHighlightsWrapper = styled.p`
+  mark {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+`;
+
 /**
  * We limit search results so that performance isn't garbage
  */
@@ -68,11 +75,21 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { updatePaneProps } = useContext(GlobalPaneContext);
   const { pane, isPaneFocused, navigate } = useContext(PaneContext);
   const [searchText, setSearchText] = useState(initialTerm || '');
-  const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    {
+      artifact: ArtifactDTO;
+      highlight?: string;
+    }[]
+  >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
+
+  const truncateTextWithEllipsis = (text: string) => {
+    if (text.length <= SEARCH_RESULT_PREVIEW_TEXT_LENGTH) return text;
+    return text.slice(0, SEARCH_RESULT_PREVIEW_TEXT_LENGTH) + '...';
+  };
 
   // This is so that back functionality works properly, returning us to the current search state is what the user sees once they return to the tab
   const persistSearchTextToPaneState = () => {
@@ -143,7 +160,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
 
           navigate(
             PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].id },
+            { id: searchResults[selectedIdx].artifact.id },
             PaneTransition.Push,
           );
         } else {
@@ -208,20 +225,26 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
           {searchResults.map((searchResult, idx) => (
             <SearchResult
               lines="none"
-              key={searchResult.id}
+              key={searchResult.artifact.id}
               $selected={selectedIdx === idx}
               onMouseOver={() => setSelectedIdx(idx)}
-              onClick={(event) => open(event, searchResult.id)}
+              onClick={(event) => open(event, searchResult.artifact.id)}
               button
             >
               <IonLabel>
-                {searchResult.title}
-                <p>
-                  {searchResult.previewText.substring(
-                    0,
-                    SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
-                  ) || t('artifact.title')}
-                </p>
+                {searchResult.artifact.title}
+                {searchResult.highlight && (
+                  <ResultWithHighlightsWrapper
+                    dangerouslySetInnerHTML={{ __html: searchResult.highlight }}
+                  ></ResultWithHighlightsWrapper>
+                )}
+                {!searchResult.highlight && (
+                  <p>
+                    {truncateTextWithEllipsis(
+                      searchResult.artifact.previewText,
+                    )}
+                  </p>
+                )}
               </IonLabel>
             </SearchResult>
           ))}

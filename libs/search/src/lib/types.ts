@@ -17,6 +17,11 @@ export interface IndexableArtifact {
   };
 }
 
+export interface SearchArtifactsResult {
+  document: ArtifactIndexDocument;
+  highlight?: string;
+}
+
 export interface SearchProvider {
   migrate: () => Promise<void>;
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
@@ -29,7 +34,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<string[]>;
+  ) => Promise<SearchArtifactsResult[]>;
   searchArtifactTitles: (
     userId: string,
     query: string,

@@ -92,6 +92,13 @@ const Backdrop = styled(IonBackdrop)`
   background: var(--ion-background-color, #aaaaaa);
 `;
 
+const ResultWithHighlightsWrapper = styled.p`
+  mark {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+`;
+
 interface Props {
   children: ReactNode;
 }
@@ -109,7 +116,7 @@ const SEARCH_DELAY_MS = 20;
 /**
  * Number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
+const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 135;
 
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
@@ -117,13 +124,23 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    {
+      artifact: ArtifactDTO;
+      highlight?: string;
+    }[]
+  >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
   const inputRef = useRef<HTMLIonInputElement>(null);
+
+  const truncateTextWithEllipsis = (text: string) => {
+    if (text.length <= SEARCH_RESULT_PREVIEW_TEXT_LENGTH) return text;
+    return text.slice(0, SEARCH_RESULT_PREVIEW_TEXT_LENGTH) + '...';
+  };
 
   const trigger = () => {
     setSearchText('');
@@ -200,7 +217,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
           navigate(
             undefined, // Open in currently focused pane rather than in specific pane
             PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].id },
+            { id: searchResults[selectedIdx].artifact.id },
             PaneTransition.Push,
           );
           hide();
@@ -296,14 +313,14 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                 {searchResults.map((searchResult, idx) => (
                   <SearchResult
                     lines="none"
-                    key={searchResult.id}
+                    key={searchResult.artifact.id}
                     $selected={selectedIdx === idx}
                     onMouseOver={() => setSelectedIdx(idx)}
                     onClick={() => {
                       navigate(
                         undefined, // Open in currently focused pane rather than in specific pane
                         PaneableComponent.Artifact,
-                        { id: searchResult.id },
+                        { id: searchResult.artifact.id },
                         PaneTransition.Push,
                       );
                       hide();
@@ -311,13 +328,21 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                     button
                   >
                     <IonLabel>
-                      {searchResult.title}
-                      <p>
-                        {searchResult.previewText.substring(
-                          0,
-                          SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
-                        ) || t('artifact.title')}
-                      </p>
+                      {searchResult.artifact.title}
+                      {searchResult.highlight && (
+                        <ResultWithHighlightsWrapper
+                          dangerouslySetInnerHTML={{
+                            __html: searchResult.highlight,
+                          }}
+                        ></ResultWithHighlightsWrapper>
+                      )}
+                      {!searchResult.highlight && (
+                        <p>
+                          {truncateTextWithEllipsis(
+                            searchResult.artifact.previewText,
+                          )}
+                        </p>
+                      )}
                     </IonLabel>
                   </SearchResult>
                 ))}

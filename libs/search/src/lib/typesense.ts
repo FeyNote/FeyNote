@@ -1,8 +1,10 @@
+import sanitizeHtml from 'sanitize-html';
 import {
   IndexableArtifact,
   BlockIndexDocument,
   Indexes,
   SearchProvider,
+  type ArtifactIndexDocument,
 } from './types';
 import { Client } from 'typesense';
 import { globalServerConfig } from '@feynote/config';
@@ -28,10 +30,10 @@ export class TypeSense implements SearchProvider {
     console.log('Starting Typesense migrations');
 
     const doesArtifactIndexExist = await this.client
-      .collections(Indexes.Artifact)
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
       .exists();
     const doesBlockIndexExist = await this.client
-      .collections(Indexes.Block)
+      .collections<BlockIndexDocument>(Indexes.Block)
       .exists();
 
     if (!doesArtifactIndexExist) {
@@ -48,7 +50,7 @@ export class TypeSense implements SearchProvider {
     const artifactIndexDocument = createArtifactIndexDocument(artifact);
 
     await this.client
-      .collections(Indexes.Artifact)
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
       .documents()
       .import([artifactIndexDocument], {
         action: 'upsert',
@@ -114,7 +116,7 @@ export class TypeSense implements SearchProvider {
 
     if (upsertBlocks.length) {
       await this.client
-        .collections(Indexes.Block)
+        .collections<BlockIndexDocument>(Indexes.Block)
         .documents()
         .import(upsertBlocks, {
           action: 'upsert',
@@ -151,14 +153,17 @@ export class TypeSense implements SearchProvider {
     await this.deleteBlocksByArtifactIds([artifact.id]);
     if (!blocks.length) return;
 
-    await this.client.collections(Indexes.Block).documents().import(blocks, {
-      action: 'upsert',
-    });
+    await this.client
+      .collections<BlockIndexDocument>(Indexes.Block)
+      .documents()
+      .import(blocks, {
+        action: 'upsert',
+      });
   }
 
   async deleteArtifacts(artifactIds: string[]) {
     await this.client
-      .collections(Indexes.Artifact)
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
       .documents()
       .delete({
         filter_by: `id:=[${artifactIds.join(', ')}]`,
@@ -178,7 +183,7 @@ export class TypeSense implements SearchProvider {
     const query_by = 'title,fullText';
 
     const results = await this.client
-      .collections(Indexes.Artifact)
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
       .documents()
       .search({
         q: query,
@@ -186,13 +191,26 @@ export class TypeSense implements SearchProvider {
         prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
+        highlight_affix_num_tokens: 20,
       });
 
-    return (
-      results.hits?.map((hit) => {
-        return (hit.document as Record<string, string>)['id'];
-      }) || []
-    );
+    if (!results.hits) return [];
+
+    return results.hits.map((hit) => {
+      const snippet = hit.highlight.fullText?.snippet;
+
+      const highlight = snippet
+        ? sanitizeHtml(snippet, {
+            allowedTags: ['mark'],
+            allowedAttributes: {},
+          })
+        : undefined;
+
+      return {
+        document: hit.document,
+        highlight,
+      };
+    });
   }
   async searchArtifactTitles(
     userId: string,
@@ -205,7 +223,7 @@ export class TypeSense implements SearchProvider {
     const query_by = 'title';
 
     const results = await this.client
-      .collections(Indexes.Artifact)
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
       .documents()
       .search({
         q: query,
@@ -214,12 +232,11 @@ export class TypeSense implements SearchProvider {
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
       });
+    if (!results.hits) return [];
 
-    return (
-      results.hits?.map((hit) => {
-        return (hit.document as Record<string, string>)['id'];
-      }) || []
-    );
+    return results.hits.map((hit) => {
+      return hit.document.id;
+    });
   }
   async searchArtifactBlocks(
     userId: string,
@@ -230,7 +247,7 @@ export class TypeSense implements SearchProvider {
     },
   ) {
     const results = await this.client
-      .collections(Indexes.Block)
+      .collections<BlockIndexDocument>(Indexes.Block)
       .documents()
       .search({
         q: query,
@@ -239,12 +256,11 @@ export class TypeSense implements SearchProvider {
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
       });
+    if (!results.hits) return [];
 
-    return (
-      results.hits?.map((hit) => {
-        return hit.document as BlockIndexDocument;
-      }) || []
-    );
+    return results.hits.map((hit) => {
+      return hit.document;
+    });
   }
 
   private async createBlockIndex() {
@@ -321,7 +337,7 @@ export class TypeSense implements SearchProvider {
   }
   private async deleteBlocksByArtifactIds(artifactIds: string[]) {
     await this.client
-      .collections(Indexes.Block)
+      .collections<BlockIndexDocument>(Indexes.Block)
       .documents()
       .delete({
         filter_by: `artifactId:=[${artifactIds.join(', ')}]`,
@@ -333,7 +349,7 @@ export class TypeSense implements SearchProvider {
     for (let page = 0; page < totalPages; page++) {
       const items = ids.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
       await this.client
-        .collections(Indexes.Block)
+        .collections<BlockIndexDocument>(Indexes.Block)
         .documents()
         .delete({
           filter_by: `id:=[${items.join(', ')}]`,
