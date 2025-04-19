@@ -1,6 +1,8 @@
 import type { Item, XmlElement as YXmlElement, YEvent } from 'yjs';
 
-export const getTiptapIdsFromYEvent = (yEvent: YEvent<YXmlElement>) => {
+export const getTiptapIdsFromYEvent = (
+  yEvent: YEvent<YXmlElement>,
+): string[] => {
   // Yjs change target is simple, but we do recurse up the tree here to cover all nodes changed
   const getIdsFromChangeTarget = (node: YXmlElement): string[] => {
     const ids: string[] = [];
@@ -37,7 +39,9 @@ export const getTiptapIdsFromYEvent = (yEvent: YEvent<YXmlElement>) => {
   // I don't completely understand why, but sometimes when
   // tiptap updates the ID for an existing node to a different ID,
   // the id gets put in this yEvent keys map
-  const directId = yEvent.changes.keys.get('id')?.oldValue;
+  const directId = yEvent.changes.keys.get('id')?.oldValue as
+    | string
+    | undefined;
 
   // Delta captures any added or removed nodes
   const deltaAddRemoveIds = [...yEvent.changes.added, ...yEvent.changes.deleted]
@@ -48,5 +52,14 @@ export const getTiptapIdsFromYEvent = (yEvent: YEvent<YXmlElement>) => {
   // delta records only relative positions of edits
   const changeTargetIds = getIdsFromChangeTarget(yEvent.target);
 
-  return [directId, ...changeTargetIds, ...deltaAddRemoveIds];
+  const out: string[] = [];
+
+  if (directId) {
+    out.push(directId);
+  }
+
+  out.push(...deltaAddRemoveIds);
+  out.push(...changeTargetIds);
+
+  return out;
 };
