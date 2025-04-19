@@ -6,11 +6,6 @@ import { ArtifactDTO } from '@feynote/global-types';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
-interface SearchArtifactsResult {
-  artifact: ArtifactDTO;
-  highlight?: string;
-}
-
 export const searchArtifacts = authenticatedProcedure
   .input(
     z.object({
@@ -18,39 +13,52 @@ export const searchArtifacts = authenticatedProcedure
       limit: z.number().min(1).max(100).optional(),
     }),
   )
-  .query(async ({ input, ctx }): Promise<SearchArtifactsResult[]> => {
-    const searchResults = await searchProvider.searchArtifacts(
-      ctx.session.userId,
-      input.query,
+  .query(
+    async ({
+      input,
+      ctx,
+    }): Promise<
       {
-        prefix: true,
-        limit: input.limit || 50,
-      },
-    );
-    const searchResultArtifactIds = searchResults.map(
-      (result) => result.document.id,
-    );
+        artifact: ArtifactDTO;
+        highlight?: string;
+      }[]
+    > => {
+      const searchResults = await searchProvider.searchArtifacts(
+        ctx.session.userId,
+        input.query,
+        {
+          prefix: true,
+          limit: input.limit || 50,
+        },
+      );
+      const searchResultArtifactIds = searchResults.map(
+        (result) => result.document.id,
+      );
 
-    const artifacts = await prisma.artifact.findMany({
-      where: {
-        id: { in: searchResultArtifactIds },
-      },
-      ...artifactDetail,
-    });
-    const artifactsById = new Map(
-      artifacts.map((artifact) => [artifact.id, artifact]),
-    );
+      const artifacts = await prisma.artifact.findMany({
+        where: {
+          id: { in: searchResultArtifactIds },
+        },
+        ...artifactDetail,
+      });
+      const artifactsById = new Map(
+        artifacts.map((artifact) => [artifact.id, artifact]),
+      );
 
-    const results: SearchArtifactsResult[] = [];
-    for (const searchResult of searchResults) {
-      const artifact = artifactsById.get(searchResult.document.id);
-      if (artifact) {
-        results.push({
-          artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
-          highlight: searchResult.highlight,
-        });
+      const results: {
+        artifact: ArtifactDTO;
+        highlight?: string;
+      }[] = [];
+      for (const searchResult of searchResults) {
+        const artifact = artifactsById.get(searchResult.document.id);
+        if (artifact) {
+          results.push({
+            artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
+            highlight: searchResult.highlight,
+          });
+        }
       }
-    }
 
-    return results;
-  });
+      return results;
+    },
+  );

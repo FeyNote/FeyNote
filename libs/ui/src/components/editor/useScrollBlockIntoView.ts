@@ -6,8 +6,8 @@ export const useScrollBlockIntoView = (
     blockId: string | undefined;
     containerRef: React.RefObject<HTMLElement | null>;
     highlight?: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do accept any!
   },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- we really do accept any!
   dependencies: any[],
 ) => {
   const scrollExecutedRef = useRef(false);

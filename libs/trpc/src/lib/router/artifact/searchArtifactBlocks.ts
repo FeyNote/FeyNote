@@ -6,13 +6,6 @@ import { artifactDetail } from '@feynote/prisma/types';
 import { ArtifactDTO } from '@feynote/global-types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
-interface SearchArtifactBlocksResult {
-  artifact: ArtifactDTO;
-  blockId: string;
-  blockText: string;
-  highlight?: string;
-}
-
 export const searchArtifactBlocks = authenticatedProcedure
   .input(
     z.object({
@@ -20,46 +13,65 @@ export const searchArtifactBlocks = authenticatedProcedure
       limit: z.number().min(1).max(100).optional(),
     }),
   )
-  .query(async ({ input, ctx }): Promise<SearchArtifactBlocksResult[]> => {
-    const searchResults = await searchProvider.searchArtifactBlocks(
-      ctx.session.userId,
-      input.query,
+  .query(
+    async ({
+      input,
+      ctx,
+    }): Promise<
       {
-        prefix: true,
-        limit: input.limit,
-      },
-    );
-
-    const matchedArtifactIds = [
-      ...new Set(
-        searchResults.map((artifactBlock) => artifactBlock.document.artifactId),
-      ),
-    ];
-
-    const artifacts = await prisma.artifact.findMany({
-      where: {
-        id: {
-          in: matchedArtifactIds,
+        artifact: ArtifactDTO;
+        blockId: string;
+        blockText: string;
+        highlight?: string;
+      }[]
+    > => {
+      const searchResults = await searchProvider.searchArtifactBlocks(
+        ctx.session.userId,
+        input.query,
+        {
+          prefix: true,
+          limit: input.limit,
         },
-      },
-      ...artifactDetail,
-    });
-    const artifactsById = new Map(
-      artifacts.map((artifact) => [artifact.id, artifact]),
-    );
+      );
 
-    const results: SearchArtifactBlocksResult[] = [];
-    for (const searchResult of searchResults) {
-      const artifact = artifactsById.get(searchResult.document.artifactId);
-      if (artifact) {
-        results.push({
-          artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
-          blockId: searchResult.document.id,
-          blockText: searchResult.document.text,
-          highlight: searchResult.highlight,
-        });
+      const matchedArtifactIds = [
+        ...new Set(
+          searchResults.map(
+            (artifactBlock) => artifactBlock.document.artifactId,
+          ),
+        ),
+      ];
+
+      const artifacts = await prisma.artifact.findMany({
+        where: {
+          id: {
+            in: matchedArtifactIds,
+          },
+        },
+        ...artifactDetail,
+      });
+      const artifactsById = new Map(
+        artifacts.map((artifact) => [artifact.id, artifact]),
+      );
+
+      const results: {
+        artifact: ArtifactDTO;
+        blockId: string;
+        blockText: string;
+        highlight?: string;
+      }[] = [];
+      for (const searchResult of searchResults) {
+        const artifact = artifactsById.get(searchResult.document.artifactId);
+        if (artifact) {
+          results.push({
+            artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
+            blockId: searchResult.document.id,
+            blockText: searchResult.document.text,
+            highlight: searchResult.highlight,
+          });
+        }
       }
-    }
 
-    return results;
-  });
+      return results;
+    },
+  );
