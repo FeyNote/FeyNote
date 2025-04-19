@@ -191,7 +191,7 @@ export class TypeSense implements SearchProvider {
         prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
-        highlight_affix_num_tokens: 15,
+        highlight_affix_num_tokens: 20,
       });
 
     if (!results.hits) return [];
@@ -268,7 +268,7 @@ export class TypeSense implements SearchProvider {
         prefix: options?.prefix ?? false,
         filter_by: `readableUserIds:=[${userId}]`,
         per_page: options?.limit ?? 50,
-        highlight_affix_num_tokens: 15,
+        highlight_affix_num_tokens: 20,
       });
     if (!results.hits) return [];
 

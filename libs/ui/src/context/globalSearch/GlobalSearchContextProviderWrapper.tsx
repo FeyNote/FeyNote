@@ -114,9 +114,9 @@ const SEARCH_RESULT_LIMIT = 25;
 const SEARCH_DELAY_MS = 20;
 
 /**
- * Number of characters to display in the result preview
+ * Maximum number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 135;
+const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
 
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
@@ -129,6 +129,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       artifact: ArtifactDTO;
       blockId?: string;
       highlight?: string;
+      previewText: string;
     }[]
   >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
@@ -139,8 +140,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const inputRef = useRef<HTMLIonInputElement>(null);
 
   const truncateTextWithEllipsis = (text: string) => {
-    if (text.length <= SEARCH_RESULT_PREVIEW_TEXT_LENGTH) return text;
-    return text.slice(0, SEARCH_RESULT_PREVIEW_TEXT_LENGTH) + '...';
+    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
+    const maxLength =
+      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
+        ? text.length - 1
+        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
+    return text.slice(0, maxLength) + '…';
   };
 
   const trigger = () => {
@@ -272,6 +277,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               artifact: ArtifactDTO;
               blockId?: string;
               highlight?: string;
+              previewText: string;
             }
           >();
 
@@ -282,7 +288,8 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               resultByArtifactId.set(result.artifact.id, {
                 artifact: result.artifact,
                 blockId: result.blockId,
-                highlight: result.highlight || result.blockText,
+                highlight: result.highlight,
+                previewText: result.blockText,
               });
             }
           }
@@ -291,7 +298,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               artifactIdsOrdered.push(result.artifact.id);
               resultByArtifactId.set(result.artifact.id, {
                 artifact: result.artifact,
-                highlight: result.artifact.previewText,
+                previewText: result.artifact.previewText,
               });
             }
           }
@@ -300,6 +307,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
             artifact: ArtifactDTO;
             blockId?: string;
             highlight?: string;
+            previewText: string;
           }[] = [];
 
           for (const artifactId of artifactIdsOrdered) {
@@ -390,15 +398,13 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                       {searchResult.highlight && (
                         <ResultWithHighlightsWrapper
                           dangerouslySetInnerHTML={{
-                            __html: searchResult.highlight,
+                            __html: '…' + searchResult.highlight + '…',
                           }}
                         ></ResultWithHighlightsWrapper>
                       )}
                       {!searchResult.highlight && (
                         <p>
-                          {truncateTextWithEllipsis(
-                            searchResult.artifact.previewText,
-                          )}
+                          {truncateTextWithEllipsis(searchResult.previewText)}
                         </p>
                       )}
                     </IonLabel>

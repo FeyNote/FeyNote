@@ -58,9 +58,9 @@ const SEARCH_RESULT_LIMIT = 100;
 const SEARCH_DELAY_MS = 20;
 
 /**
- * Number of characters to display in the result preview
+ * Maximum number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 135;
+const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
 
 /**
  * How long to wait before updating the persistent search text in the pane context
@@ -80,6 +80,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
       artifact: ArtifactDTO;
       blockId?: string;
       highlight?: string;
+      previewText: string;
     }[]
   >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
@@ -88,8 +89,12 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { t } = useTranslation();
 
   const truncateTextWithEllipsis = (text: string) => {
-    if (text.length <= SEARCH_RESULT_PREVIEW_TEXT_LENGTH) return text;
-    return text.slice(0, SEARCH_RESULT_PREVIEW_TEXT_LENGTH) + '...';
+    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
+    const maxLength =
+      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
+        ? text.length - 1
+        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
+    return text.slice(0, maxLength) + '…';
   };
 
   // This is so that back functionality works properly, returning us to the current search state is what the user sees once they return to the tab
@@ -218,6 +223,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
               artifact: ArtifactDTO;
               blockId?: string;
               highlight?: string;
+              previewText: string;
             }
           >();
 
@@ -228,7 +234,8 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
               resultByArtifactId.set(result.artifact.id, {
                 artifact: result.artifact,
                 blockId: result.blockId,
-                highlight: result.highlight || result.blockText,
+                highlight: result.highlight,
+                previewText: result.blockText,
               });
             }
           }
@@ -237,7 +244,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
               artifactIdsOrdered.push(result.artifact.id);
               resultByArtifactId.set(result.artifact.id, {
                 artifact: result.artifact,
-                highlight: result.artifact.previewText,
+                previewText: result.artifact.previewText,
               });
             }
           }
@@ -246,6 +253,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
             artifact: ArtifactDTO;
             blockId?: string;
             highlight?: string;
+            previewText: string;
           }[] = [];
 
           for (const artifactId of artifactIdsOrdered) {
@@ -297,15 +305,13 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
                 {searchResult.artifact.title}
                 {searchResult.highlight && (
                   <ResultWithHighlightsWrapper
-                    dangerouslySetInnerHTML={{ __html: searchResult.highlight }}
+                    dangerouslySetInnerHTML={{
+                      __html: '…' + searchResult.highlight + '…',
+                    }}
                   ></ResultWithHighlightsWrapper>
                 )}
                 {!searchResult.highlight && (
-                  <p>
-                    {truncateTextWithEllipsis(
-                      searchResult.artifact.previewText,
-                    )}
-                  </p>
+                  <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
                 )}
               </IonLabel>
             </SearchResult>
