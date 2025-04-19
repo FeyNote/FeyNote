@@ -121,7 +121,7 @@ const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
 /**
  * Maximum number of highlights to display in the result preview
  */
-const MAX_DISPLAYED_HIGHLIGHT_COUNT = 5;
+const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
@@ -404,6 +404,18 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                             }}
                           ></ResultWithHighlightsWrapper>
                         ))}
+                      {searchResult.highlights.length >
+                        MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                        <p>
+                          <i>
+                            {t('globalSearch.moreHighlights', {
+                              count:
+                                searchResult.highlights.length -
+                                MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                            })}
+                          </i>
+                        </p>
+                      )}
                       {!searchResult.highlights.length && (
                         <p>
                           {truncateTextWithEllipsis(searchResult.previewText)}

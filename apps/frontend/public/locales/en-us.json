@@ -411,6 +411,7 @@
   "globalSearch.title": "Global Search",
   "globalSearch.loggedOut": "You're not logged in. Please login to search.",
   "globalSearch.placeholder": "Search for any text within your collection",
+  "globalSearch.moreHighlights": "{{count}} more results found in this document",
 
   "calendar.monthsInYear": "Number of months in a year",
   "calendar.nameForMonth": "Name for month {{number}}",

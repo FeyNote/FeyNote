@@ -312,6 +312,18 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
                       }}
                     ></ResultWithHighlightsWrapper>
                   ))}
+                {searchResult.highlights.length >
+                  MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                  <p>
+                    <i>
+                      {t('globalSearch.moreHighlights', {
+                        count:
+                          searchResult.highlights.length -
+                          MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                      })}
+                    </i>
+                  </p>
+                )}
                 {!searchResult.highlights.length && (
                   <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
                 )}
