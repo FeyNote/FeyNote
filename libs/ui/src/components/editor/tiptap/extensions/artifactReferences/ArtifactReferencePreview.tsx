@@ -61,8 +61,21 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
 
   const artifactMeta = useObserveYArtifactMeta(yDoc);
 
-  useScrollBlockIntoView(props.artifactBlockId, [ready], containerRef);
-  useScrollDateIntoView(props.artifactDate, [ready], containerRef);
+  useScrollBlockIntoView(
+    {
+      blockId: props.artifactBlockId,
+      containerRef,
+      highlight: true,
+    },
+    [ready],
+  );
+  useScrollDateIntoView(
+    {
+      date: props.artifactDate,
+      containerRef,
+    },
+    [ready],
+  );
 
   const previewContent = (
     <>
