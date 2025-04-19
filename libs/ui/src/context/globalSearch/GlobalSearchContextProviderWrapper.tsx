@@ -287,11 +287,11 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
             }
           }
           for (const result of titleResults) {
-            if (!resultByArtifactId.has(result.id)) {
-              artifactIdsOrdered.push(result.id);
-              resultByArtifactId.set(result.id, {
-                artifact: result,
-                highlight: result.previewText,
+            if (!resultByArtifactId.has(result.artifact.id)) {
+              artifactIdsOrdered.push(result.artifact.id);
+              resultByArtifactId.set(result.artifact.id, {
+                artifact: result.artifact,
+                highlight: result.artifact.previewText,
               });
             }
           }
