@@ -55,7 +55,7 @@ jobs:
             export SOURCEMAP_UPLOAD=true
             ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
   push_frontend:
-    resource_class: medium
+    resource_class: large
     docker:
       - image: cimg/node:22.11
     steps:
