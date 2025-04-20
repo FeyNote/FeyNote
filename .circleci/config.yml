@@ -69,6 +69,7 @@ jobs:
             export SOURCEMAP_UPLOAD=true
             export NODE_OPTIONS=--max-old-space-size=8192
             npx nx build frontend --skip-nx-cache
+            [ -f "dist/apps/frontend/index.html" ] && [ -f "dist/apps/frontend/service-worker.js" ] || { echo "Both index.html and service-worker.js must exist. Something went wrong during build"; exit 1; }
       - run:
           name: move-frontend-build
           command: mv dist/apps/frontend ./www
