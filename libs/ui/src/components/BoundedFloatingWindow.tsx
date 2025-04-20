@@ -34,7 +34,7 @@ const Container = styled.div<{
   max-height: ${(props) => props.$maxHeight}px;
 `;
 
-interface Props {
+export interface Props {
   className?: string;
   floatTarget: HTMLElement;
   children: ReactNode;
