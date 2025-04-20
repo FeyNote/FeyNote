@@ -162,31 +162,34 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
             handleTRPCErrors(error);
           }),
       ])
-        .then(([artifacts, blocks]) => {
+        .then(([artifactResults, blockResults]) => {
           if (cancelled) return;
 
           setSearchedText(searchText);
 
           const results = [];
 
-          for (const artifact of artifacts || []) {
+          for (const artifactResult of artifactResults || []) {
             results.push({
-              artifactId: artifact.id,
+              artifactId: artifactResult.artifact.id,
               artifactBlockId: undefined,
-              referenceText: artifact.title,
-              artifact,
+              referenceText: artifactResult.artifact.title,
+              artifact: artifactResult.artifact,
             });
           }
 
-          for (const block of blocks || []) {
-            if (!block.text.trim() || block.text.trim().startsWith('@'))
+          for (const blockResult of blockResults || []) {
+            if (
+              !blockResult.blockText.trim() ||
+              blockResult.blockText.trim().startsWith('@')
+            )
               continue;
 
             results.push({
-              artifactId: block.artifactId,
-              artifactBlockId: block.id,
-              referenceText: block.text,
-              artifact: block.artifact,
+              artifactId: blockResult.artifact.id,
+              artifactBlockId: blockResult.blockId,
+              referenceText: blockResult.blockText,
+              artifact: blockResult.artifact,
             });
           }
 

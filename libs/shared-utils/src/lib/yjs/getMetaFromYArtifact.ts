@@ -19,7 +19,7 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     title: (artifactMetaYMap.get('title') as string) ?? '',
     theme: (artifactMetaYMap.get('theme') as ArtifactTheme) ?? 'default',
     type:
-      (artifactMetaYMap.get('type') as ArtifactType | undefined) ?? undefined,
+      (artifactMetaYMap.get('type') as ArtifactType | undefined) ?? 'tiptap',
     linkAccessLevel:
       (artifactMetaYMap.get('linkAccessLevel') as ArtifactAccessLevel) ??
       'noaccess',

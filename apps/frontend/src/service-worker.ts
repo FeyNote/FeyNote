@@ -570,7 +570,15 @@ registerRoute(
           ObjectStoreName.Artifacts,
           artifactId,
         );
-        results.push(artifact);
+        results.push({
+          artifact,
+          // We have no highlighting support while offline at this time.
+          // It would require loading each search result's yBin from indexeddb,
+          // applying it to a yDoc, converting it to tiptap json, getting all text,
+          // and then correlating the match text from minisearch
+          // The above is too heavy a lift.
+          highlight: undefined,
+        });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);
@@ -607,7 +615,10 @@ registerRoute(
           ObjectStoreName.Artifacts,
           artifactId,
         );
-        results.push(artifact);
+        results.push({
+          artifact,
+          highlight: undefined,
+        });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);
@@ -631,20 +642,23 @@ registerRoute(
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchResults = searchManager.search(input.query);
-      const artifactIds = new Set(
-        searchResults
-          .filter((searchResult) => searchResult.blockId)
-          .map((searchResult) => searchResult.artifactId),
-      );
 
       const manifestDb = await getManifestDb();
       const results = [];
-      for (const artifactId of artifactIds) {
+      for (const searchResult of searchResults) {
+        if (!searchResult.blockId) continue;
+
         const artifact = await manifestDb.get(
           ObjectStoreName.Artifacts,
-          artifactId,
+          searchResult.artifactId,
         );
-        results.push(artifact);
+        results.push({
+          artifact,
+          blockId: searchResult.blockId,
+          blockText: searchResult.previewText,
+          // This isn't exact, since the search engine would normally return marked results, but we don't want to calculate that ourselves manually at the moment. Additionally, the previewText isn't that long to begin with, so not much to work with here hence the shortcut.
+          highlight: searchResult.previewText.substring(0, 100),
+        });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);

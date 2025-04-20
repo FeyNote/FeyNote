@@ -1,12 +1,13 @@
-import { useContext, useEffect, useState } from 'react';
-import { collaborationManager } from './collaborationManager';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useEffect, useState } from 'react';
+import { applyUpdate, Doc as YDoc } from 'yjs';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getJSONContentParent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
 import { getTextForJSONContentWithEdges } from './tiptap/extensions/artifactReferences/getTextForJSONContentWithEdges';
+import { trpc } from '../../utils/trpc';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 interface Props {
   artifactId: string;
@@ -19,19 +20,24 @@ interface Props {
  * consume a large amount of RAM.
  */
 export const TextForBlock = (props: Props) => {
-  const { session } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [blockText, setBlockText] = useState<string | undefined>(undefined);
 
-  const connection = collaborationManager.get(
-    `artifact:${props.artifactId}`,
-    session,
-  );
-
   const updateBlockText = async () => {
-    await connection.syncedPromise;
+    const response = await trpc.artifact.getArtifactYBinById
+      .query({
+        id: props.artifactId,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+    if (!response) return;
+
+    const yDoc = new YDoc();
+    applyUpdate(yDoc, response.yBin);
 
     const jsonContent = getTiptapContentFromYjsDoc(
-      connection.yjsDoc,
+      yDoc,
       ARTIFACT_TIPTAP_BODY_KEY,
     );
     const parentBlockForReference = getJSONContentParent(
@@ -49,7 +55,7 @@ export const TextForBlock = (props: Props) => {
 
   useEffect(() => {
     updateBlockText();
-  }, [props.artifactId, props.blockId, connection]);
+  }, [props.artifactId, props.blockId]);
 
   return blockText;
 };

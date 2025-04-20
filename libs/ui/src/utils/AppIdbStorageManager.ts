@@ -2,7 +2,12 @@ import { deleteDB } from 'idb';
 import * as Sentry from '@sentry/react';
 
 import type { SessionDTO } from '@feynote/shared-utils';
-import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
+import {
+  getKvStoreEntry,
+  getManifestDb,
+  KVStoreKeys,
+  ObjectStoreName,
+} from './localDb';
 
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
@@ -47,13 +52,9 @@ export class AppIdbStorageManager {
   }
 
   async getSession(): Promise<SessionDTO | null> {
-    const manifestDb = await getManifestDb();
-    const session = await manifestDb.get(
-      ObjectStoreName.KV,
-      KVStoreKeys.Session,
-    );
+    const session = await getKvStoreEntry(KVStoreKeys.Session);
 
-    return session?.value || null;
+    return session || null;
   }
 
   async setSession(session: SessionDTO): Promise<void> {
@@ -80,12 +81,10 @@ export class AppIdbStorageManager {
   }
 
   async getLastSessionUserId(): Promise<string | null> {
-    const manifestDb = await getManifestDb();
-    const record = await manifestDb.get(
-      ObjectStoreName.KV,
+    const lastSessionUserId = await getKvStoreEntry(
       KVStoreKeys.LastSessionUserId,
     );
-    return record?.value || null;
+    return lastSessionUserId || null;
   }
 
   async deleteAllData(): Promise<void> {
