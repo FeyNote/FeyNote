@@ -87,7 +87,7 @@
     "dedent": "^1.5.3",
     "dompurify": "^3.2.5",
     "express": "4.21.2",
-    "flexlayout-react": "^0.8.10",
+    "flexlayout-react": "^0.8.14",
     "google-auth-library": "^9.15.1",
     "https-proxy-agent": "^7.0.6",
     "i18next": "^25.0.0",
