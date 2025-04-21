@@ -206,7 +206,7 @@ export const Settings: React.FC = () => {
               button
               onClick={() => {
                 navigate(
-                  PaneableComponent.ImportExport,
+                  PaneableComponent.JobDashboard,
                   {},
                   PaneTransition.Push,
                 );

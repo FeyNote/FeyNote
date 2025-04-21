@@ -10,7 +10,7 @@ import {
 import { ImportJobType } from '@feynote/prisma/types';
 
 const TIME_LIMIT_OF_JOBS = 5; //In minutes
-const NUMBER_OF_JOBS_PER_TIME_LIMIT = 10;
+const NUMBER_OF_JOBS_PER_TIME_LIMIT = 100;
 const TTL_S3_PRESIGNED_URL = 86400; // 24 hours in sec
 
 export const createImportJob = authenticatedProcedure

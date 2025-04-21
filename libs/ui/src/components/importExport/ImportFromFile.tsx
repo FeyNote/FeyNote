@@ -1,16 +1,19 @@
 import { IonButton, IonIcon, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ChangeEvent, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useContext, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { trpc } from '../../utils/trpc';
 import { closeOutline } from 'ionicons/icons';
 import { ImportJobType } from '@feynote/prisma/types';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 const ActionErrorText = styled.p`
   font-size: 0.8rem;
 `;
 
-const Header = styled.h3`
+const Header = styled.h1`
   margin-top: 0;
 `;
 
@@ -27,7 +30,6 @@ const Container = styled.div`
 
 interface Props {
   type: ImportJobType;
-  fetchJobs: () => void;
 }
 
 const FILE_SIZE_LIMIT = 500000000; //500MB
@@ -39,11 +41,13 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>();
   const [fileInputError, setFileInputError] = useState<string | null>(null);
+  const [disableUploadBtn, setDisableUploadBtn] = useState(false);
+  const { navigate } = useContext(PaneContext);
   const instructions = useMemo(() => {
     if (props.type === ImportJobType.Obsidian) {
-      return t('importExport.file.instructions.obsidian');
+      return t('importFromObsidian.instructions');
     } else {
-      return t('importExport.file.instructions.logseq');
+      return t('importFromLogseq.instructions');
     }
   }, [props.type, t]);
 
@@ -52,11 +56,11 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
     const selectedfile = e.target.files[0];
     if (!ALLOWED_FILE_TYPES.includes(selectedfile.type))
       return setFileInputError(
-        `${t('importExport.file.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
+        `${t('import.file.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
       );
     if (selectedfile.size >= FILE_SIZE_LIMIT)
       return setFileInputError(
-        `${t('importExport.file.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        `${t('import.file.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
       );
     setFile(selectedfile);
     setFileInputError(null);
@@ -74,6 +78,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
 
   const uploadFile = async () => {
     if (!file) return;
+    setDisableUploadBtn(true);
     try {
       const { importJobId, s3SignedURL } =
         await trpc.job.createImportJob.mutate({
@@ -92,16 +97,16 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
       await trpc.job.startJob.mutate({
         id: importJobId,
       });
-      clearFileSelection();
-      props.fetchJobs();
+      navigate(PaneableComponent.JobDashboard, {}, PaneTransition.Push);
     } catch (e) {
       console.error(e);
     }
+    setDisableUploadBtn(false);
   };
 
   return (
-    <div className="ion-padding">
-      <Header>{t('importExport.file.header')}</Header>
+    <div>
+      <Header>{t('import.file.header')}</Header>
       <Subtext>{instructions}</Subtext>
       {file ? (
         <>
@@ -117,7 +122,12 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
             </IonButton>
           </Container>
           <div>
-            <IonButton fill="outline" size="small" onClick={uploadFile}>
+            <IonButton
+              disabled={disableUploadBtn}
+              fill="outline"
+              size="small"
+              onClick={uploadFile}
+            >
               {t('generic.submit')}
             </IonButton>
           </div>

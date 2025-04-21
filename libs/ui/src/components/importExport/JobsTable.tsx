@@ -36,7 +36,7 @@ interface Props {
   jobs: (ImportJob | ExportJob)[];
 }
 
-export const ImportJobsTable: React.FC<Props> = (props) => {
+export const JobsTable: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const capitalizeFirstLeter = (str: string): string => {
     return str.charAt(0).toUpperCase() + str.slice(1);
