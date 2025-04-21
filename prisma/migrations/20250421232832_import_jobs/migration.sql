@@ -15,6 +15,7 @@ CREATE TABLE "Job" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "type" "JobType" NOT NULL,
+    "progress" INTEGER NOT NULL,
     "meta" JSONB,
     "status" "JobStatus" NOT NULL,
     "createdAt" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,

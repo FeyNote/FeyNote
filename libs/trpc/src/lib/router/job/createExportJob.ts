@@ -15,6 +15,7 @@ export const createExportJob = authenticatedProcedure
     const exportJob = await prisma.job.create({
       data: {
         userId,
+        progress: 0,
         status: JobStatus.NotStarted,
         type: JobType.Export,
         meta: {

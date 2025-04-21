@@ -225,6 +225,7 @@ model Job {
   user      User          @relation(fields: [userId], references: [id])
   userId    String        @db.Uuid
   type      JobType
+  progress  Int
   meta      Json?
   status    JobStatus
   files                      File[]

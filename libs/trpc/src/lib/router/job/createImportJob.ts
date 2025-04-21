@@ -66,6 +66,7 @@ export const createImportJob = authenticatedProcedure
           userId,
           status: JobStatus.NotStarted,
           type: JobType.Import,
+          progress: 0,
           meta: {
             importType: input.type,
             s3Key: storageKey,

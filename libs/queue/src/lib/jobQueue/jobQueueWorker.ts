@@ -55,6 +55,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       },
       data: {
         status,
+        progress: 100,
       },
     });
     enqueueOutgoingWebsocketMessage({
