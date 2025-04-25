@@ -8,7 +8,7 @@ export const triggerPasswordReset = async (
 ) => {
   const user = await prisma.user.findUnique({
     where: {
-      email,
+      email: email.toLowerCase(),
     },
   });
 
@@ -23,7 +23,7 @@ export const triggerPasswordReset = async (
 
   const mail = new PasswordResetMail(
     [email],
-    user.username || email,
+    user.username || email.toLowerCase(),
     resetLink.toString(),
   );
 
