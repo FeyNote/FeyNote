@@ -347,7 +347,6 @@ const handleLogseqGraph = async (
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
     const title = icon + page['page-name'];
-    if (title !== 'Contents') continue;
     const id = pageNameToIdMap.get(title) || (await getSafeArtifactId()).id;
     const html = await convertLogseqPageToHtml(
       page.children,
