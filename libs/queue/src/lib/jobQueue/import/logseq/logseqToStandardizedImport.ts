@@ -30,6 +30,27 @@ import { isAudioPath } from '../isAudioPath';
 import { retrieveMediaAttributesFromTag } from '../retrieveMediaAttributesFromTag';
 import { performMediaReplacement } from '../performMediaReplacement';
 
+const convertLogseqTableToMarkdown = (logseqTable: string): string => {
+  const lines = logseqTable.split('\n');
+  const numOfCols = lines[0].split(/\|[^|]*\|/).length;
+  const delimter = '|' + ' ----- |'.repeat(numOfCols);
+  lines.splice(1, 0, delimter);
+  return lines.join('\n');
+};
+
+const replaceTables = (content: string): string => {
+  // Returns one element; | Table Header | Table Header |
+  //                      | Table Value  | Table Value  |
+  // 0. The full match
+  const tableRegex = /(^\|.*?\|$\n?)+/gm;
+  for (const matchingGroups of content.matchAll(tableRegex)) {
+    const logseqTable = matchingGroups[0];
+    const table = convertLogseqTableToMarkdown(logseqTable);
+    content = content.replace(matchingGroups[0], table);
+  }
+  return content;
+};
+
 const replaceBlockquotes = (content: string): string => {
   // Returns two elements; > Blockquote text
   // 0. The full match
@@ -241,6 +262,7 @@ const convertMarkdownToHtml = async (
   markdown = replaceHighlightedText(markdown);
   markdown = replaceCodeblocks(markdown);
   markdown = replaceInlineCode(markdown);
+  markdown = replaceTables(markdown);
 
   let html = marked.parse(markdown);
   const referencedBlockWithId = blockIdToBlockInfoMap.get(block.id);
@@ -326,7 +348,6 @@ const handleLogseqGraph = async (
     const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
     const title = icon + page['page-name'];
     if (title !== 'Contents') continue;
-    console.log(`\n\nOn page name: ${title}`);
     const id = pageNameToIdMap.get(title) || (await getSafeArtifactId()).id;
     const html = await convertLogseqPageToHtml(
       page.children,
@@ -336,7 +357,6 @@ const handleLogseqGraph = async (
       importInfo,
       baseMediaNameToPath,
     );
-    console.log(`\n\nHTML: ${html}`);
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
@@ -382,7 +402,6 @@ export const logseqToStandardizedImport = async (
   };
   const baseMediaNameToPath = new Map<string, string>();
   for await (const filePath of filePaths) {
-    console.log(`File path: ${filePath}`);
     if (extname(filePath) !== '.json') {
       baseMediaNameToPath.set(basename(filePath), filePath);
     }
