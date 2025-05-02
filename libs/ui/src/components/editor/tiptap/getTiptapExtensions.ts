@@ -1,6 +1,9 @@
 import * as Sentry from '@sentry/react';
 import ParagraphExtension from '@tiptap/extension-paragraph';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
+import HighlightExtension from '@tiptap/extension-highlight';
+import CodeBlock from '@tiptap/extension-code-block';
+import Code from '@tiptap/extension-code';
 import ListItemExtension from '@tiptap/extension-list-item';
 import OrderedListExtension from '@tiptap/extension-ordered-list';
 import BulletListExtension from '@tiptap/extension-bullet-list';
@@ -81,6 +84,8 @@ export const getTiptapExtensions = (args: {
     TextExtension,
     HorizontalRule,
     BlockquoteExtension,
+    CodeBlock,
+    Code,
     ListItemExtension,
     OrderedListExtension,
     BulletListExtension,
@@ -118,6 +123,7 @@ export const getTiptapExtensions = (args: {
     TableRowExtension,
     TableHeaderExtension,
     TableCellExtension,
+    HighlightExtension,
     IndentationExtension,
     Collaboration.configure({
       document: args.y.yDoc || args.y.yjsProvider.document,

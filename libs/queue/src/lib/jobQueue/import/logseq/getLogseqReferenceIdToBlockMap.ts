@@ -19,18 +19,22 @@ export interface ArtifactBlockInfo {
 
 export const getLogseqReferenceIdToBlockMap = (
   pages: LogseqPage[],
-  pageNameToIdMap: Map<string, string>,
+  pageNameToIdMap: Map<string, string | null>,
 ): Map<string, ArtifactBlockInfo> => {
-  const referencedBlockIds = new Set<string>();
+  const referenceIdToReferenceTextMap = new Map<string, string>();
   for (const page of pages) {
+    // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
+    if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     executeOnBlock(page.children, (block) => {
-      // Returns two elements (the match and the src url) i.e. <img src="file.png" />
-      // 0. The block reference; i.e. ((Block Id))
-      // 1. The block id
-      const pageReferenceRegex = /\(\((.*?)\)\)/g;
+      // Returns four elements i.e.[Reference Text]((Block Id))
+      // 0. The full match (not used)
+      // 1. The reference text w/ brackets; [Reference Text]
+      // 2. The reference text; Reference Text
+      // 3. The block id; Block Id
+      const pageReferenceRegex = /(\[(.*)\])?\(\(*(.*?)\)*\)/g;
       for (const matchingGroups of block.content.matchAll(pageReferenceRegex)) {
-        const referencedId = matchingGroups[1];
-        referencedBlockIds.add(referencedId);
+        const referencedId = matchingGroups[3];
+        referenceIdToReferenceTextMap.set(referencedId, matchingGroups[2]);
       }
     });
   }
@@ -38,11 +42,12 @@ export const getLogseqReferenceIdToBlockMap = (
   const referenceIdToBlockMap = new Map<string, ArtifactBlockInfo>();
   for (const page of pages) {
     executeOnBlock(page.children, (block) => {
-      if (referencedBlockIds.has(block.id)) {
+      if (referenceIdToReferenceTextMap.has(block.id)) {
         referenceIdToBlockMap.set(block.id, {
           id: randomUUID(),
           artifactId: pageNameToIdMap.get(page['page-name']) || randomUUID(),
-          referenceText: block.content,
+          referenceText:
+            referenceIdToReferenceTextMap.get(block.id) || block.content,
         });
       }
     });

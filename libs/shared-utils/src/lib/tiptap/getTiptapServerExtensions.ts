@@ -1,5 +1,8 @@
 import { Mark, mergeAttributes, Node } from '@tiptap/core';
 import TableExtension from '@tiptap/extension-table';
+import HighlightExtension from '@tiptap/extension-highlight';
+import CodeBlock from '@tiptap/extension-code-block';
+import Code from '@tiptap/extension-code';
 import Mention from '@tiptap/extension-mention';
 import ParagraphExtension from '@tiptap/extension-paragraph';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
@@ -25,8 +28,8 @@ import DocumentExtension from '@tiptap/extension-document';
 import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import { UniqueID } from '@tiptap-pro/extension-unique-id';
-import ImageExtension from '@tiptap/extension-image';
 import HeadingExtension from '@tiptap/extension-heading';
+import { FeynoteEditorMediaType } from '../types/FeynoteEditorMediaType';
 
 interface Props {
   userFileToS3Map?: Map<string, string>;
@@ -119,6 +122,9 @@ export const getTiptapServerExtensions = (props: Props) => {
       },
     }),
     HeadingExtension,
+    HighlightExtension,
+    CodeBlock,
+    Code,
     TextExtension,
     HorizontalRule,
     BlockquoteExtension,
@@ -346,24 +352,27 @@ export const getTiptapServerExtensions = (props: Props) => {
       addAttributes() {
         return {
           fileId: {
-            parseHTML: (element) => element.getAttribute('fileId'),
+            parseHTML: (element) => element.getAttribute('data-file-id'),
             default: null,
           },
           storageKey: {
             default: null,
+            parseHTML: (element) => element.getAttribute('data-storage-key'),
           },
           alt: {
             default: null,
+            parseHTML: (element) => element.getAttribute('data-alt'),
           },
           title: {
             default: null,
+            parseHTML: (element) => element.getAttribute('data-title'),
           },
         };
       },
       parseHTML() {
         return [
           {
-            tag: 'img[fileId]',
+            tag: `div[data-media-type="${FeynoteEditorMediaType.Image}"]`,
           },
         ];
       },
@@ -395,6 +404,5 @@ export const getTiptapServerExtensions = (props: Props) => {
         ];
       },
     }),
-    ImageExtension,
   ];
 };

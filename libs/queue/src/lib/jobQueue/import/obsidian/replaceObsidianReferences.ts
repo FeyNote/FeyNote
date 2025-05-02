@@ -29,13 +29,13 @@ export const replaceObsidianReferences = async (
     if (isImagePath(obsidianArtifactId)) {
       const fileId = (await getSafeFileId()).id;
       const path = join('/' + pathToObsidianVaultDir, obsidianArtifactId);
-      importInfo.imageFilesToUpload.push({
+      importInfo.mediaFilesToUpload.push({
         id: fileId,
         associatedArtifactId: artifactId,
         path,
       });
 
-      const replacementHtml = `<img fileId="${fileId}" />`;
+      const replacementHtml = `<img data-file-id="${fileId}" />`;
       content = content.replace(matchingGroups[0], replacementHtml);
       continue;
     }

@@ -1,6 +1,6 @@
 import { prisma } from '@feynote/prisma/client';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
-import { uploadStandardizedImages } from './uploadStandardizedImages';
+import { uploadStandardizedMedia } from './uploadStandardizedMedia';
 import { enqueueArtifactUpdate } from '../../artifactUpdateQueue/artifactUpdateQueue';
 import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 
@@ -8,7 +8,7 @@ export const writeStandardizedImport = async (
   importInfo: StandardizedImportInfo,
   userId: string,
 ) => {
-  const images = await uploadStandardizedImages(userId, importInfo);
+  const images = await uploadStandardizedMedia(userId, importInfo);
   const { createdArtifacts } = await prisma.$transaction(async (tx) => {
     const createdArtifacts = await tx.artifact.createManyAndReturn({
       data: importInfo.artifactsToCreate,

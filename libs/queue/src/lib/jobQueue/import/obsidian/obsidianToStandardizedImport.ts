@@ -19,8 +19,7 @@ import { TiptapTransformer } from '@hocuspocus/transformer';
 import { getObsidianReferenceId } from './getObsidianReferenceId';
 import { replaceObsidianReferences } from './replaceObsidianReferences';
 import { replaceObsidianHeadingReferences } from './replaceObsidianHeadingReferences';
-import { replaceObsidianImageFileTags } from './replaceObsidianImageFileTags';
-import { replaceObsidianImageHttpTags } from './replaceObsidianImageHttpTags';
+import { replaceObsidianMediaTags } from './replaceObsidianMediaTags';
 import { pushImgTagsToNewLine } from './pushImgTagsToNewLine';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 import { getSafeArtifactId } from '@feynote/api-services';
@@ -33,7 +32,7 @@ export const obsidianToStandardizedImport = async (
 ): Promise<StandardizedImportInfo> => {
   const importInfo: StandardizedImportInfo = {
     artifactsToCreate: [],
-    imageFilesToUpload: [],
+    mediaFilesToUpload: [],
   };
 
   // Find the path to base level of obsidian vault (what folders need to be navigated to reach the .obsidian folder)
@@ -109,16 +108,11 @@ export const obsidianToStandardizedImport = async (
       referenceIdToInfoMap,
       obsidianReferenceId,
     );
-    markdown = await replaceObsidianImageFileTags(
+    markdown = await replaceObsidianMediaTags(
       markdown,
       artifactId,
       importInfo,
       pathToObsidianVaultDir,
-    );
-    markdown = await replaceObsidianImageHttpTags(
-      markdown,
-      artifactId,
-      importInfo,
     );
     const html = await marked.parse(markdown);
     const extensions = getTiptapServerExtensions({});

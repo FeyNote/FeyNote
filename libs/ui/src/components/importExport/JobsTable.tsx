@@ -58,6 +58,7 @@ export const JobsTable: React.FC<Props> = (props) => {
               title={t('importExport.table.columns.status.notStarted')}
             />
           );
+          console.log(job.status);
           switch (job.status) {
             case JobStatus.Success:
               status = (

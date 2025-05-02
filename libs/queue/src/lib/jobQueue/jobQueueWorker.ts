@@ -49,6 +49,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       console.error(`Failed processing job ${args.id}`, e);
       status = JobStatus.Failed;
     }
+    console.log(`Updating job status to completed, ${status}`);
     await prisma.job.update({
       where: {
         id: args.data.jobId,

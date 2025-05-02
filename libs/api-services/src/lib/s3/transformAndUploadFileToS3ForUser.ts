@@ -25,6 +25,7 @@ export async function transformAndUploadFileToS3ForUser(args: {
   file: Readable;
   purpose: FilePurpose;
   mimetype: string;
+  storageKey?: string;
 }) {
   const { maxResolution, quality, maxFileSize } = await getFileLimitsForUser(
     args.userId,
@@ -87,6 +88,13 @@ export async function transformAndUploadFileToS3ForUser(args: {
 
     filePipeline.pipe(limiter);
 
-    resolve(uploadFileToS3(limitedFilePipeline, args.mimetype, args.purpose));
+    resolve(
+      uploadFileToS3(
+        limitedFilePipeline,
+        args.mimetype,
+        args.purpose,
+        args.storageKey,
+      ),
+    );
   });
 }

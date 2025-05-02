@@ -46,6 +46,7 @@ export * from './lib/yjs/TLDRAW_YDOC_META_KEY';
 export * from './lib/yjs/TLDRAW_YDOC_STORE_KEY';
 export * from './lib/yjs/updateYArtifactMeta';
 export * from './lib/types/i18n';
+export * from './lib/types/FeynoteEditorMediaType';
 export * from './lib/types/preferences';
 export * from './lib/types/Manifest';
 export * from './lib/types/SessionDTO';
