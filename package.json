@@ -84,7 +84,7 @@
     "bullmq": "^5.51.1",
     "commander": "^13.1.0",
     "cors": "^2.8.5",
-    "dedent": "^1.5.3",
+    "dedent": "^1.6.0",
     "dompurify": "^3.2.5",
     "express": "4.21.2",
     "flexlayout-react": "^0.8.15",
