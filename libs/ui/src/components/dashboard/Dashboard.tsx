@@ -31,6 +31,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
 import { SessionContext } from '../../context/session/SessionContext';
+import { getEdgeId, type Edge } from '@feynote/shared-utils';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -86,6 +87,40 @@ export const Dashboard: React.FC = () => {
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
     ThreadDTO[]
   >([]);
+  const edges = useMemo(() => {
+    return artifacts.reduce<Edge[]>((acc, artifact) => {
+      for (const reference of artifact.artifactReferences) {
+        acc.push({
+          id: getEdgeId(reference),
+          artifactId: reference.artifactId,
+          artifactBlockId: reference.artifactBlockId,
+          targetArtifactId: reference.targetArtifactId,
+          targetArtifactBlockId: reference.targetArtifactBlockId,
+          targetArtifactDate: reference.targetArtifactDate,
+          targetArtifactTitle: reference.targetArtifact?.title || null,
+          artifactTitle: artifact.title,
+          referenceText: reference.referenceText,
+          isBroken: reference.targetArtifact === null,
+        });
+      }
+      for (const reference of artifact.incomingArtifactReferences) {
+        acc.push({
+          id: getEdgeId(reference),
+          artifactId: reference.artifactId,
+          artifactBlockId: reference.artifactBlockId,
+          targetArtifactId: reference.targetArtifactId,
+          targetArtifactBlockId: reference.targetArtifactBlockId,
+          targetArtifactDate: reference.targetArtifactDate,
+          targetArtifactTitle: artifact.title,
+          artifactTitle: reference.artifact.title,
+          referenceText: reference.referenceText,
+          isBroken: false,
+        });
+      }
+
+      return acc;
+    }, []);
+  }, [artifacts]);
 
   const getUserArtifacts = async () => {
     await trpc.artifact.getArtifacts
@@ -204,7 +239,7 @@ export const Dashboard: React.FC = () => {
                 </CardTitleButton>
               </CardTitle>
               {artifacts.length ? (
-                <GraphRenderer artifacts={artifacts} />
+                <GraphRenderer artifacts={artifacts} edges={edges} />
               ) : (
                 <CardNullState
                   size="small"

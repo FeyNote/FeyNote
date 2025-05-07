@@ -3,21 +3,44 @@ import ForceGraph2D, {
   NodeObject,
 } from 'react-force-graph-2d';
 import {
+    memo,
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ComponentProps,
 } from 'react';
-import { ArtifactDTO } from '@feynote/global-types';
 import { isDarkMode } from '../../utils/isDarkMode';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import styled from 'styled-components';
 import { useWidthObserver } from '../../utils/useWidthObserver';
+import type { Edge } from '@feynote/shared-utils';
+
+function drawRoundedRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number,
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
 
 const GraphContainer = styled.div<{
   $nodeHovered: boolean;
@@ -47,16 +70,24 @@ type FeynoteForceGraphData = NonNullable<
 /**
  * The radius (in relative space) of each drawn node within the visualization
  */
-const NODE_RADIUS = 8;
+const NODE_RADIUS = 5;
+const NODE_LABEL_FONT_SIZE_PX = 10;
 
 interface Props {
-  artifacts: ArtifactDTO[];
+  artifacts: {
+    id: string;
+    title: string;
+  }[];
+  edges: Edge[];
+  artifactPositions?: Map<string, { x: number; y: number }>;
+  onNodeDragEnd?: (node: FeynoteGraphNode, x: number, y: number) => void;
+  enableInitialZoom?: boolean;
 }
 
-export const GraphRenderer: React.FC<Props> = (props) => {
+export const GraphRenderer: React.FC<Props> = memo((props) => {
   const graphContainerRef = useRef<HTMLDivElement>(null);
-  const forceGraphRef =
-    useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(undefined);
+  const forceGraphRef = useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(null);
+  const initialZoomPerformedRef = useRef(!props.enableInitialZoom);
   const { navigate, pane, isPaneFocused } = useContext(PaneContext);
   const [highlightNodes, setHighlightNodes] = useState(
     new Set<FeynoteGraphNode>(),
@@ -65,7 +96,7 @@ export const GraphRenderer: React.FC<Props> = (props) => {
     new Set<FeynoteGraphLink>(),
   );
   const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
-  const _isDarkMode = isDarkMode();
+  const _isDarkMode = useMemo(() => isDarkMode(), []);
 
   const { height: displayHeight, width: displayWidth } = useWidthObserver(
     graphContainerRef,
@@ -77,7 +108,7 @@ export const GraphRenderer: React.FC<Props> = (props) => {
   );
 
   const { graphData, nodesById } = useMemo(() => {
-    const nodesById: Record<string, FeynoteGraphNode> = {};
+    const nodesById: Record<string, FeynoteForceGraphData['nodes'][number]> = {};
     const graphData = {
       nodes: [],
       links: [],
@@ -92,13 +123,17 @@ export const GraphRenderer: React.FC<Props> = (props) => {
       };
       graphData.nodes.push(node);
       nodesById[node.id] = node;
+    }
 
-      for (const reference of artifact.artifactReferences) {
-        graphData.links.push({
-          source: reference.artifactId,
-          target: reference.targetArtifactId,
-        });
+    for (const edge of props.edges) {
+      if (!nodesById[edge.artifactId] || !nodesById[edge.targetArtifactId]) {
+        continue;
       }
+
+      graphData.links.push({
+        source: edge.artifactId,
+        target: edge.targetArtifactId,
+      });
     }
 
     for (const link of graphData.links) {
@@ -118,6 +153,25 @@ export const GraphRenderer: React.FC<Props> = (props) => {
       nodesById,
     };
   }, [props.artifacts]);
+
+  useEffect(() => {
+    for (const artifact of props.artifacts) {
+      const position = props.artifactPositions?.get(artifact.id);
+      if (position) {
+        const node = nodesById[artifact.id];
+        if (node) {
+          node.fx = position.x;
+          node.fy = position.y;
+        }
+      } else {
+        const node = nodesById[artifact.id];
+        if (node) {
+          node.fx = undefined;
+          node.fy = undefined;
+        }
+      }
+    }
+  }, [props.artifactPositions, props.artifacts, nodesById]);
 
   const updateHighlight = () => {
     setHighlightNodes(highlightNodes);
@@ -167,63 +221,115 @@ export const GraphRenderer: React.FC<Props> = (props) => {
     updateHighlight();
   };
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.slice(0, maxLength - 1).trim() + '…';
+  }
+
   // add ring just for highlighted nodes
   const paintRing = useCallback(
     (node: NodeObject<FeynoteGraphNode>, ctx: CanvasRenderingContext2D) => {
       if (!node.x || !node.y) return;
 
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
-      if (highlightNodes.has(node) || !hoverNode) {
-        ctx.fillStyle = _isDarkMode ? '#888888' : '#555555';
-      } else {
-        ctx.fillStyle = _isDarkMode ? '#333333' : '#aaaaaa';
-      }
-      ctx.fill();
+      const isHighlighted = highlightNodes.has(node);
+      const label = isHighlighted
+        ? truncateText(node.name, 70)
+        : truncateText(node.name, 22);
 
-      if (highlightNodes.has(node) || !hoverNode) {
-        ctx.fillStyle = _isDarkMode ? '#ffffff' : '#000000';
-      } else {
-        ctx.fillStyle = _isDarkMode ? '#666666' : '#777777';
-      }
+      // Draw node circle
+      // ctx.beginPath();
+      // ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
+      // ctx.fillStyle = isHighlighted || !hoverNode
+      //   ? (_isDarkMode ? 'rgba(136,136,136,1)' : 'rgba(85,85,85,1)')
+      //   : (_isDarkMode ? 'rgba(51,51,51,0.5)' : 'rgba(170,170,170,0.5)');
+      // ctx.fill();
+
+      // Text styling
+      ctx.font = `${NODE_LABEL_FONT_SIZE_PX}px sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText(node.name, node.x, node.y + NODE_RADIUS * 3);
+      ctx.textBaseline = 'top';
+
+      const textWidth = ctx.measureText(label).width;
+      const padding = 1;
+      const borderRadius = 4;
+      const bgX = node.x - textWidth / 2 - padding;
+      const bgY = node.y + NODE_RADIUS * 2;
+      const bgWidth = textWidth + padding * 2;
+      // Multiplied by a fraction since there's some weird scaling shenanegans
+      const bgHeight = (NODE_LABEL_FONT_SIZE_PX * 0.7) + (padding * 2);
+
+      // Draw rounded background
+      if (isHighlighted || !hoverNode) {
+        ctx.fillStyle = _isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.3)';
+        drawRoundedRect(ctx, bgX, bgY, bgWidth, bgHeight, borderRadius);
+        ctx.fill();
+      }
+
+      // Draw text
+      const textOpacity = highlightNodes.has(node) || !highlightNodes.size ? '1' : '0.5';
+      ctx.fillStyle = _isDarkMode ? `rgba(255,255,255,${textOpacity})` : `rgba(0,0,0,${textOpacity})`;
+      ctx.fillText(label, node.x, bgY + padding);
     },
     [hoverNode],
   );
 
-  useEffect(() => {
-    forceGraphRef.current?.d3Force('link')?.distance(() => 100);
-    forceGraphRef.current?.d3Force('charge')?.distanceMax(200);
-    forceGraphRef.current?.d3Force('charge')?.strength(-250);
-  }, []);
-
   return (
     <GraphContainer ref={graphContainerRef} $nodeHovered={!!hoverNode}>
-      <FeynoteForceGraph2D
-        ref={forceGraphRef}
-        graphData={graphData}
-        nodeRelSize={NODE_RADIUS}
-        autoPauseRedraw={false}
-        nodeColor={(_) => (_isDarkMode ? '#888888' : '#555555')}
-        linkColor={(_) => (_isDarkMode ? '#555555' : '#999999')}
-        linkDirectionalParticleColor={(_) =>
-          _isDarkMode ? '#999999' : '#333333'
-        }
-        linkWidth={(link) => (highlightLinks.has(link) ? 5 : 1)}
-        linkDirectionalParticles={4}
-        linkDirectionalParticleWidth={(link) =>
-          highlightLinks.has(link) ? 4 : 0
-        }
-        nodeCanvasObjectMode={undefined}
-        nodeCanvasObject={paintRing}
-        onNodeHover={handleNodeHover}
-        onNodeClick={handleNodeClick}
-        onLinkHover={handleLinkHover}
-        nodeLabel={() => ''}
-        width={displayWidth}
-        height={displayHeight}
-      />
+      {displayWidth !== undefined && displayHeight !== undefined && (
+        <FeynoteForceGraph2D
+          ref={((el: ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>) => {
+            el?.d3Force('charge')?.distanceMax(150);
+            el?.d3Force('link')?.distance(65);
+            el?.d3Force('charge')?.strength(-140);
+
+            forceGraphRef.current = el;
+          }) as unknown as React.MutableRefObject<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>}
+          cooldownTime={750}
+          onEngineStop={() => {
+            if (initialZoomPerformedRef.current) return;
+
+            forceGraphRef.current?.zoomToFit(500, displayWidth * 0.1);
+            initialZoomPerformedRef.current = true;
+          }}
+          graphData={graphData}
+          nodeRelSize={NODE_RADIUS}
+          autoPauseRedraw={true}
+          nodeColor={(node) => {
+            const opacity = highlightNodes.has(node) || !highlightNodes.size ? '1' : '0.4';
+            return _isDarkMode ? `rgba(100,100,100,${opacity})` : `rgba(100,100,100,${opacity})`;
+          }}
+          linkColor={(link) => {
+            const opacity = highlightLinks.has(link) || !highlightLinks.size ? '0.8' : '0.4';
+            return _isDarkMode ? `rgba(100,100,100,${opacity})` : `rgba(150,150,150,${opacity})`;
+          }}
+          linkDirectionalParticleColor={(_) =>
+            _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'
+          }
+          linkWidth={(link) => (highlightLinks.has(link) ? 5 : 1)}
+          linkDirectionalParticles={4}
+          linkDirectionalParticleWidth={(link) =>
+            highlightLinks.has(link) ? 4 : 0
+          }
+          linkDirectionalArrowLength={7}
+          linkDirectionalArrowRelPos={1}
+          linkDirectionalArrowColor={() => _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'}
+          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObject={paintRing}
+          onNodeHover={handleNodeHover}
+          onNodeClick={handleNodeClick}
+          onLinkHover={handleLinkHover}
+          nodeLabel={() => ''}
+          width={displayWidth}
+          height={displayHeight}
+          onNodeDragEnd={(node) => {
+            if (props.onNodeDragEnd && typeof node.x === 'number' && typeof node.y === 'number') {
+              props.onNodeDragEnd(node, node.x, node.y);
+            }
+          }}
+        />
+      )}
     </GraphContainer>
   );
-};
+});

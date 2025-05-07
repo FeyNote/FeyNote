@@ -252,6 +252,8 @@
   "artifactRenderer.incomingArtifactReferences.help": "The documents listed here reference the document you're viewing somewhere in their content.",
   "artifactRenderer.artifactReferences": "References",
   "artifactRenderer.artifactReferences.help": "The documents listed here are referenced by the document you're viewing somewhere in it's content.",
+  "artifactRenderer.artifactLocalGraph": "Local Graph",
+  "artifactRenderer.artifactLocalGraph.help": "This graph shows the documents that are referenced by this document, and the documents that reference this document. Click on a node to view it.",
   "artifactRenderer.artifactShares": "Shared With",
   "artifactRenderer.artifactShares.help": "This document is shared with any of the individuals listed here",
   "artifactRenderer.sharedByLink": "Shared by link",

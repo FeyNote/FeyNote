@@ -20,7 +20,7 @@ export const artifactDetail = Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
         targetArtifactDate: true,
         referenceText: true,
         referenceTargetArtifactId: true,
-        artifact: {
+        targetArtifact: {
           select: {
             title: true,
           },

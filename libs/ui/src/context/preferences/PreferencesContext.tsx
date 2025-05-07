@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import { AppPreferences, PreferenceNames } from '@feynote/shared-utils';
 import { PreferencesService } from '../../utils/preferences';
 
@@ -22,3 +22,14 @@ export const PreferencesContext = createContext<PreferencesContextData>(
   // and we don't want to provide a partial implementation that might not throw an error if used improperly
   null as unknown as PreferencesContextData,
 );
+
+export const usePreferencesContext = () => {
+  const context = useContext(PreferencesContext);
+  if (!context) {
+    throw new Error(
+      'usePreferencesContext must be used within a PreferencesContext.Provider',
+    );
+  }
+  return context;
+}
+

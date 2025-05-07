@@ -1,17 +1,14 @@
-// Based on https://github.com/ueberdosis/tiptap/blob/main/packages/extension-image/src/image.ts
-// and this comment: https://github.com/ueberdosis/tiptap/issues/333#issuecomment-2701758790
-
 import { mergeAttributes } from '@tiptap/core';
 import { addMediaNodeView } from '../feynoteMedia/addMediaNodeView';
 import { FeynoteMediaExtension, type FeynoteMediaOptions } from '../feynoteMedia/FeynoteMediaExtension';
 
-export interface FeynoteImageOptions extends FeynoteMediaOptions {
+export interface FeynoteVideoOptions extends FeynoteMediaOptions {
 }
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    feynoteImage: {
-      setFeynoteImage: (options: {
+    feynoteVideo: {
+      setFeynoteVideo: (options: {
         fileId: string;
         storageKey: string;
         alt?: string;
@@ -22,29 +19,29 @@ declare module '@tiptap/core' {
 }
 
 /**
- * This extension displays images stored on our backend.
+ * This extension displays videos stored on our backend.
  */
-export const FeynoteImageExtension = FeynoteMediaExtension.extend({
-  name: 'feynoteImage',
+export const FeynoteVideoExtension = FeynoteMediaExtension.extend({
+  name: 'feynoteVideo',
 
   parseHTML() {
     return [
       {
-        tag: 'img[data-file-id]',
+        tag: 'video[data-file-id]',
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
-      'img',
+      'video',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
     ];
   },
 
   addCommands() {
     return {
-      setFeynoteImage:
+      setFeynoteVideo:
         (options) =>
         ({ commands }) => {
           return commands.insertContent({
@@ -57,7 +54,7 @@ export const FeynoteImageExtension = FeynoteMediaExtension.extend({
 
   addNodeView() {
     return addMediaNodeView({
-      tagName: 'img',
+      tagName: 'video',
       ...this.options
     });
   },

@@ -45,6 +45,7 @@ import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
+import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
 import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
@@ -177,6 +178,8 @@ export const getTiptapExtensions = (args: {
               'image/jpeg',
               'image/gif',
               'image/webp',
+              'video/mp4',
+              'audio/mpeg',
             ],
             onDrop: args.handleFileUpload,
             onPaste: (currentEditor, files, htmlContent) => {
@@ -200,6 +203,11 @@ export const getTiptapExtensions = (args: {
         ]
       : []),
     FeynoteImageExtension.configure({
+      getSrcForFileId: (fileId) => {
+        return args.getFileUrl(fileId);
+      },
+    }),
+    FeynoteVideoExtension.configure({
       getSrcForFileId: (fileId) => {
         return args.getFileUrl(fileId);
       },

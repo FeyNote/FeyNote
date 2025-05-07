@@ -26,12 +26,16 @@ export enum PreferenceNames {
   LeftPaneShowArtifactTree = 'leftPane.showArtifactTree',
   LeftPaneArtifactTreeShowUncategorized = 'leftPane.appTree.showUncategorized',
   LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
+
   RightPaneStartOpen = 'rightPane.startOpen',
+
   Language = 'global.language',
   FontSize = 'global.fontSize',
   Theme = 'global.theme',
   CollaborationColor = 'global.collaborationColor',
   PreferencesSync = 'global.preferencesSync',
+
+  GraphShowOrphans = 'graph.showOrphans',
 }
 
 export interface AppPreferences {
@@ -41,10 +45,14 @@ export interface AppPreferences {
   [PreferenceNames.LeftPaneShowArtifactTree]: boolean;
   [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: boolean;
   [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
+
   [PreferenceNames.RightPaneStartOpen]: boolean;
+
   [PreferenceNames.Language]: null | SupportedLanguages;
   [PreferenceNames.FontSize]: SupportedFontSize;
   [PreferenceNames.Theme]: AppTheme;
   [PreferenceNames.CollaborationColor]: string;
   [PreferenceNames.PreferencesSync]: PreferencesSync;
+
+  [PreferenceNames.GraphShowOrphans]: boolean;
 }

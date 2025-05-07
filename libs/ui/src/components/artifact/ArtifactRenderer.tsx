@@ -151,6 +151,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           setIsUploadingFile(true);
           for (const file of files) {
             try {
+              console.log("files", file);
               const response = await uploadFileToApi({
                 file,
                 purpose: 'artifact',
@@ -159,10 +160,34 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
               if (pos === undefined) {
                 pos = editor.state.selection.anchor;
               }
+              let type: string | null = null;
+              if (file.type.startsWith('image/')) {
+                type = 'feynoteImage';
+              }
+              if (file.type.startsWith('video/')) {
+                type = 'feynoteVideo';
+              }
+              if (file.type.startsWith('audio/')) {
+                type = 'feynoteAudio';
+              }
+              if (!type) {
+                presentAlert({
+                  header: t('artifactRenderer.unsupportedFileType'),
+                  message: t('artifactRenderer.unsupportedFileType.message'),
+                  buttons: [
+                    {
+                      text: t('generic.okay'),
+                      role: 'cancel',
+                    },
+                  ],
+                });
+                continue;
+              }
+              console.log("asdf", type, response);
               editor
                 .chain()
                 .insertContentAt(pos, {
-                  type: 'feynoteImage',
+                  type,
                   attrs: {
                     title: file.name,
                     alt: file.name,
