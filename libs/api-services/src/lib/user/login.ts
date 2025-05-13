@@ -11,7 +11,7 @@ import type { SessionDTO } from '@feynote/shared-utils';
 export const login = async (email: string, password: string) => {
   const user = await prisma.user.findFirst({
     where: {
-      email,
+      email: email.toLowerCase(),
     },
   });
 
@@ -34,6 +34,6 @@ export const login = async (email: string, password: string) => {
   return {
     token: session.token,
     userId: session.userId,
-    email: email,
+    email: email.toLowerCase(),
   } satisfies SessionDTO;
 };

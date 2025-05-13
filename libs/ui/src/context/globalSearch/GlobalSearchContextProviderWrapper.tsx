@@ -36,7 +36,7 @@ const SearchContainer = styled.div`
   top: 20%;
   z-index: 3;
 
-  width: min(450px, 97%);
+  width: min(500px, 97%);
 
   transform: translateX(-50%);
 `;
@@ -92,6 +92,13 @@ const Backdrop = styled(IonBackdrop)`
   background: var(--ion-background-color, #aaaaaa);
 `;
 
+const ResultWithHighlightsWrapper = styled.p`
+  mark {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+`;
+
 interface Props {
   children: ReactNode;
 }
@@ -107,9 +114,14 @@ const SEARCH_RESULT_LIMIT = 25;
 const SEARCH_DELAY_MS = 20;
 
 /**
- * Number of characters to display in the result preview
+ * Maximum number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
+const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
+
+/**
+ * Maximum number of highlights to display in the result preview
+ */
+const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
@@ -117,13 +129,29 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const { navigate } = useContext(GlobalPaneContext);
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
-  const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    {
+      artifact: ArtifactDTO;
+      blockId?: string;
+      highlights: string[];
+      previewText: string;
+    }[]
+  >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
   const inputRef = useRef<HTMLIonInputElement>(null);
+
+  const truncateTextWithEllipsis = (text: string) => {
+    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
+    const maxLength =
+      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
+        ? text.length - 1
+        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
+    return text.slice(0, maxLength) + '…';
+  };
 
   const trigger = () => {
     setSearchText('');
@@ -200,7 +228,10 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
           navigate(
             undefined, // Open in currently focused pane rather than in specific pane
             PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].id },
+            {
+              id: searchResults[selectedIdx].artifact.id,
+              focusBlockId: searchResults[selectedIdx].blockId,
+            },
             PaneTransition.Push,
           );
           hide();
@@ -231,13 +262,62 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
     let cancelled = false;
     const timeout = setTimeout(() => {
-      trpc.artifact.searchArtifacts
-        .query({
+      Promise.all([
+        trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
-        })
-        .then((results) => {
+        }),
+        trpc.artifact.searchArtifactBlocks.query({
+          query: searchText,
+          limit: SEARCH_RESULT_LIMIT,
+        }),
+      ])
+        .then(([titleResults, blockResults]) => {
           if (cancelled) return;
+
+          const results: {
+            artifact: ArtifactDTO;
+            blockId?: string;
+            highlights: string[];
+            previewText: string;
+          }[] = [];
+          const resultsByArtifactId = new Map<string, (typeof results)[0]>();
+
+          // We merge all the results under the same artifact entry in the UI, but we want to preserve as many highlights as we can
+          for (const blockResult of blockResults) {
+            const existingResult = resultsByArtifactId.get(
+              blockResult.artifact.id,
+            );
+            if (existingResult) {
+              if (blockResult.highlight) {
+                existingResult.highlights.push(blockResult.highlight);
+              }
+            } else {
+              const result = {
+                artifact: blockResult.artifact,
+                blockId: blockResult.blockId,
+                highlights: blockResult.highlight
+                  ? [blockResult.highlight]
+                  : [],
+                previewText: blockResult.blockText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(blockResult.artifact.id, result);
+            }
+          }
+          // We only want to display title results if there are no block results for that artifact
+          for (const titleResult of titleResults) {
+            if (!resultsByArtifactId.has(titleResult.artifact.id)) {
+              const result = {
+                artifact: titleResult.artifact,
+                highlights: [],
+                previewText: titleResult.artifact.previewText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(titleResult.artifact.id, result);
+            }
+          }
+
           setSearchResults(results);
         })
         .catch((error) => {
@@ -296,14 +376,17 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                 {searchResults.map((searchResult, idx) => (
                   <SearchResult
                     lines="none"
-                    key={searchResult.id}
+                    key={searchResult.artifact.id}
                     $selected={selectedIdx === idx}
                     onMouseOver={() => setSelectedIdx(idx)}
                     onClick={() => {
                       navigate(
                         undefined, // Open in currently focused pane rather than in specific pane
                         PaneableComponent.Artifact,
-                        { id: searchResult.id },
+                        {
+                          id: searchResult.artifact.id,
+                          focusBlockId: searchResult.blockId,
+                        },
                         PaneTransition.Push,
                       );
                       hide();
@@ -311,13 +394,33 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                     button
                   >
                     <IonLabel>
-                      {searchResult.title}
-                      <p>
-                        {searchResult.previewText.substring(
-                          0,
-                          SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
-                        ) || t('artifact.title')}
-                      </p>
+                      {searchResult.artifact.title}
+                      {searchResult.highlights
+                        .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
+                        .map((highlight) => (
+                          <ResultWithHighlightsWrapper
+                            dangerouslySetInnerHTML={{
+                              __html: '…' + highlight + '…',
+                            }}
+                          ></ResultWithHighlightsWrapper>
+                        ))}
+                      {searchResult.highlights.length >
+                        MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                        <p>
+                          <i>
+                            {t('globalSearch.moreHighlights', {
+                              count:
+                                searchResult.highlights.length -
+                                MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                            })}
+                          </i>
+                        </p>
+                      )}
+                      {!searchResult.highlights.length && (
+                        <p>
+                          {truncateTextWithEllipsis(searchResult.previewText)}
+                        </p>
+                      )}
                     </IonLabel>
                   </SearchResult>
                 ))}

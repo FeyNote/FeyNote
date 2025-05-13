@@ -16,7 +16,6 @@ export const buildWelcomeArtifact = (options: {
     title: t('template.welcome.title'),
     theme: 'default',
     type: 'tiptap',
-    titleBodyMerge: true,
     linkAccessLevel: 'noaccess',
     deletedAt: null,
   } as const satisfies YArtifactMeta;

@@ -15,6 +15,7 @@ import '@ionic/react/css/display.css';
 import { setupIonicReact } from '@ionic/react';
 
 import '@ionic/react/css/palettes/dark.class.css';
+import './light.class.css';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import '../../../../libs/ui/src/css/global.css';
 
@@ -41,39 +42,54 @@ const SW_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
 setupIonicReact();
 export function App() {
   useRegisterSW({
-    onRegistered(registration) {
-      registration?.update();
-      setInterval(() => {
-        registration?.update();
-      }, SW_UPDATE_INTERVAL_MS);
+    onRegisteredSW(swURL, registration) {
+      if (registration) {
+        setInterval(async () => {
+          if (registration.installing || !navigator) return;
 
-      // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
-      const swRegistration = registration as unknown as
-        | {
-            sync?: {
-              register: (name: string) => Promise<void>;
-            };
-            periodicSync?: {
-              register: (
-                name: string,
-                options: { minInterval: number },
-              ) => Promise<void>;
-            };
+          if ('connection' in navigator && !navigator.onLine) return;
+
+          const resp = await fetch(swURL, {
+            cache: 'no-store',
+            headers: {
+              cache: 'no-store',
+              'cache-control': 'no-cache',
+            },
+          });
+
+          if (resp?.status === 200) {
+            await registration.update();
           }
-        | undefined;
+        }, SW_UPDATE_INTERVAL_MS);
 
-      swRegistration?.sync?.register('manifest').catch((e: unknown) => {
-        console.error('Cannot register background sync', e);
-      });
+        // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
+        const swRegistration = registration as unknown as
+          | {
+              sync?: {
+                register: (name: string) => Promise<void>;
+              };
+              periodicSync?: {
+                register: (
+                  name: string,
+                  options: { minInterval: number },
+                ) => Promise<void>;
+              };
+            }
+          | undefined;
 
-      const PERIODIC_SYNC_INTERVAL_HOURS = 48;
-      swRegistration?.periodicSync
-        ?.register('manifest', {
-          minInterval: PERIODIC_SYNC_INTERVAL_HOURS * 60 * 60 * 1000,
-        })
-        .catch((e: unknown) => {
-          console.error('Cannot register periodic sync', e);
+        swRegistration?.sync?.register('manifest').catch((e: unknown) => {
+          console.error('Cannot register background sync', e);
         });
+
+        const PERIODIC_SYNC_INTERVAL_HOURS = 48;
+        swRegistration?.periodicSync
+          ?.register('manifest', {
+            minInterval: PERIODIC_SYNC_INTERVAL_HOURS * 60 * 60 * 1000,
+          })
+          .catch((e: unknown) => {
+            console.error('Cannot register periodic sync', e);
+          });
+      }
     },
   });
 

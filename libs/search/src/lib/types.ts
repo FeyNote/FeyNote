@@ -17,6 +17,21 @@ export interface IndexableArtifact {
   };
 }
 
+export interface SearchArtifactsResult {
+  document: ArtifactIndexDocument;
+  highlight?: string;
+}
+
+export interface SearchArtifactTitlesResult {
+  document: ArtifactIndexDocument;
+  highlight?: string;
+}
+
+export interface SearchArtifactBlocksResult {
+  document: BlockIndexDocument;
+  highlight?: string;
+}
+
 export interface SearchProvider {
   migrate: () => Promise<void>;
   indexArtifact: (artifact: IndexableArtifact) => Promise<void>;
@@ -29,7 +44,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<string[]>;
+  ) => Promise<SearchArtifactsResult[]>;
   searchArtifactTitles: (
     userId: string,
     query: string,
@@ -37,7 +52,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<string[]>;
+  ) => Promise<SearchArtifactTitlesResult[]>;
   searchArtifactBlocks: (
     userId: string,
     query: string,
@@ -45,7 +60,7 @@ export interface SearchProvider {
       prefix?: boolean;
       limit?: number;
     },
-  ) => Promise<BlockIndexDocument[]>;
+  ) => Promise<SearchArtifactBlocksResult[]>;
 }
 
 export interface ArtifactIndexDocument {

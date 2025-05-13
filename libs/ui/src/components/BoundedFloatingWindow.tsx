@@ -2,6 +2,15 @@ import styled from 'styled-components';
 import { forwardRef, useMemo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
+/**
+ * Ensures there's always this many pixels between the right side of the floating window and the edge of the viewport.
+ */
+const RIGHT_PADDING_PX = 5;
+/**
+ * Ensures there's always this many pixels between the left side of the floating window and the edge of the viewport.
+ */
+const LEFT_PADDING_PX = 5;
+
 const Container = styled.div<{
   $top?: number;
   $left?: number;
@@ -25,7 +34,7 @@ const Container = styled.div<{
   max-height: ${(props) => props.$maxHeight}px;
 `;
 
-interface Props {
+export interface Props {
   className?: string;
   floatTarget: HTMLElement;
   children: ReactNode;
@@ -33,6 +42,8 @@ interface Props {
   minHeight: number;
   maxHeight: number;
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseOver?: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseOut?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const BoundedFloatingWindow = forwardRef(
@@ -59,9 +70,9 @@ export const BoundedFloatingWindow = forwardRef(
         bounds.bottom = previewTargetBoundingRect.top;
       }
       if (previewTargetBoundingRect.left + props.width < window.innerWidth) {
-        bounds.left = previewTargetBoundingRect.left;
+        bounds.left = Math.max(previewTargetBoundingRect.left, LEFT_PADDING_PX);
       } else {
-        bounds.right = 0;
+        bounds.right = RIGHT_PADDING_PX;
       }
       return bounds;
     }, [props.floatTarget]);
@@ -86,6 +97,8 @@ export const BoundedFloatingWindow = forwardRef(
         $minHeight={props.minHeight}
         $maxHeight={props.maxHeight}
         onClick={(event) => props.onClick?.(event)}
+        onMouseOver={(event) => props.onMouseOver?.(event)}
+        onMouseOut={(event) => props.onMouseOut?.(event)}
       >
         {props.children}
       </Container>,

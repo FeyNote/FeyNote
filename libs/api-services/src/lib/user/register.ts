@@ -10,7 +10,7 @@ export const register = async (
   password: string,
 ) => {
   const existingUser = await prisma.user.findFirst({
-    where: { email },
+    where: { email: email.toLowerCase() },
   });
 
   if (existingUser) {
@@ -26,7 +26,7 @@ export const register = async (
         passwordHash: hash,
         passwordSalt: salt,
         passwordVersion: version,
-        email,
+        email: email.toLowerCase(),
       },
     });
 
@@ -38,6 +38,6 @@ export const register = async (
   return {
     token: session.token,
     userId: session.userId,
-    email,
+    email: email.toLowerCase(),
   } satisfies SessionDTO;
 };

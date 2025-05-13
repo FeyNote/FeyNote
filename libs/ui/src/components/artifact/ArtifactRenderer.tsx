@@ -1,4 +1,4 @@
-import { memo, useContext, useEffect, useState } from 'react';
+import { memo, useContext, useEffect, useRef, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
@@ -64,6 +64,7 @@ interface Props {
 }
 
 export const ArtifactRenderer: React.FC<Props> = memo((props) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
@@ -72,8 +73,21 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  useScrollBlockIntoView(props.scrollToBlockId, [editorReady], undefined, true);
-  useScrollDateIntoView(props.scrollToDate, [editorReady]);
+  useScrollBlockIntoView(
+    {
+      blockId: props.scrollToBlockId,
+      highlight: true,
+      containerRef,
+    },
+    [editorReady],
+  );
+  useScrollDateIntoView(
+    {
+      date: props.scrollToDate,
+      containerRef,
+    },
+    [editorReady],
+  );
 
   const { type, deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
@@ -102,7 +116,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   const render = (renderer: React.ReactNode) => {
     return (
-      <>
+      <div ref={containerRef}>
         {deletedAt && (
           <ArtifactDeletedBanner
             undelete={props.undelete}
@@ -119,7 +133,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             </FileUploadOverlayContent>
           </FileUploadOverlay>
         )}
-      </>
+      </div>
     );
   };
 

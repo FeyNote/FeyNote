@@ -1,52 +1,123 @@
-import { textblockTypeInputRule } from '@tiptap/core';
-import Heading from '@tiptap/extension-heading';
+import {
+  Heading as BaseHeadingExtension,
+  HeadingOptions as BaseHeadingOptions,
+} from '@tiptap/extension-heading';
+import type { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
 
-export const HeadingExtension = Heading.extend({
-  addCommands() {
-    const { options, name, editor } = this;
+export interface HeadingOptions extends BaseHeadingOptions {
+  artifactId: string | undefined;
+  edgeStore: ReturnType<typeof getEdgeStore> | undefined;
+  onIncomingReferenceCounterMouseOver:
+    | ((event: MouseEvent, blockId: string) => void)
+    | undefined;
+  onIncomingReferenceCounterMouseOut: ((event: MouseEvent) => void) | undefined;
+}
+
+export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
+  addOptions() {
     return {
-      setHeading:
-        (attributes) =>
-        ({ commands }) => {
-          if (!options.levels.includes(attributes.level)) {
-            return false;
-          }
-          if (editor.state.selection.$head.node().attrs.indent) {
-            return commands.setNode(name, {
-              ...attributes,
-              indent: editor.state.selection.$head.node().attrs.indent,
-            });
-          }
-          return commands.setNode(name, attributes);
-        },
-      toggleHeading:
-        (attributes) =>
-        ({ commands }) => {
-          if (!options.levels.includes(attributes.level)) {
-            return false;
-          }
-
-          if (editor.state.selection.$head.node().attrs.indent) {
-            return commands.toggleNode(name, 'paragraph', {
-              ...attributes,
-              indent: editor.state.selection.$head.node().attrs.indent,
-            });
-          }
-          return commands.toggleNode(name, 'paragraph', attributes);
-        },
+      HTMLAttributes: {},
+      artifactId: undefined,
+      edgeStore: undefined,
+      onIncomingReferenceCounterMouseOver: undefined,
+      onIncomingReferenceCounterMouseOut: undefined,
+      levels: [1, 2, 3, 4, 5, 6],
     };
   },
-  addInputRules() {
-    const { options, type, editor } = this;
-    return options.levels.map((level) => {
-      return textblockTypeInputRule({
-        find: new RegExp(`^(#{1,${level}})\\s$`),
-        type,
-        getAttributes: () => ({
-          level,
-          indent: editor.state.selection.$head.node().attrs.indent,
-        }),
+
+  addNodeView() {
+    return ({ node, HTMLAttributes }) => {
+      if (!this.options.artifactId) {
+        throw new Error('Artifact ID is required for the HeadingExtension');
+      }
+
+      const container = document.createElement('div');
+      container.setAttribute('data-id', node.attrs.id);
+      container.classList.add('editor-heading-container');
+
+      const incomingEdgeCounter = document.createElement('span');
+      incomingEdgeCounter.contentEditable = 'false';
+
+      const edgeUpdateListener = () => {
+        // If any of the options are missing, we disable the counter
+        if (
+          !this.options.artifactId ||
+          !this.options.edgeStore ||
+          !this.options.onIncomingReferenceCounterMouseOver ||
+          !this.options.onIncomingReferenceCounterMouseOut
+        ) {
+          return;
+        }
+
+        const incomingEdges =
+          this.options.edgeStore?.getIncomingEdgesForBlockInstant({
+            artifactId: this.options.artifactId,
+            blockId: node.attrs.id,
+          });
+
+        incomingEdgeCounter.innerText = `${incomingEdges?.length || 0}`;
+
+        if (incomingEdges?.length) {
+          incomingEdgeCounter.style.display = 'block';
+        } else {
+          incomingEdgeCounter.style.display = 'none';
+        }
+      };
+
+      edgeUpdateListener();
+      const cleanupUpdateListener = this.options.edgeStore?.listenForArtifactId(
+        this.options.artifactId,
+        edgeUpdateListener,
+      );
+
+      incomingEdgeCounter.classList.add('editor-incoming-edge-counter');
+
+      const clickListener = (event: MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+
+        this.options.onIncomingReferenceCounterMouseOver?.(
+          event,
+          node.attrs.id,
+        );
+      };
+      incomingEdgeCounter.addEventListener('click', clickListener);
+
+      const mouseOverListener = (event: MouseEvent) => {
+        this.options.onIncomingReferenceCounterMouseOver?.(
+          event,
+          node.attrs.id,
+        );
+      };
+      incomingEdgeCounter.addEventListener('mouseover', mouseOverListener);
+
+      const mouseOutListener = (event: MouseEvent) => {
+        this.options.onIncomingReferenceCounterMouseOut?.(event);
+      };
+      incomingEdgeCounter.addEventListener('mouseout', mouseOutListener);
+
+      const contentDom = document.createElement('h' + node.attrs.level);
+      container.appendChild(contentDom);
+      container.append(incomingEdgeCounter);
+
+      Object.entries(HTMLAttributes).forEach(([key, value]) => {
+        if (key === 'class') {
+          container.classList.add(value);
+        } else {
+          container.setAttribute(key, value);
+        }
       });
-    });
+
+      return {
+        dom: container,
+        contentDOM: contentDom,
+        destroy: () => {
+          cleanupUpdateListener?.();
+          container.removeEventListener('click', edgeUpdateListener);
+          container.removeEventListener('mouseover', mouseOverListener);
+          container.removeEventListener('mouseout', mouseOutListener);
+        },
+      };
+    };
   },
 });

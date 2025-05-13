@@ -11,7 +11,12 @@ import {
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
-import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
+import {
+  getKvStoreEntry,
+  getManifestDb,
+  KVStoreKeys,
+  ObjectStoreName,
+} from './localDb';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 
 /**
@@ -77,17 +82,13 @@ export class SearchManager {
   async populateFromLocalDb() {
     performance.mark('startIndexLoad');
 
-    const manifestDb = await getManifestDb();
-    const indexRecord = await manifestDb.get(
-      ObjectStoreName.KV,
-      KVStoreKeys.SearchIndex,
-    );
+    const indexRecord = await getKvStoreEntry(KVStoreKeys.SearchIndex);
 
     if (!indexRecord) return;
 
     try {
       this.miniSearch = MiniSearch.loadJSON(
-        indexRecord.value,
+        indexRecord,
         this.miniSearchOptions,
       );
 

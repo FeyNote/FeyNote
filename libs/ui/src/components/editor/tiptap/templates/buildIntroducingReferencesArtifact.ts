@@ -13,7 +13,6 @@ export const buildIntroducingReferencesArtifact = (options: {
     title: t('template.introducingReferences.title'),
     theme: 'default',
     type: 'tiptap',
-    titleBodyMerge: true,
     linkAccessLevel: 'noaccess',
     deletedAt: null,
   } as const satisfies YArtifactMeta;

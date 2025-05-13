@@ -17,19 +17,13 @@ if (environment !== 'development') {
     environment,
     dsn: 'https://c33be4806db6ac96de06c5de2f8ebc85@o4508428193955840.ingest.us.sentry.io/4508428202606592',
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
-    ],
+    integrations: [Sentry.browserTracingIntegration()],
     sampleRate: 1, //  Percentage of transactions to capture. 1.0 captures 100%
     // Controls which URLs distributed tracing should be enabled
     tracePropagationTargets: [
       /^https:\/\/feynote\.com\/api/,
       /^https:\/\/app\.feynote\.com\/api/,
     ],
-    // Session Replay
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1,
 
     initialScope: {
       extra: {

@@ -13,33 +13,52 @@ export const searchArtifacts = authenticatedProcedure
       limit: z.number().min(1).max(100).optional(),
     }),
   )
-  .query(async ({ input, ctx }): Promise<ArtifactDTO[]> => {
-    const resultArtifactIds = await searchProvider.searchArtifacts(
-      ctx.session.userId,
-      input.query,
+  .query(
+    async ({
+      input,
+      ctx,
+    }): Promise<
       {
-        prefix: true,
-        limit: input.limit,
-      },
-    );
+        artifact: ArtifactDTO;
+        highlight?: string;
+      }[]
+    > => {
+      const searchResults = await searchProvider.searchArtifacts(
+        ctx.session.userId,
+        input.query,
+        {
+          prefix: true,
+          limit: input.limit || 50,
+        },
+      );
+      const searchResultArtifactIds = searchResults.map(
+        (result) => result.document.id,
+      );
 
-    const artifacts = await prisma.artifact.findMany({
-      where: {
-        id: { in: resultArtifactIds },
-      },
-      ...artifactDetail,
-    });
-    const artifactsById = new Map(
-      artifacts.map((artifact) => [artifact.id, artifact]),
-    );
+      const artifacts = await prisma.artifact.findMany({
+        where: {
+          id: { in: searchResultArtifactIds },
+        },
+        ...artifactDetail,
+      });
+      const artifactsById = new Map(
+        artifacts.map((artifact) => [artifact.id, artifact]),
+      );
 
-    const results: ArtifactDTO[] = [];
-    for (const resultArtifactId of resultArtifactIds) {
-      const artifact = artifactsById.get(resultArtifactId);
-      if (artifact) {
-        results.push(artifactDetailToArtifactDTO(ctx.session.userId, artifact));
+      const results: {
+        artifact: ArtifactDTO;
+        highlight?: string;
+      }[] = [];
+      for (const searchResult of searchResults) {
+        const artifact = artifactsById.get(searchResult.document.id);
+        if (artifact) {
+          results.push({
+            artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
+            highlight: searchResult.highlight,
+          });
+        }
       }
-    }
 
-    return results;
-  });
+      return results;
+    },
+  );

@@ -10,7 +10,6 @@ export interface YArtifactMeta {
   title: string;
   theme: ArtifactTheme;
   type: ArtifactType;
-  titleBodyMerge: boolean;
   linkAccessLevel: ArtifactAccessLevel;
   deletedAt: string | null;
 }
@@ -19,7 +18,6 @@ export interface UpdatableYArtifactMeta {
   title: string;
   theme: ArtifactTheme;
   type: ArtifactType;
-  titleBodyMerge: boolean;
   linkAccessLevel: ArtifactAccessLevel;
   deletedAt: string | null;
 }

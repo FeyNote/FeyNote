@@ -1,6 +1,34 @@
 /* eslint-disable no-restricted-globals */
 
-import { IDBPDatabase, openDB } from 'idb';
+import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
+import type {
+  DecodedFileStream,
+  Edge,
+  SessionDTO,
+} from '@feynote/shared-utils';
+import { IDBPDatabase, openDB, type DBSchema } from 'idb';
+
+export interface ArtifactSnapshotDoc {
+  id: string;
+  meta: YArtifactMeta;
+  yDoc: Uint8Array;
+}
+
+export interface AuthorizedCollaborationScopeDoc {
+  docName: string;
+  accessLevel: string;
+}
+
+export interface ArtifactVersionDoc {
+  id: string;
+  version: number;
+}
+
+export type PendingFileDoc = Omit<DecodedFileStream, 'fileContents'> & {
+  id: string;
+  fileContents: null; // This is normally a stream, but we can't store a stream in IndexedDB
+  fileContentsUint8: Uint8Array<ArrayBufferLike>;
+};
 
 export enum ObjectStoreName {
   Artifacts = 'artifacts',
@@ -19,10 +47,72 @@ export enum KVStoreKeys {
   LastSessionUserId = 'lastSessionUserId',
 }
 
+export interface KVSession {
+  key: KVStoreKeys.Session;
+  value: SessionDTO;
+}
+export interface KVSearchIndex {
+  key: KVStoreKeys.SearchIndex;
+  value: string;
+}
+export interface KVLastSessionUserId {
+  key: KVStoreKeys.LastSessionUserId;
+  value: string;
+}
+
+export type KVStoreValue = {
+  [KVStoreKeys.Session]: KVSession;
+  [KVStoreKeys.SearchIndex]: KVSearchIndex;
+  [KVStoreKeys.LastSessionUserId]: KVLastSessionUserId;
+};
+
+export interface FeynoteLocalDB extends DBSchema {
+  [ObjectStoreName.Artifacts]: {
+    key: string;
+    value: ArtifactDTO;
+  };
+  [ObjectStoreName.ArtifactSnapshots]: {
+    key: string;
+    value: ArtifactSnapshotDoc;
+  };
+  [ObjectStoreName.PendingArtifacts]: {
+    key: string;
+    value: {
+      id: string;
+    };
+  };
+  [ObjectStoreName.ArtifactVersions]: {
+    key: string;
+    value: ArtifactVersionDoc;
+  };
+  [ObjectStoreName.AuthorizedCollaborationScopes]: {
+    key: string;
+    value: AuthorizedCollaborationScopeDoc;
+  };
+  [ObjectStoreName.PendingFiles]: {
+    key: string;
+    value: PendingFileDoc;
+  };
+  [ObjectStoreName.Edges]: {
+    key: string;
+    value: Edge;
+    indexes: {
+      artifactId: string;
+      targetArtifactId: string;
+      'artifactId, artifactBlockId': string;
+      'targetArtifactId, targetArtifactBlockId': string;
+    };
+  };
+  [ObjectStoreName.KV]: {
+    key: string;
+    value: KVStoreValue[keyof KVStoreValue];
+  };
+}
+
 const MIGRATION_VERSION = 3;
 
 const connect = () => {
-  const dbP = openDB(`manifest`, MIGRATION_VERSION, {
+  const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATION_VERSION, {
     blocking: async () => {
       dbP.then((db) => {
         db.close();
@@ -126,10 +216,22 @@ const connect = () => {
   return dbP;
 };
 
-let manifestDbP: Promise<IDBPDatabase> | undefined = undefined;
+let manifestDbP: Promise<IDBPDatabase<FeynoteLocalDB>> | undefined = undefined;
 export async function getManifestDb() {
   if (!manifestDbP) manifestDbP = connect();
 
   const manifestDb = await manifestDbP;
   return manifestDb;
 }
+
+export const getKvStoreEntry = async <T extends KVStoreKeys>(
+  key: T,
+): Promise<KVStoreValue[T]['value'] | undefined> => {
+  const localDb = await getManifestDb();
+
+  const result = await localDb.get(ObjectStoreName.KV, key);
+
+  const typedResult = result as KVStoreValue[T] | undefined;
+
+  return typedResult?.value;
+};

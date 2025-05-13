@@ -30,10 +30,10 @@ jobs:
           name: migrate
           command: npx prisma migrate dev
       - run:
-          name: lint, typecheck, test, build
+          name: lint, lint-locales, typecheck, test, build
           command: |
             export ENABLE_BUNDLE_ANALYZER=true
-            npx nx run-many --targets=lint,typecheck,test,build
+            npx nx run-many --targets=lint,lint-locales,typecheck,test,build
       - store_artifacts:
           path: ./dist/apps/frontend/stats.html
           destination: frontend-bundle-stats.html
@@ -55,7 +55,7 @@ jobs:
             export SOURCEMAP_UPLOAD=true
             ./scripts/build-push-api-dockerhub.sh ${CIRCLE_TAG:=stg}
   push_frontend:
-    resource_class: medium
+    resource_class: large
     docker:
       - image: cimg/node:22.11
     steps:
@@ -69,6 +69,7 @@ jobs:
             export SOURCEMAP_UPLOAD=true
             export NODE_OPTIONS=--max-old-space-size=8192
             npx nx build frontend --skip-nx-cache
+            [ -f "dist/apps/frontend/index.html" ] && [ -f "dist/apps/frontend/service-worker.js" ] || { echo "Both index.html and service-worker.js must exist. Something went wrong during build"; exit 1; }
       - run:
           name: move-frontend-build
           command: mv dist/apps/frontend ./www

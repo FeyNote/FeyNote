@@ -20,6 +20,14 @@ import {
 } from './PaneableComponent';
 import { t } from 'i18next';
 import { useFlexLayout } from './useFlexLayout';
+import { getManifestDb, ObjectStoreName } from '../../utils/localDb';
+
+class PaneNotFoundError extends Error {
+  constructor(paneId: string) {
+    super(`Pane with id ${paneId} not found`);
+    this.name = 'PaneNotFoundError';
+  }
+}
 
 interface Props {
   children: ReactNode;
@@ -96,8 +104,9 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
 
   const getPaneById = (paneId = getFocusedPaneId()): PaneTracker => {
     const tabNode = layout.getNodeById(paneId) as TabNode | undefined;
-    if (!tabNode || tabNode.getType() !== 'tab')
-      throw new Error(`Pane with id ${paneId} not present in pane list`);
+    if (!tabNode || tabNode.getType() !== 'tab') {
+      throw new PaneNotFoundError(paneId);
+    }
 
     let currentView = tabNode.getConfig() as HistoryNode | undefined;
     const extraData = tabNode.getExtraData();
@@ -256,6 +265,8 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
           ),
         );
 
+        asyncAssignDefaultTitle(id);
+
         break;
       }
     }
@@ -280,6 +291,53 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
 
   const renamePane = (paneId: string, name: string) => {
     layout.doAction(Actions.renameTab(paneId, name));
+  };
+
+  /**
+   * A method to assign a default title to a pane for some pane types that
+   * render dynamic content (e.g. Artifact, etc.)
+   */
+  const asyncAssignDefaultTitle = async (paneId: string) => {
+    const pane = getPaneById(paneId);
+    const initialViewTitle = pane.currentView.props.title;
+    const navigationEventId = pane.currentView.navigationEventId;
+
+    let updatedTitle: string | undefined = undefined;
+    if (pane.currentView.component === PaneableComponent.Artifact) {
+      const artifactId = pane.currentView.props.id;
+
+      const manifestDb = await getManifestDb();
+      const artifact = await manifestDb.get(
+        ObjectStoreName.Artifacts,
+        artifactId,
+      );
+      if (!artifact) return;
+
+      updatedTitle = artifact.title;
+    }
+
+    if (!updatedTitle) {
+      return;
+    }
+
+    let possiblyUpdatedPane;
+    try {
+      possiblyUpdatedPane = getPaneById(paneId);
+    } catch (e) {
+      // If the pane has been closed, we don't need to do anything
+      console.warn(e);
+      return;
+    }
+
+    const isPaneStillInNeed =
+      initialViewTitle === possiblyUpdatedPane.currentView.props.title &&
+      navigationEventId === possiblyUpdatedPane.currentView.navigationEventId;
+
+    if (!isPaneStillInNeed) {
+      return;
+    }
+
+    renamePane(paneId, updatedTitle);
   };
 
   const updatePaneProps = <T extends PaneableComponent>(

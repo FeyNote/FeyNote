@@ -1,30 +1,19 @@
-import {
-  IonContent,
-  IonFab,
-  IonFabButton,
-  IonIcon,
-  IonList,
-  IonPage,
-} from '@ionic/react';
-import { useContext, useEffect, useState } from 'react';
+import { IonContent, IonList, IonPage } from '@ionic/react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
-import { add, chatbubbles } from 'ionicons/icons';
+import { chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import { ThreadDTO } from '@feynote/global-types';
 import { useProgressBar } from '../../utils/useProgressBar';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneNav } from '../pane/PaneNav';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();
   const [threads, setThreads] = useState<ThreadDTO[]>([]);
   const { startProgressBar, ProgressBar } = useProgressBar();
-  const { navigate } = useContext(PaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const getUserThreads = () => {
@@ -33,25 +22,6 @@ export const AIThreadsList: React.FC = () => {
       .query()
       .then((_threads) => {
         setThreads(_threads);
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      })
-      .finally(() => {
-        progress.dismiss();
-      });
-  };
-
-  const createNewThread = () => {
-    const progress = startProgressBar();
-    trpc.ai.createThread
-      .mutate({})
-      .then((thread) => {
-        navigate(
-          PaneableComponent.AIThread,
-          { id: thread.id },
-          PaneTransition.Push,
-        );
       })
       .catch((error) => {
         handleTRPCErrors(error);
@@ -84,11 +54,6 @@ export const AIThreadsList: React.FC = () => {
             })}
           </IonList>
         )}
-        <IonFab slot="fixed" vertical="bottom" horizontal="end">
-          <IonFabButton onClick={createNewThread}>
-            <IonIcon icon={add} />
-          </IonFabButton>
-        </IonFab>
       </IonContent>
     </IonPage>
   );

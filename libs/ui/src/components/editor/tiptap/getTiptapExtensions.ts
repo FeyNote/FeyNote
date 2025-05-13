@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react';
-import ParagraphExtension from '@tiptap/extension-paragraph';
+import { ParagraphExtension } from './extensions/paragraph/ParagraphExtension';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
 import HighlightExtension from '@tiptap/extension-highlight';
 import CodeBlock from '@tiptap/extension-code-block';
@@ -54,6 +54,7 @@ import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink
 import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 import { FocusExtension } from './extensions/focus/FocusExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
+import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
 
 type DocArgOptions =
   | {
@@ -75,12 +76,34 @@ export const getTiptapExtensions = (args: {
   getFileUrl: (fileId: string) => string;
   onTocUpdate?: (content: TableOfContentData) => void;
   onRollDice?: (roll: string) => void;
+  /**
+   * These both need to be stable references, as they will not be updated on future renders
+   */
+  onIncomingReferenceCounterMouseOver?: (
+    event: MouseEvent,
+    blockId: string,
+  ) => void;
+  onIncomingReferenceCounterMouseOut?: (event: MouseEvent) => void;
 }) => {
   return [
     DocumentExtension,
-    ParagraphExtension,
+    ParagraphExtension.configure({
+      artifactId: args.artifactId,
+      edgeStore: getEdgeStore(),
+      onIncomingReferenceCounterMouseOver:
+        args.onIncomingReferenceCounterMouseOver,
+      onIncomingReferenceCounterMouseOut:
+        args.onIncomingReferenceCounterMouseOut,
+    }),
+    HeadingExtension.configure({
+      artifactId: args.artifactId,
+      edgeStore: getEdgeStore(),
+      onIncomingReferenceCounterMouseOver:
+        args.onIncomingReferenceCounterMouseOver,
+      onIncomingReferenceCounterMouseOut:
+        args.onIncomingReferenceCounterMouseOut,
+    }),
     BlockGroup,
-    HeadingExtension,
     TextExtension,
     HorizontalRule,
     BlockquoteExtension,

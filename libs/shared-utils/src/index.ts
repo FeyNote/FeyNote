@@ -17,6 +17,7 @@ export * from './lib/tiptap/getIdForJSONContent';
 export * from './lib/tiptap/getJSONContentById';
 export * from './lib/tiptap/getJSONContentDiff';
 export * from './lib/tiptap/getJSONContentMapById';
+export * from './lib/tiptap/getJSONContentParent';
 export * from './lib/tiptap/getReferencesFromJSONContent';
 export * from './lib/tiptap/getTextForJSONContent';
 export * from './lib/tiptap/getTiptapContentFromYjsDoc';

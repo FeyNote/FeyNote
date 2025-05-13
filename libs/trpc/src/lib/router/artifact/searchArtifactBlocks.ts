@@ -5,7 +5,6 @@ import { prisma } from '@feynote/prisma/client';
 import { artifactDetail } from '@feynote/prisma/types';
 import { ArtifactDTO } from '@feynote/global-types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
-import type { BlockIndexDocument } from '@feynote/search';
 
 export const searchArtifactBlocks = authenticatedProcedure
   .input(
@@ -19,11 +18,14 @@ export const searchArtifactBlocks = authenticatedProcedure
       input,
       ctx,
     }): Promise<
-      (BlockIndexDocument & {
+      {
         artifact: ArtifactDTO;
-      })[]
+        blockId: string;
+        blockText: string;
+        highlight?: string;
+      }[]
     > => {
-      const matchedArtifactBlocks = await searchProvider.searchArtifactBlocks(
+      const searchResults = await searchProvider.searchArtifactBlocks(
         ctx.session.userId,
         input.query,
         {
@@ -34,8 +36,8 @@ export const searchArtifactBlocks = authenticatedProcedure
 
       const matchedArtifactIds = [
         ...new Set(
-          matchedArtifactBlocks.map(
-            (artifactBlock) => artifactBlock.artifactId,
+          searchResults.map(
+            (artifactBlock) => artifactBlock.document.artifactId,
           ),
         ),
       ];
@@ -48,24 +50,27 @@ export const searchArtifactBlocks = authenticatedProcedure
         },
         ...artifactDetail,
       });
-
-      const artifactsById = artifacts.reduce<Record<string, ArtifactDTO>>(
-        (artifactsById, artifact) => {
-          artifactsById[artifact.id] = artifactDetailToArtifactDTO(
-            ctx.session.userId,
-            artifact,
-          );
-          return artifactsById;
-        },
-        {},
+      const artifactsById = new Map(
+        artifacts.map((artifact) => [artifact.id, artifact]),
       );
 
-      const results = matchedArtifactBlocks
-        .map((matchedArtifactBlock) => ({
-          ...matchedArtifactBlock,
-          artifact: artifactsById[matchedArtifactBlock.artifactId],
-        }))
-        .filter((matchedArtifactBlock) => !!matchedArtifactBlock.artifact);
+      const results: {
+        artifact: ArtifactDTO;
+        blockId: string;
+        blockText: string;
+        highlight?: string;
+      }[] = [];
+      for (const searchResult of searchResults) {
+        const artifact = artifactsById.get(searchResult.document.artifactId);
+        if (artifact) {
+          results.push({
+            artifact: artifactDetailToArtifactDTO(ctx.session.userId, artifact),
+            blockId: searchResult.document.id,
+            blockText: searchResult.document.text,
+            highlight: searchResult.highlight,
+          });
+        }
+      }
 
       return results;
     },

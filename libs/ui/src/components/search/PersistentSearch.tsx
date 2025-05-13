@@ -40,6 +40,13 @@ const SearchResult = styled(IonItem)<{
     props.$selected && `--background: var(--ion-background-color-step-100);`}
 `;
 
+const ResultWithHighlightsWrapper = styled.p`
+  mark {
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+  }
+`;
+
 /**
  * We limit search results so that performance isn't garbage
  */
@@ -51,14 +58,19 @@ const SEARCH_RESULT_LIMIT = 100;
 const SEARCH_DELAY_MS = 20;
 
 /**
- * Number of characters to display in the result preview
+ * Maximum number of characters to display in the result preview
  */
-const SEARCH_RESULT_PREVIEW_TEXT_LENGTH = 100;
+const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
 
 /**
  * How long to wait before updating the persistent search text in the pane context
  */
 const PANE_PERSIST_SEARCH_TEXT_DELAY_MS = 200;
+
+/**
+ * Maximum number of highlights to display in the result preview
+ */
+const MAX_DISPLAYED_HIGHLIGHT_COUNT = 5;
 
 interface Props {
   initialTerm?: string;
@@ -68,11 +80,27 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { updatePaneProps } = useContext(GlobalPaneContext);
   const { pane, isPaneFocused, navigate } = useContext(PaneContext);
   const [searchText, setSearchText] = useState(initialTerm || '');
-  const [searchResults, setSearchResults] = useState<ArtifactDTO[]>([]);
+  const [searchResults, setSearchResults] = useState<
+    {
+      artifact: ArtifactDTO;
+      blockId?: string;
+      highlights: string[];
+      previewText: string;
+    }[]
+  >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
+
+  const truncateTextWithEllipsis = (text: string) => {
+    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
+    const maxLength =
+      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
+        ? text.length - 1
+        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
+    return text.slice(0, maxLength) + '…';
+  };
 
   // This is so that back functionality works properly, returning us to the current search state is what the user sees once they return to the tab
   const persistSearchTextToPaneState = () => {
@@ -116,14 +144,22 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     );
   };
 
-  const open = (event: MouseEvent | KeyboardEvent, artifactId: string) => {
+  const open = (
+    event: MouseEvent | KeyboardEvent,
+    artifactId: string,
+    blockId: string | undefined,
+  ) => {
     persistSearchTextToPaneState();
 
     const paneTransition =
       event.ctrlKey || event.metaKey
         ? PaneTransition.NewTab
         : PaneTransition.Push;
-    navigate(PaneableComponent.Artifact, { id: artifactId }, paneTransition);
+    navigate(
+      PaneableComponent.Artifact,
+      { id: artifactId, focusBlockId: blockId },
+      paneTransition,
+    );
   };
 
   useEffect(() => {
@@ -143,7 +179,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
 
           navigate(
             PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].id },
+            { id: searchResults[selectedIdx].artifact.id },
             PaneTransition.Push,
           );
         } else {
@@ -172,13 +208,62 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
 
     let cancelled = false;
     const timeout = setTimeout(() => {
-      trpc.artifact.searchArtifacts
-        .query({
+      Promise.all([
+        trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
-        })
-        .then((results) => {
+        }),
+        trpc.artifact.searchArtifactBlocks.query({
+          query: searchText,
+          limit: SEARCH_RESULT_LIMIT,
+        }),
+      ])
+        .then(([titleResults, blockResults]) => {
           if (cancelled) return;
+
+          const results: {
+            artifact: ArtifactDTO;
+            blockId?: string;
+            highlights: string[];
+            previewText: string;
+          }[] = [];
+          const resultsByArtifactId = new Map<string, (typeof results)[0]>();
+
+          // We merge all the results under the same artifact entry in the UI, but we want to preserve as many highlights as we can
+          for (const blockResult of blockResults) {
+            const existingResult = resultsByArtifactId.get(
+              blockResult.artifact.id,
+            );
+            if (existingResult) {
+              if (blockResult.highlight) {
+                existingResult.highlights.push(blockResult.highlight);
+              }
+            } else {
+              const result = {
+                artifact: blockResult.artifact,
+                blockId: blockResult.blockId,
+                highlights: blockResult.highlight
+                  ? [blockResult.highlight]
+                  : [],
+                previewText: blockResult.blockText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(blockResult.artifact.id, result);
+            }
+          }
+          // We only want to display title results if there are no block results for that artifact
+          for (const titleResult of titleResults) {
+            if (!resultsByArtifactId.has(titleResult.artifact.id)) {
+              const result = {
+                artifact: titleResult.artifact,
+                highlights: [],
+                previewText: titleResult.artifact.previewText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(titleResult.artifact.id, result);
+            }
+          }
+
           setSearchResults(results);
         })
         .catch((error) => {
@@ -208,20 +293,40 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
           {searchResults.map((searchResult, idx) => (
             <SearchResult
               lines="none"
-              key={searchResult.id}
+              key={searchResult.artifact.id}
               $selected={selectedIdx === idx}
               onMouseOver={() => setSelectedIdx(idx)}
-              onClick={(event) => open(event, searchResult.id)}
+              onClick={(event) =>
+                open(event, searchResult.artifact.id, searchResult.blockId)
+              }
               button
             >
               <IonLabel>
-                {searchResult.title}
-                <p>
-                  {searchResult.previewText.substring(
-                    0,
-                    SEARCH_RESULT_PREVIEW_TEXT_LENGTH,
-                  ) || t('artifact.title')}
-                </p>
+                {searchResult.artifact.title}
+                {searchResult.highlights
+                  .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
+                  .map((highlight) => (
+                    <ResultWithHighlightsWrapper
+                      dangerouslySetInnerHTML={{
+                        __html: '…' + highlight + '…',
+                      }}
+                    ></ResultWithHighlightsWrapper>
+                  ))}
+                {searchResult.highlights.length >
+                  MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                  <p>
+                    <i>
+                      {t('globalSearch.moreHighlights', {
+                        count:
+                          searchResult.highlights.length -
+                          MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                      })}
+                    </i>
+                  </p>
+                )}
+                {!searchResult.highlights.length && (
+                  <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
+                )}
               </IonLabel>
             </SearchResult>
           ))}

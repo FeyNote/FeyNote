@@ -1,24 +1,17 @@
-import { memo, MutableRefObject, useRef } from 'react';
-import { BubbleMenu, EditorContent } from '@tiptap/react';
+import { memo, MutableRefObject } from 'react';
 import { Editor, JSONContent } from '@tiptap/core';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
-// @ts-expect-error This package does not have any types on it's alpha release (which we want since it's bundle size is much smaller)
-import { DiceRoll } from '@dice-roller/rpg-dice-roller';
 
-import { ArtifactEditorStyles } from './ArtifactEditorStyles';
-import { useArtifactEditor } from './useTiptapEditor';
-import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import { IonItem } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
-import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
-import { useToastContext } from '../../context/toast/ToastContext';
+import { TiptapEditor } from './TiptapEditor';
+import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -52,48 +45,16 @@ type Props = {
   showBottomSpacer?: boolean;
 } & DocArgOptions;
 
+/**
+ * This component, slightly misnamed, renders the tiptap editor + title input.
+ * It does not handle other artifact types.
+ */
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
-  const onRollDiceRef = useRef<(notation: string) => void>(() => {
-    // noop
-  });
+  const { t } = useTranslation();
   const yDoc = props.yDoc || props.yjsProvider.document;
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const titleBodyMerge = yMeta.titleBodyMerge ?? true;
-  const toastCtrl = useToastContext();
-
-  const { t } = useTranslation();
-
-  onRollDiceRef.current = (notation: string) => {
-    // Dice roller does not support kh/kl, only kh1/kl1
-    notation = notation.replaceAll(/kh\b/g, 'kh1').replaceAll(/kl\b/g, 'kl1');
-    // Dice roller does not support "+4 to hit", only 1d20+4
-    notation = notation.replaceAll(/^(\+\d+) to hit$/g, '1d20$1');
-    // Dice roller does not support "+4", only 1d20+4
-    notation = notation.replaceAll(/^(\+\d+)$/g, '1d20$1');
-
-    const diceRoll = new DiceRoll(notation);
-
-    toastCtrl.showToast({
-      title: t('artifactRenderer.diceRoll.title'),
-      body: diceRoll.toString(),
-      showClose: true,
-    });
-  };
-
-  const editor = useArtifactEditor({
-    ...props,
-    onRollDice: (notation: string) => {
-      onRollDiceRef.current(notation);
-    },
-  });
-
-  if (props.setContentRef) {
-    props.setContentRef.current = (content) => {
-      editor?.commands.setContent(content);
-    };
-  }
 
   const setMetaProp = (metaPropName: string, value: string) => {
     yDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
@@ -116,40 +77,8 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
 
   return (
     <div data-print-target={`artifact:${props.artifactId}`}>
-      {!titleBodyMerge && titleInput}
       <ArtifactEditorContainer>
-        <ArtifactEditorStyles data-theme={theme}>
-          {titleBodyMerge && titleInput}
-          <EditorContent editor={editor}></EditorContent>
-          {editor && (
-            <BubbleMenu
-              editor={editor}
-              shouldShow={({ editor, state, from, to }) => {
-                const { doc, selection } = state;
-                const { empty } = selection;
-                const isEmptyTextBlock =
-                  !doc.textBetween(from, to).length &&
-                  selection.$from.parent.type.name === 'paragraph';
-                const isFeynoteImage =
-                  doc.nodeAt(from)?.type.name === 'feynoteImage';
-
-                if (
-                  !editor.isEditable ||
-                  empty ||
-                  isEmptyTextBlock ||
-                  isFeynoteImage
-                ) {
-                  return false;
-                }
-
-                return true;
-              }}
-            >
-              <ArtifactBubbleMenuControls editor={editor} />
-            </BubbleMenu>
-          )}
-          {editor && <TableBubbleMenu editor={editor} />}
-        </ArtifactEditorStyles>
+        <TiptapEditor {...props} theme={theme} prepend={titleInput} />
       </ArtifactEditorContainer>
 
       {props.showBottomSpacer && <BottomSpacer />}

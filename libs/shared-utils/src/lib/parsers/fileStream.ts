@@ -2,6 +2,16 @@ import type { FilePurpose } from '@prisma/client';
 
 const filePurposes = ['artifact'] satisfies FilePurpose[];
 
+export interface DecodedFileStream {
+  id: string;
+  purpose: FilePurpose;
+  artifactId?: string;
+  fileName: string;
+  mimetype: string;
+  fileSize: number;
+  fileContents: ReadableStream<Uint8Array>;
+}
+
 /*
  * Expects input in the form:
  *   1) [2 bytes: uint16] length of id, followed by `id` bytes
@@ -16,15 +26,7 @@ const filePurposes = ['artifact'] satisfies FilePurpose[];
  */
 export async function decodeFileStream(
   input: ReadableStream<Uint8Array>,
-): Promise<{
-  id: string;
-  purpose: FilePurpose;
-  artifactId?: string;
-  fileName: string;
-  mimetype: string;
-  fileSize: number;
-  fileContents: ReadableStream<Uint8Array>;
-}> {
+): Promise<DecodedFileStream> {
   const reader = input.getReader();
   let leftover = new Uint8Array<ArrayBufferLike>(new ArrayBuffer(0));
 

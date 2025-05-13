@@ -175,6 +175,29 @@ export const ArtifactEditorStyles = styled.div`
     }
   }
 
+  .editor-paragraph-container,
+  .editor-heading-container {
+    position: relative;
+  }
+
+  .editor-incoming-edge-counter {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--ion-background-color-step-100);
+    color: var(--ion-text-color-step-100);
+    border-radius: 50%;
+    width: 1rem;
+    height: 1rem;
+    line-height: 1rem;
+    font-size: 0.8rem;
+    display: none;
+    text-align: center;
+
+    cursor: pointer;
+    user-select: none;
+  }
+
   &[data-theme='classic'] {
     ${themeVariables.classic}
 
