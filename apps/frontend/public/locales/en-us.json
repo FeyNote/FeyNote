@@ -217,6 +217,13 @@
   "persistentSearch.title": "Global Search",
 
   "graph.title": "Graph",
+  "graph.settings": "Graph Settings",
+  "graph.settings.help": "These settings are persisted, and apply only to this graph view.",
+  "graph.settings.showOrphans": "Show Orphaned Documents",
+  "graph.settings.showOrphans.help": "Orphaned documents are documents that are not have any references in common with other documents. This can be useful to find documents that are not linked to anything else.",
+  "graph.settings.lockNodeOnDrag": "Lock In Place on Drag",
+  "graph.settings.lockedArtifacts": "Locked Documents",
+  "graph.settings.lockedArtifacts.help": "These documents are locked in place and will not move. You can use this to organize your graph into sections.",
   "graph.nullState.title": "No Documents",
   "graph.nullState.message": "Click the plus button in the bottom right corner to create one!",
 
@@ -252,6 +259,8 @@
   "artifactRenderer.incomingArtifactReferences.help": "The documents listed here reference the document you're viewing somewhere in their content.",
   "artifactRenderer.artifactReferences": "References",
   "artifactRenderer.artifactReferences.help": "The documents listed here are referenced by the document you're viewing somewhere in it's content.",
+  "artifactRenderer.artifactLocalGraph": "Local Graph",
+  "artifactRenderer.artifactLocalGraph.help": "This graph shows the documents that are referenced by this document, and the documents that reference this document. Click on a node to view it.",
   "artifactRenderer.artifactShares": "Shared With",
   "artifactRenderer.artifactShares.help": "This document is shared with any of the individuals listed here",
   "artifactRenderer.sharedByLink": "Shared by link",
