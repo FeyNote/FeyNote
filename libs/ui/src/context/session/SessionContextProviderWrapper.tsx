@@ -10,6 +10,7 @@ import {
 import { useIonModal } from '@ionic/react';
 import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 import { useSetAndPersistSession } from './useSetAndPersistSession';
+import { trpc } from '../../utils/trpc';
 
 interface Props {
   children: ReactNode;
@@ -32,6 +33,14 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
       presentWelcomeModal();
     }
   }, [session]);
+
+  useEffect(() => {
+    if (!session?.token) {
+      return;
+    }
+
+    trpc.user.validateSession.query();
+  }, [session?.token]);
 
   useEffect(() => {
     appIdbStorageManager.getSession().then((session) => {

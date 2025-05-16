@@ -9,6 +9,7 @@ import { getByEmail } from './getByEmail';
 import { getKnownUsers } from './getKnownUsers';
 import { triggerPasswordReset } from './triggerPasswordReset';
 import { passwordReset } from './passwordReset';
+import { validateSession } from './validateSession';
 
 export const userRouter = trpcRouter({
   getByEmail,
@@ -21,4 +22,5 @@ export const userRouter = trpcRouter({
   setPreferences,
   passwordReset,
   triggerPasswordReset,
+  validateSession,
 });
