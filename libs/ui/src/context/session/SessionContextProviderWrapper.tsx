@@ -11,6 +11,7 @@ import { useIonModal } from '@ionic/react';
 import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 import { useSetAndPersistSession } from './useSetAndPersistSession';
 import { trpc } from '../../utils/trpc';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 interface Props {
   children: ReactNode;
@@ -26,6 +27,7 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   });
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
     if (getWelcomeModalPending()) {
@@ -39,7 +41,9 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
       return;
     }
 
-    trpc.user.validateSession.query();
+    trpc.user.validateSession.query().catch((error) => {
+      handleTRPCErrors(error);
+    });
   }, [session?.token]);
 
   useEffect(() => {
