@@ -7,8 +7,8 @@ import { FeynoteMediaExtension } from '../feynoteMedia/FeynoteMediaExtension';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
-    feynoteImage: {
-      setFeynoteImage: (options: {
+    feynoteAudio: {
+      setFeynoteAudio: (options: {
         fileId: string;
         storageKey: string;
         alt?: string;
@@ -19,32 +19,32 @@ declare module '@tiptap/core' {
 }
 
 /**
- * This extension displays images stored on our backend.
+ * This extension displays audio files stored on our backend.
  */
-export const FeynoteImageExtension = FeynoteMediaExtension.extend({
-  name: 'feynoteImage',
+export const FeynoteAudioExtension = FeynoteMediaExtension.extend({
+  name: 'feynoteAudio',
 
   parseHTML() {
     return [
       {
-        tag: 'img[data-file-id]',
+        tag: 'audio[data-file-id]',
       },
       {
-        tag: 'div[data-file-id][data-file-type="image"]',
+        tag: 'div[data-file-id][data-file-type="audio"]',
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
-      'img',
+      'audio',
       mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
     ];
   },
 
   addCommands() {
     return {
-      setFeynoteImage:
+      setFeynoteAudio:
         (options) =>
         ({ commands }) => {
           return commands.insertContent({
@@ -57,7 +57,7 @@ export const FeynoteImageExtension = FeynoteMediaExtension.extend({
 
   addNodeView() {
     return addMediaNodeView({
-      tagName: 'img',
+      tagName: 'audio',
       ...this.options,
     });
   },

@@ -1,10 +1,10 @@
 import { css } from 'styled-components';
 
-export const feynoteImageExtensionStyles = css`
-  .resizable-image-container {
+export const feynoteMediaExtensionStyles = css`
+  .resizable-media-container {
     line-height: 0px;
 
-    .resizable-image-resize-container {
+    .resizable-media-resize-container {
       position: relative;
       display: inline-block;
 
@@ -14,13 +14,13 @@ export const feynoteImageExtensionStyles = css`
         cursor: default;
       }
 
-      .resizable-image-border {
+      .resizable-media-border {
         position: absolute;
         background-color: var(--ion-color-primary);
         cursor: pointer;
       }
 
-      .resizable-image-handle {
+      .resizable-media-handle {
         position: absolute;
         background-color: var(--ion-color-primary);
         height: 10px;
@@ -54,7 +54,7 @@ export const feynoteImageExtensionStyles = css`
     }
 
     &.ProseMirror-selectednode {
-      .resizable-image-resize-container:not(.edit-mode) {
+      .resizable-media-resize-container:not(.edit-mode) {
         &:after {
           content: '';
           position: absolute;

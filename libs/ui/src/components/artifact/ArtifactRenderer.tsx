@@ -159,10 +159,26 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
               if (pos === undefined) {
                 pos = editor.state.selection.anchor;
               }
+
+              let type: string | null = null;
+              if (response.mimetype === 'image/jpeg') {
+                type = 'feynoteImage';
+              } else if (
+                response.mimetype === 'video/mp4' ||
+                response.mimetype === 'video/webm' ||
+                response.mimetype === 'video/mpeg'
+              ) {
+                type = 'feynoteVideo';
+              } else if (response.mimetype === 'audio/mpeg') {
+                type = 'feynoteAudio';
+              } else {
+                type = 'feynoteGenericFile';
+              }
+
               editor
                 .chain()
                 .insertContentAt(pos, {
-                  type: 'feynoteImage',
+                  type,
                   attrs: {
                     title: file.name,
                     alt: file.name,
