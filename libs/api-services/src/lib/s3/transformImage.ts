@@ -18,8 +18,7 @@ export const transformImage = (
     .jpeg({
       quality,
       mozjpeg: true,
-    })
-    .pipe(outputStream);
+    });
 
-  inputStream.pipe(transformer);
+  inputStream.pipe(transformer).pipe(outputStream);
 };

@@ -4,7 +4,7 @@ import { getCapabilitiesForUser } from '../payments/getCapabilitiesForUser';
 export const getFileLimitsForUser = async (userId: string) => {
   const userCapabilities = await getCapabilitiesForUser(userId);
   let maxResolution = 1024;
-  let quality = 65;
+  let quality = 70;
   if (userCapabilities.has(Capability.HighResImages)) {
     maxResolution = 2048;
     quality = 75;
