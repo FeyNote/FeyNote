@@ -239,7 +239,11 @@ export const Dashboard: React.FC = () => {
                 </CardTitleButton>
               </CardTitle>
               {artifacts.length ? (
-                <GraphRenderer artifacts={artifacts} edges={edges} />
+                <GraphRenderer
+                  artifacts={artifacts}
+                  edges={edges}
+                  enableInitialZoom={true}
+                />
               ) : (
                 <CardNullState
                   size="small"
