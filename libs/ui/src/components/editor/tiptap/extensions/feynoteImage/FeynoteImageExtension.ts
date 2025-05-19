@@ -2,7 +2,7 @@
 // and this comment: https://github.com/ueberdosis/tiptap/issues/333#issuecomment-2701758790
 
 import { mergeAttributes } from '@tiptap/core';
-import { addMediaNodeView } from '../feynoteMedia/addMediaNodeView';
+import { addResizeableMediaNodeView } from '../feynoteMedia/addResizeableMediaNodeView';
 import { FeynoteMediaExtension } from '../feynoteMedia/FeynoteMediaExtension';
 
 declare module '@tiptap/core' {
@@ -56,7 +56,7 @@ export const FeynoteImageExtension = FeynoteMediaExtension.extend({
   },
 
   addNodeView() {
-    return addMediaNodeView({
+    return addResizeableMediaNodeView({
       tagName: 'img',
       ...this.options,
     });

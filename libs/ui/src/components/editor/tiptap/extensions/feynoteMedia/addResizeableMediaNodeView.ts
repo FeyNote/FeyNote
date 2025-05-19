@@ -1,15 +1,13 @@
 import type { NodeViewRenderer } from '@tiptap/core';
 
-export const addMediaNodeView = (options: {
-  tagName: 'img' | 'video' | 'audio';
+export const addResizeableMediaNodeView = (options: {
+  tagName: 'img' | 'video';
   minWidthPx: number;
   minHeightPx: number;
   getSrcForFileId: (fileId: string) => string;
 }): NodeViewRenderer => {
-  console.log('addMediaNodeView', options);
   let isLoaded = false;
   return ({ node, editor, getPos, HTMLAttributes }) => {
-    console.log('mer');
     const minWidthPx = options.minWidthPx;
     const minHeightPx = options.minHeightPx;
 
@@ -56,7 +54,7 @@ export const addMediaNodeView = (options: {
     let borders: HTMLDivElement[] = [];
 
     // Toggle editing mode
-    resizeContainer.addEventListener('click', () => {
+    mediaElement.addEventListener('click', () => {
       if (!editing && editor.isEditable) {
         editing = true;
         resizeContainer.classList.add('edit-mode');

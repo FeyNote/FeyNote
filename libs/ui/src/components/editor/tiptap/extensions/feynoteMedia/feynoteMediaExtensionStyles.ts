@@ -55,16 +55,8 @@ export const feynoteMediaExtensionStyles = css`
 
     &.ProseMirror-selectednode {
       .resizable-media-resize-container:not(.edit-mode) {
-        &:after {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          width: 0;
-          border-right: 1px solid var(--ion-text-color);
-          animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
-        }
+        outline: 1px solid var(--ion-color-primary);
+        outline-offset: -1px;
       }
     }
   }

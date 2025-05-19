@@ -19,7 +19,7 @@ export const feynoteGenericFileExtensionStyles = css`
     max-width: min(100%, 400px);
     width: min-content;
 
-    &.has-focus {
+    &.ProseMirror-selectednode {
       outline: 1px solid var(--ion-color-primary);
       outline-offset: -1px;
     }
