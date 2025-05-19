@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { LogseqBlock, LogseqPage } from './LogseqGraph';
+import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
 
 const executeOnBlock = (
   blocks: LogseqBlock[],
@@ -10,12 +11,6 @@ const executeOnBlock = (
     executeOnBlock(block.children, executor);
   }
 };
-
-export interface ArtifactBlockInfo {
-  id: string;
-  artifactId: string;
-  referenceText: string;
-}
 
 export const getLogseqReferenceIdToBlockMap = (
   pages: LogseqPage[],

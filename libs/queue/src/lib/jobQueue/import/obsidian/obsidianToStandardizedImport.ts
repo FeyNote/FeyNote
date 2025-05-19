@@ -6,7 +6,7 @@ import {
   ArtifactType,
 } from '@prisma/client';
 import { readFile } from 'fs/promises';
-import path, { extname, parse } from 'path';
+import path from 'path';
 import { marked } from 'marked';
 import {
   addMissingBlockIds,
@@ -16,15 +16,17 @@ import {
   getTiptapServerExtensions,
 } from '@feynote/shared-utils';
 import { TiptapTransformer } from '@hocuspocus/transformer';
-import { getObsidianReferenceId } from './getObsidianReferenceId';
 import { replaceObsidianReferences } from './replaceObsidianReferences';
-import { replaceObsidianHeadingReferences } from './replaceObsidianHeadingReferences';
-import { replaceObsidianMediaTags } from './replaceObsidianMediaTags';
-import { pushImgTagsToNewLine } from './pushImgTagsToNewLine';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 import { getSafeArtifactId } from '@feynote/api-services';
-import { replaceObsidianParagraphReferences } from './replaceObsidianParagraphReferences';
-import { populateHeadingBlockIds } from './populateHeadingBlockIds';
+import { populateBlockIdToBlockInfoMap } from './populateBlockIdToBlockInfoMap';
+import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
+import { replaceMarkdownMediaLinks } from '../replaceMarkdownMediaLinks';
+import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
+import { addBlockIdsToReferencedBlockIds } from './addBlockIdsToReferencedBlockIds';
+import { addBlockIdsToReferencedHeaders } from './addBlockIdsToReferencedHeaders';
+import { populateHeadersToBlockInfoMap } from './populateHeadersToBlockInfoMap';
+import { replaceObsidianReferencedHeadings } from './replaceObsidianReferencedHeadings';
 
 export const obsidianToStandardizedImport = async (
   userId: string,
@@ -35,101 +37,97 @@ export const obsidianToStandardizedImport = async (
     mediaFilesToUpload: [],
   };
 
-  // Find the path to base level of obsidian vault (what folders need to be navigated to reach the .obsidian folder)
-  const obsidianConfigDirPath = filePaths.find((filePath) =>
-    filePath.includes('.obsidian'),
-  );
-  if (!obsidianConfigDirPath)
-    throw Error('No .obsidian folder found in the zip file');
-  const pathToObsidianVaultDir = path.join(
-    ...obsidianConfigDirPath.split(path.sep).slice(0, -1),
-  );
-
-  const referenceIdToInfoMap = new Map<
-    string,
-    {
-      id: string;
-      blockId?: string;
-    }
-  >();
-
-  // Due to obsidian having two different ways in which heading references can be shown we must preprocess the
-  // block ids to all heading references
+  const pageNameToArtifactIdMap = new Map<string, string>();
+  const baseMediaNameToPath = new Map<string, string>();
+  const referenceIdToBlockInfoMap = new Map<string, ArtifactBlockInfo>();
+  // Must preprocess references to get the correct reference text for artifact block replacements
   for await (const filePath of filePaths) {
-    if (extname(filePath) !== '.md') continue;
+    const basename = path.basename(filePath);
+    if (!(path.extname(filePath) !== '.md' || basename === 'Journaling.md'))
+      continue;
+    if (path.extname(filePath) !== '.md') {
+      baseMediaNameToPath.set(basename, filePath);
+      continue;
+    }
+    const title = path.parse(basename).name;
     const markdown = await readFile(filePath, 'utf-8');
-    const obsidianReferenceId = getObsidianReferenceId(
-      filePath,
-      pathToObsidianVaultDir,
-    );
-    const artifactId =
-      referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
-      (await getSafeArtifactId()).id;
-    referenceIdToInfoMap.set(obsidianReferenceId, {
-      id: artifactId,
-    });
-    populateHeadingBlockIds(
+    const artifactId = (await getSafeArtifactId()).id;
+    pageNameToArtifactIdMap.set(basename, artifactId);
+    populateBlockIdToBlockInfoMap(
       markdown,
-      referenceIdToInfoMap,
-      obsidianReferenceId,
+      referenceIdToBlockInfoMap,
       artifactId,
+      title,
+    );
+    populateHeadersToBlockInfoMap(
+      markdown,
+      referenceIdToBlockInfoMap,
+      artifactId,
+      title,
     );
   }
 
   for await (const filePath of filePaths) {
-    if (extname(filePath) !== '.md') continue;
-    const obsidianReferenceId = getObsidianReferenceId(
-      filePath,
-      pathToObsidianVaultDir,
-    );
-    const artifactId =
-      referenceIdToInfoMap.get(obsidianReferenceId)?.id ??
-      (await getSafeArtifactId()).id;
-    referenceIdToInfoMap.set(obsidianReferenceId, {
-      id: artifactId,
-    });
+    const basename = path.basename(filePath);
+    if (!(path.extname(filePath) !== '.md' || basename === 'Journaling.md'))
+      continue;
+    console.log(`On file: ${basename}`);
+    if (path.extname(filePath) !== '.md') continue;
+    const artifactId = pageNameToArtifactIdMap.get(basename);
+    if (!artifactId) continue;
+    const title = path.parse(basename).name;
+
     let markdown = await readFile(filePath, 'utf-8');
-    markdown = pushImgTagsToNewLine(markdown);
     markdown = await replaceObsidianReferences(
       markdown,
-      referenceIdToInfoMap,
-      artifactId,
-      pathToObsidianVaultDir,
-      importInfo,
-    );
-    markdown = replaceObsidianHeadingReferences(
-      markdown,
-      referenceIdToInfoMap,
-      obsidianReferenceId,
-    );
-    markdown = replaceObsidianParagraphReferences(
-      markdown,
-      artifactId,
-      referenceIdToInfoMap,
-      obsidianReferenceId,
-    );
-    markdown = await replaceObsidianMediaTags(
-      markdown,
       artifactId,
       importInfo,
-      pathToObsidianVaultDir,
+      baseMediaNameToPath,
+      referenceIdToBlockInfoMap,
+      pageNameToArtifactIdMap,
+      title,
+    );
+    markdown = await replaceMarkdownMediaLinks(
+      markdown,
+      importInfo,
+      artifactId,
+      baseMediaNameToPath,
+    );
+    markdown = await replaceMarkdownMediaTags(
+      markdown,
+      importInfo,
+      artifactId,
+      baseMediaNameToPath,
+    );
+    markdown = replaceObsidianReferencedHeadings(
+      markdown,
+      referenceIdToBlockInfoMap,
+      title,
+    );
+    markdown = addBlockIdsToReferencedBlockIds(
+      markdown,
+      referenceIdToBlockInfoMap,
+      title,
+    );
+    markdown = addBlockIdsToReferencedHeaders(
+      markdown,
+      referenceIdToBlockInfoMap,
+      title,
     );
     const html = await marked.parse(markdown);
+    console.log(`HTML:\n\n${html}`);
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);
 
     const text = getTextForJSONContent(tiptap);
-    const title = parse(filePath).name;
-    const fileId = await getSafeArtifactId();
 
     const yDoc = constructYArtifact({
-      id: fileId.id,
+      id: artifactId,
       userId,
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
-      titleBodyMerge: true,
       linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
     });

@@ -1,67 +1,69 @@
-import { getSafeArtifactId, getSafeFileId } from '@feynote/api-services';
-import { randomUUID } from 'crypto';
 import { isImagePath } from '../isImagePath';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
-import { join } from 'path';
+import path from 'path';
+import { FeynoteEditorMediaType } from '@feynote/shared-utils';
+import { isVideoPath } from '../isVideoPath';
+import { isAudioPath } from '../isAudioPath';
+import { performMediaReplacement } from '../performMediaReplacement';
+import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
 
 export const replaceObsidianReferences = async (
-  content: string,
-  docInfoMap: Map<
-    string,
-    {
-      id: string;
-      blockId?: string;
-    }
-  >,
+  markdown: string,
   artifactId: string,
-  pathToObsidianVaultDir: string,
   importInfo: StandardizedImportInfo,
+  baseMediaNameToPath: Map<string, string>,
+  referenceIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
+  pageNameToArtifactIdMap: Map<string, string>,
+  obsidianFileId: string,
 ): Promise<string> => {
-  // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
+  // Returns three elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
   // 0. The full match
-  // 1. The artifact path
-  // 2. The Heading Text or Block Id Including # (Not used)
-  // 3. The Heading Text or Block Id
-  // 4. The |display text (Not used)
-  const referenceRegex = /!?\[\[(.+?)(#([^|]*?))?(\|.*?)?\]\]/g;
-  for (const matchingGroups of content.matchAll(referenceRegex)) {
-    const obsidianArtifactId = matchingGroups[1];
-    if (isImagePath(obsidianArtifactId)) {
-      const fileId = (await getSafeFileId()).id;
-      const path = join('/' + pathToObsidianVaultDir, obsidianArtifactId);
-      importInfo.mediaFilesToUpload.push({
-        id: fileId,
-        associatedArtifactId: artifactId,
-        path,
-      });
+  // 1. The document path
+  // 2. The Heading Text or Block Id Including #
+  // 3. The |display text (Not used)
+  const referenceRegex = /!?\[\[(.*?)(#[^|]*?)?(\|.*?)?\]\]/g;
+  for (const matchingGroups of markdown.matchAll(referenceRegex)) {
+    const documentReference = matchingGroups[1];
+    if (
+      baseMediaNameToPath.has(documentReference) ||
+      documentReference.startsWith('http')
+    ) {
+      // Either a file path or a URL
+      const src =
+        baseMediaNameToPath.get(documentReference) || documentReference;
+      let fileType = FeynoteEditorMediaType.Generic;
+      if (isVideoPath(src)) fileType = FeynoteEditorMediaType.Video;
+      else if (isImagePath(src)) fileType = FeynoteEditorMediaType.Image;
+      else if (isAudioPath(src)) fileType = FeynoteEditorMediaType.Audio;
 
-      const replacementHtml = `<img data-file-id="${fileId}" />`;
-      content = content.replace(matchingGroups[0], replacementHtml);
+      const title = path.basename(src);
+      const alt = matchingGroups[3] || title;
+      markdown = await performMediaReplacement({
+        match: matchingGroups[0],
+        src: src,
+        fileType,
+        importInfo,
+        content: markdown,
+        artifactId,
+        title,
+        alt,
+      });
       continue;
     }
 
-    const artifactInfo = docInfoMap.get(obsidianArtifactId);
-    const refrencedArtifactId =
-      artifactInfo?.id ?? (await getSafeArtifactId()).id;
-    if (!artifactInfo) {
-      docInfoMap.set(obsidianArtifactId, {
-        id: refrencedArtifactId,
-      });
+    // If the document reference does not exist then its a local reference and need to add the local title
+    const blockId = (documentReference || obsidianFileId) + matchingGroups[2];
+    const brokenReferenceId = `00000000-0000-0000-0000-000000000000`;
+    if (blockId) {
+      const blockInfo = referenceIdToBlockInfoMap.get(blockId);
+      const replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockInfo?.id || brokenReferenceId} data-artifact-id="${blockInfo?.artifactId || brokenReferenceId}" data-artifact-reference-text="${blockInfo?.referenceText || documentReference}"></span>`;
+      markdown = markdown.replace(matchingGroups[0], replacementHtml);
+    } else {
+      const referencedArtifactId =
+        pageNameToArtifactIdMap.get(documentReference);
+      const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${referencedArtifactId || brokenReferenceId}" data-artifact-reference-text="${documentReference}"></span>`;
+      markdown = markdown.replace(matchingGroups[0], replacementHtml);
     }
-    const headingReference = matchingGroups[3];
-    let replacementHtml = `<span data-type="artifactReference" data-artifact-id="${refrencedArtifactId}"></span>`;
-    if (headingReference) {
-      const obsidianBlockId = obsidianArtifactId + headingReference;
-      const blockId = docInfoMap.get(obsidianBlockId)?.blockId ?? randomUUID();
-      if (!docInfoMap.has(obsidianBlockId)) {
-        docInfoMap.set(obsidianBlockId, {
-          id: refrencedArtifactId,
-          blockId,
-        });
-      }
-      replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockId} data-artifact-id="${refrencedArtifactId}"></span>`;
-    }
-    content = content.replace(matchingGroups[0], replacementHtml);
   }
-  return content;
+  return markdown;
 };

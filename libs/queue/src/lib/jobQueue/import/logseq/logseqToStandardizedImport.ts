@@ -8,7 +8,6 @@ import {
   addMissingBlockIds,
   ARTIFACT_TIPTAP_BODY_KEY,
   constructYArtifact,
-  FeynoteEditorMediaType,
   getTextForJSONContent,
   getTiptapServerExtensions,
 } from '@feynote/shared-utils';
@@ -17,18 +16,13 @@ import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { basename, extname } from 'path';
 import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 import { generateJSON } from '@tiptap/html';
-import { isImagePath } from '../isImagePath';
 import type { LogseqBlock, LogseqGraph } from './LogseqGraph';
 import { marked } from 'marked';
-import {
-  getLogseqReferenceIdToBlockMap,
-  type ArtifactBlockInfo,
-} from './getLogseqReferenceIdToBlockMap';
+import { getLogseqReferenceIdToBlockMap } from './getLogseqReferenceIdToBlockMap';
 import { getSafeArtifactId } from '@feynote/api-services';
-import { isVideoPath } from '../isVideoPath';
-import { isAudioPath } from '../isAudioPath';
-import { retrieveMediaAttributesFromTag } from '../retrieveMediaAttributesFromTag';
-import { performMediaReplacement } from '../performMediaReplacement';
+import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
+import { replaceMarkdownMediaLinks } from '../replaceMarkdownMediaLinks';
+import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
 
 const convertLogseqTableToMarkdown = (logseqTable: string): string => {
   const lines = logseqTable.split('\n');
@@ -103,81 +97,6 @@ const replaceHighlightedText = (content: string): string => {
   return content;
 };
 
-const replaceLogseqMediaTags = async (
-  content: string,
-  importInfo: StandardizedImportInfo,
-  artifactId: string,
-  baseMediaNameToPath: Map<string, string>,
-): Promise<string> => {
-  // Returns two elements; i.e. <img src="file.png" />
-  // 0. The full match
-  // 1. The html tag
-  const mediaTagRegex = /<(img|video|audio).*?\/>/g;
-  for (const matchingGroups of content.matchAll(mediaTagRegex)) {
-    const match = matchingGroups[0];
-    const tagAttributes = retrieveMediaAttributesFromTag(match);
-    if (!tagAttributes) continue;
-
-    const src = tagAttributes.src.startsWith('http')
-      ? tagAttributes.src
-      : baseMediaNameToPath.get(basename(tagAttributes.src));
-    if (!src) continue;
-    content = await performMediaReplacement({
-      match: matchingGroups[0],
-      src,
-      fileType: matchingGroups[1] as FeynoteEditorMediaType,
-      importInfo,
-      content,
-      artifactId,
-      title: tagAttributes.title,
-      alt: tagAttributes.alt,
-    });
-  }
-  return content;
-};
-
-const replaceLogseqMediaLinks = async (
-  content: string,
-  importInfo: StandardizedImportInfo,
-  artifactId: string,
-  baseMediaNameToPath: Map<string, string>,
-): Promise<string> => {
-  /**
-   * Returns four matching elements
-   * 0. The full match in format either ![Title](path.png){} ({} is optional)
-   * 1. The title in [Title]
-   * 2. The src url in (path.png)
-   * 3. The alt text in {alt}
-   */
-  const mediaLinkRegex = /!\[([^[]*?)\]\((.*?)\)({.*?})?/g;
-  for (const matchingGroups of content.matchAll(mediaLinkRegex)) {
-    const title = matchingGroups[1];
-    const srcMatch = matchingGroups[2];
-    const alt = matchingGroups[3] || title;
-    if (!srcMatch) continue;
-    let fileType = FeynoteEditorMediaType.Generic;
-    if (isVideoPath(srcMatch)) fileType = FeynoteEditorMediaType.Video;
-    else if (isImagePath(srcMatch)) fileType = FeynoteEditorMediaType.Image;
-    else if (isAudioPath(srcMatch)) fileType = FeynoteEditorMediaType.Audio;
-
-    const src = srcMatch.startsWith('http')
-      ? srcMatch
-      : baseMediaNameToPath.get(basename(srcMatch));
-    if (!src) continue;
-    content = await performMediaReplacement({
-      match: matchingGroups[0],
-      src,
-      fileType,
-      importInfo,
-      content,
-      artifactId,
-      title,
-      alt,
-    });
-  }
-  return content;
-};
-
 const replaceLogseqBlockReferences = (
   content: string,
   blockIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
@@ -246,13 +165,13 @@ const convertMarkdownToHtml = async (
   markdown = replaceLogseqPageReferences(markdown, pageNameToIdMap);
   markdown = replaceLogseqBlockReferences(markdown, blockIdToBlockInfoMap);
   markdown = appendLogseqBlockProperties(markdown, block);
-  markdown = await replaceLogseqMediaLinks(
+  markdown = await replaceMarkdownMediaLinks(
     markdown,
     importInfo,
     artifactId,
     baseMediaNameToPath,
   );
-  markdown = await replaceLogseqMediaTags(
+  markdown = await replaceMarkdownMediaTags(
     markdown,
     importInfo,
     artifactId,
@@ -367,7 +286,6 @@ const handleLogseqGraph = async (
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
-      titleBodyMerge: true,
       linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
     });
