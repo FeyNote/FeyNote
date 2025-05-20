@@ -117,6 +117,7 @@
     "tslib": "^2.8.1",
     "typesense": "^2.0.3",
     "uint8array-extras": "^1.4.0",
+    "uuid": "^11.1.0",
     "workbox-routing": "^7.3.0",
     "workbox-strategies": "^7.3.0",
     "workbox-sw": "^7.3.0",

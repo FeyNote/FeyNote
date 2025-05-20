@@ -33,6 +33,7 @@ export class PreferencesService {
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
 
     [PreferenceNames.GraphShowOrphans]: true,
+    [PreferenceNames.GraphLockNodeOnDrag]: true,
   };
   initialLoading: Promise<void> | undefined;
 
