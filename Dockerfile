@@ -1,9 +1,10 @@
-FROM node:22.11-alpine
+FROM node:22.15-alpine
 
 WORKDIR /app
 
 # dev watch script
 RUN apk add --no-cache inotify-tools
+RUN npm install -g tsx
 
 COPY .npmrc .npmrc
 COPY package.json package.json

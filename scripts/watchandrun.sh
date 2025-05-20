@@ -16,5 +16,6 @@ while true; do
   PID=$!
   inotifywait -e modify -e move -e create -e delete -e attrib -r $@
   kill $PID
+  sleep 1
 done
 

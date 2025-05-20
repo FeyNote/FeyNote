@@ -23,12 +23,17 @@ export class PreferencesService {
     [PreferenceNames.LeftPaneShowArtifactTree]: true,
     [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
+
     [PreferenceNames.RightPaneStartOpen]: true,
+
     [PreferenceNames.Language]: null,
     [PreferenceNames.FontSize]: SupportedFontSize.X1_0,
     [PreferenceNames.Theme]: AppTheme.Default,
     [PreferenceNames.CollaborationColor]: getRandomColor(),
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
+
+    [PreferenceNames.GraphShowOrphans]: true,
+    [PreferenceNames.GraphLockNodeOnDrag]: true,
   };
   initialLoading: Promise<void> | undefined;
 

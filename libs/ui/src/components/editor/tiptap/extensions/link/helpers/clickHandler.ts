@@ -31,6 +31,7 @@ export default function clickHandler(options: ClickHandlerOptions): Plugin {
 
         // Find the closest link element to the target element
         const link = nodeTarget?.closest('a');
+        if (link?.getAttribute('data-disable-hyperlink')) return;
 
         // Extract attributes from the state
         const attrs = getAttributes(view.state, options.type.name);

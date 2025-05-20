@@ -1,10 +1,10 @@
 import { css } from 'styled-components';
 
-export const feynoteImageExtensionStyles = css`
-  .resizable-image-container {
+export const feynoteMediaExtensionStyles = css`
+  .resizable-media-container {
     line-height: 0px;
 
-    .resizable-image-resize-container {
+    .resizable-media-resize-container {
       position: relative;
       display: inline-block;
 
@@ -14,13 +14,13 @@ export const feynoteImageExtensionStyles = css`
         cursor: default;
       }
 
-      .resizable-image-border {
+      .resizable-media-border {
         position: absolute;
         background-color: var(--ion-color-primary);
         cursor: pointer;
       }
 
-      .resizable-image-handle {
+      .resizable-media-handle {
         position: absolute;
         background-color: var(--ion-color-primary);
         height: 10px;
@@ -54,17 +54,9 @@ export const feynoteImageExtensionStyles = css`
     }
 
     &.ProseMirror-selectednode {
-      .resizable-image-resize-container:not(.edit-mode) {
-        &:after {
-          content: '';
-          position: absolute;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          width: 0;
-          border-right: 1px solid var(--ion-text-color);
-          animation: ProseMirror-cursor-blink 1.1s steps(2, start) infinite;
-        }
+      .resizable-media-resize-container:not(.edit-mode) {
+        outline: 1px solid var(--ion-color-primary);
+        outline-offset: -1px;
       }
     }
   }

@@ -92,5 +92,8 @@
     }
   },
   "useInferencePlugins": false,
-  "nxCloudId": "67b0da692185ed22a4099cd8"
+  "nxCloudId": "67b0da692185ed22a4099cd8",
+  "tui": {
+    "enabled": false
+  }
 }

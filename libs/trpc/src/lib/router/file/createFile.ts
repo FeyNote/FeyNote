@@ -43,14 +43,32 @@ export const createFile = authenticatedProcedure
       }
     }
 
-    let uploadResult;
     try {
-      uploadResult = await transformAndUploadFileToS3ForUser({
-        userId: ctx.session.userId,
-        file: Readable.fromWeb(input.fileContents as NodeWebReadableStream),
-        purpose: input.purpose,
-        mimetype: input.mimetype,
+      const { uploadResult, transformedMimetype } =
+        await transformAndUploadFileToS3ForUser({
+          userId: ctx.session.userId,
+          file: Readable.fromWeb(input.fileContents as NodeWebReadableStream),
+          purpose: input.purpose,
+          mimetype: input.mimetype,
+        });
+
+      const file = await prisma.file.create({
+        data: {
+          id,
+          userId: ctx.session.userId,
+          artifactId: input.artifactId,
+          name: input.fileName,
+          mimetype: transformedMimetype,
+          storageKey: uploadResult.key,
+          purpose: input.purpose,
+          metadata: {
+            uploadResult, // We store this here in case we ever need fields from this in the future
+          },
+        },
+        ...fileSummary,
       });
+
+      return file;
     } catch (e) {
       if (e instanceof FileSizeLimitError) {
         throw new TRPCError({
@@ -61,22 +79,4 @@ export const createFile = authenticatedProcedure
 
       throw e;
     }
-
-    const file = await prisma.file.create({
-      data: {
-        id,
-        userId: ctx.session.userId,
-        artifactId: input.artifactId,
-        name: input.fileName,
-        mimetype: input.mimetype,
-        storageKey: uploadResult.key,
-        purpose: input.purpose,
-        metadata: {
-          uploadResult, // We store this here in case we ever need fields from this in the future
-        },
-      },
-      ...fileSummary,
-    });
-
-    return file;
   });

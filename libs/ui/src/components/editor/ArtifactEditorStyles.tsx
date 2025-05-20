@@ -8,8 +8,10 @@ import { spellSheetExtensionStyles } from './tiptap/extensions/statsheet/spellSh
 import { ttrpgNoteExtensionStyles } from './tiptap/extensions/ttrpgNote/ttrpgNoteExtensionStyles';
 import { themeVariables } from './themeVariables';
 import { hyperlinkExtensionStyles } from './tiptap/extensions/link/hyperlinkExtensionStyles';
-import { feynoteImageExtensionStyles } from './tiptap/extensions/feynoteImage/feynoteImageExtensionStyles';
 import { diceDecorationExtensionStyles } from './tiptap/extensions/diceDecoration/diceDecorationExtensionStyles';
+import { feynoteMediaExtensionStyles } from './tiptap/extensions/feynoteMedia/feynoteMediaExtensionStyles';
+import { feynoteGenericFileExtensionStyles } from './tiptap/extensions/feynoteGenericFile/feynoteGenericFileExtensionStyles';
+import { feynoteAudioExtensionStyles } from './tiptap/extensions/feynoteAudio/feynoteAudioExtensionStyles';
 
 export const ArtifactEditorStyles = styled.div`
   ${themeVariables.default}
@@ -223,6 +225,8 @@ export const ArtifactEditorStyles = styled.div`
   ${spellSheetExtensionStyles}
   ${ttrpgNoteExtensionStyles}
   ${hyperlinkExtensionStyles}
-  ${feynoteImageExtensionStyles}
+  ${feynoteMediaExtensionStyles}
+  ${feynoteGenericFileExtensionStyles}
+  ${feynoteAudioExtensionStyles}
   ${diceDecorationExtensionStyles}
 `;
