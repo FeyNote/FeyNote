@@ -13,15 +13,16 @@ export const replaceObsidianReferences = async (
   importInfo: StandardizedImportInfo,
   baseMediaNameToPath: Map<string, string>,
   referenceIdToBlockInfoMap: Map<string, ArtifactBlockInfo>,
-  pageNameToArtifactIdMap: Map<string, string>,
+  titleToArtifactIdMap: Map<string, string>,
   obsidianFileId: string,
 ): Promise<string> => {
-  // Returns three elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
+  // Returns four elements (the match and three matching groups) for each artifact references; i.e. ![[Doc Path#Header Id|Display Text]]
   // 0. The full match
   // 1. The document path
-  // 2. The Heading Text or Block Id Including #
-  // 3. The |display text (Not used)
-  const referenceRegex = /!?\[\[(.*?)(#[^|]*?)?(\|.*?)?\]\]/g;
+  // 2. The Heading Text i.e. #Heading One
+  // 3. The Block Id i.e. ^a8eac6
+  // 4. The |display text (Not used)
+  const referenceRegex = /!?\[\[(.*?)(#.*?)?(\^.*?)?(\|.*?)?\]\]/g;
   for (const matchingGroups of markdown.matchAll(referenceRegex)) {
     const documentReference = matchingGroups[1];
     if (
@@ -37,7 +38,7 @@ export const replaceObsidianReferences = async (
       else if (isAudioPath(src)) fileType = FeynoteEditorMediaType.Audio;
 
       const title = path.basename(src);
-      const alt = matchingGroups[3] || title;
+      const alt = matchingGroups[4] || title;
       markdown = await performMediaReplacement({
         match: matchingGroups[0],
         src: src,
@@ -52,15 +53,19 @@ export const replaceObsidianReferences = async (
     }
 
     // If the document reference does not exist then its a local reference and need to add the local title
-    const blockId = (documentReference || obsidianFileId) + matchingGroups[2];
+    const fileId = documentReference || obsidianFileId;
+    const headerId = fileId + matchingGroups[2];
+    const blockId = fileId + matchingGroups[3];
+    const blockInfo =
+      referenceIdToBlockInfoMap.get(blockId) ||
+      referenceIdToBlockInfoMap.get(headerId);
     const brokenReferenceId = `00000000-0000-0000-0000-000000000000`;
-    if (blockId) {
+    if (blockInfo) {
       const blockInfo = referenceIdToBlockInfoMap.get(blockId);
       const replacementHtml = `<span data-type="artifactReference" data-artifact-block-id=${blockInfo?.id || brokenReferenceId} data-artifact-id="${blockInfo?.artifactId || brokenReferenceId}" data-artifact-reference-text="${blockInfo?.referenceText || documentReference}"></span>`;
       markdown = markdown.replace(matchingGroups[0], replacementHtml);
     } else {
-      const referencedArtifactId =
-        pageNameToArtifactIdMap.get(documentReference);
+      const referencedArtifactId = titleToArtifactIdMap.get(documentReference);
       const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${referencedArtifactId || brokenReferenceId}" data-artifact-reference-text="${documentReference}"></span>`;
       markdown = markdown.replace(matchingGroups[0], replacementHtml);
     }

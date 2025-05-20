@@ -37,14 +37,12 @@ export const obsidianToStandardizedImport = async (
     mediaFilesToUpload: [],
   };
 
-  const pageNameToArtifactIdMap = new Map<string, string>();
+  const titleToArtifactIdMap = new Map<string, string>();
   const baseMediaNameToPath = new Map<string, string>();
   const referenceIdToBlockInfoMap = new Map<string, ArtifactBlockInfo>();
   // Must preprocess references to get the correct reference text for artifact block replacements
   for await (const filePath of filePaths) {
     const basename = path.basename(filePath);
-    if (!(path.extname(filePath) !== '.md' || basename === 'Journaling.md'))
-      continue;
     if (path.extname(filePath) !== '.md') {
       baseMediaNameToPath.set(basename, filePath);
       continue;
@@ -52,7 +50,7 @@ export const obsidianToStandardizedImport = async (
     const title = path.parse(basename).name;
     const markdown = await readFile(filePath, 'utf-8');
     const artifactId = (await getSafeArtifactId()).id;
-    pageNameToArtifactIdMap.set(basename, artifactId);
+    titleToArtifactIdMap.set(title, artifactId);
     populateBlockIdToBlockInfoMap(
       markdown,
       referenceIdToBlockInfoMap,
@@ -69,13 +67,10 @@ export const obsidianToStandardizedImport = async (
 
   for await (const filePath of filePaths) {
     const basename = path.basename(filePath);
-    if (!(path.extname(filePath) !== '.md' || basename === 'Journaling.md'))
-      continue;
-    console.log(`On file: ${basename}`);
     if (path.extname(filePath) !== '.md') continue;
-    const artifactId = pageNameToArtifactIdMap.get(basename);
-    if (!artifactId) continue;
     const title = path.parse(basename).name;
+    const artifactId = titleToArtifactIdMap.get(title);
+    if (!artifactId) continue;
 
     let markdown = await readFile(filePath, 'utf-8');
     markdown = await replaceObsidianReferences(
@@ -84,7 +79,7 @@ export const obsidianToStandardizedImport = async (
       importInfo,
       baseMediaNameToPath,
       referenceIdToBlockInfoMap,
-      pageNameToArtifactIdMap,
+      titleToArtifactIdMap,
       title,
     );
     markdown = await replaceMarkdownMediaLinks(
@@ -115,7 +110,6 @@ export const obsidianToStandardizedImport = async (
       title,
     );
     const html = await marked.parse(markdown);
-    console.log(`HTML:\n\n${html}`);
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
     addMissingBlockIds(tiptap);

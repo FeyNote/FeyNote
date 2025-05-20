@@ -49,7 +49,7 @@ export const uploadStandardizedMedia = async (
         const purpose = FilePurpose.artifact;
         const mimetype = mime.lookup(ext);
 
-        const uploadResult = await transformAndUploadFileToS3ForUser({
+        const { uploadResult } = await transformAndUploadFileToS3ForUser({
           userId,
           file,
           purpose,

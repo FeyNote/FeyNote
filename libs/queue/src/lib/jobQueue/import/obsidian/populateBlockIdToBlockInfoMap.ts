@@ -18,8 +18,8 @@ export const populateBlockIdToBlockInfoMap = (
     const referenceText = matchingGroups[1]
       .trim()
       .replaceAll(/!?\[\[.*?\]\]/g, '@...');
-    const externalReferenceId = `${obsidianFileId}${blockId}`;
-    referenceIdToArtifactBlockInfo.set(externalReferenceId, {
+    const referenceId = `${obsidianFileId}${blockId}`;
+    referenceIdToArtifactBlockInfo.set(referenceId, {
       id: randomUUID(),
       artifactId,
       referenceText: referenceText,
