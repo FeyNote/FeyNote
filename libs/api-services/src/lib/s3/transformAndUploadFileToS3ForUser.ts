@@ -30,6 +30,7 @@ export async function transformAndUploadFileToS3ForUser(args: {
     args.userId,
   );
 
+  let transformedMimetype = args.mimetype;
   const filePipeline = new PassThrough();
   if (IMAGE_FILE_TYPES.includes(args.mimetype)) {
     transformImage(
@@ -40,11 +41,15 @@ export async function transformAndUploadFileToS3ForUser(args: {
       quality,
       'inside',
     );
+    transformedMimetype = 'image/jpeg';
   } else {
     args.file.pipe(filePipeline);
   }
 
-  return new Promise<ReturnType<typeof uploadFileToS3>>((resolve, reject) => {
+  return new Promise<{
+    uploadResult: Awaited<ReturnType<typeof uploadFileToS3>>;
+    transformedMimetype: string;
+  }>((resolve, reject) => {
     let totalBytes = 0;
     const limitedFilePipeline = new PassThrough();
     const sizeLimitError = new FileSizeLimitError();
@@ -87,6 +92,17 @@ export async function transformAndUploadFileToS3ForUser(args: {
 
     filePipeline.pipe(limiter);
 
-    resolve(uploadFileToS3(limitedFilePipeline, args.mimetype, args.purpose));
+    const uploadP = uploadFileToS3(
+      limitedFilePipeline,
+      transformedMimetype,
+      args.purpose,
+    );
+
+    resolve(
+      uploadP.then((uploadResult) => ({
+        uploadResult,
+        transformedMimetype,
+      })),
+    );
   });
 }

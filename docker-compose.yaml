@@ -7,7 +7,7 @@ x-common-env-vars: &common-env-vars
   WORKER_REDIS_PORT: '6379'
   HOCUSPOCUS_REDIS_HOST: hocuspocus-valkey
   HOCUSPOCUS_REDIS_PORT: '6379'
-  WEBSOCKET_REDIS_HOST: socketio-valkey
+  WEBSOCKET_REDIS_HOST: websocket-valkey
   WEBSOCKET_REDIS_PORT: '6379'
   STRIPE_API_KEY: sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
   NODE_ENV: development
@@ -76,11 +76,13 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    ports:
+      - '9001:9229'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    command: ./scripts/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/hocuspocus/tsconfig.json --enable-source-maps ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/hocuspocus/tsconfig.json
       <<: *common-env-vars
@@ -96,11 +98,13 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    ports:
+      - '9000:9229'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    command: ./scripts/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/backend/tsconfig.json --enable-source-maps ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/backend/tsconfig.json
       <<: *common-env-vars
@@ -115,11 +119,13 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    ports:
+      - '9002:9229'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    command: ./scripts/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/queue-worker/tsconfig.json --enable-source-maps ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/queue-worker/tsconfig.json
       <<: *common-env-vars
@@ -134,11 +140,13 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    ports:
+      - '9003:9229'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
       - ./prisma:/app/prisma
-    command: ./scripts/watchandrun.sh 'node --enable-source-maps --import @swc-node/register/esm-register ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    command: ./scripts/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/websocket/tsconfig.json --enable-source-maps ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
     environment:
       SWC_NODE_PROJECT: ./apps/websocket/tsconfig.json
       <<: *common-env-vars

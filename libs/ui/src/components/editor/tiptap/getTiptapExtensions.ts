@@ -45,6 +45,7 @@ import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
+import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
 import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
@@ -52,6 +53,8 @@ import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 import { FocusExtension } from './extensions/focus/FocusExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
 import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
+import { FeynoteGenericFileExtension } from './extensions/feynoteGenericFile/FeynoteGenericFileExtension';
+import { FeynoteAudioExtension } from './extensions/feynoteAudio/FeynoteAudioExtension';
 
 type DocArgOptions =
   | {
@@ -172,12 +175,7 @@ export const getTiptapExtensions = (args: {
     ...(args.editable && args.handleFileUpload
       ? [
           FileHandlerExtension.configure({
-            allowedMimeTypes: [
-              'image/png',
-              'image/jpeg',
-              'image/gif',
-              'image/webp',
-            ],
+            allowedMimeTypes: undefined,
             onDrop: args.handleFileUpload,
             onPaste: (currentEditor, files, htmlContent) => {
               args.handleFileUpload?.(currentEditor, files);
@@ -200,6 +198,21 @@ export const getTiptapExtensions = (args: {
         ]
       : []),
     FeynoteImageExtension.configure({
+      getSrcForFileId: (fileId) => {
+        return args.getFileUrl(fileId);
+      },
+    }),
+    FeynoteVideoExtension.configure({
+      getSrcForFileId: (fileId) => {
+        return args.getFileUrl(fileId);
+      },
+    }),
+    FeynoteAudioExtension.configure({
+      getSrcForFileId: (fileId) => {
+        return args.getFileUrl(fileId);
+      },
+    }),
+    FeynoteGenericFileExtension.configure({
       getSrcForFileId: (fileId) => {
         return args.getFileUrl(fileId);
       },

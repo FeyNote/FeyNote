@@ -34,6 +34,12 @@ import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingRef
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 import { ArtifactTableOfContents } from './ArtifactTableOfContents';
+import { GraphRenderer } from '../../graph/GraphRenderer';
+import styled from 'styled-components';
+
+const GraphContainer = styled.div`
+  height: 200px;
+`;
 
 interface Props {
   artifactId: string;
@@ -66,6 +72,39 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { incomingEdges, outgoingEdges } = useEdgesForArtifactId(
     props.artifactId,
   );
+  const edges = useMemo(
+    () => [...incomingEdges, ...outgoingEdges],
+    [incomingEdges, outgoingEdges],
+  );
+
+  const graphArtifacts = useMemo(() => {
+    return edges.reduce(
+      (acc, el) => {
+        acc[el.artifactId] = {
+          id: el.artifactId,
+          title: el.artifactTitle,
+        };
+        if (el.targetArtifactTitle !== null) {
+          acc[el.targetArtifactId] = {
+            id: el.targetArtifactId,
+            title: el.targetArtifactTitle,
+          };
+        }
+        return acc;
+      },
+      {} as { [key: string]: { id: string; title: string } },
+    );
+  }, [edges]);
+  const graphPositionMap = useMemo(() => {
+    if (!artifactMeta.id) return;
+
+    const map = new Map<string, { x: number; y: number }>();
+    map.set(artifactMeta.id, {
+      x: 0.01, // React force graph zero makes the element disappear
+      y: 0.01,
+    });
+    return map;
+  }, [artifactMeta.id]);
 
   const [knownUsers, setKnownUsers] = useState<
     {
@@ -280,6 +319,26 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           {outgoingEdgesByArtifactId.map(([artifactId, edges]) => (
             <OutgoingReferencesToArtifact key={artifactId} edges={edges} />
           ))}
+        </IonCard>
+      )}
+      {!!edges.length && (
+        <IonCard>
+          <IonListHeader>
+            <IonIcon icon={link} size="small" />
+            &nbsp;&nbsp;
+            {t('artifactRenderer.artifactLocalGraph')}
+            <InfoButton
+              message={t('artifactRenderer.artifactLocalGraph.help')}
+            />
+          </IonListHeader>
+          <GraphContainer>
+            <GraphRenderer
+              artifacts={Object.values(graphArtifacts)}
+              artifactPositions={graphPositionMap}
+              edges={edges}
+              enableInitialZoom={true}
+            />
+          </GraphContainer>
         </IonCard>
       )}
     </>
