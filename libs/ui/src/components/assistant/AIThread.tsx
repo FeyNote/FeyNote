@@ -18,6 +18,7 @@ import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
+import { PaneContext } from '../../context/pane/PaneContext';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -54,6 +55,7 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { navigate } = useContext(PaneContext);
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useProgressBar();
@@ -192,6 +194,7 @@ export const AIThread: React.FC<Props> = (props) => {
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
             setTitle={setTitle}
+            navigate={navigate}
           />
         }
       />
