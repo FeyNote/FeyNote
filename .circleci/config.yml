@@ -33,7 +33,7 @@ jobs:
           name: lint, lint-locales, typecheck, test, build
           command: |
             export ENABLE_BUNDLE_ANALYZER=true
-            npx nx run-many --targets=lint,lint-locales,typecheck,test,build --parallel=2
+            npx nx run-many --targets=lint,lint-locales,typecheck,test,build --parallel=1
       - store_artifacts:
           path: ./dist/apps/frontend/stats.html
           destination: frontend-bundle-stats.html
