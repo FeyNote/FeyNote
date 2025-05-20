@@ -82,7 +82,7 @@
     "astro": "^5.5.6",
     "axios": "^1.9.0",
     "bullmq": "^5.52.2",
-    "commander": "^13.1.0",
+    "commander": "^14.0.0",
     "cors": "^2.8.5",
     "dedent": "^1.6.0",
     "dompurify": "^3.2.5",
