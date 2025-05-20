@@ -25,6 +25,8 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.Theme]: z.nativeEnum(AppTheme),
       [PreferenceNames.CollaborationColor]: z.string().length(7),
       [PreferenceNames.PreferencesSync]: z.nativeEnum(PreferencesSync),
+      [PreferenceNames.GraphShowOrphans]: z.boolean(),
+      [PreferenceNames.GraphLockNodeOnDrag]: z.boolean(),
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) satisfies z.ZodSchema<AppPreferences, any, any>,
