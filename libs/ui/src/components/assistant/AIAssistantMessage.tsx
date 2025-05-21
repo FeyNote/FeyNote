@@ -30,13 +30,15 @@ export const AIAssistantMessage = ({
           <AIToolInvocation key={i} toolInvocation={part.toolInvocation} />
         );
       } else if (part.type === 'text') {
-        <AIMessagePartText
-          key={i}
-          part={part}
-          retryMessage={retryMessage}
-          disableRetry={disableRetry}
-          messageId={message.id}
-        />;
+        return (
+          <AIMessagePartText
+            key={i}
+            part={part}
+            retryMessage={retryMessage}
+            disableRetry={disableRetry}
+            messageId={message.id}
+          />
+        );
       }
     })
   );
