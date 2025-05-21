@@ -1,7 +1,7 @@
 import { ToolName } from '@feynote/shared-utils';
 import type { ToolInvocation } from 'ai';
 
-export const isToolInvocationReadyToDipslay = (
+export const isDisplayableInvocation = (
   invocation: ToolInvocation,
 ): boolean => {
   return (

@@ -9,7 +9,7 @@ import {
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { Request, Response } from 'express';
-import { convertToCoreMessages, StreamData, streamToResponse } from 'ai';
+import { convertToCoreMessages } from 'ai';
 import { ToolName } from '@feynote/shared-utils';
 
 export async function createMessage(req: Request, res: Response) {
@@ -40,30 +40,13 @@ export async function createMessage(req: Request, res: Response) {
     systemMessage.ttrpgAssistant,
     ...requestMessages,
   ]);
-  const stream = await generateAssistantStreamText(
-    messages,
-    AIModel.GPT4_MINI,
-    {
-      [ToolName.Generate5eMonster]: Display5eMonsterTool,
-      [ToolName.Generate5eObject]: Display5eObjectTool,
-      [ToolName.ScrapeUrl]: DisplayUrlTool,
-    },
-  );
 
-  const data = new StreamData();
-  streamToResponse(
-    stream.toAIStream({
-      onFinal() {
-        data.close();
-      },
-    }),
-    res,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        'Transfer-Encoding': 'chunked',
-      },
-    },
-    data,
-  );
+  const stream = generateAssistantStreamText(messages, AIModel.GPT4_MINI, {
+    [ToolName.Generate5eMonster]: Display5eMonsterTool,
+    [ToolName.Generate5eObject]: Display5eObjectTool,
+    [ToolName.ScrapeUrl]: DisplayUrlTool,
+  });
+
+  res.setHeader('Transfer-Encoding', 'chunked');
+  stream.pipeDataStreamToResponse(res);
 }
