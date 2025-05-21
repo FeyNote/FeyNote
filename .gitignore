@@ -52,3 +52,5 @@ vite.config.*.timestamp*
 vitest.config.*.timestamp*
 # Sentry Config File
 .env.sentry-build-plugin
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
