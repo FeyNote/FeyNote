@@ -73,7 +73,7 @@ export const AIThread: React.FC<Props> = (props) => {
       body: {
         threadId: props.id,
       },
-      maxToolRoundtrips: 5,
+      maxSteps: 1,
       onFinish: async (message, options) => {
         if (
           options.finishReason === 'stop' ||

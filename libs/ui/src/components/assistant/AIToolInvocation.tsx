@@ -1,6 +1,5 @@
 import { ToolInvocation } from 'ai';
 import { IonSpinner } from '@ionic/react';
-import { useMemo } from 'react';
 import { getEditorContentsFromToolInvocation } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
 
@@ -9,9 +8,8 @@ interface Props {
 }
 
 export const AIToolInvocation = (props: Props) => {
-  const toolInvocationContents = useMemo(
-    () => getEditorContentsFromToolInvocation(props.toolInvocation),
-    [props.toolInvocation],
+  const toolInvocationContents = getEditorContentsFromToolInvocation(
+    props.toolInvocation,
   );
   if (!toolInvocationContents.length) return <IonSpinner name="dots" />;
 
