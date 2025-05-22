@@ -41,4 +41,8 @@ socket.on(EventName.ArtifactUpdated, (data) => {
   eventManager.broadcast(EventName.ArtifactUpdated, data);
 });
 
+socket.on(EventName.ThreadUpdated, (data) => {
+  eventManager.broadcast(EventName.ThreadUpdated, data);
+});
+
 export const websocketClient = socket;
