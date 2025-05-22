@@ -11,4 +11,7 @@ export type WebsocketMessageJSON = {
       deletedAt: boolean;
     };
   };
+  [WebsocketMessageEvent.ThreadUpdated]: {
+    threadId: string;
+  };
 };
