@@ -12,6 +12,7 @@ import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 import { useSetAndPersistSession } from './useSetAndPersistSession';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { websocketClient } from '../events/websocketClient';
 
 interface Props {
   children: ReactNode;
@@ -56,6 +57,9 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
     await _setAndPersistSession(newSession);
     setSession(newSession);
+
+    websocketClient.disconnect();
+    websocketClient.connect();
   };
 
   const value = useMemo(
