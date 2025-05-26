@@ -96,7 +96,7 @@
     "ioredis": "^5.6.1",
     "minisearch": "^7.1.2",
     "multer": "^2.0.0",
-    "radix-ui": "^1.4.1",
+    "radix-ui": "^1.4.2",
     "react": "19.1.0",
     "react-complex-tree": "^2.6.0",
     "react-dom": "19.1.0",
