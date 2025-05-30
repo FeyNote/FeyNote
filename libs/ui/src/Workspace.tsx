@@ -57,6 +57,10 @@ const DockContainer = styled.div`
     --color-6: var(--ion-background-color-step-600);
   }
 
+  .flexlayout__splitter {
+    z-index: 1;
+  }
+
   .flexlayout__tabset_tabbar_outer_top {
     background: var(--ion-card-background, #ffffff);
   }
