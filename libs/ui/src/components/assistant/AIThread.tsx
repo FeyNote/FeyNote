@@ -15,7 +15,7 @@ import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
 import { PaneContext } from '../../context/pane/PaneContext';
@@ -61,7 +61,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const { navigate } = useContext(PaneContext);
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({

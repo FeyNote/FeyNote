@@ -6,11 +6,16 @@ import { useContext } from 'react';
 import { SessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
 import * as Sentry from '@sentry/react';
+import { isAxiosError } from 'axios';
 
 const openAlertTracker = {
   isOpen: false,
 };
 
+/**
+ * Presents a user-facing message when capturing an error in hook-style.
+ * This can also handle Axios errors, though we don't use Axios much.
+ */
 export const useHandleTRPCErrors = () => {
   const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
@@ -28,6 +33,9 @@ export const useHandleTRPCErrors = () => {
     if (error instanceof TRPCClientError) {
       errorCode =
         (error as TRPCClientError<AppRouter>).data?.httpStatus || errorCode;
+    }
+    if (isAxiosError(error) && error.response) {
+      errorCode = error.response.status;
     }
     const handler = handlerMap?.[errorCode];
     if (typeof handler === 'string') {
