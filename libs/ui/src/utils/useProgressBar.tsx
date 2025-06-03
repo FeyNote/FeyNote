@@ -1,12 +1,16 @@
-import { IonProgressBar } from '@ionic/react';
 import { useEffect, useReducer } from 'react';
 import styled from 'styled-components';
+import { ProgressBar } from '../components/info/ProgressBar';
 
-const ProgressBarPlaceholder = styled.div`
-  height: 4px;
+const ProgressBarPlaceholder = styled.div<{
+  $barStyle: 'thick' | 'thin';
+}>`
+  height: ${(props) => (props.$barStyle === 'thick' ? '4px' : '2px')};
 `;
 
-export const useProgressBar = () => {
+export const useIndeterminateProgressBar = (opts?: {
+  barStyle?: 'thin' | 'thick';
+}) => {
   const [progress, updateProgress] = useReducer(
     (
       progress: number,
@@ -23,7 +27,7 @@ export const useProgressBar = () => {
       }
 
       if (action === 'complete' && progress !== 0) {
-        progress = 100;
+        progress = 1;
       }
 
       if (action === 'reset') {
@@ -35,10 +39,17 @@ export const useProgressBar = () => {
     0,
   );
 
-  const ProgressBar = progress ? (
-    <IonProgressBar value={progress}></IonProgressBar>
+  console.log(progress);
+
+  const _ProgressBar = progress ? (
+    <ProgressBar
+      barStyle={opts?.barStyle || 'thin'}
+      progress={progress}
+    ></ProgressBar>
   ) : (
-    <ProgressBarPlaceholder></ProgressBarPlaceholder>
+    <ProgressBarPlaceholder
+      $barStyle={opts?.barStyle || 'thin'}
+    ></ProgressBarPlaceholder>
   );
 
   useEffect(() => {
@@ -59,7 +70,7 @@ export const useProgressBar = () => {
     updateProgress('complete');
     setTimeout(() => {
       updateProgress('reset');
-    }, 200);
+    }, 250);
   };
 
   const startProgressBar = (autoTimeout = 5000) => {
@@ -78,7 +89,7 @@ export const useProgressBar = () => {
   };
 
   return {
-    ProgressBar,
+    ProgressBar: _ProgressBar,
     startProgressBar,
   };
 };

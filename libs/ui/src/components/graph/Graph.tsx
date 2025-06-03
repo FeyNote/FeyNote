@@ -8,7 +8,7 @@ import { useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
 import { Edge, getEdgeId, PreferenceNames } from '@feynote/shared-utils';
 import { collaborationManager } from '../editor/collaborationManager';
@@ -33,7 +33,7 @@ export const Graph: React.FC = () => {
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { session } = useContext(SessionContext);
   const { t } = useTranslation();
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const [initialLoadCompleted, setInitialLoadCompleted] = useState(false);
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
   const { handleTRPCErrors } = useHandleTRPCErrors();

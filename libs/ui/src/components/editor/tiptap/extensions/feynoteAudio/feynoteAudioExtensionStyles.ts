@@ -3,16 +3,29 @@ import { css } from 'styled-components';
 export const feynoteAudioExtensionStyles = css`
   .feynote-audio-container {
     display: grid;
-    width: min(100%, 500px);
-    grid-template-columns: 1fr auto;
+    height: 34px;
+    overflow: hidden;
+    width: 350px;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    justify-items: center;
 
     border: 1px solid var(--ion-background-color-step-200);
     border-radius: 5px;
 
-    .download-icon svg {
-      width: 1.5rem;
-      height: 1.5rem;
-      fill: var(--ion-color-primary);
+    .feynote-audio {
+      height: 30px;
+      width: 320px;
+    }
+
+    .download-icon {
+      display: flex;
+      align-items: center;
+
+      svg {
+        fill: var(--ion-color-primary);
+        height: 1rem;
+      }
     }
 
     &.ProseMirror-selectednode {

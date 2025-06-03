@@ -15,6 +15,7 @@ import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
+import { ProgressBar } from '../info/ProgressBar';
 
 const FileUploadOverlay = styled.div`
   position: absolute;
@@ -31,25 +32,16 @@ const FileUploadOverlay = styled.div`
 
 const FileUploadOverlayContent = styled.div`
   color: white;
-  display: flex;
+  padding: 10px;
+  background: var(--ion-card-background);
+  border-radius: 4px;
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.6);
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 300px;
   align-items: center;
+  justify-items: center;
   gap: 8px;
-`;
-
-const Spinner = styled.div`
-  border: 3px solid rgba(255, 255, 255, 0.8);
-  border-top-color: transparent;
-  border-left-color: transparent;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
 `;
 
 interface Props {
@@ -68,6 +60,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [collabReady, setCollabReady] = useState(false);
   const [editorReady, setEditorReady] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [fileUploadProgress, setFileUploadProgress] = useState(0);
   const { session } = useContext(SessionContext);
   const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
@@ -128,8 +121,9 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         {isUploadingFile && (
           <FileUploadOverlay>
             <FileUploadOverlayContent>
-              <Spinner />
               {t('artifactRenderer.uploadingFile')}
+
+              <ProgressBar progress={fileUploadProgress} />
             </FileUploadOverlayContent>
           </FileUploadOverlay>
         )}
@@ -149,12 +143,16 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         onTocUpdate={props.onTocUpdate}
         handleFileUpload={async (editor, files, pos) => {
           setIsUploadingFile(true);
+          setFileUploadProgress(0);
           for (const file of files) {
             try {
               const response = await uploadFileToApi({
                 file,
                 purpose: 'artifact',
                 artifactId: props.artifactId,
+                onProgress: (progress) => {
+                  setFileUploadProgress(progress);
+                },
               });
               if (pos === undefined) {
                 pos = editor.state.selection.anchor;
@@ -173,6 +171,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
                 type = 'feynoteAudio';
               } else {
                 type = 'feynoteGenericFile';
+              }
+
+              if (!file.name || !response.id || !response.storageKey) {
+                throw new Error('File incomplete/API response issue');
               }
 
               editor
@@ -232,10 +234,14 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         onTitleChange={props.onTitleChange}
         handleFileUpload={async (file) => {
           setIsUploadingFile(true);
+          setFileUploadProgress(0);
           const response = await uploadFileToApi({
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,
+            onProgress: (progress) => {
+              setFileUploadProgress(progress);
+            },
           })
             .catch((e) => {
               handleTRPCErrors(e, {

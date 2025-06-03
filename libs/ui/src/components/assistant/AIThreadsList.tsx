@@ -7,13 +7,13 @@ import { chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
 import { ThreadDTO } from '@feynote/global-types';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();
   const [threads, setThreads] = useState<ThreadDTO[]>([]);
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const getUserThreads = () => {
