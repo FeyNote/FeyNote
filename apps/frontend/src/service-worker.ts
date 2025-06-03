@@ -44,10 +44,8 @@ import {
   getManifestDb,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
-import {
-  decodeFileStream,
-  readableStreamToUint8Array,
-} from '../../../libs/shared-utils/src/lib/parsers/fileStream';
+import { FileStreamDecoder } from '../../../libs/shared-utils/src/lib/parsers/stream/file/FileStreamDecoder';
+import { readableStreamToUint8Array } from '../../../libs/shared-utils/src/lib/parsers/readableStreamToUint8Array';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
@@ -406,7 +404,7 @@ registerRoute(
       // We need a second instance of the cloned request so we can store it in the bgSyncQueue
       const clonedRequest2 = clonedRequest.clone();
       const blob = await clonedRequest.blob();
-      const input = await decodeFileStream(blob.stream());
+      const input = await new FileStreamDecoder(blob.stream()).decode();
       const fileContentsUint8 = await readableStreamToUint8Array(
         input.fileContents,
       );
