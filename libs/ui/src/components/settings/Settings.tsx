@@ -197,16 +197,16 @@ export const Settings: React.FC = () => {
         <IonCard>
           <IonList>
             <IonListHeader>
-              <IonIcon icon={tv} size="small" />
+              <IonIcon icon={person} size="small" />
               &nbsp;&nbsp;
-              {t('settings.interface')}
+              {t('settings.account')}
             </IonListHeader>
             <IonItem
               lines="none"
               button
               onClick={() => {
                 navigate(
-                  PaneableComponent.JobDashboard,
+                  PaneableComponent.Import,
                   {},
                   PaneTransition.Push,
                 );
@@ -214,8 +214,58 @@ export const Settings: React.FC = () => {
               target="_blank"
               detail={true}
             >
-              {t('settings.importExport')}
+              {t('settings.import')}
             </IonItem>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(
+                  PaneableComponent.Export,
+                  {},
+                  PaneTransition.Push,
+                );
+              }}
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.export')}
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonLabel>
+                {t('settings.email')}
+                <p>
+                  {t('settings.email.current')} {session.email}
+                </p>
+              </IonLabel>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonLabel>{t('settings.password')}</IonLabel>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={
+                  getPreference(PreferenceNames.PreferencesSync) ===
+                  PreferencesSync.Enabled
+                }
+                onIonChange={(event) =>
+                  togglePreferencesSync(event.detail.checked)
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.preferencesSync')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+          </IonList>
+        </IonCard>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={tv} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.interface')}
+            </IonListHeader>
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
@@ -385,41 +435,6 @@ export const Settings: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
-            </IonItem>
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={person} size="small" />
-              &nbsp;&nbsp;
-              {t('settings.account')}
-            </IonListHeader>
-            <IonItem lines="none" button>
-              <IonLabel>
-                {t('settings.email')}
-                <p>
-                  {t('settings.email.current')} {session.email}
-                </p>
-              </IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonLabel>{t('settings.password')}</IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={
-                  getPreference(PreferenceNames.PreferencesSync) ===
-                  PreferencesSync.Enabled
-                }
-                onIonChange={(event) =>
-                  togglePreferencesSync(event.detail.checked)
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.preferencesSync')}
-                </IonLabel>
-              </IonToggle>
             </IonItem>
           </IonList>
         </IonCard>

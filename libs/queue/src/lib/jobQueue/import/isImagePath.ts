@@ -6,7 +6,6 @@ export const isImagePath = (filePath: string): boolean => {
     ext === '.png' ||
     ext === '.jpg' ||
     ext === '.jpeg' ||
-    ext === '.gif' ||
     ext === '.svg'
   );
 };

@@ -1,8 +1,4 @@
 import {
-  ExportJobType,
-  type ArtifactReferenceSummary,
-} from '@feynote/prisma/types';
-import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getMetaFromYArtifact,
   getTiptapContentFromYjsDoc,
@@ -10,7 +6,9 @@ import {
 } from '@feynote/shared-utils';
 import { generateHTML } from '@tiptap/html';
 import { applyUpdate, Doc } from 'yjs';
-import { turndown } from './turndownService';
+import { htmlToMarkdown } from '@feynote/api-services';
+import type { ArtifactWithReferences } from './artifactReferenceSummary';
+import { ExportFormat } from '@feynote/prisma/types';
 
 export interface ArtifactExport {
   title: string;
@@ -18,27 +16,27 @@ export interface ArtifactExport {
 }
 
 export const transformArtifactsToArtifactExports = (
-  artifactSummaries: ArtifactReferenceSummary[],
-  type: ExportJobType,
+  artifactsWithReferences: ArtifactWithReferences[],
+  type: ExportFormat,
   userFileToS3Map: Map<string, string>,
 ): ArtifactExport[] => {
-  const artifactExports = artifactSummaries.map((artifactSummary) => {
+  const artifactExports = artifactsWithReferences.map((artifactSummary) => {
     const yDoc = new Doc();
     applyUpdate(yDoc, artifactSummary.yBin);
     const tiptap = getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY);
 
     let title = getMetaFromYArtifact(yDoc).title;
-    title += type === ExportJobType.Markdown ? '.md' : '.json';
+    title += (type === ExportFormat.Markdown ? '.md' : '.json');
 
     switch (type) {
-      case ExportJobType.Markdown: {
+      case ExportFormat.Markdown: {
         const extensions = getTiptapServerExtensions({ userFileToS3Map });
         const html = generateHTML(tiptap, extensions);
         let markdown = `${artifactSummary.id}\n`;
-        markdown += turndown(html);
+        markdown += htmlToMarkdown(html);
         return { title, content: markdown };
       }
-      case ExportJobType.Json: {
+      case ExportFormat.Json: {
         const content = JSON.stringify(tiptap);
         return { title, content };
       }

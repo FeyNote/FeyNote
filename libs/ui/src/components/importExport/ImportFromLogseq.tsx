@@ -1,4 +1,4 @@
-import { ImportJobType } from '@feynote/prisma/types';
+import { ImportFormat } from '@feynote/prisma/types';
 import { ImportFromFile } from './ImportFromFile';
 import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
@@ -30,13 +30,13 @@ export const ImportFromLogseq: React.FC = () => {
     <IonPage>
       <PaneNav title={t('importFromLogseq.title')} />
       <IonContent className="ion-padding">
-        <ImportFromFile type={ImportJobType.Logseq} />
+        <ImportFromFile format={ImportFormat.Logseq} />
         <SectionBreak />
         <h1>Instruction Guide</h1>
         <p>{t('importFromLogseq.paragraph.start')}</p>
         <p>{t('importFromLogseq.paragraph.step.one')}</p>
         <SquareImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/Logseq_Ellipsis_Menu.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/logseq-ellipsis-menu-20250527.png"
           alt="Cursor hovering the ellipsis button in the top right of your logseq application"
         />
         <p>
@@ -46,12 +46,12 @@ export const ImportFromLogseq: React.FC = () => {
           </Emphasis>
         </p>
         <RectangularImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/Export_Graph_Btn.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/export-graph-button-20250527.png"
           alt='Cursor hovering "Export Graph" option in the ellipsis dropdown'
         />
         <p>{t('importFromLogseq.paragraph.step.three')}</p>
         <SquareImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/ExportAsJsonBtn.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/export-as-json-button-20250527.png"
           alt='Cursor hovering "Export as Json" option in the logseq popover'
         />
         <p>
@@ -61,7 +61,7 @@ export const ImportFromLogseq: React.FC = () => {
           </Emphasis>
         </p>
         <RectangularImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/OpnInDirectoryBtn.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/open-in-directory-button-20250527.png"
           alt='Cursor hovering "Open in directory" option in the ellipsis dropdown'
         />
         <p>
@@ -72,7 +72,7 @@ export const ImportFromLogseq: React.FC = () => {
           {t('importFromLogseq.paragraph.step.five.two')}
         </p>
         <SquareImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/LogseqFileExplorerBtn.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/logseq-file-explorer-button-20250527.png"
           alt="Cursor hovering over the Logseq path in their system file explorer"
         />
         <p>
@@ -83,12 +83,12 @@ export const ImportFromLogseq: React.FC = () => {
           {t('importFromLogseq.paragraph.step.six.two')}
         </p>
         <SquareImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/AssetsFldr.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/assets-folder-20250527.png"
           alt="Cursor copying the assets folder in their Logseq directory"
         />
         <p>{t('importFromLogseq.paragraph.step.seven')}</p>
         <SquareImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Logseq/AssetsAndGraphToZip.png"
+          src="https://static.feynote.com/screenshots/import-instructions/logseq/asserts-and-graph-to-zip-20250527.png"
           alt="Cursor copying the assets folder in their Logseq directory"
         />
         <p>{t('importFromLogseq.paragraph.end')}</p>

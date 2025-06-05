@@ -17,11 +17,8 @@ export const writeStandardizedImport = async (
         yBin: true,
       },
     });
-    await tx.file.createManyAndReturn({
+    await tx.file.createMany({
       data: images,
-      select: {
-        id: true,
-      },
     });
 
     return { createdArtifacts };

@@ -118,13 +118,14 @@
   "settings.account": "Account Settings",
   "settings.email": "Account Email",
   "settings.email.current": "Currently signed in as",
+  "settings.import": "Import Document Data",
+  "settings.export": "Export Document Data",
   "settings.password": "Account Password",
   "settings.preferencesSync": "Sync Preferences Between Devices",
   "settings.preferencesSync.header": "Sync Preferences",
   "settings.preferencesSync.message": "You must select whether you want to override the synced settings in the cloud with the local settings on this device, or override the settings on this device with the settings from the cloud.",
   "settings.preferencesSync.local": "Keep Local Settings",
   "settings.preferencesSync.remote": "Keep Cloud Settings",
-  "settings.importExport": "Import/Export Document Data",
   "settings.version": "Application Version: {{version}}",
 
   "contribute.title": "Contribute",
@@ -197,20 +198,24 @@
   "welcome.dashboard.description": "The dashboard is your home base for all of your content.",
   "welcome.ai.title": "Generate/Import Content",
   "welcome.ai.description": "The assistant can help you generate content or import content from any URL.",
-
   "welcome.footer": "You can always access this guide by clicking the welcome guide button on the settings page (in the left sidemenu)",
 
-  "importExport.title": "Import/Export Documents",
-  "importExport.table.columns.status.failed": "Failed",
-  "importExport.table.title": "Import/Export Jobs",
-  "importExport.table.columns.type": "Type",
-  "importExport.table.columns.subtype": "Subtype",
-  "importExport.table.columns.status": "Status",
-  "importExport.table.columns.createdAt": "Created At",
-  "importExport.table.columns.status.notStarted": "Not Started",
-  "importExport.table.columns.status.inProgress": "In-Progress",
-  "importExport.table.columns.status.success": "Success",
-  "importExport.table.columns.status.failed": "Failed",
+  "import.title": "Import Documents",
+
+  "importJobList.title": "Import Jobs",
+  "importJobList.format.logseq": "Logseq",
+  "importJobList.format.obsidian": "Obsidian",
+  "importJobList.format.unknown": "Unknown Format",
+  "importJobList.error.unknown": "I'm sorry an unknown error has occurred, please try your upload again. If your problem persists please contact support.",
+  "importJobList.showMore": "Show More",
+
+
+  "export.title": "Import Documents",
+
+  "exportJobList.jobsList.type.json": "Json",
+  "exportJobList.jobsList.type.markdwon": "Markdown",
+  "exportJobList.format.unknown": "Unknown Format",
+  "exportJobList.error.unknown": "I'm sorry an unknown error has occurred, please try your upload again. If your problem persists please contact support.",
 
   "importFromLogseq.title": "Import from Logseq",
   "importFromLogseq.instructions": "Please select a zipped JSON export of your graph alongside your logseq assets directory if you wish to preserve images. (Note: Support for org mode is in-progress, and only documents of markdown format will be imported)",
@@ -242,6 +247,7 @@
   "importFromObsidian.paragraph.end": "That's it! Your graph is now zipped up and ready to upload!",
 
   "import.file.header": "File Selection",
+  "import.file.browse": "Browse",
   "import.file.error.type": "Invalid file type selected. File must be of type(s);",
   "import.file.error.size": "File size limit exceeded. File must have a size of under;",
 
@@ -623,6 +629,5 @@
   "generic.delete": "Delete",
   "generic.warning": "Warning",
   "generic.upload": "Upload",
-  "generic.browse": "Browse",
   "generic.submit": "Submit"
 }

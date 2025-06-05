@@ -2,12 +2,13 @@ import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { JobStatus, JobType } from '@prisma/client';
-import { ExportJobType } from '@feynote/prisma/types';
+import { ExportFormat } from '@feynote/prisma/types';
+import { enqueueJob } from '@feynote/queue';
 
 export const createExportJob = authenticatedProcedure
   .input(
     z.object({
-      type: z.nativeEnum(ExportJobType),
+      format: z.nativeEnum(ExportFormat),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -19,9 +20,14 @@ export const createExportJob = authenticatedProcedure
         status: JobStatus.NotStarted,
         type: JobType.Export,
         meta: {
-          exportType: input.type,
+          exportFormat: input.format,
         },
       },
     });
-    return exportJob.id;
+
+    enqueueJob({
+      triggeredByUserId: ctx.session.userId,
+      jobId: exportJob.id,
+    });
+    return exportJob;
   });

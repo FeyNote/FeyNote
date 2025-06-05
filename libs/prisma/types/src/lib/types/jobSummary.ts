@@ -1,4 +1,4 @@
-import { Prisma, type JobType } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export const jobSummary = Prisma.validator<Prisma.JobFindFirstArgs>()({
   select: {
@@ -10,42 +10,30 @@ export const jobSummary = Prisma.validator<Prisma.JobFindFirstArgs>()({
   },
 });
 
-export enum ImportJobType {
-  Obsidian = 'obsidian',
-  Logseq = 'logseq',
+export enum JobErrorCode {
+  UnknownError = 'unknown_error',
 }
 
-export enum ExportJobType {
+export enum ExportFormat {
   Markdown = 'markdown',
   Json = 'json',
 }
 
-export interface JobMeta {
-  exportType?: ExportJobType;
+export enum ImportFormat {
+  Obsidian = 'obsidian',
+  Logseq = 'logseq',
 }
 
-export type ImportJob = Omit<
+export type JobSummary = Omit<
   Prisma.JobGetPayload<typeof jobSummary>,
-  'meta' | 'type'
+  'meta'
 > & {
   meta: {
-    importType: ImportJobType;
-    title: string;
+    importFormat?: ImportFormat;
+    exportFormat?: ExportFormat;
+    error?: JobErrorCode;
   };
-  type: typeof JobType.Import;
 };
-
-export type ExportJob = Omit<
-  Prisma.JobGetPayload<typeof jobSummary>,
-  'meta' | 'type'
-> & {
-  meta: {
-    exportType: ExportJobType;
-  };
-  type: typeof JobType.Export;
-};
-
-export type JobSummary = ImportJob | ExportJob;
 
 export const prismaJobSummaryToJobSummary = (
   _jobSummary: Prisma.JobGetPayload<typeof jobSummary>,

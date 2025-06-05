@@ -1,5 +1,5 @@
 import { rm } from 'fs/promises';
-import { downloadFileFromS3 } from './downloadFileFromS3';
+import { getFileFromS3 } from './getFileFromS3';
 import { extractFilesFromZip } from './extractFilesFromZip';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
 import { writeStandardizedImport } from './writeStandardizedImport';
@@ -9,7 +9,7 @@ export const importFromZip = async (
   userId: string,
   processor: (filePaths: string[]) => Promise<StandardizedImportInfo>,
 ) => {
-  const zipDest = await downloadFileFromS3(storageKey);
+  const zipDest = await getFileFromS3(storageKey);
   const { filePaths, extractDest } = await extractFilesFromZip(zipDest);
   if (!filePaths) return;
 

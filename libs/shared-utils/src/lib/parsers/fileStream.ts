@@ -1,6 +1,6 @@
 import type { FilePurpose } from '@prisma/client';
 
-const filePurposes = ['artifact'] satisfies FilePurpose[];
+const filePurposes = ['artifact', 'job'] satisfies FilePurpose[];
 
 export interface DecodedFileStream {
   id: string;

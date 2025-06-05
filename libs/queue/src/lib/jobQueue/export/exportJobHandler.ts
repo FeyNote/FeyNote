@@ -1,6 +1,4 @@
-import { type ExportJob } from '@feynote/prisma/types';
 import { transformArtifactsToArtifactExports } from './transformArtifactsToExportFormat';
-import { getUserArtifacts } from './getUserArtifacts';
 import ZipStream from 'zip-stream';
 import {
   getSignedFileUrlsForUser,
@@ -9,10 +7,12 @@ import {
 import { FilePurpose } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import { PassThrough } from 'stream';
+import { artifactWithReferences } from './artifactReferenceSummary';
+import type { JobSummary } from '@feynote/prisma/types';
 
-export const exportJobHandler = async (job: ExportJob, userId: string) => {
-  const jobType = job.meta.exportType;
-  if (!jobType) {
+export const exportJobHandler = async (job: JobSummary, userId: string) => {
+  const jobFormat = job.meta.exportFormat;
+  if (!jobFormat) {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
@@ -38,22 +38,24 @@ export const exportJobHandler = async (job: ExportJob, userId: string) => {
     let hasMore = true;
     let offset = 0;
     do {
-      const artifacts = await getUserArtifacts({
-        userId,
-        offset,
-        batchSize,
+
+      const artifactsWithReferences = await prisma.artifact.findMany({
+        where: { userId, deletedAt: null },
+        ...artifactWithReferences,
+        take: batchSize,
+        skip: offset,
       });
 
-      if (artifacts.length < batchSize) {
+      if (artifactsWithReferences.length < batchSize) {
         hasMore = false;
       }
-      if (artifacts.length === 0) {
+      if (artifactsWithReferences.length === 0) {
         continue;
       }
 
       const artifactExports = transformArtifactsToArtifactExports(
-        artifacts,
-        jobType,
+        artifactsWithReferences,
+        jobFormat,
         userFileToS3Map,
       );
 

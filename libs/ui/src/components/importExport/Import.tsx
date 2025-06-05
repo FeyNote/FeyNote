@@ -1,42 +1,34 @@
-import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
+import { IonButton, IonContent, IonIcon, IonItem, IonList, IonPage } from '@ionic/react';
+import { arrowDown } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
-import { JobsTable } from './JobsTable';
+import { ImportJobList } from './ImportJobList';
 import { useContext, useEffect, useState } from 'react';
 import { useProgressBar } from '../../utils/useProgressBar';
 import { trpc } from '../../utils/trpc';
-import { type ExportJob, type ImportJob } from '@feynote/prisma/types';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
-import { JobType } from '@prisma/client';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import type { JobSummary } from '@feynote/prisma/types';
+import { JobType } from '@prisma/client';
 
-export const JobDashboard: React.FC = () => {
+export const Import: React.FC = () => {
   const { t } = useTranslation();
-  const [jobs, setJobs] = useState<(ImportJob | ExportJob)[]>([]);
+  const [jobs, setJobs] = useState<(JobSummary)[]>([]);
+  const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const { startProgressBar, ProgressBar } = useProgressBar();
   const { navigate } = useContext(PaneContext);
 
   useEffect(() => {
-    fetchJobs();
+    getMoreImportJobs();
     const jobCompletionHandler = async (
       _: EventName,
-      data: EventData[EventName.JobCompleted],
+      __: EventData[EventName.JobCompleted],
     ) => {
-      const importExportJobs = await trpc.job.getImportExportJobs.query();
-      setJobs(importExportJobs);
-      const eventJob = importExportJobs.find((job) => job.id === data.jobId);
-      if (!eventJob) return;
-      if (eventJob.type === JobType.Export) {
-        const url = await trpc.file.getFileUrlByJobId.query({
-          jobId: eventJob.id,
-        });
-        if (!url) return;
-        window.open(url, '_blank');
-      }
+      await refreshJobs()
     };
 
     eventManager.addEventListener(EventName.JobCompleted, jobCompletionHandler);
@@ -48,19 +40,38 @@ export const JobDashboard: React.FC = () => {
     };
   }, []);
 
-  const fetchJobs = async () => {
+  const refreshJobs = async () => {
     const progress = startProgressBar();
-    const importExportJobs = await trpc.job.getImportExportJobs.query();
-    setJobs(importExportJobs);
+    const importDto = await trpc.job.getJobs.query({
+      limit: jobs.length,
+    });
+    setJobs(importDto.jobs);
+    setHasMoreJobs(importDto.totalCount <= importDto.jobs.length);
+    progress.dismiss();
+  };
+
+  const getMoreImportJobs = async () => {
+    const progress = startProgressBar();
+    const importjobsDTO = await trpc.job.getJobs.query({
+      offset: jobs.length,
+      limit: 5,
+      type: JobType.Import,
+    });
+    const totalJobs = [...jobs, ...importjobsDTO.jobs];
+    setJobs(totalJobs);
+    setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
     progress.dismiss();
   };
 
   return (
     <IonPage>
-      <PaneNav title={t('importExport.title')} />
+      <PaneNav title={t('import.title')} />
       <IonContent className="ion-padding">
         {ProgressBar}
-        {!!jobs.length && <JobsTable jobs={jobs} />}
+        {!!jobs.length && (
+          <ImportJobList hasMoreJobs={hasMoreJobs} jobs={jobs} getMoreJobs={getMoreImportJobs} />
+        )}
+        <br/>
         <IonList>
           <IonItem
             lines="none"

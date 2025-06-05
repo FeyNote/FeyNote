@@ -1,28 +1,24 @@
 import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
-import { FilePurpose, JobStatus, JobType } from '@prisma/client';
+import { JobStatus, JobType } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
-import {
-  generateS3Key,
-  getSignedUrlForFilePurpose,
-} from '@feynote/api-services';
-import { ImportJobType } from '@feynote/prisma/types';
+import { ImportFormat } from '@feynote/prisma/types';
+import { enqueueJob } from '@feynote/queue';
 
-const TIME_LIMIT_OF_JOBS = 5; //In minutes
-const NUMBER_OF_JOBS_PER_TIME_LIMIT = 100;
-const TTL_S3_PRESIGNED_URL = 86400; // 24 hours in sec
+const TIME_LIMIT_OF_JOBS = 5; // In minutes
+const NUMBER_OF_JOBS_PER_TIME_LIMIT = 5;
 
 export const createImportJob = authenticatedProcedure
   .input(
     z.object({
-      name: z.string(),
-      mimetype: z.string(),
-      type: z.nativeEnum(ImportJobType),
+      format: z.nativeEnum(ImportFormat),
+      fileId: z.string(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
     const userId = ctx.session.userId;
+    // Get the most recent jobs within the time limit
     const mostRecentJobs = await prisma.job.findMany({
       select: {
         createdAt: true,
@@ -30,61 +26,63 @@ export const createImportJob = authenticatedProcedure
       where: {
         userId,
         type: JobType.Import,
+        createdAt: {
+          gte: new Date(Date.now() - TIME_LIMIT_OF_JOBS * 60 * 1000),
+        },
       },
       orderBy: {
         createdAt: 'asc',
       },
-      take: NUMBER_OF_JOBS_PER_TIME_LIMIT,
     });
-    // Ensure number of jobs created doesn't surpass allowable limits within a given timeframe
+    // Check if the number of jobs created has surpassed allowable limits
     if (
       mostRecentJobs.length &&
       mostRecentJobs.length >= NUMBER_OF_JOBS_PER_TIME_LIMIT
     ) {
-      const lastJobToCheck = mostRecentJobs[NUMBER_OF_JOBS_PER_TIME_LIMIT - 1];
-      const timelimit = new Date();
-      timelimit.setMinutes(timelimit.getMinutes() - TIME_LIMIT_OF_JOBS);
-      if (lastJobToCheck.createdAt > timelimit) {
-        throw new TRPCError({
-          code: 'TOO_MANY_REQUESTS',
-        });
-      }
+      throw new TRPCError({
+        code: 'TOO_MANY_REQUESTS',
+      });
     }
 
-    const storageKey = generateS3Key();
-    const purpose = FilePurpose.job;
-    const s3SignedURL = await getSignedUrlForFilePurpose({
-      key: storageKey,
-      operation: 'putObject',
-      purpose,
-      expiresInSeconds: TTL_S3_PRESIGNED_URL,
+    const file = await prisma.file.findUnique({
+      where: {
+        id: input.fileId,
+        userId: ctx.session.userId,
+      },
     });
 
-    const { importJobId } = await prisma.$transaction(async (tx) => {
+    if (!file) {
+      throw new TRPCError({
+        message: 'File with the provided id does not exist or is not accessible to the user',
+        code: 'NOT_FOUND',
+      });
+    }
+
+    const { importJob } = await prisma.$transaction(async (tx) => {
       const importJob = await tx.job.create({
         data: {
           userId,
           status: JobStatus.NotStarted,
           type: JobType.Import,
-          progress: 0,
+          progress: 20,
           meta: {
-            importType: input.type,
-            s3Key: storageKey,
+            importFormat: input.format,
           },
         },
       });
-      await tx.file.create({
+      await tx.file.update({
+        where: {
+          id: input.fileId,
+        },
         data: {
-          userId,
-          storageKey: storageKey,
-          purpose,
-          mimetype: input.mimetype,
-          name: input.name,
           jobId: importJob.id,
-          metadata: {},
         },
       });
-      return { importJobId: importJob.id };
+      return { importJob: importJob };
     });
-    return { importJobId, s3SignedURL };
+    enqueueJob({
+      triggeredByUserId: ctx.session.userId,
+      jobId: importJob.id,
+    });
+    return importJob
   });

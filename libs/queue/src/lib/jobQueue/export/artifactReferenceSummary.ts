@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 
-export const artifactReferenceSummary =
+export const artifactWithReferences =
   Prisma.validator<Prisma.ArtifactFindFirstArgs>()({
     select: {
       id: true,
@@ -15,6 +15,6 @@ export const artifactReferenceSummary =
     },
   });
 
-export type ArtifactReferenceSummary = Prisma.ArtifactGetPayload<
-  typeof artifactReferenceSummary
+export type ArtifactWithReferences = Prisma.ArtifactGetPayload<
+  typeof artifactWithReferences
 >;

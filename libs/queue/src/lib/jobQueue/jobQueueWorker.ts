@@ -6,7 +6,7 @@ import { JobStatus, JobType } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import {
   jobSummary,
-  prismaJobSummaryToJobSummary,
+  prismaJobSummaryToJobSummary
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
@@ -30,7 +30,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       },
       ...jobSummary,
     });
-    const job = prismaJobSummaryToJobSummary(prismaJobSummary);
+    const job = prismaJobSummaryToJobSummary(prismaJobSummary)
     let status: JobStatus = JobStatus.Success;
     try {
       switch (job.type) {

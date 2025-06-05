@@ -2,33 +2,31 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { prisma } from '@feynote/prisma/client';
 import {
   jobSummary,
-  type ImportJob,
-  type ExportJob,
+  type JobSummary,
   prismaJobSummaryToJobSummary,
 } from '@feynote/prisma/types';
-import { JobType } from '@prisma/client';
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-export const getImportExportJob = authenticatedProcedure
+
+export const getJob = authenticatedProcedure
   .input(
     z.object({
       id: z.string(),
     }),
   )
-  .query(async ({ input, ctx }): Promise<ImportJob | ExportJob> => {
-    const importExportJob = await prisma.job.findUnique({
+  .query(async ({ input, ctx }): Promise<JobSummary> => {
+    const job = await prisma.job.findUnique({
       where: {
         id: input.id,
         userId: ctx.session.userId,
-        type: JobType.Import || JobType.Export,
       },
       ...jobSummary,
     });
-    if (!importExportJob) {
+    if (!job) {
       throw new TRPCError({
         code: 'NOT_FOUND',
       });
     }
-    return prismaJobSummaryToJobSummary(importExportJob);
+    return prismaJobSummaryToJobSummary(job);
   });

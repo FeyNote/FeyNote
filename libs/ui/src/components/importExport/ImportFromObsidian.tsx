@@ -1,4 +1,4 @@
-import { ImportJobType } from '@feynote/prisma/types';
+import { ImportFormat } from '@feynote/prisma/types';
 import { ImportFromFile } from './ImportFromFile';
 import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
@@ -30,13 +30,13 @@ export const ImportFromObsidian: React.FC = () => {
     <IonPage>
       <PaneNav title={t('importFromObsidian.title')} />
       <IonContent className="ion-padding">
-        <ImportFromFile type={ImportJobType.Obsidian} />
+        <ImportFromFile format={ImportFormat.Obsidian} />
         <SectionBreak />
         <h1>Instruction Guide</h1>
         <p>{t('importFromObsidian.paragraph.start')}</p>
         <p>{t('importFromObsidian.paragraph.step.one')}</p>
         <ThreeDotsImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Obsidian/ThreeDotsClick.png"
+          src="https://static.feynote.com/screenshots/import-instructions/obsidian/three-dots-click-20250527.png"
           alt="Cursor hovering the ellipsis button in the top right of your obsidian application"
         />
         <p>
@@ -46,7 +46,7 @@ export const ImportFromObsidian: React.FC = () => {
           </Emphasis>
         </p>
         <ShowInSystemExplorerImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Obsidian/ShowInSystemExplorer.png"
+          src="https://static.feynote.com/screenshots/import-instructions/obsidian/show-in-system-explorer-20250527.png"
           alt='Cursor hovering "Show In System Explorer" option in the ellipsis dropdown'
         />
         <p>
@@ -60,7 +60,7 @@ export const ImportFromObsidian: React.FC = () => {
           <Emphasis></Emphasis>
         </p>
         <ThreeDotsImg
-          src="https://feynote-public.s3.us-east-1.amazonaws.com/static/screenshots/Import+Instructions/Obsidian/CompressToZip.png"
+          src="https://static.feynote.com/screenshots/import-instructions/obsidian/compress-to-zip-20250527.png"
           alt="Cursor hovering compress to zip option for the Obsidian Vault folder"
         />
         <p>{t('importFromObsidian.paragraph.end')}</p>
