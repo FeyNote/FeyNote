@@ -40,7 +40,7 @@ export const buildWelcomeArtifact = (options: {
               {
                 type: 'link',
                 attrs: {
-                  href: 'https://feynote.com/documentation',
+                  href: 'https://docs.feynote.com',
                   target: '_blank',
                   rel: 'noopener noreferrer nofollow',
                   class: null,

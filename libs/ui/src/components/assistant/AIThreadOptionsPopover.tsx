@@ -3,21 +3,21 @@ import { useTranslation } from 'react-i18next';
 import { pencil, trashBin } from 'ionicons/icons';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import type { PaneContextData } from '../../context/pane/PaneContext';
 
 interface Props {
   id: string;
   title: string;
   setTitle: (title: string) => void;
+  navigate: PaneContextData['navigate'];
 }
 
 export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { navigate } = props;
   const [presentAlert] = useIonAlert();
-  const { navigate } = useContext(PaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const triggerRenameThreadAlert = async () => {

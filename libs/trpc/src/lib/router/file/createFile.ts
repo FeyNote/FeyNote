@@ -12,7 +12,7 @@ import { FileDTO } from '@feynote/global-types';
 import { octetInputParser } from '@trpc/server/http';
 import type { ParserZodEsque } from '@trpc/server/unstable-core-do-not-import';
 import { Readable } from 'stream';
-import { decodeFileStream } from '@feynote/shared-utils';
+import { FileStreamDecoder } from '@feynote/shared-utils';
 import type { ReadableStream as NodeWebReadableStream } from 'stream/web';
 
 type UtilityParser<TInput, TOutput> = ParserZodEsque<TInput, TOutput> & {
@@ -23,7 +23,7 @@ type OctetInput = Blob | Uint8Array | File;
 export const createFile = authenticatedProcedure
   .input(octetInputParser as UtilityParser<OctetInput, ReadableStream>)
   .mutation(async ({ ctx, input: _input }): Promise<FileDTO> => {
-    const input = await decodeFileStream(_input);
+    const input = await new FileStreamDecoder(_input).decode();
     const id = input.id;
 
     if (input.artifactId) {

@@ -1,11 +1,8 @@
 import type { Message } from 'ai';
-import { starkdown } from 'starkdown';
-import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
-import { copyOutline, refresh } from 'ionicons/icons';
-import { copyToClipboard } from '../../utils/copyToClipboard';
-import { useMemo } from 'react';
-import { isToolInvocationReadyToDipslay } from '../../utils/assistant/isToolInvocationReadyToDisplay';
+import { IonSpinner } from '@ionic/react';
+import { isDisplayableInvocation } from '../../utils/assistant/isDisplayableInvocation';
 import { AIToolInvocation } from './AIToolInvocation';
+import { AIMessagePartText } from './AIMessagePartText';
 
 interface Props {
   message: Message;
@@ -18,59 +15,31 @@ export const AIAssistantMessage = ({
   retryMessage,
   disableRetry,
 }: Props) => {
-  const isThereInvocationToDisplay = message.toolInvocations?.find(
-    isToolInvocationReadyToDipslay,
-  );
-  const messageHTML = useMemo(() => {
-    if (!message.content) return null;
-    return starkdown(message.content);
-  }, [message.content]);
-
-  if (!isThereInvocationToDisplay && !messageHTML) {
+  if (!message.parts || message.parts.length === 1) {
     return <IonSpinner name="dots" />;
   }
 
   return (
-    <>
-      {message.toolInvocations && isThereInvocationToDisplay && (
-        <>
-          {message.toolInvocations.map((toolInvocation) => (
-            <AIToolInvocation
-              key={toolInvocation.toolCallId}
-              toolInvocation={toolInvocation}
-            />
-          ))}
-        </>
-      )}
-      {messageHTML && (
-        <>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: messageHTML,
-            }}
-          ></div>
-          <IonButtons>
-            <IonButton
-              size="small"
-              onClick={() =>
-                copyToClipboard({
-                  html: messageHTML,
-                  plaintext: message.content,
-                })
-              }
-            >
-              <IonIcon icon={copyOutline} />
-            </IonButton>
-            <IonButton
-              disabled={disableRetry}
-              size="small"
-              onClick={() => retryMessage(message.id)}
-            >
-              <IonIcon icon={refresh} />
-            </IonButton>
-          </IonButtons>
-        </>
-      )}
-    </>
+    message.parts &&
+    message.parts.map((part, i) => {
+      if (
+        part.type === 'tool-invocation' &&
+        isDisplayableInvocation(part.toolInvocation)
+      ) {
+        return (
+          <AIToolInvocation key={i} toolInvocation={part.toolInvocation} />
+        );
+      } else if (part.type === 'text') {
+        return (
+          <AIMessagePartText
+            key={i}
+            part={part}
+            retryMessage={retryMessage}
+            disableRetry={disableRetry}
+            messageId={message.id}
+          />
+        );
+      }
+    })
   );
 };

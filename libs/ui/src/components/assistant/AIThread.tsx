@@ -15,9 +15,13 @@ import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { EventName } from '../../context/events/EventName';
+import type { EventData } from '../../context/events/EventData';
+import { eventManager } from '../../context/events/EventManager';
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -31,7 +35,7 @@ const ChatTextContainer = styled.div`
   display: flex;
   align-items: center;
   padding-left: 8px;
-  margin-right: 75px;
+  margin-right: 8px;
 `;
 
 const SendButtonContainer = styled.div`
@@ -54,9 +58,10 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { navigate } = useContext(PaneContext);
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({
@@ -71,7 +76,7 @@ export const AIThread: React.FC<Props> = (props) => {
       body: {
         threadId: props.id,
       },
-      maxToolRoundtrips: 5,
+      maxSteps: 1,
       onFinish: async (message, options) => {
         if (
           options.finishReason === 'stop' ||
@@ -107,12 +112,31 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    setIsLoadingInitialState(true);
-    const progress = startProgressBar();
-    getThreadInfo().finally(() => {
-      setIsLoadingInitialState(false);
-      progress.dismiss();
-    });
+    const loadThreadInfo = async () => {
+      setIsLoadingInitialState(true);
+      const progress = startProgressBar();
+      getThreadInfo().finally(() => {
+        setIsLoadingInitialState(false);
+        progress.dismiss();
+      });
+    };
+    loadThreadInfo();
+
+    const threadUpdateHandler = async (
+      _: EventName,
+      data: EventData[EventName.ThreadUpdated],
+    ) => {
+      if (data.threadId !== props.id) return;
+      await loadThreadInfo();
+    };
+
+    eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
+    return () => {
+      eventManager.removeEventListener(
+        EventName.ThreadUpdated,
+        threadUpdateHandler,
+      );
+    };
   }, []);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
@@ -192,6 +216,7 @@ export const AIThread: React.FC<Props> = (props) => {
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
             setTitle={setTitle}
+            navigate={navigate}
           />
         }
       />

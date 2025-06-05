@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { JsonValue } from '@prisma/client/runtime/library';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '@feynote/queue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const saveMessage = authenticatedProcedure
   .input(
@@ -13,6 +18,7 @@ export const saveMessage = authenticatedProcedure
   .mutation(
     async ({
       input,
+      ctx,
     }): Promise<{
       id: string;
       json: JsonValue;
@@ -22,6 +28,13 @@ export const saveMessage = authenticatedProcedure
     }> => {
       const message = await prisma.message.create({
         data: { threadId: input.threadId, json: input.message },
+      });
+      enqueueOutgoingWebsocketMessage({
+        room: wsRoomNameForUserId(ctx.session.userId),
+        event: WebsocketMessageEvent.ThreadUpdated,
+        json: {
+          threadId: input.threadId,
+        },
       });
       return message;
     },

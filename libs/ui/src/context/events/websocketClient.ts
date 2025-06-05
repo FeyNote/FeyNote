@@ -44,4 +44,8 @@ socket.on(EventName.JobCompleted, (data) => {
   eventManager.broadcast(EventName.JobCompleted, data);
 });
 
+socket.on(EventName.ThreadUpdated, (data) => {
+  eventManager.broadcast(EventName.ThreadUpdated, data);
+});
+
 export const websocketClient = socket;

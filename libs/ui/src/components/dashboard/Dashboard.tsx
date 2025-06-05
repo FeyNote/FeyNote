@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
@@ -65,7 +65,7 @@ export const Dashboard: React.FC = () => {
   const { navigate, isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);

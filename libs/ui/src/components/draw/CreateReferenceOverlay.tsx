@@ -1,4 +1,4 @@
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -91,7 +91,7 @@ interface Props {
 }
 
 export const CreateReferenceOverlay: React.FC<Props> = (props) => {
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const [searchText, setSearchText] = useState('');
   const [searchedText, setSearchedText] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);

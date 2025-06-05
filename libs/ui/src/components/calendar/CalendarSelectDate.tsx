@@ -2,7 +2,7 @@ import { applyUpdate, Doc as YDoc } from 'yjs';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
-import { useProgressBar } from '../../utils/useProgressBar';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import type { TypedMap } from 'yjs-types';
 import type { YCalendarMap } from '@feynote/shared-utils';
@@ -18,7 +18,7 @@ interface Props {
 
 export const CalendarSelectDate: React.FC<Props> = (props) => {
   const [yDoc, setYDoc] = useState(props.yDoc);
-  const { startProgressBar, ProgressBar } = useProgressBar();
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
 

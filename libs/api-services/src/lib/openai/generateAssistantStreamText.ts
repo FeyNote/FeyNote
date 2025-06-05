@@ -1,13 +1,13 @@
 import { openai } from './openai';
 import { AIModel } from './utils/AIModel';
-import { type CoreTool, streamText, type CoreMessage } from 'ai';
+import { type Tool, streamText, type CoreMessage } from 'ai';
 
-export async function generateAssistantStreamText(
+export function generateAssistantStreamText(
   messages: CoreMessage[],
   model: AIModel,
-  tools: Record<string, CoreTool>,
+  tools: Record<string, Tool>,
 ): ReturnType<typeof streamText<typeof tools>> {
-  const stream = await streamText({
+  const stream = streamText({
     model: openai(model, {
       structuredOutputs: true,
       parallelToolCalls: true,
@@ -15,7 +15,7 @@ export async function generateAssistantStreamText(
     tools,
     maxTokens: 16383,
     messages,
-    experimental_toolCallStreaming: true,
+    toolCallStreaming: true,
   });
   return stream;
 }
