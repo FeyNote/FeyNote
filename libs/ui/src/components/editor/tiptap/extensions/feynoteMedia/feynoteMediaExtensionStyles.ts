@@ -11,7 +11,7 @@ export const feynoteMediaExtensionStyles = css`
       img {
         min-height: 60px;
         min-width: 60px;
-        cursor: default;
+        cursor: pointer;
       }
 
       .resizable-media-border {
