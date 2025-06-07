@@ -28,7 +28,6 @@ import {
 } from 'tldraw';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
-import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
 import { FileDTO } from '@feynote/global-types';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { WebSocketStatus } from '@hocuspocus/provider';
@@ -37,7 +36,7 @@ const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
 
 type UseYjsTLDrawStoreOptions = {
-  getFileUrl: (fileId: string) => string;
+  getFileUrl: (fileId: string) => Promise<string> | string;
   handleFileUpload?: (file: File) => Promise<FileDTO>;
   shapeUtils: TLAnyShapeUtilConstructor[];
   editable: boolean;
@@ -72,13 +71,11 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
         asset.meta.id = id;
         asset.meta.storageKey = storageKey;
 
-        // This url isn't really used since we're using meta
-        const url = getFileRedirectUrl({
-          fileId: id,
-        });
+        const url = await getFileUrl(id);
 
         return {
-          src: url.toString(),
+          // This url isn't really used since we're using meta. It will be expired down the line
+          src: url,
         };
       } catch (e) {
         console.error(e);
@@ -95,7 +92,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
         throw new Error('Asset has no file id');
       }
 
-      const url = getFileUrl(id);
+      const url = await getFileUrl(id);
 
       return url;
     },

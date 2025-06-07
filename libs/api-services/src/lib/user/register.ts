@@ -36,6 +36,7 @@ export const register = async (
   });
 
   return {
+    id: session.id,
     token: session.token,
     userId: session.userId,
     email: email.toLowerCase(),

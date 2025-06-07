@@ -63,9 +63,19 @@ export const FeynoteAudioExtension = FeynoteMediaExtension.extend({
       element.setAttribute('controls', 'true');
       element.setAttribute('data-file-type', 'audio');
       element.setAttribute('alt', HTMLAttributes['alt']);
-      element.src = this.options.getSrcForFileId(
+      element.style.visibility = 'hidden';
+      const srcResponse = this.options.getSrcForFileId(
         HTMLAttributes['data-file-id'],
       );
+      if (typeof srcResponse === 'string') {
+        element.src = srcResponse;
+        element.style.visibility = 'visible';
+      } else {
+        srcResponse.then((src) => {
+          element.src = src;
+          element.style.visibility = 'visible';
+        });
+      }
       element.classList.add('feynote-audio');
       container.appendChild(element);
 

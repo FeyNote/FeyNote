@@ -11,9 +11,9 @@ try {
 
 const apiUrlsByEnv = {
   development: {
-    rest: '/api',
-    trpc: '/api/trpc',
-    hocuspocus: '/hocuspocus',
+    rest: window.location.origin + '/api',
+    trpc: window.location.origin + '/api/trpc',
+    hocuspocus: window.location.origin + '/hocuspocus',
     websocket: wsHost + '/websocket',
   },
   'feynote.com': {

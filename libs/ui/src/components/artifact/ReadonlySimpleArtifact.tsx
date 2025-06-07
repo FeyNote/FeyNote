@@ -6,7 +6,7 @@ import { trpc } from '../../utils/trpc';
 import { useIonAlert } from '@ionic/react';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
-import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { Edge, type SessionDTO } from '@feynote/shared-utils';
 import { getEdgeStore } from '../../utils/edgesReferences/edgeStore';
@@ -127,10 +127,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         yjsProvider={undefined}
         yDoc={yDoc}
         getFileUrl={(fileId) => {
-          return getFileRedirectUrl({
-            fileId,
-            sessionToken: session?.token || undefined,
-          }).toString();
+          return getFileUrlById(fileId, session || undefined);
         }}
       />
     );
@@ -156,10 +153,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
         onReady={props.onReady}
         yDoc={yDoc}
         getFileUrl={(fileId) => {
-          return getFileRedirectUrl({
-            fileId,
-            sessionToken: session?.token || undefined,
-          }).toString();
+          return getFileUrlById(fileId, session || undefined);
         }}
       />
     );

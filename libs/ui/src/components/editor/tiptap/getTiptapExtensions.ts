@@ -73,7 +73,7 @@ export const getTiptapExtensions = (args: {
   y: DocArgOptions;
   collaborationUser: Record<string, string>;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
-  getFileUrl: (fileId: string) => string;
+  getFileUrl: (fileId: string) => Promise<string> | string;
   onTocUpdate?: (content: TableOfContentData) => void;
   onRollDice?: (roll: string) => void;
   /**

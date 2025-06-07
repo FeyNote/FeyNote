@@ -3,7 +3,7 @@ import { Doc as YDoc } from 'yjs';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useContext } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
-import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { TiptapEditor } from './TiptapEditor';
 
 interface Props {
@@ -24,12 +24,8 @@ export const TiptapPreview: React.FC<Props> = (props) => {
         editable={false}
         yDoc={props.yDoc}
         theme={artifactMeta.theme}
-        getFileUrl={(fileId) => {
-          if (!session) return '';
-          return getFileRedirectUrl({
-            fileId,
-            sessionToken: session.token,
-          }).toString();
+        getFileUrl={async (fileId) => {
+          return getFileUrlById(fileId, session);
         }}
       />
     </ArtifactEditorContainer>
