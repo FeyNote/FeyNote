@@ -132,7 +132,7 @@ type Props = {
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (file: File) => Promise<FileDTO>;
-  getFileUrl: (fileId: string) => string;
+  getFileUrl: (fileId: string) => Promise<string> | string;
 } & DocArgOptions;
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {

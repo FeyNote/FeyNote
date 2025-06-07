@@ -10,4 +10,11 @@ export const getS3Client = () =>
       accessKeyId: globalServerConfig.aws.accessKeyId,
       secretAccessKey: globalServerConfig.aws.secretAccessKey,
     },
+    requestHandler: {
+      requestInit() {
+        return {
+          foo: 'bar',
+        };
+      },
+    },
   }));

@@ -7,7 +7,7 @@ import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
 import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
 import { SessionContext } from '../../../../../context/session/SessionContext';
-import { getFileRedirectUrl } from '../../../../../utils/files/getFileRedirectUrl';
+import { getFileUrlById } from '../../../../../utils/files/getFileUrlById';
 import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
 import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWindow';
@@ -103,11 +103,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
           yDoc={yDoc}
           editable={false}
           getFileUrl={(fileId) => {
-            if (!session) return '';
-            return getFileRedirectUrl({
-              fileId,
-              sessionToken: session.token,
-            }).toString();
+            return getFileUrlById(fileId, session);
           }}
           onReady={() => setReady(true)}
         />

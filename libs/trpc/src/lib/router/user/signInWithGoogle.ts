@@ -40,6 +40,7 @@ export const signInWithGoogle = publicProcedure
 
       return {
         session: {
+          id: session.id,
           token: session.token,
           userId: session.userId,
           email: payload.email,
