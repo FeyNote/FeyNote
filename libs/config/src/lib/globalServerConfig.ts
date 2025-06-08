@@ -2,6 +2,15 @@ import { coerceBoolean } from './coerceBoolean';
 import { getEnvOrThrow } from './getEnvOrThrow';
 
 export const globalServerConfig = {
+  logger: {
+    level: process.env['LOGGER_LEVEL'] || 'http',
+    transports: {
+      console: coerceBoolean(
+        process.env['LOGGER_TRANSPORTS_CONSOLE'] || 'false',
+      ),
+      sentry: coerceBoolean(process.env['LOGGER_TRANSPORTS_SENTRY'] || 'false'),
+    },
+  },
   email: {
     fromName: getEnvOrThrow('EMAIL_FROM_NAME'),
     fromAddress: getEnvOrThrow('EMAIL_FROM_ADDRESS'),

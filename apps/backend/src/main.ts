@@ -1,6 +1,7 @@
 import './instrument.ts';
 
 import express from 'express';
+import morgan from 'morgan';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import cors from 'cors';
 
@@ -8,6 +9,7 @@ import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
+import { logger } from '@feynote/api-services';
 
 const app = express();
 
@@ -56,6 +58,14 @@ const jsonMiddleware = express.json({
   },
 });
 
+app.use(
+  morgan(':status :method :url :response-time ms', {
+    stream: {
+      write: (message) => logger.http(message.trim()),
+    },
+  }),
+);
+
 app.use('/message', urlEncodedMiddleware, jsonMiddleware, messageRouter);
 app.use('/file', urlEncodedMiddleware, jsonMiddleware, fileRouter);
 app.use('/stripe', urlEncodedMiddleware, jsonMiddleware, stripeRouter);
@@ -70,6 +80,6 @@ app.use(
 
 const port = process.env.PORT || 8080;
 const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+  logger.info(`Listening at http://localhost:${port}/api`);
 });
 server.on('error', console.error);

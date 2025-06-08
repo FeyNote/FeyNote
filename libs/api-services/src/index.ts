@@ -17,6 +17,8 @@ export * from './lib/artifacts/updateArtifactOutgoingReferences';
 export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
 
+export * from './lib/logging/logger';
+
 export * from './lib/s3/FILE_PURPOSE_TO_BUCKET';
 export * from './lib/s3/generateS3Key';
 export * from './lib/s3/getSignedUrl';
