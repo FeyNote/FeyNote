@@ -7,6 +7,7 @@ import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { YArtifactMeta } from '@feynote/global-types';
+import { logger } from '@feynote/api-services';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
@@ -29,7 +30,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         });
 
         if (!artifact) {
-          console.error('Attempted to load artifact that does not exist!');
+          logger.debug('Attempted to load artifact that does not exist!');
           throw new Error();
         }
 
@@ -65,7 +66,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         });
 
         if (!user) {
-          console.error('Attempted to load user tree that does not exist!');
+          logger.debug('Attempted to load user tree that does not exist!');
           throw new Error();
         }
 
@@ -78,7 +79,9 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
       }
     }
   } catch (e) {
-    console.error(e);
+    if (!(e instanceof Error) || e.message) {
+      logger.error(e);
+    }
 
     throw e;
   }

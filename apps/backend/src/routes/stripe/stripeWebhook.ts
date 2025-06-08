@@ -8,6 +8,7 @@ import {
   stripe,
   getCheckoutUserId,
   extendSubscription,
+  logger,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { globalServerConfig } from '@feynote/config';
@@ -52,7 +53,7 @@ export const stripeWebhookHandler = defineExpressHandler(
         globalServerConfig.stripe.webhookSecret,
       );
     } catch (e) {
-      console.error('Stripe webhook validation error', e);
+      logger.warn('Stripe webhook validation error', e);
       Sentry.captureException(e);
       throw new BadRequestExpressError(`Webhook Error: ${e}`);
     }
@@ -98,7 +99,7 @@ export const stripeWebhookHandler = defineExpressHandler(
           .filter((priceName): priceName is string => Boolean(priceName));
 
         if (subscriptionModelNames.length === 0) {
-          console.error('No subscription model found in paid invoice');
+          logger.error('No subscription model found in paid invoice');
           Sentry.captureMessage('No subscription model found in paid invoice', {
             extra: {
               type: event.type,
@@ -117,7 +118,7 @@ export const stripeWebhookHandler = defineExpressHandler(
             });
           }
         } else {
-          console.error('Payment collected for unknown user');
+          logger.warn('Payment collected for unknown user');
           Sentry.captureMessage('Payment collected for unknown user', {
             extra: {
               type: event.type,

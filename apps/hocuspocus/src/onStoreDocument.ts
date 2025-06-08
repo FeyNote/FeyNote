@@ -11,6 +11,7 @@ import {
 } from '@feynote/shared-utils';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { splitDocumentName } from './splitDocumentName';
+import { logger } from '@feynote/api-services';
 
 export async function onStoreDocument(args: onStoreDocumentPayload) {
   try {
@@ -35,7 +36,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         });
 
         if (!artifact) {
-          console.error('Attempting to save artifact that does not exist');
+          logger.error('Attempting to save artifact that does not exist');
           throw new Error();
         }
 
@@ -96,7 +97,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         });
 
         if (!user) {
-          console.error('Attempting to save user tree that does not exist');
+          logger.error('Attempting to save user tree that does not exist');
           throw new Error();
         }
 
@@ -123,7 +124,9 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
       );
     });
   } catch (e) {
-    console.error(e);
+    if (!(e instanceof Error) || e.message) {
+      logger.error(e);
+    }
 
     throw e;
   }

@@ -10,6 +10,7 @@ import {
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { globalServerConfig } from '@feynote/config';
+import { logger } from '@feynote/api-services';
 
 const pubClient = new Redis({
   host: globalServerConfig.websocket.redis.host,
@@ -18,10 +19,10 @@ const pubClient = new Redis({
 const subClient = pubClient.duplicate();
 
 pubClient.on('error', (err) => {
-  console.error(err);
+  logger.error(err);
 });
 subClient.on('error', (err) => {
-  console.error(err);
+  logger.error(err);
 });
 
 const io = new Server({

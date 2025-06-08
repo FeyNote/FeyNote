@@ -3,6 +3,7 @@ import { Worker } from 'bullmq';
 import { IncomingWebsocketMessageQueueItem } from './IncomingWebsocketMessageQueueItem';
 import { INCOMING_WEBSOCKET_MESSAGE_QUEUE_NAME } from './INCOMING_WEBSOCKET_MESSAGE_QUEUE_NAME';
 import { globalServerConfig } from '@feynote/config';
+import { logger } from '@feynote/api-services';
 
 export const incomingWebsocketMessageQueueWorker = new Worker<
   IncomingWebsocketMessageQueueItem,
@@ -11,16 +12,16 @@ export const incomingWebsocketMessageQueueWorker = new Worker<
   INCOMING_WEBSOCKET_MESSAGE_QUEUE_NAME,
   async (args) => {
     try {
-      console.log(`Processing job ${args.id}`);
+      logger.info(`Processing job ${args.id}`);
     } catch (e) {
-      console.log(`Failed processing job ${args.id}`, e);
+      logger.error(`Failed processing job ${args.id}`, e);
 
       Sentry.captureException(e);
 
       throw e;
     }
 
-    console.log(`Finished processing job ${args.id}`);
+    logger.info(`Finished processing job ${args.id}`);
   },
   {
     autorun: false,

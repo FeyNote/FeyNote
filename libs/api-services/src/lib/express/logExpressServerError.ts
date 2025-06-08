@@ -1,9 +1,8 @@
+import { logger } from '../logging/logger';
 import { ExpressError } from './expressErrors';
 import * as Sentry from '@sentry/node';
 
 export const logExpressServerError = (e: unknown) => {
-  console.error(e);
-
   let status;
   if (e instanceof ExpressError) {
     status = e.status;
@@ -12,7 +11,13 @@ export const logExpressServerError = (e: unknown) => {
   }
 
   const isExpectedError = status < 500 || status > 599;
-  if (isExpectedError) return;
+  if (isExpectedError) {
+    logger.debug(e);
+
+    return;
+  }
+
+  logger.error(e);
 
   Sentry.captureException(e);
 };
