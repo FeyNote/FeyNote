@@ -1,4 +1,4 @@
-import { IonButton, IonIcon, IonProgressBar, IonText } from '@ionic/react';
+import { IonButton, IonIcon, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ChangeEvent, useContext, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -7,10 +7,9 @@ import { ImportFormat } from '@feynote/prisma/types';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
-import { FilePurpose } from '@prisma/client';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { trpc } from '../../utils/trpc';
+import { uploadImportJob } from '../../utils/job/uploadImportJob';
+import { ProgressBar } from '../info/ProgressBar';
 
 const ActionErrorText = styled.p`
   font-size: 0.8rem;
@@ -90,14 +89,10 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
       setFileUploadProgress(progress)
     }
     try {
-      const fileDTO = await uploadFileToApi({
+      await uploadImportJob({
         file: file,
-        purpose: FilePurpose.job,
-        onProgress: uploadProgressListener,
-      })
-      await trpc.job.createImportJob.mutate({
         format: props.format,
-        fileId: fileDTO.id,
+        onProgress: uploadProgressListener,
       })
       navigate(PaneableComponent.Import, {}, PaneTransition.Push);
     } catch (e) {
@@ -135,7 +130,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
             >
               {t('generic.submit')}
             </IonButton>
-            { fileUploadProgress && <IonProgressBar value={fileUploadProgress}></IonProgressBar>}
+            {fileUploadProgress && <ProgressBar progress={fileUploadProgress} />}
           </div>
         </>
       ) : (

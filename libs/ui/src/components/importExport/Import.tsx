@@ -1,10 +1,8 @@
-import { IonButton, IonContent, IonIcon, IonItem, IonList, IonPage } from '@ionic/react';
-import { arrowDown } from 'ionicons/icons';
+import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { ImportJobList } from './ImportJobList';
 import { useContext, useEffect, useState } from 'react';
-import { useProgressBar } from '../../utils/useProgressBar';
 import { trpc } from '../../utils/trpc';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
@@ -14,13 +12,14 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { JobSummary } from '@feynote/prisma/types';
 import { JobType } from '@prisma/client';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<(JobSummary)[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
-  const { startProgressBar, ProgressBar } = useProgressBar();
   const { navigate } = useContext(PaneContext);
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
 
   useEffect(() => {
     getMoreImportJobs();
@@ -60,7 +59,7 @@ export const Import: React.FC = () => {
     const totalJobs = [...jobs, ...importjobsDTO.jobs];
     setJobs(totalJobs);
     setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
-    progress.dismiss();
+    progress.dismiss()
   };
 
   return (

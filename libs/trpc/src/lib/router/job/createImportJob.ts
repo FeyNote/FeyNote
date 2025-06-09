@@ -1,22 +1,28 @@
-import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
-import { JobStatus, JobType } from '@prisma/client';
+import { FilePurpose, JobStatus, JobType, type Job } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
-import { ImportFormat } from '@feynote/prisma/types';
 import { enqueueJob } from '@feynote/queue';
+import { ImportJobStreamDecoder } from '@feynote/shared-utils';
+import type { ParserZodEsque } from '@trpc/server/unstable-core-do-not-import';
+import { octetInputParser } from '@trpc/server/http';
+import { FileSizeLimitError, transformAndUploadFileToS3ForUser } from '@feynote/api-services';
+import type { ReadableStream as NodeWebReadableStream } from 'stream/web';
+import { Readable } from 'stream';
+
+type UtilityParser<TInput, TOutput> = ParserZodEsque<TInput, TOutput> & {
+  parse: (input: unknown) => TOutput;
+};
+type OctetInput = Blob | Uint8Array | File;
 
 const TIME_LIMIT_OF_JOBS = 5; // In minutes
 const NUMBER_OF_JOBS_PER_TIME_LIMIT = 5;
 
 export const createImportJob = authenticatedProcedure
-  .input(
-    z.object({
-      format: z.nativeEnum(ImportFormat),
-      fileId: z.string(),
-    }),
-  )
-  .mutation(async ({ ctx, input }) => {
+  .input(octetInputParser as UtilityParser<OctetInput, ReadableStream>)
+  .mutation(async ({ ctx, input: _input }): Promise<Job> => {
+    const input = await new ImportJobStreamDecoder(_input).decode();
+
     const userId = ctx.session.userId;
     // Get the most recent jobs within the time limit
     const mostRecentJobs = await prisma.job.findMany({
@@ -44,45 +50,58 @@ export const createImportJob = authenticatedProcedure
       });
     }
 
-    const file = await prisma.file.findUnique({
-      where: {
-        id: input.fileId,
-        userId: ctx.session.userId,
-      },
-    });
+    try {
+      const { uploadResult, transformedMimetype } =
+        await transformAndUploadFileToS3ForUser({
+          userId: ctx.session.userId,
+          file: Readable.fromWeb(input.fileContents as NodeWebReadableStream),
+          purpose: FilePurpose.job,
+          mimetype: input.mimetype,
+        });
 
-    if (!file) {
-      throw new TRPCError({
-        message: 'File with the provided id does not exist or is not accessible to the user',
-        code: 'NOT_FOUND',
-      });
-    }
-
-    const { importJob } = await prisma.$transaction(async (tx) => {
-      const importJob = await tx.job.create({
-        data: {
-          userId,
-          status: JobStatus.NotStarted,
-          type: JobType.Import,
-          progress: 20,
-          meta: {
-            importFormat: input.format,
+      const { importJob } = await prisma.$transaction(async (tx) => {
+        const importJob = await tx.job.create({
+          data: {
+            userId,
+            status: JobStatus.NotStarted,
+            type: JobType.Import,
+            progress: 20, // Some progress should be given for the act of uploading the file
+            meta: {
+              importFormat: input.format,
+            },
           },
-        },
+        });
+        await tx.file.create({
+          data: {
+            id: input.id,
+            userId: ctx.session.userId,
+            name: input.fileName,
+            mimetype: transformedMimetype,
+            storageKey: uploadResult.key,
+            purpose: FilePurpose.job,
+            jobId: importJob.id,
+            metadata: {
+              uploadResult,
+            },
+          },
+        });
+        return { importJob: importJob };
+      })
+
+      enqueueJob({
+        triggeredByUserId: ctx.session.userId,
+        jobId: importJob.id,
       });
-      await tx.file.update({
-        where: {
-          id: input.fileId,
-        },
-        data: {
-          jobId: importJob.id,
-        },
-      });
-      return { importJob: importJob };
-    });
-    enqueueJob({
-      triggeredByUserId: ctx.session.userId,
-      jobId: importJob.id,
-    });
-    return importJob
+
+      return importJob;
+    } catch (e) {
+      if (e instanceof FileSizeLimitError) {
+        throw new TRPCError({
+          message: 'File size exceeds maximum allowed size',
+          code: 'PAYLOAD_TOO_LARGE',
+        });
+      }
+
+      throw e;
+    }
   });

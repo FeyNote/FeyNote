@@ -10,6 +10,8 @@ export * from './lib/validation/validatePassword';
 export * from './lib/parsers/markdownToTxt';
 export * from './lib/parsers/stream/file/FileStreamEncoder';
 export * from './lib/parsers/stream/file/FileStreamDecoder';
+export * from './lib/parsers/stream/job/ImportJobStreamEncoder';
+export * from './lib/parsers/stream/job/ImportJobStreamDecoder';
 export * from './lib/parsers/stream/FeynoteAPIStreamMessageType';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
