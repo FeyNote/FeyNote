@@ -9,7 +9,12 @@ import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
-import { logger } from '@feynote/api-services';
+import {
+  logger,
+  metrics,
+  setupMinimalMetricsServer,
+} from '@feynote/api-services';
+import { globalServerConfig } from '@feynote/config';
 
 const app = express();
 
@@ -58,6 +63,23 @@ const jsonMiddleware = express.json({
   },
 });
 
+app.use(function (req, res, next) {
+  const timer = metrics.apiRequest.startTimer();
+  res.on('finish', function () {
+    const elapsed = timer();
+    metrics.apiRequest.observe({
+      value: elapsed,
+      labels: {
+        status_code: res.statusCode,
+        method: req.method,
+        path: req.route?.path || req.path,
+      },
+    });
+  });
+
+  next();
+});
+
 app.use(
   morgan(':status :method :url :response-time ms', {
     stream: {
@@ -65,6 +87,10 @@ app.use(
     },
   }),
 );
+
+setupMinimalMetricsServer({
+  existingApp: app,
+});
 
 app.use('/message', urlEncodedMiddleware, jsonMiddleware, messageRouter);
 app.use('/file', urlEncodedMiddleware, jsonMiddleware, fileRouter);
@@ -78,8 +104,18 @@ app.use(
   }),
 );
 
-const port = process.env.PORT || 8080;
-const server = app.listen(port, () => {
-  logger.info(`Listening at http://localhost:${port}/api`);
+const server = app.listen(globalServerConfig.api.port, () => {
+  logger.info(`Listening at http://0.0.0.0:${globalServerConfig.api.port}/api`);
 });
 server.on('error', logger.error);
+
+const shutdown = () => {
+  server.close((e) => {
+    logger.error(e);
+
+    process.exit(e ? 1 : 0);
+  });
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

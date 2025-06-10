@@ -11,11 +11,15 @@ import {
 } from '@feynote/shared-utils';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { splitDocumentName } from './splitDocumentName';
-import { logger } from '@feynote/api-services';
+import { logger, metrics } from '@feynote/api-services';
 
 export async function onStoreDocument(args: onStoreDocumentPayload) {
   try {
     const [type, identifier] = splitDocumentName(args.documentName);
+
+    metrics.hocuspocusDocumentLoad.inc({
+      document_type: type,
+    });
 
     switch (type) {
       case SupportedDocumentType.Artifact: {

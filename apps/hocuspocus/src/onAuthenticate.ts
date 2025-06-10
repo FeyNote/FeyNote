@@ -1,13 +1,19 @@
 import { onAuthenticatePayload } from '@hocuspocus/server';
 
-import { isSessionExpired, logger } from '@feynote/api-services';
+import { isSessionExpired, logger, metrics } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ArtifactAccessLevel } from '@prisma/client';
 
 export async function onAuthenticate(args: onAuthenticatePayload) {
+  const [type, identifier] = splitDocumentName(args.documentName);
+
   try {
+    metrics.hocuspocusAuthenticateAttempt.inc({
+      document_type: type,
+    });
+
     const session = await prisma.session.findUnique({
       where: {
         token: args.token,
@@ -28,8 +34,6 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       userId: session.userId,
       isOwner: false,
     };
-
-    const [type, identifier] = splitDocumentName(args.documentName);
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -95,11 +99,19 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       }
     }
 
+    metrics.hocuspocusAuthenticate.inc({
+      document_type: type,
+    });
+
     return context;
   } catch (e) {
     if (!(e instanceof Error) || e.message) {
       logger.error(e);
     }
+
+    metrics.hocuspocusAuthenticateFailed.inc({
+      document_type: type,
+    });
 
     throw e;
   }

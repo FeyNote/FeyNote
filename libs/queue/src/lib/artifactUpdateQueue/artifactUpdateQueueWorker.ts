@@ -9,6 +9,7 @@ import {
   createArtifactRevision,
   updateArtifactAccess,
   logger,
+  metrics,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { ArtifactType, Prisma } from '@prisma/client';
@@ -36,6 +37,12 @@ export const artifactUpdateQueueWorker = new Worker<
 >(
   ARTIFACT_UPDATE_QUEUE_NAME,
   async (args) => {
+    metrics.jobStarted.inc({
+      job_type: 'artifact_update',
+    });
+
+    const timer = metrics.jobProcessed.startTimer();
+
     try {
       logger.info(`Processing job ${args.id}`);
 
@@ -183,9 +190,20 @@ export const artifactUpdateQueueWorker = new Worker<
         logger.error(e);
         Sentry.captureException(e);
       }
+
+      metrics.jobProcessed.observe({
+        value: timer(),
+        labels: {
+          job_type: 'artifact_update',
+        },
+      });
     } catch (e) {
       logger.error(`Failed processing job ${args.id}`, e);
       Sentry.captureException(e);
+
+      metrics.jobFailed.inc({
+        job_type: 'artifact_update',
+      });
 
       throw e;
     }

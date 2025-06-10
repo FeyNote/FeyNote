@@ -6,6 +6,7 @@ import {
 } from './OutgoingWebsocketMessageQueueItem';
 import { globalServerConfig } from '@feynote/config';
 import { WebsocketMessageEvent } from '@feynote/global-types';
+import { metrics } from '@feynote/api-services';
 
 export const websocketMessageQueue = new Queue<
   OutgoingWebsocketMessageQueueItem,
@@ -22,6 +23,10 @@ export const enqueueOutgoingWebsocketMessage = <
 >(
   item: OutgoingWebsocketMessage<T>,
 ) => {
+  metrics.websocketMessageOutgoing.inc({
+    message_type: item.event,
+  });
+
   return websocketMessageQueue.add(`${Date.now()}-${Math.random()}`, {
     ...item,
     json: JSON.stringify(item.json),

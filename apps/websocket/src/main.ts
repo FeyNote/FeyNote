@@ -10,7 +10,11 @@ import {
 import { Redis } from 'ioredis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { globalServerConfig } from '@feynote/config';
-import { logger } from '@feynote/api-services';
+import {
+  logger,
+  metrics,
+  setupMinimalMetricsServer,
+} from '@feynote/api-services';
 
 const pubClient = new Redis({
   host: globalServerConfig.websocket.redis.host,
@@ -63,14 +67,23 @@ io.on('connection', (socket) => {
       event: message.event,
       json: JSON.stringify(message),
     });
+    metrics.websocketMessageIncoming.inc();
   });
+
+  metrics.websocketConnection.inc();
+  const clientCount = io.of('/').sockets.size;
+  metrics.websocketConnectionCount.set(clientCount);
 });
 
-io.listen(parseInt(process.env.PORT || '8080'));
+io.listen(globalServerConfig.websocket.wsPort);
 
 const worker = buildOutgoingWebsocketMessageQueueWorker(io);
 
 worker.run();
+
+setupMinimalMetricsServer({
+  port: globalServerConfig.websocket.restPort,
+});
 
 const shutdown = async () => {
   await worker.close();

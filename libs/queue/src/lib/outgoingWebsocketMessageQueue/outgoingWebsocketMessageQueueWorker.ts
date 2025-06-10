@@ -4,7 +4,7 @@ import { OutgoingWebsocketMessageQueueItem } from './OutgoingWebsocketMessageQue
 import { OUTGOING_WEBSOCKET_MESSAGE_QUEUE_NAME } from './OUTGOING_WEBSOCKET_MESSAGE_QUEUE_NAME';
 import { globalServerConfig } from '@feynote/config';
 import { Server } from 'socket.io';
-import { logger } from '@feynote/api-services';
+import { logger, metrics } from '@feynote/api-services';
 
 export const buildOutgoingWebsocketMessageQueueWorker = (io: Server) => {
   return new Worker<OutgoingWebsocketMessageQueueItem, void>(
@@ -21,6 +21,10 @@ export const buildOutgoingWebsocketMessageQueueWorker = (io: Server) => {
 
         throw e;
       }
+
+      metrics.websocketMessageOutgoingProcessed.inc({
+        message_type: args.data.event,
+      });
 
       logger.info(`Finished processing job ${args.id}`);
     },

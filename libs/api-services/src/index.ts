@@ -18,6 +18,7 @@ export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
 
 export * from './lib/logging/logger';
+export * from './lib/logging/metrics';
 
 export * from './lib/s3/FILE_PURPOSE_TO_BUCKET';
 export * from './lib/s3/generateS3Key';

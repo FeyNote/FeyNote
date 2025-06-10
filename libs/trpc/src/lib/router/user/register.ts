@@ -24,6 +24,9 @@ export const register = publicProcedure
         input.email,
         input.password,
       );
+      services.metrics.accountCreated.inc({
+        auth_type: 'google',
+      });
       return session;
     } catch (e) {
       if (e instanceof UserAlreadyExistError) {

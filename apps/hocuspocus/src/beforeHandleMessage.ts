@@ -20,7 +20,7 @@ import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { memoizedShadowDocsByDocName } from './memoizedShadowDocsByDocName';
 import assert from 'assert';
-import { logger } from '@feynote/api-services';
+import { logger, metrics } from '@feynote/api-services';
 
 /**
  * Deconstruct the IncomingMessage.
@@ -61,6 +61,12 @@ const getShadowDoc = (documentName: string, baseDoc: YDoc) => {
 export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
   try {
     const [type] = splitDocumentName(args.documentName);
+
+    metrics.hocuspocusMessage.inc({
+      document_type: type,
+    });
+
+    const timer = metrics.hocuspocusMessageValidateTime.startTimer();
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -147,6 +153,13 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
         break;
       }
     }
+
+    metrics.hocuspocusMessageValidateTime.observe({
+      value: timer(),
+      labels: {
+        document_type: type,
+      },
+    });
   } catch (e) {
     if (!(e instanceof Error) || e.message) {
       logger.error(e);
