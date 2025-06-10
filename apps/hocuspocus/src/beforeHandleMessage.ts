@@ -154,12 +154,12 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
       }
     }
 
-    metrics.hocuspocusMessageValidateTime.observe({
-      value: timer(),
-      labels: {
+    metrics.hocuspocusMessageValidateTime.observe(
+      {
         document_type: type,
       },
-    });
+      timer(),
+    );
   } catch (e) {
     if (!(e instanceof Error) || e.message) {
       logger.error(e);

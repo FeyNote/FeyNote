@@ -191,12 +191,12 @@ export const artifactUpdateQueueWorker = new Worker<
         Sentry.captureException(e);
       }
 
-      metrics.jobProcessed.observe({
-        value: timer(),
-        labels: {
+      metrics.jobProcessed.observe(
+        {
           job_type: 'artifact_update',
         },
-      });
+        timer(),
+      );
     } catch (e) {
       logger.error(`Failed processing job ${args.id}`, e);
       Sentry.captureException(e);

@@ -66,15 +66,15 @@ const jsonMiddleware = express.json({
 app.use(function (req, res, next) {
   const timer = metrics.apiRequest.startTimer();
   res.on('finish', function () {
-    const elapsed = timer();
-    metrics.apiRequest.observe({
-      value: elapsed,
-      labels: {
+    const time = timer();
+    metrics.apiRequest.observe(
+      {
         status_code: res.statusCode,
         method: req.method,
         path: req.route?.path || req.path,
       },
-    });
+      time,
+    );
   });
 
   next();
