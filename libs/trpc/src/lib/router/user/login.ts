@@ -19,6 +19,9 @@ export const login = publicProcedure
   .mutation(async ({ input }): Promise<SessionDTO> => {
     try {
       const session = await services.login(input.email, input.password);
+      services.metrics.accountLogin.inc({
+        auth_type: 'password',
+      });
       return session;
     } catch (e) {
       if (e instanceof UserNoPasswordError) {

@@ -1,25 +1,31 @@
 import { onAuthenticatePayload } from '@hocuspocus/server';
 
-import { isSessionExpired } from '@feynote/api-services';
+import { isSessionExpired, logger, metrics } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ArtifactAccessLevel } from '@prisma/client';
 
 export async function onAuthenticate(args: onAuthenticatePayload) {
+  const [type, identifier] = splitDocumentName(args.documentName);
+
   try {
+    metrics.hocuspocusAuthenticateAttempt.inc({
+      document_type: type,
+    });
+
     const session = await prisma.session.findUnique({
       where: {
         token: args.token,
       },
     });
     if (!session) {
-      console.log('Session not found');
+      logger.debug('Session not found');
       throw new Error();
     }
 
     if (isSessionExpired(session)) {
-      console.log('Session is expired');
+      logger.debug('Session is expired');
       throw new Error();
     }
 
@@ -28,8 +34,6 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       userId: session.userId,
       isOwner: false,
     };
-
-    const [type, identifier] = splitDocumentName(args.documentName);
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -49,7 +53,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         });
 
         if (!artifact) {
-          console.log(
+          logger.debug(
             'User attempted to authenticate to an artifact that does not exist',
           );
           throw new Error();
@@ -62,7 +66,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           (artifact.userId !== context.userId && !artifactShare) ||
           artifactShare?.accessLevel === ArtifactAccessLevel.noaccess
         ) {
-          console.log(
+          logger.debug(
             'User attempted to connect to artifact that they do not have access to',
           );
           throw new Error();
@@ -83,7 +87,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       }
       case SupportedDocumentType.UserTree: {
         if (identifier !== context.userId) {
-          console.log(
+          logger.debug(
             'User attempted to connect to userTree that is not their own',
           );
           throw new Error();
@@ -95,9 +99,19 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
       }
     }
 
+    metrics.hocuspocusAuthenticate.inc({
+      document_type: type,
+    });
+
     return context;
   } catch (e) {
-    console.error(e);
+    if (!(e instanceof Error) || e.message) {
+      logger.error(e);
+    }
+
+    metrics.hocuspocusAuthenticateFailed.inc({
+      document_type: type,
+    });
 
     throw e;
   }

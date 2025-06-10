@@ -3,6 +3,7 @@ import { Session } from '@prisma/client';
 import { isSessionExpired } from './isSessionExpired';
 import { extendSession } from './extendSession';
 import * as Sentry from '@sentry/node';
+import { logger } from '../logging/logger';
 
 export const getSessionFromAuthHeader = async (
   authHeader: string | undefined,
@@ -21,7 +22,7 @@ export const getSessionFromAuthHeader = async (
   // write to occur
   extendSession(session).catch((err) => {
     Sentry.captureException(err);
-    console.error('Failed to extend session', err);
+    logger.error('Failed to extend session', err);
   });
 
   return session;

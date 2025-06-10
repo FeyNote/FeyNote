@@ -1,6 +1,7 @@
 import './instrument.ts';
 
 import express from 'express';
+import morgan from 'morgan';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import cors from 'cors';
 
@@ -8,6 +9,12 @@ import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
+import {
+  logger,
+  metrics,
+  setupMinimalMetricsServer,
+} from '@feynote/api-services';
+import { globalServerConfig } from '@feynote/config';
 
 const app = express();
 
@@ -56,6 +63,35 @@ const jsonMiddleware = express.json({
   },
 });
 
+app.use(function (req, res, next) {
+  const timer = metrics.apiRequest.startTimer();
+  res.on('finish', function () {
+    const time = timer();
+    metrics.apiRequest.observe(
+      {
+        status_code: res.statusCode,
+        method: req.method,
+        path: req.route?.path || req.path,
+      },
+      time,
+    );
+  });
+
+  next();
+});
+
+app.use(
+  morgan(':status :method :url :response-time ms', {
+    stream: {
+      write: (message) => logger.http(message.trim()),
+    },
+  }),
+);
+
+setupMinimalMetricsServer({
+  existingApp: app,
+});
+
 app.use('/message', urlEncodedMiddleware, jsonMiddleware, messageRouter);
 app.use('/file', urlEncodedMiddleware, jsonMiddleware, fileRouter);
 app.use('/stripe', urlEncodedMiddleware, jsonMiddleware, stripeRouter);
@@ -68,8 +104,18 @@ app.use(
   }),
 );
 
-const port = process.env.PORT || 8080;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+const server = app.listen(globalServerConfig.api.port, () => {
+  logger.info(`Listening at http://0.0.0.0:${globalServerConfig.api.port}/api`);
 });
-server.on('error', console.error);
+server.on('error', logger.error);
+
+const shutdown = () => {
+  server.close((e) => {
+    logger.error(e);
+
+    process.exit(e ? 1 : 0);
+  });
+};
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
