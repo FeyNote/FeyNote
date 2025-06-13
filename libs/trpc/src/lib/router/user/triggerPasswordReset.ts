@@ -21,4 +21,6 @@ export const triggerPasswordReset = publicProcedure
         code: 'NOT_FOUND',
       });
     }
+
+    services.metrics.accountPasswordReset.inc();
   });

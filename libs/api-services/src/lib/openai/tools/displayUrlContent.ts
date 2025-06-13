@@ -14,6 +14,7 @@ import { globalServerConfig } from '@feynote/config';
 import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
+import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);
 const newLineCausingNodes = new Set([
@@ -95,7 +96,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       toolInvocations: toolResults,
     };
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     return null;
   }
 };

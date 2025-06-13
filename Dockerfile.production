@@ -1,4 +1,4 @@
-FROM node:22.15-alpine
+FROM node:24.2-alpine
 
 WORKDIR /app
 
@@ -27,6 +27,6 @@ ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 ENV VITE_APP_VERSION=$APP_VERSION
 
-RUN npx nx run-many -t build --parallel=6
+RUN npx nx run-many -t build -p backend,cli,docs,hocuspocus,queue-worker,websocket,www --parallel=6
 
 CMD echo "Must provide command to run containers"

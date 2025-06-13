@@ -1,6 +1,7 @@
-const { sentryEsbuildPlugin } = require('@sentry/esbuild-plugin');
+import { sentryEsbuildPlugin } from '@sentry/esbuild-plugin';
+import { build } from 'esbuild';
 
-require('esbuild').build({
+build({
   sourcemap: process.env.SOURCEMAP_UPLOAD === 'true', // Source map generation must be turned on for Sentry
   external: ['@sentry/profiling-node'],
   bundle: true,

@@ -10,6 +10,7 @@ import { beforeHandleMessage } from './beforeHandleMessage';
 import { onAuthenticate } from './onAuthenticate';
 import { onConnect } from './onConnect';
 import { onDisconnect } from './onDisconnect';
+import { logger } from '@feynote/api-services';
 
 const extensions: Extension[] = [];
 
@@ -33,12 +34,18 @@ if (globalServerConfig.hocuspocus.redis.enable) {
 }
 
 if (globalServerConfig.hocuspocus.logging.enable) {
-  extensions.push(new Logger());
+  extensions.push(
+    new Logger({
+      log: (message) => {
+        logger.info(message);
+      },
+    }),
+  );
 }
 
 export const hocuspocusServer = Server.configure({
   stopOnSignals: true, // Listen to SIGINT, SIGTERM
-  port: globalServerConfig.hocuspocus.port,
+  port: globalServerConfig.hocuspocus.wsPort,
   debounce: globalServerConfig.hocuspocus.writeDelayMs,
   maxDebounce: globalServerConfig.hocuspocus.maxWriteDelayMs,
   timeout: globalServerConfig.hocuspocus.connectionTimeout,

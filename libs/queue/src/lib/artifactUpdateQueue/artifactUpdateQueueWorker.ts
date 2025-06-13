@@ -8,6 +8,8 @@ import {
   updateArtifactOutgoingReferences,
   createArtifactRevision,
   updateArtifactAccess,
+  logger,
+  metrics,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { ArtifactType, Prisma } from '@prisma/client';
@@ -35,8 +37,14 @@ export const artifactUpdateQueueWorker = new Worker<
 >(
   ARTIFACT_UPDATE_QUEUE_NAME,
   async (args) => {
+    metrics.jobStarted.inc({
+      job_type: 'artifact_update',
+    });
+
+    const timer = metrics.jobProcessed.startTimer();
+
     try {
-      console.log(`Processing job ${args.id}`);
+      logger.info(`Processing job ${args.id}`);
 
       const oldYjsDoc = new YDoc();
       const oldYBin = Buffer.from(args.data.oldYBinB64, 'base64');
@@ -179,17 +187,28 @@ export const artifactUpdateQueueWorker = new Worker<
           });
         }
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         Sentry.captureException(e);
       }
+
+      metrics.jobProcessed.observe(
+        {
+          job_type: 'artifact_update',
+        },
+        timer(),
+      );
     } catch (e) {
-      console.log(`Failed processing job ${args.id}`, e);
+      logger.error(`Failed processing job ${args.id}`, e);
       Sentry.captureException(e);
+
+      metrics.jobFailed.inc({
+        job_type: 'artifact_update',
+      });
 
       throw e;
     }
 
-    console.log(`Finished processing job ${args.id}`);
+    logger.info(`Finished processing job ${args.id}`);
   },
   {
     autorun: false,

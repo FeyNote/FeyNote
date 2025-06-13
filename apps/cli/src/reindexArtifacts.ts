@@ -8,6 +8,7 @@ import {
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
 import { setTimeout } from 'timers/promises';
+import { logger } from '@feynote/api-services';
 
 export const reindexArtifacts = async (
   userId: string | undefined,
@@ -16,7 +17,7 @@ export const reindexArtifacts = async (
   cooldown: number,
 ) => {
   for (let page = 0; ; page++) {
-    console.log('Indexing page', page);
+    logger.info('Indexing page', page);
 
     const artifacts = await prisma.artifact.findMany({
       where: {
@@ -81,7 +82,7 @@ export const reindexArtifacts = async (
         if (throwOnError) {
           throw e;
         } else {
-          console.error(e);
+          logger.error(e);
         }
       }
 

@@ -18,6 +18,8 @@ x-common-env-vars: &common-env-vars
   PROXY_URL: val
   PROXY_USERNAME: val
   PROXY_PASSWORD: val
+  LOGGER_LEVEL: debug
+  LOGGER_TRANSPORTS_CONSOLE: 'true'
 
 name: feynote
 services:
