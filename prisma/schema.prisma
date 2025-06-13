@@ -180,7 +180,7 @@ model StripePayment {
   amountPaid           Int
   customerId           String        @db.VarChar(255)
   customerEmail        String?       @db.VarChar(255)
-  paymentIntentId      String        @unique @db.VarChar(255)
+  invoiceId            String        @unique @db.VarChar(255)
   stripeSubscriptionId String        @unique @db.VarChar(255)
   subscriptionId       String?       @db.Uuid
   subscription         Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
