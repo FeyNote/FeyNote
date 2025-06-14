@@ -97,6 +97,11 @@ export const stripeWebhookHandler = defineExpressHandler(
     });
 
     if (event.type === 'invoice.payment_succeeded') {
+      logger.debug(
+        'Received invoice.payment_succeeded webhook',
+        event.data.object,
+      );
+
       const invoice = event.data.object;
       const invoiceId = invoice.id;
 
@@ -187,18 +192,22 @@ export const stripeWebhookHandler = defineExpressHandler(
           },
         });
 
+        const stripePaymentData = {
+          userId,
+          amountPaid: invoice.amount_paid,
+          customerId,
+          invoiceId,
+          customerEmail: invoice.customer_email,
+          stripeSubscriptionId: subscriptionId,
+          subscriptionId: internalSubscription?.id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe's typings are incompatible with Prisma's troublesome json type
+          eventObjectJson: invoice as any,
+        };
+
+        logger.debug('Creating stripePayment record', stripePaymentData);
+
         await tx.stripePayment.create({
-          data: {
-            userId,
-            amountPaid: invoice.amount_paid,
-            customerId,
-            invoiceId,
-            customerEmail: invoice.customer_email,
-            stripeSubscriptionId: subscriptionId,
-            subscriptionId: internalSubscription?.id,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Stripe's typings are incompatible with Prisma's troublesome json type
-            eventObjectJson: invoice as any,
-          },
+          data: stripePaymentData,
         });
       });
     }
