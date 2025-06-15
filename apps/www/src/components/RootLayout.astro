@@ -15,7 +15,11 @@ const { title } = Astro.props;
     <GlobalStyles />
     <style>
       body {
+        margin: 0;
         color: white;
+        min-height: 100vh;
+
+        font-family: sans-serif;
       }
 
       a {
@@ -30,6 +34,7 @@ const { title } = Astro.props;
         height: 40px;
         padding-left: 16px;
         padding-right: 16px;
+        padding-top: 5px;
       }
 
       .nav .title {
