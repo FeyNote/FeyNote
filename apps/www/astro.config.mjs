@@ -16,7 +16,7 @@ export default defineConfig({
   }),
   vite: {
     server: {
-      allowedHosts: true,
+      allowedHosts: ['feynote.com', '.feynote.com', '.tartarus.cloud'],
     },
     ssr: {
       // This marks the `path-to-regexp` package as external, so it won't be bundled in the server build
