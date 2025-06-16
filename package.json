@@ -127,7 +127,7 @@
     "y-indexeddb": "^9.0.12",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27",
-    "zod": "^3.25.57"
+    "zod": "^3.25.64"
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",
