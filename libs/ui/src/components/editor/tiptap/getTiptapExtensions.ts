@@ -45,7 +45,10 @@ import { IsolatingContainerBackspaceExtension } from './extensions/isolatingCont
 import { BlockGroup } from './extensions/BlockGroup';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
-import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
+import {
+  ARTIFACT_TIPTAP_BODY_KEY,
+  TiptapBlockType,
+} from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
@@ -127,7 +130,7 @@ export const getTiptapExtensions = (args: {
     StrikeExtension,
     UnderlineExtension,
     TextAlignExtension.configure({
-      types: ['heading', 'paragraph'],
+      types: [TiptapBlockType.Heading, TiptapBlockType.Paragraph],
       alignments: ['left', 'center', 'right'],
     }),
     DropcursorExtension,
@@ -171,7 +174,11 @@ export const getTiptapExtensions = (args: {
       placeholder: args.placeholder,
     }),
     UniqueIDExtension.configure({
-      types: ['heading', 'paragraph', 'artifactReference'],
+      types: [
+        TiptapBlockType.Heading,
+        TiptapBlockType.Paragraph,
+        TiptapBlockType.ArtifactReference,
+      ],
       filterTransaction: (transaction) => !isChangeOrigin(transaction),
     }),
     MonsterStatblockExtension,

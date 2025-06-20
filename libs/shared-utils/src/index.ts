@@ -30,6 +30,7 @@ export * from './lib/tiptap/jsonContentForEach';
 export * from './lib/tiptap/patchJsonContentWithReferenceText';
 export * from './lib/tiptap/randomizeJSONContentUUIDs';
 export * from './lib/tiptap/addMissingBlockIds';
+export * from './lib/tiptap/TiptapBlockType';
 export * from './lib/tldraw/getReferencesFromTLDrawContent';
 export * from './lib/tldraw/getTLDrawContentFromYDoc';
 export * from './lib/tldraw/randomizeTLDrawContentShapeIds';

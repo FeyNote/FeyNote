@@ -39,8 +39,6 @@ export const useIndeterminateProgressBar = (opts?: {
     0,
   );
 
-  console.log(progress);
-
   const _ProgressBar = progress ? (
     <ProgressBar
       barStyle={opts?.barStyle || 'thin'}

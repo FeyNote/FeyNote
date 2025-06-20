@@ -7,6 +7,7 @@ export const jobSummary = Prisma.validator<Prisma.JobFindFirstArgs>()({
     status: true,
     type: true,
     meta: true,
+    progress: true,
   },
 });
 

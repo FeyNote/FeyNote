@@ -30,6 +30,7 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import { UniqueID } from '@tiptap-pro/extension-unique-id';
 import HeadingExtension from '@tiptap/extension-heading';
 import { FeynoteEditorMediaType } from '../types/FeynoteEditorMediaType';
+import { TiptapBlockType } from './TiptapBlockType';
 
 interface Props {
   userFileToS3Map?: Map<string, string>;
@@ -143,7 +144,7 @@ export const getTiptapServerExtensions = (props: Props) => {
     StrikeExtension,
     UnderlineExtension,
     TextAlignExtension.configure({
-      types: ['heading', 'paragraph'],
+      types: [TiptapBlockType.Heading, TiptapBlockType.Paragraph],
       alignments: ['left', 'center', 'right'],
     }),
     DropcursorExtension,
@@ -241,7 +242,11 @@ export const getTiptapServerExtensions = (props: Props) => {
       },
     }),
     UniqueID.configure({
-      types: ['heading', 'paragraph', 'artifactReference'],
+      types: [
+        TiptapBlockType.Heading,
+        TiptapBlockType.Paragraph,
+        TiptapBlockType.ArtifactReference,
+      ],
     }),
     Node.create({
       name: 'customMonsterStatblock',

@@ -6,7 +6,7 @@ import { JobStatus, JobType } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import {
   jobSummary,
-  prismaJobSummaryToJobSummary
+  prismaJobSummaryToJobSummary,
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
@@ -19,7 +19,6 @@ import { WebsocketMessageEvent } from '@feynote/global-types';
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
   JOB_QUEUE_NAME,
   async (args) => {
-    console.log(`Received job: ${JSON.stringify(args.data)}`);
     const userId = args.data.triggeredByUserId;
     const prismaJobSummary = await prisma.job.update({
       where: {
@@ -30,7 +29,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       },
       ...jobSummary,
     });
-    const job = prismaJobSummaryToJobSummary(prismaJobSummary)
+    const job = prismaJobSummaryToJobSummary(prismaJobSummary);
     let status: JobStatus = JobStatus.Success;
     try {
       switch (job.type) {
@@ -49,14 +48,14 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       console.error(`Failed processing job ${args.id}`, e);
       status = JobStatus.Failed;
     }
-    console.log(`Updating job status to completed, ${status}`);
+
     await prisma.job.update({
       where: {
         id: args.data.jobId,
       },
       data: {
         status,
-        progress: 100,
+        progress: 1,
       },
     });
     enqueueOutgoingWebsocketMessage({
@@ -64,9 +63,10 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       event: WebsocketMessageEvent.JobCompleted,
       json: {
         jobId: job.id,
+        type: job.type,
       },
     });
-    console.error(`Finished processing job ${args.id}`);
+    console.log(`Finished processing job ${args.id}`);
   },
   {
     autorun: false,

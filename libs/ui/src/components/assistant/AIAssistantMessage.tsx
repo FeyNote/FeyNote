@@ -29,7 +29,7 @@ export const AIAssistantMessage = ({
         return (
           <AIToolInvocation key={i} toolInvocation={part.toolInvocation} />
         );
-      } else if (part.type === 'text') {
+      } else {
         return (
           <AIMessagePartText
             key={i}

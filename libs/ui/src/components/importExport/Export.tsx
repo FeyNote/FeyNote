@@ -1,68 +1,123 @@
-import {
-  IonAccordion,
-  IonAccordionGroup,
-  IonContent,
-  IonItem,
-  IonLabel,
-  IonPage,
-} from '@ionic/react';
-import { t } from 'i18next';
-import { ExportZip } from './ExportZip';
-import { ExportFormat } from '@feynote/prisma/types';
+import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
+import { useTranslation } from 'react-i18next';
+import { JobList } from './JobList';
+import { useContext, useEffect, useState } from 'react';
+import { trpc } from '../../utils/trpc';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
+import type { EventData } from '../../context/events/EventData';
+import { type JobSummary } from '@feynote/prisma/types';
+import { JobType } from '@prisma/client';
+import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+
+const NUM_OF_INITAL_JOBS_SHOWN = 5;
 
 export const Export: React.FC = () => {
+  const { t } = useTranslation();
+  const [jobs, setJobs] = useState<JobSummary[]>([]);
+  const [hasMoreJobs, setHasMoreJobs] = useState(true);
+  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
+  const { navigate } = useContext(PaneContext);
 
-  // useEffect(() => {
-  //   getImportJobs();
-  //   const jobCompletionHandler = async (
-  //     _: EventName,
-  //     data: EventData[EventName.JobCompleted],
-  //   ) => {
-  //     const importJobs = await trpc.job.getImportJobs.query();
-  //     setJobs(importExportJobs);
-  //     const eventJob = importExportJobs.find((job) => job.id === data.jobId);
-  //     if (!eventJob) return;
-  //     if (eventJob.type === JobType.Export) {
-  //       const url = await trpc.file.getFileUrlByJobId.query({
-  //         jobId: eventJob.id,
-  //       });
-  //       if (!url) return;
-  //       window.open(url, '_blank');
-  //     }
-  //   };
-  //
-  //   eventManager.addEventListener(EventName.JobCompleted, jobCompletionHandler);
-  //   return () => {
-  //     eventManager.removeEventListener(
-  //       EventName.JobCompleted,
-  //       jobCompletionHandler,
-  //     );
-  //   };
-  // }, []);
+  useEffect(() => {
+    getMoreJobs();
+    const jobCompletionHandler = async (
+      _: EventName,
+      data: EventData[EventName.JobCompleted],
+    ) => {
+      if (data.type !== JobType.Export) return;
+      await refreshJobs();
+      await openJobUrls(data.jobId);
+    };
+
+    eventManager.addEventListener(EventName.JobCompleted, jobCompletionHandler);
+    return () => {
+      eventManager.removeEventListener(
+        EventName.JobCompleted,
+        jobCompletionHandler,
+      );
+    };
+  }, []);
+
+  const openJobUrls = async (jobId: string) => {
+    const urls = await trpc.file.getFileUrlsByJobId.query({
+      jobId: jobId,
+    });
+    if (!urls.length) return;
+    urls.forEach((url) => window.open(url, '_blank'));
+  };
+
+  const refreshJobs = async () => {
+    const progress = startProgressBar();
+    const exportDto = await trpc.job.getJobs.query({
+      // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
+      limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
+      type: JobType.Export,
+    });
+    setJobs(exportDto.jobs);
+    progress.dismiss();
+  };
+
+  const getMoreJobs = async () => {
+    const progress = startProgressBar();
+    const exportjobsDTO = await trpc.job.getJobs.query({
+      offset: jobs.length,
+      limit: NUM_OF_INITAL_JOBS_SHOWN,
+      type: JobType.Export,
+    });
+    const totalJobs = [...jobs, ...exportjobsDTO.jobs];
+    setJobs(totalJobs);
+    setHasMoreJobs(exportjobsDTO.totalCount > totalJobs.length);
+    progress.dismiss();
+  };
 
   return (
     <IonPage>
       <PaneNav title={t('export.title')} />
       <IonContent className="ion-padding">
-        <IonAccordionGroup>
-          <IonAccordion value="third">
-            <IonItem slot="header">
-              <IonLabel>{t('export.options.markdown')}</IonLabel>
-            </IonItem>
-            <div slot="content">
-              <ExportZip type={ExportFormat.Markdown} />
-            </div>
-          </IonAccordion>
-          <IonAccordion value="fourth">
-            <IonItem slot="header">
-              <IonLabel>{t('export.options.json')}</IonLabel>
-            </IonItem>
-            <div slot="content">
-              <ExportZip type={ExportFormat.Json} />
-            </div>
-          </IonAccordion>
-        </IonAccordionGroup>
+        {ProgressBar}
+        {!!jobs.length && (
+          <JobList
+            title={t('export.jobList')}
+            hasMoreJobs={hasMoreJobs}
+            jobs={jobs}
+            getMoreJobs={getMoreJobs}
+            jobClickHandler={openJobUrls}
+          />
+        )}
+        <br />
+        <IonList>
+          <IonItem
+            lines="none"
+            button
+            onClick={() => {
+              navigate(PaneableComponent.ExportToJson, {}, PaneTransition.Push);
+            }}
+            target="_blank"
+            detail={true}
+          >
+            {t('export.options.json')}
+          </IonItem>
+          <IonItem
+            lines="none"
+            button
+            onClick={() => {
+              navigate(
+                PaneableComponent.ExportToMarkdown,
+                {},
+                PaneTransition.Push,
+              );
+            }}
+            target="_blank"
+            detail={true}
+          >
+            {t('export.options.markdown')}
+          </IonItem>
+        </IonList>
       </IonContent>
     </IonPage>
   );

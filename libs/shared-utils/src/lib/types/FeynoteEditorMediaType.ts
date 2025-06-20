@@ -1,5 +1,5 @@
 export enum FeynoteEditorMediaType {
-  Image = 'img',
+  Image = 'image',
   Video = 'video',
   Audio = 'audio',
   Generic = 'generic',

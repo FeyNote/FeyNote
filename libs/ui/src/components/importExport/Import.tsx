@@ -1,7 +1,7 @@
 import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
-import { ImportJobList } from './ImportJobList';
+import { JobList } from './JobList';
 import { useContext, useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import { eventManager } from '../../context/events/EventManager';
@@ -14,20 +14,23 @@ import type { JobSummary } from '@feynote/prisma/types';
 import { JobType } from '@prisma/client';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 
+const NUM_OF_INITAL_JOBS_SHOWN = 5;
+
 export const Import: React.FC = () => {
   const { t } = useTranslation();
-  const [jobs, setJobs] = useState<(JobSummary)[]>([]);
+  const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const { navigate } = useContext(PaneContext);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
 
   useEffect(() => {
-    getMoreImportJobs();
+    getMoreJobs();
     const jobCompletionHandler = async (
       _: EventName,
-      __: EventData[EventName.JobCompleted],
+      data: EventData[EventName.JobCompleted],
     ) => {
-      await refreshJobs()
+      if (data.type !== JobType.Import) return;
+      await refreshJobs();
     };
 
     eventManager.addEventListener(EventName.JobCompleted, jobCompletionHandler);
@@ -42,24 +45,30 @@ export const Import: React.FC = () => {
   const refreshJobs = async () => {
     const progress = startProgressBar();
     const importDto = await trpc.job.getJobs.query({
-      limit: jobs.length,
+      // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
+      limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
+      type: JobType.Import,
     });
     setJobs(importDto.jobs);
     setHasMoreJobs(importDto.totalCount <= importDto.jobs.length);
     progress.dismiss();
   };
 
-  const getMoreImportJobs = async () => {
+  const getMoreJobs = async () => {
     const progress = startProgressBar();
     const importjobsDTO = await trpc.job.getJobs.query({
       offset: jobs.length,
-      limit: 5,
+      limit: NUM_OF_INITAL_JOBS_SHOWN,
       type: JobType.Import,
     });
     const totalJobs = [...jobs, ...importjobsDTO.jobs];
     setJobs(totalJobs);
     setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
-    progress.dismiss()
+    progress.dismiss();
+  };
+
+  const jobClickHandler = async (_: string) => {
+    // TODO: Navigate user to page of all imported artifacts from job
   };
 
   return (
@@ -68,9 +77,15 @@ export const Import: React.FC = () => {
       <IonContent className="ion-padding">
         {ProgressBar}
         {!!jobs.length && (
-          <ImportJobList hasMoreJobs={hasMoreJobs} jobs={jobs} getMoreJobs={getMoreImportJobs} />
+          <JobList
+            title={t('import.jobList')}
+            hasMoreJobs={hasMoreJobs}
+            jobs={jobs}
+            getMoreJobs={getMoreJobs}
+            jobClickHandler={jobClickHandler}
+          />
         )}
-        <br/>
+        <br />
         <IonList>
           <IonItem
             lines="none"
@@ -85,7 +100,7 @@ export const Import: React.FC = () => {
             target="_blank"
             detail={true}
           >
-            {t('importFromLogseq.title')}
+            {t('import.options.logseq')}
           </IonItem>
           <IonItem
             lines="none"
@@ -100,18 +115,7 @@ export const Import: React.FC = () => {
             target="_blank"
             detail={true}
           >
-            {t('importFromObsidian.title')}
-          </IonItem>
-          <IonItem
-            lines="none"
-            button
-            onClick={() => {
-              navigate(PaneableComponent.Export, {}, PaneTransition.Push);
-            }}
-            target="_blank"
-            detail={true}
-          >
-            {t('export.title')}
+            {t('import.options.obsidian')}
           </IonItem>
         </IonList>
       </IonContent>

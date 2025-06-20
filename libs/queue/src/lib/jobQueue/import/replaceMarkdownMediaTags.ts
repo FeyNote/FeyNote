@@ -1,4 +1,4 @@
-import type { FeynoteEditorMediaType } from '@feynote/shared-utils';
+import { FeynoteEditorMediaType } from '@feynote/shared-utils';
 import { performMediaReplacement } from './performMediaReplacement';
 import { retrieveMediaAttributesFromTag } from './retrieveMediaAttributesFromTag';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
@@ -23,10 +23,12 @@ export const replaceMarkdownMediaTags = async (
       ? tagAttributes.src
       : baseMediaNameToPath.get(basename(tagAttributes.src));
     if (!src) continue;
+    let fileType = matchingGroups[1];
+    if (fileType === 'img') fileType = FeynoteEditorMediaType.Image;
     content = await performMediaReplacement({
       match: matchingGroups[0],
       src,
-      fileType: matchingGroups[1] as FeynoteEditorMediaType,
+      fileType: fileType as FeynoteEditorMediaType,
       importInfo,
       content,
       artifactId,

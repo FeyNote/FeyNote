@@ -10,7 +10,7 @@ export const buildOutgoingWebsocketMessageQueueWorker = (io: Server) => {
     OUTGOING_WEBSOCKET_MESSAGE_QUEUE_NAME,
     async (args) => {
       try {
-        console.log(`WS job received: ${JSON.stringify(args.data)}`);
+        console.log(`Processing job ${args.id}`);
         io.to(args.data.room).emit(args.data.event, JSON.parse(args.data.json));
       } catch (e) {
         console.log(`Failed processing job ${args.id}`, e);

@@ -18,30 +18,32 @@ export const getJobs = authenticatedProcedure
       type: z.nativeEnum(JobType).optional(),
     }),
   )
-.query(
-  async ({ input, ctx }): Promise<{ jobs: JobSummary[], totalCount: number }> => {
-    const importJobs = await prisma.job.findMany({
-      where: {
-        userId: ctx.session.userId,
-        type: input.type,
-      },
-      skip: input.offset,
-      take: input.limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
-      ...jobSummary,
-    });
-    console.log(`grabbed jobs: ${importJobs}`)
-    const totalCount = await prisma.job.count({
-      where: {
-        userId: ctx.session.userId,
-        type: JobType.Import,
-      },
-    })
-    return {
-      jobs: importJobs.map(prismaJobSummaryToJobSummary),
-      totalCount,
-    }
-  },
-);
+  .query(
+    async ({
+      input,
+      ctx,
+    }): Promise<{ jobs: JobSummary[]; totalCount: number }> => {
+      const jobs = await prisma.job.findMany({
+        where: {
+          userId: ctx.session.userId,
+          type: input.type,
+        },
+        skip: input.offset,
+        take: input.limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        ...jobSummary,
+      });
+      const totalCount = await prisma.job.count({
+        where: {
+          userId: ctx.session.userId,
+          type: input.type,
+        },
+      });
+      return {
+        jobs: jobs.map(prismaJobSummaryToJobSummary),
+        totalCount,
+      };
+    },
+  );

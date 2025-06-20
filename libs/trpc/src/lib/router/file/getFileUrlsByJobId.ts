@@ -7,14 +7,14 @@ import { TRPCError } from '@trpc/server';
 
 const SIGNED_URL_EXPIRATION_SECONDS = 86400;
 
-export const getFileUrlByJobId = authenticatedProcedure
+export const getFileUrlsByJobId = authenticatedProcedure
   .input(
     z.object({
       jobId: z.string(),
     }),
   )
-  .query(async ({ ctx, input }): Promise<string> => {
-    const file = await prisma.file.findFirst({
+  .query(async ({ ctx, input }): Promise<string[]> => {
+    const files = await prisma.file.findMany({
       where: {
         jobId: input.jobId,
         userId: ctx.session.userId,
@@ -22,19 +22,23 @@ export const getFileUrlByJobId = authenticatedProcedure
       },
     });
 
-    if (!file) {
+    if (!files.length) {
       throw new TRPCError({
-        message: 'File does not exist for the given job id',
+        message: 'No files found for the given job id',
         code: 'NOT_FOUND',
       });
     }
 
-    const url = getSignedUrlForFilePurpose({
-      key: file.storageKey,
-      operation: 'getObject',
-      purpose: file.purpose,
-      expiresInSeconds: SIGNED_URL_EXPIRATION_SECONDS,
-    });
+    const signedUrls = [];
+    for (const file of files) {
+      const url = await getSignedUrlForFilePurpose({
+        key: file.storageKey,
+        operation: 'getObject',
+        purpose: file.purpose,
+        expiresInSeconds: SIGNED_URL_EXPIRATION_SECONDS,
+      });
+      signedUrls.push(url);
+    }
 
-    return url;
+    return signedUrls;
   });

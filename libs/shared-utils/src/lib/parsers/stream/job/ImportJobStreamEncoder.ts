@@ -17,7 +17,7 @@ export class ImportJobStreamEncoder {
     const writer = new FeynoteStreamWriter();
 
     // Type
-    writer.writeUInt16(FeynoteAPIStreamMessageType.File);
+    writer.writeUInt16(FeynoteAPIStreamMessageType.Job);
     // Subtype (used for versioning in the future in the case of incompatible updates to this protocol)
     writer.writeUInt16(0);
 
@@ -25,7 +25,7 @@ export class ImportJobStreamEncoder {
       id: data.id,
       fileName: data.fileName,
       mimetype: data.mimetype,
-      format: ImportFormat,
+      format: data.format,
       fileSize: data.fileSize,
     });
     writer.writeRawUint8Array(new Uint8Array(await data.file.arrayBuffer()));
