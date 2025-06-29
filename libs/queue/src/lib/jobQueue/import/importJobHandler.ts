@@ -28,7 +28,7 @@ export const importJobHandler = async (job: JobSummary) => {
     case ImportFormat.Obsidian: {
       await importFromZip({
         storageKey: importFile.storageKey,
-        userId: job.userId,
+        job,
         processor: (filePaths) =>
           obsidianToStandardizedImport(job.userId, filePaths, progressTracker),
         progressTracker,
@@ -38,7 +38,7 @@ export const importJobHandler = async (job: JobSummary) => {
     case ImportFormat.Logseq: {
       await importFromZip({
         storageKey: importFile.storageKey,
-        userId: job.userId,
+        job,
         processor: (filePaths) =>
           logseqToStandardizedImport(job.userId, filePaths, progressTracker),
         progressTracker,

@@ -6,10 +6,11 @@ import { writeStandardizedImport } from './writeStandardizedImport';
 import { FilePurpose } from '@prisma/client';
 import { streamFileFromS3 } from '@feynote/api-services';
 import type { JobProgressTracker } from '../JobProgressTracker';
+import type { JobSummary } from '@feynote/prisma/types';
 
 export const importFromZip = async (args: {
   storageKey: string;
-  userId: string;
+  job: JobSummary;
   processor: (filePaths: string[]) => Promise<StandardizedImportInfo>;
   progressTracker: JobProgressTracker;
 }) => {
@@ -20,7 +21,11 @@ export const importFromZip = async (args: {
   if (!filePaths) return;
 
   const importInfo = await args.processor(filePaths);
-  await writeStandardizedImport(importInfo, args.userId, args.progressTracker);
+  await writeStandardizedImport({
+    importInfo,
+    job: args.job,
+    progressTracker: args.progressTracker,
+  });
 
   await rm(zipDest, { recursive: true });
   await rm(extractDest, { recursive: true });
