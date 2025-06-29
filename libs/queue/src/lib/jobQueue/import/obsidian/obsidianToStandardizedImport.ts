@@ -27,10 +27,12 @@ import { addBlockIdsToReferencedBlockIds } from './addBlockIdsToReferencedBlockI
 import { addBlockIdsToReferencedHeaders } from './addBlockIdsToReferencedHeaders';
 import { populateHeadersToBlockInfoMap } from './populateHeadersToBlockInfoMap';
 import { replaceObsidianReferencedHeadings } from './replaceObsidianReferencedHeadings';
+import type { JobProgressTracker } from '../../JobProgressTracker';
 
 export const obsidianToStandardizedImport = async (
   userId: string,
   filePaths: string[],
+  progressTracker: JobProgressTracker,
 ): Promise<StandardizedImportInfo> => {
   const importInfo: StandardizedImportInfo = {
     artifactsToCreate: [],
@@ -41,7 +43,7 @@ export const obsidianToStandardizedImport = async (
   const baseMediaNameToPath = new Map<string, string>();
   const referenceIdToBlockInfoMap = new Map<string, ArtifactBlockInfo>();
   // Must preprocess references to get the correct reference text for artifact block replacements
-  for await (const filePath of filePaths) {
+  for (const filePath of filePaths) {
     const basename = path.basename(filePath);
     if (path.extname(filePath) !== '.md') {
       baseMediaNameToPath.set(basename, filePath);
@@ -65,7 +67,8 @@ export const obsidianToStandardizedImport = async (
     );
   }
 
-  for await (const filePath of filePaths) {
+  for (let i = 0; i < filePaths.length; i++) {
+    const filePath = filePaths[i];
     const basename = path.basename(filePath);
     if (path.extname(filePath) !== '.md') continue;
     const title = path.parse(basename).name;
@@ -141,6 +144,10 @@ export const obsidianToStandardizedImport = async (
       text,
       json: tiptap,
       yBin,
+    });
+    progressTracker.onProgress({
+      progress: Math.floor((i / filePaths.length) * 100),
+      step: 1,
     });
   }
   return importInfo;

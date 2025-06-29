@@ -25,9 +25,9 @@ export * from './lib/s3/transformAndUploadFileToS3ForUser';
 export * from './lib/s3/transformImage';
 export * from './lib/s3/uploadFileToS3';
 export * from './lib/s3/streamFileFromS3';
-export * from './lib/s3/getFileFromS3';
 export * from './lib/s3/getSignedFileUrlsForUser';
 export * from './lib/s3/getSafeFileId';
+export * from './lib/s3/sanitizeFilePath';
 
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';

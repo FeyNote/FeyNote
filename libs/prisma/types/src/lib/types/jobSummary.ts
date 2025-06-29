@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 export const jobSummary = Prisma.validator<Prisma.JobFindFirstArgs>()({
   select: {
     id: true,
+    userId: true,
     createdAt: true,
     status: true,
     type: true,

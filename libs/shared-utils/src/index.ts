@@ -59,3 +59,4 @@ export * from './lib/types/SessionDTO';
 export * from './lib/ImmediateDebouncer';
 export * from './lib/tiptap/getTiptapServerExtensions';
 export * from './lib/customTrpcTransformer';
+export * from './lib/throttleDropPromise';

@@ -27,9 +27,11 @@ export async function transformAndUploadFileToS3ForUser(args: {
   mimetype: string;
   storageKey?: string;
 }) {
-  const { maxResolution, quality, maxFileSize } = await getFileLimitsForUser(
-    args.userId,
-  );
+  const fileLimits = await getFileLimitsForUser(args.userId);
+  let maxFileSizeMB = fileLimits.maxFileSize;
+  if (args.purpose === FilePurpose.job) {
+    maxFileSizeMB = 5000 * 1024 * 1024; // 5GB
+  }
 
   let transformedMimetype = args.mimetype;
   const filePipeline = new PassThrough();
@@ -37,9 +39,9 @@ export async function transformAndUploadFileToS3ForUser(args: {
     transformImage(
       args.file,
       filePipeline,
-      maxResolution,
-      maxResolution,
-      quality,
+      fileLimits.maxResolution,
+      fileLimits.maxResolution,
+      fileLimits.quality,
       'inside',
     );
     transformedMimetype = 'image/jpeg';
@@ -58,7 +60,7 @@ export async function transformAndUploadFileToS3ForUser(args: {
     const limiter = new Writable({
       write(chunk, _enc, cb) {
         totalBytes += chunk.length;
-        if (totalBytes > maxFileSize) {
+        if (totalBytes > maxFileSizeMB) {
           cb(sizeLimitError);
           filePipeline.destroy(sizeLimitError); // stop reading
           limitedFilePipeline.destroy(sizeLimitError); // stop writing

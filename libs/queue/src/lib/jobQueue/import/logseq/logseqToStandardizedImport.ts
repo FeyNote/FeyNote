@@ -23,6 +23,7 @@ import { getSafeArtifactId } from '@feynote/api-services';
 import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
 import { replaceMarkdownMediaLinks } from '../replaceMarkdownMediaLinks';
 import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
+import type { JobProgressTracker } from '../../JobProgressTracker';
 
 const convertLogseqTableToMarkdown = (logseqTable: string): string => {
   const lines = logseqTable.split('\n');
@@ -246,6 +247,7 @@ const handleLogseqGraph = async (
   json: LogseqGraph,
   userId: string,
   baseMediaNameToPath: Map<string, string>,
+  progressTracker: JobProgressTracker,
 ) => {
   const pageNameToIdMap = new Map<string, string>();
   for (const page of json.blocks) {
@@ -261,7 +263,8 @@ const handleLogseqGraph = async (
     pageNameToIdMap,
   );
 
-  for (const page of json.blocks) {
+  for (let i = 0; i < json.blocks.length; i++) {
+    const page = json.blocks[i];
     // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
@@ -306,12 +309,18 @@ const handleLogseqGraph = async (
       json: tiptap,
       yBin,
     });
+
+    progressTracker.onProgress({
+      progress: Math.floor((i / json.blocks.length) * 100),
+      step: 1,
+    });
   }
 };
 
 export const logseqToStandardizedImport = async (
   userId: string,
   filePaths: string[],
+  progressTracker: JobProgressTracker,
 ): Promise<StandardizedImportInfo> => {
   const importInfo: StandardizedImportInfo = {
     artifactsToCreate: [],
@@ -327,7 +336,13 @@ export const logseqToStandardizedImport = async (
   for await (const filePath of filePaths) {
     if (extname(filePath) === '.json') {
       const json = JSON.parse(await readFile(filePath, 'utf-8')) as LogseqGraph;
-      await handleLogseqGraph(importInfo, json, userId, baseMediaNameToPath);
+      await handleLogseqGraph(
+        importInfo,
+        json,
+        userId,
+        baseMediaNameToPath,
+        progressTracker,
+      );
       break;
     }
   }

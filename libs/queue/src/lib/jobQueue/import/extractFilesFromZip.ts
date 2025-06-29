@@ -2,6 +2,7 @@ import { readdir } from 'fs/promises';
 import { join } from 'path';
 import extract from 'extract-zip';
 import { tmpdir } from 'os';
+import { sanitizeFilePath } from '@feynote/api-services';
 
 class FileLimitExceededError extends Error {
   constructor() {
@@ -26,7 +27,14 @@ export const extractFilesFromZip = async (zipDest: string) => {
   });
 
   const filePaths = (await readdir(extractDest, { recursive: true })).map(
-    (filePath) => join(extractDest, filePath.toString()),
+    (filePath) => {
+      const joinedPath = join(extractDest, filePath.toString());
+      const sanitizedPath = sanitizeFilePath({
+        mustStartWith: extractDest,
+        filePath: joinedPath,
+      });
+      return sanitizedPath;
+    },
   );
   return { filePaths, extractDest };
 };

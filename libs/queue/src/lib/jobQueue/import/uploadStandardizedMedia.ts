@@ -9,19 +9,21 @@ import { FilePurpose } from '@prisma/client';
 import { Readable } from 'stream';
 import { createReadStream } from 'fs';
 import mime from 'mime';
+import type { JobProgressTracker } from '../JobProgressTracker';
 
 const ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD = 5000;
-const UPLOAD_CONCURRENCY = 20;
+const UPLOAD_CONCURRENCY = 3;
 
 const limit = pLimit(UPLOAD_CONCURRENCY);
 
 export const uploadStandardizedMedia = async (
   userId: string,
   importInfo: StandardizedImportInfo,
+  progressTracker: JobProgressTracker,
 ) => {
   let counter = 0;
   const results = await Promise.allSettled(
-    importInfo.mediaFilesToUpload.map(async (mediaInfo) => {
+    importInfo.mediaFilesToUpload.map(async (mediaInfo, idx) => {
       return limit(async () => {
         counter++;
 
@@ -70,6 +72,12 @@ export const uploadStandardizedMedia = async (
           },
         };
 
+        progressTracker.onProgress({
+          progress: Math.floor(
+            (idx / importInfo.mediaFilesToUpload.length) * 100,
+          ),
+          step: 2,
+        });
         return fileData;
       });
     }),

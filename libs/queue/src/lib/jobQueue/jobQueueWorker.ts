@@ -10,16 +10,10 @@ import {
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
-import {
-  enqueueOutgoingWebsocketMessage,
-  wsRoomNameForUserId,
-} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
-import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
   JOB_QUEUE_NAME,
   async (args) => {
-    const userId = args.data.triggeredByUserId;
     const prismaJobSummary = await prisma.job.update({
       where: {
         id: args.data.jobId,
@@ -31,14 +25,15 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
     });
     const job = prismaJobSummaryToJobSummary(prismaJobSummary);
     let status: JobStatus = JobStatus.Success;
+
     try {
       switch (job.type) {
         case JobType.Import: {
-          await importJobHandler(job, userId);
+          await importJobHandler(job);
           break;
         }
         case JobType.Export: {
-          await exportJobHandler(job, userId);
+          await exportJobHandler(job);
           break;
         }
         default:
@@ -55,15 +50,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       },
       data: {
         status,
-        progress: 1,
-      },
-    });
-    enqueueOutgoingWebsocketMessage({
-      room: wsRoomNameForUserId(userId),
-      event: WebsocketMessageEvent.JobCompleted,
-      json: {
-        jobId: job.id,
-        type: job.type,
+        progress: 100,
       },
     });
     console.log(`Finished processing job ${args.id}`);

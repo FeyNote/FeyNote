@@ -1,4 +1,3 @@
-import type { JobType } from '@prisma/client';
 import type { WebsocketMessageEvent } from './WebsocketMessageEvent';
 
 export type WebsocketMessageJSON = {
@@ -11,10 +10,6 @@ export type WebsocketMessageJSON = {
       references: boolean;
       deletedAt: boolean;
     };
-  };
-  [WebsocketMessageEvent.JobCompleted]: {
-    jobId: string;
-    type: JobType;
   };
   [WebsocketMessageEvent.ThreadUpdated]: {
     threadId: string;

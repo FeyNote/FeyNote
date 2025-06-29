@@ -1,12 +1,9 @@
-import { streamFileFromS3 } from '@feynote/api-services';
-import { FilePurpose } from '@prisma/client';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { createWriteStream } from 'fs';
+import type Stream from 'stream';
 
-export const getFileFromS3 = async (key: string) => {
-  const purpose = FilePurpose.job;
-  const stream = await streamFileFromS3(key, purpose);
+export const saveFileStreamToDisk = async (stream: Stream.Readable) => {
   if (!stream) throw new Error('Error streaming file from s3');
 
   const tempDir = tmpdir();

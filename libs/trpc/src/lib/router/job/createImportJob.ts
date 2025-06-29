@@ -6,7 +6,10 @@ import { enqueueJob } from '@feynote/queue';
 import { ImportJobStreamDecoder } from '@feynote/shared-utils';
 import type { ParserZodEsque } from '@trpc/server/unstable-core-do-not-import';
 import { octetInputParser } from '@trpc/server/http';
-import { FileSizeLimitError, transformAndUploadFileToS3ForUser } from '@feynote/api-services';
+import {
+  FileSizeLimitError,
+  transformAndUploadFileToS3ForUser,
+} from '@feynote/api-services';
 import type { ReadableStream as NodeWebReadableStream } from 'stream/web';
 import { Readable } from 'stream';
 
@@ -65,7 +68,7 @@ export const createImportJob = authenticatedProcedure
             userId,
             status: JobStatus.NotStarted,
             type: JobType.Import,
-            progress: 20, // Some progress should be given for the act of uploading the file
+            progress: 0,
             meta: {
               importFormat: input.format,
             },
@@ -86,7 +89,7 @@ export const createImportJob = authenticatedProcedure
           },
         });
         return { importJob: importJob };
-      })
+      });
 
       enqueueJob({
         triggeredByUserId: ctx.session.userId,

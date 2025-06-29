@@ -40,9 +40,6 @@ socket.on('reconnect', () => {
 socket.on(EventName.ArtifactUpdated, (data) => {
   eventManager.broadcast(EventName.ArtifactUpdated, data);
 });
-socket.on(EventName.JobCompleted, (data) => {
-  eventManager.broadcast(EventName.JobCompleted, data);
-});
 
 socket.on(EventName.ThreadUpdated, (data) => {
   eventManager.broadcast(EventName.ThreadUpdated, data);

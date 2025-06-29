@@ -3,12 +3,18 @@ import type { StandardizedImportInfo } from './StandardizedImportInfo';
 import { uploadStandardizedMedia } from './uploadStandardizedMedia';
 import { enqueueArtifactUpdate } from '../../artifactUpdateQueue/artifactUpdateQueue';
 import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
+import type { JobProgressTracker } from '../JobProgressTracker';
 
 export const writeStandardizedImport = async (
   importInfo: StandardizedImportInfo,
   userId: string,
+  progressTracker: JobProgressTracker,
 ) => {
-  const images = await uploadStandardizedMedia(userId, importInfo);
+  const images = await uploadStandardizedMedia(
+    userId,
+    importInfo,
+    progressTracker,
+  );
   const { createdArtifacts } = await prisma.$transaction(async (tx) => {
     const createdArtifacts = await tx.artifact.createManyAndReturn({
       data: importInfo.artifactsToCreate,

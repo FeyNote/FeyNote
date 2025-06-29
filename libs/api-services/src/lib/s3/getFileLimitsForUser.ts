@@ -14,12 +14,12 @@ export const getFileLimitsForUser = async (userId: string) => {
     quality = 80;
   }
 
-  let maxFileSizeMb = 80000;
+  let maxFileSizeMb = 8;
   if (userCapabilities.has(Capability.LargeFiles)) {
-    maxFileSizeMb = 250000;
+    maxFileSizeMb = 25;
   }
   if (userCapabilities.has(Capability.UltraLargeFiles)) {
-    maxFileSizeMb = 500000;
+    maxFileSizeMb = 50;
   }
 
   return {

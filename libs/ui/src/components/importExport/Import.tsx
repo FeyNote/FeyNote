@@ -4,9 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
 import { useContext, useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
-import { eventManager } from '../../context/events/EventManager';
-import { EventName } from '../../context/events/EventName';
-import type { EventData } from '../../context/events/EventData';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -15,47 +12,38 @@ import { JobType } from '@prisma/client';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
+const REFRESH_JOBS_INTERVAL = 3000; //3sec
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
-  const [hasMoreJobs, setHasMoreJobs] = useState(true);
+  const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { navigate } = useContext(PaneContext);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
 
   useEffect(() => {
+    const progress = startProgressBar();
     getMoreJobs();
-    const jobCompletionHandler = async (
-      _: EventName,
-      data: EventData[EventName.JobCompleted],
-    ) => {
-      if (data.type !== JobType.Import) return;
-      await refreshJobs();
-    };
+    const refreshInterval = setInterval(() => {
+      refreshJobs();
+    }, REFRESH_JOBS_INTERVAL);
+    progress.dismiss();
 
-    eventManager.addEventListener(EventName.JobCompleted, jobCompletionHandler);
     return () => {
-      eventManager.removeEventListener(
-        EventName.JobCompleted,
-        jobCompletionHandler,
-      );
+      clearInterval(refreshInterval);
     };
   }, []);
 
   const refreshJobs = async () => {
-    const progress = startProgressBar();
     const importDto = await trpc.job.getJobs.query({
       // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
       limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
       type: JobType.Import,
     });
     setJobs(importDto.jobs);
-    setHasMoreJobs(importDto.totalCount <= importDto.jobs.length);
-    progress.dismiss();
   };
 
   const getMoreJobs = async () => {
-    const progress = startProgressBar();
     const importjobsDTO = await trpc.job.getJobs.query({
       offset: jobs.length,
       limit: NUM_OF_INITAL_JOBS_SHOWN,
@@ -64,7 +52,6 @@ export const Import: React.FC = () => {
     const totalJobs = [...jobs, ...importjobsDTO.jobs];
     setJobs(totalJobs);
     setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
-    progress.dismiss();
   };
 
   const jobClickHandler = async (_: string) => {
