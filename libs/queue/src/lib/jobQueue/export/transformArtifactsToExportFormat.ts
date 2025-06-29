@@ -26,7 +26,7 @@ export const transformArtifactsToArtifactExports = (
     const tiptap = getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY);
 
     let title = getMetaFromYArtifact(yDoc).title;
-    title += (type === ExportFormat.Markdown ? '.md' : '.json');
+    title += type === ExportFormat.Markdown ? '.md' : '.json';
 
     switch (type) {
       case ExportFormat.Markdown: {

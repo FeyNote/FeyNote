@@ -205,11 +205,7 @@ export const Settings: React.FC = () => {
               lines="none"
               button
               onClick={() => {
-                navigate(
-                  PaneableComponent.Import,
-                  {},
-                  PaneTransition.Push,
-                );
+                navigate(PaneableComponent.Import, {}, PaneTransition.Push);
               }}
               target="_blank"
               detail={true}
@@ -220,11 +216,7 @@ export const Settings: React.FC = () => {
               lines="none"
               button
               onClick={() => {
-                navigate(
-                  PaneableComponent.Export,
-                  {},
-                  PaneTransition.Push,
-                );
+                navigate(PaneableComponent.Export, {}, PaneTransition.Push);
               }}
               target="_blank"
               detail={true}

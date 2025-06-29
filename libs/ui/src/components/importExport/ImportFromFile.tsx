@@ -46,7 +46,9 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const [disableUploadBtn, setDisableUploadBtn] = useState(false);
   const { navigate } = useContext(PaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [fileUploadProgress, setFileUploadProgress] = useState<null | number>(null);
+  const [fileUploadProgress, setFileUploadProgress] = useState<null | number>(
+    null,
+  );
 
   const instructions = useMemo(() => {
     if (props.format === ImportFormat.Obsidian) {
@@ -85,15 +87,15 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
     if (!file) return;
     setDisableUploadBtn(true);
     const uploadProgressListener = (progress: number | undefined) => {
-      if (progress === undefined) return
-      setFileUploadProgress(progress)
-    }
+      if (progress === undefined) return;
+      setFileUploadProgress(progress);
+    };
     try {
       await uploadImportJob({
         file: file,
         format: props.format,
         onProgress: uploadProgressListener,
-      })
+      });
       navigate(PaneableComponent.Import, {}, PaneTransition.Push);
     } catch (e) {
       handleTRPCErrors(e, {
@@ -130,7 +132,9 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
             >
               {t('generic.submit')}
             </IonButton>
-            {fileUploadProgress && <ProgressBar progress={fileUploadProgress} />}
+            {fileUploadProgress && (
+              <ProgressBar progress={fileUploadProgress} />
+            )}
           </div>
         </>
       ) : (

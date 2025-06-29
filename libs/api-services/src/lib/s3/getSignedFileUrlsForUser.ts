@@ -15,7 +15,7 @@ export const getSignedFileUrlsForUser = async (
       id: true,
       storageKey: true,
       purpose: true,
-    }
+    },
   });
   for (const file of userFiles) {
     const presignedUrl = await getSignedUrlForFilePurpose({

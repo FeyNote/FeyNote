@@ -8,7 +8,6 @@ import {
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 
-
 export const getJob = authenticatedProcedure
   .input(
     z.object({
