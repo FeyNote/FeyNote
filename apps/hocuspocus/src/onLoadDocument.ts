@@ -7,10 +7,15 @@ import { SupportedDocumentType } from './SupportedDocumentType';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
+import { logger, metrics } from '@feynote/api-services';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
     const [type, identifier] = splitDocumentName(args.documentName);
+
+    metrics.hocuspocusDocumentLoad.inc({
+      document_type: type,
+    });
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -29,7 +34,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         });
 
         if (!artifact) {
-          console.error('Attempted to load artifact that does not exist!');
+          logger.debug('Attempted to load artifact that does not exist!');
           throw new Error();
         }
 
@@ -65,7 +70,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         });
 
         if (!user) {
-          console.error('Attempted to load user tree that does not exist!');
+          logger.debug('Attempted to load user tree that does not exist!');
           throw new Error();
         }
 
@@ -78,7 +83,9 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
       }
     }
   } catch (e) {
-    console.error(e);
+    if (!(e instanceof Error) || e.message) {
+      logger.error(e);
+    }
 
     throw e;
   }

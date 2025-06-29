@@ -2,6 +2,15 @@ import { coerceBoolean } from './coerceBoolean';
 import { getEnvOrThrow } from './getEnvOrThrow';
 
 export const globalServerConfig = {
+  logger: {
+    level: process.env['LOGGER_LEVEL'] || 'http',
+    transports: {
+      console: coerceBoolean(
+        process.env['LOGGER_TRANSPORTS_CONSOLE'] || 'false',
+      ),
+      sentry: coerceBoolean(process.env['LOGGER_TRANSPORTS_SENTRY'] || 'false'),
+    },
+  },
   email: {
     fromName: getEnvOrThrow('EMAIL_FROM_NAME'),
     fromAddress: getEnvOrThrow('EMAIL_FROM_ADDRESS'),
@@ -29,8 +38,12 @@ export const globalServerConfig = {
     username: getEnvOrThrow('PROXY_USERNAME'),
     password: getEnvOrThrow('PROXY_PASSWORD'),
   },
+  api: {
+    port: parseInt(process.env['API_PORT'] || '8080'),
+  },
   hocuspocus: {
-    port: parseInt(process.env['HOCUSPOCUS_PORT'] || '8080'),
+    wsPort: parseInt(process.env['HOCUSPOCUS_WS_PORT'] || '8080'),
+    restPort: parseInt(process.env['HOCUSPOCUS_REST_PORT'] || '8081'),
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
     maxWriteDelayMs: parseInt(
       process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
@@ -63,12 +76,15 @@ export const globalServerConfig = {
     },
   },
   websocket: {
+    wsPort: parseInt(process.env['WEBSOCKET_WS_PORT'] || '8080'),
+    restPort: parseInt(process.env['WEBSOCKET_REST_PORT'] || '8081'),
     redis: {
       host: process.env['WEBSOCKET_REDIS_HOST'],
       port: parseInt(process.env['WEBSOCKET_REDIS_PORT'] || '6379'),
     },
   },
   worker: {
+    restPort: parseInt(process.env['WORKER_REST_PORT'] || '8080'),
     queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '1'),
     queueCompleteCount: parseInt(
       process.env['WORKER_QUEUE_COMPLETE_COUNT'] || '1000',

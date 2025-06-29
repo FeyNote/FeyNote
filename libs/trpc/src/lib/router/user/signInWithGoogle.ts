@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { publicProcedure } from '../../trpc';
 import { OAuth2Client } from 'google-auth-library';
 import { TRPCError } from '@trpc/server';
-import { upsertLogin } from '@feynote/api-services';
+import { metrics, upsertLogin } from '@feynote/api-services';
 import type { SessionDTO } from '@feynote/shared-utils';
 
 export const signInWithGoogle = publicProcedure
@@ -38,8 +38,19 @@ export const signInWithGoogle = publicProcedure
         payload.email,
       );
 
+      if (created) {
+        metrics.accountCreated.inc({
+          auth_type: 'google',
+        });
+      } else {
+        metrics.accountLogin.inc({
+          auth_type: 'google',
+        });
+      }
+
       return {
         session: {
+          id: session.id,
           token: session.token,
           userId: session.userId,
           email: payload.email,

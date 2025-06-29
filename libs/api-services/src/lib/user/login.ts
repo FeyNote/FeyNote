@@ -32,6 +32,7 @@ export const login = async (email: string, password: string) => {
   const session = await generateSession(user.id);
 
   return {
+    id: session.id,
     token: session.token,
     userId: session.userId,
     email: email.toLowerCase(),

@@ -25,9 +25,13 @@ export default defineConfig({
       logo: {
         src: './src/assets/feynote-icon-20240925.png',
       },
-      social: {
-        discord: 'https://discord.gg/Tz8trXrd4C',
-      },
+      social: [
+        {
+          icon: 'discord',
+          label: 'Discord',
+          href: 'https://discord.gg/Tz8trXrd4C',
+        },
+      ],
       sidebar: [
         'index',
         {

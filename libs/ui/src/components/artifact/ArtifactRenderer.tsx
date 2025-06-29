@@ -9,7 +9,7 @@ import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import { getFileRedirectUrl } from '../../utils/files/getFileRedirectUrl';
+import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
 import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -199,10 +199,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           setIsUploadingFile(false);
         }}
         getFileUrl={(fileId) => {
-          return getFileRedirectUrl({
-            fileId,
-            sessionToken: session.token,
-          }).toString();
+          return getFileUrlById(fileId, session);
         }}
         showBottomSpacer={true}
       />,
@@ -255,10 +252,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           return response;
         }}
         getFileUrl={(fileId) => {
-          return getFileRedirectUrl({
-            fileId,
-            sessionToken: session.token,
-          }).toString();
+          return getFileUrlById(fileId, session);
         }}
       />,
     );

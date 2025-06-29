@@ -25,7 +25,7 @@ type UseArtifactEditorArgs = {
   editable: boolean;
   onReady?: () => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
-  getFileUrl: (fileId: string) => string;
+  getFileUrl: (fileId: string) => Promise<string> | string;
   onTocUpdate?: (content: TableOfContentData) => void;
   onRollDice?: (roll: string) => void;
   onIncomingReferenceCounterMouseOver?: (

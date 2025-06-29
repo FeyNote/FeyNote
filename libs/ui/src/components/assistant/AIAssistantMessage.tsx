@@ -15,7 +15,7 @@ export const AIAssistantMessage = ({
   retryMessage,
   disableRetry,
 }: Props) => {
-  if (!message.parts || message.parts.length === 1) {
+  if (!message.parts || message.parts.length === 0) {
     return <IonSpinner name="dots" />;
   }
 

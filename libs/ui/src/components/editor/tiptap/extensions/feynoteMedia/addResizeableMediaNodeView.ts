@@ -4,7 +4,7 @@ export const addResizeableMediaNodeView = (options: {
   tagName: 'img' | 'video';
   minWidthPx: number;
   minHeightPx: number;
-  getSrcForFileId: (fileId: string) => string;
+  getSrcForFileId: (fileId: string) => Promise<string> | string;
 }): NodeViewRenderer => {
   let isLoaded = false;
   return ({ node, editor, getPos, HTMLAttributes }) => {
@@ -26,7 +26,17 @@ export const addResizeableMediaNodeView = (options: {
     blockContainer.append(resizeContainer);
 
     const mediaElement = document.createElement(options.tagName);
-    mediaElement.src = options.getSrcForFileId(HTMLAttributes['data-file-id']);
+    mediaElement.style.visibility = 'hidden';
+    const srcResponse = options.getSrcForFileId(HTMLAttributes['data-file-id']);
+    if (typeof srcResponse === 'string') {
+      mediaElement.src = srcResponse;
+      mediaElement.style.visibility = 'visible';
+    } else {
+      srcResponse.then((src) => {
+        mediaElement.src = src;
+        mediaElement.style.visibility = 'visible';
+      });
+    }
     if (node.attrs.alt) (mediaElement as HTMLImageElement).alt = node.attrs.alt;
     if (node.attrs.title) mediaElement.title = node.attrs.title;
     if (node.attrs.width)

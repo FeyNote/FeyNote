@@ -4,7 +4,7 @@
 import { Node } from '@tiptap/core';
 
 export interface FeynoteMediaOptions {
-  getSrcForFileId: (fileId: string) => string;
+  getSrcForFileId: (fileId: string) => Promise<string> | string;
 
   minWidthPx: number;
   minHeightPx: number;

@@ -15,6 +15,7 @@ import type { AxiosRequestConfig } from 'axios';
 import { globalServerConfig } from '@feynote/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import axios from 'axios';
+import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);
 const newLineCausingNodes = new Set([
@@ -96,7 +97,7 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       toolInvocations: toolResults,
     };
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     return null;
   }
 };

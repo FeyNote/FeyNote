@@ -40,7 +40,7 @@ type Props = {
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
-  getFileUrl: (fileId: string) => string;
+  getFileUrl: (fileId: string) => Promise<string> | string;
   onTocUpdate?: (content: TableOfContentData) => void;
   showBottomSpacer?: boolean;
 } & DocArgOptions;

@@ -16,6 +16,7 @@ import {
   getJSONContentDiff,
 } from '@feynote/shared-utils';
 import { isIndexable } from './indexableCharacters';
+import { logger } from '@feynote/api-services';
 
 export class TypeSense implements SearchProvider {
   private readonly client = new Client({
@@ -27,7 +28,7 @@ export class TypeSense implements SearchProvider {
   });
 
   async migrate() {
-    console.log('Starting Typesense migrations');
+    logger.info('Starting Typesense migrations');
 
     const doesArtifactIndexExist = await this.client
       .collections<ArtifactIndexDocument>(Indexes.Artifact)
@@ -43,7 +44,7 @@ export class TypeSense implements SearchProvider {
       await this.createBlockIndex();
     }
 
-    console.log('Typesense migrations complete');
+    logger.info('Typesense migrations complete');
   }
 
   async indexArtifact(artifact: IndexableArtifact) {

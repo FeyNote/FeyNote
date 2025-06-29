@@ -1,9 +1,10 @@
 import { searchProvider } from './search';
+import { logger } from '@feynote/api-services';
 
 (async () => {
   await searchProvider.migrate();
 
-  console.log('Migration completed.');
+  logger.info('Migration completed.');
 
   process.exit(0);
 })();

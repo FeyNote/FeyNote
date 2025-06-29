@@ -20,6 +20,7 @@ import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { memoizedShadowDocsByDocName } from './memoizedShadowDocsByDocName';
 import assert from 'assert';
+import { logger, metrics } from '@feynote/api-services';
 
 /**
  * Deconstruct the IncomingMessage.
@@ -60,6 +61,12 @@ const getShadowDoc = (documentName: string, baseDoc: YDoc) => {
 export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
   try {
     const [type] = splitDocumentName(args.documentName);
+
+    metrics.hocuspocusMessage.inc({
+      document_type: type,
+    });
+
+    const timer = metrics.hocuspocusMessageValidateTime.startTimer();
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -121,7 +128,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
             memoizedShadowDocsByDocName.delete(args.documentName);
 
             const e = new Error('Illegal update performed');
-            console.error(e);
+            logger.warn(e);
             Sentry.captureException(e, {
               extra: {
                 userId: args.context.userId,
@@ -133,7 +140,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
             throw new Error();
           }
         } catch (e) {
-          console.error('Error while validating message', e);
+          logger.error('Error while validating message', e);
           Sentry.captureException(e, {
             extra: {
               userId: args.context.userId,
@@ -146,8 +153,17 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
         break;
       }
     }
+
+    metrics.hocuspocusMessageValidateTime.observe(
+      {
+        document_type: type,
+      },
+      timer(),
+    );
   } catch (e) {
-    console.error(e);
+    if (!(e instanceof Error) || e.message) {
+      logger.error(e);
+    }
 
     throw e;
   }
