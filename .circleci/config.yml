@@ -4,7 +4,7 @@ orbs:
   node: circleci/node@7.1.0
 jobs:
   build_and_test:
-    resource_class: medium
+    resource_class: medium+
     docker:
       - image: cimg/node:24.1
         environment:
