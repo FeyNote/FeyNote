@@ -1,10 +1,11 @@
+import { artifactUpdateQueueWorker, jobQueueWorker } from '@feynote/queue';
 import { setupMinimalMetricsServer } from '@feynote/api-services';
 import './instrument.ts';
 
-import { artifactUpdateQueueWorker } from '@feynote/queue';
 import { globalServerConfig } from '@feynote/config';
 
 artifactUpdateQueueWorker.run();
+jobQueueWorker.run();
 
 setupMinimalMetricsServer({
   port: globalServerConfig.worker.restPort,
@@ -12,6 +13,7 @@ setupMinimalMetricsServer({
 
 const shutdown = async () => {
   await artifactUpdateQueueWorker.close();
+  await jobQueueWorker.close();
 
   process.exit(0);
 };

@@ -1,11 +1,11 @@
 import { onLoadDocumentPayload } from '@hocuspocus/server';
 import { applyUpdate } from 'yjs';
-import type { TypedMap } from 'yjs-types';
 
 import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { logger, metrics } from '@feynote/api-services';
 

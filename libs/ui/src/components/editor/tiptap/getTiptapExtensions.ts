@@ -1,6 +1,9 @@
 import * as Sentry from '@sentry/react';
 import { ParagraphExtension } from './extensions/paragraph/ParagraphExtension';
 import BlockquoteExtension from '@tiptap/extension-blockquote';
+import HighlightExtension from '@tiptap/extension-highlight';
+import CodeBlock from '@tiptap/extension-code-block';
+import Code from '@tiptap/extension-code';
 import ListItemExtension from '@tiptap/extension-list-item';
 import OrderedListExtension from '@tiptap/extension-ordered-list';
 import BulletListExtension from '@tiptap/extension-bullet-list';
@@ -42,7 +45,10 @@ import { IsolatingContainerBackspaceExtension } from './extensions/isolatingCont
 import { BlockGroup } from './extensions/BlockGroup';
 import { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
-import { ARTIFACT_TIPTAP_BODY_KEY } from '@feynote/shared-utils';
+import {
+  ARTIFACT_TIPTAP_BODY_KEY,
+  TiptapBlockType,
+} from '@feynote/shared-utils';
 import { Editor } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
@@ -107,6 +113,8 @@ export const getTiptapExtensions = (args: {
     TextExtension,
     HorizontalRule,
     BlockquoteExtension,
+    CodeBlock,
+    Code,
     ListItemExtension,
     OrderedListExtension,
     BulletListExtension,
@@ -122,7 +130,7 @@ export const getTiptapExtensions = (args: {
     StrikeExtension,
     UnderlineExtension,
     TextAlignExtension.configure({
-      types: ['heading', 'paragraph'],
+      types: [TiptapBlockType.Heading, TiptapBlockType.Paragraph],
       alignments: ['left', 'center', 'right'],
     }),
     DropcursorExtension,
@@ -144,6 +152,7 @@ export const getTiptapExtensions = (args: {
     TableRowExtension,
     TableHeaderExtension,
     TableCellExtension,
+    HighlightExtension,
     IndentationExtension,
     Collaboration.configure({
       document: args.y.yDoc || args.y.yjsProvider.document,
@@ -165,7 +174,11 @@ export const getTiptapExtensions = (args: {
       placeholder: args.placeholder,
     }),
     UniqueIDExtension.configure({
-      types: ['heading', 'paragraph', 'artifactReference'],
+      types: [
+        TiptapBlockType.Heading,
+        TiptapBlockType.Paragraph,
+        TiptapBlockType.ArtifactReference,
+      ],
       filterTransaction: (transaction) => !isChangeOrigin(transaction),
     }),
     MonsterStatblockExtension,

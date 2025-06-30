@@ -4,3 +4,5 @@ export * from './lib/outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue
 export * from './lib/outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 export * from './lib/incomingWebsocketMessageQueue/incomingWebsocketMessageQueueWorker';
 export * from './lib/incomingWebsocketMessageQueue/incomingWebsocketMessageQueue';
+export * from './lib/jobQueue/jobQueueWorker';
+export * from './lib/jobQueue/jobQueue';

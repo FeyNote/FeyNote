@@ -8,12 +8,13 @@ import { generateAssistantText } from '../generateAssistantText';
 import { systemMessage } from '../utils/SystemMessage';
 import { AIModel } from '../utils/AIModel';
 import DOMPurify from 'dompurify';
-import axios, { AxiosRequestConfig } from 'axios';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import { globalServerConfig } from '@feynote/config';
 import { ToolName } from '@feynote/shared-utils';
 import { Display5eMonsterTool } from './display5eMonster';
 import { Display5eObjectTool } from './display5eObject';
+import type { AxiosRequestConfig } from 'axios';
+import { globalServerConfig } from '@feynote/config';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import axios from 'axios';
 import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);

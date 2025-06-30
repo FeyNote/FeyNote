@@ -29,6 +29,9 @@ import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
 import { SessionContext } from '../../context/session/SessionContext';
 import { WelcomeModal } from '../dashboard/WelcomeModal';
+import { PaneContext } from '../../context/pane/PaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -72,6 +75,7 @@ export const Settings: React.FC = () => {
   const { setPreference, getPreference, _preferencesService } =
     useContext(PreferencesContext);
   const { session } = useContext(SessionContext);
+  const { navigate } = useContext(PaneContext);
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   });
@@ -187,6 +191,63 @@ export const Settings: React.FC = () => {
               detail={true}
             >
               {t('settings.help.contact')}
+            </IonItem>
+          </IonList>
+        </IonCard>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={person} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.account')}
+            </IonListHeader>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(PaneableComponent.Import, {}, PaneTransition.Push);
+              }}
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.import')}
+            </IonItem>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(PaneableComponent.Export, {}, PaneTransition.Push);
+              }}
+              target="_blank"
+              detail={true}
+            >
+              {t('settings.export')}
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonLabel>
+                {t('settings.email')}
+                <p>
+                  {t('settings.email.current')} {session.email}
+                </p>
+              </IonLabel>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonLabel>{t('settings.password')}</IonLabel>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={
+                  getPreference(PreferenceNames.PreferencesSync) ===
+                  PreferencesSync.Enabled
+                }
+                onIonChange={(event) =>
+                  togglePreferencesSync(event.detail.checked)
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.preferencesSync')}
+                </IonLabel>
+              </IonToggle>
             </IonItem>
           </IonList>
         </IonCard>
@@ -366,41 +427,6 @@ export const Settings: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
-            </IonItem>
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={person} size="small" />
-              &nbsp;&nbsp;
-              {t('settings.account')}
-            </IonListHeader>
-            <IonItem lines="none" button>
-              <IonLabel>
-                {t('settings.email')}
-                <p>
-                  {t('settings.email.current')} {session.email}
-                </p>
-              </IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonLabel>{t('settings.password')}</IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={
-                  getPreference(PreferenceNames.PreferencesSync) ===
-                  PreferencesSync.Enabled
-                }
-                onIonChange={(event) =>
-                  togglePreferencesSync(event.detail.checked)
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.preferencesSync')}
-                </IonLabel>
-              </IonToggle>
             </IonItem>
           </IonList>
         </IonCard>

@@ -15,6 +15,7 @@ jobs:
           AWS_ACCESS_KEY_ID: CI_PLACEHOLDER
           AWS_SECRET_ACCESS_KEY: CI_PLACEHOLDER
           DATABASE_URL: postgresql://dnd-assistant:dnd-assistant@localhost:5432/dnd-assistant?schema=public
+          NODE_OPTIONS: --max-old-space-size=4096
       - image: postgres:16.1
         environment:
           POSTGRES_USER: dnd-assistant

@@ -27,12 +27,17 @@ export * from './lib/s3/getSignedUrlForFilePurpose';
 export * from './lib/s3/transformAndUploadFileToS3ForUser';
 export * from './lib/s3/transformImage';
 export * from './lib/s3/uploadFileToS3';
+export * from './lib/s3/streamFileFromS3';
+export * from './lib/s3/getSignedFileUrlsForUser';
+export * from './lib/s3/getSafeFileId';
+export * from './lib/s3/sanitizeFilePath';
 
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';
 
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
+export * from './lib/artifacts/getSafeArtifactId';
 
 export * from './lib/dto/artifactDetailToArtifactDTO';
 
@@ -42,3 +47,6 @@ export * from './lib/payments/getCapabilitiesForUser';
 export * from './lib/payments/extendSubscription';
 export * from './lib/payments/getCheckoutUserId';
 export * from './lib/payments/stripe';
+export * from './lib/axios/proxyGetRequest';
+
+export * from './lib/converters/htmlToMarkdown';

@@ -11,8 +11,9 @@ export async function uploadFileToS3(
   file: Buffer | Readable,
   mimetype: string,
   purpose: FilePurpose,
+  storageKey?: string,
 ) {
-  const key = generateS3Key();
+  const key = storageKey || generateS3Key();
   const bucket = FILE_PURPOSE_TO_BUCKET[purpose];
 
   const uploadRef = new Upload({

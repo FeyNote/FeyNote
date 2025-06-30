@@ -10,6 +10,12 @@ import { SharedContent } from '../../components/sharing/SharedContent';
 import { NewArtifact } from '../../components/artifact/NewArtifact';
 import { Contribute } from '../../components/payments/Contribute';
 import { PersistentSearch } from '../../components/search/PersistentSearch';
+import { ImportFromObsidian } from '../../components/importExport/ImportFromObsidian';
+import { ImportFromLogseq } from '../../components/importExport/ImportFromLogseq';
+import { Export } from '../../components/importExport/Export';
+import { Import } from '../../components/importExport/Import';
+import { ExportToJson } from '../../components/importExport/ExportToJson';
+import { ExportToMarkdown } from '../../components/importExport/ExportToMarkdown';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -22,6 +28,12 @@ export enum PaneableComponent {
   Graph = 'Graph',
   SharedContent = 'SharedContent',
   RecentArtifacts = 'RecentArtifacts',
+  Export = 'Export',
+  ExportToMarkdown = 'ExportToMarkdown',
+  ExportToJson = 'ExportToJson',
+  Import = 'Import',
+  ImportFromLogseq = 'ImportFromLogseq',
+  ImportFromObsidian = 'ImportFromObsidian',
   PersistentSearch = 'PersistentSearch',
 }
 
@@ -36,6 +48,14 @@ export type PaneableComponentProps = {
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
+  [PaneableComponent.Import]: ComponentProps<typeof Import>;
+  [PaneableComponent.Export]: ComponentProps<typeof Export>;
+  [PaneableComponent.ExportToJson]: ComponentProps<typeof ExportToJson>;
+  [PaneableComponent.ExportToMarkdown]: ComponentProps<typeof ExportToMarkdown>;
+  [PaneableComponent.ImportFromLogseq]: ComponentProps<typeof ImportFromLogseq>;
+  [PaneableComponent.ImportFromObsidian]: ComponentProps<
+    typeof ImportFromObsidian
+  >;
   [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
 };
 
@@ -53,6 +73,12 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Graph]: Graph,
     [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.RecentArtifacts]: RecentArtifacts,
+    [PaneableComponent.Export]: Export,
+    [PaneableComponent.ExportToJson]: ExportToJson,
+    [PaneableComponent.ExportToMarkdown]: ExportToMarkdown,
+    [PaneableComponent.Import]: Import,
+    [PaneableComponent.ImportFromLogseq]: ImportFromLogseq,
+    [PaneableComponent.ImportFromObsidian]: ImportFromObsidian,
     [PaneableComponent.PersistentSearch]: PersistentSearch,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
@@ -77,5 +103,11 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Graph]: 'graph.title',
   [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
+  [PaneableComponent.Export]: 'export.title',
+  [PaneableComponent.ExportToMarkdown]: 'exportToMarkdown.title',
+  [PaneableComponent.ExportToJson]: 'exportToMarkdown.title',
+  [PaneableComponent.Import]: 'import.title',
+  [PaneableComponent.ImportFromLogseq]: 'importFromLogseq.title',
+  [PaneableComponent.ImportFromObsidian]: 'importFromObsidian.title',
   [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
 } satisfies Record<PaneableComponent, string>;
