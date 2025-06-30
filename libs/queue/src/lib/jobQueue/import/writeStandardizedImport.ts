@@ -28,26 +28,6 @@ export const writeStandardizedImport = async (args: {
       data: images,
     });
 
-    const artifactIds = createdArtifacts.map(
-      (createdArtifact) => createdArtifact.id,
-    );
-
-    const existingJob = await prisma.job.findUnique({
-      where: { id: args.job.id },
-      select: { meta: true },
-    });
-
-    const meta = {
-      ...(existingJob?.meta as JobSummary['meta']),
-      createdArtifacts: artifactIds,
-    };
-    await tx.job.update({
-      where: { id: args.job.id },
-      data: {
-        meta,
-      },
-    });
-
     return { createdArtifacts };
   });
 

@@ -12,12 +12,12 @@ const executeOnBlock = (
   }
 };
 
-export const getLogseqReferenceIdToBlockMap = (
-  pages: LogseqPage[],
-  pageNameToIdMap: Map<string, string | null>,
-): Map<string, ArtifactBlockInfo> => {
+export const getLogseqReferenceIdToBlockMap = (args: {
+  pages: LogseqPage[];
+  pageNameToIdMap: Map<string, string | null>;
+}): Map<string, ArtifactBlockInfo> => {
   const referenceIdToReferenceTextMap = new Map<string, string>();
-  for (const page of pages) {
+  for (const page of args.pages) {
     // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     executeOnBlock(page.children, (block) => {
@@ -35,12 +35,13 @@ export const getLogseqReferenceIdToBlockMap = (
   }
 
   const referenceIdToBlockMap = new Map<string, ArtifactBlockInfo>();
-  for (const page of pages) {
+  for (const page of args.pages) {
     executeOnBlock(page.children, (block) => {
       if (referenceIdToReferenceTextMap.has(block.id)) {
         referenceIdToBlockMap.set(block.id, {
           id: randomUUID(),
-          artifactId: pageNameToIdMap.get(page['page-name']) || randomUUID(),
+          artifactId:
+            args.pageNameToIdMap.get(page['page-name']) || randomUUID(),
           referenceText:
             referenceIdToReferenceTextMap.get(block.id) || block.content,
         });

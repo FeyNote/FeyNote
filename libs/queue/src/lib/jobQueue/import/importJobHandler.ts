@@ -30,7 +30,7 @@ export const importJobHandler = async (job: JobSummary) => {
         storageKey: importFile.storageKey,
         job,
         processor: (filePaths) =>
-          obsidianToStandardizedImport(job.userId, filePaths, progressTracker),
+          obsidianToStandardizedImport({ job, filePaths, progressTracker }),
         progressTracker,
       });
       break;
@@ -40,7 +40,7 @@ export const importJobHandler = async (job: JobSummary) => {
         storageKey: importFile.storageKey,
         job,
         processor: (filePaths) =>
-          logseqToStandardizedImport(job.userId, filePaths, progressTracker),
+          logseqToStandardizedImport({ job, filePaths, progressTracker }),
         progressTracker,
       });
       break;

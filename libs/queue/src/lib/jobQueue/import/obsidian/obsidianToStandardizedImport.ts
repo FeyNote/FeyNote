@@ -28,12 +28,13 @@ import { addBlockIdsToReferencedHeaders } from './addBlockIdsToReferencedHeaders
 import { populateHeadersToBlockInfoMap } from './populateHeadersToBlockInfoMap';
 import { replaceObsidianReferencedHeadings } from './replaceObsidianReferencedHeadings';
 import type { JobProgressTracker } from '../../JobProgressTracker';
+import type { JobSummary } from '@feynote/prisma/types';
 
-export const obsidianToStandardizedImport = async (
-  userId: string,
-  filePaths: string[],
-  progressTracker: JobProgressTracker,
-): Promise<StandardizedImportInfo> => {
+export const obsidianToStandardizedImport = async (args: {
+  job: JobSummary;
+  filePaths: string[];
+  progressTracker: JobProgressTracker;
+}): Promise<StandardizedImportInfo> => {
   const importInfo: StandardizedImportInfo = {
     artifactsToCreate: [],
     mediaFilesToUpload: [],
@@ -43,7 +44,7 @@ export const obsidianToStandardizedImport = async (
   const baseMediaNameToPath = new Map<string, string>();
   const referenceIdToBlockInfoMap = new Map<string, ArtifactBlockInfo>();
   // Must preprocess references to get the correct reference text for artifact block replacements
-  for (const filePath of filePaths) {
+  for (const filePath of args.filePaths) {
     const basename = path.basename(filePath);
     if (path.extname(filePath) !== '.md') {
       baseMediaNameToPath.set(basename, filePath);
@@ -67,8 +68,8 @@ export const obsidianToStandardizedImport = async (
     );
   }
 
-  for (let i = 0; i < filePaths.length; i++) {
-    const filePath = filePaths[i];
+  for (let i = 0; i < args.filePaths.length; i++) {
+    const filePath = args.filePaths[i];
     const basename = path.basename(filePath);
     if (path.extname(filePath) !== '.md') continue;
     const title = path.parse(basename).name;
@@ -121,7 +122,7 @@ export const obsidianToStandardizedImport = async (
 
     const yDoc = constructYArtifact({
       id: artifactId,
-      userId,
+      userId: args.job.userId,
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
@@ -138,15 +139,16 @@ export const obsidianToStandardizedImport = async (
 
     importInfo.artifactsToCreate.push({
       id: artifactId,
-      userId,
+      userId: args.job.userId,
       title,
       type: ArtifactType.tiptap,
       text,
       json: tiptap,
+      jobId: args.job.id,
       yBin,
     });
-    progressTracker.onProgress({
-      progress: Math.floor((i / filePaths.length) * 100),
+    args.progressTracker.onProgress({
+      progress: Math.floor((i / args.filePaths.length) * 100),
       step: 1,
     });
   }

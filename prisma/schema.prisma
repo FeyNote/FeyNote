@@ -32,7 +32,7 @@ model User {
   artifactShares    ArtifactShare[]
   stripePayments    StripePayment[]
   subscriptions     Subscription[]
-  jobs       Job[]
+  jobs              Job[]
 }
 
 model Session {
@@ -54,6 +54,8 @@ model Artifact {
   user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String              @db.Uuid
   text            String
+  jobId           String?             @db.Uuid
+  job             Job?                @relation(fields: [jobId], references: [id])
   json            Json
   yBin            Bytes               @db.ByteA
   linkAccessLevel ArtifactAccessLevel @default(noaccess)
@@ -142,8 +144,8 @@ model File {
   user       User        @relation(fields: [userId], references: [id])
   artifactId String?     @db.Uuid
   artifact   Artifact?   @relation(fields: [artifactId], references: [id])
-  jobId     String?     @db.Uuid
-  job   Job?   @relation(fields: [jobId], references: [id])
+  jobId      String?     @db.Uuid
+  job        Job?        @relation(fields: [jobId], references: [id])
   mimetype   String
   name       String
   storageKey String
@@ -221,14 +223,15 @@ enum JobStatus {
 }
 
 model Job {
-  id        String        @id @default(uuid()) @db.Uuid
-  user      User          @relation(fields: [userId], references: [id])
-  userId    String        @db.Uuid
+  id        String     @id @default(uuid()) @db.Uuid
+  user      User       @relation(fields: [userId], references: [id])
+  userId    String     @db.Uuid
   type      JobType
   progress  Int
   meta      Json?
   status    JobStatus
-  files                      File[]
-  createdAt DateTime      @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(6)
+  files     File[]
+  createdAt DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @db.Timestamptz(6)
+  Artifact  Artifact[]
 }

@@ -24,6 +24,7 @@ import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
 import { replaceMarkdownMediaLinks } from '../replaceMarkdownMediaLinks';
 import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
 import type { JobProgressTracker } from '../../JobProgressTracker';
+import type { JobSummary } from '@feynote/prisma/types';
 
 const convertLogseqTableToMarkdown = (logseqTable: string): string => {
   const lines = logseqTable.split('\n');
@@ -242,15 +243,15 @@ const convertLogseqPageToHtml = async (
   return htmlPage;
 };
 
-const handleLogseqGraph = async (
-  importInfo: StandardizedImportInfo,
-  json: LogseqGraph,
-  userId: string,
-  baseMediaNameToPath: Map<string, string>,
-  progressTracker: JobProgressTracker,
-) => {
+const handleLogseqGraph = async (args: {
+  importInfo: StandardizedImportInfo;
+  json: LogseqGraph;
+  job: JobSummary;
+  baseMediaNameToPath: Map<string, string>;
+  progressTracker: JobProgressTracker;
+}) => {
   const pageNameToIdMap = new Map<string, string>();
-  for (const page of json.blocks) {
+  for (const page of args.json.blocks) {
     // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const title = page['page-name'];
@@ -258,13 +259,13 @@ const handleLogseqGraph = async (
     pageNameToIdMap.set(title, id);
   }
 
-  const blockIdToBlockInfoMap = getLogseqReferenceIdToBlockMap(
-    json.blocks,
-    pageNameToIdMap,
-  );
+  const blockIdToBlockInfoMap = getLogseqReferenceIdToBlockMap({
+    pages: args.json.blocks,
+    pageNameToIdMap: pageNameToIdMap,
+  });
 
-  for (let i = 0; i < json.blocks.length; i++) {
-    const page = json.blocks[i];
+  for (let i = 0; i < args.json.blocks.length; i++) {
+    const page = args.json.blocks[i];
     // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
@@ -275,8 +276,8 @@ const handleLogseqGraph = async (
       id,
       pageNameToIdMap,
       blockIdToBlockInfoMap,
-      importInfo,
-      baseMediaNameToPath,
+      args.importInfo,
+      args.baseMediaNameToPath,
     );
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
@@ -285,7 +286,7 @@ const handleLogseqGraph = async (
 
     const yDoc = constructYArtifact({
       id,
-      userId,
+      userId: args.job.userId,
       title,
       theme: ArtifactTheme.default,
       type: ArtifactType.tiptap,
@@ -300,9 +301,10 @@ const handleLogseqGraph = async (
     applyUpdate(yDoc, encodeStateAsUpdate(tiptapYContent));
     const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 
-    importInfo.artifactsToCreate.push({
+    args.importInfo.artifactsToCreate.push({
       id,
-      userId,
+      userId: args.job.userId,
+      jobId: args.job.id,
       title,
       type: ArtifactType.tiptap,
       text,
@@ -310,39 +312,39 @@ const handleLogseqGraph = async (
       yBin,
     });
 
-    progressTracker.onProgress({
-      progress: Math.floor((i / json.blocks.length) * 100),
+    args.progressTracker.onProgress({
+      progress: Math.floor((i / args.json.blocks.length) * 100),
       step: 1,
     });
   }
 };
 
-export const logseqToStandardizedImport = async (
-  userId: string,
-  filePaths: string[],
-  progressTracker: JobProgressTracker,
-): Promise<StandardizedImportInfo> => {
+export const logseqToStandardizedImport = async (args: {
+  job: JobSummary;
+  filePaths: string[];
+  progressTracker: JobProgressTracker;
+}): Promise<StandardizedImportInfo> => {
   const importInfo: StandardizedImportInfo = {
     artifactsToCreate: [],
     mediaFilesToUpload: [],
   };
   const baseMediaNameToPath = new Map<string, string>();
-  for await (const filePath of filePaths) {
+  for await (const filePath of args.filePaths) {
     if (extname(filePath) !== '.json') {
       baseMediaNameToPath.set(basename(filePath), filePath);
     }
   }
 
-  for await (const filePath of filePaths) {
+  for await (const filePath of args.filePaths) {
     if (extname(filePath) === '.json') {
       const json = JSON.parse(await readFile(filePath, 'utf-8')) as LogseqGraph;
-      await handleLogseqGraph(
+      await handleLogseqGraph({
         importInfo,
         json,
-        userId,
+        job: args.job,
         baseMediaNameToPath,
-        progressTracker,
-      );
+        progressTracker: args.progressTracker,
+      });
       break;
     }
   }
