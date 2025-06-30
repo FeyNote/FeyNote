@@ -4,7 +4,7 @@ orbs:
   node: circleci/node@7.1.0
 jobs:
   build_and_test:
-    resource_class: large
+    resource_class: medium
     docker:
       - image: cimg/node:24.1
         environment:
@@ -15,6 +15,7 @@ jobs:
           AWS_ACCESS_KEY_ID: CI_PLACEHOLDER
           AWS_SECRET_ACCESS_KEY: CI_PLACEHOLDER
           DATABASE_URL: postgresql://dnd-assistant:dnd-assistant@localhost:5432/dnd-assistant?schema=public
+          NODE_OPTIONS: --max-old-space-size=4096
       - image: postgres:16.1
         environment:
           POSTGRES_USER: dnd-assistant
