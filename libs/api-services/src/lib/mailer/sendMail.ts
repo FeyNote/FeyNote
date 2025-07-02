@@ -6,6 +6,8 @@ import {
 
 import { Mail } from './mail/Mail';
 import { globalServerConfig } from '@feynote/config';
+import dedent from 'dedent';
+import { logger } from '../logging/logger';
 
 const ses = new SESClient({
   region: globalServerConfig.aws.region,
@@ -41,9 +43,23 @@ export const sendMail = async (mail: Mail) => {
     ReplyToAddresses: [globalServerConfig.email.replyToAddress],
   };
 
-  await ses.send(
-    new SendEmailCommand({
-      ...params,
-    }),
-  );
+  if (process.env['NODE_ENV'] === 'development') {
+    logger.info(dedent`
+      ======= sendEmail =======
+      To: ${mail.to}
+      Cc: ${mail.cc}
+      Subject: ${mail.subject}
+      HTML:
+      ${mail.html}
+      Text:
+      ${mail.plain}
+      ======= This mail was not sent due to development mode =======
+    `);
+  } else {
+    await ses.send(
+      new SendEmailCommand({
+        ...params,
+      }),
+    );
+  }
 };
