@@ -19,20 +19,20 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
         id: args.data.jobId,
       },
       data: {
-        status: JobStatus.InProgress,
+        status: JobStatus.inprogress,
       },
       ...jobSummary,
     });
     const job = prismaJobSummaryToJobSummary(prismaJobSummary);
-    let status: JobStatus = JobStatus.Success;
+    let status: JobStatus = JobStatus.success;
 
     try {
       switch (job.type) {
-        case JobType.Import: {
+        case JobType.import: {
           await importJobHandler(job);
           break;
         }
-        case JobType.Export: {
+        case JobType.export: {
           await exportJobHandler(job);
           break;
         }
@@ -41,7 +41,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       }
     } catch (e) {
       console.error(`Failed processing job ${args.id}`, e);
-      status = JobStatus.Failed;
+      status = JobStatus.failed;
     }
 
     await prisma.job.update({

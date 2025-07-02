@@ -5,7 +5,6 @@ import { JobList } from './JobList';
 import { useContext, useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import { type JobSummary } from '@feynote/prisma/types';
-import { JobType } from '@prisma/client';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -46,7 +45,7 @@ export const Export: React.FC = () => {
     const exportDto = await trpc.job.getJobs.query({
       // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
       limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
-      type: JobType.Export,
+      type: 'export',
     });
     setJobs(exportDto.jobs);
   };
@@ -55,7 +54,7 @@ export const Export: React.FC = () => {
     const exportjobsDTO = await trpc.job.getJobs.query({
       offset: jobs.length,
       limit: NUM_OF_INITAL_JOBS_SHOWN,
-      type: JobType.Export,
+      type: 'export',
     });
     const totalJobs = [...jobs, ...exportjobsDTO.jobs];
     setJobs(totalJobs);

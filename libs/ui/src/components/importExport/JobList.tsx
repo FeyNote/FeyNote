@@ -9,13 +9,7 @@ import {
   IonNote,
 } from '@ionic/react';
 import { arrowDown, document as documentIcon } from 'ionicons/icons';
-import {
-  ExportFormat,
-  ImportFormat,
-  JobErrorCode,
-  type JobSummary,
-} from '@feynote/prisma/types';
-import { JobStatus } from '@prisma/client';
+import { type JobSummary } from '@feynote/prisma/types';
 import { ProgressBar } from '../info/ProgressBar';
 
 const JobsContainer = styled.div`
@@ -34,14 +28,23 @@ interface Props {
 export const JobList: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  const formatToTranslationString = {
-    [ImportFormat.Logseq]: t('jobList.format.logseq'),
-    [ImportFormat.Obsidian]: t('jobList.format.obsidian'),
-    [ExportFormat.Json]: t('jobList.format.json'),
-    [ExportFormat.Markdown]: t('jobList.format.markdown'),
+  const formatToTranslationString: Record<
+    NonNullable<
+      JobSummary['meta']['importFormat'] | JobSummary['meta']['exportFormat']
+    >,
+    string
+  > = {
+    logseq: t('jobList.format.logseq'),
+    obsidian: t('jobList.format.obsidian'),
+    json: t('jobList.format.json'),
+    markdown: t('jobList.format.markdown'),
   };
-  const ErrorCodeToTranslationString = {
-    [JobErrorCode.UnknownError]: t('jobList.error.unknown'),
+
+  const ErrorCodeToTranslationString: Record<
+    NonNullable<JobSummary['meta']['error']>,
+    string
+  > = {
+    unknown_error: t('jobList.error.unknown'),
   };
 
   return (
@@ -64,17 +67,17 @@ export const JobList: React.FC<Props> = (props) => {
               <IonLabel>
                 <h3>{formatTranslation}</h3>
                 <p>{job.createdAt.toString()}</p>
-                {job.status === JobStatus.Failed && (
+                {job.status === 'failed' && (
                   <IonNote color="danger">
                     {(job.meta.error &&
                       ErrorCodeToTranslationString[job.meta.error]) ||
                       t('jobList.error.unknown')}
                   </IonNote>
                 )}
-                {job.status === JobStatus.Success && (
+                {job.status === 'success' && (
                   <IonNote color="success">{t('jobList.success')}</IonNote>
                 )}
-                {job.status === JobStatus.InProgress && (
+                {job.status === 'inprogress' && (
                   <>
                     <IonNote color="primary">{t('jobList.inProgress')}</IonNote>
                     <ProgressBar

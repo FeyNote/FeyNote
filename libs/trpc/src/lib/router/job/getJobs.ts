@@ -2,8 +2,8 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { prisma } from '@feynote/prisma/client';
 import {
   jobSummary,
-  type JobSummary,
   prismaJobSummaryToJobSummary,
+  type JobSummary,
 } from '@feynote/prisma/types';
 import { JobType } from '@prisma/client';
 import { z } from 'zod';

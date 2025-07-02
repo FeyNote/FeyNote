@@ -34,7 +34,7 @@ export const createImportJob = authenticatedProcedure
       },
       where: {
         userId,
-        type: JobType.Import,
+        type: JobType.import,
         createdAt: {
           gte: new Date(Date.now() - TIME_LIMIT_OF_JOBS * 60 * 1000),
         },
@@ -66,8 +66,8 @@ export const createImportJob = authenticatedProcedure
         const importJob = await tx.job.create({
           data: {
             userId,
-            status: JobStatus.NotStarted,
-            type: JobType.Import,
+            status: JobStatus.notstarted,
+            type: JobType.import,
             progress: 0,
             meta: {
               importFormat: input.format,
