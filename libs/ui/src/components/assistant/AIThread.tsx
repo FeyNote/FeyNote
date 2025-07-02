@@ -33,6 +33,10 @@ import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 
+const EmptyMessageContainer = styled.div`
+  height: 100%;
+`;
+
 const StyledIonCardTitle = styled(IonCardTitle)`
   display: flex;
   align-items: center;
@@ -147,8 +151,6 @@ export const AIThread: React.FC<Props> = (props) => {
             threadId: props.id,
             message,
           });
-        }
-        if (options.finishReason === 'stop') {
           if (!title) {
             await trpc.ai.createThreadTitle.mutate({
               id: props.id,
@@ -173,9 +175,9 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    const progress = startProgressBar();
     const loadThreadInfo = async () => {
       setIsLoadingInitialState(true);
-      const progress = startProgressBar();
       getThreadInfo().finally(() => {
         setIsLoadingInitialState(false);
         progress.dismiss();
@@ -284,8 +286,10 @@ export const AIThread: React.FC<Props> = (props) => {
       <IonContent>
         <ChatContainer>
           {ProgressBar}
-          {!messages.length ? (
-            <div style={{ height: '100%' }}>
+          {isLoadingInitialState ? (
+            <EmptyMessageContainer></EmptyMessageContainer>
+          ) : !messages.length ? (
+            <EmptyMessageContainer>
               <OptionsList>
                 {Prompt_Cards.map((card) => {
                   return (
@@ -308,7 +312,7 @@ export const AIThread: React.FC<Props> = (props) => {
                   );
                 })}
               </OptionsList>
-            </div>
+            </EmptyMessageContainer>
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
