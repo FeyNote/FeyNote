@@ -30,7 +30,8 @@ import {
   NotFound,
   Workspace,
   initI18Next,
-  PasswordReset,
+  ResetPassword,
+  ResetEmail,
   IonApp,
   PrintviewApp,
 } from '@feynote/ui';
@@ -96,15 +97,33 @@ export function App() {
   const url = new URL(window.location.href);
   const path = window.location.pathname.split('/').slice(1);
 
-  const passworeResetToken = url.searchParams.get('passwordResetToken');
-  if (passworeResetToken) {
+  const resetEmailToken = url.searchParams.get('resetEmailToken');
+  if (resetEmailToken) {
     return (
       <ToastContextProvider>
         <GlobalPaneContextProviderWrapper>
           <IonApp>
             <PreferencesContextProviderWrapper>
-              <PasswordReset
-                passwordResetToken={passworeResetToken}
+              <ResetEmail
+                authResetToken={resetEmailToken}
+                redirectPath={window.location.origin}
+              />
+            </PreferencesContextProviderWrapper>
+          </IonApp>
+        </GlobalPaneContextProviderWrapper>
+      </ToastContextProvider>
+    );
+  }
+
+  const resetPasswordToken = url.searchParams.get('resetPasswordToken');
+  if (resetPasswordToken) {
+    return (
+      <ToastContextProvider>
+        <GlobalPaneContextProviderWrapper>
+          <IonApp>
+            <PreferencesContextProviderWrapper>
+              <ResetPassword
+                authResetToken={resetPasswordToken}
                 redirectPath={window.location.origin}
               />
             </PreferencesContextProviderWrapper>

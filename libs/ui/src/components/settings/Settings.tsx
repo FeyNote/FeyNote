@@ -32,6 +32,8 @@ import { WelcomeModal } from '../dashboard/WelcomeModal';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { trpc } from '../../utils/trpc';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -79,6 +81,7 @@ export const Settings: React.FC = () => {
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   });
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const languageOptions = useMemo(() => {
     try {
@@ -157,6 +160,52 @@ export const Settings: React.FC = () => {
     ? getPreference(PreferenceNames.CollaborationColor)
     : 'random';
 
+  const triggerResetEmail = async () => {
+    const result = await trpc.user.triggerResetEmail
+      .mutate({
+        email: session.email,
+        returnUrl: window.location.origin,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+
+    if (!result) return;
+
+    await presentAlert({
+      header: t('settings.account.triggerResetEmail.header'),
+      message: t('settings.account.triggerResetEmail.message'),
+      buttons: [
+        {
+          text: t('generic.okay'),
+        },
+      ],
+    });
+  };
+
+  const triggerResetPassword = async () => {
+    const result = await trpc.user.triggerResetPassword
+      .mutate({
+        email: session.email,
+        returnUrl: window.location.origin,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+
+    if (!result) return;
+
+    await presentAlert({
+      header: t('settings.account.triggerResetPassword.header'),
+      message: t('settings.account.triggerResetPassword.message'),
+      buttons: [
+        {
+          text: t('generic.okay'),
+        },
+      ],
+    });
+  };
+
   return (
     <IonPage>
       <PaneNav title={t('settings.title')} />
@@ -199,7 +248,14 @@ export const Settings: React.FC = () => {
             <IonListHeader>
               <IonIcon icon={person} size="small" />
               &nbsp;&nbsp;
-              {t('settings.account')}
+              <IonLabel>
+                {t('settings.account')}
+                <p>
+                  {t('settings.email.current', {
+                    email: session.email,
+                  })}
+                </p>
+              </IonLabel>
             </IonListHeader>
             <IonItem
               lines="none"
@@ -224,17 +280,6 @@ export const Settings: React.FC = () => {
               {t('settings.export')}
             </IonItem>
             <IonItem lines="none" button>
-              <IonLabel>
-                {t('settings.email')}
-                <p>
-                  {t('settings.email.current')} {session.email}
-                </p>
-              </IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonLabel>{t('settings.password')}</IonLabel>
-            </IonItem>
-            <IonItem lines="none" button>
               <IonToggle
                 checked={
                   getPreference(PreferenceNames.PreferencesSync) ===
@@ -248,6 +293,22 @@ export const Settings: React.FC = () => {
                   {t('settings.preferencesSync')}
                 </IonLabel>
               </IonToggle>
+            </IonItem>
+            <IonItem
+              lines="none"
+              onClick={triggerResetEmail}
+              detail={true}
+              button
+            >
+              <IonLabel>{t('settings.resetEmail')}</IonLabel>
+            </IonItem>
+            <IonItem
+              lines="none"
+              onClick={triggerResetPassword}
+              detail={true}
+              button
+            >
+              <IonLabel>{t('settings.resetPassword')}</IonLabel>
             </IonItem>
           </IonList>
         </IonCard>

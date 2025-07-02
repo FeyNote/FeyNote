@@ -4,7 +4,7 @@ import { signature } from './reusables/signature';
 import { sendMail } from '../sendMail';
 import { globalServerConfig } from '@feynote/config';
 
-export class PasswordResetMail implements Mail {
+export class ResetEmailMail implements Mail {
   public readonly to: string[];
   public readonly cc: undefined;
   public readonly from = globalServerConfig.email.fromAddress;
@@ -12,11 +12,11 @@ export class PasswordResetMail implements Mail {
   public readonly html: string;
   public readonly plain: string;
 
-  constructor(to: string[], name: string, resetLink: string) {
-    this.to = to;
+  constructor(args: { to: string[]; name: string; resetLink: string }) {
+    this.to = args.to;
     this.subject = this.getSubject();
-    this.html = this.getHTML(name, resetLink);
-    this.plain = this.getPlain(name, resetLink);
+    this.html = this.getHTML(args.name, args.resetLink);
+    this.plain = this.getPlain(args.name, args.resetLink);
   }
 
   public send() {
@@ -24,18 +24,18 @@ export class PasswordResetMail implements Mail {
   }
 
   private getSubject() {
-    return 'FeyNote Password Reset';
+    return 'FeyNote Email Change';
   }
 
   private getHTML(name: string, resetLink: string) {
     return dedent`
       Hello ${name},
       <br /><br />
-      Someone recently requested a password reset link for the FeyNote account associated with this email address.
+      Someone recently requested to change the email address for the FeyNote account associated with this email address.
       <br /><br />
-      If you did not request a password reset, please disregard this email.
+      If you did not request this, please disregard this email.
       <br /><br />
-      To reset your password, paste this url into your browser: <a href="${resetLink}">${resetLink}</a>
+      To change your email, paste this url into your browser: <a href="${resetLink}">${resetLink}</a>
       <br /><br />
       ${signature.html}
     `;
@@ -45,11 +45,11 @@ export class PasswordResetMail implements Mail {
     return dedent`
       Hello ${name},
 
-      Someone recently requested a password reset link for the FeyNote account associated with this email address.
+      Someone recently requested to change the email address for the FeyNote account associated with this email address.
 
-      If you did not request a password reset, please disregard this email.
+      If you did not request this, please disregard this email.
 
-      To reset your password, paste this url into your browser: ${resetLink}
+      To change your email, paste this url into your browser: ${resetLink}
 
       ${signature.plain}
     `;

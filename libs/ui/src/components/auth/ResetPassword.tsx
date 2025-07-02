@@ -7,6 +7,7 @@ import {
   IonPage,
   useIonAlert,
 } from '@ionic/react';
+import * as Sentry from '@sentry/react';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -21,13 +22,14 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { validatePassword } from '@feynote/shared-utils';
+import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 
 interface Props {
   redirectPath: string;
-  passwordResetToken: string;
+  authResetToken: string;
 }
 
-export const PasswordReset: React.FC<Props> = (props) => {
+export const ResetPassword: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -46,15 +48,22 @@ export const PasswordReset: React.FC<Props> = (props) => {
     }
 
     setIsLoading(true);
-    trpc.user.passwordReset
+    trpc.user.resetPassword
       .mutate({
-        passwordResetToken: props.passwordResetToken,
+        authResetToken: props.authResetToken,
         password,
       })
-      .then(() => {
-        presentAlert({
-          header: t('auth.passwordReset.success.header'),
-          message: t('auth.passwordReset.success.message'),
+      .then(async () => {
+        try {
+          await appIdbStorageManager.removeSession();
+        } catch (e) {
+          console.error(e);
+          Sentry.captureException(e);
+        }
+
+        await presentAlert({
+          header: t('auth.resetPassword.success.header'),
+          message: t('auth.resetPassword.success.message'),
           buttons: [t('generic.okay')],
           onDidDismiss: () => {
             window.location.href = props.redirectPath;
@@ -65,8 +74,8 @@ export const PasswordReset: React.FC<Props> = (props) => {
         handleTRPCErrors(error, {
           403: () => {
             presentAlert({
-              header: t('auth.passwordReset.expired.header'),
-              message: t('auth.passwordReset.expired.message'),
+              header: t('auth.resetPassword.expired.header'),
+              message: t('auth.resetPassword.expired.message'),
               buttons: [t('generic.okay')],
               onDidDismiss: () => {
                 window.location.href = props.redirectPath;
@@ -85,6 +94,8 @@ export const PasswordReset: React.FC<Props> = (props) => {
     setPasswordIsValid(isValid);
     setPasswordIsTouched(true);
     setPassword(value);
+    setConfirmPasswordIsValid(confirmPassword === value);
+    setConfirmPasswordIsTouched(!!confirmPassword.length);
   };
 
   const confirmPasswordInputHandler = (value: string) => {
@@ -103,9 +114,9 @@ export const PasswordReset: React.FC<Props> = (props) => {
         <LogoActionContainer />
         <CenteredIonCard>
           <CenteredIonCardHeader>
-            <IonCardTitle>{t('auth.passwordReset.title')}</IonCardTitle>
+            <IonCardTitle>{t('auth.resetPassword.title')}</IonCardTitle>
             <IonCardSubtitle>
-              {t('auth.passwordReset.subtitle')}
+              {t('auth.resetPassword.subtitle')}
             </IonCardSubtitle>
           </CenteredIonCardHeader>
           <IonCardContent>
@@ -115,11 +126,11 @@ export const PasswordReset: React.FC<Props> = (props) => {
                   passwordIsValid,
                   passwordIsTouched,
                 )}
-                label={t('auth.passwordReset.password.label')}
+                label={t('auth.resetPassword.password.label')}
                 type="password"
                 labelPlacement="stacked"
-                placeholder={t('auth.passwordReset.password.placeholder')}
-                errorText={t('auth.passwordReset.password.error')}
+                placeholder={t('auth.resetPassword.password.placeholder')}
+                errorText={t('auth.resetPassword.password.error')}
                 value={password}
                 disabled={isLoading}
                 onIonInput={(e) =>
@@ -132,13 +143,13 @@ export const PasswordReset: React.FC<Props> = (props) => {
                   confirmPasswordIsValid,
                   confirmPasswordIsTouched,
                 )}
-                label={t('auth.passwordReset.confirmPassword.label')}
+                label={t('auth.resetPassword.confirmPassword.label')}
                 type="password"
                 labelPlacement="stacked"
                 placeholder={t(
-                  'auth.passwordReset.confirmPassword.placeholder',
+                  'auth.resetPassword.confirmPassword.placeholder',
                 )}
-                errorText={t('auth.passwordReset.confirmPassword.error')}
+                errorText={t('auth.resetPassword.confirmPassword.error')}
                 value={confirmPassword}
                 disabled={isLoading}
                 onIonInput={(e) =>
@@ -150,7 +161,7 @@ export const PasswordReset: React.FC<Props> = (props) => {
             <br />
             <CenteredContainer>
               <IonButton onClick={submitReset} disabled={disableSubmitButton}>
-                {t('auth.passwordReset.submit')}
+                {t('auth.resetPassword.submit')}
               </IonButton>
             </CenteredContainer>
           </IonCardContent>

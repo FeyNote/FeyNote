@@ -7,9 +7,11 @@ import { setPreferences } from './setPreferences';
 import { getManifest } from './getManifest';
 import { getByEmail } from './getByEmail';
 import { getKnownUsers } from './getKnownUsers';
-import { triggerPasswordReset } from './triggerPasswordReset';
-import { passwordReset } from './passwordReset';
+import { resetPassword } from './resetPassword';
 import { validateSession } from './validateSession';
+import { triggerResetEmail } from './triggerResetEmail';
+import { triggerResetPassword } from './triggerResetPassword';
+import { resetEmail } from './resetEmail';
 
 export const userRouter = trpcRouter({
   getByEmail,
@@ -20,7 +22,9 @@ export const userRouter = trpcRouter({
   signInWithGoogle,
   getPreferences,
   setPreferences,
-  passwordReset,
-  triggerPasswordReset,
+  resetPassword,
+  resetEmail,
+  triggerResetEmail,
+  triggerResetPassword,
   validateSession,
 });

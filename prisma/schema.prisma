@@ -33,6 +33,7 @@ model User {
   stripePayments    StripePayment[]
   subscriptions     Subscription[]
   jobs              Job[]
+  authResetTokens   AuthResetToken[]
 }
 
 model Session {
@@ -44,6 +45,22 @@ model Session {
   extendableUntil DateTime @db.Timestamptz(6)
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+}
+
+enum AuthResetTokenType {
+  email
+  password
+}
+
+model AuthResetToken {
+  id        String             @id @default(uuid()) @db.Uuid
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String             @db.Uuid
+  token     String             @unique @db.VarChar(255)
+  type      AuthResetTokenType
+  expiresAt DateTime           @db.Timestamptz(6)
+  createdAt DateTime           @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime           @updatedAt @db.Timestamptz(6)
 }
 
 model Artifact {
