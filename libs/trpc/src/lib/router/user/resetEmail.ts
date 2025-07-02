@@ -76,7 +76,7 @@ export const resetEmail = publicProcedure
           id: authResetToken.userId,
         },
         data: {
-          // Email is encorced unique at the DB-level so we're not concerned about collisions between this and the original check. This would 500 in the case of a race condition
+          // Email is enforced unique at the DB-level so we're not concerned about collisions between this and the original check. This would 500 in the case of a race condition
           email: input.email,
         },
       });
