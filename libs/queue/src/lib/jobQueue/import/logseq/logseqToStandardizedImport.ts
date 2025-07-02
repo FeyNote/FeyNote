@@ -155,6 +155,23 @@ const appendLogseqBlockProperties = (
   return propertyStr + markdown;
 };
 
+const addUniqueBlockId = (blockId: string, content: string): string => {
+  // Returns three elements; ## Heading title
+  // 0. The full match
+  // 1. The heading elements (optional)
+  // 2. The content
+  const pageReferenceRegex = /^(#*) ?(.+)/g;
+  for (const matchingGroups of content.matchAll(pageReferenceRegex)) {
+    let replacementHtml = `<p data-id="${blockId}">${matchingGroups[2]}</p>`;
+    const numOfHeadings = matchingGroups[1];
+    if (numOfHeadings) {
+      replacementHtml = `<h${numOfHeadings.length} data-id="${blockId}">${matchingGroups[2]}</h${numOfHeadings.length}>`;
+    }
+    content = content.replace(matchingGroups[0], replacementHtml);
+  }
+  return content;
+};
+
 const convertMarkdownToHtml = async (
   block: LogseqBlock,
   artifactId: string,
@@ -185,11 +202,11 @@ const convertMarkdownToHtml = async (
   markdown = replaceInlineCode(markdown);
   markdown = replaceTables(markdown);
 
-  let html = marked.parse(markdown);
   const referencedBlockWithId = blockIdToBlockInfoMap.get(block.id);
   if (referencedBlockWithId) {
-    html = `<p data-id="${referencedBlockWithId.id}">${html}</p>`;
+    markdown = addUniqueBlockId(referencedBlockWithId.id, markdown);
   }
+  const html = marked.parse(markdown);
   return html;
 };
 
@@ -268,9 +285,8 @@ const handleLogseqGraph = async (args: {
     const page = args.json.blocks[i];
     // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
-    const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
-    const title = icon + page['page-name'];
-    const id = pageNameToIdMap.get(title) || (await getSafeArtifactId()).id;
+    const id =
+      pageNameToIdMap.get(page['page-name']) || (await getSafeArtifactId()).id;
     const html = await convertLogseqPageToHtml(
       page.children,
       id,
@@ -284,6 +300,8 @@ const handleLogseqGraph = async (args: {
     addMissingBlockIds(tiptap);
     const text = getTextForJSONContent(tiptap);
 
+    const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
+    const title = icon + page['page-name'];
     const yDoc = constructYArtifact({
       id,
       userId: args.job.userId,
@@ -312,8 +330,9 @@ const handleLogseqGraph = async (args: {
       yBin,
     });
 
+    const progress = Math.floor((i / args.json.blocks.length) * 100);
     args.progressTracker.onProgress({
-      progress: Math.floor((i / args.json.blocks.length) * 100),
+      progress,
       step: 1,
     });
   }

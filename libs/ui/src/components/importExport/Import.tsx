@@ -12,7 +12,7 @@ import { JobType } from '@prisma/client';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
-const REFRESH_JOBS_INTERVAL = 3000; //3sec
+const REFRESH_JOBS_INTERVAL = 2000; //3sec
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();

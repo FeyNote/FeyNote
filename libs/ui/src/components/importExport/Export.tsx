@@ -12,7 +12,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
-const REFRESH_JOBS_INTERVAL = 3000; //3sec
+const REFRESH_JOBS_INTERVAL = 2000; //3sec
 
 export const Export: React.FC = () => {
   const { t } = useTranslation();

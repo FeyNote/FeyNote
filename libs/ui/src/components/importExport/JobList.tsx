@@ -78,7 +78,7 @@ export const JobList: React.FC<Props> = (props) => {
                   <>
                     <IonNote color="primary">{t('jobList.inProgress')}</IonNote>
                     <ProgressBar
-                      progress={Math.min(job.progress / 100, 0.01)}
+                      progress={Math.max(job.progress / 100, 0.01)}
                     />
                   </>
                 )}

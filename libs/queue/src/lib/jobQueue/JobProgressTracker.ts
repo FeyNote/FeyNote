@@ -4,7 +4,7 @@ import { throttleDropPromise } from '@feynote/shared-utils';
 /**
  * How often to write the job percentage completion to the database
  */
-const JOB_PROGRESS_UPDATE_PERIOD_SECONDS = 3;
+const JOB_PROGRESS_UPDATE_PERIOD_SECONDS = 2;
 
 export class JobProgressTracker {
   protected updateProgress: (percent: number) => void;
