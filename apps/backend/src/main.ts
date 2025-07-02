@@ -1,5 +1,6 @@
 import './instrument.ts';
 
+import * as Sentry from '@sentry/node';
 import express from 'express';
 import morgan from 'morgan';
 import * as trpcExpress from '@trpc/server/adapters/express';
@@ -15,6 +16,8 @@ import {
   setupMinimalMetricsServer,
 } from '@feynote/api-services';
 import { globalServerConfig } from '@feynote/config';
+import { getHTTPStatusCodeFromError } from '@trpc/server/http';
+import { TRPCError } from '@trpc/server';
 
 const app = express();
 
@@ -101,6 +104,29 @@ app.use(
   trpcExpress.createExpressMiddleware({
     router: appRouter,
     createContext,
+    onError: (opts) => {
+      const { error, type, path, input, ctx, req } = opts;
+
+      const statusCode = getHTTPStatusCodeFromError(error);
+      if (statusCode >= 500) {
+        logger.error(error.stack);
+
+        const mainError =
+          error instanceof TRPCError ? error.cause || error : error;
+
+        Sentry.captureException(mainError, {
+          extra: {
+            statusCode,
+            error,
+            type,
+            path,
+            input,
+            ctx,
+            req,
+          },
+        });
+      }
+    },
   }),
 );
 
