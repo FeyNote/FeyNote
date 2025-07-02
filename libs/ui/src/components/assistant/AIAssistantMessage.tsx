@@ -29,7 +29,7 @@ export const AIAssistantMessage = ({
         return (
           <AIToolInvocation key={i} toolInvocation={part.toolInvocation} />
         );
-      } else {
+      } else if (part.type === 'text') {
         return (
           <AIMessagePartText
             key={i}
@@ -40,6 +40,7 @@ export const AIAssistantMessage = ({
           />
         );
       }
+      return null;
     })
   );
 };

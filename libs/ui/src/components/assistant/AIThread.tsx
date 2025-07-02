@@ -1,12 +1,22 @@
 import {
   IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
   IonContent,
   IonIcon,
   IonPage,
   IonSpinner,
   IonTextarea,
 } from '@ionic/react';
-import { send } from 'ionicons/icons';
+import {
+  pencilOutline,
+  searchOutline,
+  send,
+  shirtOutline,
+  skullOutline,
+} from 'ionicons/icons';
 import { useContext, useEffect, useState } from 'react';
 import { Message, useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
@@ -22,6 +32,36 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
+
+const EmptyMessageContainer = styled.div`
+  height: 100%;
+`;
+
+const StyledIonCardTitle = styled(IonCardTitle)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    margin-right: 8px;
+  }
+`;
+
+const StyledIonCardContent = styled(IonCardContent)`
+  text-align: center;
+`;
+
+const OptionsList = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+
+  ion-card {
+    padding: 4px;
+  }
+`;
 
 const ChatContainer = styled.div`
   padding: 8px;
@@ -51,6 +91,31 @@ export interface ChatMessage {
   content: string;
   role: string;
 }
+
+const PROMPT_CARDS = [
+  {
+    header: 'thread.card.scrape.header',
+    query: 'thread.card.scrape.query',
+    displayText: 'thread.card.scrape.displayText',
+    icon: searchOutline,
+  },
+  {
+    header: 'thread.card.format.header',
+    query: 'thread.card.format.query',
+    displayText: 'thread.card.format.displayText',
+    icon: pencilOutline,
+  },
+  {
+    header: 'thread.card.monster.header',
+    query: 'thread.card.monster.query',
+    icon: skullOutline,
+  },
+  {
+    header: 'thread.card.item.header',
+    query: 'thread.card.item.query',
+    icon: shirtOutline,
+  },
+];
 
 interface Props {
   id: string;
@@ -86,8 +151,6 @@ export const AIThread: React.FC<Props> = (props) => {
             threadId: props.id,
             message,
           });
-        }
-        if (options.finishReason === 'stop') {
           if (!title) {
             await trpc.ai.createThreadTitle.mutate({
               id: props.id,
@@ -112,9 +175,9 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
+    const progress = startProgressBar();
     const loadThreadInfo = async () => {
       setIsLoadingInitialState(true);
-      const progress = startProgressBar();
       getThreadInfo().finally(() => {
         setIsLoadingInitialState(false);
         progress.dismiss();
@@ -223,12 +286,33 @@ export const AIThread: React.FC<Props> = (props) => {
       <IonContent>
         <ChatContainer>
           {ProgressBar}
-          {!messages.length ? (
-            <div style={{ height: '100%' }}>
-              {
-                // TODO Chat Tutorial https://github.com/RedChickenCo/FeyNote/issues/86
-              }
-            </div>
+          {isLoadingInitialState ? (
+            <EmptyMessageContainer></EmptyMessageContainer>
+          ) : !messages.length ? (
+            <EmptyMessageContainer>
+              <OptionsList>
+                {PROMPT_CARDS.map((card) => {
+                  return (
+                    <IonCard
+                      button
+                      onClick={() => {
+                        setInput(t(card.query));
+                      }}
+                    >
+                      <IonCardHeader>
+                        <StyledIonCardTitle>
+                          <IonIcon icon={card.icon} />
+                          {t(card.header)}
+                        </StyledIonCardTitle>
+                      </IonCardHeader>
+                      <StyledIonCardContent>
+                        {t(card.displayText || card.query)}
+                      </StyledIonCardContent>
+                    </IonCard>
+                  );
+                })}
+              </OptionsList>
+            </EmptyMessageContainer>
           ) : (
             <AIMessagesContainer
               retryMessage={retryMessage}
