@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import type { LogseqBlock, LogseqPage } from './LogseqGraph';
 import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
+import removeMarkdown from 'remove-markdown';
 
 const executeOnBlock = (
   blocks: LogseqBlock[],
@@ -38,12 +39,17 @@ export const getLogseqReferenceIdToBlockMap = (args: {
   for (const page of args.pages) {
     executeOnBlock(page.children, (block) => {
       if (referenceIdToReferenceTextMap.has(block.id)) {
+        let referenceText =
+          referenceIdToReferenceTextMap.get(block.id) || block.content;
+        referenceText =
+          block.format === 'markdown'
+            ? removeMarkdown(referenceText)
+            : referenceText; // TODO: Implement org mode support https://github.com/RedChickenCo/FeyNote/issues/846
         referenceIdToBlockMap.set(block.id, {
           id: randomUUID(),
           artifactId:
             args.pageNameToIdMap.get(page['page-name']) || randomUUID(),
-          referenceText:
-            referenceIdToReferenceTextMap.get(block.id) || block.content,
+          referenceText,
         });
       }
     });

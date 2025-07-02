@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import type { ArtifactBlockInfo } from '../ArtifactBlockInfo';
+import removeMarkdown from 'remove-markdown';
 
 export const populateBlockIdToBlockInfoMap = (
   content: string,
@@ -15,10 +16,12 @@ export const populateBlockIdToBlockInfoMap = (
   const headingRegex = /(.+)\n*(\^\w{6})$/gm;
   for (const matchingGroups of content.matchAll(headingRegex)) {
     const blockId = matchingGroups[2];
-    const referenceText = matchingGroups[1]
+    const referenceId = `${obsidianFileId}${blockId}`;
+    let referenceText = matchingGroups[1]
       .trim()
       .replaceAll(/!?\[\[.*?\]\]/g, '@...');
-    const referenceId = `${obsidianFileId}${blockId}`;
+    referenceText = removeMarkdown(referenceText);
+
     referenceIdToArtifactBlockInfo.set(referenceId, {
       id: randomUUID(),
       artifactId,
