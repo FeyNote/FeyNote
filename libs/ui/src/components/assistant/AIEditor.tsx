@@ -40,7 +40,7 @@ export const AIEditor: React.FC<Props> = (props) => {
       <AIFCEditorContainer>
         <ArtifactEditorContainer>
           <TiptapEditor
-            artifactId={'0000-0000-0000-0000'}
+            artifactId={'00000000-0000-0000-0000-000000000000'}
             editable={false}
             yDoc={yDoc}
             theme="default"
