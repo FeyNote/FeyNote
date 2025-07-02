@@ -228,15 +228,15 @@ model Subscription {
 }
 
 enum JobType {
-  Import
-  Export
+  import
+  export
 }
 
 enum JobStatus {
-  NotStarted
-  Failed
-  Success
-  InProgress
+  notstarted
+  failed
+  success
+  inprogress
 }
 
 model Job {

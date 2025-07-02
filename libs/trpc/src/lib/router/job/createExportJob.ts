@@ -17,8 +17,8 @@ export const createExportJob = authenticatedProcedure
       data: {
         userId,
         progress: 0,
-        status: JobStatus.NotStarted,
-        type: JobType.Export,
+        status: JobStatus.notstarted,
+        type: JobType.export,
         meta: {
           exportFormat: input.format,
         },
