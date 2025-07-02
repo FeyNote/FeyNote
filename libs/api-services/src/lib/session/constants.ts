@@ -23,17 +23,17 @@ export const EXTEND_IF_EXPIRES_WITHIN_DAYS = 20;
  */
 export const EXTENDED_SESSION_VALID_DAYS = SESSION_VALID_DAYS;
 
-/*
- * Password reset session validity. Should be kept very short
- */
-export const PASSWORD_RESET_VALIDITY_DAYS = 1;
-/*
- * We do not allow sessions included in reset emails to be extended for security reasons.
- * This noop is included for clarity
- */
-export const PASSWORD_RESET_EXTENDABLE_DAYS = PASSWORD_RESET_VALIDITY_DAYS;
-
 /**
  * The length of the token (in bytes) used for session tokens
  */
 export const SESSION_TOKEN_LENGTH_BYTES = 64;
+
+/*
+ * Auth reset token validity. Should be kept very, very short
+ */
+export const AUTH_RESET_TOKEN_VALIDITY_HOURS = 2;
+
+/*
+ * The length of the token (in bytes) used for auth reset tokens
+ */
+export const AUTH_RESET_TOKEN_LENGTH_BYTES = 64;

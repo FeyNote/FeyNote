@@ -72,7 +72,7 @@ export const Login: React.FC<Props> = (props) => {
     }
 
     setIsLoading(true);
-    trpc.user.triggerPasswordReset
+    trpc.user.triggerResetPassword
       .mutate({
         email,
         returnUrl: window.location.origin,

@@ -2,7 +2,8 @@ export * from './lib/user/generatePasswordHashAndSalt';
 export * from './lib/user/register';
 export * from './lib/user/login';
 export * from './lib/user/upsertLogin';
-export * from './lib/user/triggerPasswordReset';
+export * from './lib/user/triggerResetEmail';
+export * from './lib/user/triggerResetPassword';
 
 export * from './lib/error';
 export * from './lib/openai';
@@ -20,6 +21,10 @@ export * from './lib/express/expressErrors';
 export * from './lib/logging/logger';
 export * from './lib/logging/metrics';
 
+export * from './lib/mailer/mail/EmailChangedFromThisAddressMail';
+export * from './lib/mailer/mail/EmailChangedToThisAddressMail';
+export * from './lib/mailer/mail/PasswordChangedMail';
+
 export * from './lib/s3/FILE_PURPOSE_TO_BUCKET';
 export * from './lib/s3/generateS3Key';
 export * from './lib/s3/getSignedUrl';
@@ -34,6 +39,7 @@ export * from './lib/s3/sanitizeFilePath';
 
 export * from './lib/session/getSessionFromAuthHeader';
 export * from './lib/session/isSessionExpired';
+export * from './lib/session/isAuthResetTokenExpired';
 
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';

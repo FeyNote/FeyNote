@@ -53,7 +53,7 @@ class EdgeStore {
       for (const artifactId of cleanedIds) {
         this.updateTrackedEdges(artifactId);
       }
-    }, this.CLEANUP_INTERVAL_SECONDS);
+    }, this.CLEANUP_INTERVAL_SECONDS * 1000);
 
     this.broadcastChannel.addEventListener('message', async (event) => {
       const aritfactIdsWithUpdatedEdges = event.data.modifiedEdgeArtifactIds;

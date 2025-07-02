@@ -26,9 +26,24 @@ export const metrics = {
     help: 'A login to an account',
     labelNames: ['auth_type'],
   }),
-  accountPasswordReset: new client.Counter({
-    name: 'account_password_reset',
+  accountTriggerResetPassword: new client.Counter({
+    name: 'account_trigger_reset_password',
     help: 'A password reset email was triggered',
+    labelNames: [],
+  }),
+  accountResetPassword: new client.Counter({
+    name: 'account_reset_password',
+    help: 'An account password was changed',
+    labelNames: [],
+  }),
+  accountTriggerResetEmail: new client.Counter({
+    name: 'account_trigger_reset_email',
+    help: 'An email reset email was triggered',
+    labelNames: [],
+  }),
+  accountResetEmail: new client.Counter({
+    name: 'account_reset_email',
+    help: 'An account email was changed',
     labelNames: [],
   }),
 
