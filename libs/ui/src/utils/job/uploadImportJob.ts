@@ -7,14 +7,14 @@ import type { ImportFormat } from '@feynote/prisma/types';
 
 export const uploadImportJob = async (args: {
   file: File;
-  format: ImportFormat;
+  format: 'obsidian' | 'logseq';
   onProgress?: (progress: number) => void;
 }) => {
   const { id } = await trpc.file.getSafeFileId.query();
 
   const payload = await new ImportJobStreamEncoder().encode({
     id,
-    format: args.format,
+    format: args.format as ImportFormat,
     fileName: args.file.name,
     fileSize: args.file.size,
     mimetype: args.file.type,

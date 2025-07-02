@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
 import { useContext, useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
-import { type JobSummary } from '@feynote/prisma/types';
+import type { JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';

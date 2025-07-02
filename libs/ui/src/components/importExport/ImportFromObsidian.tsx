@@ -1,4 +1,3 @@
-import { ImportFormat } from '@feynote/prisma/types';
 import { ImportFromFile } from './ImportFromFile';
 import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
@@ -30,7 +29,7 @@ export const ImportFromObsidian: React.FC = () => {
     <IonPage>
       <PaneNav title={t('importFromObsidian.title')} />
       <IonContent className="ion-padding">
-        <ImportFromFile format={ImportFormat.Obsidian} />
+        <ImportFromFile format="obsidian" />
         <SectionBreak />
         <h1>Instruction Guide</h1>
         <p>{t('importFromObsidian.paragraph.start')}</p>
