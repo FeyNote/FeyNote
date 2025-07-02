@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ChangeEvent, useContext, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { closeOutline } from 'ionicons/icons';
-import { ImportFormat } from '@feynote/prisma/types';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -31,7 +30,7 @@ const Container = styled.div`
 `;
 
 interface Props {
-  format: ImportFormat;
+  format: 'obsidian' | 'logseq';
 }
 
 const FILE_SIZE_LIMIT = 500000000; //500MB
@@ -51,7 +50,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   );
 
   const instructions = useMemo(() => {
-    if (props.format === ImportFormat.Obsidian) {
+    if (props.format === 'obsidian') {
       return t('importFromObsidian.instructions');
     } else {
       return t('importFromLogseq.instructions');
