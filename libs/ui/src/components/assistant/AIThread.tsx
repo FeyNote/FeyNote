@@ -92,17 +92,7 @@ export interface ChatMessage {
   role: string;
 }
 
-const Prompt_Cards = [
-  {
-    header: 'thread.card.monster.header',
-    query: 'thread.card.monster.query',
-    icon: skullOutline,
-  },
-  {
-    header: 'thread.card.item.header',
-    query: 'thread.card.item.query',
-    icon: shirtOutline,
-  },
+const PROMPT_CARDS = [
   {
     header: 'thread.card.scrape.header',
     query: 'thread.card.scrape.query',
@@ -114,6 +104,16 @@ const Prompt_Cards = [
     query: 'thread.card.format.query',
     displayText: 'thread.card.format.displayText',
     icon: pencilOutline,
+  },
+  {
+    header: 'thread.card.monster.header',
+    query: 'thread.card.monster.query',
+    icon: skullOutline,
+  },
+  {
+    header: 'thread.card.item.header',
+    query: 'thread.card.item.query',
+    icon: shirtOutline,
   },
 ];
 
@@ -291,7 +291,7 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : !messages.length ? (
             <EmptyMessageContainer>
               <OptionsList>
-                {Prompt_Cards.map((card) => {
+                {PROMPT_CARDS.map((card) => {
                   return (
                     <IonCard
                       button
