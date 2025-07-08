@@ -27,7 +27,7 @@ import TableCellExtension from '@tiptap/extension-table-cell';
 import DocumentExtension from '@tiptap/extension-document';
 import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
-import { UniqueID } from '@tiptap-pro/extension-unique-id';
+import { UniqueID } from '@tiptap/extension-unique-id';
 import HeadingExtension from '@tiptap/extension-heading';
 import { FeynoteEditorMediaType } from '../types/FeynoteEditorMediaType';
 import { TiptapBlockType } from './TiptapBlockType';

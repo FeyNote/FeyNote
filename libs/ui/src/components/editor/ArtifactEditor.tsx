@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 

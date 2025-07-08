@@ -14,7 +14,7 @@ import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubble
 import type { TiptapCollabProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { useRef, type MutableRefObject } from 'react';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useToastContext } from '../../context/toast/ToastContext';
 import { useTranslation } from 'react-i18next';
 import { IncomingBlockReferencesInlinePreview } from './incomingBlockReferencesInlinePreview/IncomingBlockReferencesInlinePreview';

@@ -26,11 +26,11 @@ import DocumentExtension from '@tiptap/extension-document';
 import PlaceholderExtension from '@tiptap/extension-placeholder';
 import TextExtension from '@tiptap/extension-text';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
-import UniqueIDExtension from '@tiptap-pro/extension-unique-id';
-import FileHandlerExtension from '@tiptap-pro/extension-file-handler';
+import UniqueIDExtension from '@tiptap/extension-unique-id';
+import FileHandlerExtension from '@tiptap/extension-file-handler';
 import TableOfContentsExtension, {
   type TableOfContentData,
-} from '@tiptap-pro/extension-table-of-contents';
+} from '@tiptap/extension-table-of-contents';
 import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';

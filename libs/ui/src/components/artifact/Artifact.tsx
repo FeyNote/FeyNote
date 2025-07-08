@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import { collaborationManager } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useArtifactDelete } from './useArtifactDelete';
 import { useIsEditable } from '../../utils/useAuthorizedScope';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
