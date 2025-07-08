@@ -77,7 +77,9 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
       {previewInfo && ref.current && (
         <ArtifactReferencePreview
           onClick={(event) => (
-            event.stopPropagation(), linkClicked(event), close()
+            event.stopPropagation(),
+            linkClicked(event),
+            close()
           )}
           artifactId={props.edge.artifactId}
           previewInfo={previewInfo}

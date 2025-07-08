@@ -107,7 +107,8 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
           <IonButton
             fill="clear"
             onClick={(event) => (
-              event.stopPropagation(), setExpanded(!expanded)
+              event.stopPropagation(),
+              setExpanded(!expanded)
             )}
             slot="end"
             size="small"
@@ -121,7 +122,9 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
         {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
-              event.stopPropagation(), linkClicked(event), close()
+              event.stopPropagation(),
+              linkClicked(event),
+              close()
             )}
             artifactId={edge0.targetArtifactId}
             previewInfo={previewInfo}
