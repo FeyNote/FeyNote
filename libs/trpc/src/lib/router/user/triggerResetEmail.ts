@@ -15,7 +15,7 @@ export const triggerResetEmail = publicProcedure
     // We allow any url in development mode, but in prod mode we want to ensure it's only feynote.com/app.feynote.com for security
     if (
       process.env['NODE_ENV'] !== 'development' &&
-      !input.returnUrl.match(/^https:\/\/(app\.)?feynote.com\/.*$/)
+      !input.returnUrl.match(/^https:\/\/(app\.)?feynote.com(\/.*)?$/)
     ) {
       throw new TRPCError({
         message: 'Provided returnUrl is not allowed',

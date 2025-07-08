@@ -139,6 +139,8 @@
   "settings.resetPassword": "Change account password",
   "settings.account.triggerResetEmail.header": "Validation Email Sent",
   "settings.account.triggerResetEmail.message": "To protect your account against someone who might have stumbled upon your computer, we've sent you an email with a reset link which will allow you to update your account email address. Please check your current email address and follow the link included.",
+  "settings.account.triggerResetEmail.noPassword.header": "Password Reset Required",
+  "settings.account.triggerResetEmail.noPassword.message": "You're currently using \"sign in with google\" for your account, and have no password set. Since changing your email would make it impossible for you to sign in, please set a password first. You can do this via the \"change account password\" option on the settings page.",
   "settings.account.triggerResetPassword.header": "Password Reset Email Sent",
   "settings.account.triggerResetPassword.message": "To protect your account against someone who might have stumbled upon your computer, we've sent you an email with a reset link which will allow you to update your account password. Please check your email and follow the link included.",
   "settings.import": "Import Document Data",

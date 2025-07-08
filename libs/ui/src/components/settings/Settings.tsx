@@ -167,7 +167,21 @@ export const Settings: React.FC = () => {
         returnUrl: window.location.origin,
       })
       .catch((e) => {
-        handleTRPCErrors(e);
+        handleTRPCErrors(e, {
+          409: () => {
+            presentAlert({
+              header: t('settings.account.triggerResetEmail.noPassword.header'),
+              message: t(
+                'settings.account.triggerResetEmail.noPassword.message',
+              ),
+              buttons: [
+                {
+                  text: t('generic.okay'),
+                },
+              ],
+            });
+          },
+        });
       });
 
     if (!result) return;
