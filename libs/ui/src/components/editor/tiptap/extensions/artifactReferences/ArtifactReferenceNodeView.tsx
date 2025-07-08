@@ -93,7 +93,9 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
         {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
-              event.stopPropagation(), linkClicked(event), close()
+              event.stopPropagation(),
+              linkClicked(event),
+              close()
             )}
             artifactId={artifactId}
             previewInfo={previewInfo}
