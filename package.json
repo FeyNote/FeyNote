@@ -135,7 +135,7 @@
     "y-utility": "^0.1.4",
     "yjs": "^13.6.27",
     "zip-stream": "^7.0.2",
-    "zod": "^3.25.67"
+    "zod": "^3.25.75"
   },
   "devDependencies": {
     "@babel/core": "^7.27.4",
