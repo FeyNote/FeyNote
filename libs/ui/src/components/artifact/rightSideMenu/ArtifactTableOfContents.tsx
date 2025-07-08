@@ -1,4 +1,4 @@
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useEffect, useState, type RefObject } from 'react';
 import type { CollaborationManagerConnection } from '../../editor/collaborationManager';
 import { IonCard, IonIcon, IonListHeader } from '@ionic/react';

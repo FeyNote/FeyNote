@@ -32,7 +32,7 @@ import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesFo
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { ArtifactTableOfContents } from './ArtifactTableOfContents';
 import { GraphRenderer } from '../../graph/GraphRenderer';
 import styled from 'styled-components';

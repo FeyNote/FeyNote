@@ -11,7 +11,7 @@ import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';

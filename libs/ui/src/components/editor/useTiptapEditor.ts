@@ -8,7 +8,7 @@ import { useContext, useEffect, useMemo } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { getTiptapExtensions } from './tiptap/getTiptapExtensions';
-import type { TableOfContentData } from '@tiptap-pro/extension-table-of-contents';
+import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 
 type DocArgOptions =
   | {
