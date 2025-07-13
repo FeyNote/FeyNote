@@ -201,7 +201,6 @@ export const AIThread: React.FC<Props> = (props) => {
     getThreadInfo().finally(() => {
       setIsLoadingInitialState(false);
       progress.dismiss();
-      textAreaRef.current?.setFocus();
     });
 
     const threadUpdateHandler = async (
