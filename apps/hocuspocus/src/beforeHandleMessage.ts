@@ -67,6 +67,14 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
     });
 
     const timer = metrics.hocuspocusMessageValidateTime.startTimer();
+    const captureDoneMetric = () => {
+      metrics.hocuspocusMessageValidateTime.observe(
+        {
+          document_type: type,
+        },
+        timer(),
+      );
+    };
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
@@ -75,12 +83,17 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
           const { hocusPocusMessageType, yjsBinary, yjsMessageType } =
             deconstructIncomingMessage(args.update);
 
-          if (hocusPocusMessageType !== MessageType.Sync) return;
+          if (hocusPocusMessageType !== MessageType.Sync) {
+            captureDoneMetric();
+            return;
+          }
           if (
             yjsMessageType !== messageYjsUpdate &&
             yjsMessageType !== messageYjsSyncStep2
-          )
+          ) {
+            captureDoneMetric();
             return;
+          }
 
           assert(yjsBinary, 'yjsBinary must be defined for sync message types');
 
@@ -93,6 +106,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
             if (shadowDoc && yjsBinary) {
               applyUpdate(shadowDoc, yjsBinary);
             }
+            captureDoneMetric();
             return;
           }
 
@@ -154,12 +168,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
       }
     }
 
-    metrics.hocuspocusMessageValidateTime.observe(
-      {
-        document_type: type,
-      },
-      timer(),
-    );
+    captureDoneMetric();
   } catch (e) {
     if (!(e instanceof Error) || e.message) {
       logger.error(e);
