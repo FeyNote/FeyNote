@@ -42,6 +42,9 @@ const StyledIonCardTitle = styled(IonCardTitle)`
 `;
 
 interface Props {
+  options?: {
+    showNewAIThread?: boolean;
+  };
   newArtifact: (type: ArtifactType) => void;
   newAIThread: () => void;
 }
@@ -101,22 +104,24 @@ export const ArtifactTypeSelector = (props: Props) => {
             {t('editor.artifactTypeSelector.tldraw.description')}
           </IonCardContent>
         </IonCard>
-        <IonCard
-          button
-          onClick={() => {
-            props.newAIThread();
-          }}
-        >
-          <IonCardHeader>
-            <StyledIonCardTitle>
-              <IonIcon icon={chatbox} />
-              {t('editor.artifactTypeSelector.thread')}
-            </StyledIonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {t('editor.artifactTypeSelector.thread.description')}
-          </IonCardContent>
-        </IonCard>
+        {props.options?.showNewAIThread !== false && (
+          <IonCard
+            button
+            onClick={() => {
+              props.newAIThread();
+            }}
+          >
+            <IonCardHeader>
+              <StyledIonCardTitle>
+                <IonIcon icon={chatbox} />
+                {t('editor.artifactTypeSelector.thread')}
+              </StyledIonCardTitle>
+            </IonCardHeader>
+            <IonCardContent>
+              {t('editor.artifactTypeSelector.thread.description')}
+            </IonCardContent>
+          </IonCard>
+        )}
       </OptionsList>
     </OptionsContainer>
   );
