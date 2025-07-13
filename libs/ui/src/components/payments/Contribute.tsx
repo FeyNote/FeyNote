@@ -258,7 +258,7 @@ export const Contribute: React.FC = () => {
               <li>{t('contribute.free.capabilities4')}</li>
               <li>{t('contribute.free.capabilities5')}</li>
             </ul>
-            <div>{t('contribute.free')}</div>
+            <div aria-hidden>{t('contribute.free')}</div>
             {renderFreeButton()}
           </OfferingCard>
 
@@ -274,8 +274,8 @@ export const Contribute: React.FC = () => {
               <li>{t('contribute.tier1.capabilities1')}</li>
               <li>{t('contribute.tier1.capabilities2')}</li>
               <li>{t('contribute.tier1.capabilities3')}</li>
-              <HiddenListItem></HiddenListItem>
-              <HiddenListItem></HiddenListItem>
+              <HiddenListItem aria-hidden></HiddenListItem>
+              <HiddenListItem aria-hidden></HiddenListItem>
             </ul>
 
             {renderPrice(
