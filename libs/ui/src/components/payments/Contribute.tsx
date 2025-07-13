@@ -49,10 +49,6 @@ const CapabilitiesHeader = styled.h2`
   font-size: 18px;
 `;
 
-const CardDescription = styled.p`
-  height: 60px;
-`;
-
 const HiddenListItem = styled.li`
   visibility: hidden;
 `;
@@ -250,9 +246,7 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.free')}</IonCardTitle>
 
-            <CardDescription>
-              {t('contribute.free.description')}
-            </CardDescription>
+            <p>{t('contribute.free.description')}</p>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
@@ -271,9 +265,7 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier1')}</IonCardTitle>
 
-            <CardDescription>
-              {t('contribute.tier1.description')}
-            </CardDescription>
+            <p>{t('contribute.tier1.description')}</p>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
@@ -303,9 +295,7 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier2')}</IonCardTitle>
 
-            <CardDescription>
-              {t('contribute.tier2.description')}
-            </CardDescription>
+            <p>{t('contribute.tier2.description')}</p>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}

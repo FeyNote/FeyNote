@@ -10,8 +10,7 @@ import {
   AuthenticationEnforcement,
   BadRequestExpressError,
   limitNumOfMessagesByCapability,
-  getNumOfMessagesSentInWindow,
-  RateLimitExpressError,
+  TooManyRequestsExpressError,
 } from '@feynote/api-services';
 import { convertToCoreMessages, type CoreMessage } from 'ai';
 import { Capability, ToolName } from '@feynote/shared-utils';
@@ -68,7 +67,7 @@ export const createMessage = defineExpressHandler(
       messagingCap = DAILY_MESSAGING_CAP_ENHANCED_TIER;
     }
     if (numOfPreviousMessagesSent > messagingCap) {
-      throw new RateLimitExpressError(
+      throw new TooManyRequestsExpressError(
         'Number of messages sent is beyond allocated threshold for the given tier',
       );
     }
