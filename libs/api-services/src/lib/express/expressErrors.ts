@@ -37,7 +37,7 @@ export class NotAcceptableExpressError extends ExpressError {
   }
 }
 
-export class RateLimitExpressError extends ExpressError {
+export class TooManyRequestsExpressError extends ExpressError {
   constructor(...args: ConstructorParameters<typeof Error>) {
     super(429, ...args);
   }
