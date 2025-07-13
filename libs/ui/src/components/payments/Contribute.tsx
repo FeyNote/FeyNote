@@ -39,6 +39,24 @@ const FrequencySelector = styled.div`
   justify-content: center;
 `;
 
+const ContributeDescription = styled.p`
+  max-width: 700px;
+  text-align: center;
+  margin: auto;
+`;
+
+const CapabilitiesHeader = styled.h2`
+  font-size: 18px;
+`;
+
+const CardDescription = styled.p`
+  height: 60px;
+`;
+
+const HiddenListItem = styled.li`
+  visibility: hidden;
+`;
+
 const subscriptionModelNameToI18n = {
   [SubscriptionModelName.Tier1Monthly]: 'contribute.tier1.monthly',
   [SubscriptionModelName.Tier1Yearly]: 'contribute.tier1.yearly',
@@ -60,7 +78,7 @@ const subscriptionModelNameToPrice = {
 export const Contribute: React.FC = () => {
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [viewInMonthly, setViewInMonthly] = useState(false);
+  const [viewInMonthly, setViewInMonthly] = useState(true);
   const [subscriptions, setSubscriptions] = useState<
     {
       id: string;
@@ -183,7 +201,9 @@ export const Contribute: React.FC = () => {
     <IonPage>
       <PaneNav title={t('contribute.title')} />
       <IonContent>
-        <p className="ion-padding">{t('contribute.description')}</p>
+        <ContributeDescription className="ion-padding">
+          {t('contribute.description')}
+        </ContributeDescription>
         {subscriptions.length > 0 && (
           <IonCard className="ion-padding">
             <IonCardTitle>{t('contribute.currentSubscriptions')}</IonCardTitle>
@@ -230,9 +250,13 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.free')}</IonCardTitle>
 
-            <p>{t('contribute.free.description')}</p>
+            <CardDescription>
+              {t('contribute.free.description')}
+            </CardDescription>
 
-            <h6>{t('contribute.capabilities')}</h6>
+            <CapabilitiesHeader>
+              {t('contribute.capabilities')}
+            </CapabilitiesHeader>
             <ul>
               <li>{t('contribute.free.capabilities1')}</li>
               <li>{t('contribute.free.capabilities2')}</li>
@@ -240,21 +264,26 @@ export const Contribute: React.FC = () => {
               <li>{t('contribute.free.capabilities4')}</li>
               <li>{t('contribute.free.capabilities5')}</li>
             </ul>
-
+            <div>{t('contribute.free')}</div>
             {renderFreeButton()}
           </OfferingCard>
 
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier1')}</IonCardTitle>
 
-            <p>{t('contribute.tier1.description')}</p>
+            <CardDescription>
+              {t('contribute.tier1.description')}
+            </CardDescription>
 
-            <h2>{t('contribute.capabilities')}</h2>
+            <CapabilitiesHeader>
+              {t('contribute.capabilities')}
+            </CapabilitiesHeader>
             <ul>
               <li>{t('contribute.tier1.capabilities1')}</li>
               <li>{t('contribute.tier1.capabilities2')}</li>
               <li>{t('contribute.tier1.capabilities3')}</li>
-              <li>{t('contribute.tier1.capabilities4')}</li>
+              <HiddenListItem></HiddenListItem>
+              <HiddenListItem></HiddenListItem>
             </ul>
 
             {renderPrice(
@@ -274,9 +303,13 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier2')}</IonCardTitle>
 
-            <p>{t('contribute.tier2.description')}</p>
+            <CardDescription>
+              {t('contribute.tier2.description')}
+            </CardDescription>
 
-            <h2>{t('contribute.capabilities')}</h2>
+            <CapabilitiesHeader>
+              {t('contribute.capabilities')}
+            </CapabilitiesHeader>
             <ul>
               <li>{t('contribute.tier2.capabilities1')}</li>
               <li>{t('contribute.tier2.capabilities2')}</li>
