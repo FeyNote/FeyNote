@@ -5,30 +5,88 @@ import {
   Display5eMonsterTool,
   Display5eObjectTool,
   DisplayUrlTool,
+  getCapabilitiesForUser,
+  defineExpressHandler,
+  AuthenticationEnforcement,
+  BadRequestExpressError,
+  limitNumOfMessagesByCapability,
+  TooManyRequestsExpressError,
 } from '@feynote/api-services';
-import { Request, Response } from 'express';
-import { convertToCoreMessages } from 'ai';
-import { ToolName } from '@feynote/shared-utils';
+import { convertToCoreMessages, type CoreMessage } from 'ai';
+import { Capability, ToolName } from '@feynote/shared-utils';
+import z from 'zod';
+import { prisma } from '@feynote/prisma/client';
 
-export async function createMessage(req: Request, res: Response) {
-  const requestMessages = req.body['messages'];
-  if (!requestMessages || !requestMessages.length) {
-    return res
-      .status(404)
-      .send('"messages" property is required in the request body');
-  }
+const DAILY_MESSAGING_CAP_ENHANCED_TIER = 3000; // 120 messages per hour
+const DAILY_MESSAGING_CAP_FREE_TIER = 360; // 15 messages per hour
+const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 240; // 10 messages per hour
 
-  const messages = convertToCoreMessages([
-    systemMessage.ttrpgAssistant,
-    ...requestMessages,
-  ]);
+const schema = {
+  body: z.object({
+    messages: z.array(z.any()),
+  }),
+};
+export const createMessage = defineExpressHandler(
+  {
+    schema,
+    authentication: AuthenticationEnforcement.Required,
+  },
+  async function _createMessage(req, res) {
+    const requestMessages = req.body.messages;
+    let messages: CoreMessage[] = [];
+    try {
+      messages = convertToCoreMessages([
+        systemMessage.ttrpgAssistant,
+        ...requestMessages,
+      ]);
+    } catch (_) {
+      throw new BadRequestExpressError(
+        'Messages passed were either invalid or could not be verified.',
+      );
+    }
 
-  const stream = generateAssistantStreamText(messages, AIModel.GPT4_MINI, {
-    [ToolName.Generate5eMonster]: Display5eMonsterTool,
-    [ToolName.Generate5eObject]: Display5eObjectTool,
-    [ToolName.ScrapeUrl]: DisplayUrlTool,
-  });
+    const userId = res.locals.session.userId;
+    const capabilities = await getCapabilitiesForUser(userId);
+    let model = capabilities.has(Capability.AssistantEnhancedModel)
+      ? AIModel.GPT4
+      : AIModel.GPT4_MINI;
 
-  res.setHeader('Transfer-Encoding', 'chunked');
-  stream.pipeDataStreamToResponse(res);
-}
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const numOfPreviousMessagesSent = await prisma.message.count({
+      where: {
+        thread: {
+          userId,
+        },
+        createdAt: {
+          gte: twentyFourHoursAgo,
+        },
+      },
+    });
+    let messagingCap = DAILY_MESSAGING_CAP_FREE_TIER;
+    if (capabilities.has(Capability.AssistantEnhancedMessagingCap)) {
+      messagingCap = DAILY_MESSAGING_CAP_ENHANCED_TIER;
+    }
+    if (numOfPreviousMessagesSent > messagingCap) {
+      throw new TooManyRequestsExpressError(
+        'Number of messages sent is beyond allocated threshold for the given tier',
+      );
+    }
+    // Rolling window prevents reset of enhanced messaging cap when in continuous use
+    if (numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) {
+      model = AIModel.GPT4_MINI;
+    }
+    const limited_messages = limitNumOfMessagesByCapability(
+      messages,
+      capabilities,
+    );
+
+    const stream = generateAssistantStreamText(limited_messages, model, {
+      [ToolName.Generate5eMonster]: Display5eMonsterTool,
+      [ToolName.Generate5eObject]: Display5eObjectTool,
+      [ToolName.ScrapeUrl]: DisplayUrlTool,
+    });
+
+    res.setHeader('Transfer-Encoding', 'chunked');
+    stream.pipeDataStreamToResponse(res);
+  },
+);

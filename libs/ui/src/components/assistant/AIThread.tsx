@@ -9,6 +9,7 @@ import {
   IonPage,
   IonSpinner,
   IonTextarea,
+  useIonAlert,
 } from '@ionic/react';
 import {
   pencilOutline,
@@ -17,7 +18,7 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Message, useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -32,6 +33,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -94,25 +96,25 @@ export interface ChatMessage {
 
 const PROMPT_CARDS = [
   {
-    header: 'thread.card.scrape.header',
-    query: 'thread.card.scrape.query',
-    displayText: 'thread.card.scrape.displayText',
+    header: 'aiThread.card.scrape.header',
+    query: 'aiThread.card.scrape.query',
+    displayText: 'aiThread.card.scrape.displayText',
     icon: searchOutline,
   },
   {
-    header: 'thread.card.format.header',
-    query: 'thread.card.format.query',
-    displayText: 'thread.card.format.displayText',
+    header: 'aiThread.card.format.header',
+    query: 'aiThread.card.format.query',
+    displayText: 'aiThread.card.format.displayText',
     icon: pencilOutline,
   },
   {
-    header: 'thread.card.monster.header',
-    query: 'thread.card.monster.query',
+    header: 'aiThread.card.monster.header',
+    query: 'aiThread.card.monster.query',
     icon: skullOutline,
   },
   {
-    header: 'thread.card.item.header',
-    query: 'thread.card.item.query',
+    header: 'aiThread.card.item.header',
+    query: 'aiThread.card.item.query',
     icon: shirtOutline,
   },
 ];
@@ -128,6 +130,9 @@ export const AIThread: React.FC<Props> = (props) => {
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
+  const [presentAlert] = useIonAlert();
+  const textAreaRef = useRef<HTMLIonTextareaElement>(null);
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({
       api: `${getApiUrls().rest}/message/`,
@@ -160,6 +165,22 @@ export const AIThread: React.FC<Props> = (props) => {
           }
         }
       },
+      onError: (error) => {
+        try {
+          // Vercel does not expose the status code on the error property, only via its message object
+          const status = JSON.parse(error.message).status;
+          if (status === 429) {
+            presentAlert({
+              header: t('aiThread.createMessage.error.rateLimit.header'),
+              message: t('aiThread.createMessage.error.rateLimit.message'),
+              buttons: [t('generic.okay')],
+            });
+            return;
+          }
+          // eslint-disable-next-line no-empty
+        } catch (_) {}
+        handleTRPCErrors(new Error());
+      },
     });
 
   const getThreadInfo = async () => {
@@ -176,21 +197,18 @@ export const AIThread: React.FC<Props> = (props) => {
 
   useEffect(() => {
     const progress = startProgressBar();
-    const loadThreadInfo = async () => {
-      setIsLoadingInitialState(true);
-      getThreadInfo().finally(() => {
-        setIsLoadingInitialState(false);
-        progress.dismiss();
-      });
-    };
-    loadThreadInfo();
+    setIsLoadingInitialState(true);
+    getThreadInfo().finally(() => {
+      setIsLoadingInitialState(false);
+      progress.dismiss();
+    });
 
     const threadUpdateHandler = async (
       _: EventName,
       data: EventData[EventName.ThreadUpdated],
     ) => {
       if (data.threadId !== props.id) return;
-      await loadThreadInfo();
+      await getThreadInfo();
     };
 
     eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
@@ -297,6 +315,7 @@ export const AIThread: React.FC<Props> = (props) => {
                       button
                       onClick={() => {
                         setInput(t(card.query));
+                        textAreaRef.current?.setFocus();
                       }}
                     >
                       <IonCardHeader>
@@ -323,6 +342,7 @@ export const AIThread: React.FC<Props> = (props) => {
           )}
           <ChatTextContainer>
             <IonTextarea
+              ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
               disabled={isLoading || isLoadingInitialState}
