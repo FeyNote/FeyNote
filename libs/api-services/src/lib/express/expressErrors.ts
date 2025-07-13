@@ -37,6 +37,12 @@ export class NotAcceptableExpressError extends ExpressError {
   }
 }
 
+export class RateLimitExpressError extends ExpressError {
+  constructor(...args: ConstructorParameters<typeof Error>) {
+    super(429, ...args);
+  }
+}
+
 export class InternalServerExpressError extends ExpressError {
   constructor(...args: ConstructorParameters<typeof Error>) {
     super(500, ...args);

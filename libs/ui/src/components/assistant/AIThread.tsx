@@ -9,6 +9,7 @@ import {
   IonPage,
   IonSpinner,
   IonTextarea,
+  useIonAlert,
 } from '@ionic/react';
 import {
   pencilOutline,
@@ -32,6 +33,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -128,6 +130,8 @@ export const AIThread: React.FC<Props> = (props) => {
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
+  const [presentAlert] = useIonAlert();
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({
       api: `${getApiUrls().rest}/message/`,
@@ -160,6 +164,22 @@ export const AIThread: React.FC<Props> = (props) => {
           }
         }
       },
+      onError: (error) => {
+        try {
+          // Vercel does not expose the status code on the error property, only via its message object
+          const status = JSON.parse(error.message).status;
+          if (status === 429) {
+            presentAlert({
+              header: t('aiThread.createMessage.error.rateLimit.header'),
+              message: t('aiThread.createMessage.error.rateLimit.message'),
+              buttons: [t('generic.okay')],
+            });
+            return;
+          }
+          // eslint-disable-next-line no-empty
+        } catch (_) {}
+        handleTRPCErrors(new Error());
+      },
     });
 
   const getThreadInfo = async () => {
@@ -176,21 +196,18 @@ export const AIThread: React.FC<Props> = (props) => {
 
   useEffect(() => {
     const progress = startProgressBar();
-    const loadThreadInfo = async () => {
-      setIsLoadingInitialState(true);
-      getThreadInfo().finally(() => {
-        setIsLoadingInitialState(false);
-        progress.dismiss();
-      });
-    };
-    loadThreadInfo();
+    setIsLoadingInitialState(true);
+    getThreadInfo().finally(() => {
+      setIsLoadingInitialState(false);
+      progress.dismiss();
+    });
 
     const threadUpdateHandler = async (
       _: EventName,
       data: EventData[EventName.ThreadUpdated],
     ) => {
       if (data.threadId !== props.id) return;
-      await loadThreadInfo();
+      await getThreadInfo();
     };
 
     eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
