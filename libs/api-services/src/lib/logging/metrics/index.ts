@@ -71,6 +71,7 @@ export const metrics = {
     name: 'hocuspocus_message_validate_time',
     help: 'A message was validated',
     labelNames: ['document_type'],
+    buckets: [0.001, 0.005, 0.01, 0.03, 0.05, 0.1, 0.5, 1, 2], // Each of these is tracked in seconds
   }),
   hocuspocusDocumentLoad: new client.Counter({
     name: 'hocuspocus_document_load',
@@ -143,6 +144,7 @@ export const metrics = {
     name: 'job_processed',
     help: 'A job has been processed in the queue',
     labelNames: ['job_type'],
+    buckets: [0.001, 0.005, 0.01, 0.03, 0.05, 0.1, 0.3, 0.5, 1, 2, 5, 10, 30], // Each of these is tracked in seconds
   }),
   jobFailed: new client.Counter({
     name: 'job_failed',

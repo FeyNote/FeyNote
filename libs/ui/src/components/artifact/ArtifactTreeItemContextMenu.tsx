@@ -15,6 +15,8 @@ import {
 } from '../contextMenu/sharedComponents';
 import { useContext } from 'react';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { useIonModal } from '@ionic/react';
+import { NewArtifactModal } from './NewArtifactModal';
 
 interface Props {
   artifactId: string;
@@ -25,6 +27,16 @@ interface Props {
 export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigate } = useContext(GlobalPaneContext);
+  const [presentNewArtifactModal, dismissNewArtifactModal] = useIonModal(
+    NewArtifactModal,
+    {
+      dismiss: () => dismissNewArtifactModal(),
+      tree: {
+        parentArtifactId: props.artifactId,
+        order: 'X',
+      },
+    },
+  );
 
   const { deleteArtifact } = useArtifactDelete();
 
@@ -93,6 +105,9 @@ export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
       </ContextMenuGroup>
       <ContextMenuGroupDivider />
       <ContextMenuGroup>
+        <ContextMenuItem onClick={() => presentNewArtifactModal()}>
+          {t('artifactTree.newArtifactWithin')}
+        </ContextMenuItem>
         <ContextMenuItem onClick={onDeleteArtifactClicked}>
           {t('generic.delete')}
         </ContextMenuItem>

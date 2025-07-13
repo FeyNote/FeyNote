@@ -318,7 +318,13 @@ export const ArtifactTree = () => {
 
         const comparison = aItem.data.order.localeCompare(bItem.data.order);
         if (comparison === 0) {
-          return aItem.data.title.localeCompare(bItem.data.title);
+          const titleComparison = aItem.data.title.localeCompare(
+            bItem.data.title,
+          );
+          if (comparison === 0) {
+            return aItem.data.id.localeCompare(bItem.data.id);
+          }
+          return titleComparison;
         }
         return comparison;
       });
