@@ -18,7 +18,7 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Message, useChat } from 'ai/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -96,25 +96,25 @@ export interface ChatMessage {
 
 const PROMPT_CARDS = [
   {
-    header: 'thread.card.scrape.header',
-    query: 'thread.card.scrape.query',
-    displayText: 'thread.card.scrape.displayText',
+    header: 'aiThread.card.scrape.header',
+    query: 'aiThread.card.scrape.query',
+    displayText: 'aiThread.card.scrape.displayText',
     icon: searchOutline,
   },
   {
-    header: 'thread.card.format.header',
-    query: 'thread.card.format.query',
-    displayText: 'thread.card.format.displayText',
+    header: 'aiThread.card.format.header',
+    query: 'aiThread.card.format.query',
+    displayText: 'aiThread.card.format.displayText',
     icon: pencilOutline,
   },
   {
-    header: 'thread.card.monster.header',
-    query: 'thread.card.monster.query',
+    header: 'aiThread.card.monster.header',
+    query: 'aiThread.card.monster.query',
     icon: skullOutline,
   },
   {
-    header: 'thread.card.item.header',
-    query: 'thread.card.item.query',
+    header: 'aiThread.card.item.header',
+    query: 'aiThread.card.item.query',
     icon: shirtOutline,
   },
 ];
@@ -132,6 +132,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const { session } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
+  const textAreaRef = useRef<HTMLIonTextareaElement>(null);
   const { messages, setMessages, isLoading, input, setInput, append, reload } =
     useChat({
       api: `${getApiUrls().rest}/message/`,
@@ -200,6 +201,7 @@ export const AIThread: React.FC<Props> = (props) => {
     getThreadInfo().finally(() => {
       setIsLoadingInitialState(false);
       progress.dismiss();
+      textAreaRef.current?.setFocus();
     });
 
     const threadUpdateHandler = async (
@@ -314,6 +316,7 @@ export const AIThread: React.FC<Props> = (props) => {
                       button
                       onClick={() => {
                         setInput(t(card.query));
+                        textAreaRef.current?.setFocus();
                       }}
                     >
                       <IonCardHeader>
@@ -340,6 +343,7 @@ export const AIThread: React.FC<Props> = (props) => {
           )}
           <ChatTextContainer>
             <IonTextarea
+              ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
               disabled={isLoading || isLoadingInitialState}
