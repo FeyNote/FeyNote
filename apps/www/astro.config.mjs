@@ -16,7 +16,8 @@ export default defineConfig({
   }),
   vite: {
     server: {
-      allowedHosts: ['8080--main--dnd-assistant--cmeyer.coder.tartarus.cloud'],
+      // Currently hardcoded since allowedHosts: true is broken (GH issue here: https://github.com/withastro/astro/issues/13060)
+      allowedHosts: ['.tartarus.cloud', '.feynote.com'],
     },
     ssr: {
       // This marks the `path-to-regexp` package as external, so it won't be bundled in the server build
