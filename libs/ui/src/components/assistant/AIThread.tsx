@@ -182,7 +182,6 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
-
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
