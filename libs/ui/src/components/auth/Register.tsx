@@ -210,6 +210,18 @@ export const Register: React.FC<Props> = (props) => {
                 </sub>
               </CenteredIonText>
             </IonItem>
+            <IonItem lines="none">
+              <CenteredIonText>
+                <sub>
+                  <i>
+                    {t('auth.register.tos.text')}{' '}
+                    <a href="https://feynote.com/tos">
+                      {t('auth.register.tos.link')}
+                    </a>
+                  </i>
+                </sub>
+              </CenteredIonText>
+            </IonItem>
           </IonCardContent>
         </CenteredIonCard>
       </IonContentFantasyBackground>

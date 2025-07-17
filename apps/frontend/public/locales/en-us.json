@@ -64,6 +64,8 @@
   "auth.register.conflict": "An account with that email already exists",
   "auth.register.submit": "Register",
   "auth.register.switchToLogin": "Already have an account? Click to login",
+  "auth.register.tos.text": "By continuing, you're agreeing to the Feynote",
+  "auth.register.tos.link": "Terms of Service",
 
   "auth.resetPassword.title": "Reset Password",
   "auth.resetPassword.subtitle": "Enter a new password for your account",
