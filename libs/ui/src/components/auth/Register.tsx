@@ -193,10 +193,8 @@ export const Register: React.FC<Props> = (props) => {
               <CenteredIonText>
                 <sub>
                   <i>
-                    {t('auth.register.tos.text')}{' '}
-                    <a href="https://feynote.com/tos">
-                      {t('auth.register.tos.link')}
-                    </a>
+                    {t('auth.tos.text')}{' '}
+                    <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
                   </i>
                 </sub>
               </CenteredIonText>
