@@ -189,7 +189,18 @@ export const Register: React.FC<Props> = (props) => {
                 onIonBlur={() => setConfirmPasswordIsTouched(false)}
               />
             </CenteredIonInputContainer>
-            <br />
+            <IonItem lines="none">
+              <CenteredIonText>
+                <sub>
+                  <i>
+                    {t('auth.register.tos.text')}{' '}
+                    <a href="https://feynote.com/tos">
+                      {t('auth.register.tos.link')}
+                    </a>
+                  </i>
+                </sub>
+              </CenteredIonText>
+            </IonItem>
             <CenteredContainer>
               <IonButton
                 onClick={submitRegister}
@@ -207,18 +218,6 @@ export const Register: React.FC<Props> = (props) => {
                   >
                     {t('auth.register.switchToLogin')}
                   </ToggleAuthTypeButton>
-                </sub>
-              </CenteredIonText>
-            </IonItem>
-            <IonItem lines="none">
-              <CenteredIonText>
-                <sub>
-                  <i>
-                    {t('auth.register.tos.text')}{' '}
-                    <a href="https://feynote.com/tos">
-                      {t('auth.register.tos.link')}
-                    </a>
-                  </i>
                 </sub>
               </CenteredIonText>
             </IonItem>
