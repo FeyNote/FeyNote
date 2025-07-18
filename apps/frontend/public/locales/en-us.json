@@ -356,6 +356,9 @@
   "artifactRenderer.artifactSharedToYou.message": "Shared to you by {{name}}.",
   "artifactRenderer.artifactSharedToYou.readwrite": "You have edit access",
   "artifactRenderer.artifactSharedToYou.readonly": "You have read-only access.",
+  "artifactRenderer.artifactSharedToYou.remove": "Remove My Access",
+  "artifactRenderer.artifactSharedToYou.remove.confirm.header": "Are you sure?",
+  "artifactRenderer.artifactSharedToYou.remove.confirm.message": "Removing yourself from this shared document will remove it from your collection unless the owner re-adds you.",
   "artifactRenderer.theme": "Theme",
 
   "incomingReferencesInlinePreview.header": "Incoming References to This Block",

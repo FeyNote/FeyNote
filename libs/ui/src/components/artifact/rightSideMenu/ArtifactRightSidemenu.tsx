@@ -6,6 +6,7 @@ import {
   IonListHeader,
   IonSelect,
   IonSelectOption,
+  useIonAlert,
   useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../../info/InfoButton';
@@ -58,6 +59,7 @@ interface Props {
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const [presentAlert] = useIonAlert();
   const { isEditable } = useIsEditable(props.connection);
   const { navigate } = useContext(GlobalPaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
@@ -209,7 +211,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
-  const removeSelfAsCollaborator = () => {
+  const _removeSelfAsCollaborator = () => {
     trpc.artifact.removeSelfAsCollaborator
       .mutate({
         artifactId: props.artifactId,
@@ -225,6 +227,28 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       .catch((e) => {
         handleTRPCErrors(e);
       });
+  };
+
+  const removeSelfAsCollaborator = () => {
+    presentAlert({
+      header: t('artifactRenderer.artifactSharedToYou.remove.confirm.header'),
+      message: t('artifactRenderer.artifactSharedToYou.remove.confirm.message'),
+      buttons: [
+        {
+          text: t('generic.cancel'),
+          role: 'cancel',
+        },
+        {
+          text: t('generic.confirm'),
+          role: 'confirm',
+        },
+      ],
+      onDidDismiss: (event) => {
+        if (event.detail.role === 'confirm') {
+          _removeSelfAsCollaborator();
+        }
+      },
+    });
   };
 
   const isOwner = artifactMeta.userId === session.userId;
@@ -303,10 +327,10 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
+          <IonButton onClick={removeSelfAsCollaborator}>
+            {t('artifactRenderer.artifactSharedToYou.remove')}
+          </IonButton>
         </IonLabel>
-        <IonButton onClick={removeSelfAsCollaborator}>
-          {t('artifactRenderer.artifactSharedToYou.remove')}
-        </IonButton>
       </CompactIonItem>
     </IonCard>
   );
