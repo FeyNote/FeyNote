@@ -14,7 +14,7 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { close, person } from 'ionicons/icons';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 import { trpc } from '../../utils/trpc';
@@ -63,6 +63,15 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
       email: string;
     }[]
   >([]);
+  const allSeenUsers = useRef<
+    Map<
+      string,
+      {
+        id: string;
+        email: string;
+      }
+    >
+  >(new Map());
   const [searching, setSearching] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
@@ -73,9 +82,20 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
     props.connection.yjsDoc,
   );
 
-  const knownUserEmailsById = useMemo(() => {
-    return new Map(knownUsers.map((el) => [el.id, el.email]));
-  }, [knownUsers]);
+  useEffect(() => {
+    if (searchResult) {
+      allSeenUsers.current.set(searchResult.id, {
+        id: searchResult.id,
+        email: searchResult.email,
+      });
+    }
+    for (const knownUser of knownUsers) {
+      allSeenUsers.current.set(knownUser.id, {
+        id: knownUser.id,
+        email: knownUser.email,
+      });
+    }
+  }, [searchResult, knownUsers]);
 
   const getKnownUsers = async () => {
     await trpc.user.getKnownUsers
@@ -179,7 +199,7 @@ export const ArtifactSharingManagementModal: React.FC<Props> = (props) => {
           {userAccessYKV.yarray.map(({ key, val }) => (
             <IonItem key={key} lines="none">
               <ArtifactSharingAccessLevel
-                label={knownUserEmailsById.get(key) || key}
+                label={allSeenUsers.current.get(key)?.email || key}
                 accessLevel={val.accessLevel || 'noaccess'}
                 onChange={(accessLevel) =>
                   onAccessLevelChanged(key, accessLevel)

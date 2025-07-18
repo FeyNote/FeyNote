@@ -38,6 +38,7 @@ export enum ObjectStoreName {
   AuthorizedCollaborationScopes = 'authorizedCollaborationScopes',
   PendingFiles = 'pendingFiles',
   Edges = 'edges',
+  KnownUsers = 'knownUsers',
   KV = 'kvStore',
 }
 
@@ -103,13 +104,24 @@ export interface FeynoteLocalDB extends DBSchema {
       'targetArtifactId, targetArtifactBlockId': string;
     };
   };
+  [ObjectStoreName.KnownUsers]: {
+    key: string;
+    value: {
+      id: string;
+      name: string;
+      email: string;
+    };
+    indexes: {
+      email: string;
+    };
+  };
   [ObjectStoreName.KV]: {
     key: string;
     value: KVStoreValue[keyof KVStoreValue];
   };
 }
 
-const MIGRATION_VERSION = 3;
+const MIGRATION_VERSION = 4;
 
 const connect = () => {
   const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATION_VERSION, {
@@ -189,6 +201,16 @@ const connect = () => {
             keyPath: 'id',
           });
 
+          const knownUsersDb = db.createObjectStore(
+            ObjectStoreName.KnownUsers,
+            {
+              keyPath: 'id',
+            },
+          );
+          knownUsersDb.createIndex('email', 'email', {
+            unique: true,
+          });
+
           return;
         }
         case 1: {
@@ -200,11 +222,44 @@ const connect = () => {
             keyPath: 'id',
           });
 
+          const knownUsersDb = db.createObjectStore(
+            ObjectStoreName.KnownUsers,
+            {
+              keyPath: 'id',
+            },
+          );
+          knownUsersDb.createIndex('email', 'email', {
+            unique: true,
+          });
+
           return;
         }
         case 2: {
           db.createObjectStore(ObjectStoreName.PendingFiles, {
             keyPath: 'id',
+          });
+
+          const knownUsersDb = db.createObjectStore(
+            ObjectStoreName.KnownUsers,
+            {
+              keyPath: 'id',
+            },
+          );
+          knownUsersDb.createIndex('email', 'email', {
+            unique: true,
+          });
+
+          return;
+        }
+        case 3: {
+          const knownUsersDb = db.createObjectStore(
+            ObjectStoreName.KnownUsers,
+            {
+              keyPath: 'id',
+            },
+          );
+          knownUsersDb.createIndex('email', 'email', {
+            unique: true,
           });
 
           return;
