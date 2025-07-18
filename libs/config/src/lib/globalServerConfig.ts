@@ -94,7 +94,7 @@ export const globalServerConfig = {
     redis: {
       host: getEnvOrThrow('WORKER_REDIS_HOST'),
       port: parseInt(process.env['WORKER_REDIS_PORT'] || '6379'),
-      keyPrefix: process.env['WORKER_REDIS_LEY_PREFIX'] || 'fnworker_',
+      keyPrefix: process.env['WORKER_REDIS_KEY_PREFIX'] || 'fnworker_',
     },
   },
   sentry: {
