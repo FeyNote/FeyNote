@@ -80,6 +80,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             artifact.userId,
             ...artifact.artifactShares.map((el) => el.userId),
           ],
+          // TODO: this is incorrect
           newReadableUserIds: [
             artifact.userId,
             ...artifact.artifactShares.map((el) => el.userId),

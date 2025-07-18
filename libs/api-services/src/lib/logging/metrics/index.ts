@@ -16,6 +16,13 @@ export const metrics = {
     labelNames: ['method', 'path', 'status_code'],
     buckets: [0.01, 0.05, 0.3, 0.7, 2, 5], // Each of these is tracked in seconds
   }),
+  hocuspocusApiRequest: new client.Histogram({
+    name: 'hocuspocus_api_request',
+    help: 'Every time a request hits the hocuspocus server',
+    labelNames: ['method', 'path', 'status_code'],
+    buckets: [0.01, 0.05, 0.3, 0.7, 2, 5], // Each of these is tracked in seconds
+  }),
+
   accountCreated: new client.Counter({
     name: 'account_created',
     help: 'New account created',

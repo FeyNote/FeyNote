@@ -44,6 +44,8 @@ export const globalServerConfig = {
   hocuspocus: {
     wsPort: parseInt(process.env['HOCUSPOCUS_WS_PORT'] || '8080'),
     restPort: parseInt(process.env['HOCUSPOCUS_REST_PORT'] || '8081'),
+    internalRestBaseUrl: getEnvOrThrow('HOCUSPOCUS_INTERNAL_REST_BASE_URL'),
+    apiKey: getEnvOrThrow('HOCUSPOCUS_API_KEY'),
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
     maxWriteDelayMs: parseInt(
       process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
@@ -62,25 +64,24 @@ export const globalServerConfig = {
         process.env['HOCUSPOCUS_THROTTLE_BAN_TIME_MINUTES'] || '10',
       ),
     },
-    logging: {
-      enable: process.env['HOCUSPOCUS_LOGGING_ENABLE']
-        ? coerceBoolean(process.env['HOCUSPOCUS_LOGGING_ENABLE'])
-        : true,
-    },
     redis: {
-      enable: process.env['HOCUSPOCUS_REDIS_ENABLE']
-        ? coerceBoolean(process.env['HOCUSPOCUS_REDIS_ENABLE'])
-        : true,
       host: process.env['HOCUSPOCUS_REDIS_HOST'],
       port: parseInt(process.env['HOCUSPOCUS_REDIS_PORT'] || '6379'),
+      keyPrefix: process.env['HOCUSPOCUS_REDIS_KEY_PREFIX'] || 'fnhocus_',
     },
   },
   websocket: {
     wsPort: parseInt(process.env['WEBSOCKET_WS_PORT'] || '8080'),
     restPort: parseInt(process.env['WEBSOCKET_REST_PORT'] || '8081'),
+    queueConcurrency: parseInt(process.env['WORKER_QUEUE_CONCURRENCY'] || '2'),
+    queueCompleteCount: parseInt(
+      process.env['WORKER_QUEUE_COMPLETE_COUNT'] || '1000',
+    ),
+    queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
     redis: {
       host: process.env['WEBSOCKET_REDIS_HOST'],
       port: parseInt(process.env['WEBSOCKET_REDIS_PORT'] || '6379'),
+      keyPrefix: process.env['WEBSOCKET_REDIS_KEY_PREFIX'] || 'fnws_',
     },
   },
   worker: {
@@ -92,7 +93,8 @@ export const globalServerConfig = {
     queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
     redis: {
       host: getEnvOrThrow('WORKER_REDIS_HOST'),
-      port: parseInt(getEnvOrThrow('WORKER_REDIS_PORT')),
+      port: parseInt(process.env['WORKER_REDIS_PORT'] || '6379'),
+      keyPrefix: process.env['WORKER_REDIS_KEY_PREFIX'] || 'fnworker_',
     },
   },
   sentry: {
