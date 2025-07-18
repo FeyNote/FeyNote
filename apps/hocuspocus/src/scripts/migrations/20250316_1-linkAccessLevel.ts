@@ -1,6 +1,6 @@
 import { prisma } from '@feynote/prisma/client';
 import '../../instrument.ts';
-import { hocuspocusServer } from '../../server';
+import { hocuspocusServer } from '../../hocuspocus';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 
 const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10');
