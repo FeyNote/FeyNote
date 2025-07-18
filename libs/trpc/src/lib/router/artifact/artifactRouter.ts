@@ -4,7 +4,6 @@ import { getArtifacts } from './getArtifacts';
 import { searchArtifactBlocks } from './searchArtifactBlocks';
 import { searchArtifacts } from './searchArtifacts';
 import { searchArtifactTitles } from './searchArtifactTitles';
-import { updateArtifact } from './updateArtifact';
 import { createArtifact } from './createArtifact';
 import { getArtifactYBinById } from './getArtifactYBinById';
 import { getArtifactEdgesById } from './getArtifactEdgesById';
@@ -21,6 +20,5 @@ export const artifactRouter = trpcRouter({
   searchArtifacts,
   searchArtifactTitles,
   searchArtifactBlocks,
-  updateArtifact,
   createArtifact,
 });

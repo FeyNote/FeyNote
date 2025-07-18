@@ -8,10 +8,12 @@ import {
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
+  getUserAccessFromYArtifact,
 } from '@feynote/shared-utils';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { splitDocumentName } from './splitDocumentName';
 import { logger, metrics } from '@feynote/api-services';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export async function onStoreDocument(args: onStoreDocumentPayload) {
   try {
@@ -52,6 +54,16 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         );
         const text = getTextForJSONContent(tiptapBody);
         const artifactMeta = getMetaFromYArtifact(args.document);
+        const userAccess = getUserAccessFromYArtifact(args.document);
+        const newReadableUserIds = [...userAccess.map.entries()]
+          .filter((el) =>
+            Array.from<ArtifactAccessLevel>([
+              ArtifactAccessLevel.coowner,
+              ArtifactAccessLevel.readwrite,
+              ArtifactAccessLevel.readonly,
+            ]).includes(el[1].val.accessLevel),
+          )
+          .map((el) => el[0]);
 
         await prisma.artifact.update({
           where: {
@@ -80,11 +92,7 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             artifact.userId,
             ...artifact.artifactShares.map((el) => el.userId),
           ],
-          // TODO: this is incorrect
-          newReadableUserIds: [
-            artifact.userId,
-            ...artifact.artifactShares.map((el) => el.userId),
-          ],
+          newReadableUserIds: [artifact.userId, ...newReadableUserIds],
           oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });
