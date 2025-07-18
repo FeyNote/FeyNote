@@ -1,4 +1,5 @@
 import {
+  IonButton,
   IonCard,
   IonIcon,
   IonLabel,
@@ -36,6 +37,12 @@ import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { ArtifactTableOfContents } from './ArtifactTableOfContents';
 import { GraphRenderer } from '../../graph/GraphRenderer';
 import styled from 'styled-components';
+import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
+import {
+  GlobalPaneContext,
+  PaneTransition,
+} from '../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 
 const GraphContainer = styled.div`
   height: 200px;
@@ -52,6 +59,8 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { isEditable } = useIsEditable(props.connection);
+  const { navigate } = useContext(GlobalPaneContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
     ArtifactSharingManagementModal,
     {
@@ -200,6 +209,24 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
+  const removeSelfAsCollaborator = () => {
+    trpc.artifact.removeSelfAsCollaborator
+      .mutate({
+        artifactId: props.artifactId,
+      })
+      .then(() => {
+        navigate(
+          undefined,
+          PaneableComponent.Dashboard,
+          {},
+          PaneTransition.Replace,
+        );
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+  };
+
   const isOwner = artifactMeta.userId === session.userId;
   const isDeleted = !!artifactMeta.deletedAt;
   const artifactSharingSettings = isOwner && !isDeleted && (
@@ -277,6 +304,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
         </IonLabel>
+        <IonButton onClick={removeSelfAsCollaborator}>
+          {t('artifactRenderer.artifactSharedToYou.remove')}
+        </IonButton>
       </CompactIonItem>
     </IonCard>
   );

@@ -61,6 +61,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       host: globalServerConfig.worker.redis.host,
       port: globalServerConfig.worker.redis.port,
     },
+    prefix: globalServerConfig.worker.redis.keyPrefix,
     removeOnComplete: { count: globalServerConfig.worker.queueCompleteCount },
     removeOnFail: { count: globalServerConfig.worker.queueFailCount },
     concurrency: globalServerConfig.worker.queueConcurrency,

@@ -30,9 +30,10 @@ export const incomingWebsocketMessageQueueWorker = new Worker<
   {
     autorun: false,
     connection: {
-      host: globalServerConfig.worker.redis.host,
-      port: globalServerConfig.worker.redis.port,
+      host: globalServerConfig.websocket.redis.host,
+      port: globalServerConfig.websocket.redis.port,
     },
+    prefix: globalServerConfig.websocket.redis.keyPrefix,
     removeOnComplete: { count: globalServerConfig.worker.queueCompleteCount },
     removeOnFail: { count: globalServerConfig.worker.queueFailCount },
     concurrency: globalServerConfig.worker.queueConcurrency,

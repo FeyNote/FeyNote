@@ -11,6 +11,7 @@ export const artifactUpdateQueue = new Queue<ArtifactUpdateQueueItem, void>(
       host: globalServerConfig.worker.redis.host,
       port: globalServerConfig.worker.redis.port,
     },
+    prefix: globalServerConfig.worker.redis.keyPrefix,
   },
 );
 
