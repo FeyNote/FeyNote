@@ -155,7 +155,16 @@ export const Login: React.FC<Props> = (props) => {
                 onIonBlur={() => setPasswordIsTouched(false)}
               />
             </CenteredIonInputContainer>
-            <br />
+            <IonItem lines="none">
+              <CenteredIonText>
+                <sub>
+                  <i>
+                    {t('auth.tos.text')}{' '}
+                    <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
+                  </i>
+                </sub>
+              </CenteredIonText>
+            </IonItem>
             <CenteredContainer>
               <IonButton onClick={submitLogin} disabled={isLoading}>
                 {t('auth.login.submit')}

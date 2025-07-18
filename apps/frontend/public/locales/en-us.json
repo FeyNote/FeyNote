@@ -17,6 +17,17 @@
   "menu.signOut": "Sign Out",
   "menu.register": "Register",
 
+  "notFound.title": "Page Not Found",
+  "notFound.message": "The page you requested cannot be found",
+
+  "readonlyArtifactViewer.unauthorized.header": "Critical Fail!",
+  "readonlyArtifactViewer.unauthorized.message": "To view documents here you'll either need to have a share link (which includes a secret key!) or be logged in to an account that can view this document.",
+  "readonlyArtifactViewer.notFound.header": "Nat 20 For Stealth!",
+  "readonlyArtifactViewer.notFound.message": "The document you're looking for either doesn't exist, or the owner of it hasn't made it publicly visible. If this link used to work, the owner of this document may have revoked access.",
+
+  "auth.tos.text": "By continuing, you're agreeing to the Feynote",
+  "auth.tos.link": "Terms of Service",
+
   "auth.login.title": "Login",
   "auth.login.card.title": "Welcome Back!",
   "auth.login.card.subtitle": "Your dungeon awaits you...",
@@ -37,14 +48,6 @@
   "auth.login.error.passwordNotSet": "An account with that email address exists, but sign in with Google was used to create the account. Please use Google to sign into this account.",
   "auth.login.error.notFound": "No account with that email address exists.",
   "auth.login.error.invalidPassword": "An account with that email address exists, but the password you entered does not match.",
-
-  "notFound.title": "Page Not Found",
-  "notFound.message": "The page you requested cannot be found",
-
-  "readonlyArtifactViewer.unauthorized.header": "Critical Fail!",
-  "readonlyArtifactViewer.unauthorized.message": "To view documents here you'll either need to have a share link (which includes a secret key!) or be logged in to an account that can view this document.",
-  "readonlyArtifactViewer.notFound.header": "Nat 20 For Stealth!",
-  "readonlyArtifactViewer.notFound.message": "The document you're looking for either doesn't exist, or the owner of it hasn't made it publicly visible. If this link used to work, the owner of this document may have revoked access.",
 
   "auth.register.title": "Register",
   "auth.register.card.title": "Welcome to FeyNote!",

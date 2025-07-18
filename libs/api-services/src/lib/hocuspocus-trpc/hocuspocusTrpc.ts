@@ -1,6 +1,6 @@
 import { initTRPC } from '@trpc/server';
 
-import { HocuspocusTrpcContext } from './context';
+import { HocuspocusTrpcContext } from './hocuspocusTrpcContext';
 import { customTrpcTransformer } from '@feynote/shared-utils';
 
 const t = initTRPC.context<HocuspocusTrpcContext>().create({
