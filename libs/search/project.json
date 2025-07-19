@@ -28,7 +28,7 @@
     "migrate": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --import @swc-node/register/esm-register ./libs/search/src/lib/migrate.ts"
+        "command": "tsx --tsconfig ./libs/search/tsconfig.json ./libs/search/src/lib/migrate.ts"
       }
     }
   },
