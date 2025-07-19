@@ -23,12 +23,7 @@ export interface CollaborationManagerConnection {
 class CollaborationManager {
   private session: SessionDTO | null = null;
 
-  private ws = new HocuspocusProviderWebsocket({
-    url: getApiUrls().hocuspocus,
-    delay: 1000,
-    minDelay: 1000,
-    maxDelay: 10000,
-  });
+  private ws: HocuspocusProviderWebsocket | undefined;
 
   private connectionByDocName = new Map<
     string,
@@ -38,15 +33,19 @@ class CollaborationManager {
   get(docName: string, session: SessionDTO | null) {
     if (session?.token !== this.session?.token) {
       this.disconnectAll();
-      this.connectionByDocName.clear();
       this.session = session;
     }
 
     const existingConnection = this.connectionByDocName.get(docName);
     if (existingConnection) return existingConnection;
 
-    if (this.ws.status !== 'connected') {
-      this.ws.connect();
+    if (!this.ws) {
+      this.ws = new HocuspocusProviderWebsocket({
+        url: getApiUrls().hocuspocus,
+        delay: 1000,
+        minDelay: 1000,
+        maxDelay: 10000,
+      });
     }
 
     const yjsDoc = new Doc();
@@ -57,8 +56,6 @@ class CollaborationManager {
       token: session?.token || 'anonymous',
       websocketProvider: this.ws,
     });
-
-    console.log('hi', tiptapCollabProvider);
 
     if (docName.startsWith('artifact:')) {
       incrementVersionForChangesOnArtifact(docName.split(':')[1], yjsDoc);
@@ -106,11 +103,13 @@ class CollaborationManager {
       connection.tiptapCollabProvider.destroy();
       connection.yjsDoc.destroy();
     });
+    this.connectionByDocName.clear();
   }
 
   destroy() {
     this.disconnectAll();
-    this.ws.destroy();
+    this.ws?.destroy();
+    this.ws = undefined;
   }
 }
 
