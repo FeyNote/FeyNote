@@ -8,9 +8,10 @@ export const incomingWebsocketMessageQueue = new Queue<
   void
 >(INCOMING_WEBSOCKET_MESSAGE_QUEUE_NAME, {
   connection: {
-    host: globalServerConfig.worker.redis.host,
-    port: globalServerConfig.worker.redis.port,
+    host: globalServerConfig.websocket.redis.host,
+    port: globalServerConfig.websocket.redis.port,
   },
+  prefix: globalServerConfig.websocket.redis.keyPrefix,
 });
 
 export const enqueueIncomingWebsocketMessage = (

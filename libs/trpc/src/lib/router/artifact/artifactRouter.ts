@@ -4,11 +4,11 @@ import { getArtifacts } from './getArtifacts';
 import { searchArtifactBlocks } from './searchArtifactBlocks';
 import { searchArtifacts } from './searchArtifacts';
 import { searchArtifactTitles } from './searchArtifactTitles';
-import { updateArtifact } from './updateArtifact';
 import { createArtifact } from './createArtifact';
 import { getArtifactYBinById } from './getArtifactYBinById';
 import { getArtifactEdgesById } from './getArtifactEdgesById';
 import { getSafeArtifactId } from './getSafeArtifactId';
+import { removeSelfAsCollaborator } from './removeSelfAsCollaborator';
 
 export const artifactRouter = trpcRouter({
   getArtifactById,
@@ -16,9 +16,9 @@ export const artifactRouter = trpcRouter({
   getArtifactYBinById,
   getSafeArtifactId,
   getArtifacts,
+  removeSelfAsCollaborator,
   searchArtifacts,
   searchArtifactTitles,
   searchArtifactBlocks,
-  updateArtifact,
   createArtifact,
 });

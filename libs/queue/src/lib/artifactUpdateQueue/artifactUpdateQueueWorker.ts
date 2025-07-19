@@ -12,7 +12,7 @@ import {
   metrics,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
-import { ArtifactType, Prisma } from '@prisma/client';
+import { ArtifactType, Prisma, ArtifactAccessLevel } from '@prisma/client';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   getMetaFromYArtifact,
@@ -46,6 +46,12 @@ export const artifactUpdateQueueWorker = new Worker<
     try {
       logger.info(`Processing job ${args.id}`);
 
+      const readableUserAccessLevels = new Set<ArtifactAccessLevel>([
+        ArtifactAccessLevel.coowner,
+        ArtifactAccessLevel.readwrite,
+        ArtifactAccessLevel.readonly,
+      ]);
+
       const oldYjsDoc = new YDoc();
       const oldYBin = Buffer.from(args.data.oldYBinB64, 'base64');
       applyUpdate(oldYjsDoc, oldYBin);
@@ -54,20 +60,23 @@ export const artifactUpdateQueueWorker = new Worker<
       const newYBin = Buffer.from(args.data.newYBinB64, 'base64');
       applyUpdate(newYjsDoc, newYBin);
 
-      const oldReadableUserIds = args.data.oldReadableUserIds.sort((a, b) =>
-        a.localeCompare(b),
-      );
-      const newReadableUserIds = args.data.newReadableUserIds.sort((a, b) =>
-        a.localeCompare(b),
-      );
-
       const oldYMeta = getMetaFromYArtifact(oldYjsDoc);
       const oldTitle = oldYMeta.title;
       const newYMeta = getMetaFromYArtifact(newYjsDoc);
       const newTitle = newYMeta.title;
       const type = newYMeta.type;
+
       const oldYUserAccess = getUserAccessFromYArtifact(oldYjsDoc);
+      const oldReadableUserIds = [...oldYUserAccess.map.entries()]
+        .filter((el) => readableUserAccessLevels.has(el[1].val.accessLevel))
+        .map((el) => el[0])
+        .sort((a, b) => a.localeCompare(b));
+
       const newYUserAccess = getUserAccessFromYArtifact(newYjsDoc);
+      const newReadableUserIds = [...newYUserAccess.map.entries()]
+        .filter((el) => readableUserAccessLevels.has(el[1].val.accessLevel))
+        .map((el) => el[0])
+        .sort((a, b) => a.localeCompare(b));
 
       const newTLDrawData = newYjsDoc.getArray<{
         key: string;
@@ -167,7 +176,9 @@ export const artifactUpdateQueueWorker = new Worker<
 
       try {
         for (const userId of new Set([
+          oldYMeta.userId,
           ...oldReadableUserIds,
+          newYMeta.userId,
           ...newReadableUserIds,
         ])) {
           await enqueueOutgoingWebsocketMessage({
@@ -216,6 +227,7 @@ export const artifactUpdateQueueWorker = new Worker<
       host: globalServerConfig.worker.redis.host,
       port: globalServerConfig.worker.redis.port,
     },
+    prefix: globalServerConfig.worker.redis.keyPrefix,
     removeOnComplete: { count: globalServerConfig.worker.queueCompleteCount },
     removeOnFail: { count: globalServerConfig.worker.queueFailCount },
     concurrency: globalServerConfig.worker.queueConcurrency,

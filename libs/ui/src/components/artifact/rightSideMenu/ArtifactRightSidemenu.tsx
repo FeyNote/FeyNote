@@ -1,10 +1,12 @@
 import {
+  IonButton,
   IonCard,
   IonIcon,
   IonLabel,
   IonListHeader,
   IonSelect,
   IonSelectOption,
+  useIonAlert,
   useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../../info/InfoButton';
@@ -36,6 +38,12 @@ import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { ArtifactTableOfContents } from './ArtifactTableOfContents';
 import { GraphRenderer } from '../../graph/GraphRenderer';
 import styled from 'styled-components';
+import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
+import {
+  GlobalPaneContext,
+  PaneTransition,
+} from '../../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 
 const GraphContainer = styled.div`
   height: 200px;
@@ -51,7 +59,10 @@ interface Props {
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const [presentAlert] = useIonAlert();
   const { isEditable } = useIsEditable(props.connection);
+  const { navigate } = useContext(GlobalPaneContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
     ArtifactSharingManagementModal,
     {
@@ -200,6 +211,46 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
+  const _removeSelfAsCollaborator = () => {
+    trpc.artifact.removeSelfAsCollaborator
+      .mutate({
+        artifactId: props.artifactId,
+      })
+      .then(() => {
+        navigate(
+          undefined,
+          PaneableComponent.Dashboard,
+          {},
+          PaneTransition.Replace,
+        );
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+  };
+
+  const removeSelfAsCollaborator = () => {
+    presentAlert({
+      header: t('artifactRenderer.artifactSharedToYou.remove.confirm.header'),
+      message: t('artifactRenderer.artifactSharedToYou.remove.confirm.message'),
+      buttons: [
+        {
+          text: t('generic.cancel'),
+          role: 'cancel',
+        },
+        {
+          text: t('generic.confirm'),
+          role: 'confirm',
+        },
+      ],
+      onDidDismiss: (event) => {
+        if (event.detail.role === 'confirm') {
+          _removeSelfAsCollaborator();
+        }
+      },
+    });
+  };
+
   const isOwner = artifactMeta.userId === session.userId;
   const isDeleted = !!artifactMeta.deletedAt;
   const artifactSharingSettings = isOwner && !isDeleted && (
@@ -276,6 +327,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
+          <IonButton onClick={removeSelfAsCollaborator}>
+            {t('artifactRenderer.artifactSharedToYou.remove')}
+          </IonButton>
         </IonLabel>
       </CompactIonItem>
     </IonCard>

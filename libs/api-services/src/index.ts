@@ -18,6 +18,8 @@ export * from './lib/artifacts/updateArtifactOutgoingReferences';
 export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
 
+export * from './lib/hocuspocus-trpc';
+
 export * from './lib/logging/logger';
 export * from './lib/logging/metrics';
 

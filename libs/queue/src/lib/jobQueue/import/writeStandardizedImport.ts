@@ -36,8 +36,6 @@ export const writeStandardizedImport = async (args: {
       artifactId: artifact.id,
       userId: args.job.userId,
       triggeredByUserId: args.job.userId,
-      oldReadableUserIds: [],
-      newReadableUserIds: [args.job.userId],
       oldYBinB64: Buffer.from(encodeStateAsUpdate(new YDoc())).toString(
         'base64',
       ),

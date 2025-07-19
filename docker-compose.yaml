@@ -3,12 +3,11 @@ x-common-env-vars: &common-env-vars
   SEARCH_PROVIDER: typesense
   TYPESENSE_API_KEY: feynote
   TYPESENSE_NODES: '[{"host": "typesense", "port": 8108, "protocol": "http"}]'
-  WORKER_REDIS_HOST: queue-worker-valkey
-  WORKER_REDIS_PORT: '6379'
-  HOCUSPOCUS_REDIS_HOST: hocuspocus-valkey
-  HOCUSPOCUS_REDIS_PORT: '6379'
-  WEBSOCKET_REDIS_HOST: websocket-valkey
-  WEBSOCKET_REDIS_PORT: '6379'
+  HOCUSPOCUS_API_KEY: development
+  HOCUSPOCUS_INTERNAL_REST_BASE_URL: http://hocuspocus:8081
+  WORKER_REDIS_HOST: valkey
+  HOCUSPOCUS_REDIS_HOST: valkey
+  WEBSOCKET_REDIS_HOST: valkey
   STRIPE_API_KEY: sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
   NODE_ENV: development
   VITE_ENVIRONMENT: development
@@ -94,8 +93,7 @@ services:
     depends_on:
       - postgres
       - typesense
-      - queue-worker-valkey
-      - hocuspocus-valkey
+      - valkey
     stop_grace_period: 1s
   backend:
     build:
@@ -116,7 +114,7 @@ services:
     depends_on:
       - postgres
       - typesense
-      - queue-worker-valkey
+      - valkey
     stop_grace_period: 1s
   queue-worker:
     build:
@@ -137,7 +135,7 @@ services:
     depends_on:
       - postgres
       - typesense
-      - queue-worker-valkey
+      - valkey
     stop_grace_period: 1s
   websocket:
     build:
@@ -158,8 +156,7 @@ services:
     depends_on:
       - postgres
       - typesense
-      - queue-worker-valkey
-      - websocket-valkey
+      - valkey
     stop_grace_period: 1s
   nxgraph:
     build:
@@ -186,9 +183,5 @@ services:
     image: typesense/typesense:0.25.2
     restart: on-failure
     command: '--data-dir /media --api-key=feynote --enable-cors'
-  queue-worker-valkey:
-    image: valkey/valkey:7.2.5-bookworm
-  hocuspocus-valkey:
-    image: valkey/valkey:7.2.5-bookworm
-  websocket-valkey:
-    image: valkey/valkey:7.2.5-bookworm
+  valkey:
+    image: valkey/valkey:7.2.10-bookworm

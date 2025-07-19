@@ -37,9 +37,15 @@ export const AIUserMessage = ({
     }
   };
 
-  const submitHandler = () => {
+  const submitEditHandler = () => {
     editMessage({
       ...message,
+      parts: [
+        {
+          type: 'text',
+          text: editInput,
+        },
+      ],
       content: editInput,
     });
     setIsEditing(false);
@@ -60,7 +66,7 @@ export const AIUserMessage = ({
           <IonButton
             size="small"
             disabled={disableEdit}
-            onClick={submitHandler}
+            onClick={submitEditHandler}
           >
             Save
           </IonButton>

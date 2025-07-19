@@ -31,12 +31,15 @@ export const buildOutgoingWebsocketMessageQueueWorker = (io: Server) => {
     {
       autorun: false,
       connection: {
-        host: globalServerConfig.worker.redis.host,
-        port: globalServerConfig.worker.redis.port,
+        host: globalServerConfig.websocket.redis.host,
+        port: globalServerConfig.websocket.redis.port,
       },
-      removeOnComplete: { count: globalServerConfig.worker.queueCompleteCount },
-      removeOnFail: { count: globalServerConfig.worker.queueFailCount },
-      concurrency: globalServerConfig.worker.queueConcurrency,
+      prefix: globalServerConfig.websocket.redis.keyPrefix,
+      removeOnComplete: {
+        count: globalServerConfig.websocket.queueCompleteCount,
+      },
+      removeOnFail: { count: globalServerConfig.websocket.queueFailCount },
+      concurrency: globalServerConfig.websocket.queueConcurrency,
     },
   );
 };

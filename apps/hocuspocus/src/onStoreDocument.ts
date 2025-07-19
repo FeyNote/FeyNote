@@ -29,11 +29,6 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           },
           select: {
             userId: true,
-            artifactShares: {
-              select: {
-                userId: true,
-              },
-            },
             yBin: true,
             json: true,
           },
@@ -76,14 +71,6 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           artifactId: identifier,
           userId: artifact.userId,
           triggeredByUserId: args.context.userId,
-          oldReadableUserIds: [
-            artifact.userId,
-            ...artifact.artifactShares.map((el) => el.userId),
-          ],
-          newReadableUserIds: [
-            artifact.userId,
-            ...artifact.artifactShares.map((el) => el.userId),
-          ],
           oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });

@@ -24,24 +24,20 @@ if (globalServerConfig.hocuspocus.throttle.enable) {
   );
 }
 
-if (globalServerConfig.hocuspocus.redis.enable) {
-  extensions.push(
-    new Redis({
-      host: globalServerConfig.hocuspocus.redis.host,
-      port: globalServerConfig.hocuspocus.redis.port,
-    }),
-  );
-}
+extensions.push(
+  new Redis({
+    host: globalServerConfig.hocuspocus.redis.host,
+    port: globalServerConfig.hocuspocus.redis.port,
+  }),
+);
 
-if (globalServerConfig.hocuspocus.logging.enable) {
-  extensions.push(
-    new Logger({
-      log: (message) => {
-        logger.info(message);
-      },
-    }),
-  );
-}
+extensions.push(
+  new Logger({
+    log: (message) => {
+      logger.info(message);
+    },
+  }),
+);
 
 export const hocuspocusServer = new Server({
   stopOnSignals: true, // Listen to SIGINT, SIGTERM
