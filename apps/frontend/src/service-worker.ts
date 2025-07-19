@@ -691,3 +691,11 @@ registerRoute(
   },
   'GET',
 );
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/user\.getKnownUsers/,
+  async (event) => {
+    return cacheListResponse(ObjectStoreName.KnownUsers, event);
+  },
+  'GET',
+);
