@@ -1,6 +1,6 @@
 import { memo, MutableRefObject } from 'react';
 import { Editor, JSONContent } from '@tiptap/core';
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
@@ -25,7 +25,7 @@ const BottomSpacer = styled.div`
 
 type DocArgOptions =
   | {
-      yjsProvider: TiptapCollabProvider;
+      yjsProvider: HocuspocusProvider;
       yDoc?: undefined;
     }
   | {

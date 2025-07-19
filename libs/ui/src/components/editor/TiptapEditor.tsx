@@ -3,15 +3,11 @@ import { DiceRoll } from '@dice-roller/rpg-dice-roller';
 import type { ArtifactTheme } from '@prisma/client';
 import { ArtifactEditorStyles } from './ArtifactEditorStyles';
 import { useTiptapEditor } from './useTiptapEditor';
-import {
-  BubbleMenu,
-  EditorContent,
-  type Editor,
-  type JSONContent,
-} from '@tiptap/react';
+import { BubbleMenu } from '@tiptap/react/menus';
+import { EditorContent, type Editor, type JSONContent } from '@tiptap/react';
 import { ArtifactBubbleMenuControls } from './tiptap/extensions/artifactBubbleMenu/ArtifactBubbleMenuControls';
 import { TableBubbleMenu } from './tiptap/extensions/tableBubbleMenu/TableBubbleMenu';
-import type { TiptapCollabProvider } from '@hocuspocus/provider';
+import type { HocuspocusProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import { useRef, type MutableRefObject } from 'react';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
@@ -23,7 +19,7 @@ export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
 type DocArgOptions =
   | {
-      yjsProvider: TiptapCollabProvider;
+      yjsProvider: HocuspocusProvider;
       yDoc?: undefined;
     }
   | {

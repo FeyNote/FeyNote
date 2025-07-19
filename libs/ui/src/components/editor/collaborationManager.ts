@@ -1,6 +1,6 @@
 import {
   HocuspocusProviderWebsocket,
-  TiptapCollabProvider,
+  HocuspocusProvider,
 } from '@hocuspocus/provider';
 import { getApiUrls } from '../../utils/getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
@@ -14,7 +14,7 @@ export interface CollaborationManagerConnection {
   docName: string;
   session: SessionDTO | null;
   yjsDoc: Doc;
-  tiptapCollabProvider: TiptapCollabProvider;
+  tiptapCollabProvider: HocuspocusProvider;
   indexeddbProvider: IndexeddbPersistence;
   syncedPromise: Promise<void>;
   authorizedScopePromise: Promise<string>;
@@ -51,13 +51,14 @@ class CollaborationManager {
 
     const yjsDoc = new Doc();
     const indexeddbProvider = new IndexeddbPersistence(docName, yjsDoc);
-    const tiptapCollabProvider = new TiptapCollabProvider({
+    const tiptapCollabProvider = new HocuspocusProvider({
       name: docName,
-      baseUrl: getApiUrls().hocuspocus,
       document: yjsDoc,
       token: session?.token || 'anonymous',
       websocketProvider: this.ws,
     });
+
+    console.log('hi', tiptapCollabProvider);
 
     if (docName.startsWith('artifact:')) {
       incrementVersionForChangesOnArtifact(docName.split(':')[1], yjsDoc);
