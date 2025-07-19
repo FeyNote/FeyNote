@@ -57,7 +57,7 @@ import {
   ARTIFACT_TIPTAP_BODY_KEY,
   TiptapBlockType,
 } from '@feynote/shared-utils';
-import { Editor } from '@tiptap/core';
+import { Editor, type Extensions } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
@@ -98,7 +98,7 @@ export const getTiptapExtensions = (args: {
     blockId: string,
   ) => void;
   onIncomingReferenceCounterMouseOut?: (event: MouseEvent) => void;
-}) => {
+}): Extensions => {
   return [
     DocumentExtension,
     ParagraphExtension.configure({

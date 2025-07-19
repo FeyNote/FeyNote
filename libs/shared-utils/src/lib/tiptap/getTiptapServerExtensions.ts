@@ -3,7 +3,10 @@ import { Table as TableExtension } from '@tiptap/extension-table';
 import { Highlight as HighlightExtension } from '@tiptap/extension-highlight';
 import { CodeBlock as CodeBlockExtension } from '@tiptap/extension-code-block';
 import { Code as CodeExtension } from '@tiptap/extension-code';
-import { Mention as MentionExtension } from '@tiptap/extension-mention';
+import {
+  Mention as MentionExtension,
+  MentionOptions as MentionExtensionOptions,
+} from '@tiptap/extension-mention';
 import { Paragraph as ParagraphExtension } from '@tiptap/extension-paragraph';
 import { Blockquote as BlockquoteExtension } from '@tiptap/extension-blockquote';
 import { ListItem as ListItemExtension } from '@tiptap/extension-list-item';
@@ -157,7 +160,7 @@ export const getTiptapServerExtensions = (props: Props) => {
     TableRowExtension,
     TableHeaderExtension,
     TableCellExtension,
-    MentionExtension.extend({
+    MentionExtension.extend<MentionExtensionOptions>({
       name: 'artifactReference',
 
       addAttributes() {

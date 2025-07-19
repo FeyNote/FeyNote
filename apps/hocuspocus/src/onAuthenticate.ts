@@ -76,7 +76,7 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
           artifact.userId !== context.userId &&
           artifactShare?.accessLevel === ArtifactAccessLevel.readonly
         ) {
-          args.connection.readOnly = true;
+          args.connectionConfig.readOnly = true;
         }
 
         if (artifact.userId === context.userId) {

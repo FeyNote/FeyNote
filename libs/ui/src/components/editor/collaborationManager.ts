@@ -16,6 +16,7 @@ export interface CollaborationManagerConnection {
   yjsDoc: Doc;
   tiptapCollabProvider: HocuspocusProvider;
   indexeddbProvider: IndexeddbPersistence;
+  ws: HocuspocusProviderWebsocket;
   syncedPromise: Promise<void>;
   authorizedScopePromise: Promise<string>;
 }
@@ -73,6 +74,7 @@ class CollaborationManager {
       yjsDoc,
       tiptapCollabProvider,
       indexeddbProvider,
+      ws: this.ws,
       syncedPromise: new Promise<void>((resolve, reject) => {
         let syncSuccess = false;
         tiptapCollabProvider.on('synced', () => {

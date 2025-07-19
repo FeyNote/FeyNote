@@ -71,7 +71,7 @@ class Tooltip {
   private createTooltip() {
     if (!this.editor || !this.editor.options) return;
     const { element: editorElement } = this.editor.options;
-    const editorIsAttached = !!editorElement.parentElement;
+    const editorIsAttached = !!editorElement?.parentElement;
 
     if (this.tippyInstance || !editorIsAttached) {
       return;

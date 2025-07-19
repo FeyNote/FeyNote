@@ -44,7 +44,7 @@ export const ControlledBubbleMenu = ({
       offset({ mainAxis: 8 }),
       flip({
         padding: 8,
-        boundary: editor.options.element,
+        boundary: editor.options.element || undefined,
         fallbackPlacements: [
           'bottom',
           'top-start',

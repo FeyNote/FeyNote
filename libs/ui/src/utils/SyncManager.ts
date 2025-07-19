@@ -300,7 +300,6 @@ export class SyncManager {
       document: doc,
       token: session.token,
       websocketProvider: ws,
-      preserveConnection: false,
       awareness: null,
     });
 

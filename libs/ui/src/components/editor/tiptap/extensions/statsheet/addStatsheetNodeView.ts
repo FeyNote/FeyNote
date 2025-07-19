@@ -27,8 +27,8 @@ export const renderStatsheetNodeView: NodeViewRenderer = ({
     e.stopPropagation();
 
     const originalSelection = editor.state.selection.from;
-    const pos = getPos() + 1;
-    const endPos = getPos() + node.nodeSize;
+    const pos = (getPos() || 0) + 1;
+    const endPos = (getPos() || 0) + node.nodeSize;
 
     editor.chain().setTextSelection({ from: pos, to: endPos }).run();
 
@@ -49,7 +49,7 @@ export const renderStatsheetNodeView: NodeViewRenderer = ({
   deleteButton.addEventListener('click', () => {
     editor
       .chain()
-      .focus(getPos() + 1)
+      .focus((getPos() || 0) + 1)
       .deleteNode(node.type)
       .run();
   });

@@ -31,7 +31,7 @@ const BATCH_SIZE = parseInt(process.env.BATCH_SIZE || '10');
     });
 
     for (const { id, linkAccessLevel } of artifacts) {
-      const connection = await hocuspocusServer.openDirectConnection(
+      const connection = await hocuspocusServer.hocuspocus.openDirectConnection(
         `artifact:${id}`,
         {},
       );

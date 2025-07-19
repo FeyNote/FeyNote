@@ -108,6 +108,13 @@ export const ArtifactReferencesExtension =
 
     addOptions() {
       return {
+        artifactId: undefined,
+        HTMLAttributes: {},
+        renderText: () => '',
+        deleteTriggerWithBackspace: false,
+        renderHTML: () => ['span'],
+        suggestions: [],
+        suggestion: {},
         ...this.parent?.(),
       };
     },

@@ -13,7 +13,7 @@ declare module '@tiptap/core' {
   }
 }
 
-export const IndentationExtension = Extension.create<void, never>({
+export const IndentationExtension = Extension.create({
   name: 'customIndentation',
 
   addCommands(this) {
