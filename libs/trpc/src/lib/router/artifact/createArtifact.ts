@@ -106,8 +106,6 @@ export const createArtifact = authenticatedProcedure
         artifactId: artifact.id,
         userId: artifact.userId,
         triggeredByUserId: ctx.session.userId,
-        oldReadableUserIds: [ctx.session.userId],
-        newReadableUserIds: [ctx.session.userId],
         oldYBinB64: Buffer.from(encodeStateAsUpdate(new YDoc())).toString(
           'base64',
         ),
