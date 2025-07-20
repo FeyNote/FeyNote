@@ -24,30 +24,30 @@ export interface CollaborationManagerConnection {
 class CollaborationManager {
   private session: SessionDTO | null = null;
 
-  private ws: HocuspocusProviderWebsocket | undefined;
+  private ws = this.getNewWsInstance();
 
   private connectionByDocName = new Map<
     string,
     CollaborationManagerConnection
   >();
 
+  private getNewWsInstance() {
+    return new HocuspocusProviderWebsocket({
+      url: getApiUrls().hocuspocus,
+      delay: 1000,
+      minDelay: 1000,
+      maxDelay: 10000,
+    });
+  }
+
   get(docName: string, session: SessionDTO | null) {
     if (session?.token !== this.session?.token) {
-      this.disconnectAll();
+      this.destroy();
       this.session = session;
     }
 
     const existingConnection = this.connectionByDocName.get(docName);
     if (existingConnection) return existingConnection;
-
-    if (!this.ws) {
-      this.ws = new HocuspocusProviderWebsocket({
-        url: getApiUrls().hocuspocus,
-        delay: 1000,
-        minDelay: 1000,
-        maxDelay: 10000,
-      });
-    }
 
     const yjsDoc = new Doc();
     const indexeddbProvider = new IndexeddbPersistence(docName, yjsDoc);
@@ -57,6 +57,9 @@ class CollaborationManager {
       token: session?.token || 'anonymous',
       websocketProvider: this.ws,
     });
+    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
+    // It wires up all of the internal event listeners.
+    tiptapCollabProvider.attach();
 
     if (docName.startsWith('artifact:')) {
       incrementVersionForChangesOnArtifact(docName.split(':')[1], yjsDoc);
@@ -110,8 +113,8 @@ class CollaborationManager {
 
   destroy() {
     this.disconnectAll();
-    this.ws?.destroy();
-    this.ws = undefined;
+    this.ws.destroy();
+    this.ws = this.getNewWsInstance();
   }
 }
 
