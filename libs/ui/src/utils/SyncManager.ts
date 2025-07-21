@@ -259,18 +259,14 @@ export class SyncManager {
           return batches;
         }, [] as string[][]);
 
-        const cleanupFns = [];
         for (const batch of batches) {
-          const _cleanupFns = await Promise.all(
+          await Promise.all(
             batch.map((artifactId) => {
               return this.sync(artifactId, ws);
             }),
           );
-          cleanupFns.push(..._cleanupFns);
           await waitFor(SYNC_BATCH_RATE_LIMIT_WAIT);
         }
-
-        await Promise.all(cleanupFns.map((cleanupFn) => cleanupFn?.()));
 
         ws.destroy();
       }
@@ -288,7 +284,7 @@ export class SyncManager {
   private async sync(
     artifactId: string,
     ws: HocuspocusProviderWebsocket,
-  ): Promise<(() => Promise<void>) | undefined> {
+  ): Promise<void> {
     const docName = this.getDocName(artifactId);
     console.log('Syncing', docName);
     const session = await appIdbStorageManager.getSession();
@@ -302,6 +298,9 @@ export class SyncManager {
       websocketProvider: ws,
       awareness: null,
     });
+    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
+    // It wires up all of the internal event listeners.
+    tiptapCollabProvider.attach();
 
     const metaObserveListener = async () => {
       await this.searchManager.indexPartialArtifact(artifactId, doc, []);
@@ -368,13 +367,11 @@ export class SyncManager {
       yDoc: encodeStateAsUpdate(doc),
     });
 
-    return async () => {
-      doc
-        .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
-        .unobserveDeep(docObserveListener);
-      doc.getMap(ARTIFACT_META_KEY).unobserveDeep(metaObserveListener);
-      tiptapCollabProvider.destroy();
-      await indexeddbProvider.destroy();
-    };
+    doc
+      .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
+      .unobserveDeep(docObserveListener);
+    doc.getMap(ARTIFACT_META_KEY).unobserveDeep(metaObserveListener);
+    tiptapCollabProvider.destroy();
+    await indexeddbProvider.destroy();
   }
 }
