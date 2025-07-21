@@ -39,7 +39,7 @@ extensions.push(
   }),
 );
 
-export const hocuspocusServer = Server.configure({
+export const hocuspocusServer = new Server({
   stopOnSignals: true, // Listen to SIGINT, SIGTERM
   port: globalServerConfig.hocuspocus.wsPort,
   debounce: globalServerConfig.hocuspocus.writeDelayMs,

@@ -197,7 +197,7 @@ export const addResizeableMediaNodeView = (options: {
         // Update the node attributes
         if (typeof getPos === 'function') {
           editor.view.dispatch(
-            editor.view.state.tr.setNodeMarkup(getPos(), null, {
+            editor.view.state.tr.setNodeMarkup(getPos() || 0, null, {
               ...node.attrs,
               width: mediaElement.offsetWidth,
               height: mediaElement.offsetHeight,

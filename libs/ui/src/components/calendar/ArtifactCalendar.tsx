@@ -1,4 +1,4 @@
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { Doc as YDoc, Map as YMap } from 'yjs';
 import {
   memo,
@@ -34,7 +34,7 @@ const BottomSpacer = styled.div`
 
 interface Props {
   artifactId: string | undefined;
-  y: YDoc | TiptapCollabProvider;
+  y: YDoc | HocuspocusProvider;
   centerDate?: string;
   editable: boolean;
   viewType: 'fullsize' | 'mini';

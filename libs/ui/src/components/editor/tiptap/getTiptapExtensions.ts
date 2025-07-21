@@ -1,38 +1,47 @@
 import * as Sentry from '@sentry/react';
 import { ParagraphExtension } from './extensions/paragraph/ParagraphExtension';
-import BlockquoteExtension from '@tiptap/extension-blockquote';
-import HighlightExtension from '@tiptap/extension-highlight';
-import CodeBlock from '@tiptap/extension-code-block';
-import Code from '@tiptap/extension-code';
-import ListItemExtension from '@tiptap/extension-list-item';
-import OrderedListExtension from '@tiptap/extension-ordered-list';
-import BulletListExtension from '@tiptap/extension-bullet-list';
-import TaskListExtension from '@tiptap/extension-task-list';
-import TaskItemExtension from '@tiptap/extension-task-item';
-import HardBreakExtension from '@tiptap/extension-hard-break';
-import BoldExtension from '@tiptap/extension-bold';
-import FontFamilyExtension from '@tiptap/extension-font-family';
-import TextStyleExtension from '@tiptap/extension-text-style';
-import ItalicExtension from '@tiptap/extension-italic';
-import StrikeExtension from '@tiptap/extension-strike';
-import UnderlineExtension from '@tiptap/extension-underline';
-import TextAlignExtension from '@tiptap/extension-text-align';
-import DropcursorExtension from '@tiptap/extension-dropcursor';
-import GapcursorExtension from '@tiptap/extension-gapcursor';
-import TableRowExtension from '@tiptap/extension-table-row';
-import TableHeaderExtension from '@tiptap/extension-table-header';
-import TableCellExtension from '@tiptap/extension-table-cell';
-import DocumentExtension from '@tiptap/extension-document';
-import PlaceholderExtension from '@tiptap/extension-placeholder';
-import TextExtension from '@tiptap/extension-text';
-import HorizontalRule from '@tiptap/extension-horizontal-rule';
-import UniqueIDExtension from '@tiptap/extension-unique-id';
-import FileHandlerExtension from '@tiptap/extension-file-handler';
-import TableOfContentsExtension, {
+import { Blockquote as BlockquoteExtension } from '@tiptap/extension-blockquote';
+import { Highlight as HighlightExtension } from '@tiptap/extension-highlight';
+import { CodeBlock as CodeBlockExtension } from '@tiptap/extension-code-block';
+import { Code as CodeExtension } from '@tiptap/extension-code';
+import {
+  ListItem as ListItemExtension,
+  OrderedList as OrderedListExtension,
+  BulletList as BulletListExtension,
+  TaskList as TaskListExtension,
+  TaskItem as TaskItemExtension,
+} from '@tiptap/extension-list';
+import { HardBreak as HardBreakExtension } from '@tiptap/extension-hard-break';
+import { Bold as BoldExtension } from '@tiptap/extension-bold';
+import { FontFamily as FontFamilyExtension } from '@tiptap/extension-font-family';
+import { TextStyle as TextStyleExtension } from '@tiptap/extension-text-style';
+import { Italic as ItalicExtension } from '@tiptap/extension-italic';
+import { Strike as StrikeExtension } from '@tiptap/extension-strike';
+import { Underline as UnderlineExtension } from '@tiptap/extension-underline';
+import { TextAlign as TextAlignExtension } from '@tiptap/extension-text-align';
+import { Dropcursor as DropcursorExtension } from '@tiptap/extension-dropcursor';
+import { Gapcursor as GapcursorExtension } from '@tiptap/extension-gapcursor';
+import { TableExtension } from './extensions/table/TableExtension';
+import {
+  TableHeader as TableHeaderExtension,
+  TableRow as TableRowExtension,
+  TableCell as TableCellExtension,
+} from '@tiptap/extension-table';
+import { Document as DocumentExtension } from '@tiptap/extension-document';
+import { Placeholder as PlaceholderExtension } from '@tiptap/extensions';
+import { Text as TextExtension } from '@tiptap/extension-text';
+import { HorizontalRule as HorizontalRuleExtension } from '@tiptap/extension-horizontal-rule';
+import { UniqueID as UniqueIDExtension } from '@tiptap/extension-unique-id';
+import { FileHandler as FileHandlerExtension } from '@tiptap/extension-file-handler';
+import {
+  TableOfContents as TableOfContentsExtension,
   type TableOfContentData,
 } from '@tiptap/extension-table-of-contents';
-import Collaboration, { isChangeOrigin } from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
+import {
+  Collaboration as CollaborationExtension,
+  isChangeOrigin,
+} from '@tiptap/extension-collaboration';
+import { CollaborationCaret as CollaborationCaretExtension } from '@tiptap/extension-collaboration-caret';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
 import { ArtifactReferencesExtension } from './extensions/artifactReferences/ArtifactReferencesExtension';
 import { CommandsExtension } from './extensions/commands/CommandsExtension';
@@ -40,16 +49,15 @@ import { HeadingExtension } from './extensions/heading/HeadingExtension';
 import { MonsterStatblockExtension } from './extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
 import { SpellSheetExtension } from './extensions/statsheet/spellSheet/SpellSheetExtension';
 import { TTRPGNoteExtension } from './extensions/ttrpgNote/TTRPGNote';
-import { TableExtension } from './extensions/table/TableExtension';
 import { IsolatingContainerBackspaceExtension } from './extensions/isolatingContainerBackspaceExtension';
 import { BlockGroup } from './extensions/BlockGroup';
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { Doc as YDoc } from 'yjs';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
   TiptapBlockType,
 } from '@feynote/shared-utils';
-import { Editor } from '@tiptap/core';
+import { Editor, type Extensions } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
@@ -64,7 +72,7 @@ import { FeynoteAudioExtension } from './extensions/feynoteAudio/FeynoteAudioExt
 
 type DocArgOptions =
   | {
-      yjsProvider: TiptapCollabProvider;
+      yjsProvider: HocuspocusProvider;
       yDoc?: undefined;
     }
   | {
@@ -90,7 +98,7 @@ export const getTiptapExtensions = (args: {
     blockId: string,
   ) => void;
   onIncomingReferenceCounterMouseOut?: (event: MouseEvent) => void;
-}) => {
+}): Extensions => {
   return [
     DocumentExtension,
     ParagraphExtension.configure({
@@ -111,10 +119,10 @@ export const getTiptapExtensions = (args: {
     }),
     BlockGroup,
     TextExtension,
-    HorizontalRule,
+    HorizontalRuleExtension,
     BlockquoteExtension,
-    CodeBlock,
-    Code,
+    CodeBlockExtension,
+    CodeExtension,
     ListItemExtension,
     OrderedListExtension,
     BulletListExtension,
@@ -154,13 +162,13 @@ export const getTiptapExtensions = (args: {
     TableCellExtension,
     HighlightExtension,
     IndentationExtension,
-    Collaboration.configure({
+    CollaborationExtension.configure({
       document: args.y.yDoc || args.y.yjsProvider.document,
       field: ARTIFACT_TIPTAP_BODY_KEY,
     }),
     ...(args.y.yjsProvider
       ? [
-          CollaborationCursor.configure({
+          CollaborationCaretExtension.configure({
             provider: args.y.yjsProvider,
             user: args.collaborationUser,
           }),

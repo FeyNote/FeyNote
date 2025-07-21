@@ -1,34 +1,41 @@
 import { Mark, mergeAttributes, Node } from '@tiptap/core';
-import TableExtension from '@tiptap/extension-table';
-import HighlightExtension from '@tiptap/extension-highlight';
-import CodeBlock from '@tiptap/extension-code-block';
-import Code from '@tiptap/extension-code';
-import Mention from '@tiptap/extension-mention';
-import ParagraphExtension from '@tiptap/extension-paragraph';
-import BlockquoteExtension from '@tiptap/extension-blockquote';
-import ListItemExtension from '@tiptap/extension-list-item';
-import OrderedListExtension from '@tiptap/extension-ordered-list';
-import BulletListExtension from '@tiptap/extension-bullet-list';
-import TaskListExtension from '@tiptap/extension-task-list';
-import TaskItemExtension from '@tiptap/extension-task-item';
-import HardBreakExtension from '@tiptap/extension-hard-break';
-import BoldExtension from '@tiptap/extension-bold';
-import FontFamilyExtension from '@tiptap/extension-font-family';
-import TextStyleExtension from '@tiptap/extension-text-style';
-import ItalicExtension from '@tiptap/extension-italic';
-import StrikeExtension from '@tiptap/extension-strike';
-import UnderlineExtension from '@tiptap/extension-underline';
-import TextAlignExtension from '@tiptap/extension-text-align';
-import DropcursorExtension from '@tiptap/extension-dropcursor';
-import GapcursorExtension from '@tiptap/extension-gapcursor';
-import TableRowExtension from '@tiptap/extension-table-row';
-import TableHeaderExtension from '@tiptap/extension-table-header';
-import TableCellExtension from '@tiptap/extension-table-cell';
-import DocumentExtension from '@tiptap/extension-document';
-import TextExtension from '@tiptap/extension-text';
-import HorizontalRule from '@tiptap/extension-horizontal-rule';
-import { UniqueID } from '@tiptap/extension-unique-id';
-import HeadingExtension from '@tiptap/extension-heading';
+import { Table as TableExtension } from '@tiptap/extension-table';
+import { Highlight as HighlightExtension } from '@tiptap/extension-highlight';
+import { CodeBlock as CodeBlockExtension } from '@tiptap/extension-code-block';
+import { Code as CodeExtension } from '@tiptap/extension-code';
+import {
+  Mention as MentionExtension,
+  MentionOptions as MentionExtensionOptions,
+} from '@tiptap/extension-mention';
+import { Paragraph as ParagraphExtension } from '@tiptap/extension-paragraph';
+import { Blockquote as BlockquoteExtension } from '@tiptap/extension-blockquote';
+import { ListItem as ListItemExtension } from '@tiptap/extension-list-item';
+import {
+  OrderedList as OrderedListExtension,
+  BulletList as BulletListExtension,
+  TaskList as TaskListExtension,
+  TaskItem as TaskItemExtension,
+} from '@tiptap/extension-list';
+import { HardBreak as HardBreakExtension } from '@tiptap/extension-hard-break';
+import { Bold as BoldExtension } from '@tiptap/extension-bold';
+import { FontFamily as FontFamilyExtension } from '@tiptap/extension-font-family';
+import { TextStyle as TextStyleExtension } from '@tiptap/extension-text-style';
+import { Italic as ItalicExtension } from '@tiptap/extension-italic';
+import { Strike as StrikeExtension } from '@tiptap/extension-strike';
+import { Underline as UnderlineExtension } from '@tiptap/extension-underline';
+import { TextAlign as TextAlignExtension } from '@tiptap/extension-text-align';
+import { Dropcursor as DropcursorExtension } from '@tiptap/extension-dropcursor';
+import { Gapcursor as GapcursorExtension } from '@tiptap/extension-gapcursor';
+import {
+  TableRow as TableRowExtension,
+  TableHeader as TableHeaderExtension,
+  TableCell as TableCellExtension,
+} from '@tiptap/extension-table';
+import { Document as DocumentExtension } from '@tiptap/extension-document';
+import { Text as TextExtension } from '@tiptap/extension-text';
+import { HorizontalRule as HorizontalRule } from '@tiptap/extension-horizontal-rule';
+import { UniqueID as UniqueIDExtension } from '@tiptap/extension-unique-id';
+import { Heading as HeadingExtension } from '@tiptap/extension-heading';
 import { FeynoteEditorMediaType } from '../types/FeynoteEditorMediaType';
 import { TiptapBlockType } from './TiptapBlockType';
 
@@ -124,8 +131,8 @@ export const getTiptapServerExtensions = (props: Props) => {
     }),
     HeadingExtension,
     HighlightExtension,
-    CodeBlock,
-    Code,
+    CodeBlockExtension,
+    CodeExtension,
     TextExtension,
     HorizontalRule,
     BlockquoteExtension,
@@ -153,7 +160,7 @@ export const getTiptapServerExtensions = (props: Props) => {
     TableRowExtension,
     TableHeaderExtension,
     TableCellExtension,
-    Mention.extend({
+    MentionExtension.extend<MentionExtensionOptions>({
       name: 'artifactReference',
 
       addAttributes() {
@@ -241,7 +248,7 @@ export const getTiptapServerExtensions = (props: Props) => {
         return displayText;
       },
     }),
-    UniqueID.configure({
+    UniqueIDExtension.configure({
       types: [
         TiptapBlockType.Heading,
         TiptapBlockType.Paragraph,

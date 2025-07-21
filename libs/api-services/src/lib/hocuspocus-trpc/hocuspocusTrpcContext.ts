@@ -1,13 +1,13 @@
 import * as trpcExpress from '@trpc/server/adapters/express';
-import { Hocuspocus } from '@hocuspocus/server';
+import { Server } from '@hocuspocus/server';
 
-export const createContextWithHocuspocus = (hocuspocus: Hocuspocus) => {
+export const createContextWithHocuspocus = (hocuspocusServer: Server) => {
   return async function createContext(
     expressContext: trpcExpress.CreateExpressContextOptions,
   ) {
     const { req, res } = expressContext;
     return {
-      hocuspocus,
+      hocuspocusServer,
       req,
       res,
     };

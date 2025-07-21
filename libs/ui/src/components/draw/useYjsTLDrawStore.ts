@@ -30,7 +30,6 @@ import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
 import { FileDTO } from '@feynote/global-types';
 import { CollaborationManagerConnection } from '../editor/collaborationManager';
-import { WebSocketStatus } from '@hocuspocus/provider';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
@@ -434,8 +433,8 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
       });
     }
 
-    function handleStatusChange({ status }: { status: WebSocketStatus }) {
-      if (status === 'disconnected') {
+    function handleStatusChange() {
+      if (collaborationConnection?.ws.status === 'disconnected') {
         if (collaborationConnection?.indexeddbProvider.synced) {
           setStoreWithStatus({
             store,
@@ -445,7 +444,7 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
         }
       }
 
-      if (status === 'connected') {
+      if (collaborationConnection?.ws.status === 'connected') {
         setStoreWithStatus({
           store,
           status: 'synced-remote',
@@ -454,20 +453,12 @@ export const useYjsTLDrawStore = (args: UseYjsTLDrawStoreOptions) => {
       }
     }
 
-    collaborationConnection?.tiptapCollabProvider.on(
-      'status',
-      handleStatusChange,
-    );
+    collaborationConnection?.ws.on('status', handleStatusChange);
     unsubs.push(() =>
-      collaborationConnection?.tiptapCollabProvider.off(
-        'status',
-        handleStatusChange,
-      ),
+      collaborationConnection?.ws.off('status', handleStatusChange),
     );
     if (collaborationConnection) {
-      handleStatusChange({
-        status: collaborationConnection.tiptapCollabProvider.status,
-      });
+      handleStatusChange();
     } else {
       setStoreWithStatus({
         store,

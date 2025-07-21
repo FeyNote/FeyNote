@@ -15,10 +15,11 @@ export const removeUserAccessToDoc = authenticatedHocuspocusTrpcProcedure
     }),
   )
   .mutation(async (args): Promise<string> => {
-    const connection = await args.ctx.hocuspocus.openDirectConnection(
-      args.input.documentName,
-      {},
-    );
+    const connection =
+      await args.ctx.hocuspocusServer.hocuspocus.openDirectConnection(
+        args.input.documentName,
+        {},
+      );
 
     await connection.transact((yDoc) => {
       const yArtifactMeta = getMetaFromYArtifact(yDoc);

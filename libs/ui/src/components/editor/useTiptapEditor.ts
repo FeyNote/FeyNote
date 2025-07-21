@@ -2,7 +2,7 @@ import { Editor, useEditor } from '@tiptap/react';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 
-import { TiptapCollabProvider } from '@hocuspocus/provider';
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useTranslation } from 'react-i18next';
 import { useContext, useEffect, useMemo } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
@@ -12,7 +12,7 @@ import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 
 type DocArgOptions =
   | {
-      yjsProvider: TiptapCollabProvider;
+      yjsProvider: HocuspocusProvider;
       yDoc?: undefined;
     }
   | {

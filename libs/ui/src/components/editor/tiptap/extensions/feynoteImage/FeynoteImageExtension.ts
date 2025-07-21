@@ -3,7 +3,10 @@
 
 import { mergeAttributes } from '@tiptap/core';
 import { addResizeableMediaNodeView } from '../feynoteMedia/addResizeableMediaNodeView';
-import { FeynoteMediaExtension } from '../feynoteMedia/FeynoteMediaExtension';
+import {
+  FeynoteMediaExtension,
+  type FeynoteMediaOptions,
+} from '../feynoteMedia/FeynoteMediaExtension';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -21,44 +24,45 @@ declare module '@tiptap/core' {
 /**
  * This extension displays images stored on our backend.
  */
-export const FeynoteImageExtension = FeynoteMediaExtension.extend({
-  name: 'feynoteImage',
+export const FeynoteImageExtension =
+  FeynoteMediaExtension.extend<FeynoteMediaOptions>({
+    name: 'feynoteImage',
 
-  parseHTML() {
-    return [
-      {
-        tag: 'img[data-file-id]',
-      },
-      {
-        tag: 'div[data-file-id][data-file-type="image"]',
-      },
-    ];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    return [
-      'img',
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-    ];
-  },
-
-  addCommands() {
-    return {
-      setFeynoteImage:
-        (options) =>
-        ({ commands }) => {
-          return commands.insertContent({
-            type: this.name,
-            attrs: options,
-          });
+    parseHTML() {
+      return [
+        {
+          tag: 'img[data-file-id]',
         },
-    };
-  },
+        {
+          tag: 'div[data-file-id][data-file-type="image"]',
+        },
+      ];
+    },
 
-  addNodeView() {
-    return addResizeableMediaNodeView({
-      tagName: 'img',
-      ...this.options,
-    });
-  },
-});
+    renderHTML({ HTMLAttributes }) {
+      return [
+        'img',
+        mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      ];
+    },
+
+    addCommands() {
+      return {
+        setFeynoteImage:
+          (options) =>
+          ({ commands }) => {
+            return commands.insertContent({
+              type: this.name,
+              attrs: options,
+            });
+          },
+      };
+    },
+
+    addNodeView() {
+      return addResizeableMediaNodeView({
+        tagName: 'img',
+        ...this.options,
+      });
+    },
+  });

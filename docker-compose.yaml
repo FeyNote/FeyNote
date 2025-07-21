@@ -180,7 +180,7 @@ services:
       POSTGRES_USER: feynote
       POSTGRES_PASSWORD: feynote
   typesense:
-    image: typesense/typesense:0.25.2
+    image: typesense/typesense:29.0
     restart: on-failure
     command: '--data-dir /media --api-key=feynote --enable-cors'
   valkey:
