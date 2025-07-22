@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "apps/backend/src",
   "projectType": "application",
+  "tags": [],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
@@ -51,6 +52,5 @@
         "jestConfig": "apps/backend/jest.config.ts"
       }
     }
-  },
-  "tags": []
+  }
 }
