@@ -1,6 +1,10 @@
 /* eslint-disable no-restricted-globals */
 
-import type { ArtifactDTO, YArtifactMeta } from '@feynote/global-types';
+import type {
+  ArtifactDTO,
+  YArtifactMeta,
+  YArtifactUserAccess,
+} from '@feynote/global-types';
 import type {
   DecodedFileStream,
   Edge,
@@ -11,7 +15,13 @@ import { IDBPDatabase, openDB, type DBSchema } from 'idb';
 export interface ArtifactSnapshotDoc {
   id: string;
   meta: YArtifactMeta;
-  yDoc: Uint8Array;
+  userAccess: Map<
+    string,
+    {
+      key: string;
+      val: YArtifactUserAccess;
+    }
+  >;
 }
 
 export interface AuthorizedCollaborationScopeDoc {
