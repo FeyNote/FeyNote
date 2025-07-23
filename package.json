@@ -71,7 +71,7 @@
     "@types/remove-markdown": "^0.3.4",
     "ai": "^4.3.19",
     "astro": "^5.11.1",
-    "axios": "^1.10.0",
+    "axios": "^1.11.0",
     "bullmq": "^5.56.4",
     "commander": "^14.0.0",
     "cors": "^2.8.5",
