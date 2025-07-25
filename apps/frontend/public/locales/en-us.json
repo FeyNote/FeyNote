@@ -446,8 +446,8 @@
   "editor.referenceMenu.existingArtifactShareWithCurrent.message.diff.usersMissingFromSource": "The referenced document is shared with users that this document is not. ",
   "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.syncAll": "Update All of the Above",
   "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.linkAccessLevel": "Update link access level",
-  "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromTarget": "Share this document with each user",
-  "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromSource": "Share the target document with each user",
+  "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromTarget": "Share target document with each user on this document",
+  "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromSource": "Share this document with each user on the target document",
   "editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.noSync": "Leave as-is",
 
   "editor.bubbleMenu.defaultFont": "Theme Default",
