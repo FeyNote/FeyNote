@@ -62,6 +62,14 @@ export const getArtifactEdgesById = publicProcedure
           artifact: {
             select: {
               title: true,
+              userId: true,
+              artifactShares: {
+                select: {
+                  userId: true,
+                  accessLevel: true,
+                },
+              },
+              linkAccessLevel: true,
             },
           },
         },
@@ -93,20 +101,25 @@ export const getArtifactEdgesById = publicProcedure
       ]);
 
       return {
-        incomingEdges: incomingEdges.map((edge) => {
-          return {
-            id: getEdgeId(edge),
-            artifactId: edge.artifactId,
-            artifactBlockId: edge.artifactBlockId,
-            targetArtifactId: edge.targetArtifactId,
-            targetArtifactBlockId: edge.targetArtifactBlockId,
-            targetArtifactDate: edge.targetArtifactDate,
-            isBroken: !edge.referenceTargetArtifactId,
-            referenceText: edge.referenceText,
-            artifactTitle: edge.artifact.title,
-            targetArtifactTitle: artifact.title,
-          };
-        }),
+        incomingEdges: incomingEdges
+          .filter((edge) => {
+            // We do not want to show incoming references from artifacts you do not have access to
+            return hasArtifactAccess(edge.artifact, ctx.session?.userId);
+          })
+          .map((edge) => {
+            return {
+              id: getEdgeId(edge),
+              artifactId: edge.artifactId,
+              artifactBlockId: edge.artifactBlockId,
+              targetArtifactId: edge.targetArtifactId,
+              targetArtifactBlockId: edge.targetArtifactBlockId,
+              targetArtifactDate: edge.targetArtifactDate,
+              isBroken: !edge.referenceTargetArtifactId,
+              referenceText: edge.referenceText,
+              artifactTitle: edge.artifact.title,
+              targetArtifactTitle: artifact.title,
+            };
+          }),
         outgoingEdges: outgoingEdges.map((edge) => {
           return {
             id: getEdgeId(edge),

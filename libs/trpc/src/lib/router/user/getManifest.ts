@@ -1,6 +1,7 @@
 import { getEdgeId, Manifest, type Edge } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export const getManifest = authenticatedProcedure.query(
   async ({ ctx }): Promise<Manifest> => {
@@ -19,6 +20,9 @@ export const getManifest = authenticatedProcedure.query(
     const artifactSharesPromise = prisma.artifactShare.findMany({
       where: {
         userId: ctx.session.userId,
+        accessLevel: {
+          not: ArtifactAccessLevel.noaccess,
+        },
       },
       select: {
         artifact: {
@@ -76,7 +80,8 @@ export const getManifest = authenticatedProcedure.query(
     const edges: Edge[] = [];
     for (const relation of relationships) {
       const artifact = allArtifactsMap.get(relation.artifactId);
-      if (!artifact) continue; // To satisfy typescript, but this should never actually happen since our query filters by artifactId
+      // We do not want to show incoming references from artifacts you do not have access to
+      if (!artifact) continue;
       const targetArtifact = allArtifactsMap.get(relation.targetArtifactId);
 
       // We don't want artifacts that are deleted to show up as pointing to your artifact
