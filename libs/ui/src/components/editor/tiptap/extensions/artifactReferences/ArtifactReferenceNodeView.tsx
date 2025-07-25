@@ -26,6 +26,15 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const artifactBlockId = props.node.attrs.id;
   const { artifactId } = props.extension.options;
 
+  // This is impossible according to typings, but in reality it _can_ happen if we mess up
+  // since this is all passed through Tiptap JSON along the way.
+  // We want to break the nodeview rather than render a weird (and partially broken!) nodeview.
+  if (!artifactId || !artifactBlockId || !targetArtifactId) {
+    throw new Error(
+      'ArtifactReferenceNodeView rendered without required property',
+    );
+  }
+
   const { navigate } = useContext(PaneContext);
   const { getEdge } = useEdgesForArtifactId(artifactId);
   const edge = getEdge({

@@ -6,6 +6,7 @@ export * from './lib/calendar/YCalendarMap';
 export * from './lib/crypto/sha256Hex';
 export * from './lib/crypto/hmacSha256Hex';
 export * from './lib/edgesReferences/getEdgeId';
+export * from './lib/validation/assert';
 export * from './lib/validation/getArtifactAccessLevel';
 export * from './lib/validation/validateEmail';
 export * from './lib/validation/validatePassword';

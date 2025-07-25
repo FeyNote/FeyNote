@@ -21,6 +21,32 @@ export enum PreferencesSync {
   Disabled = 'disabled',
 }
 
+export enum ArtifactReferenceNewArtifactSharingMode {
+  /**
+   * Every reference that creates a new artifact will copy the current artifact's sharing settings to the new artifact.
+   */
+  Always = 'always',
+  /**
+   * Sharing settings will never be copied to newly created artifacts, and the new artifact will be created completely unshared.
+   */
+  Never = 'never',
+  /**
+   * Always ask the user what they would like to do.
+   */
+  Prompt = 'prompt',
+}
+
+export enum ArtifactReferenceExistingArtifactSharingMode {
+  /**
+   * Sharing settings will never be synced to referenced artifacts, and any differences between artifact sharing settings will remain as they are.
+   */
+  Never = 'never',
+  /**
+   * Always ask the user what they would like to do.
+   */
+  Prompt = 'prompt',
+}
+
 export enum PreferenceNames {
   LeftPaneStartOpen = 'leftPane.startOpen',
   LeftPaneShowArtifactTree = 'leftPane.showArtifactTree',
@@ -37,6 +63,9 @@ export enum PreferenceNames {
 
   GraphShowOrphans = 'graph.showOrphans',
   GraphLockNodeOnDrag = 'graph.lockNodeOnDrag',
+
+  ArtifactReferenceNewArtifactSharingMode = 'artifact.referenceNewArtifactSharingMode',
+  ArtifactReferenceExistingArtifactSharingMode = 'artifact.referenceExistingArtifactSharingMode',
 }
 
 export interface AppPreferences {
@@ -57,4 +86,7 @@ export interface AppPreferences {
 
   [PreferenceNames.GraphShowOrphans]: boolean;
   [PreferenceNames.GraphLockNodeOnDrag]: boolean;
+
+  [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: ArtifactReferenceNewArtifactSharingMode;
+  [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: ArtifactReferenceExistingArtifactSharingMode;
 }

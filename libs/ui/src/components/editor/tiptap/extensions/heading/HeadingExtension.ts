@@ -27,10 +27,6 @@ export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
 
   addNodeView() {
     return ({ node, HTMLAttributes }) => {
-      if (!this.options.artifactId) {
-        throw new Error('Artifact ID is required for the HeadingExtension');
-      }
-
       const container = document.createElement('div');
       container.setAttribute('data-id', node.attrs.id);
       container.classList.add('editor-heading-container');
@@ -64,11 +60,13 @@ export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
         }
       };
 
-      edgeUpdateListener();
-      const cleanupUpdateListener = this.options.edgeStore?.listenForArtifactId(
-        this.options.artifactId,
-        edgeUpdateListener,
-      );
+      if (this.options.artifactId) edgeUpdateListener();
+      const cleanupUpdateListener = this.options.artifactId
+        ? this.options.edgeStore?.listenForArtifactId(
+            this.options.artifactId,
+            edgeUpdateListener,
+          )
+        : undefined;
 
       incomingEdgeCounter.classList.add('editor-incoming-edge-counter');
 
@@ -113,7 +111,7 @@ export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
         contentDOM: contentDom,
         destroy: () => {
           cleanupUpdateListener?.();
-          container.removeEventListener('click', edgeUpdateListener);
+          container.removeEventListener('click', clickListener);
           container.removeEventListener('mouseover', mouseOverListener);
           container.removeEventListener('mouseout', mouseOutListener);
         },

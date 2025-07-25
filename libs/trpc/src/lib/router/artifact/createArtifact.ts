@@ -16,6 +16,7 @@ import {
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
+  getUserAccessFromYArtifact,
   updateYArtifactMeta,
 } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
@@ -28,6 +29,17 @@ export const createArtifact = authenticatedProcedure
       title: z.string(),
       type: z.nativeEnum(ArtifactType),
       theme: z.nativeEnum(ArtifactTheme),
+      // We follow our YKeyValue structure for userAccess
+      userAccess: z
+        .array(
+          z.object({
+            key: z.string(), // UserID
+            val: z.object({
+              accessLevel: z.nativeEnum(ArtifactAccessLevel),
+            }),
+          }),
+        )
+        .optional(),
       linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
       deletedAt: z.date().optional(),
       yBin: z.any().optional(),
@@ -68,6 +80,14 @@ export const createArtifact = authenticatedProcedure
         });
       } else {
         yDoc = constructYArtifact(meta);
+      }
+
+      if (input.userAccess) {
+        const yKeyValue = getUserAccessFromYArtifact(yDoc);
+
+        for (const userAccess of input.userAccess) {
+          yKeyValue.set(userAccess.key, userAccess.val);
+        }
       }
 
       const json = {

@@ -1,6 +1,8 @@
 import {
   AppPreferences,
   AppTheme,
+  ArtifactReferenceExistingArtifactSharingMode,
+  ArtifactReferenceNewArtifactSharingMode,
   PreferenceNames,
   PreferencesSync,
   SupportedFontSize,
@@ -34,6 +36,11 @@ export class PreferencesService {
 
     [PreferenceNames.GraphShowOrphans]: true,
     [PreferenceNames.GraphLockNodeOnDrag]: true,
+
+    [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]:
+      ArtifactReferenceNewArtifactSharingMode.Prompt,
+    [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
+      ArtifactReferenceExistingArtifactSharingMode.Prompt,
   };
   initialLoading: Promise<void> | undefined;
 

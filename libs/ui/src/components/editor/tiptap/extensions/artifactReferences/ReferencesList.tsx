@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from 'react';
 import styled from 'styled-components';
@@ -15,12 +16,28 @@ import {
 import { IoCalendar, IoDocument } from 'react-icons/io5';
 import { t } from 'i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
-import { capitalize } from '@feynote/shared-utils';
+import {
+  ArtifactReferenceExistingArtifactSharingMode,
+  ArtifactReferenceNewArtifactSharingMode,
+  assert,
+  capitalize,
+  getArtifactAccessLevel,
+  getMetaFromYArtifact,
+  getUserAccessFromYArtifact,
+  PreferenceNames,
+  updateYArtifactMeta,
+} from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { createArtifact } from '../../../../../utils/createArtifact';
 import * as Sentry from '@sentry/react';
 import { SessionContext } from '../../../../../context/session/SessionContext';
+import type { Doc as YDoc } from 'yjs';
+import { useIonAlert, type AlertButton } from '@ionic/react';
+import { ArtifactAccessLevel } from '@prisma/client';
+import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
+import { collaborationManager } from '../../../collaborationManager';
+import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -89,6 +106,8 @@ export interface ReferenceItem {
 }
 
 interface Props {
+  yDoc: YDoc;
+  artifactId: string;
   items: ReferenceItem[];
   query: string;
   command: (args: {
@@ -103,8 +122,16 @@ interface Props {
 export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const [domNonce] = useState(Math.random().toString());
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showUi, setShowUi] = useState(true);
   const [creatingItem, setCreatingItem] = useState(false);
-  const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
+  const [showCalendarInput, setShowCalendarInput] = useState(false);
+  const selectedItemInfoRef = useRef<
+    ReferenceItem & {
+      artifactDate?: string | undefined;
+    }
+  >(undefined);
+  const { getPreference, setPreference } = useContext(PreferencesContext);
+  const [presentAlert] = useIonAlert();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { session } = useContext(SessionContext);
 
@@ -163,67 +190,454 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     selectItem(selectedIndex);
   };
 
-  const createItem = () => {
+  const submitCreateItem = () => {
     if (creatingItem) return;
-
     setCreatingItem(true);
 
-    const title = capitalize(props.query);
+    const artifactMeta = getMetaFromYArtifact(props.yDoc);
+    const userAccess = getUserAccessFromYArtifact(props.yDoc);
 
-    createArtifact({
-      title,
-    })
-      .then(({ id }) => {
-        props.command({
-          artifactId: id,
-          artifactBlockId: undefined,
-          artifactDate: undefined,
-          referenceText: title,
-        });
+    const _createItem = (shareWithCurrent: boolean) => {
+      const title = capitalize(props.query);
+
+      createArtifact({
+        title,
+        userAccess: shareWithCurrent ? userAccess.map : undefined,
+        linkAccessLevel: shareWithCurrent
+          ? artifactMeta.linkAccessLevel
+          : undefined,
       })
-      .catch((e) => {
-        handleTRPCErrors(e);
+        .then(({ id }) => {
+          props.command({
+            artifactId: id,
+            artifactBlockId: undefined,
+            artifactDate: undefined,
+            referenceText: title,
+          });
+        })
+        .catch((e) => {
+          handleTRPCErrors(e);
+        });
+    };
+
+    setShowUi(false);
+
+    const defaultSharingMode = getPreference(
+      PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+    );
+    const hasUserAccessSet = userAccess.yarray
+      .toArray()
+      .filter((el) => el.val.accessLevel !== ArtifactAccessLevel.noaccess);
+    const hasLinkAccessSet = artifactMeta.linkAccessLevel !== 'noaccess';
+    const isShared = hasUserAccessSet || hasLinkAccessSet;
+
+    if (
+      isShared &&
+      defaultSharingMode === ArtifactReferenceNewArtifactSharingMode.Prompt
+    ) {
+      presentAlert({
+        header: t('editor.referenceMenu.newArtifactShareWithCurrent.header'),
+        message: t('editor.referenceMenu.newArtifactShareWithCurrent.message'),
+        buttons: [
+          {
+            text: t('editor.referenceMenu.newArtifactShareWithCurrent.never'),
+            role: 'never',
+          },
+          {
+            text: t('editor.referenceMenu.newArtifactShareWithCurrent.always'),
+            role: 'always',
+          },
+          {
+            text: t('editor.referenceMenu.newArtifactShareWithCurrent.no'),
+            role: 'no',
+          },
+          {
+            text: t('editor.referenceMenu.newArtifactShareWithCurrent.yes'),
+            role: 'yes',
+          },
+        ],
+        onDidDismiss: (event) => {
+          switch (event.detail.role) {
+            case 'never': {
+              setPreference(
+                PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                ArtifactReferenceNewArtifactSharingMode.Never,
+              );
+              _createItem(false);
+              break;
+            }
+            case 'always': {
+              setPreference(
+                PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                ArtifactReferenceNewArtifactSharingMode.Always,
+              );
+              _createItem(true);
+              break;
+            }
+            case 'yes': {
+              _createItem(true);
+              break;
+            }
+            case 'no': {
+              _createItem(false);
+              break;
+            }
+          }
+        },
       });
+    } else if (
+      isShared &&
+      defaultSharingMode === ArtifactReferenceNewArtifactSharingMode.Always
+    ) {
+      _createItem(true);
+    } else {
+      _createItem(false);
+    }
   };
 
-  const selectItem = (index: number) => {
+  const submitLinkExistingItem = async () => {
+    if (creatingItem) return;
+    setCreatingItem(true);
+
+    const item = selectedItemInfoRef.current;
+    if (!item) {
+      throw new Error(
+        'submitLinkExistingItem was called without a selectedItem',
+      );
+    }
+
+    setShowUi(false);
+
+    const _submit = () => {
+      props.command({
+        artifactId: item.artifactId,
+        artifactBlockId: item.artifactBlockId,
+        artifactDate: item.artifactDate,
+        referenceText: item.referenceText,
+      });
+    };
+
+    const enableSharingSyncPrompt =
+      getPreference(
+        PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
+      ) === ArtifactReferenceExistingArtifactSharingMode.Prompt;
+    const session = await appIdbStorageManager.getSession();
+    if (session && enableSharingSyncPrompt) {
+      const sourceMeta = getMetaFromYArtifact(props.yDoc);
+      const sourceUserAccessList = getUserAccessFromYArtifact(props.yDoc);
+      const targetCollabConnection = collaborationManager.get(
+        `artifact:${item.artifactId}`,
+        session,
+      );
+      await targetCollabConnection.syncedPromise;
+      const currentUserAccessLevelToSource = getArtifactAccessLevel(
+        props.yDoc,
+        session.userId,
+      );
+      const currentUserAccessLevelToTarget = getArtifactAccessLevel(
+        targetCollabConnection.yjsDoc,
+        session.userId,
+      );
+
+      if (currentUserAccessLevelToTarget !== ArtifactAccessLevel.coowner) {
+        // We can't change sharing permissions if you don't own the _target_ artifact in question. Only owners can change sharing permissions.
+        _submit();
+        return;
+      }
+
+      const targetMeta = getMetaFromYArtifact(targetCollabConnection.yjsDoc);
+      const targetUserAccessList = getUserAccessFromYArtifact(
+        targetCollabConnection.yjsDoc,
+      );
+
+      const linkAccessLevelsRanked = [
+        ArtifactAccessLevel.noaccess,
+        ArtifactAccessLevel.readonly,
+        ArtifactAccessLevel.readwrite,
+        ArtifactAccessLevel.coowner,
+      ];
+
+      const propagateHigherLinkAccessLevel = () => {
+        const sourceIdx = linkAccessLevelsRanked.indexOf(
+          sourceMeta.linkAccessLevel,
+        );
+        const targetIdx = linkAccessLevelsRanked.indexOf(
+          targetMeta.linkAccessLevel,
+        );
+
+        if (
+          sourceIdx > targetIdx &&
+          currentUserAccessLevelToTarget === 'coowner'
+        ) {
+          updateYArtifactMeta(targetCollabConnection.yjsDoc, {
+            ...targetMeta,
+            linkAccessLevel: linkAccessLevelsRanked[sourceIdx],
+          });
+        }
+        if (
+          targetIdx > sourceIdx &&
+          currentUserAccessLevelToSource === 'coowner'
+        ) {
+          updateYArtifactMeta(props.yDoc, {
+            ...sourceMeta,
+            linkAccessLevel: linkAccessLevelsRanked[targetIdx],
+          });
+        }
+      };
+
+      const propagateSourceUsersToTarget = () => {
+        if (currentUserAccessLevelToTarget !== 'coowner') return;
+
+        for (const sourceUserAccessEntry of sourceUserAccessList.yarray) {
+          const targetUserAccessEntry = targetUserAccessList.get(
+            sourceUserAccessEntry.key,
+          );
+          if (
+            targetUserAccessEntry?.accessLevel !==
+            sourceUserAccessEntry.val.accessLevel
+          ) {
+            targetUserAccessList.set(
+              sourceUserAccessEntry.key,
+              sourceUserAccessEntry.val,
+            );
+          }
+        }
+      };
+
+      const propagateTargetUsersToSource = () => {
+        if (currentUserAccessLevelToSource !== 'coowner') return;
+
+        for (const targetUserAccessEntry of targetUserAccessList.yarray) {
+          const sourceUserAccessEntry = sourceUserAccessList.get(
+            targetUserAccessEntry.key,
+          );
+          if (
+            sourceUserAccessEntry?.accessLevel !==
+            targetUserAccessEntry.val.accessLevel
+          ) {
+            sourceUserAccessList.set(
+              targetUserAccessEntry.key,
+              targetUserAccessEntry.val,
+            );
+          }
+        }
+      };
+
+      assert(
+        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) > -1,
+        'Source linkAccessLevel must be present and valid',
+      );
+      assert(
+        linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) > -1,
+        'Target linkAccessLevel must be present and valid',
+      );
+
+      /**
+       * We only propagate a linkAccessLevel diff if the user has coowner access to the higher of the two asset's linkAccessLevels, since we never want to propagate a _lower_ sharing level via this mechanism.
+       */
+      let linkAccessLevelDiff = false;
+      if (
+        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) >
+          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) &&
+        currentUserAccessLevelToTarget === 'coowner'
+      ) {
+        linkAccessLevelDiff = true;
+      }
+      if (
+        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) <
+          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) &&
+        currentUserAccessLevelToSource === 'coowner'
+      ) {
+        linkAccessLevelDiff = true;
+      }
+
+      /**
+       * We can only add users to the target if we're coowner of the target
+       */
+      const usersMissingFromTarget: string[] = [];
+      if (currentUserAccessLevelToTarget === 'coowner') {
+        for (const sourceUserAccessEntry of sourceUserAccessList.yarray) {
+          const targetUserAccessEntry = targetUserAccessList.get(
+            sourceUserAccessEntry.key,
+          );
+          if (
+            targetUserAccessEntry?.accessLevel !==
+            sourceUserAccessEntry.val.accessLevel
+          ) {
+            usersMissingFromTarget.push(sourceUserAccessEntry.key);
+          }
+        }
+      }
+
+      /**
+       * We can only add users to the source if we're coowner of the source
+       */
+      const usersMissingFromSource: string[] = [];
+      if (currentUserAccessLevelToSource === 'coowner') {
+        for (const targetUserAccessEntry of targetUserAccessList.yarray) {
+          const sourceUserAccessEntry = sourceUserAccessList.get(
+            targetUserAccessEntry.key,
+          );
+          if (
+            sourceUserAccessEntry?.accessLevel !==
+            targetUserAccessEntry.val.accessLevel
+          ) {
+            usersMissingFromSource.push(targetUserAccessEntry.key);
+          }
+        }
+      }
+
+      const numberOfDiffs = [
+        !!linkAccessLevelDiff,
+        !!usersMissingFromTarget.length,
+        !!usersMissingFromSource.length,
+      ].filter((el) => el);
+      if (!numberOfDiffs.length) {
+        // There is no diff, so nothing to prompt the user about
+        _submit();
+        return;
+      }
+
+      const header = t(
+        'editor.referenceMenu.existingArtifactShareWithCurrent.header',
+      );
+      const subHeader = t(
+        'editor.referenceMenu.existingArtifactShareWithCurrent.subHeader',
+      );
+      let message = '';
+      if (linkAccessLevelDiff)
+        message += t(
+          'editor.referenceMenu.existingArtifactShareWithCurrent.message.diff.linkAccessLevel',
+        );
+      if (usersMissingFromTarget.length)
+        message += t(
+          'editor.referenceMenu.existingArtifactShareWithCurrent.message.diff.usersMissingFromTarget',
+        );
+      if (usersMissingFromSource.length)
+        message += t(
+          'editor.referenceMenu.existingArtifactShareWithCurrent.message.diff.usersMissingFromSource',
+        );
+
+      const buttons: AlertButton[] = [];
+
+      if (linkAccessLevelDiff) {
+        buttons.push({
+          text: t(
+            'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.linkAccessLevel',
+          ),
+          role: 'linkAccessLevel',
+        });
+      }
+
+      if (usersMissingFromTarget.length) {
+        buttons.push({
+          text: t(
+            'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromTarget',
+          ),
+          role: 'usersMissingFromTarget',
+        });
+      }
+
+      if (usersMissingFromSource.length) {
+        buttons.push({
+          text: t(
+            'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromSource',
+          ),
+          role: 'usersMissingFromSource',
+        });
+      }
+
+      if (numberOfDiffs.length > 1) {
+        buttons.push({
+          text: t(
+            'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.syncAll',
+          ),
+          role: 'all',
+        });
+      }
+
+      buttons.push({
+        text: t(
+          'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.noSync',
+        ),
+        role: 'none',
+      });
+
+      presentAlert({
+        header,
+        subHeader,
+        message,
+        buttons,
+        onDidDismiss: async (event) => {
+          switch (event.detail.role) {
+            case 'none': {
+              _submit();
+              break;
+            }
+            case 'all': {
+              propagateHigherLinkAccessLevel();
+              propagateSourceUsersToTarget();
+              propagateTargetUsersToSource();
+              _submit();
+              break;
+            }
+            case 'linkAccessLevel': {
+              propagateHigherLinkAccessLevel();
+              _submit();
+              break;
+            }
+            case 'usersMissingFromTarget': {
+              propagateSourceUsersToTarget();
+              _submit();
+              break;
+            }
+            case 'usersMissingFromSource': {
+              propagateTargetUsersToSource();
+              _submit();
+              break;
+            }
+          }
+        },
+      });
+      return;
+    }
+
+    _submit();
+  };
+
+  const selectItem = async (index: number) => {
     if (!props.items.length) {
-      createItem();
+      submitCreateItem();
       return;
     }
 
     const item = props.items.at(index);
     if (!item) {
       if (showCreateButton && index === props.items.length) {
-        createItem();
+        submitCreateItem();
       }
       return;
     }
 
+    selectedItemInfoRef.current = item;
     if (item.artifact.type === 'calendar') {
       setCreatingItem(true);
-      setCalendarSelectInfo(item);
+      setShowCalendarInput(true);
 
       return;
     }
 
-    props.command({
-      artifactId: item.artifactId,
-      artifactBlockId: item.artifactBlockId,
-      artifactDate: undefined,
-      referenceText: item.referenceText,
-    });
+    submitLinkExistingItem();
   };
 
   const onCalendarSubmit = (date: string) => {
-    if (!calendarSelectInfo) return;
+    if (!selectedItemInfoRef.current) return;
 
-    props.command({
-      artifactId: calendarSelectInfo.artifactId,
-      artifactBlockId: undefined,
+    selectedItemInfoRef.current = {
+      ...selectedItemInfoRef.current,
       artifactDate: date,
-      referenceText: calendarSelectInfo.referenceText,
-    });
+    };
+    submitLinkExistingItem();
   };
 
   if (props.searching) {
@@ -325,9 +739,11 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     }
   };
 
+  if (!showUi) return;
+
   return (
     <SuggestionListContainer>
-      {!calendarSelectInfo && (
+      {!showCalendarInput && (
         <div>
           {props.items.map((item, index) => {
             return (
@@ -358,7 +774,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
               id={`reference-item-${domNonce}-0`}
               onMouseMove={() => setSelectedIndex(0)}
               $selected={selectedIndex === 0}
-              onClick={() => createItem()}
+              onClick={() => submitCreateItem()}
             >
               <SuggestionListItemIcon>
                 <MdHorizontalRule size={18} />
@@ -380,7 +796,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
               id={`reference-item-${domNonce}-${props.items.length}`}
               onMouseMove={() => setSelectedIndex(props.items.length)}
               $selected={selectedIndex === props.items.length}
-              onClick={() => createItem()}
+              onClick={() => submitCreateItem()}
             >
               <SuggestionListItemIcon>
                 <MdHorizontalRule size={18} />
@@ -399,10 +815,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           )}
         </div>
       )}
-      {calendarSelectInfo && (
+      {showCalendarInput && selectedItemInfoRef.current && (
         <CalendarSelectDate
-          artifactId={calendarSelectInfo.artifactId}
-          artifact={calendarSelectInfo.artifact}
+          artifactId={selectedItemInfoRef.current.artifactId}
+          artifact={selectedItemInfoRef.current.artifact}
           onSubmit={onCalendarSubmit}
         />
       )}
