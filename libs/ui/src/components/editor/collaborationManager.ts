@@ -409,7 +409,7 @@ export const useCollaborationConnectionStatus = (
 export const withCollaborationConnection = async <T>(
   docName: string,
   withHandler: (connection: CollaborationManagerConnection) => Promise<T>,
-  timeout: number,
+  timeout = 15000,
 ): Promise<T> => {
   const session = await appIdbStorageManager.getSession();
   const { connection, release } = collaborationManager.get(docName, session);

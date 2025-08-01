@@ -66,11 +66,10 @@ export const createArtifact = async (args: {
 
     await withCollaborationConnection(
       `userTree:${session.userId}`,
-      session,
       async (connection) => {
         // TS requires the additional check here
         if (args.tree) {
-          await addArtifactToArtifactTree({
+          addArtifactToArtifactTree({
             yDoc: connection.yjsDoc,
             parentArtifactId: args.tree.parentArtifactId,
             order: args.tree.order,
