@@ -1,6 +1,4 @@
-import { collaborationManager } from '../editor/collaborationManager';
-import { useContext } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { withCollaborationConnection } from '../editor/collaborationManager';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
@@ -12,20 +10,17 @@ export class ArtifactDeleteDeclinedError extends Error {
 }
 
 export const useArtifactDelete = () => {
-  const { session } = useContext(SessionContext);
-
   const deleteArtifact = async (artifactId: string): Promise<void> => {
-    const connection = collaborationManager.get(
+    await withCollaborationConnection(
       `artifact:${artifactId}`,
-      session,
+      async (connection) => {
+        const map = connection.yjsDoc.getMap(ARTIFACT_META_KEY) as TypedMap<
+          Partial<YArtifactMeta>
+        >;
+
+        map.set('deletedAt', new Date().toISOString());
+      },
     );
-    await connection.syncedPromise;
-
-    const map = connection.yjsDoc.getMap(ARTIFACT_META_KEY) as TypedMap<
-      Partial<YArtifactMeta>
-    >;
-
-    map.set('deletedAt', new Date().toISOString());
   };
 
   return {

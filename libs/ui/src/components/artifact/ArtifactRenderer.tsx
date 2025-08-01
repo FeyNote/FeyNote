@@ -16,6 +16,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
 
 const FileUploadOverlay = styled.div`
   position: absolute;
@@ -47,7 +48,7 @@ const FileUploadOverlayContent = styled.div`
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
-  isEditable: boolean;
+  authorizedScope: CollaborationConnectionAuthorizedScope;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
@@ -114,7 +115,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           <ArtifactDeletedBanner
             undelete={props.undelete}
             deletedAt={deletedAt}
-            isEditable={props.isEditable}
+            authorizedScope={props.authorizedScope}
           />
         )}
         {renderer}
@@ -131,11 +132,17 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     );
   };
 
+  const isEditable =
+    !deletedAt &&
+    (props.authorizedScope === CollaborationConnectionAuthorizedScope.CoOwner ||
+      props.authorizedScope ===
+        CollaborationConnectionAuthorizedScope.ReadWrite);
+
   if (type === 'tiptap') {
     return render(
       <ArtifactEditor
         artifactId={props.artifactId}
-        editable={props.isEditable && !deletedAt}
+        editable={isEditable}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
@@ -210,7 +217,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return render(
       <ArtifactCalendar
         artifactId={props.artifactId}
-        editable={props.isEditable && !deletedAt}
+        editable={isEditable}
         onReady={() => setEditorReady(true)}
         y={props.connection.tiptapCollabProvider}
         viewType="fullsize"
@@ -225,7 +232,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     return render(
       <ArtifactDraw
         artifactId={props.artifactId}
-        editable={props.isEditable && !deletedAt}
+        editable={isEditable}
         onReady={() => setEditorReady(true)}
         collaborationConnection={props.connection}
         onTitleChange={props.onTitleChange}

@@ -29,7 +29,10 @@ import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
 import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
-import { useIsEditable } from '../../../utils/useAuthorizedScope';
+import {
+  CollaborationConnectionAuthorizedScope,
+  useCollaborationConnectionAuthorizedScope,
+} from '../../../utils/useCollaborationConnectionAuthorizedScope';
 import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
@@ -60,7 +63,8 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const { isEditable } = useIsEditable(props.connection);
+  const { authorizedScope, collaborationConnectionStatus } =
+    useCollaborationConnectionAuthorizedScope(props.connection);
   const { navigate } = useContext(GlobalPaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
@@ -89,21 +93,23 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
 
   const graphArtifacts = useMemo(() => {
-    return edges.reduce(
-      (acc, el) => {
-        acc[el.artifactId] = {
-          id: el.artifactId,
-          title: el.artifactTitle,
-        };
-        if (el.targetArtifactTitle !== null) {
-          acc[el.targetArtifactId] = {
-            id: el.targetArtifactId,
-            title: el.targetArtifactTitle,
+    return Object.values(
+      edges.reduce(
+        (acc, el) => {
+          acc[el.artifactId] = {
+            id: el.artifactId,
+            title: el.artifactTitle,
           };
-        }
-        return acc;
-      },
-      {} as { [key: string]: { id: string; title: string } },
+          if (el.targetArtifactTitle !== null) {
+            acc[el.targetArtifactId] = {
+              id: el.targetArtifactId,
+              title: el.targetArtifactTitle,
+            };
+          }
+          return acc;
+        },
+        {} as { [key: string]: { id: string; title: string } },
+      ),
     );
   }, [edges]);
   const graphPositionMap = useMemo(() => {
@@ -323,7 +329,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           })}
           <br />
           {t(
-            isEditable
+            authorizedScope === CollaborationConnectionAuthorizedScope.ReadWrite
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
@@ -337,6 +343,18 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
+      <div>
+        Connection status: {collaborationConnectionStatus.connectionStatus}
+        <br />
+        Authentication status:{' '}
+        {collaborationConnectionStatus.authenticationStatus}
+        <br />
+        IDB status: {collaborationConnectionStatus.idbSynced.toString()}
+        <br />
+        TTP status: {collaborationConnectionStatus.hocuspocusSynced.toString()}
+        <br />
+        Authorized scope: {authorizedScope}
+      </div>
       {aritfactSettings}
       <ArtifactTableOfContents
         artifactId={props.artifactId}
@@ -387,7 +405,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </IonListHeader>
           <GraphContainer>
             <GraphRenderer
-              artifacts={Object.values(graphArtifacts)}
+              artifacts={graphArtifacts}
               artifactPositions={graphPositionMap}
               edges={edges}
               enableInitialZoom={true}

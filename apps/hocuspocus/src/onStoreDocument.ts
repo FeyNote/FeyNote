@@ -5,13 +5,16 @@ import { prisma } from '@feynote/prisma/client';
 import { enqueueArtifactUpdate } from '@feynote/queue';
 import {
   ARTIFACT_TIPTAP_BODY_KEY,
+  getArtifactAccessLevel,
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
+  getUserAccessFromYArtifact,
 } from '@feynote/shared-utils';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { splitDocumentName } from './splitDocumentName';
 import { logger, metrics } from '@feynote/api-services';
+import { ArtifactAccessLevel } from '@prisma/client';
 
 export async function onStoreDocument(args: onStoreDocumentPayload) {
   try {
@@ -47,6 +50,10 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
         );
         const text = getTextForJSONContent(tiptapBody);
         const artifactMeta = getMetaFromYArtifact(args.document);
+        const userAccess = getUserAccessFromYArtifact(args.document);
+        const userAccessPOJO = Object.fromEntries(
+          [...userAccess.map.values()].map((el) => [el.key, el.val]),
+        );
 
         await prisma.artifact.update({
           where: {
@@ -63,6 +70,8 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
               ...(artifact.json as unknown as Record<string, unknown>),
               tiptapBody,
               meta: artifactMeta,
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Thanks Prisma
+              userAccess: userAccessPOJO as any,
             },
           },
         });
@@ -74,6 +83,57 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
           oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
           newYBinB64: yBin.toString('base64'),
         });
+
+        for (const connection of args.document.getConnections()) {
+          const userId = connection.context.userId;
+          const userAccess = getArtifactAccessLevel(args.document, userId);
+
+          const invalidate = () => {
+            connection.sendStateless(
+              JSON.stringify({
+                event: 'accessRemoved',
+              }),
+            );
+            connection.close(); // This does not disconnect the websocket itself, just closes the pseudo "connection" to the document
+          };
+          const broadcastNewAuthorizedScope = () => {
+            connection.sendStateless(
+              JSON.stringify({
+                event: 'authorizedScopeChanged',
+                data: {
+                  authorizedScope: connection.readOnly
+                    ? 'readonly'
+                    : 'read-write',
+                },
+              }),
+            );
+          };
+
+          if (
+            userAccess === ArtifactAccessLevel.coowner &&
+            connection.readOnly === true
+          ) {
+            connection.readOnly = false;
+            broadcastNewAuthorizedScope();
+          }
+          if (
+            userAccess === ArtifactAccessLevel.readwrite &&
+            connection.readOnly === true
+          ) {
+            connection.readOnly = false;
+            broadcastNewAuthorizedScope();
+          }
+          if (
+            userAccess === ArtifactAccessLevel.readonly &&
+            connection.readOnly === false
+          ) {
+            connection.readOnly = true;
+            broadcastNewAuthorizedScope();
+          }
+          if (userAccess === ArtifactAccessLevel.noaccess) {
+            invalidate();
+          }
+        }
 
         break;
       }

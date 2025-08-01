@@ -36,7 +36,7 @@ import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
 import { ArtifactAccessLevel } from '@prisma/client';
 import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
-import { collaborationManager } from '../../../collaborationManager';
+import { getSelfManagedCollaborationConnection } from '../../../collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
 
 const SuggestionListContainer = styled.div`
@@ -325,29 +325,31 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     if (session && enableSharingSyncPrompt) {
       const sourceMeta = getMetaFromYArtifact(props.yDoc);
       const sourceUserAccessList = getUserAccessFromYArtifact(props.yDoc);
-      const targetCollabConnection = collaborationManager.get(
-        `artifact:${item.artifactId}`,
-        session,
-      );
-      await targetCollabConnection.syncedPromise;
+      const targetCollabConnectionInfo =
+        await getSelfManagedCollaborationConnection(
+          `artifact:${item.artifactId}`,
+        );
       const currentUserAccessLevelToSource = getArtifactAccessLevel(
         props.yDoc,
         session.userId,
       );
       const currentUserAccessLevelToTarget = getArtifactAccessLevel(
-        targetCollabConnection.yjsDoc,
+        targetCollabConnectionInfo.connection.yjsDoc,
         session.userId,
       );
 
       if (currentUserAccessLevelToTarget !== ArtifactAccessLevel.coowner) {
         // We can't change sharing permissions if you don't own the _target_ artifact in question. Only owners can change sharing permissions.
+        targetCollabConnectionInfo.release();
         _submit();
         return;
       }
 
-      const targetMeta = getMetaFromYArtifact(targetCollabConnection.yjsDoc);
+      const targetMeta = getMetaFromYArtifact(
+        targetCollabConnectionInfo.connection.yjsDoc,
+      );
       const targetUserAccessList = getUserAccessFromYArtifact(
-        targetCollabConnection.yjsDoc,
+        targetCollabConnectionInfo.connection.yjsDoc,
       );
 
       const linkAccessLevelsRanked = [
@@ -369,7 +371,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           sourceIdx > targetIdx &&
           currentUserAccessLevelToTarget === 'coowner'
         ) {
-          updateYArtifactMeta(targetCollabConnection.yjsDoc, {
+          updateYArtifactMeta(targetCollabConnectionInfo.connection.yjsDoc, {
             ...targetMeta,
             linkAccessLevel: linkAccessLevelsRanked[sourceIdx],
           });
@@ -423,14 +425,19 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         }
       };
 
-      assert(
-        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) > -1,
-        'Source linkAccessLevel must be present and valid',
-      );
-      assert(
-        linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) > -1,
-        'Target linkAccessLevel must be present and valid',
-      );
+      try {
+        assert(
+          linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) > -1,
+          'Source linkAccessLevel must be present and valid',
+        );
+        assert(
+          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) > -1,
+          'Target linkAccessLevel must be present and valid',
+        );
+      } catch (e) {
+        targetCollabConnectionInfo.release();
+        throw e;
+      }
 
       /**
        * We only propagate a linkAccessLevel diff if the user has coowner access to the higher of the two asset's linkAccessLevels, since we never want to propagate a _lower_ sharing level via this mechanism.
@@ -494,6 +501,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       ].filter((el) => el);
       if (!numberOfDiffs.length) {
         // There is no diff, so nothing to prompt the user about
+        targetCollabConnectionInfo.release();
         _submit();
         return;
       }
@@ -597,6 +605,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
               break;
             }
           }
+          targetCollabConnectionInfo.release();
         },
       });
       return;

@@ -4,15 +4,10 @@ import {
   MessageType,
 } from '@hocuspocus/server';
 import { messageYjsSyncStep2, messageYjsUpdate } from 'y-protocols/sync';
+import { applyUpdate, encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import {
-  applyUpdate,
-  encodeStateAsUpdate,
-  Doc as YDoc,
-  type YMapEvent,
-} from 'yjs';
-import {
-  ARTIFACT_META_KEY,
-  ARTIFACT_USER_ACCESS_KEY,
+  getMetaFromYArtifact,
+  getUserAccessFromYArtifact,
 } from '@feynote/shared-utils';
 import * as Sentry from '@sentry/node';
 
@@ -97,7 +92,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
 
           assert(yjsBinary, 'yjsBinary must be defined for sync message types');
 
-          // We only need to validate changes for non-owners, since we can relatively trust an owner not to corrupt their own document, and not doing this comparison improves memory consumption and performance
+          // We only need to validate changes for non-owners, since we can (relatively) trust an owner not to corrupt their own document, and not doing this comparison improves memory consumption and performance
           if (args.context.isOwner) {
             // We still need to keep shadow doc up to date if it exists
             const shadowDoc = memoizedShadowDocsByDocName.get(
@@ -112,37 +107,54 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
 
           const shadowDoc = getShadowDoc(args.documentName, args.document);
 
-          let illegalUpdatePerformed = false;
+          const illegalChanged: string[] = [];
+          const illegalMetaKeys = [
+            'id',
+            'userId',
+            'linkAccessLevel',
+            'deletedAt',
+          ];
 
-          const artifactMetaObserver = (event: YMapEvent<unknown>) => {
-            if (
-              event.keysChanged.has('userId') ||
-              event.keysChanged.has('linkAccessLevel')
-            ) {
-              illegalUpdatePerformed = true;
+          const userAccessYKV = getUserAccessFromYArtifact(shadowDoc);
+          const userAccessToString = () => {
+            let str = '';
+
+            const keys = [...userAccessYKV.map.keys()].sort();
+            for (const key of keys) {
+              str += `${key}:${userAccessYKV.get(key)?.accessLevel}`;
             }
-          };
-          const artifactUserAccessObserver = () => {
-            illegalUpdatePerformed = true;
-          };
-          shadowDoc.getMap(ARTIFACT_META_KEY).observe(artifactMetaObserver);
-          shadowDoc
-            .getArray(ARTIFACT_USER_ACCESS_KEY)
-            .observe(artifactUserAccessObserver);
 
+            return str;
+          };
+
+          const metaPre = getMetaFromYArtifact(shadowDoc);
+          const userAccessPre = userAccessToString();
           applyUpdate(shadowDoc, yjsBinary);
+          const metaPost = getMetaFromYArtifact(shadowDoc);
+          const userAccessPost = userAccessToString();
 
-          shadowDoc.getMap(ARTIFACT_META_KEY).unobserve(artifactMetaObserver);
-          shadowDoc
-            .getArray(ARTIFACT_USER_ACCESS_KEY)
-            .unobserve(artifactUserAccessObserver);
+          for (const illegalKey of illegalMetaKeys) {
+            if (
+              metaPre[illegalKey as keyof typeof metaPre] !==
+              metaPost[illegalKey as keyof typeof metaPost]
+            ) {
+              illegalChanged.push(illegalKey);
+            }
+          }
+          if (userAccessPre !== userAccessPost) {
+            illegalChanged.push('userAccess');
+          }
 
-          if (illegalUpdatePerformed) {
+          if (illegalChanged.length) {
             // We've corrupted the document state, so we need to reset it
             memoizedShadowDocsByDocName.delete(args.documentName);
 
-            const e = new Error('Illegal update performed');
-            logger.warn(e);
+            const e = new Error(
+              `Illegal update performed modifying keys: ${illegalChanged}`,
+            );
+            logger.warn(
+              `Illegal update performed modifying keys: ${illegalChanged}`,
+            );
             Sentry.captureException(e, {
               extra: {
                 userId: args.context.userId,

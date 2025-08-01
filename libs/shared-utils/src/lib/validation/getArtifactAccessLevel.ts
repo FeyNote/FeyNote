@@ -1,4 +1,4 @@
-import { ArtifactAccessLevel } from '@prisma/client';
+import type { ArtifactAccessLevel } from '@prisma/client';
 import { Doc as YDoc } from 'yjs';
 import { getMetaFromYArtifact } from '../yjs/getMetaFromYArtifact';
 import { getUserAccessFromYArtifact } from '../yjs/getUserAccessFromYArtifact';

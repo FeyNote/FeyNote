@@ -5,7 +5,7 @@ import type {
 } from '@prisma/client';
 import { trpc } from './trpc';
 import { addArtifactToArtifactTree } from './artifactTree/addArtifactToArtifactTree';
-import { collaborationManager } from '../components/editor/collaborationManager';
+import { withCollaborationConnection } from '../components/editor/collaborationManager';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import type { YArtifactUserAccess } from '@feynote/global-types';
 
@@ -64,19 +64,21 @@ export const createArtifact = async (args: {
       throw new Error('createArtifact called with no session');
     }
 
-    const connection = collaborationManager.get(
+    await withCollaborationConnection(
       `userTree:${session.userId}`,
       session,
+      async (connection) => {
+        // TS requires the additional check here
+        if (args.tree) {
+          await addArtifactToArtifactTree({
+            yDoc: connection.yjsDoc,
+            parentArtifactId: args.tree.parentArtifactId,
+            order: args.tree.order,
+            newItemId: id,
+          });
+        }
+      },
     );
-    await connection.syncedPromise;
-    const treeYDoc = connection.yjsDoc;
-
-    await addArtifactToArtifactTree({
-      yDoc: treeYDoc,
-      parentArtifactId: args.tree.parentArtifactId,
-      order: args.tree.order,
-      newItemId: id,
-    });
   }
 
   return result;
