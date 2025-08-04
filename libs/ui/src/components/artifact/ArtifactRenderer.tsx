@@ -18,6 +18,10 @@ import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
 
+const ArtifactRendererContainer = styled.div`
+  height: 100%;
+`;
+
 const FileUploadOverlay = styled.div`
   position: absolute;
   top: 0;
@@ -110,7 +114,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   const render = (renderer: React.ReactNode) => {
     return (
-      <div ref={containerRef}>
+      <ArtifactRendererContainer ref={containerRef}>
         {deletedAt && (
           <ArtifactDeletedBanner
             undelete={props.undelete}
@@ -128,7 +132,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
             </FileUploadOverlayContent>
           </FileUploadOverlay>
         )}
-      </div>
+      </ArtifactRendererContainer>
     );
   };
 
