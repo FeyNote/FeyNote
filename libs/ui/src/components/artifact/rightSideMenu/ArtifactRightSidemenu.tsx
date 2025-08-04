@@ -63,8 +63,9 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const { authorizedScope, collaborationConnectionStatus } =
-    useCollaborationConnectionAuthorizedScope(props.connection);
+  const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
+    props.connection,
+  );
   const { navigate } = useContext(GlobalPaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
@@ -257,62 +258,64 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     });
   };
 
-  const isOwner = artifactMeta.userId === session.userId;
   const isDeleted = !!artifactMeta.deletedAt;
-  const artifactSharingSettings = isOwner && !isDeleted && (
-    <IonCard>
-      <IonListHeader>
-        <IonIcon icon={person} size="small" />
-        &nbsp;&nbsp;
-        {t('artifactRenderer.artifactShares')}
-        <InfoButton message={t('artifactRenderer.artifactShares.help')} />
-      </IonListHeader>
-      {activeUserShares.map(({ key }) => (
-        <CompactIonItem
-          lines="none"
-          key={key}
-          onClick={() => presentSharingModal()}
-          button
-        >
-          <NowrapIonLabel>
-            {knownUsersById.get(key)?.email || key}
-          </NowrapIonLabel>
-        </CompactIonItem>
-      ))}
-      {artifactMeta.linkAccessLevel &&
-        artifactMeta.linkAccessLevel !== 'noaccess' && (
+  const artifactSharingSettings = authorizedScope ===
+    CollaborationConnectionAuthorizedScope.CoOwner &&
+    !isDeleted && (
+      <IonCard>
+        <IonListHeader>
+          <IonIcon icon={person} size="small" />
+          &nbsp;&nbsp;
+          {t('artifactRenderer.artifactShares')}
+          <InfoButton message={t('artifactRenderer.artifactShares.help')} />
+        </IonListHeader>
+        {activeUserShares.map(({ key }) => (
           <CompactIonItem
             lines="none"
+            key={key}
             onClick={() => presentSharingModal()}
             button
           >
             <NowrapIonLabel>
-              {t('artifactRenderer.sharedByLink')}
+              {knownUsersById.get(key)?.email || key}
             </NowrapIonLabel>
           </CompactIonItem>
-        )}
-      {!activeUserShares.length &&
-        artifactMeta.linkAccessLevel === 'noaccess' && (
-          <CompactIonItem lines="none">
-            <NowrapIonLabel>
-              {t('artifactRenderer.artifactShares.null')}
-            </NowrapIonLabel>
-          </CompactIonItem>
-        )}
-      <CompactIonItem
-        lines="none"
-        button
-        detail={true}
-        onClick={() => presentSharingModal()}
-      >
-        <NowrapIonLabel>
-          {t('artifactRenderer.artifactShares.manage')}
-        </NowrapIonLabel>
-      </CompactIonItem>
-    </IonCard>
-  );
+        ))}
+        {artifactMeta.linkAccessLevel &&
+          artifactMeta.linkAccessLevel !== 'noaccess' && (
+            <CompactIonItem
+              lines="none"
+              onClick={() => presentSharingModal()}
+              button
+            >
+              <NowrapIonLabel>
+                {t('artifactRenderer.sharedByLink')}
+              </NowrapIonLabel>
+            </CompactIonItem>
+          )}
+        {!activeUserShares.length &&
+          artifactMeta.linkAccessLevel === 'noaccess' && (
+            <CompactIonItem lines="none">
+              <NowrapIonLabel>
+                {t('artifactRenderer.artifactShares.null')}
+              </NowrapIonLabel>
+            </CompactIonItem>
+          )}
+        <CompactIonItem
+          lines="none"
+          button
+          detail={true}
+          onClick={() => presentSharingModal()}
+        >
+          <NowrapIonLabel>
+            {t('artifactRenderer.artifactShares.manage')}
+          </NowrapIonLabel>
+        </CompactIonItem>
+      </IonCard>
+    );
 
-  const artifactSharingStatus = !isOwner && (
+  const artifactSharingStatus = authorizedScope !==
+    CollaborationConnectionAuthorizedScope.CoOwner && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -343,18 +346,6 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
-      <div>
-        Connection status: {collaborationConnectionStatus.connectionStatus}
-        <br />
-        Authentication status:{' '}
-        {collaborationConnectionStatus.authenticationStatus}
-        <br />
-        IDB status: {collaborationConnectionStatus.idbSynced.toString()}
-        <br />
-        TTP status: {collaborationConnectionStatus.hocuspocusSynced.toString()}
-        <br />
-        Authorized scope: {authorizedScope}
-      </div>
       {aritfactSettings}
       <ArtifactTableOfContents
         artifactId={props.artifactId}
