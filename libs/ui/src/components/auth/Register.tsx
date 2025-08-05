@@ -43,10 +43,10 @@ export const Register: React.FC<Props> = (props) => {
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [confirmPasswordIsTouched, setConfirmPasswordIsTouched] =
     useState(false);
-  const [nameIsValid, setNameIsValid] = useState(true);
-  const [emailIsValid, setEmailIsValid] = useState(true);
-  const [passwordIsValid, setPasswordIsValid] = useState(true);
-  const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
+  const [nameIsValid, setNameIsValid] = useState(false);
+  const [emailIsValid, setEmailIsValid] = useState(false);
+  const [passwordIsValid, setPasswordIsValid] = useState(false);
+  const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setSession } = useContext(SessionContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
