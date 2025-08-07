@@ -5,6 +5,7 @@ import { mergeAttributes } from '@tiptap/core';
 import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
 import { t } from 'i18next';
+import { Doc as YDoc } from 'yjs';
 import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
 
 export type ReferencePluginOptions = MentionOptions & {
@@ -33,99 +34,108 @@ const mouseupListener = () => {
   });
 };
 
-export const ArtifactReferencesExtension =
-  Mention.extend<ReferencePluginOptions>({
-    name: 'artifactReference',
+const ArtifactReferencesExtension = Mention.extend<ReferencePluginOptions>({
+  name: 'artifactReference',
 
-    onCreate() {
-      window.removeEventListener('keydown', keydownListener);
-      window.removeEventListener('mouseup', mouseupListener);
-      window.addEventListener('keydown', keydownListener);
-      window.addEventListener('mouseup', mouseupListener);
-    },
+  onCreate() {
+    window.removeEventListener('keydown', keydownListener);
+    window.removeEventListener('mouseup', mouseupListener);
+    window.addEventListener('keydown', keydownListener);
+    window.addEventListener('mouseup', mouseupListener);
+  },
 
-    addAttributes() {
-      return {
-        artifactId: {
-          default: null,
-          parseHTML: (element) => element.getAttribute('data-artifact-id'),
-          renderHTML: (attributes) => {
-            if (!attributes.artifactId) {
-              return {};
-            }
+  addAttributes() {
+    return {
+      artifactId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-artifact-id'),
+        renderHTML: (attributes) => {
+          if (!attributes.artifactId) {
+            return {};
+          }
 
-            return {
-              'data-artifact-id': attributes.artifactId,
-            };
-          },
+          return {
+            'data-artifact-id': attributes.artifactId,
+          };
         },
+      },
 
-        artifactBlockId: {
-          default: null,
-          parseHTML: (element) =>
-            element.getAttribute('data-artifact-block-id'),
-          renderHTML: (attributes) => {
-            if (!attributes.artifactBlockId) {
-              return {};
-            }
+      artifactBlockId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-artifact-block-id'),
+        renderHTML: (attributes) => {
+          if (!attributes.artifactBlockId) {
+            return {};
+          }
 
-            return {
-              'data-artifact-block-id': attributes.artifactBlockId,
-            };
-          },
+          return {
+            'data-artifact-block-id': attributes.artifactBlockId,
+          };
         },
+      },
 
-        artifactDate: {
-          default: null,
-          parseHTML: (element) => element.getAttribute('data-artifact-date'),
-          renderHTML: (attributes) => {
-            if (!attributes.artifactDate) {
-              return {};
-            }
+      artifactDate: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-artifact-date'),
+        renderHTML: (attributes) => {
+          if (!attributes.artifactDate) {
+            return {};
+          }
 
-            return {
-              'data-artifact-date': attributes.artifactDate,
-            };
-          },
+          return {
+            'data-artifact-date': attributes.artifactDate,
+          };
         },
+      },
 
-        referenceText: {
-          default: t('editor.emptyReference'),
-          parseHTML: (element) =>
-            element.getAttribute('data-artifact-reference-text'),
-          renderHTML: (attributes) => {
-            if (!attributes.referenceText) {
-              return {};
-            }
+      referenceText: {
+        default: t('editor.emptyReference'),
+        parseHTML: (element) =>
+          element.getAttribute('data-artifact-reference-text'),
+        renderHTML: (attributes) => {
+          if (!attributes.referenceText) {
+            return {};
+          }
 
-            return {
-              'data-artifact-reference-text': attributes.referenceText,
-            };
-          },
+          return {
+            'data-artifact-reference-text': attributes.referenceText,
+          };
         },
-      };
-    },
+      },
+    };
+  },
 
-    addOptions() {
-      return {
-        artifactId: undefined,
-        HTMLAttributes: {},
-        renderText: () => '',
-        deleteTriggerWithBackspace: false,
-        renderHTML: () => ['span'],
-        suggestions: [],
-        suggestion: {},
-        ...this.parent?.(),
-      };
-    },
+  addOptions() {
+    return {
+      artifactId: undefined,
+      HTMLAttributes: {},
+      renderText: () => '',
+      deleteTriggerWithBackspace: false,
+      renderHTML: () => ['span'],
+      suggestions: [],
+      suggestion: {},
+      ...this.parent?.(),
+    };
+  },
 
-    addNodeView() {
-      return ReactNodeViewRenderer(ArtifactReferenceNodeView);
-    },
-  }).configure({
+  addNodeView() {
+    return ReactNodeViewRenderer(ArtifactReferenceNodeView);
+  },
+});
+
+export const buildArtifactReferencesExtension = (args: {
+  artifactId: string;
+  yDoc: YDoc;
+}) => {
+  return ArtifactReferencesExtension.configure({
+    artifactId: args.artifactId,
     suggestion: {
       items: getReferenceSuggestions(mentionMenuOptsRef),
-      render: renderReferenceList(mentionMenuOptsRef),
+      render: renderReferenceList({
+        mentionMenuOptsRef,
+        artifactId: args.artifactId,
+        yDoc: args.yDoc,
+      }),
       char: '@',
       allowSpaces: true,
       allow: () => mentionMenuOptsRef.enableMentionMenu,
@@ -171,3 +181,4 @@ export const ArtifactReferencesExtension =
       return displayText;
     },
   });
+};

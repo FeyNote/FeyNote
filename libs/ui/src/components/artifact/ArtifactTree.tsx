@@ -19,7 +19,7 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 import * as Sentry from '@sentry/react';
 
-import { collaborationManager } from '../editor/collaborationManager';
+import { useCollaborationConnection } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import { ArtifactDTO } from '@feynote/global-types';
@@ -145,10 +145,7 @@ export const ArtifactTree = () => {
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
   const currentPane = getPaneById(undefined);
 
-  const connection = collaborationManager.get(
-    `userTree:${session.userId}`,
-    session,
-  );
+  const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;
 
   const yKeyValue = useMemo(() => {

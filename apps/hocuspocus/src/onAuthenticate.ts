@@ -5,6 +5,7 @@ import { prisma } from '@feynote/prisma/client';
 import { splitDocumentName } from './splitDocumentName';
 import { SupportedDocumentType } from './SupportedDocumentType';
 import { ArtifactAccessLevel } from '@prisma/client';
+import { getArtifactAccessLevel } from '@feynote/shared-utils';
 
 export async function onAuthenticate(args: onAuthenticatePayload) {
   const [type, identifier] = splitDocumentName(args.documentName);
@@ -37,35 +38,39 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
 
     switch (type) {
       case SupportedDocumentType.Artifact: {
-        const artifact = await prisma.artifact.findUnique({
-          where: {
-            id: identifier,
-          },
-          select: {
-            userId: true,
-            artifactShares: {
-              select: {
-                userId: true,
-                accessLevel: true,
+        let accessLevel: ArtifactAccessLevel = ArtifactAccessLevel.noaccess;
+
+        const inMemoryDoc = args.instance.documents.get(args.documentName);
+        if (inMemoryDoc) {
+          accessLevel = getArtifactAccessLevel(inMemoryDoc, context.userId);
+        } else {
+          const artifact = await prisma.artifact.findUnique({
+            where: {
+              id: identifier,
+            },
+            select: {
+              userId: true,
+              linkAccessLevel: true,
+              artifactShares: {
+                select: {
+                  userId: true,
+                  accessLevel: true,
+                },
               },
             },
-          },
-        });
+          });
 
-        if (!artifact) {
-          logger.debug(
-            'User attempted to authenticate to an artifact that does not exist',
-          );
-          throw new Error();
+          if (!artifact) {
+            logger.debug(
+              'User attempted to authenticate to an artifact that does not exist',
+            );
+            throw new Error();
+          }
+
+          accessLevel = getArtifactAccessLevel(artifact, context.userId);
         }
 
-        const artifactShare = artifact.artifactShares.find(
-          (share) => share.userId === context.userId,
-        );
-        if (
-          (artifact.userId !== context.userId && !artifactShare) ||
-          artifactShare?.accessLevel === ArtifactAccessLevel.noaccess
-        ) {
+        if (accessLevel === ArtifactAccessLevel.noaccess) {
           logger.debug(
             'User attempted to connect to artifact that they do not have access to',
           );
@@ -73,13 +78,13 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         }
 
         if (
-          artifact.userId !== context.userId &&
-          artifactShare?.accessLevel === ArtifactAccessLevel.readonly
+          accessLevel !== ArtifactAccessLevel.readwrite &&
+          accessLevel !== ArtifactAccessLevel.coowner
         ) {
           args.connectionConfig.readOnly = true;
         }
 
-        if (artifact.userId === context.userId) {
+        if (accessLevel === ArtifactAccessLevel.coowner) {
           context.isOwner = true;
         }
 

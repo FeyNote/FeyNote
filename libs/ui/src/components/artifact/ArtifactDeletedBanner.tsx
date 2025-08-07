@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
 
 const Container = styled.div`
   background-color: var(--ion-color-danger);
@@ -12,18 +13,19 @@ const Container = styled.div`
 interface Props {
   undelete?: () => void;
   deletedAt: string;
-  isEditable: boolean;
+  authorizedScope: CollaborationConnectionAuthorizedScope;
 }
 
 export const ArtifactDeletedBanner = ({
   deletedAt,
   undelete,
-  isEditable,
+  authorizedScope,
 }: Props) => {
   const { t } = useTranslation();
 
   const messageI18n =
-    isEditable && undelete
+    authorizedScope === CollaborationConnectionAuthorizedScope.CoOwner &&
+    undelete
       ? 'artifact.deletedBanner.messageEditable'
       : 'artifact.deletedBanner.message';
 

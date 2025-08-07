@@ -1,7 +1,7 @@
 import { trpc } from '../../../utils/trpc';
 import { buildWelcomeArtifact } from './templates/buildWelcomeArtifact';
 import { buildIntroducingReferencesArtifact } from './templates/buildIntroducingReferencesArtifact';
-import { collaborationManager } from '../collaborationManager';
+import { withCollaborationConnection } from '../collaborationManager';
 import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 import { addArtifactToArtifactTree } from '../../../utils/artifactTree/addArtifactToArtifactTree';
 
@@ -11,13 +11,6 @@ export const createWelcomeArtifacts = async () => {
     throw new Error(
       'createWelcomeArtifacts called before session was initialized',
     );
-
-  const connection = collaborationManager.get(
-    `userTree:${session.userId}`,
-    session,
-  );
-  await connection.syncedPromise;
-  const treeYDoc = connection.yjsDoc;
 
   const [{ id: welcomeId }, { id: introducingReferencesId }] =
     await Promise.all([
@@ -53,18 +46,24 @@ export const createWelcomeArtifacts = async () => {
     yBin: welcomeTemplate.result.yBin,
   });
 
-  treeYDoc.transact(() => {
-    addArtifactToArtifactTree({
-      yDoc: treeYDoc,
-      parentArtifactId: null,
-      order: 'X',
-      newItemId: welcome.id,
-    });
-    addArtifactToArtifactTree({
-      yDoc: treeYDoc,
-      parentArtifactId: null,
-      order: 'XX',
-      newItemId: introducingReferences.id,
-    });
-  });
+  await withCollaborationConnection(
+    `userTree:${session.userId}`,
+    async (connection) => {
+      connection.yjsDoc.transact(() => {
+        addArtifactToArtifactTree({
+          yDoc: connection.yjsDoc,
+          parentArtifactId: null,
+          order: 'X',
+          newItemId: welcome.id,
+        });
+        addArtifactToArtifactTree({
+          yDoc: connection.yjsDoc,
+          parentArtifactId: null,
+          order: 'XX',
+          newItemId: introducingReferences.id,
+        });
+      });
+    },
+    30000, // We're generous here, since creating welcome artifacts is usually the first thing that occurs when the user launches FeyNote for the first time and things can take time to setup
+  );
 };

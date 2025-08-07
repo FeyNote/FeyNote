@@ -1,5 +1,7 @@
 import {
   AppTheme,
+  ArtifactReferenceExistingArtifactSharingMode,
+  ArtifactReferenceNewArtifactSharingMode,
   PreferenceNames,
   PreferencesSync,
   SupportedFontSize,
@@ -59,6 +61,22 @@ const fontSizeToI18n = {
   [SupportedFontSize.PX22]: 'settings.fontSize.px22',
   [SupportedFontSize.PX24]: 'settings.fontSize.px24',
 } satisfies Record<SupportedFontSize, string>;
+
+const artifactReferenceNewArtifactSharingModeToI18n = {
+  [ArtifactReferenceNewArtifactSharingMode.Always]:
+    'settings.artifact.referenceNewArtifactSharingMode.always',
+  [ArtifactReferenceNewArtifactSharingMode.Never]:
+    'settings.artifact.referenceNewArtifactSharingMode.never',
+  [ArtifactReferenceNewArtifactSharingMode.Prompt]:
+    'settings.artifact.referenceNewArtifactSharingMode.prompt',
+} satisfies Record<ArtifactReferenceNewArtifactSharingMode, string>;
+
+const artifactReferenceExistingArtifactSharingModeToI18n = {
+  [ArtifactReferenceExistingArtifactSharingMode.Never]:
+    'settings.artifact.referenceExistingArtifactSharingMode.never',
+  [ArtifactReferenceExistingArtifactSharingMode.Prompt]:
+    'settings.artifact.referenceExistingArtifactSharingMode.prompt',
+} satisfies Record<ArtifactReferenceExistingArtifactSharingMode, string>;
 
 const colorOptions = {
   '#1abc9c': 'settings.collaborationColor.turquoise',
@@ -474,6 +492,65 @@ export const Settings: React.FC = () => {
                   >
                     {t(fontSizeToI18n[fontSize])}
                   </FontSizeSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+          </IonList>
+        </IonCard>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={tv} size="small" />
+              &nbsp;&nbsp;
+              {t('settings.editor')}
+            </IonListHeader>
+            <IonItem lines="none">
+              <IonSelect
+                label={t('settings.artifact.referenceNewArtifactSharingMode')}
+                labelPlacement="stacked"
+                value={getPreference(
+                  PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                    event.detail.value,
+                  )
+                }
+              >
+                {Object.values(ArtifactReferenceNewArtifactSharingMode).map(
+                  (value) => (
+                    <IonSelectOption value={value} key={value}>
+                      {t(artifactReferenceNewArtifactSharingModeToI18n[value])}
+                    </IonSelectOption>
+                  ),
+                )}
+              </IonSelect>
+            </IonItem>
+            <IonItem lines="none">
+              <IonSelect
+                label={t(
+                  'settings.artifact.referenceExistingArtifactSharingMode',
+                )}
+                labelPlacement="stacked"
+                value={getPreference(
+                  PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
+                    event.detail.value,
+                  )
+                }
+              >
+                {Object.values(
+                  ArtifactReferenceExistingArtifactSharingMode,
+                ).map((value) => (
+                  <IonSelectOption value={value} key={value}>
+                    {t(
+                      artifactReferenceExistingArtifactSharingModeToI18n[value],
+                    )}
+                  </IonSelectOption>
                 ))}
               </IonSelect>
             </IonItem>

@@ -5,7 +5,7 @@ import type {
   ArtifactTheme,
   ArtifactType,
 } from '@prisma/client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Doc as YDoc } from 'yjs';
 
 export const useObserveYArtifactMeta = (
@@ -40,13 +40,20 @@ export const useObserveYArtifactMeta = (
     return () => artifactMetaMap.unobserve(listener);
   }, [yArtifact]);
 
-  return {
-    id,
-    userId,
-    title,
-    theme,
-    type,
-    linkAccessLevel,
-    deletedAt,
-  };
+  // This is useful for downstream watchers that rely on change detection (useEffect/useMemo/etc)
+  // since we'll provide a stable result value unless something changes.
+  const result = useMemo(
+    () => ({
+      id,
+      userId,
+      title,
+      theme,
+      type,
+      linkAccessLevel,
+      deletedAt,
+    }),
+    [id, userId, title, theme, type, linkAccessLevel, deletedAt],
+  );
+
+  return result;
 };
