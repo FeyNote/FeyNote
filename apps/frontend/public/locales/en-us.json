@@ -120,6 +120,7 @@
   "settings.fontSize.px20": "20px (Larger)",
   "settings.fontSize.px22": "22px (Larger)",
   "settings.fontSize.px24": "24px (Larger)",
+  "settings.editor": "Editor Settings",
   "settings.collaborationColor": "Collaboration Cursor Color",
   "settings.collaborationColor.random": "Random Color",
   "settings.collaborationColor.turquoise": "Turquoise",
