@@ -28,7 +28,7 @@ import { CollaborationManagerConnection } from '../editor/collaborationManager';
 import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
-import { ArtifactAccessLevel } from '@prisma/client';
+import type { ArtifactAccessLevel } from '@prisma/client';
 
 const ShareLinkDisplay = styled.div`
   display: grid;

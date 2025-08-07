@@ -1,5 +1,5 @@
 import { IonItem, IonSelect, IonSelectOption } from '@ionic/react';
-import { ArtifactAccessLevel } from '@prisma/client';
+import type { ArtifactAccessLevel } from '@prisma/client';
 import { useTranslation } from 'react-i18next';
 
 interface Props {

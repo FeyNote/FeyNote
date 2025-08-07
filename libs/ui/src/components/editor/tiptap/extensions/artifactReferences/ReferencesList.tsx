@@ -34,10 +34,10 @@ import * as Sentry from '@sentry/react';
 import { SessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
-import { ArtifactAccessLevel } from '@prisma/client';
 import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
 import { getSelfManagedCollaborationConnection } from '../../../collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
+import type { ArtifactAccessLevel } from '@prisma/client';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -227,7 +227,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     );
     const hasUserAccessSet = userAccess.yarray
       .toArray()
-      .filter((el) => el.val.accessLevel !== ArtifactAccessLevel.noaccess);
+      .filter((el) => el.val.accessLevel !== 'noaccess');
     const hasLinkAccessSet = artifactMeta.linkAccessLevel !== 'noaccess';
     const isShared = hasUserAccessSet || hasLinkAccessSet;
 
@@ -338,7 +338,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         session.userId,
       );
 
-      if (currentUserAccessLevelToTarget !== ArtifactAccessLevel.coowner) {
+      if (currentUserAccessLevelToTarget !== 'coowner') {
         // We can't change sharing permissions if you don't own the _target_ artifact in question. Only owners can change sharing permissions.
         targetCollabConnectionInfo.release();
         _submit();
@@ -352,11 +352,11 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         targetCollabConnectionInfo.connection.yjsDoc,
       );
 
-      const linkAccessLevelsRanked = [
-        ArtifactAccessLevel.noaccess,
-        ArtifactAccessLevel.readonly,
-        ArtifactAccessLevel.readwrite,
-        ArtifactAccessLevel.coowner,
+      const linkAccessLevelsRanked: ArtifactAccessLevel[] = [
+        'noaccess',
+        'readonly',
+        'readwrite',
+        'coowner',
       ];
 
       const propagateHigherLinkAccessLevel = () => {
