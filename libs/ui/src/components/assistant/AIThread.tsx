@@ -18,8 +18,8 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { Message, useChat } from 'ai/react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { UIMessage, useChat } from '@ai-sdk/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
@@ -34,6 +34,7 @@ import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { DefaultChatTransport } from 'ai';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -133,36 +134,29 @@ export const AIThread: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
-  const { messages, setMessages, isLoading, input, setInput, append, reload } =
+  const [input, setInput] = useState('')
+  const { messages, setMessages, status, sendMessage, regenerate } =
     useChat({
-      api: `${getApiUrls().rest}/message/`,
-      headers: {
-        Authorization: session?.token ? `Bearer ${session.token}` : '',
-        'Content-Type': 'application/json',
-      },
+      transport: new DefaultChatTransport({
+        api: `${getApiUrls().rest}/message/`,
+        headers: {
+          Authorization: session?.token ? `Bearer ${session.token}` : '',
+          'Content-Type': 'application/json',
+        },
+        body: {
+          threadId: props.id,
+        },
+      }),
       generateId: () => {
         return crypto.randomUUID();
       },
-      body: {
-        threadId: props.id,
-      },
-      maxSteps: 1,
-      onFinish: async (message, options) => {
-        if (
-          options.finishReason === 'stop' ||
-          options.finishReason === 'tool-calls'
-        ) {
-          await trpc.ai.saveMessage.mutate({
-            threadId: props.id,
-            message,
+      onFinish: async () => {
+        if (!title) {
+          await trpc.ai.createThreadTitle.mutate({
+            id: props.id,
           });
-          if (!title) {
-            await trpc.ai.createThreadTitle.mutate({
-              id: props.id,
-            });
 
-            await getThreadInfo();
-          }
+          await getThreadInfo();
         }
       },
       onError: (error) => {
@@ -182,6 +176,7 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
+  const isLoading = useMemo((() => status === 'submitted' || status === 'streaming'), [status])
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
@@ -223,69 +218,57 @@ export const AIThread: React.FC<Props> = (props) => {
     if (
       e.key === 'Enter' &&
       !e.shiftKey &&
-      !isLoading &&
+      status === 'ready' &&
       !isLoadingInitialState
     ) {
       e.preventDefault(); // Prevents adding a newline
-      submitMessageQuery(input);
+      sendMessage({
+        text: input
+      })
       setInput('');
     } else {
       setInput(e.currentTarget.value || '');
     }
   };
 
-  const submitMessageQuery = async (query: string) => {
-    const message = {
-      content: query,
-      role: 'user',
-    };
-    const newMessage = await trpc.ai.saveMessage.mutate({
-      threadId: props.id,
-      message,
-    });
-    append({
-      content: query,
-      role: 'user',
-      id: newMessage.id,
-    });
-    await getThreadInfo();
-  };
-
-  const updateMessage = async (message: Message) => {
-    await trpc.ai.updateMessage.mutate({
-      threadId: props.id,
-      message,
-    });
+  const deleteUntilMessageId = async (args: { id: string, inclusive: boolean }) => {
+    const messageIdx = messages.findIndex((message) => message.id === args.id)
+    if (messageIdx === -1) return
+    const remainingMessages = messages.slice(0, messageIdx + 1);
     await trpc.ai.deleteMessageToId.mutate({
-      id: message.id,
+      id: args.id,
       threadId: props.id,
+      inclusive: args.inclusive,
     });
-    await getThreadInfo();
-    reload();
-  };
-
-  const retryMessage = async (messageId: string) => {
-    let retriedUserMsg,
-      retriedUserMsgIdx = null;
-    for (const [idx, message] of messages.entries()) {
-      if (message.role === 'user') {
-        retriedUserMsgIdx = idx;
-        retriedUserMsg = message;
-      }
-      if (message.id === messageId) break;
-    }
-    if (retriedUserMsgIdx === null || !retriedUserMsg) return;
-    const messageToDelete = messages.at(retriedUserMsgIdx + 1);
-    if (!messageToDelete) return;
-    await trpc.ai.deleteMessageToId.mutate({
-      id: messageToDelete.id,
-      threadId: props.id,
-      inclusive: true,
-    });
-    const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
     setMessages(remainingMessages);
-    reload();
-  };
+  }
+
+  const setMessage = async (args: {id: string, text: string }) => {
+    const existingMessageIdx = messages.findIndex((message) => message.id === args.id)
+    if (existingMessageIdx === -1) return
+    const existingMessage = messages[existingMessageIdx]
+    const updatedMessage: UIMessage = {
+      ...existingMessage,
+      parts: [
+        {
+          type: 'text',
+          text: args.text,
+        },
+      ],
+    }
+
+    // Replaces only the changed message
+    const newMessageList: UIMessage[] = [
+      ...messages.slice(0, existingMessageIdx),
+      updatedMessage,
+      ...messages.slice(existingMessageIdx + 1)
+    ]
+    setMessages(newMessageList)
+    await trpc.ai.saveMessage.mutate({
+      threadId: props.id,
+      message: updatedMessage,
+    });
+  }
 
   return (
     <IonPage>
@@ -308,9 +291,10 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : !messages.length ? (
             <EmptyMessageContainer>
               <OptionsList>
-                {PROMPT_CARDS.map((card) => {
+                {PROMPT_CARDS.map((card, idx) => {
                   return (
                     <IonCard
+                      key={idx}
                       button
                       onClick={() => {
                         setInput(t(card.query));
@@ -333,8 +317,9 @@ export const AIThread: React.FC<Props> = (props) => {
             </EmptyMessageContainer>
           ) : (
             <AIMessagesContainer
-              retryMessage={retryMessage}
-              updateMessage={updateMessage}
+              resendMessageList={regenerate}
+              deleteUntilMessageId={deleteUntilMessageId}
+              setMessage={setMessage}
               messages={messages}
               ongoingCommunication={isLoading}
             />
@@ -350,7 +335,9 @@ export const AIThread: React.FC<Props> = (props) => {
             <SendButtonContainer>
               <IonButton
                 onClick={() => {
-                  submitMessageQuery(input);
+                  sendMessage({
+                    text: input,
+                  });
                   setInput('');
                 }}
               >

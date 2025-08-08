@@ -19,7 +19,7 @@ const handleServerError = (e: unknown, res: Response) => {
   logExpressServerError(e);
 
   if (process.env['NODE_ENV'] !== 'production') {
-    res.status(status).send(e);
+    res.status(status).send(e.toString());
   } else {
     res.status(status).send('Internal server error');
   }
@@ -74,6 +74,7 @@ export const defineExpressHandler = <
 ) => {
   return [
     async (req: Request, res: Response, next: NextFunction) => {
+      console.log(`req1: ${req}`)
       try {
         try {
           opts.schema.params?.parse(req.params);
@@ -81,11 +82,11 @@ export const defineExpressHandler = <
           opts.schema.body?.parse(req.body);
         } catch (e) {
           if (e instanceof ZodError) {
+            console.log(e)
             throw new BadRequestExpressError(e.message);
           }
           throw new InternalServerExpressError('Unknown error parsing request');
         }
-
         let session: Session | undefined;
         if (opts.authentication !== AuthenticationEnforcement.None) {
           let authorization = req.headers.authorization;

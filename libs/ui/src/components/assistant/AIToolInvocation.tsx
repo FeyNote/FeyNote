@@ -1,15 +1,15 @@
-import { ToolInvocation } from 'ai';
+import { type ToolUIPart } from 'ai';
 import { IonSpinner } from '@ionic/react';
 import { getEditorContentsFromToolInvocation } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
 
 interface Props {
-  toolInvocation: ToolInvocation;
+  part: ToolUIPart;
 }
 
-export const AIToolInvocation = (props: Props) => {
+export const AIToolPart = (props: Props) => {
   const toolInvocationContents = getEditorContentsFromToolInvocation(
-    props.toolInvocation,
+    props.part,
   );
   if (!toolInvocationContents.length) return <IonSpinner name="dots" />;
 

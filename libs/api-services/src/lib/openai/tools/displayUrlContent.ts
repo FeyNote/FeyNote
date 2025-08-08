@@ -1,4 +1,4 @@
-import { CoreMessage, tool } from 'ai';
+import { tool, type ModelMessage } from 'ai';
 import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
@@ -80,9 +80,12 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     }
     const res = await axios.get(params.url, requestConfig);
     const html = getTextFromHtml(res.data);
-    const messages = [
+    const messages: ModelMessage[] = [
       systemMessage.scrapeContent,
-      { role: 'user', content: html } as CoreMessage,
+      {
+        role: 'user',
+        content: html
+      }
     ];
     const { text, toolResults } = await generateAssistantText(
       messages,
@@ -105,6 +108,6 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
 export const DisplayUrlTool = tool({
   description:
     'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
-  parameters: getDisplayScrapeUrlSchema(),
+  inputSchema: getDisplayScrapeUrlSchema(),
   execute: displayUrlExecutor,
 });

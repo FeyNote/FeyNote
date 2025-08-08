@@ -1,24 +1,31 @@
-import type { Message } from 'ai';
-import { starkdown } from 'starkdown';
+import type { UIMessage } from '@ai-sdk/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { copyOutline, pencil } from 'ionicons/icons';
 
 interface Props {
-  message: Message;
-  updateMessage: (message: Message) => void;
+  message: UIMessage;
+  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
+  resendMessageList: () => Promise<void>;
+  setMessage: (params: { id: string, text: string }) => Promise<void>;
   disableEdit: boolean;
 }
-
 export const AIUserMessage = ({
   message,
-  updateMessage: editMessage,
+  deleteUntilMessageId,
+  resendMessageList,
+  setMessage,
   disableEdit,
 }: Props) => {
   const inputRef = useRef<HTMLIonTextareaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editInput, setEditInput] = useState(message.content);
+  const messageText = useMemo(() => {
+    const messagePart = message.parts.find((part) => part.type === 'text')
+    return messagePart?.text || ''
+  }, [message.parts]);
+  const [editInput, setEditInput] = useState(messageText)
+
   useEffect(() => {
     if (inputRef.current) {
       setTimeout(() => {
@@ -30,30 +37,18 @@ export const AIUserMessage = ({
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey && !disableEdit) {
       e.preventDefault(); // Prevents adding a newline
-      editMessage({ ...message, content: editInput });
-      setIsEditing(false);
+      submitMessageEdit()
     } else {
       setEditInput(e.currentTarget.value?.toString() || '');
     }
   };
 
-  const submitEditHandler = () => {
-    editMessage({
-      ...message,
-      parts: [
-        {
-          type: 'text',
-          text: editInput,
-        },
-      ],
-      content: editInput,
-    });
+  const submitMessageEdit = async () => {
+    setMessage({ id: message.id, text: editInput })
+    await deleteUntilMessageId({ id: message.id, inclusive: false })
+    resendMessageList()
     setIsEditing(false);
   };
-
-  const messageHTML = useMemo(() => {
-    return starkdown(message.content);
-  }, [message.content]);
 
   if (isEditing) {
     return (
@@ -66,7 +61,7 @@ export const AIUserMessage = ({
           <IonButton
             size="small"
             disabled={disableEdit}
-            onClick={submitEditHandler}
+            onClick={submitMessageEdit}
           >
             Save
           </IonButton>
@@ -76,18 +71,14 @@ export const AIUserMessage = ({
   } else {
     return (
       <>
-        <div
-          dangerouslySetInnerHTML={{
-            __html: messageHTML,
-          }}
-        ></div>
+        <div>{messageText}</div>
         <IonButtons>
           <IonButton
             size="small"
             onClick={() =>
               copyToClipboard({
-                html: messageHTML,
-                plaintext: message.content,
+                html: messageText,
+                plaintext: messageText,
               })
             }
           >

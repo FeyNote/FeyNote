@@ -1,33 +1,41 @@
-import type { Message } from 'ai';
+import type { UIMessage } from '@ai-sdk/react';
 import { IonSpinner } from '@ionic/react';
-import { isDisplayableInvocation } from '../../utils/assistant/isDisplayableInvocation';
-import { AIToolInvocation } from './AIToolInvocation';
+import { isDisplayableToolPart } from '../../utils/assistant/isDisplayableInvocation';
+import { AIToolPart } from './AIToolInvocation';
 import { AIMessagePartText } from './AIMessagePartText';
+import type { ToolUIPart } from 'ai';
 
 interface Props {
-  message: Message;
-  retryMessage: (messageId: string) => void;
+  message: UIMessage;
+  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
+  resendMessageList: () => Promise<void>;
   disableRetry: boolean;
 }
 
 export const AIAssistantMessage = ({
   message,
-  retryMessage,
+  deleteUntilMessageId,
+  resendMessageList,
   disableRetry,
 }: Props) => {
   if (!message.parts || message.parts.length === 0) {
     return <IonSpinner name="dots" />;
   }
 
+  const retryMessage = () => {
+    deleteUntilMessageId({ id: message.id, inclusive: true })
+    resendMessageList()
+  }
+
   return (
     message.parts &&
     message.parts.map((part, i) => {
       if (
-        part.type === 'tool-invocation' &&
-        isDisplayableInvocation(part.toolInvocation)
+        part.type.includes('part-') &&
+        isDisplayableToolPart(part as ToolUIPart)
       ) {
         return (
-          <AIToolInvocation key={i} toolInvocation={part.toolInvocation} />
+          <AIToolPart key={i} part={part as ToolUIPart} />
         );
       } else if (part.type === 'text') {
         return (

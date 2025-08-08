@@ -7,7 +7,7 @@ import { tool } from 'ai';
 export const Display5eObjectTool = tool({
   description:
     'A function that generates and displays a DND 5e item or spell to the user',
-  parameters: getDisplay5eObjectSchema(),
+  inputSchema: getDisplay5eObjectSchema(),
   execute: async (generatedObject: Generate5eObjectParams) => {
     return `
     ---

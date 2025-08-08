@@ -2,7 +2,7 @@ import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
 import { personCircle } from 'ionicons/icons';
 import { AIMessageContent } from './AIMessageContent';
-import type { Message } from 'ai';
+import type { UIMessage } from '@ai-sdk/react';
 import { useTranslation } from 'react-i18next';
 
 const ScrollerContent = styled.div`
@@ -47,9 +47,10 @@ const MessageHeader = styled(IonLabel)`
 `;
 
 interface Props {
-  messages: Message[];
-  retryMessage: (messageId: string) => void;
-  updateMessage: (message: Message) => void;
+  messages: UIMessage[];
+  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
+  resendMessageList: () => Promise<void>;
+  setMessage: (params: { id: string, text: string }) => Promise<void>;
   ongoingCommunication: boolean;
 }
 
@@ -78,8 +79,9 @@ export const AIMessagesContainer = (props: Props) => {
                 </div>
                 <AIMessageContent
                   message={message}
-                  retryMessage={props.retryMessage}
-                  updateMessage={props.updateMessage}
+                  resendMessageList={props.resendMessageList}
+                  deleteUntilMessageId={props.deleteUntilMessageId}
+                  setMessage={props.setMessage}
                   ongoingCommunication={props.ongoingCommunication}
                 />
               </MessageContainer>

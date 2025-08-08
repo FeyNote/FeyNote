@@ -1,4 +1,4 @@
-import type { Message } from 'ai';
+import type { UIMessage } from '@ai-sdk/react';
 import { AIUserMessage } from './AIUserMessage';
 import { AIAssistantMessage } from './AIAssistantMessage';
 import styled from 'styled-components';
@@ -8,17 +8,19 @@ const MessageContentContainer = styled.div`
 `;
 
 interface Props {
-  message: Message;
-  retryMessage: (messageId: string) => void;
-  updateMessage: (message: Message) => void;
+  message: UIMessage;
+  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
+  resendMessageList: () => Promise<void>;
+  setMessage: (params: { id: string, text: string }) => Promise<void>;
   ongoingCommunication: boolean;
 }
 
 export const AIMessageContent = ({
   ongoingCommunication,
   message,
-  retryMessage,
-  updateMessage,
+  resendMessageList,
+  setMessage,
+  deleteUntilMessageId,
 }: Props) => {
   const isUserMessage = message.role === 'user';
 
@@ -27,13 +29,16 @@ export const AIMessageContent = ({
       {isUserMessage ? (
         <AIUserMessage
           message={message}
-          updateMessage={updateMessage}
+          resendMessageList={resendMessageList}
+          deleteUntilMessageId={deleteUntilMessageId}
+          setMessage={setMessage}
           disableEdit={ongoingCommunication}
         />
       ) : (
         <AIAssistantMessage
           message={message}
-          retryMessage={retryMessage}
+          resendMessageList={resendMessageList}
+          deleteUntilMessageId={deleteUntilMessageId}
           disableRetry={ongoingCommunication}
         />
       )}

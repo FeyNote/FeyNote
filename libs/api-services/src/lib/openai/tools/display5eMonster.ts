@@ -7,7 +7,7 @@ import { tool } from 'ai';
 export const Display5eMonsterTool = tool({
   description:
     'A function that generates and displays a DND 5e Monster to the user',
-  parameters: getDisplay5eMonsterSchema(),
+  inputSchema: getDisplay5eMonsterSchema(),
   execute: async (_: Generate5eMonsterParams) => {
     return '';
   },

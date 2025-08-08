@@ -1,9 +1,9 @@
-import { generateText, type Tool, type CoreMessage } from 'ai';
+import { generateText, type Tool, type ModelMessage } from 'ai';
 import type { AIModel } from './utils/AIModel';
 import { openai } from './openai';
 
 export async function generateAssistantText(
-  messages: CoreMessage[],
+  messages: ModelMessage[],
   model: AIModel,
   tools?: Record<string, Tool>,
 ) {
@@ -17,7 +17,7 @@ export async function generateAssistantText(
   const result = await generateText({
     model: openai(model, modelOpts),
     tools,
-    maxTokens: 16383,
+    maxOutputTokens: 16383,
     messages,
   });
 

@@ -12,10 +12,12 @@ import {
   limitNumOfMessagesByCapability,
   TooManyRequestsExpressError,
 } from '@feynote/api-services';
-import { convertToCoreMessages, type CoreMessage } from 'ai';
+import { convertToModelMessages, type ModelMessage, type UIMessage } from 'ai';
 import { Capability, ToolName } from '@feynote/shared-utils';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
+import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '@feynote/queue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 const DAILY_MESSAGING_CAP_ENHANCED_TIER = 3000; // 120 messages per hour
 const DAILY_MESSAGING_CAP_FREE_TIER = 360; // 15 messages per hour
@@ -24,6 +26,7 @@ const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 240; // 10 messages per hour
 const schema = {
   body: z.object({
     messages: z.array(z.any()),
+    threadId: z.string(),
   }),
 };
 export const createMessage = defineExpressHandler(
@@ -33,12 +36,13 @@ export const createMessage = defineExpressHandler(
   },
   async function _createMessage(req, res) {
     const requestMessages = req.body.messages;
-    let messages: CoreMessage[] = [];
+    let messages: ModelMessage[] = [];
     try {
-      messages = convertToCoreMessages([
+      messages = convertToModelMessages([
         systemMessage.ttrpgAssistant,
         ...requestMessages,
       ]);
+      messages.unshift(systemMessage.ttrpgAssistant)
     } catch (_) {
       throw new BadRequestExpressError(
         'Messages passed were either invalid or could not be verified.',
@@ -87,6 +91,24 @@ export const createMessage = defineExpressHandler(
     });
 
     res.setHeader('Transfer-Encoding', 'chunked');
-    stream.pipeDataStreamToResponse(res);
+
+    const saveMessage = async (message: UIMessage ) => {
+      await prisma.message.create({
+        data: { threadId: req.body.threadId, json: message as any },
+      });
+      enqueueOutgoingWebsocketMessage({
+        room: wsRoomNameForUserId(userId),
+        event: WebsocketMessageEvent.ThreadUpdated,
+        json: {
+          threadId: req.body.threadId,
+        },
+      });
+    }
+
+    stream.toUIMessageStreamResponse({
+      onFinish: ({ responseMessage }) => {
+        saveMessage(responseMessage)
+      }
+    })
   },
 );
