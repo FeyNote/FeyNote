@@ -1,14 +1,14 @@
-import type { UIMessage } from '@ai-sdk/react';
 import { AIUserMessage } from './AIUserMessage';
 import { AIAssistantMessage } from './AIAssistantMessage';
 import styled from 'styled-components';
+import type { FeynoteUIMessage } from './FeynoteUIMessage';
 
 const MessageContentContainer = styled.div`
   padding-left: 8px;
 `;
 
 interface Props {
-  message: UIMessage;
+  message: FeynoteUIMessage;
   deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
   resendMessageList: () => Promise<void>;
   setMessage: (params: { id: string, text: string }) => Promise<void>;

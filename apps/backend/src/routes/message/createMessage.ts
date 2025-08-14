@@ -1,19 +1,13 @@
 import {
-  systemMessage,
-  AIModel,
-  generateAssistantStreamText,
-  Display5eMonsterTool,
-  Display5eObjectTool,
-  DisplayUrlTool,
   getCapabilitiesForUser,
   defineExpressHandler,
   AuthenticationEnforcement,
   BadRequestExpressError,
-  limitNumOfMessagesByCapability,
   TooManyRequestsExpressError,
+  openai,
 } from '@feynote/api-services';
 import { convertToModelMessages, type ModelMessage, type UIMessage } from 'ai';
-import { Capability, ToolName } from '@feynote/shared-utils';
+import { AIModel, Capability, display5eMonsterTool, display5eObjectTool, displayUrlTool, generateAssistantStreamText, limitNumOfMessagesByCapability, systemMessage, ToolName } from '@feynote/shared-utils';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '@feynote/queue';
@@ -39,7 +33,6 @@ export const createMessage = defineExpressHandler(
     let messages: ModelMessage[] = [];
     try {
       messages = convertToModelMessages([
-        systemMessage.ttrpgAssistant,
         ...requestMessages,
       ]);
       messages.unshift(systemMessage.ttrpgAssistant)
@@ -84,10 +77,10 @@ export const createMessage = defineExpressHandler(
       capabilities,
     );
 
-    const stream = generateAssistantStreamText(limited_messages, model, {
-      [ToolName.Generate5eMonster]: Display5eMonsterTool,
-      [ToolName.Generate5eObject]: Display5eObjectTool,
-      [ToolName.ScrapeUrl]: DisplayUrlTool,
+    const stream = generateAssistantStreamText(openai, limited_messages, model, {
+      [ToolName.Display5eMonster]: display5eMonsterTool,
+      [ToolName.Display5eObject]: display5eObjectTool,
+      [ToolName.DisplayUrl]: displayUrlTool,
     });
 
     res.setHeader('Transfer-Encoding', 'chunked');
@@ -107,8 +100,10 @@ export const createMessage = defineExpressHandler(
 
     stream.toUIMessageStreamResponse({
       onFinish: ({ responseMessage }) => {
+        console.log(responseMessage)
         saveMessage(responseMessage)
-      }
+      },
     })
+    stream.pipeUIMessageStreamToResponse(res)
   },
 );

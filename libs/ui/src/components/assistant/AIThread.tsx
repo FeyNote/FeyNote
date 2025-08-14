@@ -19,7 +19,7 @@ import {
   skullOutline,
 } from 'ionicons/icons';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { UIMessage, useChat } from '@ai-sdk/react';
+import { useChat } from '@ai-sdk/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
@@ -35,6 +35,7 @@ import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
+import type { FeynoteUIMessage } from './FeynoteUIMessage';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -136,7 +137,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
   const [input, setInput] = useState('')
   const { messages, setMessages, status, sendMessage, regenerate } =
-    useChat({
+    useChat<FeynoteUIMessage>({
       transport: new DefaultChatTransport({
         api: `${getApiUrls().rest}/message/`,
         headers: {
@@ -155,7 +156,6 @@ export const AIThread: React.FC<Props> = (props) => {
           await trpc.ai.createThreadTitle.mutate({
             id: props.id,
           });
-
           await getThreadInfo();
         }
       },
@@ -247,7 +247,7 @@ export const AIThread: React.FC<Props> = (props) => {
     const existingMessageIdx = messages.findIndex((message) => message.id === args.id)
     if (existingMessageIdx === -1) return
     const existingMessage = messages[existingMessageIdx]
-    const updatedMessage: UIMessage = {
+    const updatedMessage: FeynoteUIMessage = {
       ...existingMessage,
       parts: [
         {
@@ -258,7 +258,7 @@ export const AIThread: React.FC<Props> = (props) => {
     }
 
     // Replaces only the changed message
-    const newMessageList: UIMessage[] = [
+    const newMessageList: FeynoteUIMessage[] = [
       ...messages.slice(0, existingMessageIdx),
       updatedMessage,
       ...messages.slice(existingMessageIdx + 1)

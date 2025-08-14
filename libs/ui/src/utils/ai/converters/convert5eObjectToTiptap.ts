@@ -1,10 +1,10 @@
-import type { Generate5eObjectParams } from '../schemas/display5eObjectSchema';
+import type { Generate5eObjectParams } from "@feynote/shared-utils";
+import type { DeepPartial } from "ai";
 
 export const convert5eObjectToTiptap = (
-  generatedObject?: Generate5eObjectParams,
+  generatedObject: DeepPartial<Generate5eObjectParams>,
 ) => {
   const content = [];
-  if (!generatedObject) return;
   if (generatedObject.name)
     content.push({
       type: 'heading',

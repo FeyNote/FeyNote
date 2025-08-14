@@ -1,21 +1,23 @@
-import { type ToolUIPart } from 'ai';
+import { type UIDataTypes, type UIMessagePart } from 'ai';
 import { IonSpinner } from '@ionic/react';
-import { getEditorContentsFromToolInvocation } from '../../utils/assistant/getEditorContentsFromToolInvocation';
+import { getEditorContentsFromToolPart } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
+import type { FeynoteUITool } from './FeynoteUIMessage';
 
 interface Props {
-  part: ToolUIPart;
+  part: UIMessagePart<UIDataTypes, FeynoteUITool>;
 }
 
 export const AIToolPart = (props: Props) => {
-  const toolInvocationContents = getEditorContentsFromToolInvocation(
+  const toolPartContents = getEditorContentsFromToolPart(
     props.part,
+    props.toolName
   );
-  if (!toolInvocationContents.length) return <IonSpinner name="dots" />;
+  if (!toolPartContents.length) return <IonSpinner name="dots" />;
 
   return (
     <>
-      {toolInvocationContents.map((content, i) => (
+      {toolPartContents.map((content, i) => (
         <AIEditor key={i} editorContent={content} />
       ))}
     </>

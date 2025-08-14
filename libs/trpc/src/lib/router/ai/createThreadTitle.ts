@@ -2,13 +2,10 @@ import { z } from 'zod';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
-import {
-  generateAssistantText,
-  AIModel,
-  systemMessage,
-} from '@feynote/api-services';
 import { threadSummary } from '@feynote/prisma/types';
-import type { CoreMessage } from 'ai';
+import { AIModel, generateAssistantText, systemMessage } from '@feynote/shared-utils';
+import { openai } from '@feynote/api-services';
+import type { ModelMessage } from 'ai';
 
 export const createThreadTitle = authenticatedProcedure
   .input(
@@ -28,10 +25,10 @@ export const createThreadTitle = authenticatedProcedure
     }
     let messages = thread.messages.map(
       (message) => message.json,
-    ) as CoreMessage[];
+    ) as ModelMessage[];
     messages = [systemMessage.nameGeneration, ...messages];
 
-    const { text } = await generateAssistantText(messages, AIModel.GPT4_MINI);
+    const { text } = await generateAssistantText(openai, messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
       where: { id: thread.id },
       data: {

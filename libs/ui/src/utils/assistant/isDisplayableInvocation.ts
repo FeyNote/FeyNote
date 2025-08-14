@@ -1,16 +1,16 @@
 import { ToolName } from '@feynote/shared-utils';
 import * as Sentry from '@sentry/react';
-import type { ToolUIPart } from 'ai';
+import type { UIDataTypes, UIMessagePart } from 'ai';
+import type { FeynoteUITool } from '../../components/assistant/FeynoteUIMessage';
 
 export const isDisplayableToolPart = (
-  part: ToolUIPart,
+  part: UIMessagePart<UIDataTypes, FeynoteUITool>,
 ): boolean => {
-  const toolName = part.type.replace('tool-', '')
-  switch(toolName) {
-    case ToolName.ScrapeUrl:
+  switch(part.type) {
+    case `tool-${ToolName.DisplayUrl}`:
       return part.state === 'output-available';
-    case ToolName.Generate5eMonster:
-    case ToolName.Generate5eObject:
+    case `tool-${ToolName.Display5eMonster}`:
+    case `tool-${ToolName.Display5eObject}`:
       return part.state === 'input-streaming' || part.state === 'input-available'
     default:
       Sentry.captureMessage(`Invalid tool part detected; ${part}`);

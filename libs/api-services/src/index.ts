@@ -6,7 +6,8 @@ export * from './lib/user/triggerResetEmail';
 export * from './lib/user/triggerResetPassword';
 
 export * from './lib/error';
-export * from './lib/openai';
+export * from './lib/openai/openai';
+export * from './lib/openai/retrieveMessageContext';
 
 export * from './lib/artifacts/artifactJsonZodSchema';
 export * from './lib/artifacts/createArtifactRevision';

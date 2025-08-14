@@ -1,11 +1,11 @@
-import type { UIMessage } from '@ai-sdk/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { copyOutline, pencil } from 'ionicons/icons';
+import type { FeynoteUIMessage } from './FeynoteUIMessage';
 
 interface Props {
-  message: UIMessage;
+  message: FeynoteUIMessage;
   deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
   resendMessageList: () => Promise<void>;
   setMessage: (params: { id: string, text: string }) => Promise<void>;

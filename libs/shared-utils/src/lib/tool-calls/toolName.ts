@@ -1,5 +1,5 @@
 export enum ToolName {
-  Generate5eMonster = 'generate5eMonster',
-  Generate5eObject = 'generate5eObject',
-  ScrapeUrl = 'scrapeUrl',
+  Display5eMonster = 'display5eMonsterTool',
+  Display5eObject = 'display5eObjectTool',
+  DisplayUrl = 'displayUrlTool',
 }

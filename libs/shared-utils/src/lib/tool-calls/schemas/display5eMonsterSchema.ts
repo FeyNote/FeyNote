@@ -68,3 +68,8 @@ export const getDisplay5eMonsterSchema = () => {
 export type Generate5eMonsterParams = zInfer<
   ReturnType<typeof getDisplay5eMonsterSchema>
 >;
+
+export type Display5eMonsterTool = {
+  input: Generate5eMonsterParams,
+  output: string,
+}

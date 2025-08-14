@@ -33,3 +33,8 @@ export const getDisplay5eObjectSchema = () => {
 export type Generate5eObjectParams = zInfer<
   ReturnType<typeof getDisplay5eObjectSchema>
 >;
+
+export type Display5eObjectTool = {
+  input: Generate5eObjectParams,
+  output: string,
+}

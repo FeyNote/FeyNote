@@ -1,21 +1,21 @@
-import { tool, type ModelMessage } from 'ai';
+import { tool, type InferUITool, type ModelMessage } from 'ai';
 import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
   getDisplayScrapeUrlSchema,
+  type DisplayUrlTool,
 } from '@feynote/shared-utils';
-import { generateAssistantText } from '../generateAssistantText';
-import { systemMessage } from '../utils/SystemMessage';
-import { AIModel } from '../utils/AIModel';
 import DOMPurify from 'dompurify';
 import { ToolName } from '@feynote/shared-utils';
-import { Display5eMonsterTool } from './display5eMonster';
-import { Display5eObjectTool } from './display5eObject';
+import { display5eMonsterTool } from './display5eMonster';
+import { display5eObjectTool } from './display5eObject';
 import type { AxiosRequestConfig } from 'axios';
 import { globalServerConfig } from '@feynote/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import axios from 'axios';
-import { logger } from '../../logging/logger';
+import { systemMessage } from '../utils/SystemMessage';
+import { generateAssistantText } from '../generateAssistantText';
+import { AIModel } from '../utils/AIModel';
 
 const newLineOnlyNodes = new Set(['br']);
 const newLineCausingNodes = new Set([
@@ -64,7 +64,7 @@ const getTextFromHtml = (html: string): string => {
   return cleanedHtml;
 };
 
-const displayUrlExecutor = async (params: ScrapeUrlParams) => {
+const displayUrlExecutor = async (params: ScrapeUrlParams): UIMessagePart<UIDataTypes, FeynoteUITool> => {
   try {
     const requestConfig = {
       headers: {
@@ -91,8 +91,8 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       messages,
       AIModel.GPT4_MINI,
       {
-        [ToolName.Generate5eMonster]: Display5eMonsterTool,
-        [ToolName.Generate5eObject]: Display5eObjectTool,
+        [ToolName.Display5eMonster]: display5eMonsterTool,
+        [ToolName.Display5eObject]: display5eObjectTool,
       },
     );
     return {
@@ -100,14 +100,19 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
       toolInvocations: toolResults,
     };
   } catch (e) {
-    logger.error(e);
+    console.error(e);
     return null;
   }
 };
 
-export const DisplayUrlTool = tool({
+export const displayUrlTool = tool({
   description:
     'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
   inputSchema: getDisplayScrapeUrlSchema(),
   execute: displayUrlExecutor,
 });
+
+type _DisplayUrlTool = InferUITool<typeof displayUrlTool>;
+
+const _ = {} as _DisplayUrlTool satisfies DisplayUrlTool;
+const __ = {} as DisplayUrlTool satisfies _DisplayUrlTool;

@@ -4,6 +4,7 @@ import { personCircle } from 'ionicons/icons';
 import { AIMessageContent } from './AIMessageContent';
 import type { UIMessage } from '@ai-sdk/react';
 import { useTranslation } from 'react-i18next';
+import type { FeynoteUIMessage } from './FeynoteUIMessage';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -47,7 +48,7 @@ const MessageHeader = styled(IonLabel)`
 `;
 
 interface Props {
-  messages: UIMessage[];
+  messages: FeynoteUIMessage[];
   deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
   resendMessageList: () => Promise<void>;
   setMessage: (params: { id: string, text: string }) => Promise<void>;

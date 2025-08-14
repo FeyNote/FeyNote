@@ -1,5 +1,6 @@
-import { JSONContent } from '@tiptap/core';
-import type { Generate5eMonsterParams } from '../schemas/display5eMonsterSchema';
+import type { Generate5eMonsterParams } from '@feynote/shared-utils';
+import type { JSONContent } from '@tiptap/core';
+import type { DeepPartial } from 'ai';
 import { TFunction } from 'i18next';
 
 const getTiptapTableObj = (
@@ -54,7 +55,7 @@ const getTiptapParagraphFromObj = (item: {
 };
 
 export const convert5eMonsterToTipTap = (
-  generatedMonster: Generate5eMonsterParams,
+  generatedMonster: DeepPartial<Generate5eMonsterParams>,
   t: TFunction,
 ) => {
   const tiptapContent = [];

@@ -74,7 +74,6 @@ export const defineExpressHandler = <
 ) => {
   return [
     async (req: Request, res: Response, next: NextFunction) => {
-      console.log(`req1: ${req}`)
       try {
         try {
           opts.schema.params?.parse(req.params);
