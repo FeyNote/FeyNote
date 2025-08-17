@@ -149,7 +149,7 @@
     "@types/express": "4.17.21",
     "@types/jest": "30.0.0",
     "@types/morgan": "^1.9.10",
-    "@types/node": "24.2.0",
+    "@types/node": "24.2.1",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
     "@types/react-is": "19.0.0",
