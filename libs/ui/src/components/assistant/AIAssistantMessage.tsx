@@ -2,50 +2,40 @@ import { IonSpinner } from '@ionic/react';
 import { isDisplayableToolPart } from '../../utils/assistant/isDisplayableInvocation';
 import { AIToolPart } from './AIToolInvocation';
 import { AIMessagePartText } from './AIMessagePartText';
-import type { ToolUIPart } from 'ai';
-import type { ToolName } from '@feynote/shared-utils';
-import type { FeynoteUIMessage } from './FeynoteUIMessage';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 interface Props {
   message: FeynoteUIMessage;
-  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
-  resendMessageList: () => Promise<void>;
+  retryMessage: (messageId: string) => void;
   disableRetry: boolean;
 }
 
-export const AIAssistantMessage = ({
-  message,
-  deleteUntilMessageId,
-  resendMessageList,
-  disableRetry,
-}: Props) => {
-  if (!message.parts || message.parts.length === 0) {
+export const AIAssistantMessage = (props: Props) => {
+  if (!props.message.parts || props.message.parts.length === 0) {
     return <IonSpinner name="dots" />;
   }
 
-  const retryMessage = () => {
-    deleteUntilMessageId({ id: message.id, inclusive: true })
-    resendMessageList()
-  }
-
   return (
-    message.parts &&
-    message.parts.map((part, i) => {
-      if (
-        part.type.includes('tool-') &&
-        isDisplayableToolPart(part)
-      ) {
+    props.message.parts &&
+    props.message.parts.map((part, i) => {
+      if (part.type.includes('tool-') && isDisplayableToolPart(part)) {
         return (
-          <AIToolPart key={i} part={part} />
+          <AIToolPart
+            key={i}
+            messageId={props.message.id}
+            disableRetry={props.disableRetry}
+            retryMessage={props.retryMessage}
+            part={part}
+          />
         );
       } else if (part.type === 'text') {
         return (
           <AIMessagePartText
             key={i}
             part={part}
-            retryMessage={retryMessage}
-            disableRetry={disableRetry}
-            messageId={message.id}
+            retryMessage={props.retryMessage}
+            disableRetry={props.disableRetry}
+            messageId={props.message.id}
           />
         );
       }

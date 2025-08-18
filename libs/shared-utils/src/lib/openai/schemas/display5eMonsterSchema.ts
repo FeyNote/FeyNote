@@ -70,6 +70,6 @@ export type Generate5eMonsterParams = zInfer<
 >;
 
 export type Display5eMonsterTool = {
-  input: Generate5eMonsterParams,
-  output: string,
-}
+  input: Generate5eMonsterParams;
+  output: string;
+};

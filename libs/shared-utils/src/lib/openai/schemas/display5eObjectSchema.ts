@@ -35,6 +35,6 @@ export type Generate5eObjectParams = zInfer<
 >;
 
 export type Display5eObjectTool = {
-  input: Generate5eObjectParams,
-  output: string,
-}
+  input: Generate5eObjectParams;
+  output: string;
+};

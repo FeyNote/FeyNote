@@ -1,5 +1,6 @@
 import { generateText, type Tool, type ModelMessage } from 'ai';
 import type { AIModel } from './utils/AIModel';
+import { openai } from '@ai-sdk/openai';
 
 export async function generateAssistantText(
   messages: ModelMessage[],

@@ -39,10 +39,14 @@ export * from './lib/tldraw/randomizeTLDrawContentShapeIds';
 export * from './lib/tldraw/ReferenceShapeProps';
 export * from './lib/tldraw/ReferenceShapeIconOptions';
 export * from './lib/tldraw/TLYKVRecord';
-export * from './lib/tool-calls/schemas/display5eMonsterSchema';
-export * from './lib/tool-calls/schemas/display5eObjectSchema';
-export * from './lib/tool-calls/schemas/displayUrlContent';
-export * from './lib/tool-calls/toolName';
+
+export * from './lib/openai/schemas/display5eMonsterSchema';
+export * from './lib/openai/schemas/display5eObjectSchema';
+export * from './lib/openai/schemas/displayUrlContent';
+export * from './lib/openai/ToolName';
+export * from './lib/openai/FeynoteUIMessage';
+export * from './lib/openai/ThreadDTO';
+
 export * from './lib/yjs/ARTIFACT_META_KEY';
 export * from './lib/yjs/ARTIFACT_USER_ACCESS_KEY';
 export * from './lib/yjs/constructYArtifact';
@@ -61,13 +65,3 @@ export * from './lib/ImmediateDebouncer';
 export * from './lib/tiptap/getTiptapServerExtensions';
 export * from './lib/customTrpcTransformer';
 export * from './lib/throttleDropPromise';
-export * from './lib/tool-calls/converters/convert5eMonsterToTipTap'
-export * from './lib/tool-calls/converters/convert5eObjectToTiptap'
-export * from '../../api-services/src/lib/openai/tools/displayUrlContent';
-export * from '../../api-services/src/lib/openai/tools/display5eObject';
-export * from '../../api-services/src/lib/openai/tools/display5eMonster';
-export * from './lib/tool-calls/utils/AIModel';
-export * from './lib/tool-calls/utils/SystemMessage';
-export * from './lib/tool-calls/utils/generateAssistantStreamText';
-export * from './lib/tool-calls/utils/generateAssistantText';
-export * from './lib/tool-calls/utils/limitNumOfMessagesByCapability';

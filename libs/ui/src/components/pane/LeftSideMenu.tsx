@@ -12,8 +12,11 @@ import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { EventName } from '../../context/events/EventName';
-import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
-import type { ThreadDTO } from '@feynote/global-types';
+import {
+  ImmediateDebouncer,
+  PreferenceNames,
+  type ThreadDTO,
+} from '@feynote/shared-utils';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -86,8 +89,8 @@ export const LeftSideMenu: React.FC = () => {
         setRecentlyUpdatedThreads(
           threads.sort(
             (a, b) =>
-              (b.messages.at(-1)?.createdAt.getTime() || 0) -
-              (a.messages.at(-1)?.createdAt.getTime() || 0),
+              (b.messages.at(-1)?.updatedAt.getTime() || 0) -
+              (a.messages.at(-1)?.updatedAt.getTime() || 0),
           ),
         );
       })

@@ -6,8 +6,17 @@ export * from './lib/user/triggerResetEmail';
 export * from './lib/user/triggerResetPassword';
 
 export * from './lib/error';
+
 export * from './lib/openai/openai';
 export * from './lib/openai/retrieveMessageContext';
+export * from './lib/openai/utils/SystemMessage';
+export * from './lib/openai/utils/AIModel';
+export * from './lib/openai/utils/limitNumOfMessagesByCapability';
+export * from './lib/openai/generateAssistantStreamText';
+export * from './lib/openai/generateAssistantText';
+export * from './lib/openai/tools/displayUrlContent';
+export * from './lib/openai/tools/display5eMonster';
+export * from './lib/openai/tools/display5eObject';
 
 export * from './lib/artifacts/artifactJsonZodSchema';
 export * from './lib/artifacts/createArtifactRevision';

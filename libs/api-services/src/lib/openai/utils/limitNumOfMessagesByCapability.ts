@@ -1,5 +1,5 @@
+import { Capability } from '@feynote/shared-utils';
 import type { CoreMessage } from 'ai';
-import { Capability } from '../../payments/constants';
 
 const MAX_MESSAGE_LIMIT = 10;
 export function limitNumOfMessagesByCapability(

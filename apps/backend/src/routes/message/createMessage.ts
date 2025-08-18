@@ -5,13 +5,18 @@ import {
   BadRequestExpressError,
   TooManyRequestsExpressError,
   openai,
+  systemMessage,
+  AIModel,
+  limitNumOfMessagesByCapability,
+  generateAssistantStreamText,
+  display5eMonsterTool,
+  displayUrlTool,
+  display5eObjectTool,
 } from '@feynote/api-services';
-import { convertToModelMessages, type ModelMessage, type UIMessage } from 'ai';
-import { AIModel, Capability, display5eMonsterTool, display5eObjectTool, displayUrlTool, generateAssistantStreamText, limitNumOfMessagesByCapability, systemMessage, ToolName } from '@feynote/shared-utils';
+import { convertToModelMessages, type ModelMessage } from 'ai';
+import { Capability, ToolName } from '@feynote/shared-utils';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
-import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '@feynote/queue';
-import { WebsocketMessageEvent } from '@feynote/global-types';
 
 const DAILY_MESSAGING_CAP_ENHANCED_TIER = 3000; // 120 messages per hour
 const DAILY_MESSAGING_CAP_FREE_TIER = 360; // 15 messages per hour
@@ -32,10 +37,8 @@ export const createMessage = defineExpressHandler(
     const requestMessages = req.body.messages;
     let messages: ModelMessage[] = [];
     try {
-      messages = convertToModelMessages([
-        ...requestMessages,
-      ]);
-      messages.unshift(systemMessage.ttrpgAssistant)
+      messages = convertToModelMessages([...requestMessages]);
+      messages.unshift(systemMessage.ttrpgAssistant);
     } catch (_) {
       throw new BadRequestExpressError(
         'Messages passed were either invalid or could not be verified.',
@@ -77,33 +80,18 @@ export const createMessage = defineExpressHandler(
       capabilities,
     );
 
-    const stream = generateAssistantStreamText(openai, limited_messages, model, {
-      [ToolName.Display5eMonster]: display5eMonsterTool,
-      [ToolName.Display5eObject]: display5eObjectTool,
-      [ToolName.DisplayUrl]: displayUrlTool,
-    });
+    const stream = generateAssistantStreamText(
+      openai,
+      limited_messages,
+      model,
+      {
+        [ToolName.Display5eMonster]: display5eMonsterTool,
+        [ToolName.Display5eObject]: display5eObjectTool,
+        [ToolName.DisplayUrl]: displayUrlTool,
+      },
+    );
 
     res.setHeader('Transfer-Encoding', 'chunked');
-
-    const saveMessage = async (message: UIMessage ) => {
-      await prisma.message.create({
-        data: { threadId: req.body.threadId, json: message as any },
-      });
-      enqueueOutgoingWebsocketMessage({
-        room: wsRoomNameForUserId(userId),
-        event: WebsocketMessageEvent.ThreadUpdated,
-        json: {
-          threadId: req.body.threadId,
-        },
-      });
-    }
-
-    stream.toUIMessageStreamResponse({
-      onFinish: ({ responseMessage }) => {
-        console.log(responseMessage)
-        saveMessage(responseMessage)
-      },
-    })
-    stream.pipeUIMessageStreamToResponse(res)
+    stream.pipeUIMessageStreamToResponse(res);
   },
 );

@@ -1,9 +1,17 @@
-import { tool, type InferUITool, type ModelMessage } from 'ai';
+import {
+  tool,
+  type InferUITool,
+  type ModelMessage,
+  type TextUIPart,
+  type UIDataTypes,
+  type UIMessagePart,
+} from 'ai';
 import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
   getDisplayScrapeUrlSchema,
   type DisplayUrlTool,
+  type FeynoteUITool,
 } from '@feynote/shared-utils';
 import DOMPurify from 'dompurify';
 import { ToolName } from '@feynote/shared-utils';
@@ -64,7 +72,9 @@ const getTextFromHtml = (html: string): string => {
   return cleanedHtml;
 };
 
-const displayUrlExecutor = async (params: ScrapeUrlParams): UIMessagePart<UIDataTypes, FeynoteUITool> => {
+const displayUrlExecutor = async (
+  params: ScrapeUrlParams,
+): Promise<UIMessagePart<UIDataTypes, FeynoteUITool>[] | null> => {
   try {
     const requestConfig = {
       headers: {
@@ -84,8 +94,8 @@ const displayUrlExecutor = async (params: ScrapeUrlParams): UIMessagePart<UIData
       systemMessage.scrapeContent,
       {
         role: 'user',
-        content: html
-      }
+        content: html,
+      },
     ];
     const { text, toolResults } = await generateAssistantText(
       messages,
@@ -95,10 +105,19 @@ const displayUrlExecutor = async (params: ScrapeUrlParams): UIMessagePart<UIData
         [ToolName.Display5eObject]: display5eObjectTool,
       },
     );
-    return {
+    const textPart: TextUIPart = {
+      type: 'text',
       text,
-      toolInvocations: toolResults,
+      state: 'done',
     };
+    const toolParts = toolResults.map((toolResult) => ({
+      type: `tool-${toolResult.toolName}`,
+      toolCallId: toolResult.toolCallId,
+      state: 'output-available',
+      input: toolResult.input,
+      output: toolResult.output,
+    })) as UIMessagePart<UIDataTypes, FeynoteUITool>[];
+    return [textPart, ...toolParts];
   } catch (e) {
     console.error(e);
     return null;

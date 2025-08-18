@@ -9,9 +9,10 @@ export const threadSummary = Prisma.validator<Prisma.ThreadFindFirstArgs>()({
         id: true,
         json: true,
         createdAt: true,
+        updatedAt: true,
       },
       orderBy: {
-        createdAt: 'asc',
+        updatedAt: 'asc',
       },
     },
   },

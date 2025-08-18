@@ -35,7 +35,7 @@ import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
-import type { FeynoteUIMessage } from './FeynoteUIMessage';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -135,7 +135,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState('');
   const { messages, setMessages, status, sendMessage, regenerate } =
     useChat<FeynoteUIMessage>({
       transport: new DefaultChatTransport({
@@ -151,7 +151,11 @@ export const AIThread: React.FC<Props> = (props) => {
       generateId: () => {
         return crypto.randomUUID();
       },
-      onFinish: async () => {
+      onFinish: async (data) => {
+        await trpc.ai.saveMessage.mutate({
+          threadId: props.id,
+          message: data.message,
+        });
         if (!title) {
           await trpc.ai.createThreadTitle.mutate({
             id: props.id,
@@ -176,16 +180,16 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
-  const isLoading = useMemo((() => status === 'submitted' || status === 'streaming'), [status])
+  console.log(messages);
+  const isLoading = useMemo(
+    () => status === 'submitted' || status === 'streaming',
+    [status],
+  );
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
     });
-    const threadMessages = threadDTO.messages.map((message) => ({
-      ...message.json,
-      id: message.id,
-    }));
-    setMessages(threadMessages);
+    setMessages(threadDTO.messages);
     setTitle(threadDTO.title || null);
   };
 
@@ -214,6 +218,22 @@ export const AIThread: React.FC<Props> = (props) => {
     };
   }, []);
 
+  const submitMessageQuery = async () => {
+    const message: FeynoteUIMessage = {
+      id: crypto.randomUUID(),
+      parts: [{ type: 'text', text: input }],
+      role: 'user',
+    };
+    await trpc.ai.saveMessage.mutate({
+      threadId: props.id,
+      message,
+    });
+    sendMessage({
+      text: input,
+    });
+    setInput('');
+  };
+
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (
       e.key === 'Enter' &&
@@ -222,53 +242,47 @@ export const AIThread: React.FC<Props> = (props) => {
       !isLoadingInitialState
     ) {
       e.preventDefault(); // Prevents adding a newline
-      sendMessage({
-        text: input
-      })
-      setInput('');
+      submitMessageQuery();
     } else {
       setInput(e.currentTarget.value || '');
     }
   };
 
-  const deleteUntilMessageId = async (args: { id: string, inclusive: boolean }) => {
-    const messageIdx = messages.findIndex((message) => message.id === args.id)
-    if (messageIdx === -1) return
-    const remainingMessages = messages.slice(0, messageIdx + 1);
+  const updateMessage = async (message: FeynoteUIMessage) => {
+    await trpc.ai.updateMessage.mutate({
+      threadId: props.id,
+      message,
+    });
     await trpc.ai.deleteMessageToId.mutate({
-      id: args.id,
+      id: message.id,
       threadId: props.id,
-      inclusive: args.inclusive,
     });
-    setMessages(remainingMessages);
-  }
+    await getThreadInfo();
+    regenerate();
+  };
 
-  const setMessage = async (args: {id: string, text: string }) => {
-    const existingMessageIdx = messages.findIndex((message) => message.id === args.id)
-    if (existingMessageIdx === -1) return
-    const existingMessage = messages[existingMessageIdx]
-    const updatedMessage: FeynoteUIMessage = {
-      ...existingMessage,
-      parts: [
-        {
-          type: 'text',
-          text: args.text,
-        },
-      ],
+  const retryMessage = async (messageId: string) => {
+    let retriedUserMsg,
+      retriedUserMsgIdx = null;
+    for (const [idx, message] of messages.entries()) {
+      if (message.role === 'user') {
+        retriedUserMsgIdx = idx;
+        retriedUserMsg = message;
+      }
+      if (message.id === messageId) break;
     }
-
-    // Replaces only the changed message
-    const newMessageList: FeynoteUIMessage[] = [
-      ...messages.slice(0, existingMessageIdx),
-      updatedMessage,
-      ...messages.slice(existingMessageIdx + 1)
-    ]
-    setMessages(newMessageList)
-    await trpc.ai.saveMessage.mutate({
+    if (retriedUserMsgIdx === null || !retriedUserMsg) return;
+    const messageToDelete = messages.at(retriedUserMsgIdx + 1);
+    if (!messageToDelete) return;
+    await trpc.ai.deleteMessageToId.mutate({
+      id: messageToDelete.id,
       threadId: props.id,
-      message: updatedMessage,
+      inclusive: true,
     });
-  }
+    const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
+    setMessages(remainingMessages);
+    regenerate();
+  };
 
   return (
     <IonPage>
@@ -317,9 +331,8 @@ export const AIThread: React.FC<Props> = (props) => {
             </EmptyMessageContainer>
           ) : (
             <AIMessagesContainer
-              resendMessageList={regenerate}
-              deleteUntilMessageId={deleteUntilMessageId}
-              setMessage={setMessage}
+              updateMessage={updateMessage}
+              retryMessage={retryMessage}
               messages={messages}
               ongoingCommunication={isLoading}
             />
@@ -333,14 +346,7 @@ export const AIThread: React.FC<Props> = (props) => {
               onKeyUp={keyUpHandler}
             />
             <SendButtonContainer>
-              <IonButton
-                onClick={() => {
-                  sendMessage({
-                    text: input,
-                  });
-                  setInput('');
-                }}
-              >
+              <IonButton onClick={submitMessageQuery}>
                 {isLoading || isLoadingInitialState ? (
                   <IonSpinner name="crescent" />
                 ) : (

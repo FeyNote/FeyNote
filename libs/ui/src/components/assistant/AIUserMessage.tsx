@@ -2,29 +2,23 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { copyOutline, pencil } from 'ionicons/icons';
-import type { FeynoteUIMessage } from './FeynoteUIMessage';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 interface Props {
   message: FeynoteUIMessage;
-  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
-  resendMessageList: () => Promise<void>;
-  setMessage: (params: { id: string, text: string }) => Promise<void>;
-  disableEdit: boolean;
+  disableUpdate: boolean;
+  updateMessage: (message: FeynoteUIMessage) => void;
 }
-export const AIUserMessage = ({
-  message,
-  deleteUntilMessageId,
-  resendMessageList,
-  setMessage,
-  disableEdit,
-}: Props) => {
+export const AIUserMessage = (props: Props) => {
   const inputRef = useRef<HTMLIonTextareaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const messageText = useMemo(() => {
-    const messagePart = message.parts.find((part) => part.type === 'text')
-    return messagePart?.text || ''
-  }, [message.parts]);
-  const [editInput, setEditInput] = useState(messageText)
+    const messagePart = props.message.parts.find(
+      (part) => part.type === 'text',
+    );
+    return messagePart?.text || '';
+  }, [props.message.parts]);
+  const [editInput, setEditInput] = useState(messageText);
 
   useEffect(() => {
     if (inputRef.current) {
@@ -35,19 +29,25 @@ export const AIUserMessage = ({
   }, [isEditing]);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !disableEdit) {
+    if (e.key === 'Enter' && !e.shiftKey && !props.disableUpdate) {
       e.preventDefault(); // Prevents adding a newline
-      submitMessageEdit()
+      submitMessageUpdate();
     } else {
       setEditInput(e.currentTarget.value?.toString() || '');
     }
   };
 
-  const submitMessageEdit = async () => {
-    setMessage({ id: message.id, text: editInput })
-    await deleteUntilMessageId({ id: message.id, inclusive: false })
-    resendMessageList()
+  const submitMessageUpdate = async () => {
     setIsEditing(false);
+    props.updateMessage({
+      ...props.message,
+      parts: [
+        {
+          type: 'text',
+          text: editInput,
+        },
+      ],
+    });
   };
 
   if (isEditing) {
@@ -60,8 +60,8 @@ export const AIUserMessage = ({
           </IonButton>
           <IonButton
             size="small"
-            disabled={disableEdit}
-            onClick={submitMessageEdit}
+            disabled={props.disableUpdate}
+            onClick={submitMessageUpdate}
           >
             Save
           </IonButton>

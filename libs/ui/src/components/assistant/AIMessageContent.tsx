@@ -1,7 +1,7 @@
 import { AIUserMessage } from './AIUserMessage';
 import { AIAssistantMessage } from './AIAssistantMessage';
 import styled from 'styled-components';
-import type { FeynoteUIMessage } from './FeynoteUIMessage';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 const MessageContentContainer = styled.div`
   padding-left: 8px;
@@ -9,37 +9,27 @@ const MessageContentContainer = styled.div`
 
 interface Props {
   message: FeynoteUIMessage;
-  deleteUntilMessageId: (params: { id: string; inclusive: boolean }) => Promise<void>;
-  resendMessageList: () => Promise<void>;
-  setMessage: (params: { id: string, text: string }) => Promise<void>;
   ongoingCommunication: boolean;
+  updateMessage: (message: FeynoteUIMessage) => void;
+  retryMessage: (messageId: string) => void;
 }
 
-export const AIMessageContent = ({
-  ongoingCommunication,
-  message,
-  resendMessageList,
-  setMessage,
-  deleteUntilMessageId,
-}: Props) => {
-  const isUserMessage = message.role === 'user';
+export const AIMessageContent = (props: Props) => {
+  const isUserMessage = props.message.role === 'user';
 
   return (
     <MessageContentContainer>
       {isUserMessage ? (
         <AIUserMessage
-          message={message}
-          resendMessageList={resendMessageList}
-          deleteUntilMessageId={deleteUntilMessageId}
-          setMessage={setMessage}
-          disableEdit={ongoingCommunication}
+          message={props.message}
+          disableUpdate={props.ongoingCommunication}
+          updateMessage={props.updateMessage}
         />
       ) : (
         <AIAssistantMessage
-          message={message}
-          resendMessageList={resendMessageList}
-          deleteUntilMessageId={deleteUntilMessageId}
-          disableRetry={ongoingCommunication}
+          message={props.message}
+          disableRetry={props.ongoingCommunication}
+          retryMessage={props.retryMessage}
         />
       )}
     </MessageContentContainer>

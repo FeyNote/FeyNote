@@ -1,5 +1,6 @@
-import type { Tool, TypedToolResult } from 'ai';
+import type { UIDataTypes, UIMessagePart } from 'ai';
 import { z, infer as zInfer } from 'zod';
+import type { FeynoteUITool } from '../FeynoteUIMessage';
 
 export const getDisplayScrapeUrlSchema = () => {
   return z.object({
@@ -12,9 +13,6 @@ export type ScrapeUrlParams = zInfer<
 >;
 
 export type DisplayUrlTool = {
-  input: ScrapeUrlParams,
-  output: {
-    text: string;
-    toolInvocations: TypedToolResult<Record<string, Tool>>[]
-  } | null
-}
+  input: ScrapeUrlParams;
+  output: UIMessagePart<UIDataTypes, FeynoteUITool>[] | null;
+};

@@ -3,9 +3,13 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { threadSummary } from '@feynote/prisma/types';
-import { AIModel, generateAssistantText, systemMessage } from '@feynote/shared-utils';
-import { openai } from '@feynote/api-services';
-import type { ModelMessage } from 'ai';
+import {
+  AIModel,
+  generateAssistantText,
+  systemMessage,
+} from '@feynote/api-services';
+import { convertToModelMessages } from 'ai';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 export const createThreadTitle = authenticatedProcedure
   .input(
@@ -23,12 +27,13 @@ export const createThreadTitle = authenticatedProcedure
         code: 'NOT_FOUND',
       });
     }
-    let messages = thread.messages.map(
-      (message) => message.json,
-    ) as ModelMessage[];
-    messages = [systemMessage.nameGeneration, ...messages];
+    const feynoteUIMessages = thread.messages.map(
+      (message) => message.json as unknown as FeynoteUIMessage,
+    );
 
-    const { text } = await generateAssistantText(openai, messages, AIModel.GPT4_MINI);
+    const messages = convertToModelMessages([...feynoteUIMessages]);
+    messages.unshift(systemMessage.nameGeneration);
+    const { text } = await generateAssistantText(messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
       where: { id: thread.id },
       data: {

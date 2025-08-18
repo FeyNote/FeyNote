@@ -2,8 +2,8 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
-import { ThreadDTO, type ThreadDTOMessage } from '@feynote/global-types';
 import { threadSummary } from '@feynote/prisma/types';
+import type { FeynoteUIMessage, ThreadDTO } from '@feynote/shared-utils';
 
 export const getThread = authenticatedProcedure
   .input(
@@ -21,24 +21,15 @@ export const getThread = authenticatedProcedure
         code: 'NOT_FOUND',
       });
     }
+    const messages = thread.messages.map((message) => ({
+      ...(message.json as unknown as FeynoteUIMessage),
+      id: message.id,
+      updatedAt: message.createdAt,
+    }));
     const threadDTO = {
       id: thread.id,
       title: thread.title || undefined,
-      messages: (thread.messages as unknown as ThreadDTOMessage[])
-        .filter(
-          (message) =>
-            message.json.role === 'user' || message.json.role === 'assistant',
-        )
-        .map((message) => ({
-          id: message.id,
-          json: {
-            ...message.json,
-            createdAt: message.json.createdAt
-              ? new Date(message.json.createdAt)
-              : undefined,
-          },
-          createdAt: message.createdAt,
-        })),
+      messages,
     };
-    return threadDTO satisfies ThreadDTO;
+    return threadDTO;
   });

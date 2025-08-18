@@ -17,7 +17,7 @@ import {
   telescope,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import type { ArtifactDTO, ThreadDTO } from '@feynote/global-types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
@@ -31,7 +31,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
 import { SessionContext } from '../../context/session/SessionContext';
-import { getEdgeId, type Edge } from '@feynote/shared-utils';
+import { getEdgeId, type Edge, type ThreadDTO } from '@feynote/shared-utils';
 
 const FlexContainer = styled.div`
   display: flex;
