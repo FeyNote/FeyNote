@@ -127,7 +127,7 @@
     "zod": "^3.25.75"
   },
   "devDependencies": {
-    "@babel/core": "^7.28.0",
+    "@babel/core": "^7.28.3",
     "@babel/preset-react": "^7.27.1",
     "@nx/esbuild": "21.3.11",
     "@nx/eslint": "21.3.11",
