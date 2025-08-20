@@ -70,7 +70,7 @@
     "@types/multer": "^2.0.0",
     "@types/remove-markdown": "^0.3.4",
     "ai": "^4.3.19",
-    "astro": "^5.12.9",
+    "astro": "^5.13.2",
     "axios": "^1.11.0",
     "bullmq": "^5.56.10",
     "commander": "^14.0.0",
