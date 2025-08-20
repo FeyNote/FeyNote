@@ -105,11 +105,6 @@ const displayUrlExecutor = async (
         [ToolName.Display5eObject]: display5eObjectTool,
       },
     );
-    const textPart: TextUIPart = {
-      type: 'text',
-      text,
-      state: 'done',
-    };
     const toolParts = toolResults.map((toolResult) => ({
       type: `tool-${toolResult.toolName}`,
       toolCallId: toolResult.toolCallId,
@@ -117,7 +112,16 @@ const displayUrlExecutor = async (
       input: toolResult.input,
       output: toolResult.output,
     })) as UIMessagePart<UIDataTypes, FeynoteUITool>[];
-    return [textPart, ...toolParts];
+
+    if (text.trim()) {
+      const textPart: TextUIPart = {
+        type: 'text',
+        text,
+        state: 'done',
+      };
+      toolParts.push(textPart);
+    }
+    return toolParts;
   } catch (e) {
     console.error(e);
     return null;

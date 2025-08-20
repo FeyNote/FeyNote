@@ -3,6 +3,7 @@ import { IonSpinner } from '@ionic/react';
 import { getEditorContentsFromToolPart } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
 import type { FeynoteUITool } from '@feynote/shared-utils';
+import { useMemo } from 'react';
 
 interface Props {
   part: UIMessagePart<UIDataTypes, FeynoteUITool>;
@@ -12,7 +13,10 @@ interface Props {
 }
 
 export const AIToolPart = (props: Props) => {
-  const toolPartContents = getEditorContentsFromToolPart(props.part);
+  const toolPartContents = useMemo(
+    () => getEditorContentsFromToolPart(props.part),
+    [props.part],
+  );
   if (!toolPartContents.length) return <IonSpinner name="dots" />;
 
   return (

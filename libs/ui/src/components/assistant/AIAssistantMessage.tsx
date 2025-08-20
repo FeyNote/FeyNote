@@ -1,5 +1,4 @@
 import { IonSpinner } from '@ionic/react';
-import { isDisplayableToolPart } from '../../utils/assistant/isDisplayableInvocation';
 import { AIToolPart } from './AIToolInvocation';
 import { AIMessagePartText } from './AIMessagePartText';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
@@ -18,7 +17,7 @@ export const AIAssistantMessage = (props: Props) => {
   return (
     props.message.parts &&
     props.message.parts.map((part, i) => {
-      if (part.type.includes('tool-') && isDisplayableToolPart(part)) {
+      if (part.type.includes('tool-')) {
         return (
           <AIToolPart
             key={i}

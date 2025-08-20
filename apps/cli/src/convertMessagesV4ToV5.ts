@@ -5,6 +5,68 @@ import { setTimeout } from 'timers/promises';
 import { logger } from '@feynote/api-services';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+const convertToolPartToV5Part = (
+  part: any,
+  messageAlreadyHasTextContent: boolean,
+): UIMessagePart<UIDataTypes, FeynoteUITool> => {
+  switch (part.type) {
+    case 'tool-invocation': {
+      switch (part.toolInvocation.state) {
+        case 'result': {
+          let output = part.toolInvocation.result;
+          if (output.toolInvocations?.length || output.text) {
+            const outputParts = [];
+            if (output.text)
+              outputParts.push({ type: 'text', text: output.text });
+            outputParts.push(
+              ...output.toolInvocation.map((toolInvocation: any) =>
+                convertToolPartToV5Part(toolInvocation, !!output.text),
+              ),
+            );
+            output = outputParts;
+          }
+          const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
+            toolCallId: part.toolInvocation.toolCallId,
+            type: `tool-${part.toolInvocation.toolName}` as any,
+            state: 'output-available',
+            input: part.toolInvocation.args,
+            output: part.toolInvocation.result,
+          };
+          return toolPart;
+        }
+        case 'call': {
+          const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
+            toolCallId: part.toolInvocation.toolCallId,
+            type: `tool-${part.toolInvocation.toolName}` as any,
+            state: 'input-available',
+            input: part.toolInvocation.args,
+          };
+          return toolPart;
+        }
+        default:
+          throw new Error(`Unrecognized tool invocation state ${part}`);
+      }
+    }
+    case 'text': {
+      if (!messageAlreadyHasTextContent) {
+        const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
+          type: 'text',
+          text: part.text,
+        };
+        return toolPart;
+      }
+      break;
+    }
+    case 'step-start': {
+      const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
+        type: 'step-start',
+      };
+      return toolPart;
+    }
+  }
+  throw new Error(`Error when processing part ${part}`);
+};
+
 const convertV4ToV5Message = (legacyMessage: any) => {
   const message: FeynoteUIMessage = {
     id: legacyMessage.id,
@@ -12,48 +74,23 @@ const convertV4ToV5Message = (legacyMessage: any) => {
     parts: [],
   };
   if (legacyMessage.content) {
+    message.parts.push({ type: 'step-start' });
     message.parts.push({ type: 'text', text: legacyMessage.content });
   }
-  legacyMessage.parts?.forEach((part: any) => {
-    switch (part.type) {
-      case 'tool-invocation': {
-        switch (part.toolInvocation.state) {
-          case 'result': {
-            const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
-              toolCallId: part.toolInvocation.toolCallId,
-              type: `tool-${part.toolInvocation.toolName}` as any,
-              state: 'output-available',
-              input: part.toolInvocation.args,
-              output: part.toolInvocation.result,
-            };
-            message.parts.push(toolPart);
-            break;
-          }
-          case 'call': {
-            const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
-              toolCallId: part.toolInvocation.toolCallId,
-              type: `tool-${part.toolInvocation.toolName}` as any,
-              state: 'input-available',
-              input: part.toolInvocation.args,
-            };
-            message.parts.push(toolPart);
-            break;
-          }
-        }
-        break;
-      }
-      case 'text': {
-        if (!legacyMessage.content) {
-          message.parts.push({ type: 'text', text: legacyMessage.content });
-        }
-        break;
-      }
-      case 'step-start': {
-        message.parts.push({ type: 'step-start' });
-        break;
-      }
-    }
-  });
+  if (legacyMessage.toolInvocations?.length) {
+    message.parts.push(
+      ...legacyMessage.toolInvocations.map((toolInvocation: any) =>
+        convertToolPartToV5Part(toolInvocation, !!legacyMessage.content),
+      ),
+    );
+  }
+  if (legacyMessage.parts?.length) {
+    message.parts.push(
+      ...legacyMessage.parts.map((part: any) =>
+        convertToolPartToV5Part(part, !!legacyMessage.content),
+      ),
+    );
+  }
 };
 
 export const convertMessagesV4ToV5 = async (
