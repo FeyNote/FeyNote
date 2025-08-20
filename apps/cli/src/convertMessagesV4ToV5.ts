@@ -1,6 +1,9 @@
 import type { UIDataTypes, UIMessagePart } from 'ai';
 import { prisma } from '@feynote/prisma/client';
-import type { FeynoteUIMessage, FeynoteUITool } from '@feynote/shared-utils';
+import {
+  type FeynoteUIMessage,
+  type FeynoteUITool,
+} from '@feynote/shared-utils';
 import { setTimeout } from 'timers/promises';
 import { logger } from '@feynote/api-services';
 
@@ -8,44 +11,42 @@ import { logger } from '@feynote/api-services';
 const convertToolPartToV5Part = (
   part: any,
   messageAlreadyHasTextContent: boolean,
-): UIMessagePart<UIDataTypes, FeynoteUITool> => {
+): UIMessagePart<UIDataTypes, FeynoteUITool> | undefined => {
   switch (part.type) {
     case 'tool-invocation': {
-      switch (part.toolInvocation.state) {
-        case 'result': {
-          let output = part.toolInvocation.result;
-          if (output.toolInvocations?.length || output.text) {
-            const outputParts = [];
-            if (output.text)
-              outputParts.push({ type: 'text', text: output.text });
-            outputParts.push(
-              ...output.toolInvocation.map((toolInvocation: any) =>
-                convertToolPartToV5Part(toolInvocation, !!output.text),
-              ),
-            );
-            output = outputParts;
-          }
-          const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
-            toolCallId: part.toolInvocation.toolCallId,
-            type: `tool-${part.toolInvocation.toolName}` as any,
-            state: 'output-available',
-            input: part.toolInvocation.args,
-            output: part.toolInvocation.result,
-          };
-          return toolPart;
-        }
-        case 'call': {
-          const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
-            toolCallId: part.toolInvocation.toolCallId,
-            type: `tool-${part.toolInvocation.toolName}` as any,
-            state: 'input-available',
-            input: part.toolInvocation.args,
-          };
-          return toolPart;
-        }
-        default:
-          throw new Error(`Unrecognized tool invocation state ${part}`);
+      const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
+        toolCallId: part.toolInvocation.toolCallId,
+        type: `tool-${part.toolInvocation.toolName}` as any,
+        state: 'output-available',
+        input: part.toolInvocation.args,
+        output: part.toolInvocation.result,
+      };
+      let output = part.toolInvocation.result;
+      const outputParts = [];
+      if (output.text && !messageAlreadyHasTextContent) {
+        outputParts.push({ type: 'text', text: output.text });
       }
+      if (output.toolInvocations?.length) {
+        const convertedRescusriveParts = output.toolInvocations.map(
+          (toolInvocation: any) => {
+            const part = {
+              type: 'tool-invocation',
+              toolInvocation: {
+                ...toolInvocation,
+              },
+            };
+            const convertedPart = convertToolPartToV5Part(part, !!output.text);
+            return convertedPart;
+          },
+        );
+        if (convertedRescusriveParts) {
+          outputParts.push(...convertedRescusriveParts);
+        }
+      }
+      if (outputParts.length) {
+        toolPart.output = outputParts;
+      }
+      return toolPart;
     }
     case 'text': {
       if (!messageAlreadyHasTextContent) {
@@ -55,7 +56,7 @@ const convertToolPartToV5Part = (
         };
         return toolPart;
       }
-      break;
+      return undefined;
     }
     case 'step-start': {
       const toolPart: UIMessagePart<UIDataTypes, FeynoteUITool> = {
@@ -64,33 +65,44 @@ const convertToolPartToV5Part = (
       return toolPart;
     }
   }
-  throw new Error(`Error when processing part ${part}`);
+  throw new Error(
+    `Error when processing part ${JSON.stringify(part, null, 2)}`,
+  );
 };
 
-const convertV4ToV5Message = (legacyMessage: any) => {
+const convertMessageVercelLegacyToVercelV5 = (messageId: string, json: any) => {
   const message: FeynoteUIMessage = {
-    id: legacyMessage.id,
-    role: legacyMessage.role,
+    id: messageId,
+    role: json.role,
     parts: [],
   };
-  if (legacyMessage.content) {
+  if (json.content) {
     message.parts.push({ type: 'step-start' });
-    message.parts.push({ type: 'text', text: legacyMessage.content });
+    message.parts.push({ type: 'text', text: json.content });
   }
-  if (legacyMessage.toolInvocations?.length) {
-    message.parts.push(
-      ...legacyMessage.toolInvocations.map((toolInvocation: any) =>
-        convertToolPartToV5Part(toolInvocation, !!legacyMessage.content),
-      ),
-    );
+  if (json.toolInvocations?.length) {
+    const convertedParts = json.toolInvocations
+      .map((toolInvocation: any) =>
+        convertToolPartToV5Part(
+          {
+            type: 'tool-invocation',
+            toolInvocation: {
+              ...toolInvocation,
+            },
+          },
+          !!json.content,
+        ),
+      )
+      .filter((part: any) => !!part);
+    message.parts.push(...convertedParts);
   }
-  if (legacyMessage.parts?.length) {
-    message.parts.push(
-      ...legacyMessage.parts.map((part: any) =>
-        convertToolPartToV5Part(part, !!legacyMessage.content),
-      ),
-    );
+  if (json.parts?.length) {
+    const convertedParts = json.parts
+      .map((part: any) => convertToolPartToV5Part(part, !!json.content))
+      .filter((part: any) => !!part);
+    message.parts.push(...convertedParts);
   }
+  return message;
 };
 
 export const convertMessagesV4ToV5 = async (
@@ -109,10 +121,16 @@ export const convertMessagesV4ToV5 = async (
         },
       });
       if (!messages.length) break;
-      const updatedMessages = messages.map((message) => ({
-        ...message,
-        jsonV5: convertV4ToV5Message(message.json),
-      }));
+      const updatedMessages = messages.map((message) => {
+        const vercelV5 = convertMessageVercelLegacyToVercelV5(
+          message.id,
+          message.json,
+        );
+        return {
+          ...message,
+          vercel_json_v5: vercelV5,
+        };
+      });
       await prisma.message.updateMany({
         data: updatedMessages,
       });

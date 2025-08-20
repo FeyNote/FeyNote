@@ -85,9 +85,9 @@ export const createMessage = defineExpressHandler(
       limited_messages,
       model,
       {
-        [ToolName.Display5eMonster]: display5eMonsterTool,
-        [ToolName.Display5eObject]: display5eObjectTool,
-        [ToolName.DisplayUrl]: displayUrlTool,
+        [ToolName.Generate5eMonster]: display5eMonsterTool,
+        [ToolName.Generate5eObject]: display5eObjectTool,
+        [ToolName.ScrapeUrl]: displayUrlTool,
       },
     );
 

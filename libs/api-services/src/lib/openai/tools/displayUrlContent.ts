@@ -101,8 +101,8 @@ const displayUrlExecutor = async (
       messages,
       AIModel.GPT4_MINI,
       {
-        [ToolName.Display5eMonster]: display5eMonsterTool,
-        [ToolName.Display5eObject]: display5eObjectTool,
+        [ToolName.Generate5eMonster]: display5eMonsterTool,
+        [ToolName.Generate5eObject]: display5eObjectTool,
       },
     );
     const toolParts = toolResults.map((toolResult) => ({
