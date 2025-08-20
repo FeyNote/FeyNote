@@ -28,7 +28,7 @@ export const createThreadTitle = authenticatedProcedure
       });
     }
     const feynoteUIMessages = thread.messages.map(
-      (message) => message.json as unknown as FeynoteUIMessage,
+      (message) => message.vercel_json_v5 as unknown as FeynoteUIMessage,
     );
 
     const messages = convertToModelMessages([...feynoteUIMessages]);

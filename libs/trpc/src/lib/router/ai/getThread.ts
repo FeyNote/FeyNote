@@ -21,11 +21,13 @@ export const getThread = authenticatedProcedure
         code: 'NOT_FOUND',
       });
     }
-    const messages = thread.messages.map((message) => ({
-      ...(message.json as unknown as FeynoteUIMessage),
-      id: message.id,
-      updatedAt: message.createdAt,
-    }));
+    const messages = thread.messages
+      .filter((message) => !!message.vercel_json_v5)
+      .map((message) => ({
+        ...(message.vercel_json_v5 as unknown as FeynoteUIMessage),
+        id: message.id,
+        updatedAt: message.createdAt,
+      }));
     const threadDTO = {
       id: thread.id,
       title: thread.title || undefined,

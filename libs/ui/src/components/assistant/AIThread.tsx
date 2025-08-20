@@ -180,7 +180,6 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
-  console.log(messages);
   const isLoading = useMemo(
     () => status === 'submitted' || status === 'streaming',
     [status],
