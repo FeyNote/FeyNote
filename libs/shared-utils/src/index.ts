@@ -40,9 +40,9 @@ export * from './lib/tldraw/ReferenceShapeProps';
 export * from './lib/tldraw/ReferenceShapeIconOptions';
 export * from './lib/tldraw/TLYKVRecord';
 
-export * from './lib/openai/schemas/display5eMonsterSchema';
-export * from './lib/openai/schemas/display5eObjectSchema';
-export * from './lib/openai/schemas/displayUrlContent';
+export * from './lib/openai/schemas/generate5eMonsterSchema';
+export * from './lib/openai/schemas/Generate5eObjectSchema';
+export * from './lib/openai/schemas/scrapeUrlContent';
 export * from './lib/openai/ToolName';
 export * from './lib/openai/FeynoteUIMessage';
 export * from './lib/openai/ThreadDTO';

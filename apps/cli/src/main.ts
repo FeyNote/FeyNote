@@ -2,8 +2,6 @@ import { program } from 'commander';
 import { reindexArtifacts } from './reindexArtifacts';
 import { convertMessagesV4ToV5 } from './convertMessagesV4ToV5';
 
-convertMessagesV4ToV5(100, 50, true);
-
 program
   .command('reindex')
   .option('--user-id <userId | all>', 'User ID to reindex or "all"', 'all')
@@ -43,7 +41,7 @@ program
     const pageSize = parseInt(options.pageSize);
     const cooldown = parseInt(options.cooldown);
 
-    convertMessagesV4ToV5(pageSize, cooldown, false);
+    convertMessagesV4ToV5(pageSize, cooldown, true);
   });
 
 program.parse(process.argv);

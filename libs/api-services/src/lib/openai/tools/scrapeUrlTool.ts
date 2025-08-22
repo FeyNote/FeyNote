@@ -9,14 +9,14 @@ import {
 import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
-  getDisplayScrapeUrlSchema,
-  type DisplayUrlTool,
+  getScrapeUrlSchema,
+  type ScrapeUrlTool,
   type FeynoteUITool,
 } from '@feynote/shared-utils';
 import DOMPurify from 'dompurify';
 import { ToolName } from '@feynote/shared-utils';
-import { display5eMonsterTool } from './display5eMonster';
-import { display5eObjectTool } from './display5eObject';
+import { generate5eMonsterTool } from './generate5eMonster';
+import { generate5eObjectTool } from './generate5eObject';
 import type { AxiosRequestConfig } from 'axios';
 import { globalServerConfig } from '@feynote/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
@@ -24,6 +24,7 @@ import axios from 'axios';
 import { systemMessage } from '../utils/SystemMessage';
 import { generateAssistantText } from '../generateAssistantText';
 import { AIModel } from '../utils/AIModel';
+import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);
 const newLineCausingNodes = new Set([
@@ -101,8 +102,8 @@ const displayUrlExecutor = async (
       messages,
       AIModel.GPT4_MINI,
       {
-        [ToolName.Generate5eMonster]: display5eMonsterTool,
-        [ToolName.Generate5eObject]: display5eObjectTool,
+        [ToolName.Generate5eMonster]: generate5eMonsterTool,
+        [ToolName.Generate5eObject]: generate5eObjectTool,
       },
     );
     const toolParts = toolResults.map((toolResult) => ({
@@ -123,19 +124,19 @@ const displayUrlExecutor = async (
     }
     return toolParts;
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return null;
   }
 };
 
-export const displayUrlTool = tool({
+export const scrapeUrlTool = tool({
   description:
     'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
-  inputSchema: getDisplayScrapeUrlSchema(),
+  inputSchema: getScrapeUrlSchema(),
   execute: displayUrlExecutor,
 });
 
-type _DisplayUrlTool = InferUITool<typeof displayUrlTool>;
+type _DisplayUrlTool = InferUITool<typeof scrapeUrlTool>;
 
-const _ = {} as _DisplayUrlTool satisfies DisplayUrlTool;
-const __ = {} as DisplayUrlTool satisfies _DisplayUrlTool;
+const _ = {} as _DisplayUrlTool satisfies ScrapeUrlTool;
+const __ = {} as ScrapeUrlTool satisfies _DisplayUrlTool;

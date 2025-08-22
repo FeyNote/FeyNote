@@ -1,6 +1,6 @@
 import { z, infer as zInfer } from 'zod';
 
-export const getDisplay5eMonsterSchema = () => {
+export const getGenerate5eMonsterSchema = () => {
   return z.object({
     name: z.string(),
     alignment: z.string(),
@@ -66,10 +66,10 @@ export const getDisplay5eMonsterSchema = () => {
 };
 
 export type Generate5eMonsterParams = zInfer<
-  ReturnType<typeof getDisplay5eMonsterSchema>
+  ReturnType<typeof getGenerate5eMonsterSchema>
 >;
 
-export type Display5eMonsterTool = {
+export type Generate5eMonsterTool = {
   input: Generate5eMonsterParams;
   output: string;
 };

@@ -9,9 +9,9 @@ import {
   AIModel,
   limitNumOfMessagesByCapability,
   generateAssistantStreamText,
-  display5eMonsterTool,
-  displayUrlTool,
-  display5eObjectTool,
+  generate5eMonsterTool,
+  scrapeUrlTool,
+  generate5eObjectTool,
 } from '@feynote/api-services';
 import { convertToModelMessages, type ModelMessage } from 'ai';
 import { Capability, ToolName } from '@feynote/shared-utils';
@@ -75,21 +75,16 @@ export const createMessage = defineExpressHandler(
     if (numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) {
       model = AIModel.GPT4_MINI;
     }
-    const limited_messages = limitNumOfMessagesByCapability(
+    const limitedMessages = limitNumOfMessagesByCapability(
       messages,
       capabilities,
     );
 
-    const stream = generateAssistantStreamText(
-      openai,
-      limited_messages,
-      model,
-      {
-        [ToolName.Generate5eMonster]: display5eMonsterTool,
-        [ToolName.Generate5eObject]: display5eObjectTool,
-        [ToolName.ScrapeUrl]: displayUrlTool,
-      },
-    );
+    const stream = generateAssistantStreamText(openai, limitedMessages, model, {
+      [ToolName.Generate5eMonster]: generate5eMonsterTool,
+      [ToolName.Generate5eObject]: generate5eObjectTool,
+      [ToolName.ScrapeUrl]: scrapeUrlTool,
+    });
 
     res.setHeader('Transfer-Encoding', 'chunked');
     stream.pipeUIMessageStreamToResponse(res);

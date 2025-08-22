@@ -21,7 +21,7 @@ const convertToolPartToV5Part = (
         input: part.toolInvocation.args,
         output: part.toolInvocation.result,
       };
-      let output = part.toolInvocation.result;
+      const output = part.toolInvocation.result;
       const outputParts = [];
       if (output.text && !messageAlreadyHasTextContent) {
         outputParts.push({ type: 'text', text: output.text });
@@ -121,19 +121,20 @@ export const convertMessagesV4ToV5 = async (
         },
       });
       if (!messages.length) break;
-      const updatedMessages = messages.map((message) => {
+      for await (const message of messages) {
         const vercelV5 = convertMessageVercelLegacyToVercelV5(
           message.id,
           message.json,
         );
-        return {
-          ...message,
-          vercel_json_v5: vercelV5,
-        };
-      });
-      await prisma.message.updateMany({
-        data: updatedMessages,
-      });
+        await prisma.message.update({
+          where: {
+            id: message.id,
+          },
+          data: {
+            vercelJsonV5: vercelV5 as any,
+          },
+        });
+      }
 
       await setTimeout(cooldown);
     } catch (e) {

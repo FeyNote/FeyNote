@@ -152,6 +152,7 @@ export const AIThread: React.FC<Props> = (props) => {
         return crypto.randomUUID();
       },
       onFinish: async (data) => {
+        //TODO: https://github.com/RedChickenCo/FeyNote/issues/1201
         await trpc.ai.saveMessage.mutate({
           threadId: props.id,
           message: data.message,

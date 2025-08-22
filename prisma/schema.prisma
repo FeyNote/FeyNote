@@ -190,7 +190,7 @@ model Thread {
 model Message {
   id        String   @id @default(uuid()) @db.Uuid
   json      Json?
-  vercel_json_v5    Json?
+  vercelJsonV5    Json?
   threadId  String   @db.Uuid
   thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   createdAt DateTime @unique @default(now()) @db.Timestamptz(6)

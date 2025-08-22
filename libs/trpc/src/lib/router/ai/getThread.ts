@@ -22,9 +22,9 @@ export const getThread = authenticatedProcedure
       });
     }
     const messages = thread.messages
-      .filter((message) => !!message.vercel_json_v5)
+      .filter((message) => !!message.vercelJsonV5)
       .map((message) => ({
-        ...(message.vercel_json_v5 as unknown as FeynoteUIMessage),
+        ...(message.vercelJsonV5 as unknown as FeynoteUIMessage),
         id: message.id,
         updatedAt: message.createdAt,
       }));

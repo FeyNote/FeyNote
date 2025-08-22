@@ -81,7 +81,6 @@ export const defineExpressHandler = <
           opts.schema.body?.parse(req.body);
         } catch (e) {
           if (e instanceof ZodError) {
-            console.log(e)
             throw new BadRequestExpressError(e.message);
           }
           throw new InternalServerExpressError('Unknown error parsing request');
