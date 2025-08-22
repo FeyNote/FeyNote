@@ -18,4 +18,4 @@ export const systemMessage = {
     content: SCRAPE_CONTENT_MESSAGE,
     role: 'system',
   },
-} as const
+} as const;

@@ -1,5 +1,5 @@
-import type { Generate5eObjectParams } from "@feynote/shared-utils";
-import type { DeepPartial } from "ai";
+import type { Generate5eObjectParams } from '@feynote/shared-utils';
+import type { DeepPartial } from 'ai';
 
 export const convert5eObjectToTiptap = (
   generatedObject: DeepPartial<Generate5eObjectParams>,
