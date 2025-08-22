@@ -27,10 +27,6 @@ export const ParagraphExtension =
 
     addNodeView() {
       return ({ node, HTMLAttributes }) => {
-        if (!this.options.artifactId) {
-          throw new Error('Artifact ID is required for the ParagraphExtension');
-        }
-
         const container = document.createElement('div');
         container.setAttribute('data-id', node.attrs.id);
         container.classList.add('editor-paragraph-container');
@@ -64,12 +60,13 @@ export const ParagraphExtension =
           }
         };
 
-        edgeUpdateListener();
-        const cleanupUpdateListener =
-          this.options.edgeStore?.listenForArtifactId(
-            this.options.artifactId,
-            edgeUpdateListener,
-          );
+        if (this.options.artifactId) edgeUpdateListener();
+        const cleanupUpdateListener = this.options.artifactId
+          ? this.options.edgeStore?.listenForArtifactId(
+              this.options.artifactId,
+              edgeUpdateListener,
+            )
+          : undefined;
 
         incomingEdgeCounter.classList.add('editor-incoming-edge-counter');
 
@@ -114,7 +111,7 @@ export const ParagraphExtension =
           contentDOM: contentDom,
           destroy: () => {
             cleanupUpdateListener?.();
-            container.removeEventListener('click', edgeUpdateListener);
+            container.removeEventListener('click', clickListener);
             container.removeEventListener('mouseover', mouseOverListener);
             container.removeEventListener('mouseout', mouseOutListener);
           },

@@ -19,7 +19,7 @@ export const generate5eObjectTool = tool({
   },
 });
 
-type _Display5eObjectTool = InferUITool<typeof generate5eObjectTool>;
+type _Generate5eObjectTool = InferUITool<typeof generate5eObjectTool>;
 
-const _ = {} as _Display5eObjectTool satisfies Generate5eObjectTool;
-const __ = {} as Generate5eObjectTool satisfies _Display5eObjectTool;
+const _ = {} as _Generate5eObjectTool satisfies Generate5eObjectTool;
+const __ = {} as Generate5eObjectTool satisfies _Generate5eObjectTool;

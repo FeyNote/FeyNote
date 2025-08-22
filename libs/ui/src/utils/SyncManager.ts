@@ -5,12 +5,7 @@ import {
   HocuspocusProviderWebsocket,
 } from '@hocuspocus/provider';
 import { getApiUrls } from './getApiUrls';
-import {
-  Doc,
-  encodeStateAsUpdate,
-  type XmlElement as YXmlElement,
-  type YEvent,
-} from 'yjs';
+import { Doc, type XmlElement as YXmlElement, type YEvent } from 'yjs';
 import { trpc } from './trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
@@ -20,6 +15,7 @@ import {
   getEdgeId,
   getMetaFromYArtifact,
   getTiptapIdsFromYEvent,
+  getUserAccessFromYArtifact,
   ImmediateDebouncer,
 } from '@feynote/shared-utils';
 import { getManifestDb, ObjectStoreName } from './localDb';
@@ -364,7 +360,7 @@ export class SyncManager {
     await manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
       id: artifactId,
       meta: getMetaFromYArtifact(doc),
-      yDoc: encodeStateAsUpdate(doc),
+      userAccess: getUserAccessFromYArtifact(doc).map,
     });
 
     doc

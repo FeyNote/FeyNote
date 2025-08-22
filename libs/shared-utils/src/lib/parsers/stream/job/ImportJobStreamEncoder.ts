@@ -1,4 +1,4 @@
-import { ImportFormat } from '@feynote/prisma/types';
+import type { ImportFormat } from '@feynote/prisma/types';
 import { FeynoteStreamWriter } from '../feynoteAPIStreamEncoding';
 import { FeynoteAPIStreamMessageType } from '../FeynoteAPIStreamMessageType';
 

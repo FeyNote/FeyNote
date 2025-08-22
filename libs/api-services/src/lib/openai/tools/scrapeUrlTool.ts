@@ -136,7 +136,7 @@ export const scrapeUrlTool = tool({
   execute: displayUrlExecutor,
 });
 
-type _DisplayUrlTool = InferUITool<typeof scrapeUrlTool>;
+type _ScrapeUrlTool = InferUITool<typeof scrapeUrlTool>;
 
-const _ = {} as _DisplayUrlTool satisfies ScrapeUrlTool;
-const __ = {} as ScrapeUrlTool satisfies _DisplayUrlTool;
+const _ = {} as _ScrapeUrlTool satisfies ScrapeUrlTool;
+const __ = {} as ScrapeUrlTool satisfies _ScrapeUrlTool;

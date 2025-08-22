@@ -84,6 +84,8 @@ model Artifact {
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
   artifactShares             ArtifactShare[]
   files                      File[]
+
+  @@index([userId])
 }
 
 model ArtifactReference {
@@ -106,6 +108,10 @@ model ArtifactReference {
 
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([artifactId])
+  @@index([referenceTargetArtifactId])
+  @@index([targetArtifactId])
 }
 
 model ArtifactRevision {
@@ -135,6 +141,7 @@ model ArtifactShare {
   updatedAt   DateTime            @updatedAt @db.Timestamptz(6)
 
   @@unique([artifactId, userId])
+  @@index([userId])
 }
 
 enum ArtifactAccessLevel {

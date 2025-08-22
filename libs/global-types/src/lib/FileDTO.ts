@@ -1,4 +1,4 @@
-import { FileSummary } from '@feynote/prisma/types';
+import type { FileSummary } from '@feynote/prisma/types';
 
 export interface FileDTO {
   id: string;

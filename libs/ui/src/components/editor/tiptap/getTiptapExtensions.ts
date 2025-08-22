@@ -28,7 +28,10 @@ import {
   TableCell as TableCellExtension,
 } from '@tiptap/extension-table';
 import { Document as DocumentExtension } from '@tiptap/extension-document';
-import { Placeholder as PlaceholderExtension } from '@tiptap/extensions';
+import {
+  Placeholder as PlaceholderExtension,
+  TrailingNode as TrailingNodeExtension,
+} from '@tiptap/extensions';
 import { Text as TextExtension } from '@tiptap/extension-text';
 import { HorizontalRule as HorizontalRuleExtension } from '@tiptap/extension-horizontal-rule';
 import { UniqueID as UniqueIDExtension } from '@tiptap/extension-unique-id';
@@ -43,7 +46,7 @@ import {
 } from '@tiptap/extension-collaboration';
 import { CollaborationCaret as CollaborationCaretExtension } from '@tiptap/extension-collaboration-caret';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
-import { ArtifactReferencesExtension } from './extensions/artifactReferences/ArtifactReferencesExtension';
+import { buildArtifactReferencesExtension } from './extensions/artifactReferences/ArtifactReferencesExtension';
 import { CommandsExtension } from './extensions/commands/CommandsExtension';
 import { HeadingExtension } from './extensions/heading/HeadingExtension';
 import { MonsterStatblockExtension } from './extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
@@ -117,6 +120,7 @@ export const getTiptapExtensions = (args: {
       onIncomingReferenceCounterMouseOut:
         args.onIncomingReferenceCounterMouseOut,
     }),
+    TrailingNodeExtension,
     BlockGroup,
     TextExtension,
     HorizontalRuleExtension,
@@ -175,9 +179,14 @@ export const getTiptapExtensions = (args: {
         ]
       : []),
     CommandsExtension,
-    ArtifactReferencesExtension.configure({
-      artifactId: args.artifactId,
-    }),
+    ...(args.artifactId
+      ? [
+          buildArtifactReferencesExtension({
+            artifactId: args.artifactId,
+            yDoc: args.y.yDoc || args.y.yjsProvider.document,
+          }),
+        ]
+      : []),
     PlaceholderExtension.configure({
       placeholder: args.placeholder,
     }),

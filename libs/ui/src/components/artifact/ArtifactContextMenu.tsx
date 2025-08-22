@@ -15,6 +15,7 @@ import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
 import { createArtifact } from '../../utils/createArtifact';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
 
 interface Props {
   artifactId: string;
@@ -23,7 +24,7 @@ interface Props {
   connection: CollaborationManagerConnection;
   pane: PaneContextData['pane'];
   navigate: PaneContextData['navigate'];
-  isEditable: boolean;
+  authorizedScope: CollaborationConnectionAuthorizedScope;
 }
 
 export const ArtifactContextMenu: React.FC<Props> = (props) => {
@@ -116,16 +117,20 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
         <ContextMenuItem onClick={onDuplicateArtifactClicked}>
           {t('contextMenu.duplicateArtifact')}
         </ContextMenuItem>
-        {props.isEditable && !deletedAt && (
-          <ContextMenuItem onClick={props.triggerDelete}>
-            {t('generic.delete')}
-          </ContextMenuItem>
-        )}
-        {props.isEditable && deletedAt && (
-          <ContextMenuItem onClick={props.triggerUndelete}>
-            {t('artifact.deleted.undelete')}
-          </ContextMenuItem>
-        )}
+        {props.authorizedScope ===
+          CollaborationConnectionAuthorizedScope.CoOwner &&
+          !deletedAt && (
+            <ContextMenuItem onClick={props.triggerDelete}>
+              {t('generic.delete')}
+            </ContextMenuItem>
+          )}
+        {props.authorizedScope ===
+          CollaborationConnectionAuthorizedScope.CoOwner &&
+          deletedAt && (
+            <ContextMenuItem onClick={props.triggerUndelete}>
+              {t('artifact.deleted.undelete')}
+            </ContextMenuItem>
+          )}
       </ContextMenuGroup>
     </ContextMenuContainer>
   );

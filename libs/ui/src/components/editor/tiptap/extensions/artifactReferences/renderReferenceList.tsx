@@ -4,12 +4,17 @@ import tippy from 'tippy.js';
 import { ReferencesList } from './ReferencesList';
 import { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { ReferenceListItem } from './ReferenceListItem';
+import type { Doc as YDoc } from 'yjs';
 
-export const renderReferenceList = (mentionMenuOptsRef: {
-  enableMentionMenu: boolean;
-  componentRef: {
-    current: any;
+export const renderReferenceList = (args: {
+  mentionMenuOptsRef: {
+    enableMentionMenu: boolean;
+    componentRef: {
+      current: any;
+    };
   };
+  artifactId: string;
+  yDoc: YDoc;
 }) => {
   return () => {
     let component: any;
@@ -18,11 +23,15 @@ export const renderReferenceList = (mentionMenuOptsRef: {
     return {
       onStart: (props: SuggestionProps<ReferenceListItem>) => {
         component = new ReactRenderer(ReferencesList, {
-          props,
+          props: {
+            ...props,
+            artifactId: args.artifactId,
+            yDoc: args.yDoc,
+          },
           editor: props.editor,
         });
 
-        mentionMenuOptsRef.componentRef.current = component;
+        args.mentionMenuOptsRef.componentRef.current = component;
 
         popup = tippy('body', {
           getReferenceClientRect: props.clientRect as any,
@@ -35,14 +44,18 @@ export const renderReferenceList = (mentionMenuOptsRef: {
         });
       },
       onUpdate(props: SuggestionProps<ReferenceListItem>) {
-        component.updateProps(props);
+        component.updateProps({
+          ...props,
+          artifactId: args.artifactId,
+          yDoc: args.yDoc,
+        });
 
         popup[0].setProps({
           getReferenceClientRect: props.clientRect,
         });
       },
       onKeyDown(props: SuggestionKeyDownProps) {
-        if (!mentionMenuOptsRef.enableMentionMenu) return;
+        if (!args.mentionMenuOptsRef.enableMentionMenu) return;
 
         if (props.event.key === 'Escape') {
           popup[0].hide();
@@ -50,12 +63,16 @@ export const renderReferenceList = (mentionMenuOptsRef: {
           return true;
         }
 
-        return component?.ref?.onKeyDown(props);
+        return component?.ref?.onKeyDown({
+          ...props,
+          artifactId: args.artifactId,
+          yDoc: args.yDoc,
+        });
       },
       onExit() {
         popup[0].destroy();
         component.destroy();
-        mentionMenuOptsRef.enableMentionMenu = false;
+        args.mentionMenuOptsRef.enableMentionMenu = false;
       },
     };
   };

@@ -1,6 +1,25 @@
 {
   "extends": ["../../.eslintrc.json"],
   "ignorePatterns": ["!**/*"],
+  "rules": {
+    "@typescript-eslint/no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "regex": "@prisma.*",
+            "message": "Only type-only imports are allowed from @prisma/client",
+            "allowTypeImports": true
+          },
+          {
+            "regex": "@feynote/prisma",
+            "message": "Only type-only imports are allowed from @feynote/prisma",
+            "allowTypeImports": true
+          }
+        ]
+      }
+    ]
+  },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],

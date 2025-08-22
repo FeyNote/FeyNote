@@ -1,6 +1,8 @@
 import {
   AppPreferences,
   AppTheme,
+  ArtifactReferenceExistingArtifactSharingMode,
+  ArtifactReferenceNewArtifactSharingMode,
   PreferenceNames,
   PreferencesSync,
   SupportedFontSize,
@@ -27,6 +29,11 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.PreferencesSync]: z.nativeEnum(PreferencesSync),
       [PreferenceNames.GraphShowOrphans]: z.boolean(),
       [PreferenceNames.GraphLockNodeOnDrag]: z.boolean(),
+      [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: z.nativeEnum(
+        ArtifactReferenceNewArtifactSharingMode,
+      ),
+      [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
+        z.nativeEnum(ArtifactReferenceExistingArtifactSharingMode),
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) satisfies z.ZodSchema<AppPreferences, any, any>,

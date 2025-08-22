@@ -29,7 +29,10 @@ import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
 import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
-import { useIsEditable } from '../../../utils/useAuthorizedScope';
+import {
+  CollaborationConnectionAuthorizedScope,
+  useCollaborationConnectionAuthorizedScope,
+} from '../../../utils/useCollaborationConnectionAuthorizedScope';
 import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
@@ -60,7 +63,9 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [presentAlert] = useIonAlert();
-  const { isEditable } = useIsEditable(props.connection);
+  const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
+    props.connection,
+  );
   const { navigate } = useContext(GlobalPaneContext);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
@@ -89,21 +94,23 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
 
   const graphArtifacts = useMemo(() => {
-    return edges.reduce(
-      (acc, el) => {
-        acc[el.artifactId] = {
-          id: el.artifactId,
-          title: el.artifactTitle,
-        };
-        if (el.targetArtifactTitle !== null) {
-          acc[el.targetArtifactId] = {
-            id: el.targetArtifactId,
-            title: el.targetArtifactTitle,
+    return Object.values(
+      edges.reduce(
+        (acc, el) => {
+          acc[el.artifactId] = {
+            id: el.artifactId,
+            title: el.artifactTitle,
           };
-        }
-        return acc;
-      },
-      {} as { [key: string]: { id: string; title: string } },
+          if (el.targetArtifactTitle !== null) {
+            acc[el.targetArtifactId] = {
+              id: el.targetArtifactId,
+              title: el.targetArtifactTitle,
+            };
+          }
+          return acc;
+        },
+        {} as { [key: string]: { id: string; title: string } },
+      ),
     );
   }, [edges]);
   const graphPositionMap = useMemo(() => {
@@ -251,62 +258,64 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     });
   };
 
-  const isOwner = artifactMeta.userId === session.userId;
   const isDeleted = !!artifactMeta.deletedAt;
-  const artifactSharingSettings = isOwner && !isDeleted && (
-    <IonCard>
-      <IonListHeader>
-        <IonIcon icon={person} size="small" />
-        &nbsp;&nbsp;
-        {t('artifactRenderer.artifactShares')}
-        <InfoButton message={t('artifactRenderer.artifactShares.help')} />
-      </IonListHeader>
-      {activeUserShares.map(({ key }) => (
-        <CompactIonItem
-          lines="none"
-          key={key}
-          onClick={() => presentSharingModal()}
-          button
-        >
-          <NowrapIonLabel>
-            {knownUsersById.get(key)?.email || key}
-          </NowrapIonLabel>
-        </CompactIonItem>
-      ))}
-      {artifactMeta.linkAccessLevel &&
-        artifactMeta.linkAccessLevel !== 'noaccess' && (
+  const artifactSharingSettings = authorizedScope ===
+    CollaborationConnectionAuthorizedScope.CoOwner &&
+    !isDeleted && (
+      <IonCard>
+        <IonListHeader>
+          <IonIcon icon={person} size="small" />
+          &nbsp;&nbsp;
+          {t('artifactRenderer.artifactShares')}
+          <InfoButton message={t('artifactRenderer.artifactShares.help')} />
+        </IonListHeader>
+        {activeUserShares.map(({ key }) => (
           <CompactIonItem
             lines="none"
+            key={key}
             onClick={() => presentSharingModal()}
             button
           >
             <NowrapIonLabel>
-              {t('artifactRenderer.sharedByLink')}
+              {knownUsersById.get(key)?.email || key}
             </NowrapIonLabel>
           </CompactIonItem>
-        )}
-      {!activeUserShares.length &&
-        artifactMeta.linkAccessLevel === 'noaccess' && (
-          <CompactIonItem lines="none">
-            <NowrapIonLabel>
-              {t('artifactRenderer.artifactShares.null')}
-            </NowrapIonLabel>
-          </CompactIonItem>
-        )}
-      <CompactIonItem
-        lines="none"
-        button
-        detail={true}
-        onClick={() => presentSharingModal()}
-      >
-        <NowrapIonLabel>
-          {t('artifactRenderer.artifactShares.manage')}
-        </NowrapIonLabel>
-      </CompactIonItem>
-    </IonCard>
-  );
+        ))}
+        {artifactMeta.linkAccessLevel &&
+          artifactMeta.linkAccessLevel !== 'noaccess' && (
+            <CompactIonItem
+              lines="none"
+              onClick={() => presentSharingModal()}
+              button
+            >
+              <NowrapIonLabel>
+                {t('artifactRenderer.sharedByLink')}
+              </NowrapIonLabel>
+            </CompactIonItem>
+          )}
+        {!activeUserShares.length &&
+          artifactMeta.linkAccessLevel === 'noaccess' && (
+            <CompactIonItem lines="none">
+              <NowrapIonLabel>
+                {t('artifactRenderer.artifactShares.null')}
+              </NowrapIonLabel>
+            </CompactIonItem>
+          )}
+        <CompactIonItem
+          lines="none"
+          button
+          detail={true}
+          onClick={() => presentSharingModal()}
+        >
+          <NowrapIonLabel>
+            {t('artifactRenderer.artifactShares.manage')}
+          </NowrapIonLabel>
+        </CompactIonItem>
+      </IonCard>
+    );
 
-  const artifactSharingStatus = !isOwner && (
+  const artifactSharingStatus = authorizedScope !==
+    CollaborationConnectionAuthorizedScope.CoOwner && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -323,7 +332,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           })}
           <br />
           {t(
-            isEditable
+            authorizedScope === CollaborationConnectionAuthorizedScope.ReadWrite
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
@@ -387,7 +396,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </IonListHeader>
           <GraphContainer>
             <GraphRenderer
-              artifacts={Object.values(graphArtifacts)}
+              artifacts={graphArtifacts}
               artifactPositions={graphPositionMap}
               edges={edges}
               enableInitialZoom={true}

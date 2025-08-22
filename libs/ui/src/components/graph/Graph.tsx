@@ -11,7 +11,7 @@ import { gitNetwork } from 'ionicons/icons';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
 import { Edge, getEdgeId, PreferenceNames } from '@feynote/shared-utils';
-import { collaborationManager } from '../editor/collaborationManager';
+import { useCollaborationConnection } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { PaneContext } from '../../context/pane/PaneContext';
@@ -40,10 +40,7 @@ export const Graph: React.FC = () => {
 
   const showOrphans = getPreference(PreferenceNames.GraphShowOrphans);
 
-  const connection = collaborationManager.get(
-    `userTree:${session.userId}`,
-    session,
-  );
+  const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;
 
   const artifactsYKV = useMemo(() => {

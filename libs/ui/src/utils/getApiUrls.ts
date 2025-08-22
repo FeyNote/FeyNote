@@ -11,9 +11,12 @@ try {
 
 const apiUrlsByEnv = {
   development: {
-    rest: window.location.origin + '/api',
-    trpc: window.location.origin + '/api/trpc',
-    hocuspocus: window.location.origin + '/hocuspocus',
+    // eslint-disable-next-line no-restricted-globals
+    rest: self.location.origin + '/api',
+    // eslint-disable-next-line no-restricted-globals
+    trpc: self.location.origin + '/api/trpc',
+    // eslint-disable-next-line no-restricted-globals
+    hocuspocus: self.location.origin + '/hocuspocus',
     websocket: wsHost + '/websocket',
   },
   'feynote.com': {

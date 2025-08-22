@@ -14,7 +14,7 @@ export const generate5eMonsterTool = tool({
   },
 });
 
-type _Display5eMonsterTool = InferUITool<typeof generate5eMonsterTool>;
+type _Generate5eMonsterTool = InferUITool<typeof generate5eMonsterTool>;
 
-const _ = {} as _Display5eMonsterTool satisfies Generate5eMonsterTool;
-const __ = {} as Generate5eMonsterTool satisfies _Display5eMonsterTool;
+const _ = {} as _Generate5eMonsterTool satisfies Generate5eMonsterTool;
+const __ = {} as Generate5eMonsterTool satisfies _Generate5eMonsterTool;

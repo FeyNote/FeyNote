@@ -9,7 +9,7 @@ interface Args {
   newItemId: string;
 }
 
-export const addArtifactToArtifactTree = async (args: Args) => {
+export const addArtifactToArtifactTree = (args: Args) => {
   const { yKeyValue } = getArtifactTreeFromYDoc(args.yDoc);
 
   yKeyValue.set(args.newItemId, {

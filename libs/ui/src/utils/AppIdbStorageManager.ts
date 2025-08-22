@@ -93,8 +93,11 @@ export class AppIdbStorageManager {
     await manifestDb.clear(ObjectStoreName.Edges);
     await manifestDb.clear(ObjectStoreName.Artifacts);
     await manifestDb.clear(ObjectStoreName.ArtifactVersions);
+    await manifestDb.clear(ObjectStoreName.ArtifactSnapshots);
     await manifestDb.clear(ObjectStoreName.PendingArtifacts);
+    await manifestDb.clear(ObjectStoreName.KnownUsers);
     await manifestDb.clear(ObjectStoreName.AuthorizedCollaborationScopes);
+    await manifestDb.clear(ObjectStoreName.PendingFiles);
 
     const databases = await indexedDB.databases();
     for (const database of databases) {
