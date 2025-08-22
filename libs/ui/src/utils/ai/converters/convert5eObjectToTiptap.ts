@@ -30,11 +30,11 @@ export const convert5eObjectToTiptap = (
           {
             type: 'text',
             marks: [{ type: 'bold' }],
-            text: keyPair.keyName + ':',
+            text: keyPair?.keyName + ':',
           },
           {
             type: 'text',
-            text: ' ' + keyPair.keyValue,
+            text: ' ' + keyPair?.keyValue,
           },
         ],
       );

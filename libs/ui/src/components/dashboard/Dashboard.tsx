@@ -140,8 +140,8 @@ export const Dashboard: React.FC = () => {
         setRecentlyUpdatedThreads(
           threads.sort(
             (a, b) =>
-              (b.messages.at(-1)?.createdAt.getTime() || 0) -
-              (a.messages.at(-1)?.createdAt.getTime() || 0),
+              (b.messages.at(-1)?.updatedAt.getTime() || 0) -
+              (a.messages.at(-1)?.updatedAt.getTime() || 0),
           ),
         );
       })
