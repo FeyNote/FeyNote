@@ -1,10 +1,10 @@
-import type { Generate5eObjectParams } from '../schemas/display5eObjectSchema';
+import type { Generate5eObjectParams } from '@feynote/shared-utils';
+import type { DeepPartial } from 'ai';
 
 export const convert5eObjectToTiptap = (
-  generatedObject?: Generate5eObjectParams,
+  generatedObject: DeepPartial<Generate5eObjectParams>,
 ) => {
   const content = [];
-  if (!generatedObject) return;
   if (generatedObject.name)
     content.push({
       type: 'heading',
@@ -25,19 +25,19 @@ export const convert5eObjectToTiptap = (
   if (generatedObject.keyPairs?.length) {
     const keyPairContent = generatedObject.keyPairs.flatMap((keyPair, idx) => {
       const paragraphContent = [];
-      paragraphContent.push(
-        ...[
-          {
-            type: 'text',
-            marks: [{ type: 'bold' }],
-            text: keyPair.keyName + ':',
-          },
-          {
-            type: 'text',
-            text: ' ' + keyPair.keyValue,
-          },
-        ],
-      );
+      if (keyPair?.keyName) {
+        paragraphContent.push({
+          type: 'text',
+          marks: [{ type: 'bold' }],
+          text: keyPair.keyName + ':',
+        });
+      }
+      if (keyPair?.keyValue) {
+        paragraphContent.push({
+          type: 'text',
+          text: ' ' + keyPair.keyValue,
+        });
+      }
       if (
         generatedObject.keyPairs &&
         idx !== generatedObject.keyPairs.length - 1

@@ -18,8 +18,8 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { Message, useChat } from 'ai/react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useChat } from '@ai-sdk/react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
@@ -34,6 +34,8 @@ import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { DefaultChatTransport } from 'ai';
+import type { FeynoteUIMessage } from '@feynote/shared-utils';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -133,36 +135,33 @@ export const AIThread: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
-  const { messages, setMessages, isLoading, input, setInput, append, reload } =
-    useChat({
-      api: `${getApiUrls().rest}/message/`,
-      headers: {
-        Authorization: session?.token ? `Bearer ${session.token}` : '',
-        'Content-Type': 'application/json',
-      },
+  const [input, setInput] = useState('');
+  const { messages, setMessages, status, sendMessage, regenerate } =
+    useChat<FeynoteUIMessage>({
+      transport: new DefaultChatTransport({
+        api: `${getApiUrls().rest}/message/`,
+        headers: {
+          Authorization: session?.token ? `Bearer ${session.token}` : '',
+          'Content-Type': 'application/json',
+        },
+        body: {
+          threadId: props.id,
+        },
+      }),
       generateId: () => {
         return crypto.randomUUID();
       },
-      body: {
-        threadId: props.id,
-      },
-      maxSteps: 1,
-      onFinish: async (message, options) => {
-        if (
-          options.finishReason === 'stop' ||
-          options.finishReason === 'tool-calls'
-        ) {
-          await trpc.ai.saveMessage.mutate({
-            threadId: props.id,
-            message,
+      onFinish: async (data) => {
+        //TODO: https://github.com/RedChickenCo/FeyNote/issues/1201
+        await trpc.ai.saveMessage.mutate({
+          threadId: props.id,
+          message: data.message,
+        });
+        if (!title) {
+          await trpc.ai.createThreadTitle.mutate({
+            id: props.id,
           });
-          if (!title) {
-            await trpc.ai.createThreadTitle.mutate({
-              id: props.id,
-            });
-
-            await getThreadInfo();
-          }
+          await getThreadInfo();
         }
       },
       onError: (error) => {
@@ -182,15 +181,15 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
+  const isLoading = useMemo(
+    () => status === 'submitted' || status === 'streaming',
+    [status],
+  );
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
     });
-    const threadMessages = threadDTO.messages.map((message) => ({
-      ...message.json,
-      id: message.id,
-    }));
-    setMessages(threadMessages);
+    setMessages(threadDTO.messages);
     setTitle(threadDTO.title || null);
   };
 
@@ -219,39 +218,37 @@ export const AIThread: React.FC<Props> = (props) => {
     };
   }, []);
 
+  const submitMessageQuery = async () => {
+    const message: FeynoteUIMessage = {
+      id: crypto.randomUUID(),
+      parts: [{ type: 'text', text: input }],
+      role: 'user',
+    };
+    await trpc.ai.saveMessage.mutate({
+      threadId: props.id,
+      message,
+    });
+    sendMessage({
+      text: input,
+    });
+    setInput('');
+  };
+
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
     if (
       e.key === 'Enter' &&
       !e.shiftKey &&
-      !isLoading &&
+      status === 'ready' &&
       !isLoadingInitialState
     ) {
       e.preventDefault(); // Prevents adding a newline
-      submitMessageQuery(input);
-      setInput('');
+      submitMessageQuery();
     } else {
       setInput(e.currentTarget.value || '');
     }
   };
 
-  const submitMessageQuery = async (query: string) => {
-    const message = {
-      content: query,
-      role: 'user',
-    };
-    const newMessage = await trpc.ai.saveMessage.mutate({
-      threadId: props.id,
-      message,
-    });
-    append({
-      content: query,
-      role: 'user',
-      id: newMessage.id,
-    });
-    await getThreadInfo();
-  };
-
-  const updateMessage = async (message: Message) => {
+  const updateMessage = async (message: FeynoteUIMessage) => {
     await trpc.ai.updateMessage.mutate({
       threadId: props.id,
       message,
@@ -261,7 +258,7 @@ export const AIThread: React.FC<Props> = (props) => {
       threadId: props.id,
     });
     await getThreadInfo();
-    reload();
+    regenerate();
   };
 
   const retryMessage = async (messageId: string) => {
@@ -284,7 +281,7 @@ export const AIThread: React.FC<Props> = (props) => {
     });
     const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
     setMessages(remainingMessages);
-    reload();
+    regenerate();
   };
 
   return (
@@ -308,9 +305,10 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : !messages.length ? (
             <EmptyMessageContainer>
               <OptionsList>
-                {PROMPT_CARDS.map((card) => {
+                {PROMPT_CARDS.map((card, idx) => {
                   return (
                     <IonCard
+                      key={idx}
                       button
                       onClick={() => {
                         setInput(t(card.query));
@@ -333,8 +331,8 @@ export const AIThread: React.FC<Props> = (props) => {
             </EmptyMessageContainer>
           ) : (
             <AIMessagesContainer
-              retryMessage={retryMessage}
               updateMessage={updateMessage}
+              retryMessage={retryMessage}
               messages={messages}
               ongoingCommunication={isLoading}
             />
@@ -348,12 +346,7 @@ export const AIThread: React.FC<Props> = (props) => {
               onKeyUp={keyUpHandler}
             />
             <SendButtonContainer>
-              <IonButton
-                onClick={() => {
-                  submitMessageQuery(input);
-                  setInput('');
-                }}
-              >
+              <IonButton onClick={submitMessageQuery}>
                 {isLoading || isLoadingInitialState ? (
                   <IonSpinner name="crescent" />
                 ) : (

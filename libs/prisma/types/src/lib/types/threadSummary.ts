@@ -7,11 +7,12 @@ export const threadSummary = Prisma.validator<Prisma.ThreadFindFirstArgs>()({
     messages: {
       select: {
         id: true,
-        json: true,
+        vercelJsonV5: true,
         createdAt: true,
+        updatedAt: true,
       },
       orderBy: {
-        createdAt: 'asc',
+        updatedAt: 'asc',
       },
     },
   },

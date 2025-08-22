@@ -1,18 +1,19 @@
 import {
-  systemMessage,
-  AIModel,
-  generateAssistantStreamText,
-  Display5eMonsterTool,
-  Display5eObjectTool,
-  DisplayUrlTool,
   getCapabilitiesForUser,
   defineExpressHandler,
   AuthenticationEnforcement,
   BadRequestExpressError,
-  limitNumOfMessagesByCapability,
   TooManyRequestsExpressError,
+  openai,
+  systemMessage,
+  AIModel,
+  limitNumOfMessagesByCapability,
+  generateAssistantStreamText,
+  generate5eMonsterTool,
+  scrapeUrlTool,
+  generate5eObjectTool,
 } from '@feynote/api-services';
-import { convertToCoreMessages, type CoreMessage } from 'ai';
+import { convertToModelMessages, type ModelMessage } from 'ai';
 import { Capability, ToolName } from '@feynote/shared-utils';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
@@ -24,6 +25,7 @@ const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 240; // 10 messages per hour
 const schema = {
   body: z.object({
     messages: z.array(z.any()),
+    threadId: z.string(),
   }),
 };
 export const createMessage = defineExpressHandler(
@@ -33,12 +35,10 @@ export const createMessage = defineExpressHandler(
   },
   async function _createMessage(req, res) {
     const requestMessages = req.body.messages;
-    let messages: CoreMessage[] = [];
+    let messages: ModelMessage[] = [];
     try {
-      messages = convertToCoreMessages([
-        systemMessage.ttrpgAssistant,
-        ...requestMessages,
-      ]);
+      messages = convertToModelMessages([...requestMessages]);
+      messages.unshift(systemMessage.ttrpgAssistant);
     } catch (_) {
       throw new BadRequestExpressError(
         'Messages passed were either invalid or could not be verified.',
@@ -75,18 +75,18 @@ export const createMessage = defineExpressHandler(
     if (numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) {
       model = AIModel.GPT4_MINI;
     }
-    const limited_messages = limitNumOfMessagesByCapability(
+    const limitedMessages = limitNumOfMessagesByCapability(
       messages,
       capabilities,
     );
 
-    const stream = generateAssistantStreamText(limited_messages, model, {
-      [ToolName.Generate5eMonster]: Display5eMonsterTool,
-      [ToolName.Generate5eObject]: Display5eObjectTool,
-      [ToolName.ScrapeUrl]: DisplayUrlTool,
+    const stream = generateAssistantStreamText(openai, limitedMessages, model, {
+      [ToolName.Generate5eMonster]: generate5eMonsterTool,
+      [ToolName.Generate5eObject]: generate5eObjectTool,
+      [ToolName.ScrapeUrl]: scrapeUrlTool,
     });
 
     res.setHeader('Transfer-Encoding', 'chunked');
-    stream.pipeDataStreamToResponse(res);
+    stream.pipeUIMessageStreamToResponse(res);
   },
 );

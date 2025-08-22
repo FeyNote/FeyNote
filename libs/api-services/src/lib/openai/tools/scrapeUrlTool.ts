@@ -1,20 +1,29 @@
-import { CoreMessage, tool } from 'ai';
+import {
+  tool,
+  type InferUITool,
+  type ModelMessage,
+  type TextUIPart,
+  type UIDataTypes,
+  type UIMessagePart,
+} from 'ai';
 import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
-  getDisplayScrapeUrlSchema,
+  getScrapeUrlSchema,
+  type ScrapeUrlTool,
+  type FeynoteUITool,
 } from '@feynote/shared-utils';
-import { generateAssistantText } from '../generateAssistantText';
-import { systemMessage } from '../utils/SystemMessage';
-import { AIModel } from '../utils/AIModel';
 import DOMPurify from 'dompurify';
 import { ToolName } from '@feynote/shared-utils';
-import { Display5eMonsterTool } from './display5eMonster';
-import { Display5eObjectTool } from './display5eObject';
+import { generate5eMonsterTool } from './generate5eMonster';
+import { generate5eObjectTool } from './generate5eObject';
 import type { AxiosRequestConfig } from 'axios';
 import { globalServerConfig } from '@feynote/config';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import axios from 'axios';
+import { systemMessage } from '../utils/SystemMessage';
+import { generateAssistantText } from '../generateAssistantText';
+import { AIModel } from '../utils/AIModel';
 import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);
@@ -64,7 +73,9 @@ const getTextFromHtml = (html: string): string => {
   return cleanedHtml;
 };
 
-const displayUrlExecutor = async (params: ScrapeUrlParams) => {
+const displayUrlExecutor = async (
+  params: ScrapeUrlParams,
+): Promise<UIMessagePart<UIDataTypes, FeynoteUITool>[] | null> => {
   try {
     const requestConfig = {
       headers: {
@@ -80,31 +91,52 @@ const displayUrlExecutor = async (params: ScrapeUrlParams) => {
     }
     const res = await axios.get(params.url, requestConfig);
     const html = getTextFromHtml(res.data);
-    const messages = [
+    const messages: ModelMessage[] = [
       systemMessage.scrapeContent,
-      { role: 'user', content: html } as CoreMessage,
+      {
+        role: 'user',
+        content: html,
+      },
     ];
     const { text, toolResults } = await generateAssistantText(
       messages,
       AIModel.GPT4_MINI,
       {
-        [ToolName.Generate5eMonster]: Display5eMonsterTool,
-        [ToolName.Generate5eObject]: Display5eObjectTool,
+        [ToolName.Generate5eMonster]: generate5eMonsterTool,
+        [ToolName.Generate5eObject]: generate5eObjectTool,
       },
     );
-    return {
-      text,
-      toolInvocations: toolResults,
-    };
+    const toolParts = toolResults.map((toolResult) => ({
+      type: `tool-${toolResult.toolName}`,
+      toolCallId: toolResult.toolCallId,
+      state: 'output-available',
+      input: toolResult.input,
+      output: toolResult.output,
+    })) as UIMessagePart<UIDataTypes, FeynoteUITool>[];
+
+    if (text.trim()) {
+      const textPart: TextUIPart = {
+        type: 'text',
+        text,
+        state: 'done',
+      };
+      toolParts.push(textPart);
+    }
+    return toolParts;
   } catch (e) {
     logger.error(e);
     return null;
   }
 };
 
-export const DisplayUrlTool = tool({
+export const scrapeUrlTool = tool({
   description:
     'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
-  parameters: getDisplayScrapeUrlSchema(),
+  inputSchema: getScrapeUrlSchema(),
   execute: displayUrlExecutor,
 });
+
+type _ScrapeUrlTool = InferUITool<typeof scrapeUrlTool>;
+
+const _ = {} as _ScrapeUrlTool satisfies ScrapeUrlTool;
+const __ = {} as ScrapeUrlTool satisfies _ScrapeUrlTool;

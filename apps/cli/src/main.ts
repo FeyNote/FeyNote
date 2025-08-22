@@ -1,5 +1,6 @@
 import { program } from 'commander';
 import { reindexArtifacts } from './reindexArtifacts';
+import { convertMessagesV4ToV5 } from './convertMessagesV4ToV5';
 
 program
   .command('reindex')
@@ -21,6 +22,26 @@ program
     const cooldown = parseInt(options.cooldown);
 
     reindexArtifacts(userId, false, pageSize, cooldown);
+  });
+
+program
+  .command('migrateVercelV5')
+  .option(
+    '--page-size <number>',
+    'How many messages to migrate per batch',
+    '100',
+  )
+  .option(
+    '--cooldown <number>',
+    'How long to wait between indexing each artifact in milliseconds',
+    '50',
+  )
+  .description('Migrate all messages from v4 to v5 format')
+  .action((options) => {
+    const pageSize = parseInt(options.pageSize);
+    const cooldown = parseInt(options.cooldown);
+
+    convertMessagesV4ToV5(pageSize, cooldown, true);
   });
 
 program.parse(process.argv);

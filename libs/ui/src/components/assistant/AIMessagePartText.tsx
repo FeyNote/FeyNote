@@ -1,12 +1,12 @@
-import type { Message } from 'ai';
 import React, { useMemo } from 'react';
 import { starkdown } from 'starkdown';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
 import { copyOutline, refresh } from 'ionicons/icons';
+import type { TextUIPart } from 'ai';
 
 interface Props {
-  part: NonNullable<Message['parts']>[0];
+  part: TextUIPart;
   messageId: string;
   disableRetry: boolean;
   retryMessage: (messageId: string) => void;

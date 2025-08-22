@@ -1,42 +1,37 @@
-import {
-  AllowedToolInvocation,
-  tiptapToolInvocationBuilder,
-  ToolName,
-} from '@feynote/shared-utils';
+import { ToolName, type FeynoteUITool } from '@feynote/shared-utils';
 import { starkdown } from 'starkdown';
-import type { ToolInvocation } from 'ai';
 import { JSONContent } from '@tiptap/core';
-import { t } from 'i18next';
+import { type UIDataTypes, type UIMessagePart } from 'ai';
+import { convert5eMonsterToTipTap } from '../ai/converters/convert5eMonsterToTipTap';
+import { convert5eObjectToTiptap } from '../ai/converters/convert5eObjectToTiptap';
 
-export const getEditorContentsFromToolInvocation = (
-  invocation: ToolInvocation,
+export const getEditorContentsFromToolPart = (
+  part: UIMessagePart<UIDataTypes, FeynoteUITool>,
 ): (string | JSONContent)[] => {
-  if (
-    (invocation.toolName === ToolName.Generate5eObject ||
-      invocation.toolName === ToolName.Generate5eMonster) &&
-    invocation.args
-  ) {
-    const tiptapContent = tiptapToolInvocationBuilder(
-      invocation as AllowedToolInvocation,
-      t,
-    );
-    if (!tiptapContent) return [];
-    return [tiptapContent];
-  }
-  if (
-    invocation.toolName === ToolName.ScrapeUrl &&
-    invocation.state === 'result'
-  ) {
-    const editorContents: (string | JSONContent)[] = [];
-    if (invocation.result.text) {
-      editorContents.push(starkdown(invocation.result.text));
+  switch (part.type) {
+    case `tool-${ToolName.Generate5eMonster}`: {
+      if (!part.input) return [];
+      const tiptapContent = convert5eMonsterToTipTap(part.input);
+      if (!tiptapContent) return [];
+      return [tiptapContent];
     }
-    if (invocation.result.toolInvocations) {
-      invocation.result.toolInvocations.forEach((invocation: ToolInvocation) =>
-        editorContents.push(...getEditorContentsFromToolInvocation(invocation)),
+    case `tool-${ToolName.Generate5eObject}`: {
+      if (!part.input) return [];
+      const tiptapContent = convert5eObjectToTiptap(part.input);
+      if (!tiptapContent) return [];
+      return [tiptapContent];
+    }
+    case `tool-${ToolName.ScrapeUrl}`: {
+      if (!part.output) return [];
+      const editorContents: (string | JSONContent)[] = [];
+      part.output.forEach((part) =>
+        editorContents.push(...getEditorContentsFromToolPart(part)),
       );
+      return editorContents;
     }
-    return editorContents;
+    case 'text': {
+      return [starkdown(part.text)];
+    }
   }
   return [];
 };

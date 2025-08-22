@@ -1,6 +1,7 @@
-import { JSONContent } from '@tiptap/core';
-import type { Generate5eMonsterParams } from '../schemas/display5eMonsterSchema';
-import { TFunction } from 'i18next';
+import type { Generate5eMonsterParams } from '@feynote/shared-utils';
+import type { JSONContent } from '@tiptap/core';
+import type { DeepPartial } from 'ai';
+import { t } from 'i18next';
 
 const getTiptapTableObj = (
   value: string,
@@ -24,11 +25,13 @@ const getTiptapTableObj = (
   };
 };
 
-const getTiptapParagraphFromObj = (item: {
-  name: string;
-  description: string;
-  frequency?: string | null;
-}) => {
+const getTiptapParagraphFromObj = (
+  item: Partial<{
+    name: string;
+    description: string;
+    frequency: string | null;
+  }>,
+) => {
   const content = [];
   if (item.name)
     content.push({
@@ -54,8 +57,7 @@ const getTiptapParagraphFromObj = (item: {
 };
 
 export const convert5eMonsterToTipTap = (
-  generatedMonster: Generate5eMonsterParams,
-  t: TFunction,
+  generatedMonster: DeepPartial<Generate5eMonsterParams>,
 ) => {
   const tiptapContent = [];
   if (!generatedMonster) return;
@@ -306,9 +308,9 @@ export const convert5eMonsterToTipTap = (
   if (generatedMonster.traits?.length) {
     tiptapContent.push({ type: 'horizontalRule' });
     tiptapContent.push(
-      ...generatedMonster.traits.map((ability) =>
-        getTiptapParagraphFromObj(ability),
-      ),
+      ...generatedMonster.traits
+        .filter((ability) => !!ability)
+        .map((ability) => getTiptapParagraphFromObj(ability)),
     );
   }
 
@@ -320,9 +322,9 @@ export const convert5eMonsterToTipTap = (
       content: [{ type: 'text', text: t('monsterStatblock.actions.header') }],
     });
     tiptapContent.push(
-      ...generatedMonster.actions.map((action) =>
-        getTiptapParagraphFromObj(action),
-      ),
+      ...generatedMonster.actions
+        .filter((action) => !!action)
+        .map((action) => getTiptapParagraphFromObj(action)),
     );
   }
 
@@ -334,9 +336,9 @@ export const convert5eMonsterToTipTap = (
       content: [{ type: 'text', text: t('monsterStatblock.reactions.header') }],
     });
     tiptapContent.push(
-      ...generatedMonster.reactions.map((reaction) =>
-        getTiptapParagraphFromObj(reaction),
-      ),
+      ...generatedMonster.reactions
+        .filter((reaction) => !!reaction)
+        .map((reaction) => getTiptapParagraphFromObj(reaction)),
     );
   }
 
@@ -362,9 +364,9 @@ export const convert5eMonsterToTipTap = (
     }
     if (generatedMonster.legendaryActions.actions?.length) {
       tiptapContent.push(
-        ...generatedMonster.legendaryActions.actions.map((action) =>
-          getTiptapParagraphFromObj(action),
-        ),
+        ...generatedMonster.legendaryActions.actions
+          .filter((action) => !!action)
+          .map((action) => getTiptapParagraphFromObj(action)),
       );
     }
   }

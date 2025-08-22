@@ -2,7 +2,7 @@ import { JSONContent, type Editor } from '@tiptap/react';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { useEffect, useMemo, useRef } from 'react';
-import { copyOutline } from 'ionicons/icons';
+import { copyOutline, refresh } from 'ionicons/icons';
 import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
@@ -17,6 +17,9 @@ const AIFCEditorContainer = styled.div`
 
 interface Props {
   editorContent: string | JSONContent;
+  messageId: string;
+  retryMessage: (messageId: string) => void;
+  disableRetry: boolean;
 }
 
 export const AIEditor: React.FC<Props> = (props) => {
@@ -60,6 +63,13 @@ export const AIEditor: React.FC<Props> = (props) => {
             }
           >
             <IonIcon icon={copyOutline} />
+          </IonButton>
+          <IonButton
+            disabled={props.disableRetry}
+            size="small"
+            onClick={() => props.retryMessage(props.messageId)}
+          >
+            <IonIcon icon={refresh} />
           </IonButton>
         </IonButtons>
       </AIFCEditorContainer>

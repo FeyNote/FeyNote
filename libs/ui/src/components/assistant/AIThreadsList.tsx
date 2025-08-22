@@ -6,9 +6,9 @@ import { trpc } from '../../utils/trpc';
 import { chatbubbles } from 'ionicons/icons';
 import { AIThreadMenuItem } from './AIThreadMenuItem';
 import { NullState } from '../info/NullState';
-import { ThreadDTO } from '@feynote/global-types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
+import type { ThreadDTO } from '@feynote/shared-utils';
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();

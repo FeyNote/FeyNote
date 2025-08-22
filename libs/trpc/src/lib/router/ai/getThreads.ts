@@ -1,7 +1,7 @@
-import { ThreadDTO, type ThreadDTOMessage } from '@feynote/global-types';
 import { threadSummary } from '@feynote/prisma/types';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
+import type { FeynoteUIMessage, ThreadDTO } from '@feynote/shared-utils';
 
 export const getThreads = authenticatedProcedure.query(
   async ({ ctx }): Promise<ThreadDTO[]> => {
@@ -13,20 +13,15 @@ export const getThreads = authenticatedProcedure.query(
     const threadDTOs = threads.map((thread) => ({
       id: thread.id,
       title: thread.title || undefined,
-      messages: (thread.messages as unknown as ThreadDTOMessage[]).map(
-        (message) => ({
+      messages: thread.messages
+        .filter((message) => !!message.vercelJsonV5)
+        .map((message) => ({
+          ...(message.vercelJsonV5 as unknown as FeynoteUIMessage),
           id: message.id,
-          json: {
-            ...message.json,
-            createdAt: message.json.createdAt
-              ? new Date(message.json.createdAt)
-              : undefined,
-          },
-          createdAt: message.createdAt,
-        }),
-      ),
+          updatedAt: message.updatedAt,
+        })),
     }));
 
-    return threadDTOs satisfies ThreadDTO[];
+    return threadDTOs;
   },
 );
