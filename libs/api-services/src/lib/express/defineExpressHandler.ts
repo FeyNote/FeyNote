@@ -19,7 +19,11 @@ const handleServerError = (e: unknown, res: Response) => {
   logExpressServerError(e);
 
   if (process.env['NODE_ENV'] !== 'production') {
-    res.status(status).send(e.toString());
+    if (e instanceof Error) {
+      res.status(status).send(e.toString());
+    } else {
+      res.status(status).send(e);
+    }
   } else {
     res.status(status).send('Internal server error');
   }
