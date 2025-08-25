@@ -23,10 +23,10 @@ const convertToolPartToV5Part = (
       };
       const output = part.toolInvocation.result;
       const outputParts = [];
-      if (output.text && !messageAlreadyHasTextContent) {
+      if (output?.text && !messageAlreadyHasTextContent) {
         outputParts.push({ type: 'text', text: output.text });
       }
-      if (output.toolInvocations?.length) {
+      if (output?.toolInvocations?.length) {
         const convertedRescusriveParts = output.toolInvocations.map(
           (toolInvocation: any) => {
             const part = {
@@ -76,6 +76,7 @@ const convertMessageVercelLegacyToVercelV5 = (messageId: string, json: any) => {
     role: json.role,
     parts: [],
   };
+  if (!json) return message;
   if (json.content) {
     message.parts.push({ type: 'step-start' });
     message.parts.push({ type: 'text', text: json.content });
