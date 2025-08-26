@@ -109,7 +109,7 @@
     "stripe": "^18.4.0",
     "styled-components": "6.1.19",
     "tippy.js": "^6.3.7",
-    "tldraw": "^3.11.1",
+    "tldraw": "^3.15.3",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "turndown": "^7.2.1",
