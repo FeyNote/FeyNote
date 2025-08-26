@@ -60,6 +60,9 @@ const subscriptionModelNameToI18n = {
   [SubscriptionModelName.Tier2Monthly]: 'contribute.tier2.monthly',
   [SubscriptionModelName.Tier2Yearly]: 'contribute.tier2.yearly',
   [SubscriptionModelName.Tier2Forever]: 'contribute.tier2.forever',
+  [SubscriptionModelName.Tier3Monthly]: 'contribute.tier3.monthly',
+  [SubscriptionModelName.Tier3Yearly]: 'contribute.tier3.yearly',
+  [SubscriptionModelName.Tier3Forever]: 'contribute.tier3.forever',
 } satisfies Record<SubscriptionModelName, string>;
 
 const subscriptionModelNameToPrice = {
@@ -69,6 +72,9 @@ const subscriptionModelNameToPrice = {
   [SubscriptionModelName.Tier2Monthly]: 5,
   [SubscriptionModelName.Tier2Yearly]: 40,
   [SubscriptionModelName.Tier2Forever]: -1,
+  [SubscriptionModelName.Tier3Monthly]: 10,
+  [SubscriptionModelName.Tier3Yearly]: 80,
+  [SubscriptionModelName.Tier3Forever]: -1,
 } satisfies Record<SubscriptionModelName, number>;
 
 export const Contribute: React.FC = () => {
@@ -304,7 +310,8 @@ export const Contribute: React.FC = () => {
               <li>{t('contribute.tier2.capabilities1')}</li>
               <li>{t('contribute.tier2.capabilities2')}</li>
               <li>{t('contribute.tier2.capabilities3')}</li>
-              <li>{t('contribute.tier2.capabilities4')}</li>
+              <HiddenListItem aria-hidden={true}></HiddenListItem>
+              <HiddenListItem aria-hidden={true}></HiddenListItem>
             </ul>
 
             {renderPrice(
@@ -318,6 +325,36 @@ export const Contribute: React.FC = () => {
               viewInMonthly
                 ? SubscriptionModelName.Tier2Monthly
                 : SubscriptionModelName.Tier2Yearly,
+            )}
+          </OfferingCard>
+
+          <OfferingCard>
+            <IonCardTitle>{t('contribute.tier3')}</IonCardTitle>
+
+            <p>{t('contribute.tier3.description')}</p>
+
+            <CapabilitiesHeader>
+              {t('contribute.capabilities')}
+            </CapabilitiesHeader>
+            <ul>
+              <li>{t('contribute.tier3.capabilities1')}</li>
+              <li>{t('contribute.tier3.capabilities2')}</li>
+              <HiddenListItem aria-hidden={true}></HiddenListItem>
+              <HiddenListItem aria-hidden={true}></HiddenListItem>
+              <HiddenListItem aria-hidden={true}></HiddenListItem>
+            </ul>
+
+            {renderPrice(
+              subscriptionModelNameToPrice[
+                viewInMonthly
+                  ? SubscriptionModelName.Tier3Monthly
+                  : SubscriptionModelName.Tier3Yearly
+              ],
+            )}
+            {renderButtonForSubscription(
+              viewInMonthly
+                ? SubscriptionModelName.Tier3Monthly
+                : SubscriptionModelName.Tier3Yearly,
             )}
           </OfferingCard>
         </OfferingContainer>

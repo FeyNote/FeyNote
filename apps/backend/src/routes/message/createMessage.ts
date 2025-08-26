@@ -48,8 +48,8 @@ export const createMessage = defineExpressHandler(
     const userId = res.locals.session.userId;
     const capabilities = await getCapabilitiesForUser(userId);
     let model = capabilities.has(Capability.AssistantEnhancedModel)
-      ? AIModel.GPT4
-      : AIModel.GPT4_MINI;
+      ? AIModel.GPT5
+      : AIModel.GPT5_MINI;
 
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const numOfPreviousMessagesSent = await prisma.message.count({
