@@ -38,20 +38,22 @@ if (environment !== 'development') {
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
-import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
-import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
 import {
+  SearchManager,
+  SyncManager,
   getManifestDb,
   ObjectStoreName,
-} from '../../../libs/ui/src/utils/localDb';
-import { FileStreamDecoder } from '../../../libs/shared-utils/src/lib/parsers/stream/file/FileStreamDecoder';
-import { readableStreamToUint8Array } from '../../../libs/shared-utils/src/lib/parsers/readableStreamToUint8Array';
+} from '@feynote/ui';
+import {
+  FileStreamDecoder,
+  readableStreamToUint8Array,
+  customTrpcTransformer,
+} from '@feynote/shared-utils';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { customTrpcTransformer } from '../../../libs/shared-utils/src/lib/customTrpcTransformer';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);

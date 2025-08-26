@@ -11,6 +11,7 @@ export * from './lib/validation/getArtifactAccessLevel';
 export * from './lib/validation/validateEmail';
 export * from './lib/validation/validatePassword';
 export * from './lib/parsers/markdownToTxt';
+export * from './lib/parsers/readableStreamToUint8Array';
 export * from './lib/parsers/stream/file/FileStreamEncoder';
 export * from './lib/parsers/stream/file/FileStreamDecoder';
 export * from './lib/parsers/stream/job/ImportJobStreamEncoder';
