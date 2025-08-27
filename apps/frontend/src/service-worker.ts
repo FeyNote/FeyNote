@@ -356,15 +356,18 @@ registerRoute(
     );
 
     if (pendingFile) {
-      return new Response(pendingFile.fileContentsUint8, {
-        headers: {
-          'Content-Type': pendingFile.mimetype,
-          'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
-          swcache: 'true',
-          'Accept-Ranges': 'bytes',
-          'Content-Length': pendingFile.fileSize.toString(),
+      return new Response(
+        pendingFile.fileContentsUint8 as Buffer<ArrayBuffer>,
+        {
+          headers: {
+            'Content-Type': pendingFile.mimetype,
+            'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
+            swcache: 'true',
+            'Accept-Ranges': 'bytes',
+            'Content-Length': pendingFile.fileSize.toString(),
+          },
         },
-      });
+      );
     }
 
     // Try to see if we have anything in the cache
