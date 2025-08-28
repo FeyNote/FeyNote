@@ -100,7 +100,7 @@ const displayUrlExecutor = async (
     ];
     const { text, toolResults } = await generateAssistantText(
       messages,
-      AIModel.GPT5_MINI,
+      AIModel.GPT4_MINI,
       {
         [ToolName.Generate5eMonster]: generate5eMonsterTool,
         [ToolName.Generate5eObject]: generate5eObjectTool,

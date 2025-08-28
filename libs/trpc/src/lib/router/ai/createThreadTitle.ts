@@ -33,7 +33,7 @@ export const createThreadTitle = authenticatedProcedure
 
     const messages = convertToModelMessages([...feynoteUIMessages]);
     messages.unshift(systemMessage.nameGeneration);
-    const { text } = await generateAssistantText(messages, AIModel.GPT5_MINI);
+    const { text } = await generateAssistantText(messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
       where: { id: thread.id },
       data: {
