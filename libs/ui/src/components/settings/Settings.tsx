@@ -23,7 +23,7 @@ import {
   useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, type ComponentProps } from 'react';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
@@ -98,7 +98,7 @@ export const Settings: React.FC = () => {
   const { navigate } = useContext(PaneContext);
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
-  });
+  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const languageOptions = useMemo(() => {

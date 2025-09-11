@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 import { useCollaborationConnection } from '../editor/collaborationManager';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
-import { useArtifactDelete } from './useArtifactDelete';
+import { useArtifactDeleteOrRemoveSelf } from './useArtifactDeleteOrRemoveSelf';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
@@ -45,7 +45,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
   const connection = useCollaborationConnection(`artifact:${props.id}`);
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
-  const { deleteArtifact } = useArtifactDelete();
+  const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
   const { authorizedScope, collaborationConnectionStatus } =
     useCollaborationConnectionAuthorizedScope(connection);
 
@@ -134,7 +134,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
           <ArtifactContextMenu
             artifactId={props.id}
             authorizedScope={authorizedScope}
-            triggerDelete={() => deleteArtifact(props.id)}
+            triggerDelete={() => deleteArtifactOrRemoveSelf(props.id)}
             triggerUndelete={undelete}
             connection={connection}
             pane={pane}

@@ -44,7 +44,6 @@ const SYNC_BATCH_SIZE = 5;
 
 /**
  * How long to wait between syncing each batch
- * NOTE: This must not be longer than our server WS timeout - Hocuspocus default is 15 seconds
  */
 const SYNC_BATCH_RATE_LIMIT_WAIT = 1 * 1000;
 

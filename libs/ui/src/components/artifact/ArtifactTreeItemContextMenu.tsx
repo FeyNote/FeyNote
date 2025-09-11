@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import {
-  ArtifactDeleteDeclinedError,
-  useArtifactDelete,
-} from './useArtifactDelete';
+  useArtifactDeleteOrRemoveSelf,
+} from './useArtifactDeleteOrRemoveSelf';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -13,10 +12,11 @@ import {
   ContextMenuGroupDivider,
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
-import { useContext } from 'react';
+import { useContext, type ComponentProps } from 'react';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useIonModal } from '@ionic/react';
 import { NewArtifactModal } from './NewArtifactModal';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 interface Props {
   artifactId: string;
@@ -35,16 +35,15 @@ export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
         parentArtifactId: props.artifactId,
         order: 'X',
       },
-    },
+    } satisfies ComponentProps<typeof NewArtifactModal>,
   );
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const { deleteArtifact } = useArtifactDelete();
+  const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
 
   const onDeleteArtifactClicked = () => {
-    deleteArtifact(props.artifactId).catch((e) => {
-      if (e instanceof ArtifactDeleteDeclinedError) return;
-
-      throw e;
+    deleteArtifactOrRemoveSelf(props.artifactId).catch((e) => {
+      handleTRPCErrors(e);
     });
   };
 

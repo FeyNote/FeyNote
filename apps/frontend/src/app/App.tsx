@@ -5,6 +5,9 @@ import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
 
+import "@radix-ui/themes/styles.css";
+import { Theme } from "@radix-ui/themes";
+
 /* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
@@ -100,36 +103,40 @@ export function App() {
   const resetEmailToken = url.searchParams.get('resetEmailToken');
   if (resetEmailToken) {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <PreferencesContextProviderWrapper>
-              <ResetEmail
-                authResetToken={resetEmailToken}
-                redirectPath={window.location.origin}
-              />
-            </PreferencesContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <PreferencesContextProviderWrapper>
+                <ResetEmail
+                  authResetToken={resetEmailToken}
+                  redirectPath={window.location.origin}
+                />
+              </PreferencesContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
   const resetPasswordToken = url.searchParams.get('resetPasswordToken');
   if (resetPasswordToken) {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <PreferencesContextProviderWrapper>
-              <ResetPassword
-                authResetToken={resetPasswordToken}
-                redirectPath={window.location.origin}
-              />
-            </PreferencesContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <PreferencesContextProviderWrapper>
+                <ResetPassword
+                  authResetToken={resetPasswordToken}
+                  redirectPath={window.location.origin}
+                />
+              </PreferencesContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
@@ -140,30 +147,34 @@ export function App() {
 
   if (!path.length || path[0] === '') {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <SidemenuContextProviderWrapper>
-              <PreferencesContextProviderWrapper>
-                <SessionContextProviderWrapper>
-                  <GlobalSearchContextProviderWrapper>
-                    <Workspace />
-                  </GlobalSearchContextProviderWrapper>
-                </SessionContextProviderWrapper>
-              </PreferencesContextProviderWrapper>
-            </SidemenuContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <SidemenuContextProviderWrapper>
+                <PreferencesContextProviderWrapper>
+                  <SessionContextProviderWrapper>
+                    <GlobalSearchContextProviderWrapper>
+                      <Workspace />
+                    </GlobalSearchContextProviderWrapper>
+                  </SessionContextProviderWrapper>
+                </PreferencesContextProviderWrapper>
+              </SidemenuContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
   return (
-    <IonApp>
-      <PreferencesContextProviderWrapper>
-        <NotFound />
-      </PreferencesContextProviderWrapper>
-    </IonApp>
+    <Theme>
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <NotFound />
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    </Theme>
   );
 }
 

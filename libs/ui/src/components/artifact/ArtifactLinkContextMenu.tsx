@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { useArtifactDelete } from './useArtifactDelete';
+import { useArtifactDeleteOrRemoveSelf } from './useArtifactDeleteOrRemoveSelf';
 import { useContext } from 'react';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneContext } from '../../context/pane/PaneContext';
@@ -9,6 +9,7 @@ import {
   ContextMenuGroupDivider,
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 interface Props {
   artifactId: string;
@@ -17,13 +18,18 @@ interface Props {
 export const ArtifactLinkContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { pane, navigateHistoryBack, navigate } = useContext(PaneContext);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
-  const { deleteArtifact } = useArtifactDelete();
+  const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
 
   const onDeleteArtifactClicked = () => {
-    deleteArtifact(props.artifactId).then(() => {
-      navigateHistoryBack();
-    });
+    deleteArtifactOrRemoveSelf(props.artifactId)
+      .catch((e) => {
+        handleTRPCErrors(e);
+      })
+      .then(() => {
+        navigateHistoryBack();
+      });
   };
 
   return (

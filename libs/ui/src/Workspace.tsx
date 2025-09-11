@@ -170,6 +170,7 @@ const Menu = styled.div<{
   max-height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  background-color: var(--ion-background-color);
 
   ${(props) =>
     props.$open &&

@@ -16,6 +16,7 @@ import { Export } from '../../components/importExport/Export';
 import { Import } from '../../components/importExport/Import';
 import { ExportToJson } from '../../components/importExport/ExportToJson';
 import { ExportToMarkdown } from '../../components/importExport/ExportToMarkdown';
+import { AllArtifacts } from '../../components/artifact/allArtifacts/AllArtifacts';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -23,6 +24,7 @@ export enum PaneableComponent {
   Contribute = 'Contribute',
   NewArtifact = 'NewArtifact',
   Artifact = 'Artifact',
+  AllArtifacts = 'AllArtifacts',
   AIThread = 'AIThread',
   AIThreadsList = 'AIThreadsList',
   Graph = 'Graph',
@@ -43,6 +45,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.Contribute]: ComponentProps<typeof Contribute>;
   [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
+  [PaneableComponent.AllArtifacts]: ComponentProps<typeof AllArtifacts>;
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
   [PaneableComponent.AIThreadsList]: ComponentProps<typeof AIThreadsList>;
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
@@ -68,6 +71,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Contribute]: Contribute,
     [PaneableComponent.NewArtifact]: NewArtifact,
     [PaneableComponent.Artifact]: Artifact,
+    [PaneableComponent.AllArtifacts]: AllArtifacts,
     [PaneableComponent.AIThread]: AIThread,
     [PaneableComponent.AIThreadsList]: AIThreadsList,
     [PaneableComponent.Graph]: Graph,
@@ -98,6 +102,7 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Contribute]: 'contribute.title',
   [PaneableComponent.NewArtifact]: 'newArtifact.title',
   [PaneableComponent.Artifact]: 'artifact.title',
+  [PaneableComponent.AllArtifacts]: 'allArtifacts.title',
   [PaneableComponent.AIThread]: 'assistant.title',
   [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
   [PaneableComponent.Graph]: 'graph.title',

@@ -17,6 +17,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ComponentProps,
   type RefObject,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -74,7 +75,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       artifactId: props.artifactId,
       connection: props.connection,
       dismiss: () => dismissSharingModal(),
-    },
+    } satisfies ComponentProps<typeof ArtifactSharingManagementModal>,
   );
   const { session } = useContext(SessionContext);
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);

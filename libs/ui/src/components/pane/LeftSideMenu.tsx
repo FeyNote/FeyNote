@@ -31,6 +31,7 @@ import {
   settings,
   add,
   heart,
+  list,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -44,6 +45,11 @@ import { InfoButton } from '../info/InfoButton';
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
 `;
+
+/**
+  * The globally unique tree id for react complex tree
+  */
+const TREE_ID = "leftSideMenuArtifactTree";
 
 /**
  * The default number of recent artifacts to show
@@ -163,6 +169,25 @@ export const LeftSideMenu: React.FC = () => {
           onClick={(event) =>
             navigate(
               undefined,
+              PaneableComponent.AllArtifacts,
+              {},
+              event.metaKey || event.ctrlKey
+                ? PaneTransition.NewTab
+                : PaneTransition.Push,
+              !(event.metaKey || event.ctrlKey),
+            )
+          }
+          button
+        >
+          <IonIcon icon={list} size="small" />
+          &nbsp;&nbsp;
+          <IonLabel>{t('menu.allArtifacts')}</IonLabel>
+        </CompactIonItem>
+        <CompactIonItem
+          lines="none"
+          onClick={(event) =>
+            navigate(
+              undefined,
               PaneableComponent.Graph,
               {},
               event.metaKey || event.ctrlKey
@@ -207,7 +232,13 @@ export const LeftSideMenu: React.FC = () => {
             <InfoButton message={t('menu.tree.help')} />
           </IonListHeader>
         </IonList>
-        <ArtifactTree />
+        <ArtifactTree
+          treeId={TREE_ID}
+          registerAsGlobalTreeDragHandler={true}
+          editable={true}
+          mode="navigate"
+          enableItemContextMenu={true}
+        />
       </IonCard>
 
       {!!recentlyUpdatedThreads.length &&

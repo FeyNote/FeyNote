@@ -10,6 +10,10 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
+
+import { Theme } from "@radix-ui/themes";
+import "@radix-ui/themes/styles.css";
+
 import './css/global.css';
 import './css/printView.css';
 import { initI18Next } from './i18n/initI18Next';
@@ -105,16 +109,18 @@ export const PrintviewApp: React.FC<Props> = (props) => {
   };
 
   return (
-    <ToastContextProvider>
-      <IonApp>
-        <PreferencesContextProviderWrapper>
-          <GlobalPaneContext.Provider value={globalPaneContextValue}>
-            <PaneContext.Provider value={paneContextValue}>
-              <ReadonlyArtifactViewer artifactId={props.id} onReady={onReady} />
-            </PaneContext.Provider>
-          </GlobalPaneContext.Provider>
-        </PreferencesContextProviderWrapper>
-      </IonApp>
-    </ToastContextProvider>
+    <Theme>
+      <ToastContextProvider>
+        <IonApp>
+          <PreferencesContextProviderWrapper>
+            <GlobalPaneContext.Provider value={globalPaneContextValue}>
+              <PaneContext.Provider value={paneContextValue}>
+                <ReadonlyArtifactViewer artifactId={props.id} onReady={onReady} />
+              </PaneContext.Provider>
+            </GlobalPaneContext.Provider>
+          </PreferencesContextProviderWrapper>
+        </IonApp>
+      </ToastContextProvider>
+    </Theme>
   );
 };

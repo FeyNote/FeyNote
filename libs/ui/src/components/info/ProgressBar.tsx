@@ -25,7 +25,7 @@ const ProgressIndicator = styled(Progress.Indicator)`
 `;
 
 interface Props {
-  progress: number;
+  progress: number; // 0-1
   barStyle?: 'thin' | 'thick';
 }
 

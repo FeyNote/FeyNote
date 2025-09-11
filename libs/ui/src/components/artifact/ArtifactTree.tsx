@@ -5,6 +5,8 @@ import {
   useReducer,
   useRef,
   useState,
+  type Ref,
+  type RefObject,
 } from 'react';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import {
@@ -14,6 +16,9 @@ import {
   Tree,
   TreeItem,
   TreeItemIndex,
+  type DraggingPositionBetweenItems,
+  type DraggingPositionItem,
+  type DraggingPositionRoot,
 } from 'react-complex-tree';
 import styled from 'styled-components';
 import { t } from 'i18next';
@@ -39,48 +44,7 @@ import {
   registerStartTreeDrag,
   setCustomDragData,
 } from '../../utils/artifactTree/customDrag';
-
-/**
- * Calculates a lexographic sort order between two uppercase strings.
- * The absolute values "A" and "Z" are used as the lower and upper bounds, but will not be returned as lexographic sort order.
- * You can use "A" and "Z" as the lower and upper bounds, respectively, when passing in arguments to place an item at the upper or lower bound.
- */
-const _calculateOrderBetween = (a: string, b: string): string => {
-  const aChar = a[0] || 'A';
-  const aCharCode = a ? a.charCodeAt(0) : 'A'.charCodeAt(0);
-  const bCharCode = b ? b.charCodeAt(0) : 'Z'.charCodeAt(0);
-
-  if (bCharCode - aCharCode >= 2) {
-    return String.fromCharCode(bCharCode - 1);
-  }
-
-  if (bCharCode - aCharCode === 1) {
-    return aChar + _calculateOrderBetween(a.substring(1), '');
-  }
-
-  return aChar + _calculateOrderBetween(a.substring(1), b.substring(1));
-};
-
-const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
-  const validRegex = /^[A-Z]*$/;
-  if (!validRegex.test(a) || !validRegex.test(b)) {
-    console.error('a and b must be uppercase strings');
-    Sentry.captureException(new Error('a and b must be uppercase strings'), {
-      extra: {
-        a,
-        b,
-      },
-    });
-    // We do not want to break the user's experience
-    return 'Y';
-  }
-
-  if (a.localeCompare(b) > 0) {
-    throw new Error('a must be greater than b');
-  }
-
-  return _calculateOrderBetween(a, b);
-};
+import { calculateOrderForArtifactTreeNode } from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 
 const StyleContainer = styled.div`
   .rct-tree-root {
@@ -123,12 +87,30 @@ export interface InternalTreeItem {
   draggable?: boolean;
 }
 
-const TREE_ID = 'appArtifactTree';
-const ROOT_ITEM_ID = 'root';
-export const UNCATEGORIZED_ITEM_ID = 'uncategorized';
+export const ROOT_TREE_NODE_ID = 'root';
+export const UNCATEGORIZED_TREE_NODE_ID = 'uncategorized';
 const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
-export const ArtifactTree = () => {
+type ExcludedMinimalDraggingPositionKeys = "linearIndex" | "depth";
+/**
+  * Implements only a subset of the information in the normal DraggingPosition interface
+  */
+type MinimalDraggingPosition = Omit<DraggingPositionItem, ExcludedMinimalDraggingPositionKeys> | Omit<DraggingPositionBetweenItems, ExcludedMinimalDraggingPositionKeys> | Omit<DraggingPositionRoot, ExcludedMinimalDraggingPositionKeys>;
+
+interface Props {
+  treeId: string, // This should be globally unique!
+  registerAsGlobalTreeDragHandler: boolean, // This should only be enabled for the sidemenu tree
+  editable: boolean,
+  mode: "navigate" | "select"
+  enableItemContextMenu: boolean,
+  onNodeClicked?: (pos: MinimalDraggingPosition) => void,
+  onDropRef?: RefObject<(
+    droppedItems: TreeItem<InternalTreeItem>[],
+    target: MinimalDraggingPosition,
+  ) => void>,
+}
+
+export const ArtifactTree: React.FC<Props> = (props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useContext(SessionContext);
   const { getPreference } = useContext(PreferencesContext);
@@ -292,10 +274,10 @@ export const ArtifactTree = () => {
 
     if (leftPaneArtifactTreeShowUncategorized) {
       // All uncategorized items go under their own header
-      items[UNCATEGORIZED_ITEM_ID] = {
-        index: UNCATEGORIZED_ITEM_ID,
+      items[UNCATEGORIZED_TREE_NODE_ID] = {
+        index: UNCATEGORIZED_TREE_NODE_ID,
         data: {
-          id: UNCATEGORIZED_ITEM_ID,
+          id: UNCATEGORIZED_TREE_NODE_ID,
           title: t('artifactTree.uncategorized', {
             count: uncategorizedArtifacts.size,
           }),
@@ -328,10 +310,10 @@ export const ArtifactTree = () => {
     }
 
     // Create root node
-    items[ROOT_ITEM_ID] = {
-      index: ROOT_ITEM_ID,
+    items[ROOT_TREE_NODE_ID] = {
+      index: ROOT_TREE_NODE_ID,
       data: {
-        id: ROOT_ITEM_ID,
+        id: ROOT_TREE_NODE_ID,
         title: 'Root',
         order: 'A',
       },
@@ -339,7 +321,7 @@ export const ArtifactTree = () => {
       children: Object.entries(items)
         .filter(([key]) => {
           // We always want the list of uncategorized artifacts at the root
-          if (key === UNCATEGORIZED_ITEM_ID) return true;
+          if (key === UNCATEGORIZED_TREE_NODE_ID) return true;
 
           const kvEntry = kvEntries.get(key);
 
@@ -383,18 +365,17 @@ export const ArtifactTree = () => {
 
   const onDrop = (
     droppedItems: TreeItem<InternalTreeItem>[],
-    target: DraggingPosition,
+    target: MinimalDraggingPosition,
   ) => {
     if (target.targetType === 'root') {
-      const parentItem = items[target.targetItem];
-      if (!parentItem.children)
-        throw new Error("ParentItem of an item doesn't have children somehow");
-      const lastParentChildOrder =
-        parentItem.children.at(parentItem.children.length - 1)?.toString() ||
-        'A';
-
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+        const order = calculateOrderForArtifactTreeNode({
+          treeYKV: yKeyValue,
+          parentNodeId: ROOT_TREE_NODE_ID,
+          location: {
+            position: "end"
+          }
+        });
 
         yKeyValue.set(item.data.id, {
           parentNodeId: null,
@@ -411,24 +392,24 @@ export const ArtifactTree = () => {
         return;
       }
 
-      if (target.targetItem.toString() === UNCATEGORIZED_ITEM_ID) {
+      if (target.targetItem.toString() === UNCATEGORIZED_TREE_NODE_ID) {
         recursiveDelete(droppedItems);
 
         return;
       }
 
-      const parentItem = items[target.targetItem];
-      if (!parentItem.children)
-        throw new Error("ParentItem of an item doesn't have children somehow");
-      const lastParentChildOrder =
-        parentItem.children[parentItem.children.length - 1]?.toString() || 'A';
-
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(lastParentChildOrder, 'Z');
+        const order = calculateOrderForArtifactTreeNode({
+          treeYKV: yKeyValue,
+          parentNodeId: target.targetItem.toString(),
+          location: {
+            position: "end"
+          }
+        });
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
-            target.targetItem.toString() === ROOT_ITEM_ID
+            target.targetItem.toString() === ROOT_TREE_NODE_ID
               ? null
               : target.targetItem.toString(),
           order,
@@ -444,43 +425,50 @@ export const ArtifactTree = () => {
         return;
       }
 
-      if (target.parentItem.toString() === UNCATEGORIZED_ITEM_ID) {
+      if (target.parentItem.toString() === UNCATEGORIZED_TREE_NODE_ID) {
         return;
       }
 
       const parentItem = items[target.parentItem];
-      let previousItemOrder =
-        items[parentItem.children?.[target.childIndex - 1] || -1]?.data.order ||
-        'A';
-      const nextItemOrder =
-        items[parentItem.children?.[target.childIndex] || -1]?.data.order ||
-        'Z';
+      let previousItemId = items[parentItem.children?.[target.childIndex - 1] || -1]?.data.id;
+      const nextItemId = items[parentItem.children?.[target.childIndex] || -1]?.data.id;
 
       for (const item of droppedItems) {
-        const order = calculateOrderBetween(previousItemOrder, nextItemOrder);
+        const order = calculateOrderForArtifactTreeNode({
+          treeYKV: yKeyValue,
+          parentNodeId: target.parentItem.toString(),
+          location: {
+            position: "between",
+            afterNodeId: previousItemId,
+            beforeNodeId: nextItemId,
+          }
+        });
 
         yKeyValue.set(item.data.id, {
           parentNodeId:
-            target.parentItem.toString() === ROOT_ITEM_ID
+            target.parentItem.toString() === ROOT_TREE_NODE_ID
               ? null
               : target.parentItem.toString(),
           order,
         });
 
-        previousItemOrder = order;
+        previousItemId = item.data.id;
       }
     }
   };
+  if (props.onDropRef) {
+    props.onDropRef.current = onDrop;
+  }
 
   /**
    * Returns true if the item is uncategorized, but is not the uncategorized header itself
    */
   const isItemUncategorized = (index: string) => {
-    if (index === UNCATEGORIZED_ITEM_ID) {
+    if (index === UNCATEGORIZED_TREE_NODE_ID) {
       // Allow drop on "uncategorized" itself
       return false;
     }
-    if (index === ROOT_ITEM_ID) {
+    if (index === ROOT_TREE_NODE_ID) {
       // Always allow drop on root
       return false;
     }
@@ -501,6 +489,8 @@ export const ArtifactTree = () => {
     <StyleContainer>
       <ControlledTreeEnvironment
         ref={(el) => {
+          if (!props.registerAsGlobalTreeDragHandler) return;
+
           registerStartTreeDrag(() => {
             const customDragData = getCustomDragData();
             if (!customDragData) {
@@ -513,34 +503,34 @@ export const ArtifactTree = () => {
                 'startTreeDrag was called with an unexpected component',
               );
             }
-            const { props } =
+            const { props: dragDataProps } =
               customDragData as CustomDragStateData<PaneableComponent.Artifact>;
 
             el?.dragAndDropContext.onStartDraggingItems(
               [
                 {
-                  index: props.id,
+                  index: dragDataProps.id,
                   children: [],
                   isFolder: false,
                   canMove: true,
                   canRename: false,
                   data: {
-                    id: props.id,
+                    id: dragDataProps.id,
                     title:
-                      artifacts.find((artifact) => artifact.id === props.id)
+                      artifacts.find((artifact) => artifact.id === dragDataProps.id)
                         ?.title || 'Unknown',
                     order: 'X',
                   } satisfies InternalTreeItem,
                 },
               ],
-              TREE_ID,
+              props.treeId,
             );
           });
         }}
         items={items}
         getItemTitle={(item) => item.data.title}
         viewState={{
-          [TREE_ID]: {
+          [props.treeId]: {
             expandedItems,
             selectedItems,
           },
@@ -567,7 +557,22 @@ export const ArtifactTree = () => {
             actions,
           ) => ({
             onClick: (e) => {
-              if (item.index === UNCATEGORIZED_ITEM_ID) {
+              if (props.onNodeClicked) {
+                const parentItem = Object.values(items).find((el) => el.children?.includes(item.index));
+
+                props.onNodeClicked({
+                  targetType: "item",
+                  parentItem: parentItem?.index || "root",
+                  targetItem: item.index,
+                  treeId,
+                });
+              }
+
+              if (props.mode === "select") {
+                return;
+              }
+
+              if (item.index === UNCATEGORIZED_TREE_NODE_ID) {
                 // We ignore clicks on uncategorized because it's not navigable
                 // actions.toggleExpandedState();
                 return;
@@ -608,30 +613,31 @@ export const ArtifactTree = () => {
           }
           if (target.targetType === 'between-items') {
             return (
-              target.parentItem.toString() !== UNCATEGORIZED_ITEM_ID &&
+              target.parentItem.toString() !== UNCATEGORIZED_TREE_NODE_ID &&
               !isItemUncategorized(target.parentItem.toString())
             );
           }
 
           return true;
         }}
-        canDragAndDrop
+        canDragAndDrop={props.editable}
         canDropOnFolder
         canReorderItems
         canDropOnNonFolder
         onDrop={onDrop}
-        renderItem={(props) => {
+        renderItem={(treeRenderProps) => {
           return (
             <ArtifactTreeItem
-              treeRenderProps={props}
+              treeRenderProps={treeRenderProps}
               itemsRef={itemsRef}
               expandedItemsRef={expandedItemsRef}
               setExpandedItemsRef={setExpandedItemsRef}
+              enableContextMenu={props.enableItemContextMenu}
             />
           );
         }}
       >
-        <Tree treeId={TREE_ID} rootItem={ROOT_ITEM_ID} />
+        <Tree treeId={props.treeId} rootItem={ROOT_TREE_NODE_ID} />
       </ControlledTreeEnvironment>
     </StyleContainer>
   );

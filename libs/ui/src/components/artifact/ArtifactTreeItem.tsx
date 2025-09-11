@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useRef } from 'react';
 import { IonContent, useIonPopover } from '@ionic/react';
 
-import { InternalTreeItem, UNCATEGORIZED_ITEM_ID } from './ArtifactTree';
+import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
 import { IoChevronDown, IoChevronForward } from 'react-icons/io5';
@@ -124,6 +124,7 @@ interface ArtifactTreeItemProps {
   setExpandedItemsRef: React.MutableRefObject<
     (expandedItems: string[]) => void
   >;
+  enableContextMenu: boolean
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
@@ -186,7 +187,9 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID) return;
+    if (!props.enableContextMenu) return;
+
+    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID) return;
 
     presentContextMenuPopover({
       event: e.nativeEvent,
@@ -198,14 +201,14 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
       <TreeListItem
         {...props.treeRenderProps.context.itemContainerWithChildrenProps}
         $isUncategorized={
-          props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+          props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
         }
         $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
       >
         <TreeItemContainer
           $isUncategorized={
-            props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+            props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
           }
         >
           {props.treeRenderProps.item.isFolder ? (
@@ -227,7 +230,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
             {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
             {...interactiveElementProps}
             $isUncategorized={
-              props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+              props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
             }
             className={`rct-tree-item-button`}
             onContextMenu={onContextMenu}
