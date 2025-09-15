@@ -18,9 +18,9 @@ import { Capability, ToolName } from '@feynote/shared-utils';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
 
-const DAILY_MESSAGING_CAP_ENHANCED_TIER = 3000; // 120 messages per hour
+const DAILY_ABUSE_LIMIT = 3000; // 120 messages per hour
 const DAILY_MESSAGING_CAP_FREE_TIER = 360; // 15 messages per hour
-const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 240; // 10 messages per hour
+const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 10;
 
 const schema = {
   body: z.object({
@@ -47,9 +47,6 @@ export const createMessage = defineExpressHandler(
 
     const userId = res.locals.session.userId;
     const capabilities = await getCapabilitiesForUser(userId);
-    let model = capabilities.has(Capability.AssistantEnhancedModel)
-      ? AIModel.GPT4
-      : AIModel.GPT4_MINI;
 
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const numOfPreviousMessagesSent = await prisma.message.count({
@@ -62,14 +59,27 @@ export const createMessage = defineExpressHandler(
         },
       },
     });
-    let messagingCap = DAILY_MESSAGING_CAP_FREE_TIER;
-    if (capabilities.has(Capability.AssistantEnhancedMessagingCap)) {
-      messagingCap = DAILY_MESSAGING_CAP_ENHANCED_TIER;
-    }
-    if (numOfPreviousMessagesSent > messagingCap) {
+    if (numOfPreviousMessagesSent > DAILY_ABUSE_LIMIT) {
       throw new TooManyRequestsExpressError(
         'Number of messages sent is beyond allocated threshold for the given tier',
       );
+    }
+
+    let model = AIModel.GPT4_MINI;
+    if (
+      !capabilities.has(Capability.AssistantEnhancedMessageLimit) &&
+      numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FREE_TIER
+    ) {
+      throw new TooManyRequestsExpressError(
+        'Number of messages sent is beyond allocated threshold for the given tier',
+      );
+    }
+    if (
+      (capabilities.has(Capability.AssistantLimitedEnhancedModel) &&
+        numOfPreviousMessagesSent < DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) ||
+      capabilities.has(Capability.AssistantUnlimitedEnhancedModel)
+    ) {
+      model = AIModel.GPT4;
     }
     // Rolling window prevents reset of enhanced messaging cap when in continuous use
     if (numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) {

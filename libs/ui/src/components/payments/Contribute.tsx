@@ -13,6 +13,12 @@ import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 
+const CurrentSubscriptionCard = styled(IonCard)`
+  max-width: 400px;
+  margin: 16px auto;
+  text-align: center;
+`;
+
 const OfferingContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -207,7 +213,7 @@ export const Contribute: React.FC = () => {
           {t('contribute.description')}
         </ContributeDescription>
         {subscriptions.length > 0 && (
-          <IonCard className="ion-padding">
+          <CurrentSubscriptionCard className="ion-padding">
             <IonCardTitle>{t('contribute.currentSubscriptions')}</IonCardTitle>
             <div>
               {subscriptions.map((subscription) => (
@@ -226,7 +232,7 @@ export const Contribute: React.FC = () => {
                 </div>
               ))}
             </div>
-          </IonCard>
+          </CurrentSubscriptionCard>
         )}
 
         <FrequencySelector>
