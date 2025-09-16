@@ -6,7 +6,7 @@ export function limitNumOfMessagesByCapability(
   messages: CoreMessage[],
   capabilities: Set<Capability>,
 ): CoreMessage[] {
-  if (capabilities.has(Capability.AssistantEnhancedMessageHistory)) {
+  if (capabilities.has(Capability.AssistantEnhancedMessageContext)) {
     return messages.slice(-MAX_MESSAGE_LIMIT);
   }
   return messages.slice(-MAX_MESSAGE_LIMIT / 2);
