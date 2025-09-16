@@ -22,7 +22,7 @@ export default defineConfig({
     ssr: {
       // This marks the `path-to-regexp` package as external, so it won't be bundled in the server build
       // Necessary for how we render Ionic within Astro
-      noExternal: ['path-to-regexp'],
+      noExternal: ['path-to-regexp', 'zod'],
     },
   },
 });

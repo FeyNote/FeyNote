@@ -8,9 +8,10 @@ export enum Capability {
   HighResImages = 'highResImages',
   UltraHighResImages = 'ultraHighResImages',
 
-  AssistantEnhancedMessageHistory = 'assistantEnhancedMessageHistory',
-  AssistantEnhancedModel = 'assistantEnhancedModel',
-  AssistantEnhancedMessagingCap = 'assistantEnhancedMessagingCap',
+  AssistantEnhancedMessageLimit = 'assistantEnhancedMessageHistory',
+  AssistantEnhancedMessageContext = 'assistantEnhancedMessageContext',
+  AssistantLimitedEnhancedModel = 'assistantLimitedEnhancedModel',
+  AssistantUnlimitedEnhancedModel = 'assistantUnlimitedEnhancedModel',
 }
 
 export interface SubscriptionModel {
@@ -26,70 +27,106 @@ export enum SubscriptionModelName {
   Tier2Monthly = 'tier2-monthly',
   Tier2Yearly = 'tier2-yearly',
   Tier2Forever = 'tier2-forever',
+  Tier3Monthly = 'tier3-monthly',
+  Tier3Yearly = 'tier3-yearly',
+  Tier3Forever = 'tier3-forever',
 }
 
 export const SUBSCRIPTION_MODELS = {
   [SubscriptionModelName.Tier1Monthly]: {
-    title: 'Supporter (Monthly)',
+    title: 'Quill Bearer (Monthly)',
     expiresInDays: 31,
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
     ],
   },
   [SubscriptionModelName.Tier1Yearly]: {
-    title: 'Supporter (Yearly)',
+    title: 'Quill Bearer (Yearly)',
     expiresInDays: 365,
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
     ],
   },
   [SubscriptionModelName.Tier1Forever]: {
-    title: 'Supporter (Forever)',
+    title: 'Quill Bearer (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
     ],
   },
   [SubscriptionModelName.Tier2Monthly]: {
-    title: 'Supporter+ (Monthly)',
+    title: 'Inkling (Monthly)',
     expiresInDays: 31,
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedModel,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier2Yearly]: {
-    title: 'Supporter+ (Yearly)',
+    title: 'Inkling (Yearly)',
     expiresInDays: 365,
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
-      Capability.AssistantEnhancedModel,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier2Forever]: {
-    title: 'Supporter+ (Forever)',
+    title: 'Inkling (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageHistory,
-      Capability.AssistantEnhancedMessagingCap,
-      Capability.AssistantEnhancedModel,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.Tier3Monthly]: {
+    title: 'Tome Keeper (Monthly)',
+    expiresInDays: 31,
+    capabilities: [
+      Capability.UltraLargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantUnlimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.Tier3Yearly]: {
+    title: 'Tome Keeper (Yearly)',
+    expiresInDays: 365,
+    capabilities: [
+      Capability.UltraLargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantUnlimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.Tier3Forever]: {
+    title: 'Tome Keeper (Forever)',
+    expiresInDays: 3650, // 10 years - okay, not quite forever
+    capabilities: [
+      Capability.UltraLargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageLimit,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantUnlimitedEnhancedModel,
     ],
   },
 } satisfies Record<SubscriptionModelName, SubscriptionModel> as Record<
