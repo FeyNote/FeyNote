@@ -81,10 +81,6 @@ export const createMessage = defineExpressHandler(
     ) {
       model = AIModel.GPT4;
     }
-    // Rolling window prevents reset of enhanced messaging cap when in continuous use
-    if (numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) {
-      model = AIModel.GPT4_MINI;
-    }
     const limitedMessages = limitNumOfMessagesByCapability(
       messages,
       capabilities,

@@ -187,7 +187,7 @@ export const Contribute: React.FC = () => {
     activeWithStripe: boolean;
   }) => {
     return (
-      <div>
+      <>
         {subscription.expiresAt &&
           !subscription.activeWithStripe &&
           t('contribute.expiresAt', {
@@ -201,7 +201,7 @@ export const Contribute: React.FC = () => {
           t('contribute.cancelledAt', {
             date: subscription.cancelledAt,
           })}
-      </div>
+      </>
     );
   };
 
