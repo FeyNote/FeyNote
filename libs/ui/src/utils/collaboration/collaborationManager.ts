@@ -1,16 +1,13 @@
 import {
   HocuspocusProviderWebsocket,
   HocuspocusProvider,
-  WebSocketStatus,
 } from '@hocuspocus/provider';
-import { getApiUrls } from '../../utils/getApiUrls';
+import { getApiUrls } from '../getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
 import type { SessionDTO } from '@feynote/shared-utils';
-import { incrementVersionForChangesOnArtifact } from '../../utils/incrementVersionForChangesOnArtifact';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { incrementVersionForChangesOnArtifact } from '../localDb/incrementVersionForChangesOnArtifact';
+import { appIdbStorageManager } from '../AppIdbStorageManager';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 15000;
 const TIPTAP_COLLAB_AUTORELEASE_WAIT_MS = 2000;
@@ -252,149 +249,6 @@ class CollaborationManager {
 }
 
 export const collaborationManager = new CollaborationManager();
-
-/**
- * This hook should be used for _all_ React-based interaction with our connections.
- * It's internal state management is _critical_ to making sure that connections are
- * reserved and released correctly during component lifecycle.
- * MODIFY WITH GREAT CARE
- */
-export const useCollaborationConnection = (docName: string) => {
-  const { session } = useContext(SessionContext);
-  const currentConnection =
-    useRef<ReturnType<typeof collaborationManager.get>>(undefined);
-
-  if (!currentConnection.current) {
-    currentConnection.current = collaborationManager.get(docName, session);
-  }
-
-  useEffect(() => {
-    // WARN: Cleanup the initially-instantiated collaboration connection when this hook first rendered. This is critical.
-    currentConnection.current?.release();
-
-    const connection = collaborationManager.get(docName, session);
-    currentConnection.current = connection;
-
-    return () => {
-      // WARN: Cleanup the existing connection on unmount of the component. This is critical.
-      connection.release();
-    };
-  }, [session, docName]);
-
-  return currentConnection.current.connection;
-};
-
-/**
- * A helper method for watching the status of a given collaboration connection.
- * It's highly advised to use useCollaborationConnectionAuthorizedScope instead of using these raw values
- * to make decisions, since it considers all of these values and gives you _one unified status_ that
- * you can use to make decisions about what to display.
- */
-export const useCollaborationConnectionStatus = (
-  connection: CollaborationManagerConnection,
-): {
-  connectionStatus: WebSocketStatus;
-  authenticationStatus: CollaborationManagerConnectionAuthenticationStatus;
-  authorizedScope: HocuspocusAuthorizedScope;
-  idbSynced: boolean;
-  hocuspocusSynced: boolean;
-  isDestroyed: boolean;
-} => {
-  const [isDestroyed, setIsDestroyed] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState(
-    connection.ws.status,
-  );
-  const [authenticationStatus, setAuthenticationStatus] = useState(
-    connection.authenticationStatus,
-  );
-  const [authorizedScope, setAuthorizedScope] = useState(
-    connection.authorizedScope,
-  );
-  const [idbSynced, setIdbSynced] = useState(
-    connection.indexeddbProvider.synced,
-  );
-  const [hocuspocusSynced, setHocuspocusSynced] = useState(
-    connection.tiptapCollabProvider.synced,
-  );
-
-  const listener = () => {
-    setIsDestroyed(connection.isDestroyed);
-    setConnectionStatus(connection.ws.status);
-    setAuthenticationStatus(connection.authenticationStatus);
-    setAuthorizedScope(connection.authorizedScope);
-    setIdbSynced(connection.indexeddbProvider.synced);
-    setHocuspocusSynced(connection.tiptapCollabProvider.synced);
-  };
-
-  useEffect(() => {
-    const wsEvents = ['status', 'open', 'connect', 'disconnect'];
-    for (const eventName of wsEvents) {
-      connection.ws.on(eventName, listener);
-    }
-    const localProviderEvents = ['synced'];
-    for (const eventName of localProviderEvents) {
-      connection.indexeddbProvider.on(eventName, listener);
-    }
-    const serverProviderEvents = [
-      'status',
-      'open',
-      'connect',
-      'authenticated',
-      'authenticationFailed',
-      'synced',
-      'close',
-      'disconnect',
-      'destroy',
-    ];
-    for (const eventName of serverProviderEvents) {
-      connection.tiptapCollabProvider.on(eventName, listener);
-    }
-    const ydocEvents = ['destroy'] as const;
-    for (const eventName of ydocEvents) {
-      connection.yjsDoc.on(eventName, listener);
-    }
-    listener();
-
-    return () => {
-      for (const eventName of wsEvents) {
-        connection.ws.off(eventName, listener);
-      }
-      for (const eventName of localProviderEvents) {
-        connection.indexeddbProvider.off(eventName, listener);
-      }
-      for (const eventName of serverProviderEvents) {
-        connection.tiptapCollabProvider.off(eventName, listener);
-      }
-      for (const eventName of ydocEvents) {
-        connection.yjsDoc.off(eventName, listener);
-      }
-    };
-  }, [connection]);
-
-  /**
-   * Connections can never recover from a destroyed state. This is purposeful.
-   */
-  if (isDestroyed) {
-    return {
-      connectionStatus: WebSocketStatus.Disconnected,
-      authenticationStatus:
-        CollaborationManagerConnectionAuthenticationStatus.Unauthenticated,
-      authorizedScope: HocuspocusAuthorizedScope.Uninitialized,
-      hocuspocusSynced: false,
-      idbSynced: false,
-      isDestroyed,
-    };
-  }
-
-  return {
-    connectionStatus,
-    authenticationStatus,
-    authorizedScope,
-    hocuspocusSynced,
-    idbSynced,
-    isDestroyed,
-  };
-};
 
 /**
  * This handler follows a very similar pattern to storage with* handlers.

@@ -21,7 +21,7 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
   const ref = useRef<HTMLIonItemElement>(null);
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(props.edge.targetArtifactId, props.edge.isBroken);
+    useArtifactPreviewTimer(props.edge.targetArtifactId);
 
   const linkClicked = (
     event: React.MouseEvent<
@@ -65,32 +65,22 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
       {t('artifactRightSideMenu.outgoing.block', {
         text: props.edge.referenceText,
       })}
-      {!props.edge.isBroken && (
-        <p>
-          {t('artifactRightSideMenu.outgoing.block.subtitle', {
-            title: props.edge.targetArtifactTitle,
-          })}
-        </p>
-      )}
-      {props.edge.isBroken && (
-        <p>{t('artifactRightSideMenu.brokenReference')}</p>
-      )}
+      <p>
+        {t('artifactRightSideMenu.outgoing.block.subtitle', {
+          title: props.edge.targetArtifactTitle,
+        })}
+      </p>
     </NowrapIonLabel>
   );
 
   const artifactReferenceContent = (
     <NowrapIonLabel>
       {t('artifactRightSideMenu.outgoing.artifact')}
-      {!props.edge.isBroken && (
-        <p>
-          {t('artifactRightSideMenu.outgoing.artifact.subtitle', {
-            title: props.edge.targetArtifactTitle,
-          })}
-        </p>
-      )}
-      {props.edge.isBroken && (
-        <p>{t('artifactRightSideMenu.brokenReference')}</p>
-      )}
+      <p>
+        {t('artifactRightSideMenu.outgoing.artifact.subtitle', {
+          title: props.edge.targetArtifactTitle,
+        })}
+      </p>
     </NowrapIonLabel>
   );
 

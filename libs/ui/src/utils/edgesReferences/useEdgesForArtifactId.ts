@@ -20,12 +20,12 @@ export const useEdgesForArtifactId = (artifactId: string | undefined) => {
     };
   }
 
-  const { incomingEdges, outgoingEdges, getEdge } =
+  const { incomingEdges, outgoingEdges } =
     edgeStore.getEdgesForArtifactId(artifactId);
 
   return {
     incomingEdges,
     outgoingEdges,
-    getEdge,
+    getEdge: edgeStore.getEdge,
   };
 };

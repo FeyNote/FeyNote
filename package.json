@@ -80,6 +80,8 @@
     "dedent": "^1.6.0",
     "dompurify": "^3.2.6",
     "express": "4.21.2",
+    "express-rate-limit": "^8.0.1",
+    "express-slow-down": "^3.0.0",
     "extract-zip": "^2.0.1",
     "flexlayout-react": "^0.8.17",
     "google-auth-library": "^10.2.1",

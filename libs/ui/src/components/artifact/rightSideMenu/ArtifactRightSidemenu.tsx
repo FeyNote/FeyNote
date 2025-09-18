@@ -22,7 +22,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
-import { CollaborationManagerConnection } from '../../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
 import { SessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
@@ -33,7 +33,7 @@ import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta'
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
-} from '../../../utils/useCollaborationConnectionAuthorizedScope';
+} from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
@@ -162,6 +162,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         // We don't want to show self-references in the incoming artifact references list
         if (el.artifactId === props.artifactId) return acc;
 
+        // We don't want to show references coming from artifacts that are deleted
+        if (el.artifactDeleted) return acc;
+
         acc[el.artifactId] ||= [];
         acc[el.artifactId].push(el);
         return acc;
@@ -172,14 +175,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const outgoingEdgesByArtifactId = useMemo(() => {
     return Object.entries(
       outgoingEdges.reduce<{ [key: string]: Edge[] }>((acc, el) => {
-        // We don't want to show broken references in the referenced artifact list
-        if (el.isBroken) return acc;
-
         // We don't want to show self-references in the referenced artifact list
         if (el.targetArtifactId === props.artifactId) return acc;
-
-        // We don't want to include broken references in the referenced artifact list (kinda TBD)
-        if (!el.targetArtifactTitle) return acc;
 
         acc[el.targetArtifactId] ||= [];
         acc[el.targetArtifactId].push(el);

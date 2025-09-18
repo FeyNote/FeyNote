@@ -143,7 +143,7 @@ export const buildArtifactReferencesExtension = (args: {
     renderHTML({ options, node }) {
       const edgeStore = getEdgeStore();
       const edge = this.artifactId
-        ? edgeStore.getEdgeInstant({
+        ? edgeStore.getEdge({
             artifactId: this.artifactId,
             artifactBlockId: node.attrs.id,
             targetArtifactId: node.attrs.artifactId,
@@ -163,7 +163,7 @@ export const buildArtifactReferencesExtension = (args: {
     renderText({ options, node }) {
       const edgeStore = getEdgeStore();
       const edge = this.artifactId
-        ? edgeStore.getEdgeInstant({
+        ? edgeStore.getEdge({
             artifactId: this.artifactId,
             artifactBlockId: node.attrs.id,
             targetArtifactId: node.attrs.artifactId,

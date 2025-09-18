@@ -5,13 +5,11 @@ import {
   useReducer,
   useRef,
   useState,
-  type Ref,
   type RefObject,
 } from 'react';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import {
   ControlledTreeEnvironment,
-  DraggingPosition,
   InteractionMode,
   Tree,
   TreeItem,
@@ -24,17 +22,12 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 import * as Sentry from '@sentry/react';
 
-import { useCollaborationConnection } from '../editor/collaborationManager';
 import { SessionContext } from '../../context/session/SessionContext';
-import { trpc } from '../../utils/trpc';
-import { ArtifactDTO } from '@feynote/global-types';
-import { EventName } from '../../context/events/EventName';
 import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { ImmediateDebouncer, PreferenceNames } from '@feynote/shared-utils';
-import { eventManager } from '../../context/events/EventManager';
+import { PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
@@ -45,6 +38,8 @@ import {
   setCustomDragData,
 } from '../../utils/artifactTree/customDrag';
 import { calculateOrderForArtifactTreeNode } from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { useArtifactSnapshots } from '../../utils/localDb/hooks/useArtifactSnapshots';
 
 const StyleContainer = styled.div`
   .rct-tree-root {
@@ -89,25 +84,29 @@ export interface InternalTreeItem {
 
 export const ROOT_TREE_NODE_ID = 'root';
 export const UNCATEGORIZED_TREE_NODE_ID = 'uncategorized';
-const RELOAD_DEBOUNCE_INTERVAL_MS = 3000;
 
-type ExcludedMinimalDraggingPositionKeys = "linearIndex" | "depth";
+type ExcludedMinimalDraggingPositionKeys = 'linearIndex' | 'depth';
 /**
-  * Implements only a subset of the information in the normal DraggingPosition interface
-  */
-type MinimalDraggingPosition = Omit<DraggingPositionItem, ExcludedMinimalDraggingPositionKeys> | Omit<DraggingPositionBetweenItems, ExcludedMinimalDraggingPositionKeys> | Omit<DraggingPositionRoot, ExcludedMinimalDraggingPositionKeys>;
+ * Implements only a subset of the information in the normal DraggingPosition interface
+ */
+type MinimalDraggingPosition =
+  | Omit<DraggingPositionItem, ExcludedMinimalDraggingPositionKeys>
+  | Omit<DraggingPositionBetweenItems, ExcludedMinimalDraggingPositionKeys>
+  | Omit<DraggingPositionRoot, ExcludedMinimalDraggingPositionKeys>;
 
 interface Props {
-  treeId: string, // This should be globally unique!
-  registerAsGlobalTreeDragHandler: boolean, // This should only be enabled for the sidemenu tree
-  editable: boolean,
-  mode: "navigate" | "select"
-  enableItemContextMenu: boolean,
-  onNodeClicked?: (pos: MinimalDraggingPosition) => void,
-  onDropRef?: RefObject<(
-    droppedItems: TreeItem<InternalTreeItem>[],
-    target: MinimalDraggingPosition,
-  ) => void>,
+  treeId: string; // This should be globally unique!
+  registerAsGlobalTreeDragHandler: boolean; // This should only be enabled for the sidemenu tree
+  editable: boolean;
+  mode: 'navigate' | 'select';
+  enableItemContextMenu: boolean;
+  onNodeClicked?: (pos: MinimalDraggingPosition) => void;
+  onDropRef?: RefObject<
+    (
+      droppedItems: TreeItem<InternalTreeItem>[],
+      target: MinimalDraggingPosition,
+    ) => void
+  >;
 }
 
 export const ArtifactTree: React.FC<Props> = (props) => {
@@ -117,15 +116,14 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );
-  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
+  const { artifactSnapshots: artifacts } = useArtifactSnapshots();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
   const setExpandedItemsRef = useRef(setExpandedItems);
   setExpandedItemsRef.current = setExpandedItems;
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const { navigate, getPaneById } = useContext(GlobalPaneContext);
-  const currentPane = getPaneById(undefined);
+  const { navigate } = useContext(GlobalPaneContext);
 
   const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;
@@ -146,22 +144,6 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     return yKeyValue;
   }, [yDoc]);
 
-  const load = () => {
-    trpc.artifact.getArtifacts
-      .query()
-      .then((artifacts) => {
-        setArtifacts(artifacts.filter((artifact) => !artifact.deletedAt));
-        triggerRerender();
-      })
-      .catch(() => {
-        // Do nothing
-      });
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
-
   useEffect(() => {
     const listener = () => {
       triggerRerender();
@@ -173,40 +155,12 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     };
   }, [yKeyValue]);
 
-  useEffect(() => {
-    loadDebouncerRef.current.call();
-  }, [currentPane.currentView.navigationEventId]);
-
-  const loadDebouncerRef = useRef(
-    new ImmediateDebouncer(
-      () => {
-        load();
-      },
-      RELOAD_DEBOUNCE_INTERVAL_MS,
-      {
-        enableFollowupCall: true,
-      },
-    ),
-  );
-
-  useEffect(() => {
-    const handler = () => {
-      loadDebouncerRef.current.call();
-    };
-
-    eventManager.addEventListener([EventName.ArtifactUpdated], handler);
-
-    return () => {
-      eventManager.removeEventListener([EventName.ArtifactUpdated], handler);
-    };
-  }, []);
-
   const items = useMemo((): Record<
     TreeItemIndex,
     TreeItem<InternalTreeItem>
   > => {
     const artifactsById = new Map(
-      artifacts.map((artifact) => [artifact.id, artifact]),
+      artifacts?.map((artifact) => [artifact.id, artifact]),
     );
 
     const kvEntries = new Map(yKeyValue.yarray.map((el) => [el.key, el.val]));
@@ -226,7 +180,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         index: key,
         data: {
           id: key,
-          title: artifact.title,
+          title: artifact.meta.title,
           order: value.order,
         },
         children: [],
@@ -236,13 +190,13 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     // Artifact not explicitly added to tree, add it to uncategorized
     const uncategorizedArtifacts = new Set<string>();
-    for (const artifact of artifacts) {
+    for (const artifact of artifacts || []) {
       if (!items[artifact.id]) {
         items[artifact.id] = {
           index: artifact.id,
           data: {
             id: artifact.id,
-            title: artifact.title,
+            title: artifact.meta.title,
             order: 'Z',
           },
           children: [],
@@ -341,7 +295,12 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     };
 
     return items;
-  }, [yKeyValue, _rerenderReducerValue, leftPaneArtifactTreeShowUncategorized]);
+  }, [
+    yKeyValue,
+    _rerenderReducerValue,
+    leftPaneArtifactTreeShowUncategorized,
+    artifacts,
+  ]);
   const itemsRef = useRef<Record<TreeItemIndex, TreeItem<InternalTreeItem>>>(
     {},
   );
@@ -373,8 +332,8 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           treeYKV: yKeyValue,
           parentNodeId: ROOT_TREE_NODE_ID,
           location: {
-            position: "end"
-          }
+            position: 'end',
+          },
         });
 
         yKeyValue.set(item.data.id, {
@@ -403,8 +362,8 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           treeYKV: yKeyValue,
           parentNodeId: target.targetItem.toString(),
           location: {
-            position: "end"
-          }
+            position: 'end',
+          },
         });
 
         yKeyValue.set(item.data.id, {
@@ -430,18 +389,20 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       }
 
       const parentItem = items[target.parentItem];
-      let previousItemId = items[parentItem.children?.[target.childIndex - 1] || -1]?.data.id;
-      const nextItemId = items[parentItem.children?.[target.childIndex] || -1]?.data.id;
+      let previousItemId =
+        items[parentItem.children?.[target.childIndex - 1] || -1]?.data.id;
+      const nextItemId =
+        items[parentItem.children?.[target.childIndex] || -1]?.data.id;
 
       for (const item of droppedItems) {
         const order = calculateOrderForArtifactTreeNode({
           treeYKV: yKeyValue,
           parentNodeId: target.parentItem.toString(),
           location: {
-            position: "between",
+            position: 'between',
             afterNodeId: previousItemId,
             beforeNodeId: nextItemId,
-          }
+          },
         });
 
         yKeyValue.set(item.data.id, {
@@ -517,8 +478,9 @@ export const ArtifactTree: React.FC<Props> = (props) => {
                   data: {
                     id: dragDataProps.id,
                     title:
-                      artifacts.find((artifact) => artifact.id === dragDataProps.id)
-                        ?.title || 'Unknown',
+                      artifacts?.find(
+                        (artifact) => artifact.id === dragDataProps.id,
+                      )?.meta.title || 'Unknown',
                     order: 'X',
                   } satisfies InternalTreeItem,
                 },
@@ -558,17 +520,19 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           ) => ({
             onClick: (e) => {
               if (props.onNodeClicked) {
-                const parentItem = Object.values(items).find((el) => el.children?.includes(item.index));
+                const parentItem = Object.values(items).find((el) =>
+                  el.children?.includes(item.index),
+                );
 
                 props.onNodeClicked({
-                  targetType: "item",
-                  parentItem: parentItem?.index || "root",
+                  targetType: 'item',
+                  parentItem: parentItem?.index || 'root',
                   targetItem: item.index,
                   treeId,
                 });
               }
 
-              if (props.mode === "select") {
+              if (props.mode === 'select') {
                 return;
               }
 

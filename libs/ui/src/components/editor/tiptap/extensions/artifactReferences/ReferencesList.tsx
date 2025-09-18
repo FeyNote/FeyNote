@@ -35,7 +35,7 @@ import { SessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
 import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
-import { getSelfManagedCollaborationConnection } from '../../../collaborationManager';
+import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
 

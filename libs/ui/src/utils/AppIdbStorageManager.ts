@@ -8,6 +8,9 @@ import {
   KVStoreKeys,
   ObjectStoreName,
 } from './localDb';
+import { eventManager } from '../context/events/EventManager';
+import { EventName } from '../context/events/EventName';
+import type { ArtifactSnapshot } from '@feynote/global-types';
 
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
@@ -26,6 +29,62 @@ export class AppIdbStorageManager {
         id: artifactId,
         version: new Date().getTime(),
       });
+    }
+  }
+
+  /**
+   * This method will update the snapshot DB as well as broadcast to listeners that an update is available.
+   * This method will patch a snapshot doc in place to preserve optional properties
+   */
+  async updateLocalArtifactSnapshot(
+    artifactId: string,
+    snapshotNewAttributes: Omit<ArtifactSnapshot, 'id' | 'createdLocally'> & {
+      createdLocally?: ArtifactSnapshot['createdLocally'];
+    },
+    // Behavior for if snapshot does not exist. If omitted, this method will throw when artifact does not exist.
+    ifNotExists?:
+      | {
+          create: true;
+          ignore?: false;
+          createdLocally: boolean;
+        }
+      | {
+          create?: false;
+          ignore: true;
+        },
+  ): Promise<void> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.ArtifactSnapshots,
+      artifactId,
+    );
+
+    const broadcast = () => {
+      eventManager.broadcast(EventName.LocaldbArtifactSnapshotUpdated, {
+        artifactId,
+      });
+    };
+
+    if (record) {
+      await manifestDb.put(ObjectStoreName.ArtifactSnapshots, {
+        ...record,
+        ...snapshotNewAttributes,
+        id: artifactId,
+      });
+      broadcast();
+    } else if (ifNotExists && ifNotExists.create) {
+      await manifestDb.add(ObjectStoreName.ArtifactSnapshots, {
+        ...snapshotNewAttributes,
+        createdLocally: ifNotExists.createdLocally,
+        id: artifactId,
+      });
+      broadcast();
+    } else if (ifNotExists && ifNotExists.ignore) {
+      // Ignored. I prefer the fall-through style, so left this block in.
+    } else {
+      throw new Error(
+        'updateLocalArtifactSnapshot called with artifactId that did not exist',
+      );
     }
   }
 
@@ -70,6 +129,8 @@ export class AppIdbStorageManager {
       value: session.userId,
     });
     await tx.done;
+
+    eventManager.broadcast(EventName.LocaldbSessionUpdated);
   }
 
   async removeSession(): Promise<void> {
@@ -78,6 +139,8 @@ export class AppIdbStorageManager {
     const store = tx.objectStore(ObjectStoreName.KV);
     await store.delete(KVStoreKeys.Session);
     await tx.done;
+
+    eventManager.broadcast(EventName.LocaldbSessionUpdated);
   }
 
   async getLastSessionUserId(): Promise<string | null> {

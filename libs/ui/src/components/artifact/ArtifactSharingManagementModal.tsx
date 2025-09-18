@@ -24,7 +24,7 @@ import { ArtifactLinkAccessLevelSelect } from './ArtifactLinkAccessLevelSelect';
 import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
 import styled from 'styled-components';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';

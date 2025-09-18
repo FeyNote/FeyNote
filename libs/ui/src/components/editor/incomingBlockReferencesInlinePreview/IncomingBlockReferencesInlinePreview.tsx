@@ -51,7 +51,7 @@ export const IncomingBlockReferencesInlinePreview = (props: Props) => {
   }, [props.artifactId]);
 
   props.onMouseOverRef.current = (event, blockId) => {
-    const edges = getEdgeStore().getIncomingEdgesForBlockInstant({
+    const edges = getEdgeStore().getIncomingEdgesForBlock({
       artifactId: props.artifactId,
       blockId,
     });

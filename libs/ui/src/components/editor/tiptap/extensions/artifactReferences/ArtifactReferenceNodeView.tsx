@@ -44,15 +44,12 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     targetArtifactBlockId,
     targetArtifactDate,
   });
-  const isBroken = edge ? edge.isBroken : false;
 
   const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    if (isBroken) return;
-
     let paneTransition = PaneTransition.Push;
     if (event.metaKey || event.ctrlKey) {
       paneTransition = PaneTransition.NewTab;
@@ -70,7 +67,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   };
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
+    useArtifactPreviewTimer(targetArtifactId);
 
   let referenceText = edge?.referenceText || props.node.attrs.referenceText;
   if (targetArtifactDate) {
@@ -81,7 +78,6 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
-        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >

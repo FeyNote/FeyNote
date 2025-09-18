@@ -1,16 +1,14 @@
-import type { ArtifactDTO } from "@feynote/global-types";
-import { IonIcon } from "@ionic/react";
-import { Button, DropdownMenu } from "@radix-ui/themes";
-import { filter } from "ionicons/icons";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { MultiArtifactMoveInTreeDialog } from "./MultiArtifactMoveInTreeDialog";
-import { MultiArtifactDeleteDialog } from "./MultiArtifactDeleteDialog";
-import { MultiArtifactSharingDialog } from "./MultiArtifactSharingDialog";
+import { IonIcon } from '@ionic/react';
+import { Button, DropdownMenu } from '@radix-ui/themes';
+import { filter } from 'ionicons/icons';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MultiArtifactMoveInTreeDialog } from './MultiArtifactMoveInTreeDialog';
+import { MultiArtifactDeleteDialog } from './MultiArtifactDeleteDialog';
+import { MultiArtifactSharingDialog } from './MultiArtifactSharingDialog';
 
 interface Props {
-  artifacts: ArtifactDTO[] | undefined,
-  selectedArtifactIds: ReadonlySet<string>
+  selectedArtifactIds: ReadonlySet<string>;
 }
 
 export const AllArtifactsActions: React.FC<Props> = (props) => {
@@ -25,9 +23,7 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
     <>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <Button
-            variant="soft"
-          >
+          <Button variant="soft">
             <IonIcon icon={filter} slot="start" />
             {t('allArtifacts.actions')}
           </Button>
@@ -65,4 +61,4 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
       )}
     </>
   );
-}
+};

@@ -45,11 +45,10 @@ export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
           return;
         }
 
-        const incomingEdges =
-          this.options.edgeStore?.getIncomingEdgesForBlockInstant({
-            artifactId: this.options.artifactId,
-            blockId: node.attrs.id,
-          });
+        const incomingEdges = this.options.edgeStore?.getIncomingEdgesForBlock({
+          artifactId: this.options.artifactId,
+          blockId: node.attrs.id,
+        });
 
         incomingEdgeCounter.innerText = `${incomingEdges?.length || 0}`;
 

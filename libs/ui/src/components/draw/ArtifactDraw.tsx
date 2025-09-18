@@ -66,7 +66,7 @@ import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import styled from 'styled-components';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { TLDrawCustomGrid } from './TLDrawCustomGrid';
 import {
   TLDrawReferenceShapeTool,

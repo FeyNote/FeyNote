@@ -1,10 +1,3 @@
-
-interface Props {
-}
-
-export const AllArtifactsRightSidemenu: React.FC<Props> = (props) => {
-  return (
-    <>
-    </>
-  );
+export const AllArtifactsRightSidemenu: React.FC = () => {
+  return null;
 };

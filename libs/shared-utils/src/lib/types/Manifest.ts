@@ -3,12 +3,13 @@ export interface Edge {
   artifactTitle: string;
   artifactId: string;
   artifactBlockId: string;
+  artifactDeleted: boolean;
   targetArtifactId: string;
   targetArtifactBlockId: string | null;
   targetArtifactDate: string | null;
   targetArtifactTitle: string | null;
+  targetArtifactDeleted: boolean;
   referenceText: string;
-  isBroken: boolean;
 }
 
 export interface Manifest {

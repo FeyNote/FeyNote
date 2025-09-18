@@ -5,23 +5,68 @@ import type {
   Map as YMap,
   Array as YArray,
 } from 'yjs';
-import { appIdbStorageManager } from './AppIdbStorageManager';
+import { appIdbStorageManager } from '../AppIdbStorageManager';
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   ARTIFACT_USER_ACCESS_KEY,
+  getMetaFromYArtifact,
+  ImmediateDebouncer,
 } from '@feynote/shared-utils';
+import type { YArtifactUserAccess } from '@feynote/global-types';
+
+const LOCAL_DB_WRITE_DEBOUNCE_MS = 200;
 
 export const incrementVersionForChangesOnArtifact = (
   artifactId: string,
   doc: Doc,
 ) => {
+  const bodyFragment = doc.getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY);
+  const metaMap = doc.getMap(ARTIFACT_META_KEY);
+  const artifactAccessArray = doc.getArray(ARTIFACT_USER_ACCESS_KEY) as YArray<{
+    key: string;
+    val: YArtifactUserAccess;
+  }>;
+
+  const updateSnapshot = () => {
+    const artifactAccessArray = doc.getArray(
+      ARTIFACT_USER_ACCESS_KEY,
+    ) as YArray<{
+      key: string;
+      val: YArtifactUserAccess;
+    }>;
+    console.log(
+      'writing artifact snapshot with meta',
+      getMetaFromYArtifact(doc),
+    );
+    return appIdbStorageManager.updateLocalArtifactSnapshot(
+      artifactId,
+      {
+        userAccess: artifactAccessArray.map((el) => el),
+        meta: getMetaFromYArtifact(doc),
+        updatedAt: new Date().getTime(),
+      },
+      {
+        ignore: true,
+      },
+    );
+  };
+
+  const debouncer = new ImmediateDebouncer(
+    updateSnapshot,
+    LOCAL_DB_WRITE_DEBOUNCE_MS,
+    {
+      enableFollowupCall: true,
+    },
+  );
+
   const metaObserveListener = async (
     _: YEvent<YMap<unknown>>[],
     transaction: Transaction,
   ) => {
     if (transaction.local) {
       appIdbStorageManager.incrementLocalArtifactVersion(artifactId);
+      debouncer.call();
     }
   };
 
@@ -31,6 +76,7 @@ export const incrementVersionForChangesOnArtifact = (
   ) => {
     if (transaction.local) {
       appIdbStorageManager.incrementLocalArtifactVersion(artifactId);
+      debouncer.call();
     }
   };
 
@@ -40,12 +86,9 @@ export const incrementVersionForChangesOnArtifact = (
   ) => {
     if (transaction.local) {
       appIdbStorageManager.incrementLocalArtifactVersion(artifactId);
+      debouncer.call();
     }
   };
-
-  const bodyFragment = doc.getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY);
-  const metaMap = doc.getMap(ARTIFACT_META_KEY);
-  const artifactAccessArray = doc.getArray(ARTIFACT_USER_ACCESS_KEY);
 
   bodyFragment.observeDeep(docObserveListener);
   metaMap.observeDeep(metaObserveListener);

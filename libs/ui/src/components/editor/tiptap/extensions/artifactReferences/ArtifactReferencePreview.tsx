@@ -15,7 +15,6 @@ import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWi
 export interface ReferencePreviewInfo {
   artifactYBin: Uint8Array | undefined;
   artifactInaccessible: boolean;
-  isBroken: boolean;
 }
 
 const PREVIEW_WIDTH_PX = 600;
@@ -118,19 +117,6 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     </>
   );
 
-  const brokenMessage = (
-    <>
-      <Header>{t('referencePreview.broken')}</Header>
-      {props.referenceText && (
-        <div>
-          {t('referencePreview.broken.message')}
-          <br />
-          {props.referenceText}
-        </div>
-      )}
-    </>
-  );
-
   return (
     <StyledBoundedFloatingWindow
       ref={containerRef}
@@ -140,11 +126,8 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       maxHeight={PREVIEW_MAX_HEIGHT_PX}
       onClick={(event) => props.onClick?.(event)}
     >
-      {props.previewInfo.isBroken && brokenMessage}
       {props.previewInfo.artifactInaccessible && inaccessibleMessage}
-      {!props.previewInfo.artifactInaccessible &&
-        !props.previewInfo.isBroken &&
-        previewContent}
+      {!props.previewInfo.artifactInaccessible && previewContent}
     </StyledBoundedFloatingWindow>
   );
 };

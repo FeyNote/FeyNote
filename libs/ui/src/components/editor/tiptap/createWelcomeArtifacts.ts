@@ -1,7 +1,7 @@
 import { trpc } from '../../../utils/trpc';
 import { buildWelcomeArtifact } from './templates/buildWelcomeArtifact';
 import { buildIntroducingReferencesArtifact } from './templates/buildIntroducingReferencesArtifact';
-import { withCollaborationConnection } from '../collaborationManager';
+import { withCollaborationConnection } from '../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
 import { addArtifactToArtifactTree } from '../../../utils/artifactTree/addArtifactToArtifactTree';
 

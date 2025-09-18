@@ -4,16 +4,12 @@ import { trpc } from '../../../../../utils/trpc';
 import { ReferencePreviewInfo } from './ArtifactReferencePreview';
 import { useHoverTimer } from './useHoverTimer';
 
-export const useArtifactPreviewTimer = (
-  artifactId: string,
-  isBroken: boolean,
-) => {
+export const useArtifactPreviewTimer = (artifactId: string) => {
   const [artifactYBin, setArtifactYBin] = useState<Uint8Array>();
   const [artifactInaccessible, setArtifactInaccessible] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const loadArtifactYBin = async () => {
-    if (isBroken) return;
     if (artifactYBin) return;
 
     const _artifactYBin = await trpc.artifact.getArtifactYBinById
@@ -42,7 +38,6 @@ export const useArtifactPreviewTimer = (
     ? ({
         artifactYBin,
         artifactInaccessible,
-        isBroken,
       } as ReferencePreviewInfo)
     : undefined;
 

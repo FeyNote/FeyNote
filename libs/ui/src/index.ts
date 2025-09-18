@@ -5,7 +5,7 @@ export { GlobalPaneContextProviderWrapper } from './context/globalPane/GlobalPan
 export { SidemenuContextProviderWrapper } from './context/sidemenu/SidemenuContextProviderWrapper';
 export { ToastContextProvider } from './context/toast/ToastContextProvider';
 export { Artifact } from './components/artifact/Artifact';
-export { SyncManager } from './utils/SyncManager';
+export { SyncManager } from './utils/localDb/SyncManager';
 export { SearchManager } from './utils/SearchManager';
 export { trpc } from './utils/trpc';
 export { getManifestDb, ObjectStoreName } from './utils/localDb';

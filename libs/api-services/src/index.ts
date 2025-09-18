@@ -56,8 +56,10 @@ export * from './lib/session/isAuthResetTokenExpired';
 export * from './lib/artifacts/yArtifactMetaZodSchema';
 export * from './lib/artifacts/hasArtifactAccess';
 export * from './lib/artifacts/getSafeArtifactId';
+export * from './lib/artifacts/getManifest';
 
 export * from './lib/dto/artifactDetailToArtifactDTO';
+export * from './lib/dto/prismaArtifactSnapshotToArtifactSnapshot';
 
 export * from './lib/payments/getSubscriptionsForUser';
 export * from './lib/payments/getCapabilitiesForSubscription';

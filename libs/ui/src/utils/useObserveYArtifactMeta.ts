@@ -19,7 +19,7 @@ export const useObserveYArtifactMeta = (
   const [linkAccessLevel, setLinkAccessLevel] = useState<
     ArtifactAccessLevel | undefined
   >();
-  const [deletedAt, setDeletedAt] = useState<string | null>();
+  const [deletedAt, setDeletedAt] = useState<number | null>();
 
   useEffect(() => {
     const artifactMetaMap = yArtifact.getMap(ARTIFACT_META_KEY);

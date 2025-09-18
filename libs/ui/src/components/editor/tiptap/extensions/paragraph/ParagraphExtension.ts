@@ -46,7 +46,7 @@ export const ParagraphExtension =
           }
 
           const incomingEdges =
-            this.options.edgeStore?.getIncomingEdgesForBlockInstant({
+            this.options.edgeStore?.getIncomingEdgesForBlock({
               artifactId: this.options.artifactId,
               blockId: node.attrs.id,
             });

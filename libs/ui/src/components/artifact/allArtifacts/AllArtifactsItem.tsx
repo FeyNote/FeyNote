@@ -1,23 +1,26 @@
-import type { ArtifactDTO } from "@feynote/global-types";
-import { IonIcon } from "@ionic/react";
-import type { ArtifactType } from "@prisma/client";
-import { calendar, document, pencil } from "ionicons/icons";
-import { CiInboxIn, CiInboxOut, CiUser } from "react-icons/ci";
-import styled from "styled-components";
-import { Checkbox } from "../../sharedComponents/Checkbox";
-import { PaneableComponent } from "../../../context/globalPane/PaneableComponent";
-import { PaneTransition } from "../../../context/globalPane/GlobalPaneContext";
-import { useContext, useMemo, type MouseEvent } from "react";
-import { PaneContext } from "../../../context/pane/PaneContext";
-import { useTranslation } from "react-i18next";
+import type { ArtifactSnapshot } from '@feynote/global-types';
+import { IonIcon } from '@ionic/react';
+import type { ArtifactType } from '@prisma/client';
+import { calendar, document, pencil } from 'ionicons/icons';
+import { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
+import styled from 'styled-components';
+import { Checkbox } from '../../sharedComponents/Checkbox';
+import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
+import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
+import { useContext, useMemo, type MouseEvent } from 'react';
+import { PaneContext } from '../../../context/pane/PaneContext';
+import { useTranslation } from 'react-i18next';
 
 const ItemRow = styled.div<{
-  $numDataCols: number
+  $numDataCols: number;
 }>`
   display: grid;
   user-select: none;
 
-  grid-template-columns: min-content min-content auto repeat(${(props) => props.$numDataCols}, min-content);
+  grid-template-columns: min-content min-content auto repeat(
+      ${(props) => props.$numDataCols},
+      min-content
+    );
   align-items: center;
   padding: 16px;
 
@@ -58,20 +61,22 @@ const ItemDataslot = styled.div`
 const artifactTypeToIcon: Record<ArtifactType, string> = {
   tiptap: document,
   calendar,
-  tldraw: pencil
-}
+  tldraw: pencil,
+};
 
 interface Props {
-  artifact: ArtifactDTO,
-  selected: boolean,
-  onSelectionChanged: (selected: boolean, withShift: boolean) => void
+  artifact: ArtifactSnapshot;
+  incomingEdgeCount: number;
+  outgoingEdgeCount: number;
+  selected: boolean;
+  onSelectionChanged: (selected: boolean, withShift: boolean) => void;
   dataViews: {
-    createdAt: boolean,
-    updatedAt: boolean,
-    userCount: boolean,
-    incomingReferences: boolean,
-    outgoingReferences: boolean,
-  }
+    createdAt: boolean;
+    updatedAt: boolean;
+    userCount: boolean;
+    incomingEdgeCount: boolean;
+    outgoingEdgeCount: boolean;
+  };
 }
 
 export const AllArtifactsItem: React.FC<Props> = (props) => {
@@ -87,43 +92,40 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
         : PaneTransition.Push,
       !(event.metaKey || event.ctrlKey),
     );
-  }
+  };
 
   const numDataCols = 4;
 
   const createdAtDate = useMemo(() => {
-    return props.artifact.createdAt.toLocaleDateString();
-  }, [props.artifact.createdAt]);
+    return new Date(props.artifact.meta.createdAt).toLocaleDateString();
+  }, [props.artifact.meta.createdAt]);
   const createdAtDateTime = useMemo(() => {
-    return props.artifact.createdAt.toLocaleString();
-  }, [props.artifact.createdAt]);
+    return new Date(props.artifact.meta.createdAt).toLocaleString();
+  }, [props.artifact.meta.createdAt]);
 
   const updatedAtDate = useMemo(() => {
-    return props.artifact.updatedAt.toLocaleDateString();
+    return new Date(props.artifact.updatedAt).toLocaleDateString();
   }, [props.artifact.updatedAt]);
   const updatedAtDateTime = useMemo(() => {
-    return props.artifact.updatedAt.toLocaleString();
+    return new Date(props.artifact.updatedAt).toLocaleString();
   }, [props.artifact.updatedAt]);
 
   return (
     <ItemRow
-      onClick={(event) => props.onSelectionChanged(!props.selected, event.shiftKey)}
+      onClick={(event) =>
+        props.onSelectionChanged(!props.selected, event.shiftKey)
+      }
       $numDataCols={numDataCols}
     >
-      <Checkbox
-        checked={props.selected}
-        size="medium"
-      />
+      <Checkbox checked={props.selected} size="medium" />
 
-      <ItemIcon
-        icon={artifactTypeToIcon[props.artifact.type]}
-      />
+      <ItemIcon icon={artifactTypeToIcon[props.artifact.meta.type]} />
       <ItemTitle>
         <span
           className="itemTitleInner"
           onClick={(event) => (event.stopPropagation(), goTo(event))}
         >
-          {props.artifact.title}
+          {props.artifact.meta.title}
         </span>
       </ItemTitle>
 
@@ -148,28 +150,33 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
       {props.dataViews.userCount && (
         <ItemDataslot
           title={t('allArtifacts.userCount', {
-            count: props.artifact.artifactShares.length + 1,
-          })}>
-          {props.artifact.artifactShares.length + 1}
+            count: props.artifact.userAccess.length,
+          })}
+        >
+          {props.artifact.userAccess.length}
           <CiUser />
         </ItemDataslot>
       )}
-      {props.dataViews.outgoingReferences && (
-        <ItemDataslot title={t('allArtifacts.outgoingReferences', {
-          count: props.artifact.artifactReferences.length
-        })}>
-          {props.artifact.artifactReferences.length}
+      {props.dataViews.outgoingEdgeCount && (
+        <ItemDataslot
+          title={t('allArtifacts.outgoingEdgeCount', {
+            count: props.outgoingEdgeCount,
+          })}
+        >
+          {props.outgoingEdgeCount}
           <CiInboxOut />
         </ItemDataslot>
       )}
-      {props.dataViews.incomingReferences && (
-        <ItemDataslot title={t('allArtifacts.incomingReferences', {
-          count: props.artifact.incomingArtifactReferences.length
-        })}>
-          {props.artifact.incomingArtifactReferences.length}
+      {props.dataViews.incomingEdgeCount && (
+        <ItemDataslot
+          title={t('allArtifacts.incomingEdgeCount', {
+            count: props.incomingEdgeCount,
+          })}
+        >
+          {props.incomingEdgeCount}
           <CiInboxIn />
         </ItemDataslot>
       )}
     </ItemRow>
   );
-}
+};

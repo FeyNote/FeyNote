@@ -39,7 +39,7 @@ import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
-import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
+import { SyncManager } from '../../../libs/ui/src/utils/localDb/SyncManager';
 import {
   getManifestDb,
   ObjectStoreName,
@@ -52,6 +52,9 @@ import { Queue } from 'workbox-background-sync';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { customTrpcTransformer } from '../../../libs/shared-utils/src/lib/customTrpcTransformer';
+import type { trpc } from '@feynote/ui';
+import type { Resolver } from '@trpc/client';
+import { getEdgeId, type Edge } from '@feynote/shared-utils';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
@@ -128,16 +131,20 @@ const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
   },
 });
 
-const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
+const getTrpcInputForEvent = <T extends Resolver<any>>(
+  event: RouteHandlerCallbackOptions,
+) => {
   const encodedInput = event.url.searchParams.get('input');
   if (!encodedInput) return;
 
   const input = customTrpcTransformer.deserialize(JSON.parse(encodedInput));
 
-  return input as T;
+  return input as Parameters<T>[0];
 };
 
-const encodeCacheResultForTrpc = (result: unknown) => {
+const encodeCacheResultForTrpc = <T extends Resolver<any>>(
+  result: Awaited<ReturnType<T>>,
+) => {
   return new Response(
     JSON.stringify({
       result: {
@@ -207,19 +214,6 @@ const updateListCache = async (
   await tx.done;
 };
 
-const updateSingleCache = async (
-  objectStoreName: ObjectStoreName,
-  trpcResponse: Response,
-) => {
-  const json = await trpcResponse.json();
-  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
-    id: string;
-  };
-
-  const manifestDb = await getManifestDb();
-  await manifestDb.put(objectStoreName, deserialized);
-};
-
 const cacheListResponse = async (
   objectStoreName: ObjectStoreName,
   event: RouteHandlerCallbackOptions,
@@ -242,34 +236,6 @@ const cacheListResponse = async (
     const cachedItems = await manifestDb.getAll(objectStoreName);
 
     return encodeCacheResultForTrpc(cachedItems);
-  }
-};
-
-const cacheSingleResponse = async (
-  dbName: ObjectStoreName,
-  event: RouteHandlerCallbackOptions,
-) => {
-  try {
-    const response = await fetch(event.request);
-
-    if (response.status >= 200 && response.status < 300) {
-      updateSingleCache(dbName, response.clone());
-    }
-
-    return response;
-  } catch (e) {
-    console.log(`Request failed`, e);
-
-    // TODO: check response for statuscode
-    // since we don't want to eat unauthorized errors
-
-    const input = getTrpcInputForEvent<{ id: string }>(event);
-    if (!input || !input.id) throw e;
-
-    const manifestDb = await getManifestDb();
-    const cachedItem = await manifestDb.get(dbName, input.id);
-
-    return encodeCacheResultForTrpc(cachedItem);
   }
 };
 
@@ -427,7 +393,7 @@ registerRoute(
         fileContentsUint8,
       });
 
-      return encodeCacheResultForTrpc({
+      return encodeCacheResultForTrpc<typeof trpc.file.createFile.mutate>({
         id: input.id,
         name: input.fileName,
         mimetype: input.mimetype,
@@ -448,7 +414,9 @@ registerRoute(
     } catch (_e) {
       // When offline we rely on the very low chance of a uuid collision
       const candidateId = crypto.randomUUID();
-      return encodeCacheResultForTrpc({ id: candidateId });
+      return encodeCacheResultForTrpc<typeof trpc.file.getSafeFileId.query>({
+        id: candidateId,
+      });
     }
   },
   'GET',
@@ -458,7 +426,10 @@ registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactYBinById/,
   async (event) => {
     // Cache first
-    const input = getTrpcInputForEvent<{ id: string }>(event);
+    const input =
+      getTrpcInputForEvent<typeof trpc.artifact.getArtifactYBinById.query>(
+        event,
+      );
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
 
@@ -470,7 +441,6 @@ registerRoute(
     );
     if (!manifestArtifactVersion) {
       const response = await fetch(event.request);
-      // TODO: consider syncing to indexeddb here since it'd be nearly "free"
 
       return response;
     }
@@ -482,9 +452,47 @@ registerRoute(
 
     await idbPersistence.destroy();
 
-    return encodeCacheResultForTrpc({
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactYBinById.query
+    >({
       yBin,
     });
+  },
+  'GET',
+);
+
+/**
+ * Converts targetArtifactBlockId from string -> null in the case of ''
+ * This must be done since it's part of the index and indexeddb requires index values be non-null
+ */
+function idbEdgeToEdge(edge: Edge): Edge {
+  return {
+    id: getEdgeId(edge),
+    artifactTitle: edge.artifactTitle,
+    artifactId: edge.artifactId,
+    artifactBlockId: edge.artifactBlockId,
+    artifactDeleted: edge.artifactDeleted,
+    targetArtifactId: edge.targetArtifactId,
+    targetArtifactBlockId: edge.targetArtifactBlockId || null,
+    targetArtifactDate: edge.targetArtifactDate,
+    targetArtifactTitle: edge.targetArtifactTitle,
+    targetArtifactDeleted: edge.targetArtifactDeleted,
+    referenceText: edge.referenceText,
+  };
+}
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdges/,
+  async () => {
+    const manifestDb = await getManifestDb();
+
+    const edges = await manifestDb.getAll(ObjectStoreName.Edges);
+
+    const result = edges.map(idbEdgeToEdge);
+
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactEdges.query
+    >(result);
   },
   'GET',
 );
@@ -492,10 +500,11 @@ registerRoute(
 registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
-    // Cache only, unless we do not have that artifact locally
-    const input = getTrpcInputForEvent<{
-      id: string;
-    }>(event);
+    // Cache first
+    const input =
+      getTrpcInputForEvent<typeof trpc.artifact.getArtifactEdgesById.query>(
+        event,
+      );
     if (!input || !input.id)
       throw new Error('No id provided in procedure input');
 
@@ -522,26 +531,58 @@ registerRoute(
       input.id,
     );
 
-    return encodeCacheResultForTrpc({
-      outgoingEdges,
-      incomingEdges,
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactEdgesById.query
+    >({
+      outgoingEdges: outgoingEdges.map(idbEdgeToEdge),
+      incomingEdges: incomingEdges.map(idbEdgeToEdge),
     });
   },
   'GET',
 );
 
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactById/,
-  async (event) => {
-    return cacheSingleResponse(ObjectStoreName.Artifacts, event);
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactSnapshots/,
+  async () => {
+    const manifestDb = await getManifestDb();
+
+    const snapshots = await manifestDb.getAll(
+      ObjectStoreName.ArtifactSnapshots,
+    );
+
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactSnapshots.query
+    >(snapshots);
   },
   'GET',
 );
 
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifacts/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactSnapshotById/,
   async (event) => {
-    return cacheListResponse(ObjectStoreName.Artifacts, event);
+    // Cache first
+    const input =
+      getTrpcInputForEvent<typeof trpc.artifact.getArtifactSnapshotById.query>(
+        event,
+      );
+    if (!input || !input.id)
+      throw new Error('No id provided in procedure input');
+
+    const manifestDb = await getManifestDb();
+
+    const localArtifactSnapshot = await manifestDb.get(
+      ObjectStoreName.ArtifactSnapshots,
+      input.id,
+    );
+    if (!localArtifactSnapshot) {
+      const response = await fetch(event.request);
+
+      return response;
+    }
+
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactSnapshotById.query
+    >(localArtifactSnapshot);
   },
   'GET',
 );
@@ -554,9 +595,8 @@ registerRoute(
 
       return response;
     } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
+      const input =
+        getTrpcInputForEvent<typeof trpc.artifact.searchArtifacts.query>(event);
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchResults = searchManager.search(input.query);
@@ -571,19 +611,22 @@ registerRoute(
           ObjectStoreName.Artifacts,
           artifactId,
         );
-        results.push({
-          artifact,
-          // We have no highlighting support while offline at this time.
-          // It would require loading each search result's yBin from indexeddb,
-          // applying it to a yDoc, converting it to tiptap json, getting all text,
-          // and then correlating the match text from minisearch
-          // The above is too heavy a lift.
-          highlight: undefined,
-        });
+        if (artifact)
+          results.push({
+            artifact,
+            // We have no highlighting support while offline at this time.
+            // It would require loading each search result's yBin from indexeddb,
+            // applying it to a yDoc, converting it to tiptap json, getting all text,
+            // and then correlating the match text from minisearch
+            // The above is too heavy a lift.
+            highlight: undefined,
+          });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
+      return encodeCacheResultForTrpc<
+        typeof trpc.artifact.searchArtifacts.query
+      >(limitedResults);
     }
   },
   'GET',
@@ -597,9 +640,10 @@ registerRoute(
 
       return response;
     } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
+      const input =
+        getTrpcInputForEvent<typeof trpc.artifact.searchArtifactTitles.query>(
+          event,
+        );
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchResults = searchManager.search(input.query);
@@ -616,14 +660,17 @@ registerRoute(
           ObjectStoreName.Artifacts,
           artifactId,
         );
-        results.push({
-          artifact,
-          highlight: undefined,
-        });
+        if (artifact)
+          results.push({
+            artifact,
+            highlight: undefined,
+          });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
+      return encodeCacheResultForTrpc<
+        typeof trpc.artifact.searchArtifactTitles.query
+      >(limitedResults);
     }
   },
   'GET',
@@ -637,9 +684,10 @@ registerRoute(
 
       return response;
     } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
+      const input =
+        getTrpcInputForEvent<typeof trpc.artifact.searchArtifactBlocks.query>(
+          event,
+        );
       if (!input || !input.query) throw new Error('No query provided');
 
       const searchResults = searchManager.search(input.query);
@@ -653,17 +701,20 @@ registerRoute(
           ObjectStoreName.Artifacts,
           searchResult.artifactId,
         );
-        results.push({
-          artifact,
-          blockId: searchResult.blockId,
-          blockText: searchResult.previewText,
-          // This isn't exact, since the search engine would normally return marked results, but we don't want to calculate that ourselves manually at the moment. Additionally, the previewText isn't that long to begin with, so not much to work with here hence the shortcut.
-          highlight: searchResult.previewText.substring(0, 100),
-        });
+        if (artifact)
+          results.push({
+            artifact,
+            blockId: searchResult.blockId,
+            blockText: searchResult.previewText,
+            // This isn't exact, since the search engine would normally return marked results, but we don't want to calculate that ourselves manually at the moment. Additionally, the previewText isn't that long to begin with, so not much to work with here hence the shortcut.
+            highlight: searchResult.previewText.substring(0, 100),
+          });
       }
 
       const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
+      return encodeCacheResultForTrpc<
+        typeof trpc.artifact.searchArtifactBlocks.query
+      >(limitedResults);
     }
   },
   'GET',
@@ -687,7 +738,9 @@ registerRoute(
           candidateId,
         );
         if (!artifact) {
-          return encodeCacheResultForTrpc({ id: candidateId });
+          return encodeCacheResultForTrpc<
+            typeof trpc.artifact.getSafeArtifactId.query
+          >({ id: candidateId });
         }
       }
     }

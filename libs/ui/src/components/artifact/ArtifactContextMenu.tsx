@@ -8,14 +8,14 @@ import {
   ContextMenuItem,
 } from '../contextMenu/sharedComponents';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
 import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
 import { createArtifact } from '../../utils/createArtifact';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 interface Props {
   artifactId: string;

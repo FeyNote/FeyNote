@@ -13,6 +13,12 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     Partial<YArtifactMeta>
   >;
 
+  let deletedAt = artifactMetaYMap.get('deletedAt');
+  if (typeof deletedAt === 'string') {
+    // Legacy support -- we should consider migrating once all clients are updated.
+    deletedAt = parseInt(deletedAt);
+  }
+
   const artifactMeta = {
     id: (artifactMetaYMap.get('id') as string) ?? undefined,
     userId: (artifactMetaYMap.get('userId') as string) ?? undefined,
@@ -23,7 +29,10 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
     linkAccessLevel:
       (artifactMetaYMap.get('linkAccessLevel') as ArtifactAccessLevel) ??
       'noaccess',
-    deletedAt: artifactMetaYMap.get('deletedAt') ?? null,
+    // We do NOT include updatedAt in the meta -- yjs specifically recommends against
+    // this for document size.
+    createdAt: artifactMetaYMap.get('createdAt') ?? new Date().getTime(),
+    deletedAt: deletedAt ?? null,
   } satisfies Partial<YArtifactMeta>;
 
   return artifactMeta;

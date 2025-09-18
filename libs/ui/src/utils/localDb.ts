@@ -1,28 +1,12 @@
 /* eslint-disable no-restricted-globals */
 
-import type {
-  ArtifactDTO,
-  YArtifactMeta,
-  YArtifactUserAccess,
-} from '@feynote/global-types';
+import type { ArtifactDTO, ArtifactSnapshot } from '@feynote/global-types';
 import type {
   DecodedFileStream,
   Edge,
   SessionDTO,
 } from '@feynote/shared-utils';
 import { IDBPDatabase, openDB, type DBSchema } from 'idb';
-
-export interface ArtifactSnapshotDoc {
-  id: string;
-  meta: YArtifactMeta;
-  userAccess: Map<
-    string,
-    {
-      key: string;
-      val: YArtifactUserAccess;
-    }
-  >;
-}
 
 export interface AuthorizedCollaborationScopeDoc {
   docName: string;
@@ -40,6 +24,12 @@ export type PendingFileDoc = Omit<DecodedFileStream, 'fileContents'> & {
   fileContentsUint8: Uint8Array<ArrayBufferLike>;
 };
 
+export interface KnownUserDoc {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export enum ObjectStoreName {
   Artifacts = 'artifacts',
   ArtifactSnapshots = 'artifactSnapshots',
@@ -56,6 +46,7 @@ export enum KVStoreKeys {
   Session = 'session',
   SearchIndex = 'searchIndex',
   LastSessionUserId = 'lastSessionUserId',
+  LastSyncedAt = 'lastSyncedAt',
 }
 
 export interface KVSession {
@@ -70,11 +61,16 @@ export interface KVLastSessionUserId {
   key: KVStoreKeys.LastSessionUserId;
   value: string;
 }
+export interface KVLastSyncedAt {
+  key: KVStoreKeys.LastSyncedAt;
+  value: Date;
+}
 
 export type KVStoreValue = {
   [KVStoreKeys.Session]: KVSession;
   [KVStoreKeys.SearchIndex]: KVSearchIndex;
   [KVStoreKeys.LastSessionUserId]: KVLastSessionUserId;
+  [KVStoreKeys.LastSyncedAt]: KVLastSyncedAt;
 };
 
 export interface FeynoteLocalDB extends DBSchema {
@@ -84,7 +80,7 @@ export interface FeynoteLocalDB extends DBSchema {
   };
   [ObjectStoreName.ArtifactSnapshots]: {
     key: string;
-    value: ArtifactSnapshotDoc;
+    value: ArtifactSnapshot;
   };
   [ObjectStoreName.PendingArtifacts]: {
     key: string;
@@ -116,11 +112,7 @@ export interface FeynoteLocalDB extends DBSchema {
   };
   [ObjectStoreName.KnownUsers]: {
     key: string;
-    value: {
-      id: string;
-      name: string;
-      email: string;
-    };
+    value: KnownUserDoc;
     indexes: {
       email: string;
     };

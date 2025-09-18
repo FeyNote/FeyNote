@@ -9,13 +9,19 @@ import { getArtifactYBinById } from './getArtifactYBinById';
 import { getArtifactEdgesById } from './getArtifactEdgesById';
 import { getSafeArtifactId } from './getSafeArtifactId';
 import { removeSelfAsCollaborator } from './removeSelfAsCollaborator';
+import { getArtifactSnapshots } from './getArtifactSnapshots';
+import { getArtifactSnapshotById } from './getArtifactSnapshotById';
+import { getArtifactEdges } from './getArtifactEdges';
 
 export const artifactRouter = trpcRouter({
   getArtifactById,
+  getArtifactEdges,
   getArtifactEdgesById,
   getArtifactYBinById,
   getSafeArtifactId,
   getArtifacts,
+  getArtifactSnapshots,
+  getArtifactSnapshotById,
   removeSelfAsCollaborator,
   searchArtifacts,
   searchArtifactTitles,

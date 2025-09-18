@@ -4,7 +4,11 @@ import type { YArtifactMeta } from '@feynote/global-types';
 import { ARTIFACT_USER_ACCESS_KEY } from './ARTIFACT_USER_ACCESS_KEY';
 import type { TypedMap } from 'yjs-types';
 
-export const constructYArtifact = (meta: YArtifactMeta) => {
+type Input = Omit<YArtifactMeta, 'createdAt'> & {
+  createdAt?: YArtifactMeta['createdAt'];
+};
+
+export const constructYArtifact = (meta: Input) => {
   const yArtifact = new YDoc();
 
   yArtifact.transact(() => {
@@ -18,6 +22,10 @@ export const constructYArtifact = (meta: YArtifactMeta) => {
     artifactMetaYMap.set('theme', meta.theme);
     artifactMetaYMap.set('type', meta.type);
     artifactMetaYMap.set('linkAccessLevel', meta.linkAccessLevel);
+    artifactMetaYMap.set(
+      'createdAt',
+      meta.createdAt || new Date().getTime().toString(),
+    );
     artifactMetaYMap.set('deletedAt', meta.deletedAt);
 
     yArtifact.getArray(ARTIFACT_USER_ACCESS_KEY);

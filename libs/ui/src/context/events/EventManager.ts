@@ -1,6 +1,10 @@
 import { EventData } from './EventData';
 import { EventName } from './EventName';
 
+type BroadcastDataArgs<T extends EventName> = [EventData[T]] extends [void]
+  ? []
+  : [eventData: EventData[T]];
+
 type EventListener = <T extends EventName>(
   eventName: T,
   data: EventData[T],
@@ -20,6 +24,30 @@ export class EventManager {
     },
     {} as Record<EventName, Set<EventListener>>,
   );
+  private broadcastChannel: BroadcastChannel;
+  /**
+   * These are events that should cross the window boundary to other tabs/workers, facilitated by a BroadcastChannel.
+   * WARNING: Do not use this for events that are received by all tabs, such as websocket events. If you do, the event will be
+   * triggered multiple times.
+   */
+  private crossDomainEvents: ReadonlySet<EventName> = new Set([
+    EventName.LocaldbSessionUpdated,
+    EventName.LocaldbEdgesUpdated,
+    EventName.LocaldbSyncArtifact,
+    EventName.LocaldbSyncCompleted,
+    EventName.LocaldbArtifactSnapshotUpdated,
+    EventName.LocaldbKnownUsersUpdated,
+  ]);
+
+  constructor() {
+    this.broadcastChannel = new BroadcastChannel('EventManager');
+
+    this.broadcastChannel.addEventListener('message', (event) => {
+      const { eventName, eventData } = event.data;
+
+      this.callEventListeners(eventName, eventData);
+    });
+  }
 
   addEventListener<T extends EventName>(
     eventNames: T,
@@ -66,9 +94,24 @@ export class EventManager {
     }
   }
 
-  broadcast<T extends EventName>(eventName: T, data: EventData[T]) {
+  broadcast<T extends EventName>(eventName: T, ...args: BroadcastDataArgs<T>) {
+    const eventData = args[0] as EventData[T];
+    this.callEventListeners(eventName, eventData);
+
+    if (this.crossDomainEvents.has(eventName)) {
+      this.broadcastChannel.postMessage({
+        eventName,
+        eventData,
+      });
+    }
+  }
+
+  private callEventListeners<T extends EventName>(
+    eventName: T,
+    eventData: EventData[T],
+  ) {
     this.eventListeners[eventName].forEach((listener) =>
-      listener(eventName, data),
+      listener(eventName, eventData),
     );
   }
 }

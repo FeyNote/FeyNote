@@ -40,7 +40,6 @@ import {
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
   $isHandMode: boolean;
-  $isBroken: boolean;
   $radius: number;
   $type: ReferenceIconTLDrawStyle;
 }>`
@@ -62,12 +61,6 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   pointer-events: all;
   text-align: center;
   vertical-align: middle;
-
-  ${({ $isHandMode, $isBroken }) =>
-    $isHandMode &&
-    `
-    cursor: ${$isBroken ? 'not-allowed' : 'pointer'};
-  `}
 
   svg {
     overflow: visible;
@@ -243,12 +236,10 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
       targetArtifactDate: shape.props.targetArtifactDate,
     });
     const referenceText = edge?.referenceText || shape.props.referenceText;
-    const isBroken = edge ? edge.isBroken : false;
-
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 
     const { previewInfo, onMouseOver, onMouseOut, close } =
-      useArtifactPreviewTimer(shape.props.targetArtifactId, isBroken);
+      useArtifactPreviewTimer(shape.props.targetArtifactId);
 
     const linkClicked = (
       event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
@@ -257,8 +248,6 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
 
       event.preventDefault();
       event.stopPropagation();
-
-      if (isBroken) return;
 
       close();
 
@@ -308,7 +297,6 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
         $radius={radius}
         $isHandMode={isHandMode}
         $type={shape.props.icon}
-        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onClick={linkClicked}

@@ -23,7 +23,7 @@ export const getTextForJSONContentWithEdges = async (args: {
       targetArtifactDate: root.attrs.artifactDate,
     };
 
-    const edge = await getEdgeStore().getEdge(edgeParams);
+    const edge = getEdgeStore().getEdge(edgeParams);
 
     if (!edge) return '@' + root.attrs.artifactId;
 

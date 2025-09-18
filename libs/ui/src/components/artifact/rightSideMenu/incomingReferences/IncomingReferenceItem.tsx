@@ -21,7 +21,7 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
   const ref = useRef<HTMLIonItemElement>(null);
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(props.edge.artifactId, props.edge.isBroken);
+    useArtifactPreviewTimer(props.edge.artifactId);
 
   const linkClicked = (
     event: React.MouseEvent<

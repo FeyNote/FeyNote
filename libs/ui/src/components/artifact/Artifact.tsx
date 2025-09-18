@@ -7,19 +7,19 @@ import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import { useCollaborationConnection } from '../editor/collaborationManager';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useArtifactDeleteOrRemoveSelf } from './useArtifactDeleteOrRemoveSelf';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
-} from '../../utils/useCollaborationConnectionAuthorizedScope';
+} from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 
 const StatusMessage = styled.div`
   text-align: center;
@@ -44,6 +44,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     useRef<(content: TableOfContentData) => void>(undefined);
 
   const connection = useCollaborationConnection(`artifact:${props.id}`);
+
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
   const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
   const { authorizedScope, collaborationConnectionStatus } =

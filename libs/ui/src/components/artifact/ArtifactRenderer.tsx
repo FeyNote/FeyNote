@@ -1,7 +1,7 @@
 import { memo, useContext, useEffect, useRef, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { SessionContext } from '../../context/session/SessionContext';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
@@ -16,7 +16,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 const ArtifactRendererContainer = styled.div`
   height: 100%;

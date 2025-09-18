@@ -5,7 +5,7 @@ import type {
 } from '@prisma/client';
 import { trpc } from './trpc';
 import { addArtifactToArtifactTree } from './artifactTree/addArtifactToArtifactTree';
-import { withCollaborationConnection } from '../components/editor/collaborationManager';
+import { withCollaborationConnection } from './collaboration/collaborationManager';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import type { YArtifactUserAccess } from '@feynote/global-types';
 

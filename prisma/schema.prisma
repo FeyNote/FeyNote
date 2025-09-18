@@ -45,6 +45,8 @@ model Session {
   extendableUntil DateTime @db.Timestamptz(6)
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([token])
 }
 
 enum AuthResetTokenType {
@@ -142,6 +144,7 @@ model ArtifactShare {
 
   @@unique([artifactId, userId])
   @@index([userId])
+  @@index([userId, accessLevel])
 }
 
 enum ArtifactAccessLevel {

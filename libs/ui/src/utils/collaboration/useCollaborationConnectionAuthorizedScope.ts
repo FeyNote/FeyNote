@@ -3,9 +3,9 @@ import {
   CollaborationManagerConnection,
   CollaborationManagerConnectionAuthenticationStatus,
   HocuspocusAuthorizedScope,
-  useCollaborationConnectionStatus,
-} from '../components/editor/collaborationManager';
-import { useArtifactAccessLevel } from './useArtifactAccessLevel';
+} from './collaborationManager';
+import { useArtifactAccessLevel } from '../useArtifactAccessLevel';
+import { useCollaborationConnectionStatus } from './useCollaborationConnectionStatus';
 
 /**
  * A helpful enum that converts tiptap/hocuspocus authorizedScope into more meaningful states

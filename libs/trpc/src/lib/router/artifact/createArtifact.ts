@@ -9,6 +9,7 @@ import {
   ArtifactType,
 } from '@prisma/client';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
+import * as Sentry from '@sentry/node';
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
@@ -21,6 +22,7 @@ import {
 } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 import { ArtifactJSON, YArtifactMeta } from '@feynote/global-types';
+import { TRPCError } from '@trpc/server';
 
 export const createArtifact = authenticatedProcedure
   .input(
@@ -42,6 +44,7 @@ export const createArtifact = authenticatedProcedure
         .optional(),
       linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
       deletedAt: z.date().optional(),
+      createdAt: z.date().optional(),
       yBin: z.any().optional(),
     }),
   )
@@ -50,7 +53,7 @@ export const createArtifact = authenticatedProcedure
       ctx,
       input,
     }): Promise<{
-      id: string;
+      result: 'created' | 'exists';
     }> => {
       let yDoc: YDoc | undefined;
       const meta = {
@@ -60,7 +63,8 @@ export const createArtifact = authenticatedProcedure
         theme: input.theme,
         type: input.type,
         linkAccessLevel: input.linkAccessLevel ?? ArtifactAccessLevel.noaccess,
-        deletedAt: input.deletedAt?.toISOString() ?? null,
+        createdAt: input.createdAt?.getTime() || new Date().getTime(),
+        deletedAt: input.deletedAt?.getTime() ?? null,
       } satisfies YArtifactMeta;
 
       if (input.yBin) {
@@ -105,6 +109,39 @@ export const createArtifact = authenticatedProcedure
         text = getTextForJSONContent(json.tiptapBody);
       }
 
+      const existingConflict = await prisma.artifact.findUnique({
+        where: {
+          id: input.id,
+        },
+        select: {
+          id: true,
+          userId: true,
+        },
+      });
+
+      if (existingConflict) {
+        if (existingConflict.userId === ctx.session.userId) {
+          return {
+            result: 'exists',
+          };
+        } else {
+          Sentry.captureMessage(
+            "We've hit the very unlikely, and very unfortunate scenario where a UUID generated collided between two users",
+            {
+              extra: {
+                artifactId: input.id,
+                userId: ctx.session.userId,
+                conflictedArtifactUserId: existingConflict.userId,
+              },
+            },
+          );
+          throw new TRPCError({
+            code: 'CONFLICT',
+            message: 'That artifact ID is already in use by another person.',
+          });
+        }
+      }
+
       const artifact = await prisma.artifact.create({
         data: {
           id: input.id,
@@ -132,10 +169,8 @@ export const createArtifact = authenticatedProcedure
         newYBinB64: yBin.toString('base64'),
       });
 
-      // We only return ID since we expect frontend to fetch artifact via getArtifactById
-      // rather than adding that logic here.
       return {
-        id: artifact.id,
+        result: 'created',
       };
     },
   );
