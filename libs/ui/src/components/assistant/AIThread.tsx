@@ -224,13 +224,18 @@ export const AIThread: React.FC<Props> = (props) => {
       parts: [{ type: 'text', text: input }],
       role: 'user',
     };
-    await trpc.ai.saveMessage.mutate({
-      threadId: props.id,
-      message,
-    });
-    sendMessage({
-      text: input,
-    });
+    try {
+      await trpc.ai.saveMessage.mutate({
+        threadId: props.id,
+        message,
+      });
+      sendMessage({
+        text: input,
+      });
+    } catch (e) {
+      handleTRPCErrors(e);
+      return;
+    }
     setInput('');
   };
 
@@ -249,14 +254,19 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   const updateMessage = async (message: FeynoteUIMessage) => {
-    await trpc.ai.updateMessage.mutate({
-      threadId: props.id,
-      message,
-    });
-    await trpc.ai.deleteMessageToId.mutate({
-      id: message.id,
-      threadId: props.id,
-    });
+    try {
+      await trpc.ai.updateMessage.mutate({
+        threadId: props.id,
+        message,
+      });
+      await trpc.ai.deleteMessageToId.mutate({
+        id: message.id,
+        threadId: props.id,
+      });
+    } catch (e) {
+      handleTRPCErrors(e);
+      return;
+    }
     await getThreadInfo();
     regenerate();
   };
@@ -274,11 +284,16 @@ export const AIThread: React.FC<Props> = (props) => {
     if (retriedUserMsgIdx === null || !retriedUserMsg) return;
     const messageToDelete = messages.at(retriedUserMsgIdx + 1);
     if (!messageToDelete) return;
-    await trpc.ai.deleteMessageToId.mutate({
-      id: messageToDelete.id,
-      threadId: props.id,
-      inclusive: true,
-    });
+    try {
+      await trpc.ai.deleteMessageToId.mutate({
+        id: messageToDelete.id,
+        threadId: props.id,
+        inclusive: true,
+      });
+    } catch (e) {
+      handleTRPCErrors(e);
+      return;
+    }
     const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
     setMessages(remainingMessages);
     regenerate();

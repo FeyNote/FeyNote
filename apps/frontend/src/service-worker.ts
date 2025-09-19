@@ -702,3 +702,19 @@ registerRoute(
   },
   'GET',
 );
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/ai\.getThreads/,
+  async (event) => {
+    return cacheListResponse(ObjectStoreName.Threads, event);
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/ai\.getThread/,
+  async (event) => {
+    return cacheSingleResponse(ObjectStoreName.Threads, event);
+  },
+  'GET',
+);

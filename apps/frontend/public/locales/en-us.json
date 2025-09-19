@@ -694,7 +694,7 @@
 
   "generic.error": "Error",
   "generic.artifact": "Document",
-  "generic.connectionError": "A network connectivity error occurred",
+  "generic.connectionError": "There was a problem while connecting to the internet.",
   "generic.unsavedChanges": "You have unsaved changes! If you leave this page, you will lose any modifications in-progress.",
   "generic.anonymous": "Anonymous",
   "generic.untitled": "Untitled",
