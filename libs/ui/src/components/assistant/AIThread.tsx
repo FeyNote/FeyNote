@@ -234,6 +234,7 @@ export const AIThread: React.FC<Props> = (props) => {
       });
     } catch (e) {
       handleTRPCErrors(e);
+      return;
     }
     setInput('');
   };
@@ -264,6 +265,7 @@ export const AIThread: React.FC<Props> = (props) => {
       });
     } catch (e) {
       handleTRPCErrors(e);
+      return;
     }
     await getThreadInfo();
     regenerate();
@@ -290,6 +292,7 @@ export const AIThread: React.FC<Props> = (props) => {
       });
     } catch (e) {
       handleTRPCErrors(e);
+      return;
     }
     const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
     setMessages(remainingMessages);

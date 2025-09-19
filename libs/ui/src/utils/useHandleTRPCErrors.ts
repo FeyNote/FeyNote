@@ -15,6 +15,7 @@ const openAlertTracker = {
 const offlineErrorMsgs = [
   'NetworkError when attempting to fetch resource.',
   'Failed to fetch',
+  'Load failed',
 ];
 
 /**
