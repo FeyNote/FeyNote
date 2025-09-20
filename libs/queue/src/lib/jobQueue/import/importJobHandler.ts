@@ -4,6 +4,7 @@ import { obsidianToStandardizedImport } from './obsidian/obsidianToStandardizedI
 import { prisma } from '@feynote/prisma/client';
 import { ImportFormat, type JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
+import { textMdToStandardizedImport } from './textMd/textMdToStandardizedImport';
 
 export const importJobHandler = async (job: JobSummary) => {
   const importFormat = job.meta.importFormat;
@@ -41,6 +42,16 @@ export const importJobHandler = async (job: JobSummary) => {
         job,
         processor: (filePaths) =>
           logseqToStandardizedImport({ job, filePaths, progressTracker }),
+        progressTracker,
+      });
+      break;
+    }
+    case ImportFormat.TxtMd: {
+      await importFromZip({
+        storageKey: importFile.storageKey,
+        job,
+        processor: (filePaths) =>
+          textMdToStandardizedImport({ job, filePaths, progressTracker }),
         progressTracker,
       });
       break;
