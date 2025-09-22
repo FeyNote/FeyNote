@@ -177,7 +177,7 @@
     "jest-environment-node": "^30.0.1",
     "jiti": "2.5.1",
     "jsdom": "~27.0.0",
-    "lint-staged": "^16.1.6",
+    "lint-staged": "^16.2.0",
     "nx": "21.3.11",
     "prettier": "^3.6.2",
     "prisma": "^6.16.1",
