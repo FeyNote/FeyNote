@@ -182,7 +182,7 @@
     "prettier": "^3.6.2",
     "prisma": "^6.16.1",
     "rollup-plugin-visualizer": "^6.0.3",
-    "ts-jest": "29.4.1",
+    "ts-jest": "29.4.4",
     "typescript": "^5.9.2",
     "vite": "6.3.6",
     "vite-plugin-dts": "4.5.4",
