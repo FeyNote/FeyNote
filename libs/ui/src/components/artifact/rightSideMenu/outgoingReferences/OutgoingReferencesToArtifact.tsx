@@ -13,7 +13,6 @@ import { OutgoingReferenceItem } from './OutgoingReferenceItem';
 import { chevronDown, chevronUp } from 'ionicons/icons';
 import styled from 'styled-components';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
-import { useContextMenu } from '../../../../utils/contextMenu/useContextMenu';
 
 const ChildReferencesContainer = styled.div`
   margin-left: 16px;
@@ -63,16 +62,6 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
     );
   };
 
-  const { onContextMenu } = useContextMenu(
-    ArtifactRightSidemenuReferenceContextMenu,
-    {
-      paneId: pane.id,
-      currentArtifactId: edge0.artifactId,
-      edge: edge0,
-      navigate,
-    },
-  );
-
   const artifactTitle = props.edges.find(
     (edge) => edge.targetArtifactTitle,
   )?.targetArtifactTitle;
@@ -85,68 +74,70 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
 
   return (
     <>
-      <CompactIonItem
-        lines="none"
-        button
-        onContextMenu={(event) => (onContextMenu(event), close())}
+      <ArtifactRightSidemenuReferenceContextMenu
+        paneId={pane.id}
+        currentArtifactId={edge0.artifactId}
+        edge={edge0}
       >
-        <NowrapIonLabel
-          ref={ref}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
-          onClick={linkClicked}
-        >
-          {artifactTitle}
-          <p>
-            {t('artifactRightSideMenu.outgoing.title.subtitle', {
-              count: props.edges.length,
-            })}
-          </p>
-        </NowrapIonLabel>
-        {props.edges.length > 1 && (
-          <IonButton
-            fill="clear"
-            onClick={(event) => (
-              event.stopPropagation(),
-              setExpanded(!expanded)
-            )}
-            slot="end"
-            size="small"
+        <CompactIonItem lines="none" button>
+          <NowrapIonLabel
+            ref={ref}
+            onMouseOver={onMouseOver}
+            onMouseOut={onMouseOut}
+            onClick={linkClicked}
           >
-            <IonIcon
-              icon={expanded ? chevronUp : chevronDown}
-              slot="icon-only"
+            {artifactTitle}
+            <p>
+              {t('artifactRightSideMenu.outgoing.title.subtitle', {
+                count: props.edges.length,
+              })}
+            </p>
+          </NowrapIonLabel>
+          {props.edges.length > 1 && (
+            <IonButton
+              fill="clear"
+              onClick={(event) => (
+                event.stopPropagation(),
+                setExpanded(!expanded)
+              )}
+              slot="end"
+              size="small"
+            >
+              <IonIcon
+                icon={expanded ? chevronUp : chevronDown}
+                slot="icon-only"
+              />
+            </IonButton>
+          )}
+          {previewInfo && ref.current && (
+            <ArtifactReferencePreview
+              onClick={(event) => (
+                event.stopPropagation(),
+                linkClicked(event),
+                close()
+              )}
+              artifactId={edge0.targetArtifactId}
+              previewInfo={previewInfo}
+              referenceText={
+                props.edges.length === 1
+                  ? edge0.referenceText
+                  : edge0.targetArtifactTitle || ''
+              }
+              artifactBlockId={
+                props.edges.length === 1
+                  ? edge0.targetArtifactBlockId || undefined
+                  : undefined
+              }
+              artifactDate={
+                props.edges.length === 1
+                  ? edge0.targetArtifactDate || undefined
+                  : undefined
+              }
+              previewTarget={ref.current}
             />
-          </IonButton>
-        )}
-        {previewInfo && ref.current && (
-          <ArtifactReferencePreview
-            onClick={(event) => (
-              event.stopPropagation(),
-              linkClicked(event),
-              close()
-            )}
-            artifactId={edge0.targetArtifactId}
-            previewInfo={previewInfo}
-            referenceText={
-              props.edges.length === 1
-                ? edge0.referenceText
-                : edge0.targetArtifactTitle || ''
-            }
-            artifactBlockId={
-              props.edges.length === 1
-                ? edge0.targetArtifactBlockId || undefined
-                : undefined
-            }
-            artifactDate={
-              props.edges.length === 1
-                ? edge0.targetArtifactDate || undefined
-                : undefined
-            }
-            previewTarget={ref.current}
-          />
-        )}
-      </CompactIonItem>
+          )}
+        </CompactIonItem>
+      </ArtifactRightSidemenuReferenceContextMenu>
       {expanded && (
         <ChildReferencesContainer>
           {artifactDirectEdges.map((edge) => (

@@ -48,6 +48,8 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
                   PaneableComponent.Artifact,
                   {
                     id: props.artifactId,
+                    focusBlockId: props.artifactBlockId,
+                    focusDate: props.artifactDate,
                   },
                   PaneTransition.HSplit,
                 )
@@ -62,6 +64,8 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
                   PaneableComponent.Artifact,
                   {
                     id: props.artifactId,
+                    focusBlockId: props.artifactBlockId,
+                    focusDate: props.artifactDate,
                   },
                   PaneTransition.VSplit,
                 )
@@ -76,6 +80,8 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
                   PaneableComponent.Artifact,
                   {
                     id: props.artifactId,
+                    focusBlockId: props.artifactBlockId,
+                    focusDate: props.artifactDate,
                   },
                   PaneTransition.NewTab,
                 )

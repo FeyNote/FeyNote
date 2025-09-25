@@ -8,7 +8,6 @@ import { useArtifactPreviewTimer } from '../../../editor/tiptap/extensions/artif
 import { ArtifactReferencePreview } from '../../../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
-import { useContextMenu } from '../../../../utils/contextMenu/useContextMenu';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 
 interface Props {
@@ -50,16 +49,6 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
     );
   };
 
-  const { onContextMenu } = useContextMenu(
-    ArtifactRightSidemenuReferenceContextMenu,
-    {
-      paneId: pane.id,
-      currentArtifactId: props.edge.artifactId,
-      edge: props.edge,
-      navigate,
-    },
-  );
-
   const blockReferenceContent = (
     <NowrapIonLabel>
       {t('artifactRightSideMenu.outgoing.block', {
@@ -89,31 +78,36 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
     : artifactReferenceContent;
 
   return (
-    <CompactIonItem
-      lines="none"
-      ref={ref}
-      onMouseOver={onMouseOver}
-      onMouseOut={onMouseOut}
-      onClick={linkClicked}
-      onContextMenu={(event) => (onContextMenu(event), close())}
-      button
+    <ArtifactRightSidemenuReferenceContextMenu
+      paneId={pane.id}
+      currentArtifactId={props.edge.artifactId}
+      edge={props.edge}
     >
-      {content}
-      {previewInfo && ref.current && (
-        <ArtifactReferencePreview
-          onClick={(event) => (
-            event.stopPropagation(),
-            linkClicked(event),
-            close()
-          )}
-          artifactId={props.edge.targetArtifactId}
-          previewInfo={previewInfo}
-          referenceText={props.edge.referenceText}
-          artifactBlockId={props.edge.targetArtifactBlockId || undefined}
-          artifactDate={props.edge.targetArtifactDate || undefined}
-          previewTarget={ref.current}
-        />
-      )}
-    </CompactIonItem>
+      <CompactIonItem
+        lines="none"
+        ref={ref}
+        onMouseOver={onMouseOver}
+        onMouseOut={onMouseOut}
+        onClick={linkClicked}
+        button
+      >
+        {content}
+        {previewInfo && ref.current && (
+          <ArtifactReferencePreview
+            onClick={(event) => (
+              event.stopPropagation(),
+              linkClicked(event),
+              close()
+            )}
+            artifactId={props.edge.targetArtifactId}
+            previewInfo={previewInfo}
+            referenceText={props.edge.referenceText}
+            artifactBlockId={props.edge.targetArtifactBlockId || undefined}
+            artifactDate={props.edge.targetArtifactDate || undefined}
+            previewTarget={ref.current}
+          />
+        )}
+      </CompactIonItem>
+    </ArtifactRightSidemenuReferenceContextMenu>
   );
 };

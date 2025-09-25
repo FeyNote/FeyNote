@@ -12,7 +12,6 @@ import { IonButton, IonIcon } from '@ionic/react';
 import { IncomingReferenceItem } from './IncomingReferenceItem';
 import { chevronDown, chevronUp } from 'ionicons/icons';
 import styled from 'styled-components';
-import { useContextMenu } from '../../../../utils/contextMenu/useContextMenu';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 
 const ChildReferencesContainer = styled.div`
@@ -62,70 +61,62 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
     );
   };
 
-  const { onContextMenu } = useContextMenu(
-    ArtifactRightSidemenuReferenceContextMenu,
-    {
-      paneId: pane.id,
-      currentArtifactId: edge0.targetArtifactId,
-      edge: edge0,
-      navigate,
-    },
-  );
-
   return (
     <>
-      <CompactIonItem
-        lines="none"
-        button
-        onContextMenu={(event) => (onContextMenu(event), close())}
+      <ArtifactRightSidemenuReferenceContextMenu
+        paneId={pane.id}
+        currentArtifactId={edge0.targetArtifactId}
+        edge={edge0}
       >
-        <NowrapIonLabel
-          ref={ref}
-          onMouseOver={onMouseOver}
-          onMouseOut={onMouseOut}
-          onClick={linkClicked}
-        >
-          {edge0.artifactTitle}
-          <p>
-            {t('artifactRightSideMenu.incoming.title.subtitle', {
-              count: props.edges.length,
-            })}
-          </p>
-        </NowrapIonLabel>
-        {props.edges.length > 1 && (
-          <IonButton
-            fill="clear"
-            onClick={(event) => (
-              event.stopPropagation(),
-              setExpanded(!expanded)
-            )}
-            slot="end"
-            size="small"
+        <CompactIonItem lines="none" button>
+          <NowrapIonLabel
+            ref={ref}
+            onMouseOver={onMouseOver}
+            onMouseOut={onMouseOut}
+            onClick={linkClicked}
           >
-            <IonIcon
-              icon={expanded ? chevronUp : chevronDown}
-              slot="icon-only"
+            {edge0.artifactTitle}
+            <p>
+              {t('artifactRightSideMenu.incoming.title.subtitle', {
+                count: props.edges.length,
+              })}
+            </p>
+          </NowrapIonLabel>
+          {props.edges.length > 1 && (
+            <IonButton
+              fill="clear"
+              onClick={(event) => (
+                event.stopPropagation(),
+                setExpanded(!expanded)
+              )}
+              slot="end"
+              size="small"
+            >
+              <IonIcon
+                icon={expanded ? chevronUp : chevronDown}
+                slot="icon-only"
+              />
+            </IonButton>
+          )}
+          {previewInfo && ref.current && (
+            <ArtifactReferencePreview
+              onClick={(event) => (
+                event.stopPropagation(),
+                linkClicked(event),
+                close()
+              )}
+              artifactId={edge0.artifactId}
+              previewInfo={previewInfo}
+              referenceText={''}
+              artifactBlockId={
+                props.edges.length === 1 ? edge0.artifactBlockId : undefined
+              }
+              artifactDate={undefined}
+              previewTarget={ref.current}
             />
-          </IonButton>
-        )}
-        {previewInfo && ref.current && (
-          <ArtifactReferencePreview
-            onClick={(event) => (
-              event.stopPropagation(),
-              linkClicked(event),
-              close()
-            )}
-            artifactId={edge0.artifactId}
-            previewInfo={previewInfo}
-            referenceText={''}
-            artifactBlockId={
-              props.edges.length === 1 ? edge0.artifactBlockId : undefined
-            }
-            artifactDate={undefined}
-            previewTarget={ref.current}
-          />
-        )}
-      </CompactIonItem>
+          )}
+        </CompactIonItem>
+      </ArtifactRightSidemenuReferenceContextMenu>
       {expanded && (
         <ChildReferencesContainer>
           {props.edges.map((edge) => (
