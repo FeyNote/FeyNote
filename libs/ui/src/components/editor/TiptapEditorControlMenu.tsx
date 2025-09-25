@@ -18,12 +18,13 @@ import { duplicateArtifact } from '../../utils/duplicateArtifact';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { createArtifact } from '../../utils/createArtifact';
 import { IoAdd } from 'react-icons/io5';
 import {
   globalTiptapCommandHelpers,
   type GlobalTiptapCommandHelperEntry,
 } from './globalTiptapCommandHelpers';
+import { useState } from 'react';
+import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -44,24 +45,8 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigate } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-
-  const onNewArtifactClicked = async () => {
-    const result = await createArtifact({
-      artifact: {
-        title: t('generic.untitled'),
-      },
-    });
-
-    if (!result.id) {
-      return;
-    }
-
-    navigate(
-      PaneableComponent.Artifact,
-      { id: result.id },
-      PaneTransition.NewTab,
-    );
-  };
+  const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
+  const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
 
   const onDuplicateArtifactClicked = async () => {
     const id = await duplicateArtifact(props.yDoc).catch((e) => {
@@ -103,9 +88,23 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Item onClick={() => onNewArtifactClicked()}>
+        <DropdownMenu.Item
+          onClick={() => {
+            setNewArtifactDialogOpen(true);
+            setNewArtifactAsChild(false);
+          }}
+        >
           <IoAdd />
           {t('tiptapControlMenu.file.new')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => {
+            setNewArtifactDialogOpen(true);
+            setNewArtifactAsChild(true);
+          }}
+        >
+          <IoAdd />
+          {t('artifactTree.newArtifactWithin')}
         </DropdownMenu.Item>
         <DropdownMenu.Item onClick={() => onDuplicateArtifactClicked()}>
           <RiFileCopyLine />
@@ -295,11 +294,27 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   );
 
   return (
-    <ControlMenuList>
-      {file}
-      {isEditable && edit}
-      {isEditable && insert}
-      {isEditable && format}
-    </ControlMenuList>
+    <>
+      <ControlMenuList>
+        {file}
+        {isEditable && edit}
+        {isEditable && insert}
+        {isEditable && format}
+      </ControlMenuList>
+      <NewArtifactDialog
+        open={newArtifactDialogOpen}
+        onOpenChange={(open) => {
+          setNewArtifactDialogOpen(open);
+        }}
+        tree={
+          newArtifactAsChild
+            ? {
+                parentArtifactId: props.artifactId,
+                order: 'X',
+              }
+            : undefined
+        }
+      />
+    </>
   );
 };

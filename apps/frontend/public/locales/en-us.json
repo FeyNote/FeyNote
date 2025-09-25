@@ -222,7 +222,7 @@
   "dashboard.reload": "Refresh Dashboard",
 
   "artifactTree.uncategorized": "Uncategorized ({{count}})",
-  "artifactTree.newArtifactWithin": "New Document as Child",
+  "artifactTree.newArtifactWithin": "New Document as Tree Child",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",
