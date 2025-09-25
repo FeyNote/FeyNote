@@ -40,7 +40,7 @@ export const RecentArtifacts: React.FC = () => {
   const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
   const { artifactSnapshots } = useArtifactSnapshots();
-  const { knownUsersById } = useKnownUsers();
+  const { getKnownUserById } = useKnownUsers();
   const recentArtifacts = useMemo(
     () => artifactSnapshots?.sort((a, b) => b.updatedAt - a.updatedAt),
     [artifactSnapshots],
@@ -77,7 +77,7 @@ export const RecentArtifacts: React.FC = () => {
                   {session.userId !== artifact.meta.userId && (
                     <p>
                       {t('sharedContent.sharedBy')}{' '}
-                      {knownUsersById?.get(artifact.meta.userId)?.name ||
+                      {getKnownUserById(artifact.meta.userId)?.name ||
                         t('sharedContent.unknownUser')}
                     </p>
                   )}
