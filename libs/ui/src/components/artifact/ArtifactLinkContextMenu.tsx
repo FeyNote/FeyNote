@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useArtifactDeleteOrRemoveSelfWithConfirmation } from './useArtifactDeleteOrRemoveSelf';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { ContextMenu, DropdownMenu } from '@radix-ui/themes';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -25,7 +25,7 @@ const ArtifactLinkMenuInternal: React.FC<
   }
 > = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
 
   const {

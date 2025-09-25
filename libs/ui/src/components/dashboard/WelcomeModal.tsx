@@ -18,10 +18,9 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { trpc } from '../../utils/trpc';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
-import { useContext } from 'react';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
@@ -58,7 +57,7 @@ interface Props {
 
 export const WelcomeModal: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = () => {

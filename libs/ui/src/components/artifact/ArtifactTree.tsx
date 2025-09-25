@@ -1,5 +1,4 @@
 import {
-  useContext,
   useEffect,
   useMemo,
   useReducer,
@@ -24,8 +23,8 @@ import * as Sentry from '@sentry/react';
 
 import { useSessionContext } from '../../context/session/SessionContext';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -123,7 +122,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const setExpandedItemsRef = useRef(setExpandedItems);
   setExpandedItemsRef.current = setExpandedItems;
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
 
   const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;

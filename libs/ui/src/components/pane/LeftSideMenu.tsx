@@ -6,7 +6,7 @@ import {
   IonList,
   IonListHeader,
 } from '@ionic/react';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
@@ -18,8 +18,8 @@ import {
   type ThreadDTO,
 } from '@feynote/shared-utils';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import {
   chatboxEllipses,
@@ -35,7 +35,7 @@ import {
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
-import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
+import { useGlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
@@ -69,8 +69,8 @@ export const LeftSideMenu: React.FC = () => {
   const { t } = useTranslation();
 
   const { getPreference } = usePreferencesContext();
-  const { navigate, getPaneById } = useContext(GlobalPaneContext);
-  const { trigger: triggerGlobalSearch } = useContext(GlobalSearchContext);
+  const { navigate, getPaneById } = useGlobalPaneContext();
+  const { trigger: triggerGlobalSearch } = useGlobalSearchContext();
   const currentPane = getPaneById(undefined);
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
     ThreadDTO[]

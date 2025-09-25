@@ -13,7 +13,6 @@ import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
 import {
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -43,8 +42,8 @@ import { GraphRenderer } from '../../graph/GraphRenderer';
 import styled from 'styled-components';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
@@ -67,7 +66,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
     props.connection,
   );
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
     ArtifactSharingManagementModal,

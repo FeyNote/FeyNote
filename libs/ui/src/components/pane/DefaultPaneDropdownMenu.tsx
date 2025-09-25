@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useContext } from 'react';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { DropdownMenu } from '@radix-ui/themes';
 
@@ -13,7 +12,7 @@ interface Props {
 
 export const DefaultPaneDropdownMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { getPaneById, navigate } = useContext(GlobalPaneContext);
+  const { getPaneById, navigate } = useGlobalPaneContext();
   const pane = getPaneById(props.paneId);
 
   return (

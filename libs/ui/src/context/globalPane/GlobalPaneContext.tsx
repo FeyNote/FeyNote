@@ -1,5 +1,5 @@
 import type { Action, Model } from 'flexlayout-react';
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import type {
   PaneableComponent,
   PaneableComponentProps,
@@ -102,6 +102,18 @@ export interface GlobalPaneContextData {
   _onModelChangeListener: (model: Model, action: Action) => void;
 }
 
-export const GlobalPaneContext = createContext<GlobalPaneContextData>(
-  null as unknown as GlobalPaneContextData,
+export const GlobalPaneContext = createContext<GlobalPaneContextData | null>(
+  null,
 );
+
+export const useGlobalPaneContext = () => {
+  const val = useContext(GlobalPaneContext);
+
+  if (!val) {
+    throw new Error(
+      'GlobalPaneContext used within component that does not inherit from GlobalPaneContextProvider',
+    );
+  }
+
+  return val;
+};

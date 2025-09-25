@@ -1,8 +1,7 @@
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext } from 'react';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +17,7 @@ interface Props {
 }
 
 export const NewArtifactDialog: React.FC<Props> = (props) => {
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 

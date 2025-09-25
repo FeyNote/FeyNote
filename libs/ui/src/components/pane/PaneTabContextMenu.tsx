@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
   type PaneTracker,
 } from '../../context/globalPane/GlobalPaneContext';
 import { ContextMenu } from '@radix-ui/themes';
-import { useContext } from 'react';
 
 interface Props {
   paneId: string;
@@ -14,7 +13,7 @@ interface Props {
 
 export const PaneTabContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate, getPaneById } = useContext(GlobalPaneContext);
+  const { navigate, getPaneById } = useGlobalPaneContext();
 
   let pane: PaneTracker | undefined = undefined;
   try {

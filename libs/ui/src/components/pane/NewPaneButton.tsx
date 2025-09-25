@@ -1,7 +1,6 @@
 import { IonButton, IonIcon } from '@ionic/react';
 import { add } from 'ionicons/icons';
-import { useContext } from 'react';
-import { GlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
@@ -14,7 +13,7 @@ interface Props {
 }
 
 export const NewPaneButton: React.FC<Props> = (props) => {
-  const { _model } = useContext(GlobalPaneContext);
+  const { _model } = useGlobalPaneContext();
   const { t } = useTranslation();
 
   const newTab = () => {

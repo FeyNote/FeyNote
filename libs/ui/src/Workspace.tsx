@@ -1,8 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Actions, Layout, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
+import { useGlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
 import { usePreferencesContext } from './context/preferences/PreferencesContext';
@@ -217,7 +217,7 @@ const MainGrid = styled.div<{
 
 export const Workspace: React.FC = () => {
   const { _model, _onActionListener, _onModelChangeListener } =
-    useContext(GlobalPaneContext);
+    useGlobalPaneContext();
   const { getPreference } = usePreferencesContext();
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(

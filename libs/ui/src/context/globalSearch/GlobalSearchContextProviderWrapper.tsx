@@ -1,11 +1,4 @@
-import {
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { GlobalSearchContext } from './GlobalSearchContext';
 import {
   IonBackdrop,
@@ -24,8 +17,8 @@ import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
 import { createArtifact } from '../../utils/createArtifact';
@@ -126,7 +119,7 @@ const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
 }) => {
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<
