@@ -1,13 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Actions, Layout, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import {
-  GlobalPaneContext,
-  PaneTransition,
-} from './context/globalPane/GlobalPaneContext';
+import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import { IonButton, IonContent, useIonPopover } from '@ionic/react';
+import { IonButton } from '@ionic/react';
 import { PreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
@@ -18,7 +15,6 @@ import { t } from 'i18next';
 import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
-  PaneableComponentProps,
 } from './context/globalPane/PaneableComponent';
 import {
   clearCustomDragData,
@@ -245,37 +241,6 @@ export const Workspace: React.FC = () => {
     setRightMenuOpen(!rightMenuOpen);
   };
 
-  const contextMenuPaneIdRef = useRef<string>(undefined);
-  const PaneTabContextMenuWrapper = () => {
-    const paneId = contextMenuPaneIdRef.current;
-    const { navigate: globalNavigate, getPaneById } =
-      useContext(GlobalPaneContext);
-    const pane = getPaneById(paneId);
-
-    const navigate = <T extends PaneableComponent>(
-      component: T,
-      props: PaneableComponentProps[T],
-      transition: PaneTransition,
-    ) => {
-      globalNavigate(pane.id, component, props, transition);
-    };
-
-    if (!contextMenuPaneIdRef.current) return null;
-
-    return (
-      <IonContent onClick={popoverDismissRef.current}>
-        <PaneTabContextMenu pane={pane} navigate={navigate} />
-      </IonContent>
-    );
-  };
-
-  const popoverDismissRef = useRef<() => void>(undefined);
-
-  const [present, dismiss] = useIonPopover(PaneTabContextMenuWrapper, {
-    onDismiss: (data: unknown, role: string) => dismiss(data, role),
-  });
-  popoverDismissRef.current = dismiss;
-
   useEffect(() => {
     const listener = (event: DragEvent) => {
       if (!(event.target instanceof HTMLElement)) return;
@@ -364,8 +329,11 @@ export const Workspace: React.FC = () => {
           onRenderTab={(node, renderValues) => {
             // data-node-id is used for dragging interactions since flexlayout-react doesn't provide
             // a way to figure out what the node is when dragging
+            const paneId = node.getId();
             renderValues.content = (
-              <div data-node-id={node.getId()}>{renderValues.content}</div>
+              <PaneTabContextMenu paneId={paneId}>
+                <div data-node-id={node.getId()}>{renderValues.content}</div>
+              </PaneTabContextMenu>
             );
           }}
           onAction={_onActionListener}
@@ -374,17 +342,6 @@ export const Workspace: React.FC = () => {
             if (event.button === 1 && node.getType() === 'tab') {
               _model.doAction(Actions.deleteTab(node.getId()));
             }
-          }}
-          onContextMenu={(node, event) => {
-            if (node.getType() !== 'tab') {
-              return;
-            }
-
-            event.preventDefault();
-            contextMenuPaneIdRef.current = node.getId();
-            present({
-              event: event.nativeEvent,
-            });
           }}
           onExternalDrag={() => {
             const customDragData = getCustomDragData();

@@ -23,6 +23,7 @@ interface Props {
   title: string;
   // Pass null to disable the popover. Not passing this prop will use the default context menu
   popoverContents?: React.ReactNode | null;
+  renderDropdownMenu?: ((children: React.ReactNode) => React.ReactNode) | null;
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
@@ -47,6 +48,31 @@ export const PaneNav: React.FC<Props> = (props) => {
     renamePane(props.title);
   }, [props.title]);
 
+  const renderDropdownButton = () => {
+    const contents = (
+      <IonButton
+        size="small"
+        fill="clear"
+        disabled={
+          props.popoverContents === null && props.renderDropdownMenu === null
+        }
+        onClick={(e) => {
+          if (!props.renderDropdownMenu) {
+            present({ event: e.nativeEvent });
+          }
+        }}
+      >
+        <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
+      </IonButton>
+    );
+
+    if (props.renderDropdownMenu) {
+      return props.renderDropdownMenu(contents);
+    }
+
+    return contents;
+  };
+
   return (
     <NavContainer>
       <NavGroup style={{ textAlign: 'left' }}>
@@ -68,14 +94,7 @@ export const PaneNav: React.FC<Props> = (props) => {
         </IonButton>
       </NavGroup>
       <NavGroup style={{ textAlign: 'right' }}>
-        <IonButton
-          size="small"
-          fill="clear"
-          disabled={props.popoverContents === null}
-          onClick={(e) => present({ event: e.nativeEvent })}
-        >
-          <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
-        </IonButton>
+        {renderDropdownButton()}
       </NavGroup>
     </NavContainer>
   );

@@ -5,7 +5,7 @@ import {
   GlobalPaneContext,
   PaneTransition,
 } from '../../context/globalPane/GlobalPaneContext';
-import { ContextMenu } from '@radix-ui/themes';
+import { ContextMenu, DropdownMenu } from '@radix-ui/themes';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { NewArtifactDialog } from './NewArtifactDialog';
 
@@ -19,12 +19,11 @@ export interface ArtifactLinkContextMenuProps {
   additionalContextMenuContentsAfter?: React.ReactNode;
 }
 
-/**
- * A reusable context menu that can be used anywhere that links to an artifact, and contains standard operations that one would perform
- */
-export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
-  props,
-) => {
+const ArtifactLinkMenuInternal: React.FC<
+  ArtifactLinkContextMenuProps & {
+    MenuImpl: typeof ContextMenu | typeof DropdownMenu;
+  }
+> = (props) => {
   const { t } = useTranslation();
   const { navigate } = useContext(GlobalPaneContext);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
@@ -34,14 +33,16 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
     deleteArtifactOrRemoveSelfWithConfirmationUI,
   } = useArtifactDeleteOrRemoveSelfWithConfirmation();
 
+  const MenuImpl = props.MenuImpl;
+
   return (
     <>
-      <ContextMenu.Root>
-        <ContextMenu.Trigger>{props.children}</ContextMenu.Trigger>
-        <ContextMenu.Content>
+      <MenuImpl.Root>
+        <MenuImpl.Trigger>{props.children}</MenuImpl.Trigger>
+        <MenuImpl.Content>
           {props.additionalContextMenuContentsBefore}
-          <ContextMenu.Group>
-            <ContextMenu.Item
+          <MenuImpl.Group>
+            <MenuImpl.Item
               onClick={() =>
                 navigate(
                   props.paneId,
@@ -56,8 +57,8 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
               }
             >
               {t('contextMenu.splitRight')}
-            </ContextMenu.Item>
-            <ContextMenu.Item
+            </MenuImpl.Item>
+            <MenuImpl.Item
               onClick={() =>
                 navigate(
                   props.paneId,
@@ -72,8 +73,8 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
               }
             >
               {t('contextMenu.splitDown')}
-            </ContextMenu.Item>
-            <ContextMenu.Item
+            </MenuImpl.Item>
+            <MenuImpl.Item
               onClick={() =>
                 navigate(
                   props.paneId,
@@ -88,25 +89,25 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
               }
             >
               {t('contextMenu.newTab')}
-            </ContextMenu.Item>
-          </ContextMenu.Group>
-          <ContextMenu.Separator />
-          <ContextMenu.Group>
-            <ContextMenu.Item onClick={() => setNewArtifactDialogOpen(true)}>
+            </MenuImpl.Item>
+          </MenuImpl.Group>
+          <MenuImpl.Separator />
+          <MenuImpl.Group>
+            <MenuImpl.Item onClick={() => setNewArtifactDialogOpen(true)}>
               {t('artifactTree.newArtifactWithin')}
-            </ContextMenu.Item>
-            <ContextMenu.Item
+            </MenuImpl.Item>
+            <MenuImpl.Item
               color={'red'}
               onClick={() => {
                 deleteArtifactOrRemoveSelfWithConfirmation(props.artifactId);
               }}
             >
               {t('contextMenu.deleteArtifact')}
-            </ContextMenu.Item>
-          </ContextMenu.Group>
+            </MenuImpl.Item>
+          </MenuImpl.Group>
           {props.additionalContextMenuContentsAfter}
-        </ContextMenu.Content>
-      </ContextMenu.Root>
+        </MenuImpl.Content>
+      </MenuImpl.Root>
       <NewArtifactDialog
         open={newArtifactDialogOpen}
         onOpenChange={(open) => setNewArtifactDialogOpen(open)}
@@ -119,3 +120,17 @@ export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
     </>
   );
 };
+
+/**
+ * A reusable context menu that can be used anywhere that links to an artifact, and contains standard operations that one would perform
+ */
+export const ArtifactLinkContextMenu: React.FC<ArtifactLinkContextMenuProps> = (
+  props,
+) => <ArtifactLinkMenuInternal {...props} MenuImpl={ContextMenu} />;
+
+/**
+ * A reusable dropdown menu that can be used anywhere that links to an artifact, and contains standard operations that one would perform
+ */
+export const ArtifactLinkDropdownMenu: React.FC<
+  ArtifactLinkContextMenuProps
+> = (props) => <ArtifactLinkMenuInternal {...props} MenuImpl={DropdownMenu} />;

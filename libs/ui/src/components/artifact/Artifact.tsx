@@ -2,14 +2,13 @@ import { IonButton, IonCard, IonContent, IonPage } from '@ionic/react';
 import { useContext, useRef } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
-import { ArtifactContextMenu } from './ArtifactContextMenu';
+import { ArtifactDropdownMenu } from './ArtifactDropdownMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
-import { useArtifactDeleteOrRemoveSelf } from './useArtifactDeleteOrRemoveSelf';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
@@ -46,7 +45,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   const connection = useCollaborationConnection(`artifact:${props.id}`);
 
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
-  const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
   const { authorizedScope, collaborationConnectionStatus } =
     useCollaborationConnectionAuthorizedScope(connection);
 
@@ -131,17 +129,18 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     <IonPage>
       <PaneNav
         title={title || ''}
-        popoverContents={
-          <ArtifactContextMenu
+        renderDropdownMenu={(children) => (
+          <ArtifactDropdownMenu
             artifactId={props.id}
             authorizedScope={authorizedScope}
-            triggerDelete={() => deleteArtifactOrRemoveSelf(props.id)}
             triggerUndelete={undelete}
             connection={connection}
             pane={pane}
             navigate={navigate}
-          />
-        }
+          >
+            {children}
+          </ArtifactDropdownMenu>
+        )}
       />
       <IonContent
         className="ion-padding-start ion-padding-end"

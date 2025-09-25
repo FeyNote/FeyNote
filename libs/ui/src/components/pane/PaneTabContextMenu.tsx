@@ -1,35 +1,51 @@
 import { useTranslation } from 'react-i18next';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import {
-  ContextMenuContainer,
-  ContextMenuGroup,
-  ContextMenuItem,
-} from '../contextMenu/sharedComponents';
-import { PaneContextData } from '../../context/pane/PaneContext';
+  GlobalPaneContext,
+  PaneTransition,
+  type PaneTracker,
+} from '../../context/globalPane/GlobalPaneContext';
+import { ContextMenu } from '@radix-ui/themes';
+import { useContext } from 'react';
 
 interface Props {
-  pane: PaneContextData['pane'];
-  navigate: PaneContextData['navigate'];
+  paneId: string;
+  children: React.ReactNode;
 }
 
 export const PaneTabContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { navigate, getPaneById } = useContext(GlobalPaneContext);
+
+  let pane: PaneTracker | undefined = undefined;
+  try {
+    pane = getPaneById(props.paneId);
+  } catch (e) {
+    console.error(e);
+  }
+
+  if (!pane) {
+    return props.children;
+  }
 
   return (
-    <ContextMenuContainer>
-      <ContextMenuGroup>
-        <ContextMenuItem
-          onClick={() =>
-            props.navigate(
-              props.pane.currentView.component,
-              props.pane.currentView.props,
-              PaneTransition.NewTab,
-            )
-          }
-        >
-          {t('contextMenu.duplicateTab')}
-        </ContextMenuItem>
-      </ContextMenuGroup>
-    </ContextMenuContainer>
+    <ContextMenu.Root>
+      <ContextMenu.Trigger>{props.children}</ContextMenu.Trigger>
+      <ContextMenu.Content>
+        <ContextMenu.Group>
+          <ContextMenu.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                pane.currentView.component,
+                pane.currentView.props,
+                PaneTransition.NewTab,
+              )
+            }
+          >
+            {t('contextMenu.duplicateTab')}
+          </ContextMenu.Item>
+        </ContextMenu.Group>
+      </ContextMenu.Content>
+    </ContextMenu.Root>
   );
 };
