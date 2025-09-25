@@ -14,7 +14,7 @@ import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useToastContext } from '../../context/toast/ToastContext';
 import { useTranslation } from 'react-i18next';
 import { IncomingBlockReferencesInlinePreview } from './incomingBlockReferencesInlinePreview/IncomingBlockReferencesInlinePreview';
-import { ArtifactEditorControlMenu } from './ArtifactEditorControlMenu';
+import { TiptapEditorControlMenu } from './TiptapEditorControlMenu';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { type CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
@@ -107,7 +107,7 @@ export const TiptapEditor = (props: Props) => {
   return (
     <>
       {props.showMenus && props.artifactId && (
-        <ArtifactEditorControlMenu
+        <TiptapEditorControlMenu
           artifactId={props.artifactId}
           authorizedScope={props.authorizedScope}
           yDoc={props.yDoc || props.yjsProvider.document}

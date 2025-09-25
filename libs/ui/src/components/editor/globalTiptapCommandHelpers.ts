@@ -1,11 +1,8 @@
-import { Button, DropdownMenu } from '@radix-ui/themes';
 import type { Editor, Range } from '@tiptap/core';
-import { useTranslation } from 'react-i18next';
 import { CgNotes } from 'react-icons/cg';
 import { GiMonsterGrasp } from 'react-icons/gi';
 import type { IconType } from 'react-icons/lib';
 import {
-  LuHeading,
   LuHeading1,
   LuHeading2,
   LuHeading3,
@@ -22,7 +19,6 @@ import {
 } from 'react-icons/lu';
 import { MdHorizontalRule } from 'react-icons/md';
 import { RxMagicWand } from 'react-icons/rx';
-import styled from 'styled-components';
 import {
   liftBlockOrListItem,
   sinkBlockOrListItem,
@@ -35,30 +31,16 @@ import {
   RiBox1Line,
   RiDeleteBackLine,
   RiFileCopyLine,
-  RiFontFamily,
   RiItalic,
   RiLink,
   RiListCheck2,
   RiParagraph,
-  RiPrinterLine,
   RiScissorsCutLine,
   RiStrikethrough,
-  RiText,
   RiUnderline,
 } from 'react-icons/ri';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
-import { openArtifactPrint } from '../../utils/openArtifactPrint';
-import { Doc as YDoc } from 'yjs';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { duplicateArtifact } from '../../utils/duplicateArtifact';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { createArtifact } from '../../utils/createArtifact';
-import { IoAdd } from 'react-icons/io5';
 
-type FeynoteEditorCommandEntry = {
+export type GlobalTiptapCommandHelperEntry = {
   title: string;
   keywords: string[];
   subtitle?: string;
@@ -69,7 +51,7 @@ type FeynoteEditorCommandEntry = {
   command: (editor: Editor, range: Range) => void;
 };
 
-const globalEditorCommands = {
+export const globalTiptapCommandHelpers = {
   insert: {
     hr: {
       title: 'editor.commandMenu.hr',
@@ -577,247 +559,4 @@ const globalEditorCommands = {
       },
     },
   },
-};
-
-const ControlMenuList = styled.div`
-  display: flex;
-  gap: 16px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 8px;
-`;
-
-interface Props {
-  artifactId: string;
-  editor: Editor;
-  yDoc: YDoc;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
-}
-
-export const ArtifactEditorControlMenu: React.FC<Props> = (props) => {
-  const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
-  const { handleTRPCErrors } = useHandleTRPCErrors();
-
-  const onNewArtifactClicked = async () => {
-    const result = await createArtifact({
-      artifact: {
-        title: t('generic.untitled'),
-      },
-    });
-
-    if (!result.id) {
-      return;
-    }
-
-    navigate(
-      PaneableComponent.Artifact,
-      { id: result.id },
-      PaneTransition.NewTab,
-    );
-  };
-
-  const onDuplicateArtifactClicked = async () => {
-    const id = await duplicateArtifact(props.yDoc).catch((e) => {
-      handleTRPCErrors(e);
-    });
-
-    if (!id) {
-      return;
-    }
-
-    navigate(PaneableComponent.Artifact, { id: id }, PaneTransition.NewTab);
-  };
-
-  const renderCommandEntryItem = (commandEntry: FeynoteEditorCommandEntry) => (
-    <DropdownMenu.Item
-      onClick={() =>
-        commandEntry.command(props.editor, props.editor.state.selection)
-      }
-      disabled={!commandEntry.enabled(props.editor)}
-    >
-      {commandEntry.icon && <commandEntry.icon />}
-      <span style={commandEntry.style}>{t(commandEntry.title)}</span>
-    </DropdownMenu.Item>
-  );
-
-  const isEditable = [
-    CollaborationConnectionAuthorizedScope.CoOwner,
-    CollaborationConnectionAuthorizedScope.CoOwner,
-  ].includes(props.authorizedScope);
-
-  const file = (
-    <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger>
-        <Button variant="ghost" size="1">
-          {t('tiptapControlMenu.file')}
-          <DropdownMenu.TriggerIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Item onClick={() => onNewArtifactClicked()}>
-          <IoAdd />
-          {t('tiptapControlMenu.file.new')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onDuplicateArtifactClicked()}>
-          <RiFileCopyLine />
-          {t('tiptapControlMenu.file.duplicate')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => openArtifactPrint(props.artifactId)}>
-          <RiPrinterLine />
-          {t('tiptapControlMenu.file.print')}
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  );
-
-  const edit = (
-    <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger>
-        <Button variant="ghost" size="1">
-          {t('tiptapControlMenu.edit')}
-          <DropdownMenu.TriggerIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        {renderCommandEntryItem(globalEditorCommands.edit.undo)}
-        {renderCommandEntryItem(globalEditorCommands.edit.redo)}
-        {renderCommandEntryItem(globalEditorCommands.edit.cut)}
-        {renderCommandEntryItem(globalEditorCommands.edit.copy)}
-        {renderCommandEntryItem(globalEditorCommands.edit.selectAll)}
-        {renderCommandEntryItem(globalEditorCommands.edit.delete)}
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  );
-
-  const insert = (
-    <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger>
-        <Button variant="ghost" size="1">
-          {t('tiptapControlMenu.insert')}
-          <DropdownMenu.TriggerIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        {renderCommandEntryItem(globalEditorCommands.insert.hr)}
-        {renderCommandEntryItem(globalEditorCommands.insert.table)}
-        {renderCommandEntryItem(globalEditorCommands.insert.monster)}
-        {renderCommandEntryItem(globalEditorCommands.insert.wideMonster)}
-        {renderCommandEntryItem(globalEditorCommands.insert.spell)}
-        {renderCommandEntryItem(globalEditorCommands.insert.note)}
-        {renderCommandEntryItem(globalEditorCommands.insert.link)}
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  );
-
-  const format = (
-    <DropdownMenu.Root modal={false}>
-      <DropdownMenu.Trigger>
-        <Button variant="ghost" size="1">
-          {t('tiptapControlMenu.format')}
-          <DropdownMenu.TriggerIcon />
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>
-            <RiText />
-            {t('tiptapControlMenu.format.text')}
-          </DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            {renderCommandEntryItem(
-              globalEditorCommands.format.text.toggleBold,
-            )}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.text.toggleItalic,
-            )}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.text.toggleUnderline,
-            )}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.text.toggleStrike,
-            )}
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>
-            <RiFontFamily />
-            {t('tiptapControlMenu.format.font')}
-          </DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            {renderCommandEntryItem(globalEditorCommands.format.font.default)}
-            {renderCommandEntryItem(globalEditorCommands.format.font.sans)}
-            {renderCommandEntryItem(globalEditorCommands.format.font.serif)}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.font.libreBaskerville,
-            )}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.font.mrEavesRemake,
-            )}
-            {renderCommandEntryItem(globalEditorCommands.format.font.allison)}
-            {renderCommandEntryItem(globalEditorCommands.format.font.italianno)}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.font.monsieurLaDoulaise,
-            )}
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>
-            <RiAlignLeft />
-            {t('tiptapControlMenu.format.align')}
-          </DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            {renderCommandEntryItem(globalEditorCommands.format.align.left)}
-            {renderCommandEntryItem(globalEditorCommands.format.align.center)}
-            {renderCommandEntryItem(globalEditorCommands.format.align.right)}
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-
-        <DropdownMenu.Separator />
-
-        {renderCommandEntryItem(globalEditorCommands.format.paragraph)}
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>
-            <LuHeading />
-            {t('tiptapControlMenu.format.h')}
-          </DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h1)}
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h2)}
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h3)}
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h4)}
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h5)}
-            {renderCommandEntryItem(globalEditorCommands.format.heading.h6)}
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-        <DropdownMenu.Sub>
-          <DropdownMenu.SubTrigger>
-            <LuList />
-            {t('tiptapControlMenu.format.list')}
-          </DropdownMenu.SubTrigger>
-          <DropdownMenu.SubContent>
-            {renderCommandEntryItem(globalEditorCommands.format.sinkBlock)}
-            {renderCommandEntryItem(globalEditorCommands.format.liftBlock)}
-            <DropdownMenu.Separator />
-            {renderCommandEntryItem(
-              globalEditorCommands.format.list.bulletList,
-            )}
-            {renderCommandEntryItem(
-              globalEditorCommands.format.list.orderedList,
-            )}
-            {renderCommandEntryItem(globalEditorCommands.format.list.taskList)}
-          </DropdownMenu.SubContent>
-        </DropdownMenu.Sub>
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  );
-
-  return (
-    <ControlMenuList>
-      {file}
-      {isEditable && edit}
-      {isEditable && insert}
-      {isEditable && format}
-    </ControlMenuList>
-  );
 };
