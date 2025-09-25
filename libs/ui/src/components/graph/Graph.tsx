@@ -2,7 +2,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
-import { useContext, useEffect, useMemo, useReducer } from 'react';
+import { useEffect, useMemo, useReducer } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
@@ -10,7 +10,7 @@ import { Edge, PreferenceNames } from '@feynote/shared-utils';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { usePaneContext } from '../../context/pane/PaneContext';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { GraphRightSidemenu } from './GraphRightSidemenu';
 import { createPortal } from 'react-dom';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -28,7 +28,7 @@ export const Graph: React.FC = () => {
   const { getPreference } = usePreferencesContext();
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { isPaneFocused } = usePaneContext();
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { sidemenuContentRef } = useSidemenuContext();
   const { session } = useSessionContext();
   const { t } = useTranslation();
   const { artifactSnapshotsLoading, artifactSnapshots } =

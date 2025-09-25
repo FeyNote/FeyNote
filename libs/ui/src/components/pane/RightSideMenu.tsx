@@ -1,8 +1,7 @@
-import { useContext } from 'react';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 
 export const RightSideMenu: React.FC = () => {
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { sidemenuContentRef } = useSidemenuContext();
 
   return <div ref={sidemenuContentRef}></div>;
 };

@@ -1,9 +1,9 @@
 import { IonButton, IonCard, IonContent, IonPage } from '@ionic/react';
-import { useContext, useRef } from 'react';
+import { useRef } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactDropdownMenu } from './ArtifactDropdownMenu';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
@@ -35,7 +35,7 @@ interface ArtifactProps {
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { pane, navigate, isPaneFocused } = usePaneContext();
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
   // We use a ref instead of state because this method is called on every keystroke and we don't want
   // to re-render the component stack top to bottom

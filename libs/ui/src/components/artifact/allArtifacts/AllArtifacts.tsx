@@ -1,6 +1,6 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PaneNav } from '../../pane/PaneNav';
-import { SidemenuContext } from '../../../context/sidemenu/SidemenuContext';
+import { useSidemenuContext } from '../../../context/sidemenu/SidemenuContext';
 import { usePaneContext } from '../../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
@@ -57,7 +57,7 @@ const dateCompareWithFallback = (
 
 export const AllArtifacts: React.FC = () => {
   const { isPaneFocused, pane } = usePaneContext();
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
