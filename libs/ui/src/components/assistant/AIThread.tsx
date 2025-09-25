@@ -288,14 +288,16 @@ export const AIThread: React.FC<Props> = (props) => {
     <IonPage>
       <PaneNav
         title={title || t('assistant.thread.emptyTitle')}
-        popoverContents={
+        renderDropdownMenu={(children) => (
           <AIThreadOptionsPopover
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
             setTitle={setTitle}
             navigate={navigate}
-          />
-        }
+          >
+            {children}
+          </AIThreadOptionsPopover>
+        )}
       />
       <IonContent>
         <ChatContainer>
