@@ -12,6 +12,7 @@ import { Edge, type SessionDTO } from '@feynote/shared-utils';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
 import { getEdgeStore } from '../../utils/localDb/edges/edgeStore';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 interface Props {
   artifactId: string;
@@ -123,6 +124,7 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       <ArtifactEditor
         artifactId={props.artifactId}
         editable={false}
+        authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
         onReady={props.onReady}
         yjsProvider={undefined}
         yDoc={yDoc}

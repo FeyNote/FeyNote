@@ -5,6 +5,7 @@ import { useContext } from 'react';
 import { SessionContext } from '../../context/session/SessionContext';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { TiptapEditor } from './TiptapEditor';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 interface Props {
   artifactId: string;
@@ -22,6 +23,7 @@ export const TiptapPreview: React.FC<Props> = (props) => {
       <TiptapEditor
         artifactId={props.artifactId}
         editable={false}
+        authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
         yDoc={props.yDoc}
         theme={artifactMeta.theme}
         getFileUrl={async (fileId) => {
