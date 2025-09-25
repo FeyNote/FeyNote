@@ -1,5 +1,5 @@
 import type { JSONContent } from '@tiptap/core';
-import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 /**
  * Grabs the text from a JSONContent object and all of it's children.

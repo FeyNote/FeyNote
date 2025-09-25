@@ -6,7 +6,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
 import { t } from 'i18next';
 import { Doc as YDoc } from 'yjs';
-import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export type ReferencePluginOptions = MentionOptions & {
   artifactId: string | undefined;

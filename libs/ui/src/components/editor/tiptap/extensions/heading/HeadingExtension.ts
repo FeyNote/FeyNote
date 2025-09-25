@@ -2,7 +2,7 @@ import {
   Heading as BaseHeadingExtension,
   HeadingOptions as BaseHeadingOptions,
 } from '@tiptap/extension-heading';
-import type { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import type { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export interface HeadingOptions extends BaseHeadingOptions {
   artifactId: string | undefined;

@@ -1,7 +1,7 @@
 import { Edge, getEdgeId, GetEdgeIdArgs } from '@feynote/shared-utils';
-import { trpc } from '../trpc';
-import { eventManager } from '../../context/events/EventManager';
-import { EventName } from '../../context/events/EventName';
+import { eventManager } from '../../../context/events/EventManager';
+import { EventName } from '../../../context/events/EventName';
+import { trpc } from '../../trpc';
 
 /**
  * Please do not interact with this class directly from React if avoidable.
@@ -13,6 +13,7 @@ class EdgeStore {
    */
   private listenersForSpecificArtifactId: Record<string, Set<() => void>> = {};
   private listenersForAnyUpdate = new Set<() => void>();
+  private listenersForFetchFailure = new Set<(e: unknown) => void>();
 
   // These maps represent edges that are provided by server/indexeddb
   private fetchedOutgoingEdgesByArtifactId = new Map<string, Edge[]>();
@@ -36,13 +37,28 @@ class EdgeStore {
     Map<string, Edge[]>
   >();
 
+  /**
+   * Helps us invalidate in-flight requests when a session changes
+   */
+  private sessionInvalidationRandom = crypto.randomUUID();
+
+  private _isLoading = true;
+  // Readonly to external consumers.
+  public get isLoading() {
+    return this._isLoading;
+  }
+
   constructor() {
     eventManager.addEventListener(EventName.LocaldbSessionUpdated, async () => {
       this.fetchedIncomingEdgesByArtifactId.clear();
       this.fetchedOutgoingEdgesByArtifactId.clear();
       this.fetchedIncomingEdgesByBlockIdByArtifactId.clear();
+      this.sessionInvalidationRandom = crypto.randomUUID();
+      this._isLoading = true;
       this.notify();
+
       this.loadAllEdges().then(() => {
+        this._isLoading = false;
         this.notify();
       });
     });
@@ -61,6 +77,7 @@ class EdgeStore {
     });
 
     this.loadAllEdges().then(() => {
+      this._isLoading = false;
       this.notify();
     });
 
@@ -72,6 +89,7 @@ class EdgeStore {
     this.getEdge = this.getEdge.bind(this);
     this.listen = this.listen.bind(this);
     this.listenForArtifactId = this.listenForArtifactId.bind(this);
+    this.listenForFetchFailure = this.listenForFetchFailure.bind(this);
   }
 
   /**
@@ -182,6 +200,14 @@ class EdgeStore {
     };
   }
 
+  public listenForFetchFailure(listener: (e: unknown) => void) {
+    this.listenersForFetchFailure.add(listener);
+
+    return () => {
+      this.listenersForFetchFailure.delete(listener);
+    };
+  }
+
   public listenForArtifactId(artifactId: string, listener: () => void) {
     this.listenersForSpecificArtifactId[artifactId] ||= new Set();
     this.listenersForSpecificArtifactId[artifactId].add(listener);
@@ -195,10 +221,12 @@ class EdgeStore {
   }
 
   private async loadAllEdges() {
+    const sessionRandomBefore = this.sessionInvalidationRandom;
     const result = await trpc.artifact.getArtifactEdges.query().catch((e) => {
-      console.error('Error while fetching edges', e);
+      this.notifyFetchError(e);
     });
     if (!result) return;
+    if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
 
     const fetchedOutgoingEdgesByArtifactId = new Map<string, Edge[]>();
     const fetchedIncomingEdgesByArtifactId = new Map<string, Edge[]>();
@@ -256,7 +284,7 @@ class EdgeStore {
     const response = await trpc.artifact.getArtifactEdgesById
       .query({ id: artifactId })
       .catch((e) => {
-        console.error('Error while fetching specific artifact edges', e);
+        this.notifyFetchError(e);
       });
 
     if (!response) return;
@@ -309,6 +337,12 @@ class EdgeStore {
     }
     for (const listener of this.listenersForAnyUpdate) {
       listener();
+    }
+  }
+
+  private notifyFetchError(e: unknown) {
+    for (const listener of this.listenersForFetchFailure) {
+      listener(e);
     }
   }
 }

@@ -39,7 +39,7 @@ import {
 } from '../../utils/artifactTree/customDrag';
 import { calculateOrderForArtifactTreeNode } from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
-import { useArtifactSnapshots } from '../../utils/localDb/hooks/useArtifactSnapshots';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 
 const StyleContainer = styled.div`
   .rct-tree-root {
@@ -116,7 +116,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );
-  const { artifactSnapshots: artifacts } = useArtifactSnapshots();
+  const { artifactSnapshots } = useArtifactSnapshots();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
@@ -160,7 +160,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     TreeItem<InternalTreeItem>
   > => {
     const artifactsById = new Map(
-      artifacts?.map((artifact) => [artifact.id, artifact]),
+      artifactSnapshots?.map((artifact) => [artifact.id, artifact]),
     );
 
     const kvEntries = new Map(yKeyValue.yarray.map((el) => [el.key, el.val]));
@@ -190,7 +190,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     // Artifact not explicitly added to tree, add it to uncategorized
     const uncategorizedArtifacts = new Set<string>();
-    for (const artifact of artifacts || []) {
+    for (const artifact of artifactSnapshots || []) {
       if (!items[artifact.id]) {
         items[artifact.id] = {
           index: artifact.id,
@@ -299,7 +299,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     yKeyValue,
     _rerenderReducerValue,
     leftPaneArtifactTreeShowUncategorized,
-    artifacts,
+    artifactSnapshots,
   ]);
   const itemsRef = useRef<Record<TreeItemIndex, TreeItem<InternalTreeItem>>>(
     {},
@@ -478,7 +478,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
                   data: {
                     id: dragDataProps.id,
                     title:
-                      artifacts?.find(
+                      artifactSnapshots?.find(
                         (artifact) => artifact.id === dragDataProps.id,
                       )?.meta.title || 'Unknown',
                     order: 'X',

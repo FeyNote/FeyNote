@@ -28,8 +28,8 @@ import { GraphRenderer } from '../graph/GraphRenderer';
 import { SessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
 import { type Edge } from '@feynote/shared-utils';
-import { useArtifactSnapshots } from '../../utils/localDb/hooks/useArtifactSnapshots';
-import { useEdges } from '../../utils/edgesReferences/useEdges';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useEdges } from '../../utils/localDb/edges/useEdges';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -64,36 +64,38 @@ export const Dashboard: React.FC = () => {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useContext(SessionContext);
-  const { artifactSnapshots: artifacts } = useArtifactSnapshots();
-  const { _edgesRerenderReducerValue, getEdgesForArtifactId } = useEdges();
+  const { artifactSnapshots } = useArtifactSnapshots();
+  const { getEdgesForArtifactId } = useEdges();
   const recentArtifacts = useMemo(() => {
-    if (!artifacts) return [];
+    if (!artifactSnapshots) return [];
 
-    return artifacts?.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, 10);
-  }, [artifacts]);
+    return artifactSnapshots
+      ?.sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, 10);
+  }, [artifactSnapshots]);
   const incomingSharedArtifacts = useMemo(() => {
-    if (!artifacts) return [];
+    if (!artifactSnapshots) return [];
 
-    return artifacts
+    return artifactSnapshots
       ?.filter((artifact) => artifact.meta.userId !== session.userId)
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 10);
-  }, [artifacts]);
+  }, [artifactSnapshots]);
   const graphArtifacts = useMemo(() => {
-    if (!artifacts) return [];
+    if (!artifactSnapshots) return [];
 
-    return artifacts.map((artifact) => ({
+    return artifactSnapshots.map((artifact) => ({
       id: artifact.id,
       title: artifact.meta.title,
     }));
-  }, [artifacts]);
+  }, [artifactSnapshots]);
 
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] =
     useState<ThreadDTO[]>();
   const edges = useMemo(() => {
-    if (!artifacts) return [];
+    if (!artifactSnapshots) return [];
 
-    const map = artifacts.reduce<Map<string, Edge>>((acc, artifact) => {
+    const map = artifactSnapshots.reduce<Map<string, Edge>>((acc, artifact) => {
       const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
         artifact.id,
       );
@@ -109,7 +111,7 @@ export const Dashboard: React.FC = () => {
     }, new Map());
 
     return Array.from(map.values());
-  }, [artifacts, _edgesRerenderReducerValue]);
+  }, [artifactSnapshots, getEdgesForArtifactId]);
 
   const getUserThreads = async () => {
     trpc.ai.getThreads
@@ -216,7 +218,7 @@ export const Dashboard: React.FC = () => {
                   <IonIcon icon={expand} size="small" />
                 </CardTitleButton>
               </CardTitle>
-              {artifacts?.length ? (
+              {artifactSnapshots?.length ? (
                 <GraphRenderer
                   artifacts={graphArtifacts}
                   edges={edges}

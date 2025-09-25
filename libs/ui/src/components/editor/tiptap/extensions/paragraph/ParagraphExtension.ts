@@ -2,7 +2,7 @@ import {
   Paragraph as BaseParagraphExtension,
   ParagraphOptions as BaseParagraphOptions,
 } from '@tiptap/extension-paragraph';
-import type { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import type { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export interface ParagraphOptions extends BaseParagraphOptions {
   artifactId: string | undefined;

@@ -26,7 +26,7 @@ import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
-import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
+import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
 
 const BottomSpacer = styled.div`
   height: 100px;

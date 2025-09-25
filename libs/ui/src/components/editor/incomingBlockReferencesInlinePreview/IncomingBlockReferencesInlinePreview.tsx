@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
 import { useHoverTimer } from '../tiptap/extensions/artifactReferences/useHoverTimer';
-import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
 import type { Edge } from '@feynote/shared-utils';
 import { StyledBoundedFloatingWindow } from '../../StyledBoundedFloatingWindow';
 import { PaneContext } from '../../../context/pane/PaneContext';
@@ -9,6 +8,7 @@ import { PaneableComponent } from '../../../context/globalPane/PaneableComponent
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { IncomingBlockReferenceInlinePreviewItem } from './IncomingBlockReferenceInlinePreviewItem';
+import { getEdgeStore } from '../../../utils/localDb/edges/edgeStore';
 
 const Container = styled.div`
   background-color: var(--ion-background-color);

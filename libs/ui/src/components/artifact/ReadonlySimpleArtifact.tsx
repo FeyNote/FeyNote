@@ -9,9 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { Edge, type SessionDTO } from '@feynote/shared-utils';
-import { getEdgeStore } from '../../utils/edgesReferences/edgeStore';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { getEdgeStore } from '../../utils/localDb/edges/edgeStore';
 
 interface Props {
   artifactId: string;

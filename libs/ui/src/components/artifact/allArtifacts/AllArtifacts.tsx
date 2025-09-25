@@ -19,8 +19,8 @@ import {
 import { Checkbox } from '../../sharedComponents/Checkbox';
 import { AllArtifactsActions } from './AllArtifactsActions';
 import { IonContent, IonPage } from '@ionic/react';
-import { useArtifactSnapshots } from '../../../utils/localDb/hooks/useArtifactSnapshots';
-import { useEdges } from '../../../utils/edgesReferences/useEdges';
+import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useEdges } from '../../../utils/localDb/edges/useEdges';
 
 const ResultsTable = styled.div`
   display: grid;
@@ -77,7 +77,7 @@ export const AllArtifacts: React.FC = () => {
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
-  const { artifactSnapshots: artifacts } = useArtifactSnapshots();
+  const { artifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
@@ -114,10 +114,10 @@ export const AllArtifacts: React.FC = () => {
   }, []);
 
   const filterableUsers = useMemo(() => {
-    if (!artifacts) return [];
+    if (!artifactSnapshots) return [];
 
     const artifactOtherUserIds = new Set(
-      artifacts
+      artifactSnapshots
         .map((artifact) => artifact.meta.userId)
         .filter((el): el is string => !!el),
     );
@@ -130,7 +130,7 @@ export const AllArtifacts: React.FC = () => {
         ...knownUsersById.get(el),
       };
     });
-  }, [artifacts, knownUsersById]);
+  }, [artifactSnapshots, knownUsersById]);
 
   // Allows user to filter by several different properties
   const [filters, setFilters] = useState<FilterOptions>(() => ({
@@ -147,7 +147,7 @@ export const AllArtifacts: React.FC = () => {
     Number(!!filters.onlyIncludeTypes.size);
 
   const sortedFilteredArtifacts = useMemo(() => {
-    return artifacts
+    return artifactSnapshots
       ?.filter((artifact) => {
         if (!artifact.meta.userId) return false;
 
@@ -235,11 +235,11 @@ export const AllArtifacts: React.FC = () => {
           }
         }
       });
-  }, [artifacts, order, filters]);
+  }, [artifactSnapshots, getEdgesForArtifactId, order, filters]);
 
   useEffect(() => {
     const verificationSet = new Set(selectedArtifactIds);
-    for (const artifact of artifacts || []) {
+    for (const artifact of artifactSnapshots || []) {
       verificationSet.delete(artifact.id);
     }
     if (verificationSet.size) {
@@ -249,7 +249,7 @@ export const AllArtifacts: React.FC = () => {
       }
       setSelectedArtifactIds(newSelectedArtifactIds);
     }
-  }, [artifacts]);
+  }, [artifactSnapshots]);
 
   const selectedArtifactCountNotShown = useMemo(() => {
     const verificationSet = new Set(selectedArtifactIds);
@@ -392,10 +392,10 @@ export const AllArtifacts: React.FC = () => {
                 />
               </ResultsTableItem>
             ))}
-            {!sortedFilteredArtifacts?.length && artifacts?.length && (
+            {!sortedFilteredArtifacts?.length && artifactSnapshots?.length && (
               <div>{t('allArtifacts.allFiltered')}</div>
             )}
-            {artifacts && !artifacts.length && (
+            {artifactSnapshots && !artifactSnapshots.length && (
               <div>{t('allArtifacts.noArtifacts')}</div>
             )}
           </ResultsTableItems>

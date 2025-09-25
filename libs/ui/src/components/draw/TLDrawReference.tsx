@@ -23,13 +23,12 @@ import {
   FaTree,
 } from 'react-icons/fa';
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
-import { useContext, useRef } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
-import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 import styled from 'styled-components';
@@ -37,6 +36,7 @@ import {
   ReferenceShapeIconOptions,
   ReferenceShapeProps,
 } from '@feynote/shared-utils';
+import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
   $isHandMode: boolean;
@@ -228,13 +228,17 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
     const ref = useRef<HTMLDivElement>(null);
 
     const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
-    const edge = getEdge({
-      artifactId,
-      artifactBlockId: shape.id,
-      targetArtifactId: shape.props.targetArtifactId,
-      targetArtifactBlockId: shape.props.targetArtifactBlockId,
-      targetArtifactDate: shape.props.targetArtifactDate,
-    });
+    const edge = useMemo(
+      () =>
+        getEdge({
+          artifactId,
+          artifactBlockId: shape.id,
+          targetArtifactId: shape.props.targetArtifactId,
+          targetArtifactBlockId: shape.props.targetArtifactBlockId,
+          targetArtifactDate: shape.props.targetArtifactDate,
+        }),
+      [getEdge],
+    );
     const referenceText = edge?.referenceText || shape.props.referenceText;
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 

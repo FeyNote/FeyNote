@@ -17,8 +17,8 @@ import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { SessionContext } from '../../context/session/SessionContext';
-import { useArtifactSnapshots } from '../../utils/localDb/hooks/useArtifactSnapshots';
-import { useKnownUsers } from '../../utils/localDb/hooks/useKnownUsers';
+import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 
 const Title = styled(IonCardTitle)`
   padding: 8px;
@@ -39,11 +39,11 @@ export const RecentArtifacts: React.FC = () => {
   const { t } = useTranslation();
   const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
-  const { artifactSnapshots: artifacts } = useArtifactSnapshots();
+  const { artifactSnapshots } = useArtifactSnapshots();
   const { knownUsersById } = useKnownUsers();
   const recentArtifacts = useMemo(
-    () => artifacts?.sort((a, b) => b.updatedAt - a.updatedAt),
-    [artifacts],
+    () => artifactSnapshots?.sort((a, b) => b.updatedAt - a.updatedAt),
+    [artifactSnapshots],
   );
 
   return (

@@ -34,7 +34,6 @@ import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
 } from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
-import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
 import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
@@ -48,6 +47,7 @@ import {
   PaneTransition,
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
+import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
 
 const GraphContainer = styled.div`
   height: 200px;

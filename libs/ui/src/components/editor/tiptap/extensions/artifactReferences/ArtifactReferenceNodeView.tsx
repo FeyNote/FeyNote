@@ -1,13 +1,13 @@
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
-import { useContext, useRef } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
 import { PaneContext } from '../../../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
-import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
+import { useEdgesForArtifactId } from '../../../../../utils/localDb/edges/useEdgesForArtifactId';
 
 const ArtifactReferenceLink = styled.a`
   cursor: pointer;
@@ -37,13 +37,17 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
 
   const { navigate } = useContext(PaneContext);
   const { getEdge } = useEdgesForArtifactId(artifactId);
-  const edge = getEdge({
-    artifactId,
-    artifactBlockId,
-    targetArtifactId,
-    targetArtifactBlockId,
-    targetArtifactDate,
-  });
+  const edge = useMemo(
+    () =>
+      getEdge({
+        artifactId,
+        artifactBlockId,
+        targetArtifactId,
+        targetArtifactBlockId,
+        targetArtifactDate,
+      }),
+    [getEdge],
+  );
 
   const ref = useRef<HTMLSpanElement>(null);
 

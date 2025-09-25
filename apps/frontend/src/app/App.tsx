@@ -5,8 +5,8 @@ import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
 
-import "@radix-ui/themes/styles.css";
-import { Theme } from "@radix-ui/themes";
+import '@radix-ui/themes/styles.css';
+import { Theme } from '@radix-ui/themes';
 
 /* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
@@ -37,6 +37,7 @@ import {
   ResetEmail,
   IonApp,
   PrintviewApp,
+  LocaldbStoreErrorHandlers,
 } from '@feynote/ui';
 
 initI18Next();
@@ -155,6 +156,7 @@ export function App() {
                 <PreferencesContextProviderWrapper>
                   <SessionContextProviderWrapper>
                     <GlobalSearchContextProviderWrapper>
+                      <LocaldbStoreErrorHandlers />
                       <Workspace />
                     </GlobalSearchContextProviderWrapper>
                   </SessionContextProviderWrapper>
