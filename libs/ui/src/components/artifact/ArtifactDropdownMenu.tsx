@@ -3,14 +3,13 @@ import { PaneContextData } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
-import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { createArtifact } from '../../utils/createArtifact';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
-import { cloneArtifact } from '../../utils/cloneArtifact';
 import { ArtifactLinkDropdownMenu } from './ArtifactLinkContextMenu';
 import { DropdownMenu } from '@radix-ui/themes';
+import { openArtifactPrint } from '../../utils/openArtifactPrint';
+import { duplicateArtifact } from '../../utils/duplicateArtifact';
 
 interface Props {
   artifactId: string;
@@ -29,42 +28,21 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
 
-  const onPrintArtifactClicked = () => {
-    window.open(
-      `${window.location.hostname}?printArtifactId=${props.artifactId}&autoPrint=true`,
-    );
-  };
-
   const onDuplicateArtifactClicked = async () => {
-    const { title } = getMetaFromYArtifact(props.connection.yjsDoc);
-
-    const newTitle = t('artifact.duplicateTitle', { title });
-
-    const newYDoc = await cloneArtifact({
-      title: newTitle,
-      y: props.connection.yjsDoc,
-    });
-
-    const result = await createArtifact({
-      artifact: {
-        y: newYDoc,
-      },
-    }).catch((e) => {
+    const id = await duplicateArtifact(props.connection.yjsDoc).catch((e) => {
       handleTRPCErrors(e);
     });
 
-    if (!result) return;
+    if (!id) {
+      return;
+    }
 
-    navigate(
-      PaneableComponent.Artifact,
-      { id: result.id },
-      PaneTransition.NewTab,
-    );
+    navigate(PaneableComponent.Artifact, { id: id }, PaneTransition.NewTab);
   };
 
   const extraBefore = (
     <DropdownMenu.Group>
-      <DropdownMenu.Item onClick={onPrintArtifactClicked}>
+      <DropdownMenu.Item onClick={() => openArtifactPrint(props.artifactId)}>
         {t('contextMenu.printArtifact')}
       </DropdownMenu.Item>
       <DropdownMenu.Item onClick={onDuplicateArtifactClicked}>

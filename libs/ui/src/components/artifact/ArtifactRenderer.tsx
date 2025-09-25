@@ -145,8 +145,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (type === 'tiptap') {
     return render(
       <ArtifactEditor
+        showMenus={true}
         artifactId={props.artifactId}
         editable={isEditable}
+        authorizedScope={props.authorizedScope}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}

@@ -14,7 +14,7 @@ export type ReferencePluginOptions = MentionOptions & {
 
 // We do this to prevent a hanging @ from triggering the mention menu
 // anytime the user navigates close to it. An object is necessary here so that we can pass by reference
-const mentionMenuOptsRef = {
+export const mentionMenuOptsRef = {
   enableMentionMenu: false,
   componentRef: {
     current: null,

@@ -70,8 +70,8 @@ export const renderReferenceList = (args: {
         });
       },
       onExit() {
-        popup[0].destroy();
-        component.destroy();
+        popup?.[0]?.destroy();
+        component?.destroy();
         args.mentionMenuOptsRef.enableMentionMenu = false;
       },
     };
