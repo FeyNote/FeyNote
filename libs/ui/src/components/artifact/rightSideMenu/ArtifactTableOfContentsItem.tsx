@@ -6,7 +6,6 @@ import styled from 'styled-components';
 import { scrollBlockIntoView } from '../../editor/scrollBlockIntoView';
 import { animateHighlightBlock } from '../../editor/animateHighlightBlock';
 import { PaneContext } from '../../../context/pane/PaneContext';
-import { useContextMenu } from '../../../utils/contextMenu/useContextMenu';
 import { ArtifactTableOfContentsItemContextMenu } from './ArtifactTableOfContentsItemContextMenu';
 
 const ToCItem = styled(CompactIonItem)<{ $isActive: boolean }>`
@@ -25,17 +24,7 @@ interface Props {
 }
 
 export const ArtifactTableOfContentsItem: React.FC<Props> = (props) => {
-  const { pane, navigate } = useContext(PaneContext);
-
-  const { onContextMenu } = useContextMenu(
-    ArtifactTableOfContentsItemContextMenu,
-    {
-      navigate,
-      paneId: pane.id,
-      currentArtifactId: props.artifactId,
-      blockId: props.item.id,
-    },
-  );
+  const { pane } = useContext(PaneContext);
 
   const onItemClick = (event: MouseEvent) => {
     const { id, editor, dom } = props.item;
@@ -60,17 +49,22 @@ export const ArtifactTableOfContentsItem: React.FC<Props> = (props) => {
   };
 
   return (
-    <ToCItem
-      $isActive={props.item.isActive}
-      onClick={(event) => onItemClick(event)}
-      onContextMenu={onContextMenu}
-      lines="none"
-      button
-      style={{
-        '--toc-level': props.item.level,
-      }}
+    <ArtifactTableOfContentsItemContextMenu
+      paneId={pane.id}
+      artifactId={props.artifactId}
+      artifactBlockId={props.item.id}
     >
-      {props.item.textContent}
-    </ToCItem>
+      <ToCItem
+        $isActive={props.item.isActive}
+        onClick={(event) => onItemClick(event)}
+        lines="none"
+        button
+        style={{
+          '--toc-level': props.item.level,
+        }}
+      >
+        {props.item.textContent}
+      </ToCItem>
+    </ArtifactTableOfContentsItemContextMenu>
   );
 };
