@@ -29,7 +29,7 @@ import {
 } from '../../context/globalPane/GlobalPaneContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
 import {
   CustomDragStateData,
@@ -112,7 +112,7 @@ interface Props {
 export const ArtifactTree: React.FC<Props> = (props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useSessionContext();
-  const { getPreference } = useContext(PreferencesContext);
+  const { getPreference } = usePreferencesContext();
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );

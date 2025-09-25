@@ -24,7 +24,7 @@ import {
 } from '@ionic/react';
 import { t } from 'i18next';
 import { useContext, useMemo, type ComponentProps } from 'react';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
@@ -93,7 +93,7 @@ const colorOptions = {
 export const Settings: React.FC = () => {
   const [presentAlert] = useIonAlert();
   const { setPreference, getPreference, _preferencesService } =
-    useContext(PreferencesContext);
+    usePreferencesContext();
   const { session } = useSessionContext();
   const { navigate } = useContext(PaneContext);
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {

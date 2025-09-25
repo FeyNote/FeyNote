@@ -5,7 +5,7 @@ import 'flexlayout-react/style/light.css';
 import { GlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
-import { PreferencesContext } from './context/preferences/PreferencesContext';
+import { usePreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
@@ -218,7 +218,7 @@ const MainGrid = styled.div<{
 export const Workspace: React.FC = () => {
   const { _model, _onActionListener, _onModelChangeListener } =
     useContext(GlobalPaneContext);
-  const { getPreference } = useContext(PreferencesContext);
+  const { getPreference } = usePreferencesContext();
 
   const [leftMenuOpen, setLeftMenuOpen] = useState(
     getPreference(PreferenceNames.LeftPaneStartOpen),

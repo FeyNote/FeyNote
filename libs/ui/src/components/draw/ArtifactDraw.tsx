@@ -1,12 +1,12 @@
 import { Doc as YDoc } from 'yjs';
-import { memo, useContext, useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import type { FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { useSessionContext } from '../../context/session/SessionContext';
 import {
   ArrowDownToolbarItem,
@@ -141,7 +141,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
   const sessionContext = useSessionContext(true);
-  const { getPreference } = useContext(PreferencesContext);
+  const { getPreference } = usePreferencesContext();
   const { t } = useTranslation();
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);

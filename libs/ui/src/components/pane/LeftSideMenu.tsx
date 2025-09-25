@@ -34,7 +34,7 @@ import {
   list,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
@@ -68,7 +68,7 @@ export const LeftSideMenu: React.FC = () => {
   const { setSession } = useSessionContext();
   const { t } = useTranslation();
 
-  const { getPreference } = useContext(PreferencesContext);
+  const { getPreference } = usePreferencesContext();
   const { navigate, getPaneById } = useContext(GlobalPaneContext);
   const { trigger: triggerGlobalSearch } = useContext(GlobalSearchContext);
   const currentPane = getPaneById(undefined);

@@ -4,9 +4,9 @@ import { Doc as YDoc } from 'yjs';
 
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useTranslation } from 'react-i18next';
-import { useContext, useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { getTiptapExtensions } from './tiptap/getTiptapExtensions';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 
@@ -38,7 +38,7 @@ type UseArtifactEditorArgs = {
 export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const sessionContext = useSessionContext(true);
-  const { getPreference } = useContext(PreferencesContext);
+  const { getPreference } = usePreferencesContext();
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 

@@ -1,6 +1,5 @@
 import {
   forwardRef,
-  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -34,7 +33,7 @@ import * as Sentry from '@sentry/react';
 import { useSessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
-import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
+import { usePreferencesContext } from '../../../../../context/preferences/PreferencesContext';
 import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
@@ -130,7 +129,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       artifactDate?: string | undefined;
     }
   >(undefined);
-  const { getPreference, setPreference } = useContext(PreferencesContext);
+  const { getPreference, setPreference } = usePreferencesContext();
   const [presentAlert] = useIonAlert();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const sessionContext = useSessionContext(true);

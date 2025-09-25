@@ -6,17 +6,11 @@ export interface SessionContextData {
   setSession: (session: SessionDTO | null) => Promise<void>;
 }
 
-export const SessionContext = createContext<SessionContextData | undefined>(
-  undefined,
-);
+export const SessionContext = createContext<SessionContextData | null>(null);
 
 export function useSessionContext(): SessionContextData;
-export function useSessionContext(
-  optional: true,
-): SessionContextData | undefined;
-export function useSessionContext(
-  optional?: true,
-): SessionContextData | undefined {
+export function useSessionContext(optional: true): SessionContextData | null;
+export function useSessionContext(optional?: true): SessionContextData | null {
   const context = useContext(SessionContext);
 
   if (!context && !optional) {
