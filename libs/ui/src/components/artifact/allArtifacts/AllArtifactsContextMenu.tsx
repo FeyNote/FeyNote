@@ -19,9 +19,7 @@ interface Props {
   navigate: PaneContextData['navigate'];
 }
 
-export const AllArtifactsContextMenu: React.FC<Props> = (
-  props,
-) => {
+export const AllArtifactsContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigate } = props;
 
@@ -89,4 +87,3 @@ export const AllArtifactsContextMenu: React.FC<Props> = (
     </ContextMenuContainer>
   );
 };
-

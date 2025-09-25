@@ -13,12 +13,16 @@ export const SessionContext = createContext<SessionContextData>({
 
 // TODO: Remove the default psuedo-value above and replace all useContext(SessionContext) with this.
 export function useSessionContext(): SessionContextData;
-export function useSessionContext(optional: true): SessionContextData | undefined;
+export function useSessionContext(
+  optional: true,
+): SessionContextData | undefined;
 export function useSessionContext(optional?: true): SessionContextData {
   const context = useContext(SessionContext);
 
   if ((!context || !context.session) && !optional) {
-    throw new Error("Session used in component where session was not available!");
+    throw new Error(
+      'Session used in component where session was not available!',
+    );
   }
 
   return context;

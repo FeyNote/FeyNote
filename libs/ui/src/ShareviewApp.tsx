@@ -11,8 +11,8 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
 
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
+import { Theme } from '@radix-ui/themes';
+import '@radix-ui/themes/styles.css';
 
 import './css/global.css';
 import { initI18Next } from './i18n/initI18Next';

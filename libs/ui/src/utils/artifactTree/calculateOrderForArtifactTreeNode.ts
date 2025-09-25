@@ -47,44 +47,50 @@ interface Args {
   treeYKV: YKeyValue<{
     parentNodeId: string | null;
     order: string;
-  }>,
-  parentNodeId: string | null,
-  location: {
-    position: "between",
-    afterNodeId: string,
-    beforeNodeId: string,
-  } | {
-    position: "beginning",
-  } | {
-    position: "end",
-  }
+  }>;
+  parentNodeId: string | null;
+  location:
+    | {
+        position: 'between';
+        afterNodeId: string;
+        beforeNodeId: string;
+      }
+    | {
+        position: 'beginning';
+      }
+    | {
+        position: 'end';
+      };
 }
 
 export const calculateOrderForArtifactTreeNode = (args: Args): string => {
-  const siblings = args.treeYKV.yarray.toArray()
+  const siblings = args.treeYKV.yarray
+    .toArray()
     .filter((el) => {
-      if (args.parentNodeId === null || args.parentNodeId === "root") {
+      if (args.parentNodeId === null || args.parentNodeId === 'root') {
         // Something is at root if it has no parent node id OR it's parent isn't in the tree
-        return el.val.parentNodeId === null || !args.treeYKV.has(el.val.parentNodeId);
+        return (
+          el.val.parentNodeId === null || !args.treeYKV.has(el.val.parentNodeId)
+        );
       } else {
-        return el.val.parentNodeId === args.parentNodeId
+        return el.val.parentNodeId === args.parentNodeId;
       }
     })
     .sort((a, b) => a.val.order.localeCompare(b.val.order));
 
   const location = args.location;
-  if (location.position === "between") {
+  if (location.position === 'between') {
     const afterNode = siblings.find((el) => el.key === location.afterNodeId);
     const beforeNode = siblings.find((el) => el.key === location.beforeNodeId);
 
     return calculateOrderBetween(afterNode?.val.order, beforeNode?.val.order);
   }
 
-  if (location.position === "beginning") {
+  if (location.position === 'beginning') {
     return calculateOrderBetween('A', siblings.at(0)?.val.order || 'Z');
   }
 
-  if (location.position === "end") {
+  if (location.position === 'end') {
     return calculateOrderBetween(siblings.at(-1)?.val.order || 'A', 'Z');
   }
 

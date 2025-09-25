@@ -1,8 +1,8 @@
-import { Button, Dialog, Flex } from "@radix-ui/themes";
-import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Checkbox } from "./Checkbox";
-import styled from "styled-components";
+import { Button, Dialog, Flex } from '@radix-ui/themes';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Checkbox } from './Checkbox';
+import styled from 'styled-components';
 
 const StyledDialogTitle = styled(Dialog.Title)`
   margin-top: 0;
@@ -15,20 +15,22 @@ const StyledClickableFlexItem = styled(Flex)`
 
 interface Props {
   onChange: (value: Array<string>) => void;
-  title: string,
-  subtitle?: string,
-  selectedValues: ReadonlyArray<string>,
-  allowMultiple: boolean,
+  title: string;
+  subtitle?: string;
+  selectedValues: ReadonlyArray<string>;
+  allowMultiple: boolean;
   options: {
-    value: string,
-    title: string,
-  }[],
-  children: React.ReactNode
+    value: string;
+    title: string;
+  }[];
+  children: React.ReactNode;
 }
 
 export const SelectDialog = (props: Props) => {
   const { t } = useTranslation();
-  const [selectedValues, setSelectedValues] = useState(() => new Set(props.selectedValues));
+  const [selectedValues, setSelectedValues] = useState(
+    () => new Set(props.selectedValues),
+  );
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -37,9 +39,7 @@ export const SelectDialog = (props: Props) => {
 
   return (
     <Dialog.Root open={open} onOpenChange={(newOpen) => setOpen(newOpen)}>
-      <Dialog.Trigger>
-        {props.children}
-      </Dialog.Trigger>
+      <Dialog.Trigger>{props.children}</Dialog.Trigger>
 
       <Dialog.Content maxWidth="300px">
         <StyledDialogTitle>{props.title}</StyledDialogTitle>
@@ -50,19 +50,24 @@ export const SelectDialog = (props: Props) => {
         )}
 
         {props.options.map((el) => (
-          <StyledClickableFlexItem gap="2" align="center" key={el.value} onClick={() => {
-            if (props.allowMultiple) {
-              const editableSet = new Set(selectedValues);
-              if (selectedValues.has(el.value)) {
-                editableSet.delete(el.value);
+          <StyledClickableFlexItem
+            gap="2"
+            align="center"
+            key={el.value}
+            onClick={() => {
+              if (props.allowMultiple) {
+                const editableSet = new Set(selectedValues);
+                if (selectedValues.has(el.value)) {
+                  editableSet.delete(el.value);
+                } else {
+                  editableSet.add(el.value);
+                }
+                setSelectedValues(editableSet);
               } else {
-                editableSet.add(el.value);
+                setSelectedValues(new Set([el.value]));
               }
-              setSelectedValues(editableSet);
-            } else {
-              setSelectedValues(new Set([el.value]));
-            }
-          }}>
+            }}
+          >
             <Checkbox checked={selectedValues.has(el.value)} size="medium" />
             {el.title}
           </StyledClickableFlexItem>
@@ -79,9 +84,7 @@ export const SelectDialog = (props: Props) => {
             </Button>
           </Dialog.Close>
           <Dialog.Close>
-            <Button
-              onClick={() => props.onChange([...selectedValues])}
-            >
+            <Button onClick={() => props.onChange([...selectedValues])}>
               {t('generic.okay')}
             </Button>
           </Dialog.Close>
@@ -89,5 +92,4 @@ export const SelectDialog = (props: Props) => {
       </Dialog.Content>
     </Dialog.Root>
   );
-}
-
+};

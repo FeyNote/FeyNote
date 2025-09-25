@@ -47,9 +47,9 @@ const ShowMoreButtonText = styled.span`
 `;
 
 /**
-  * The globally unique tree id for react complex tree
-  */
-const TREE_ID = "leftSideMenuArtifactTree";
+ * The globally unique tree id for react complex tree
+ */
+const TREE_ID = 'leftSideMenuArtifactTree';
 
 /**
  * The default number of recent artifacts to show

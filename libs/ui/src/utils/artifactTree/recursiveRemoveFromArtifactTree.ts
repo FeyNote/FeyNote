@@ -1,17 +1,19 @@
-import { YKeyValue } from "y-utility/y-keyvalue";
+import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc } from 'yjs';
-import { getArtifactTreeFromYDoc } from "./getArtifactTreeFromYDoc";
+import { getArtifactTreeFromYDoc } from './getArtifactTreeFromYDoc';
 
 /**
-  * This helper checks if you can add a node at a given parent such as
-  * to avoid a circular loop in the tree hierarchy.
-*/
+ * This helper checks if you can add a node at a given parent such as
+ * to avoid a circular loop in the tree hierarchy.
+ */
 export function recursiveRemoveFromArtifactTree(args: {
-  ref: YKeyValue<{
-    parentNodeId: string | null;
-    order: string;
-  }> | YDoc,
-  nodeIds: ReadonlySet<string>
+  ref:
+    | YKeyValue<{
+        parentNodeId: string | null;
+        order: string;
+      }>
+    | YDoc;
+  nodeIds: ReadonlySet<string>;
 }) {
   const treeYKV = (() => {
     if (args.ref instanceof YKeyValue) {
@@ -43,10 +45,9 @@ export function recursiveRemoveFromArtifactTree(args: {
         if (el) recursiveDeleteNode(nodeId);
       }
     }
-  }
+  };
 
   for (const nodeId of args.nodeIds) {
     recursiveDeleteNode(nodeId);
   }
 }
-

@@ -1,29 +1,30 @@
-import { IonButton, IonIcon, IonLabel } from "@ionic/react";
-import { filter } from "ionicons/icons";
-import { useTranslation } from "react-i18next";
-import { SelectDialog } from "../../sharedComponents/SelectDialog";
+import { IonButton, IonIcon, IonLabel } from '@ionic/react';
+import { filter } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
+import { SelectDialog } from '../../sharedComponents/SelectDialog';
 
 export enum AllArtifactsSortOrder {
-  AlphabeticalAsc = "alphabeticalAsc",
-  AlphabeticalDesc = "alphabeticalDesc",
-  CreatedAtAsc = "createdAtAsc",
-  CreatedAtDesc = "createdAtDesc",
-  UpdatedAtAsc = "updatedAtAsc",
-  UpdatedAtDesc = "updatedAtDesc",
+  AlphabeticalAsc = 'alphabeticalAsc',
+  AlphabeticalDesc = 'alphabeticalDesc',
+  CreatedAtAsc = 'createdAtAsc',
+  CreatedAtDesc = 'createdAtDesc',
+  UpdatedAtAsc = 'updatedAtAsc',
+  UpdatedAtDesc = 'updatedAtDesc',
 }
 
 const orderToI18n: Record<AllArtifactsSortOrder, string> = {
-  [AllArtifactsSortOrder.AlphabeticalAsc]: "allArtifacts.sort.alphabeticalAsc",
-  [AllArtifactsSortOrder.AlphabeticalDesc]: "allArtifacts.sort.alphabeticalDesc",
-  [AllArtifactsSortOrder.CreatedAtAsc]: "allArtifacts.sort.createdAtAsc",
-  [AllArtifactsSortOrder.CreatedAtDesc]: "allArtifacts.sort.createdAtDesc",
-  [AllArtifactsSortOrder.UpdatedAtAsc]: "allArtifacts.sort.updatedAtAsc",
-  [AllArtifactsSortOrder.UpdatedAtDesc]: "allArtifacts.sort.updatedAtDesc"
-}
+  [AllArtifactsSortOrder.AlphabeticalAsc]: 'allArtifacts.sort.alphabeticalAsc',
+  [AllArtifactsSortOrder.AlphabeticalDesc]:
+    'allArtifacts.sort.alphabeticalDesc',
+  [AllArtifactsSortOrder.CreatedAtAsc]: 'allArtifacts.sort.createdAtAsc',
+  [AllArtifactsSortOrder.CreatedAtDesc]: 'allArtifacts.sort.createdAtDesc',
+  [AllArtifactsSortOrder.UpdatedAtAsc]: 'allArtifacts.sort.updatedAtAsc',
+  [AllArtifactsSortOrder.UpdatedAtDesc]: 'allArtifacts.sort.updatedAtDesc',
+};
 
 interface Props {
-  currentSortOrder: AllArtifactsSortOrder,
-  onSortOrderChange: (newOrder: AllArtifactsSortOrder) => void
+  currentSortOrder: AllArtifactsSortOrder;
+  onSortOrderChange: (newOrder: AllArtifactsSortOrder) => void;
 }
 
 export const AllArtifactsSort: React.FC<Props> = (props) => {
@@ -44,16 +45,10 @@ export const AllArtifactsSort: React.FC<Props> = (props) => {
         title: t(el[1]),
       }))}
     >
-      <IonButton
-        className="ion-text-nowrap"
-        fill="clear"
-        size="small"
-      >
+      <IonButton className="ion-text-nowrap" fill="clear" size="small">
         <IonIcon icon={filter} slot="start" />
-        <IonLabel>
-          {t(orderToI18n[props.currentSortOrder])}
-        </IonLabel>
+        <IonLabel>{t(orderToI18n[props.currentSortOrder])}</IonLabel>
       </IonButton>
     </SelectDialog>
   );
-}
+};

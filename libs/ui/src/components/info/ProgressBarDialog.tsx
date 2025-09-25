@@ -13,20 +13,12 @@ export const ProgressBarDialog: FC<Props> = (props) => {
   return (
     <Dialog.Root open={true}>
       <Dialog.Content maxWidth="350px">
-        {props.title && (
-          <Dialog.Title>
-            {props.title}
-          </Dialog.Title>
-        )}
+        {props.title && <Dialog.Title>{props.title}</Dialog.Title>}
         {props.message && (
-          <Dialog.Description>
-            {props.message}
-          </Dialog.Description>
+          <Dialog.Description>{props.message}</Dialog.Description>
         )}
         <ProgressBar progress={props.progress} barStyle="thick" />
-        <Flex justify="end">
-          {props.actions}
-        </Flex>
+        <Flex justify="end">{props.actions}</Flex>
       </Dialog.Content>
     </Dialog.Root>
   );

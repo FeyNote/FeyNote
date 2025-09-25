@@ -3,10 +3,12 @@ import { getArtifactTreeFromYDoc } from './getArtifactTreeFromYDoc';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 
 interface Args {
-  ref: YKeyValue<{
-    parentNodeId: string | null;
-    order: string;
-  }> | YDoc,
+  ref:
+    | YKeyValue<{
+        parentNodeId: string | null;
+        order: string;
+      }>
+    | YDoc;
   parentArtifactId: string | null;
   /** Lexographical sorting. It is recommended to add things around "X", or "Y". This is important! */
   order: string;

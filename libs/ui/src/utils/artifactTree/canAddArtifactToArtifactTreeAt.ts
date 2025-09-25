@@ -1,18 +1,20 @@
-import { YKeyValue } from "y-utility/y-keyvalue";
+import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc } from 'yjs';
-import { getArtifactTreeFromYDoc } from "./getArtifactTreeFromYDoc";
+import { getArtifactTreeFromYDoc } from './getArtifactTreeFromYDoc';
 
 /**
-  * This helper checks if you can add a node at a given parent such as
-  * to avoid a circular loop in the tree hierarchy.
-*/
+ * This helper checks if you can add a node at a given parent such as
+ * to avoid a circular loop in the tree hierarchy.
+ */
 export function canAddArtifactToArtifactTreeAt(args: {
-  ref: YKeyValue<{
-    parentNodeId: string | null;
-    order: string;
-  }> | YDoc,
-  id: string,
-  parentNodeId: string | null,
+  ref:
+    | YKeyValue<{
+        parentNodeId: string | null;
+        order: string;
+      }>
+    | YDoc;
+  id: string;
+  parentNodeId: string | null;
 }) {
   const treeYKV = (() => {
     if (args.ref instanceof YKeyValue) {
@@ -28,14 +30,14 @@ export function canAddArtifactToArtifactTreeAt(args: {
   if (!desiredParentNode) return false;
 
   /**
-    * Crawls upwards in the tree looking to see if the target node
-    * is a descendant of the node we're adding.
-    * This will return true if the node provided is a parent of the node we're
-    * trying to add, and false if this node is not a descendant (which means we're free to add
-    * as a child of it
+   * Crawls upwards in the tree looking to see if the target node
+   * is a descendant of the node we're adding.
+   * This will return true if the node provided is a parent of the node we're
+   * trying to add, and false if this node is not a descendant (which means we're free to add
+   * as a child of it
    */
   const isIdentityParent = (node: {
-    id: string,
+    id: string;
     parentNodeId: string | null;
     order: string;
   }) => {
@@ -55,16 +57,15 @@ export function canAddArtifactToArtifactTreeAt(args: {
     if (parentNode) {
       return isIdentityParent({
         id: node.parentNodeId,
-        ...parentNode
+        ...parentNode,
       });
     }
 
     return false;
-  }
+  };
 
   return !isIdentityParent({
     id: args.parentNodeId,
     ...desiredParentNode,
   });
 }
-

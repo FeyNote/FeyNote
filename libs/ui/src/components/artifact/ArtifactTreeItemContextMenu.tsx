@@ -1,7 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import {
-  useArtifactDeleteOrRemoveSelf,
-} from './useArtifactDeleteOrRemoveSelf';
+import { useArtifactDeleteOrRemoveSelf } from './useArtifactDeleteOrRemoveSelf';
 import {
   GlobalPaneContext,
   PaneTransition,

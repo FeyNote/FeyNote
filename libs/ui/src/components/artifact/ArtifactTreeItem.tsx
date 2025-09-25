@@ -124,7 +124,7 @@ interface ArtifactTreeItemProps {
   setExpandedItemsRef: React.MutableRefObject<
     (expandedItems: string[]) => void
   >;
-  enableContextMenu: boolean
+  enableContextMenu: boolean;
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
@@ -189,7 +189,8 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
 
     if (!props.enableContextMenu) return;
 
-    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID) return;
+    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID)
+      return;
 
     presentContextMenuPopover({
       event: e.nativeEvent,

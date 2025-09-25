@@ -1,10 +1,10 @@
-import { Checkbox as RadixCheckbox } from "radix-ui";
-import type { MouseEventHandler } from "react";
-import { FaCheck, FaMinus } from "react-icons/fa";
-import styled from "styled-components";
+import { Checkbox as RadixCheckbox } from 'radix-ui';
+import type { MouseEventHandler } from 'react';
+import { FaCheck, FaMinus } from 'react-icons/fa';
+import styled from 'styled-components';
 
 const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
-  $size: number,
+  $size: number;
 }>`
   transition: background-color 100ms;
   background-color: var(--ion-background-color);
@@ -13,11 +13,11 @@ const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
     min-width: ${props.$size}px;
     height: ${props.$size}px;
   `}
-	border-radius: 4px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	box-shadow: 1px 1px 10px rgba(0,0,0,0.4);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.4);
   outline: 1px solid var(--ion-background-color-step-400);
 
   &:hover {
@@ -36,19 +36,19 @@ const StyledCheckboxIndicator = styled(RadixCheckbox.Indicator)`
 `;
 
 interface Props {
-  size: "large" | "medium" | "small"
-  checked: boolean | "indeterminate",
-  onClick?: MouseEventHandler<HTMLButtonElement>,
+  size: 'large' | 'medium' | 'small';
+  checked: boolean | 'indeterminate';
+  onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
 export const Checkbox: React.FC<Props> = (props) => {
   const size: number = (() => {
-    switch(props.size) {
-      case "large":
+    switch (props.size) {
+      case 'large':
         return 24;
-      case "medium":
+      case 'medium':
         return 20;
-      case "small":
+      case 'small':
         return 16;
     }
   })();
@@ -60,10 +60,9 @@ export const Checkbox: React.FC<Props> = (props) => {
       onClick={props.onClick}
     >
       <StyledCheckboxIndicator>
-        {props.checked === "indeterminate" && <FaMinus />}
+        {props.checked === 'indeterminate' && <FaMinus />}
         {props.checked === true && <FaCheck />}
       </StyledCheckboxIndicator>
     </StyledCheckboxRoot>
   );
-}
-
+};

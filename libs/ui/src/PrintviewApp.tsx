@@ -11,8 +11,8 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
 
-import { Theme } from "@radix-ui/themes";
-import "@radix-ui/themes/styles.css";
+import { Theme } from '@radix-ui/themes';
+import '@radix-ui/themes/styles.css';
 
 import './css/global.css';
 import './css/printView.css';
@@ -115,7 +115,10 @@ export const PrintviewApp: React.FC<Props> = (props) => {
           <PreferencesContextProviderWrapper>
             <GlobalPaneContext.Provider value={globalPaneContextValue}>
               <PaneContext.Provider value={paneContextValue}>
-                <ReadonlyArtifactViewer artifactId={props.id} onReady={onReady} />
+                <ReadonlyArtifactViewer
+                  artifactId={props.id}
+                  onReady={onReady}
+                />
               </PaneContext.Provider>
             </GlobalPaneContext.Provider>
           </PreferencesContextProviderWrapper>

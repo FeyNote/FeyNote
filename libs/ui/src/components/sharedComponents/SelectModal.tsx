@@ -29,19 +29,21 @@ const PaddedLabelContainer = styled.div`
 
 interface Props<T> {
   dismiss: (value: Array<T>) => void;
-  title: string,
-  subtitle?: string,
-  selectedValues: ReadonlyArray<T>,
-  allowMultiple: boolean,
+  title: string;
+  subtitle?: string;
+  selectedValues: ReadonlyArray<T>;
+  allowMultiple: boolean;
   options: {
-    value: T,
-    title: string,
-  }[],
+    value: T;
+    title: string;
+  }[];
 }
 
-export const SelectModal = <T extends string,>(props: Props<T>) => {
+export const SelectModal = <T extends string>(props: Props<T>) => {
   const { t } = useTranslation();
-  const [selectedValues, setSelectedValues] = useState(() => new Set(props.selectedValues));
+  const [selectedValues, setSelectedValues] = useState(
+    () => new Set(props.selectedValues),
+  );
 
   return (
     <>
@@ -63,9 +65,7 @@ export const SelectModal = <T extends string,>(props: Props<T>) => {
             </PaddedLabelContainer>
           )}
           {props.options.map((el) => (
-            <IonItem
-              key={el.value}
-            >
+            <IonItem key={el.value}>
               <IonCheckbox
                 labelPlacement="start"
                 checked={selectedValues.has(el.value)}
@@ -89,7 +89,7 @@ export const SelectModal = <T extends string,>(props: Props<T>) => {
           ))}
         </Container>
       </IonContent>
-      <IonFooter style={{ textAlign: "right" }}>
+      <IonFooter style={{ textAlign: 'right' }}>
         <IonButton
           fill="clear"
           onClick={() => props.dismiss([...props.selectedValues])}
@@ -105,5 +105,4 @@ export const SelectModal = <T extends string,>(props: Props<T>) => {
       </IonFooter>
     </>
   );
-}
-
+};

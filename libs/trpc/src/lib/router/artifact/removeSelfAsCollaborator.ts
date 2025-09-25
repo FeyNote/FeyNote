@@ -25,21 +25,23 @@ export const removeSelfAsCollaborator = authenticatedProcedure
       });
     }
 
-    await hocuspocusTrpcClient.doc.removeUserAccessToDoc.mutate({
-      userId: ctx.session.userId,
-      documentName: `artifact:${input.artifactId}`,
-    }).catch((e) => {
-      if (e instanceof TRPCClientError) {
-        if (e.data?.httpStatus === 400) {
-          throw new TRPCError({
-            message: e.message,
-            code: 'BAD_REQUEST',
-          });
+    await hocuspocusTrpcClient.doc.removeUserAccessToDoc
+      .mutate({
+        userId: ctx.session.userId,
+        documentName: `artifact:${input.artifactId}`,
+      })
+      .catch((e) => {
+        if (e instanceof TRPCClientError) {
+          if (e.data?.httpStatus === 400) {
+            throw new TRPCError({
+              message: e.message,
+              code: 'BAD_REQUEST',
+            });
+          }
         }
-      }
 
-      throw e;
-    });
+        throw e;
+      });
 
     return 'Ok';
   });
