@@ -1,8 +1,7 @@
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
-import { useContext } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { TiptapEditor } from './TiptapEditor';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
@@ -14,7 +13,7 @@ interface Props {
 }
 
 export const TiptapPreview: React.FC<Props> = (props) => {
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
 
   const artifactMeta = getMetaFromYArtifact(props.yDoc);
 
@@ -27,7 +26,7 @@ export const TiptapPreview: React.FC<Props> = (props) => {
         yDoc={props.yDoc}
         theme={artifactMeta.theme}
         getFileUrl={async (fileId) => {
-          return getFileUrlById(fileId, session);
+          return getFileUrlById(fileId, sessionContext?.session);
         }}
       />
     </ArtifactEditorContainer>

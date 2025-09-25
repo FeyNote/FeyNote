@@ -1,12 +1,12 @@
 import styled from 'styled-components';
-import { useContext, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { TiptapPreview } from '../../../TiptapPreview';
 import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
 import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
-import { SessionContext } from '../../../../../context/session/SessionContext';
+import { useSessionContext } from '../../../../../context/session/SessionContext';
 import { getFileUrlById } from '../../../../../utils/files/getFileUrlById';
 import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
@@ -45,7 +45,7 @@ interface Props {
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const [ready, setReady] = useState(false);
 
   const yDoc = useMemo(() => {
@@ -102,7 +102,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
           yDoc={yDoc}
           editable={false}
           getFileUrl={(fileId) => {
-            return getFileUrlById(fileId, session);
+            return getFileUrlById(fileId, sessionContext?.session);
           }}
           onReady={() => setReady(true)}
         />

@@ -23,7 +23,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
 import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
-import { SessionContext } from '../../../context/session/SessionContext';
+import { useSessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../../CompactIonItem';
@@ -77,7 +77,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       dismiss: () => dismissSharingModal(),
     } satisfies ComponentProps<typeof ArtifactSharingManagementModal>,
   );
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
   const { userAccessYKV, _rerenderReducerValue } =
     useObserveYArtifactUserAccess(props.connection.yjsDoc);

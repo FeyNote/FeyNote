@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 import { open, search } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { SessionContext } from '../session/SessionContext';
+import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
@@ -139,7 +139,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   >([]);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
   const inputRef = useRef<HTMLIonInputElement>(null);
@@ -344,7 +344,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     <>
       <Backdrop visible={true} onIonBackdropTap={hide} stopPropagation={true} />
       <SearchContainer>
-        {session ? (
+        {sessionContext?.session ? (
           <>
             <TitleContainer>
               <Title>{t('globalSearch.title')}</Title>

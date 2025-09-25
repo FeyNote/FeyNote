@@ -7,7 +7,7 @@ import {
   IonListHeader,
 } from '@ionic/react';
 import { useContext, useEffect, useRef, useState } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
@@ -65,7 +65,7 @@ const RECENT_THREADS_LIMIT_INC = 10;
 const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
 export const LeftSideMenu: React.FC = () => {
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
   const { t } = useTranslation();
 
   const { getPreference } = useContext(PreferencesContext);

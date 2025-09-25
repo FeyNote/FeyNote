@@ -31,7 +31,7 @@ import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { createArtifact } from '../../../../../utils/createArtifact';
 import * as Sentry from '@sentry/react';
-import { SessionContext } from '../../../../../context/session/SessionContext';
+import { useSessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
 import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
@@ -133,7 +133,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   const { getPreference, setPreference } = useContext(PreferencesContext);
   const [presentAlert] = useIonAlert();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
 
   const showCreateButton =
     props.items.length !== 0 && !!props.query.trim().length;
@@ -670,7 +670,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   }
 
   const referenceItemSubtitleI18n = (item: ReferenceItem) => {
-    const x = item.artifact.userId === session?.userId ? 'personal' : 'shared';
+    const x =
+      item.artifact.userId === sessionContext?.session.userId
+        ? 'personal'
+        : 'shared';
     const i18nVals = {
       block: {
         personal: 'editor.referenceMenu.artifactBlock',

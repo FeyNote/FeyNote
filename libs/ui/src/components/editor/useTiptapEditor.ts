@@ -5,7 +5,7 @@ import { Doc as YDoc } from 'yjs';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useTranslation } from 'react-i18next';
 import { useContext, useEffect, useMemo } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
 import { getTiptapExtensions } from './tiptap/getTiptapExtensions';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
@@ -37,14 +37,16 @@ type UseArtifactEditorArgs = {
 
 export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { getPreference } = useContext(PreferencesContext);
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 
   const collaborationUser = useMemo(
     () => ({
-      name: session ? session.email : t('generic.anonymous'),
+      name: sessionContext?.session
+        ? sessionContext.session.email
+        : t('generic.anonymous'),
       color: preferredUserColor,
     }),
     [],
@@ -93,10 +95,12 @@ export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
     // "updateUser" command is dependent on yjs provider being instantiated
     if (!args.yjsProvider) return;
     editor?.commands.updateUser({
-      name: session ? session.email : t('generic.anonymous'),
+      name: sessionContext?.session
+        ? sessionContext.session.email
+        : t('generic.anonymous'),
       color: preferredUserColor,
     });
-  }, [session?.email, preferredUserColor]);
+  }, [sessionContext?.session.email, preferredUserColor]);
 
   return editor;
 };

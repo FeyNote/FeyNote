@@ -25,7 +25,7 @@ import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
 import { type Edge } from '@feynote/shared-utils';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
@@ -63,7 +63,7 @@ export const Dashboard: React.FC = () => {
   const { navigate } = useContext(PaneContext);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
   const recentArtifacts = useMemo(() => {

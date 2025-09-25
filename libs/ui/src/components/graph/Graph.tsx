@@ -7,7 +7,7 @@ import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
 import { Edge, PreferenceNames } from '@feynote/shared-utils';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { PaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
@@ -29,7 +29,7 @@ export const Graph: React.FC = () => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { isPaneFocused } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { t } = useTranslation();
   const { artifactSnapshotsLoading, artifactSnapshots } =
     useArtifactSnapshots();

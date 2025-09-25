@@ -7,7 +7,7 @@ import {
   IonItem,
   IonPage,
 } from '@ionic/react';
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -20,13 +20,13 @@ import {
 import { validateEmail, validatePassword } from '@feynote/shared-utils';
 import { getIonInputClassNames } from './input';
 import { trpc } from '../../utils/trpc';
-import { SessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
 import { setWelcomeModalPending } from '../../utils/welcomeModalState';
+import { useSessionContext } from '../../context/session/SessionContext';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -48,7 +48,7 @@ export const Register: React.FC<Props> = (props) => {
   const [passwordIsValid, setPasswordIsValid] = useState(false);
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const submitRegister = () => {

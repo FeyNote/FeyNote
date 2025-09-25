@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
-import { useContext } from 'react';
 import { SelectDialog } from '../../sharedComponents/SelectDialog';
 import type { ArtifactType } from '@prisma/client';
-import { SessionContext } from '../../../context/session/SessionContext';
+import { useSessionContext } from '../../../context/session/SessionContext';
 import { Button } from '@radix-ui/themes';
 import { CiUser } from 'react-icons/ci';
 import { IoDocument } from 'react-icons/io5';
@@ -48,7 +47,7 @@ interface Props {
 }
 
 export const AllArtifactsFilters: React.FC<Props> = (props) => {
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { t } = useTranslation();
 
   const byUserOptions = [

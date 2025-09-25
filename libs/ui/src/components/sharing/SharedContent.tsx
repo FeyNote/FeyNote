@@ -16,7 +16,7 @@ import { PaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 
@@ -38,7 +38,7 @@ const StyledNullState = styled(NullState)`
 export const SharedContent: React.FC = () => {
   const { t } = useTranslation();
   const { navigate } = useContext(PaneContext);
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getKnownUserById } = useKnownUsers();
   const incomingSharedArtifacts = useMemo(

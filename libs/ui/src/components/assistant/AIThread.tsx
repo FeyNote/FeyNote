@@ -20,7 +20,7 @@ import {
 } from 'ionicons/icons';
 import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
@@ -131,7 +131,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
@@ -141,7 +141,9 @@ export const AIThread: React.FC<Props> = (props) => {
       transport: new DefaultChatTransport({
         api: `${getApiUrls().rest}/message/`,
         headers: {
-          Authorization: session?.token ? `Bearer ${session.token}` : '',
+          Authorization: sessionContext?.session.token
+            ? `Bearer ${sessionContext.session.token}`
+            : '',
           'Content-Type': 'application/json',
         },
         body: {

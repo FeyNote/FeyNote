@@ -7,7 +7,7 @@ import { IonItem } from '@ionic/react';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
 import { PreferencesContext } from '../../context/preferences/PreferencesContext';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import {
   ArrowDownToolbarItem,
   ArrowLeftToolbarItem,
@@ -140,7 +140,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { getPreference } = useContext(PreferencesContext);
   const { t } = useTranslation();
 
@@ -151,12 +151,18 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       props.collaborationConnection.tiptapCollabProvider.awareness?.setLocalStateField(
         'user',
         {
-          name: session ? session.email : t('generic.anonymous'),
+          name: sessionContext
+            ? sessionContext.session.email
+            : t('generic.anonymous'),
           color: preferredUserColor,
         },
       );
     }
-  }, [props.collaborationConnection, session, preferredUserColor]);
+  }, [
+    props.collaborationConnection,
+    sessionContext?.session,
+    preferredUserColor,
+  ]);
 
   const store = useYjsTLDrawStore({
     handleFileUpload: props.handleFileUpload,

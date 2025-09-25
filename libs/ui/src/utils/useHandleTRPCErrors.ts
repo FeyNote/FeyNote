@@ -2,8 +2,7 @@ import { useIonAlert } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
 import { useTranslation } from 'react-i18next';
-import { useContext } from 'react';
-import { SessionContext } from '../context/session/SessionContext';
+import { useSessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
 import * as Sentry from '@sentry/react';
 import { isAxiosError } from 'axios';
@@ -19,7 +18,7 @@ const openAlertTracker = {
 export const useHandleTRPCErrors = () => {
   const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
-  const { setSession } = useContext(SessionContext);
+  const setSession = useSessionContext(true)?.setSession;
   const { setAndPersistSession: _setAndPersistSession } =
     useSetAndPersistSession();
 

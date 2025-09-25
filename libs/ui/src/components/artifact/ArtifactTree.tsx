@@ -22,7 +22,7 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 import * as Sentry from '@sentry/react';
 
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import {
   GlobalPaneContext,
   PaneTransition,
@@ -111,7 +111,7 @@ interface Props {
 
 export const ArtifactTree: React.FC<Props> = (props) => {
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { getPreference } = useContext(PreferencesContext);
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
