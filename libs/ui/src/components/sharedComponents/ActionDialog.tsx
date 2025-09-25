@@ -13,10 +13,12 @@ interface Props {
   description?: React.ReactNode;
   triggerChildren?: React.ReactNode;
   children?: React.ReactNode;
-  actionButtons?: {
-    title: string;
-    props?: ButtonProps;
-  }[];
+  actionButtons?:
+    | {
+        title: string;
+        props?: ButtonProps;
+      }[]
+    | 'okay';
   size?: 'xlarge' | 'large' | 'medium';
 }
 
@@ -28,13 +30,34 @@ export const ActionDialog: React.FC<Props> = (props) => {
 
   const maxWidth = (() => {
     if (props.size === 'xlarge') {
-      return '1200px';
+      return '875px';
     }
     if (props.size === 'large') {
       return '650px';
     }
     return '375px';
   })();
+
+  const renderActionButtons = () => {
+    if (props.actionButtons === 'okay') {
+      return (
+        <Dialog.Close>
+          <Button>{t('generic.okay')}</Button>
+        </Dialog.Close>
+      );
+    }
+    if (Array.isArray(props.actionButtons)) {
+      return (
+        <Flex gap="3" mt="4" justify="end">
+          {props.actionButtons.map((el, idx) => (
+            <Dialog.Close key={idx}>
+              <Button {...el.props}>{el.title}</Button>
+            </Dialog.Close>
+          ))}
+        </Flex>
+      );
+    }
+  };
 
   return (
     <Dialog.Root open={props.open} onOpenChange={props.onOpenChange}>
@@ -50,18 +73,7 @@ export const ActionDialog: React.FC<Props> = (props) => {
           </Dialog.Description>
         )}
         {props.children}
-        <Flex gap="3" mt="4" justify="end">
-          {props.actionButtons?.map((el, idx) => (
-            <Dialog.Close key={idx}>
-              <Button {...el.props}>{el.title}</Button>
-            </Dialog.Close>
-          ))}
-          {!props.actionButtons?.length && (
-            <Dialog.Close>
-              <Button>{t('generic.okay')}</Button>
-            </Dialog.Close>
-          )}
-        </Flex>
+        {renderActionButtons()}
       </Dialog.Content>
     </Dialog.Root>
   );

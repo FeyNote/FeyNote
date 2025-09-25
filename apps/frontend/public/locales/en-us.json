@@ -354,7 +354,6 @@
   "allArtifacts.actions.moveInTree": "Move Within Your Tree",
   "allArtifacts.actions.manageSharing": "Manage Sharing",
   "allArtifacts.actions.delete": "Delete All",
-  "allArtifacts.artifactContextMenu.delete": "Delete Document",
   "allArtifacts.updatedAt": "Last updated {{date}}",
   "allArtifacts.createdAt": "Created {{date}}",
   "allArtifacts.userCount": "{{count}} users with access",
@@ -423,6 +422,7 @@
   "contextMenu.duplicateArtifact": "Duplicate Document",
   "contextMenu.printArtifact": "Print Document",
   "contextMenu.revealInArtifact": "Reveal in Document",
+  "contextMenu.deleteArtifact": "Delete Document",
 
   "deleteArtifact.title": "Remove Document?",
   "deleteArtifact.subtitle": "This will delete the document if you own it, or remove you as a collaborator if it's shared with you.",

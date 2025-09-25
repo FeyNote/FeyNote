@@ -20,7 +20,7 @@ export function useArtifactDeleteOrRemoveSelfWithConfirmation() {
   /**
    * You must render this out within your component so that it's part of the React tree!
    */
-  const confirmationDialog = (
+  const deleteArtifactOrRemoveSelfWithConfirmationUI = (
     <ActionDialog
       title={t('deleteArtifact.title')}
       description={t('deleteArtifact.subtitle')}
@@ -53,7 +53,7 @@ export function useArtifactDeleteOrRemoveSelfWithConfirmation() {
 
   return {
     deleteArtifactOrRemoveSelfWithConfirmation,
-    confirmationDialog,
+    deleteArtifactOrRemoveSelfWithConfirmationUI,
   };
 }
 

@@ -20,8 +20,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../../utils/localDb/edges/useEdges';
 import { CheckboxTable } from '../../sharedComponents/CheckboxTable';
-import { AllArtifactsItemContextMenu } from './AllArtifactsItemContextMenu';
-import { useArtifactDeleteOrRemoveSelfWithConfirmation } from '../useArtifactDeleteOrRemoveSelf';
+import { ArtifactLinkContextMenu } from '../ArtifactLinkContextMenu';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -57,15 +56,11 @@ const dateCompareWithFallback = (
 };
 
 export const AllArtifacts: React.FC = () => {
-  const { isPaneFocused, pane, navigate } = useContext(PaneContext);
+  const { isPaneFocused, pane } = useContext(PaneContext);
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { t } = useTranslation();
   const { session } = useContext(SessionContext);
   const { artifactSnapshots } = useArtifactSnapshots();
-  const {
-    deleteArtifactOrRemoveSelfWithConfirmation,
-    deleteArtifactOrRemoveSelfConfirmationDialogUI,
-  } = useArtifactDeleteOrRemoveSelfWithConfirmation();
   const { getEdgesForArtifactId } = useEdges();
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
@@ -326,20 +321,15 @@ export const AllArtifacts: React.FC = () => {
             />
           )}
           renderItemContainer={({ entry, children }) => (
-            <AllArtifactsItemContextMenu
+            <ArtifactLinkContextMenu
               artifactId={entry.value.id}
               paneId={pane.id}
-              navigate={navigate}
-              delete={() => {
-                deleteArtifactOrRemoveSelfWithConfirmation(entry.value.id);
-              }}
             >
               {children}
-            </AllArtifactsItemContextMenu>
+            </ArtifactLinkContextMenu>
           )}
         />
       </IonContent>
-      {deleteArtifactOrRemoveSelfConfirmationDialogUI}
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(<AllArtifactsRightSidemenu />, sidemenuContentRef.current)}
