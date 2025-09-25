@@ -15,21 +15,10 @@ import type { ArtifactSnapshot } from '@feynote/global-types';
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
     const manifestDb = await getManifestDb();
-    const record = await manifestDb.get(
-      ObjectStoreName.ArtifactVersions,
-      artifactId,
-    );
-    if (record) {
-      await manifestDb.put(ObjectStoreName.ArtifactVersions, {
-        id: artifactId,
-        version: new Date().getTime(),
-      });
-    } else {
-      await manifestDb.add(ObjectStoreName.ArtifactVersions, {
-        id: artifactId,
-        version: new Date().getTime(),
-      });
-    }
+    await manifestDb.put(ObjectStoreName.ArtifactVersions, {
+      id: artifactId,
+      version: new Date().getTime(),
+    });
   }
 
   /**

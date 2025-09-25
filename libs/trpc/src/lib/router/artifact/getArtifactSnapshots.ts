@@ -44,7 +44,6 @@ export const getArtifactSnapshots = authenticatedProcedure.query(
         prismaArtifactSnapshotToArtifactSnapshot(artifact),
       );
     }
-    ctx.res.header('x-no-date-encode', 'true');
 
     return [...results.values()];
   },

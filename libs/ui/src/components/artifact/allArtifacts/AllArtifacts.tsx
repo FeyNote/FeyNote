@@ -5,7 +5,6 @@ import { PaneContext } from '../../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { AllArtifactsRightSidemenu } from './AllArtifactsRightSidemenu';
-import type { ArtifactSnapshot } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
 import { AllArtifactsItem } from './AllArtifactsItem';
 import { SessionContext } from '../../../context/session/SessionContext';
@@ -16,33 +15,16 @@ import {
   AllArtifactsOrphansDisplaySetting,
   type FilterOptions,
 } from './AllArtifactsFilters';
-import { Checkbox } from '../../sharedComponents/Checkbox';
 import { AllArtifactsActions } from './AllArtifactsActions';
 import { IonContent, IonPage } from '@ionic/react';
 import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../../utils/localDb/edges/useEdges';
+import { CheckboxTable } from '../../sharedComponents/CheckboxTable';
 
-const ResultsTable = styled.div`
-  display: grid;
-`;
-
-const ResultsTableHeader = styled.div`
-  display: grid;
-  grid-template-columns: min-content auto;
-  align-items: center;
-  padding-left: 16px;
-  padding-right: 16px;
-`;
-
-const ResultsTableHeaderOptions = styled.div`
+const HeaderItemsContainer = styled.div`
   display: flex;
-  flex-wrap: wrap;
-  margin-left: 18px;
+  gap: 4px;
 `;
-
-const ResultsTableItems = styled.div``;
-
-const ResultsTableItem = styled.div``;
 
 const ResultsTableSelectionFilteredWarning = styled.div`
   padding-left: 16px;
@@ -82,8 +64,6 @@ export const AllArtifacts: React.FC = () => {
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
   >(new Set<string>());
-  // To track shift-click operations
-  const [lastClickedId, setLastClickedId] = useState<string>();
   const [order, setOrder] = useState<AllArtifactsSortOrder>(
     AllArtifactsSortOrder.AlphabeticalAsc,
   );
@@ -259,53 +239,12 @@ export const AllArtifacts: React.FC = () => {
     return verificationSet.size;
   }, [selectedArtifactIds, sortedFilteredArtifacts]);
 
-  const headerCheckboxValue = (() => {
-    if (!sortedFilteredArtifacts?.length) {
-      return false;
-    }
-    if (!selectedArtifactIds.size) {
-      return false;
-    }
-    if (selectedArtifactIds.size !== sortedFilteredArtifacts.length) {
-      return 'indeterminate';
-    }
-    return true;
-  })();
-
-  const onArtifactSelectionChange = (
-    artifact: ArtifactSnapshot,
-    selected: boolean,
-    withShift: boolean,
-  ) => {
-    if (!sortedFilteredArtifacts) return;
-
-    setLastClickedId(artifact.id);
-
-    const newSelected = new Set(selectedArtifactIds);
-    if (withShift) {
-      const idx = sortedFilteredArtifacts.indexOf(artifact);
-      let lastClickedIdx = sortedFilteredArtifacts.findIndex(
-        (el) => el.id === lastClickedId,
-      );
-      if (lastClickedIdx < 0) lastClickedIdx = 0;
-
-      let start = lastClickedIdx;
-      let end = idx;
-      if (lastClickedIdx > idx) {
-        start = idx;
-        end = lastClickedIdx;
-      }
-
-      const artifactsInRange = sortedFilteredArtifacts.slice(start, end + 1);
-
-      if (selected) artifactsInRange.forEach((el) => newSelected.add(el.id));
-      else artifactsInRange.forEach((el) => newSelected.delete(el.id));
-    } else {
-      if (selected) newSelected.add(artifact.id);
-      else newSelected.delete(artifact.id);
-    }
-    setSelectedArtifactIds(newSelected);
-  };
+  const checkboxTableEntries = useMemo(() => {
+    return sortedFilteredArtifacts.map((el) => ({
+      key: el.id,
+      value: el,
+    }));
+  }, [sortedFilteredArtifacts]);
 
   return (
     <IonPage>
@@ -314,27 +253,13 @@ export const AllArtifacts: React.FC = () => {
         className="ion-padding-start ion-padding-end"
         style={{ position: 'relative' }}
       >
-        <ResultsTable>
-          <ResultsTableHeader>
-            <Checkbox
-              size="medium"
-              checked={headerCheckboxValue}
-              onClick={() => {
-                if (headerCheckboxValue === false) {
-                  const allSet = new Set(
-                    sortedFilteredArtifacts?.map((el) => el.id),
-                  );
-                  setSelectedArtifactIds(allSet);
-                }
-                if (
-                  headerCheckboxValue === true ||
-                  headerCheckboxValue === 'indeterminate'
-                ) {
-                  setSelectedArtifactIds(new Set());
-                }
-              }}
-            />
-            <ResultsTableHeaderOptions>
+        <CheckboxTable
+          selectedKeys={selectedArtifactIds}
+          setSelectedKeys={setSelectedArtifactIds}
+          showHeaderWithNoItems={true}
+          items={checkboxTableEntries}
+          headerItems={
+            <HeaderItemsContainer>
               <AllArtifactsSort
                 currentSortOrder={order}
                 onSortOrderChange={(newOrder) => setOrder(newOrder)}
@@ -345,61 +270,56 @@ export const AllArtifacts: React.FC = () => {
                 onCurrentFiltersChange={(newFilters) => setFilters(newFilters)}
               />
               <AllArtifactsActions selectedArtifactIds={selectedArtifactIds} />
-            </ResultsTableHeaderOptions>
-          </ResultsTableHeader>
-
-          <ResultsTableItems>
-            {!!selectedArtifactCountNotShown && (
-              <ResultsTableSelectionFilteredWarning>
-                {t('allArtifacts.filter.selectionFiltered', {
-                  count: selectedArtifactCountNotShown,
-                })}
-              </ResultsTableSelectionFilteredWarning>
-            )}
-            {!!activeFilterCount && (
-              <ResultsTableSelectionFilteredWarning>
-                {t('allArtifacts.filter.activeFilterCount', {
-                  count: activeFilterCount,
-                })}
-              </ResultsTableSelectionFilteredWarning>
-            )}
-            {sortedFilteredArtifacts?.map((artifact) => (
-              <ResultsTableItem key={artifact.id}>
-                <AllArtifactsItem
-                  key={artifact.id}
-                  artifact={artifact}
-                  incomingEdgeCount={
-                    getEdgesForArtifactId(artifact.id).incomingEdges.length
-                  }
-                  outgoingEdgeCount={
-                    getEdgesForArtifactId(artifact.id).outgoingEdges.length
-                  }
-                  selected={selectedArtifactIds.has(artifact.id)}
-                  onSelectionChanged={(selected, withShift) => {
-                    onArtifactSelectionChange(artifact, selected, withShift);
-                  }}
-                  dataViews={{
-                    updatedAt:
-                      order === AllArtifactsSortOrder.UpdatedAtAsc ||
-                      order === AllArtifactsSortOrder.UpdatedAtDesc,
-                    createdAt:
-                      order === AllArtifactsSortOrder.CreatedAtAsc ||
-                      order === AllArtifactsSortOrder.CreatedAtDesc,
-                    userCount: true,
-                    incomingEdgeCount: true,
-                    outgoingEdgeCount: true,
-                  }}
-                />
-              </ResultsTableItem>
-            ))}
-            {!sortedFilteredArtifacts?.length && artifactSnapshots?.length && (
-              <div>{t('allArtifacts.allFiltered')}</div>
-            )}
-            {artifactSnapshots && !artifactSnapshots.length && (
-              <div>{t('allArtifacts.noArtifacts')}</div>
-            )}
-          </ResultsTableItems>
-        </ResultsTable>
+            </HeaderItemsContainer>
+          }
+          message={
+            <>
+              {!!selectedArtifactCountNotShown && (
+                <ResultsTableSelectionFilteredWarning>
+                  {t('allArtifacts.filter.selectionFiltered', {
+                    count: selectedArtifactCountNotShown,
+                  })}
+                </ResultsTableSelectionFilteredWarning>
+              )}
+              {!!activeFilterCount && (
+                <ResultsTableSelectionFilteredWarning>
+                  {t('allArtifacts.filter.activeFilterCount', {
+                    count: activeFilterCount,
+                  })}
+                </ResultsTableSelectionFilteredWarning>
+              )}
+              {!sortedFilteredArtifacts?.length &&
+                artifactSnapshots?.length && (
+                  <div>{t('allArtifacts.allFiltered')}</div>
+                )}
+              {artifactSnapshots && !artifactSnapshots.length && (
+                <div>{t('allArtifacts.noArtifacts')}</div>
+              )}
+            </>
+          }
+          renderItem={({ entry }) => (
+            <AllArtifactsItem
+              artifact={entry.value}
+              incomingEdgeCount={
+                getEdgesForArtifactId(entry.value.id).incomingEdges.length
+              }
+              outgoingEdgeCount={
+                getEdgesForArtifactId(entry.value.id).outgoingEdges.length
+              }
+              dataViews={{
+                updatedAt:
+                  order === AllArtifactsSortOrder.UpdatedAtAsc ||
+                  order === AllArtifactsSortOrder.UpdatedAtDesc,
+                createdAt:
+                  order === AllArtifactsSortOrder.CreatedAtAsc ||
+                  order === AllArtifactsSortOrder.CreatedAtDesc,
+                userCount: true,
+                incomingEdgeCount: true,
+                outgoingEdgeCount: true,
+              }}
+            />
+          )}
+        />
       </IonContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&

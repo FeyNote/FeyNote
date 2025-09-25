@@ -179,14 +179,10 @@ export const getTiptapExtensions = (args: {
         ]
       : []),
     CommandsExtension,
-    ...(args.artifactId
-      ? [
-          buildArtifactReferencesExtension({
-            artifactId: args.artifactId,
-            yDoc: args.y.yDoc || args.y.yjsProvider.document,
-          }),
-        ]
-      : []),
+    buildArtifactReferencesExtension({
+      artifactId: args.artifactId,
+      yDoc: args.y.yDoc || args.y.yjsProvider.document,
+    }),
     PlaceholderExtension.configure({
       placeholder: args.placeholder,
     }),

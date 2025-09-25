@@ -34,20 +34,22 @@ export const NewArtifactModal: React.FC<Props> = (props) => {
   const newArtifact = async (type: ArtifactType) => {
     props.dismiss();
 
-    const artifact = await createArtifact({
-      title: t('generic.untitled'),
-      type,
+    const result = await createArtifact({
+      artifact: {
+        title: t('generic.untitled'),
+        type,
+      },
       tree: props.tree,
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       undefined,
       PaneableComponent.Artifact,
-      { id: artifact.id },
+      { id: result.id },
       PaneTransition.Replace,
     );
   };

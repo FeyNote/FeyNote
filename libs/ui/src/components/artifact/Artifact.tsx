@@ -121,7 +121,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     return renderBlockingMessage(
       t('artifact.noAccess.title'),
       t('artifact.noAccess.message'),
-      <IonButton size="small" onClick={connection.reauthenticate}>
+      <IonButton size="small" onClick={() => connection.reauthenticate()}>
         {t('artifact.noAccess.action')}
       </IonButton>,
     );

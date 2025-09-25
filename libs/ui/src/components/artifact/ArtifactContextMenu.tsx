@@ -11,11 +11,10 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { getMetaFromYArtifact } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { Doc as YDoc, applyUpdate, encodeStateAsUpdate } from 'yjs';
-import { randomizeContentUUIDsInYDoc } from '../../utils/edgesReferences/randomizeContentUUIDsInYDoc';
 import { createArtifact } from '../../utils/createArtifact';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { cloneArtifact } from '../../utils/cloneArtifact';
 
 interface Props {
   artifactId: string;
@@ -41,33 +40,28 @@ export const ArtifactContextMenu: React.FC<Props> = (props) => {
   };
 
   const onDuplicateArtifactClicked = async () => {
-    const { title, theme, type } = getMetaFromYArtifact(
-      props.connection.yjsDoc,
-    );
+    const { title } = getMetaFromYArtifact(props.connection.yjsDoc);
 
     const newTitle = t('artifact.duplicateTitle', { title });
-    const oldYBin = encodeStateAsUpdate(props.connection.yjsDoc);
-    const newYDoc = new YDoc();
-    applyUpdate(newYDoc, oldYBin);
 
-    randomizeContentUUIDsInYDoc(newYDoc);
-
-    const newYBin = encodeStateAsUpdate(newYDoc);
-
-    const artifact = await createArtifact({
+    const newYDoc = await cloneArtifact({
       title: newTitle,
-      type,
-      theme,
-      yBin: newYBin,
+      y: props.connection.yjsDoc,
+    });
+
+    const result = await createArtifact({
+      artifact: {
+        y: newYDoc,
+      },
     }).catch((e) => {
       handleTRPCErrors(e);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       PaneableComponent.Artifact,
-      { id: artifact.id },
+      { id: result.id },
       PaneTransition.NewTab,
     );
   };

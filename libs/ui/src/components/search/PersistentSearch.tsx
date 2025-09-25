@@ -120,13 +120,15 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   }, [searchText]);
 
   const create = async (event: MouseEvent | KeyboardEvent) => {
-    const artifact = await createArtifact({
-      title: capitalizeEachWord(searchText).trim(),
+    const result = await createArtifact({
+      artifact: {
+        title: capitalizeEachWord(searchText).trim(),
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     persistSearchTextToPaneState();
 
@@ -138,7 +140,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     navigate(
       PaneableComponent.Artifact,
       {
-        id: artifact.id,
+        id: result.id,
       },
       paneTransition,
     );

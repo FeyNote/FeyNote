@@ -5,9 +5,11 @@ import {
 import { getApiUrls } from '../getApiUrls';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
-import type { SessionDTO } from '@feynote/shared-utils';
+import { ARTIFACT_META_KEY, type SessionDTO } from '@feynote/shared-utils';
 import { incrementVersionForChangesOnArtifact } from '../localDb/incrementVersionForChangesOnArtifact';
 import { appIdbStorageManager } from '../AppIdbStorageManager';
+import type { TypedMap } from 'yjs-types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 15000;
 const TIPTAP_COLLAB_AUTORELEASE_WAIT_MS = 2000;
@@ -98,7 +100,7 @@ export class CollaborationManagerConnection {
             resolve();
           });
         });
-        const timeoutP = new Promise((_, reject) => {
+        const timeoutAllP = new Promise((_, reject) => {
           setTimeout(() => {
             reject();
           }, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
@@ -107,8 +109,16 @@ export class CollaborationManagerConnection {
         await Promise.race([
           indexeddbProvider.whenSynced,
           tiptapSyncP,
-          timeoutP,
+          timeoutAllP,
         ]);
+
+        const artifactMetaYMap = tiptapCollabProvider.document.getMap(
+          ARTIFACT_META_KEY,
+        ) as TypedMap<Partial<YArtifactMeta>>;
+        if (!artifactMetaYMap.get('id')) {
+          // Local meta is not present reflecting an empty doc, we'll need to attempt a cloud connection.
+          await Promise.race([tiptapSyncP, timeoutAllP]);
+        }
       })(),
     );
 

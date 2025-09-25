@@ -15,8 +15,8 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
 
   let deletedAt = artifactMetaYMap.get('deletedAt');
   if (typeof deletedAt === 'string') {
-    // Legacy support -- we should consider migrating once all clients are updated.
-    deletedAt = parseInt(deletedAt);
+    // WARN: Legacy support -- we should consider migrating once all clients are updated.
+    deletedAt = new Date(deletedAt).getTime();
   }
 
   const artifactMeta = {

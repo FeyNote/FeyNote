@@ -17,18 +17,20 @@ export const NewArtifact: React.FC = () => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = async (type: ArtifactType) => {
-    const artifact = await createArtifact({
-      title: t('generic.untitled'),
-      type,
+    const result = await createArtifact({
+      artifact: {
+        title: t('generic.untitled'),
+        type,
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       PaneableComponent.Artifact,
-      { id: artifact.id },
+      { id: result.id },
       PaneTransition.Replace,
     );
   };

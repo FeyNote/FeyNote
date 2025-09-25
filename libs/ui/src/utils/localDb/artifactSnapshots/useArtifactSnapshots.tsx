@@ -19,7 +19,11 @@ export const useArtifactSnapshots = () => {
       getArtifactSnapshotById: (artifactId: string) => {
         return artifactSnapshotStore.getArtifactSnapshotById(artifactId);
       },
-      artifactSnapshots: artifactSnapshotStore.getArtifactSnapshots(),
+      artifactSnapshots: artifactSnapshotStore
+        .getArtifactSnapshots()
+        .filter((el) => {
+          return !el.meta.deletedAt;
+        }),
     }),
     [_rerenderReducerValue],
   );

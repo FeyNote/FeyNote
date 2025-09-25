@@ -164,19 +164,21 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   };
 
   const create = async () => {
-    const artifact = await createArtifact({
-      title: capitalizeEachWord(searchText).trim(),
+    const result = await createArtifact({
+      artifact: {
+        title: capitalizeEachWord(searchText).trim(),
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       undefined, // Open in currently focused pane rather than in specific pane
       PaneableComponent.Artifact,
       {
-        id: artifact.id,
+        id: result.id,
       },
       PaneTransition.Push,
     );

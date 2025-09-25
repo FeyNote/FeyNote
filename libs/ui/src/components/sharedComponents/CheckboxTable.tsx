@@ -1,0 +1,173 @@
+import { useState } from 'react';
+import styled from 'styled-components';
+import { Checkbox } from './Checkbox';
+
+const ResultsTable = styled.div`
+  display: grid;
+`;
+
+const ResultsTableHeader = styled.div`
+  display: grid;
+  grid-template-columns: min-content auto;
+  align-items: center;
+  padding-left: 16px;
+  padding-right: 16px;
+`;
+
+const ResultsTableHeaderOptions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: 18px;
+`;
+
+const ResultsTableItems = styled.div``;
+
+const ResultsTableMessage = styled.div``;
+
+const ItemRow = styled.div`
+  display: grid;
+  grid-template-columns: min-content auto;
+  align-items: center;
+
+  user-select: none;
+  padding: 16px;
+
+  transition: background-color 100ms;
+  background-color: var(--ion-background-color-step-50);
+  border-radius: 4px;
+  margin-top: 6px;
+  margin-bottom: 6px;
+
+  &:hover:not(:has(.itemTitleInner:hover)) {
+    background-color: var(--ion-background-color-step-100);
+    cursor: pointer;
+  }
+`;
+
+interface Entry<T> {
+  key: string;
+  value: T;
+}
+
+interface Props<T> {
+  items: Entry<T>[];
+  selectedKeys: ReadonlySet<string>;
+  setSelectedKeys: (newKeys: ReadonlySet<string>) => void;
+  showHeaderWithNoItems: boolean;
+  headerItems?: React.ReactNode;
+  message?: React.ReactNode;
+  renderItem: (args: { entry: Entry<T>; selected: boolean }) => React.ReactNode;
+}
+
+export const CheckboxTable = <T extends object>(props: Props<T>) => {
+  // To track shift-click operations
+  const [lastClickedKey, setLastClickedKey] = useState<string>();
+
+  const headerCheckboxValue = (() => {
+    if (!props.items.length) {
+      return false;
+    }
+    if (!props.selectedKeys.size) {
+      return false;
+    }
+    if (props.selectedKeys.size !== props.items.length) {
+      return 'indeterminate';
+    }
+    return true;
+  })();
+
+  const onItemSelectionChange = (
+    entry: Entry<T>,
+    selected: boolean,
+    withShift: boolean,
+  ) => {
+    setLastClickedKey(entry.key);
+
+    const newSelected = new Set(props.selectedKeys);
+    if (withShift) {
+      const idx = props.items.indexOf(entry);
+      let lastClickedIdx = props.items.findIndex(
+        (el) => el.key === lastClickedKey,
+      );
+      if (lastClickedIdx < 0) lastClickedIdx = 0;
+
+      let start = lastClickedIdx;
+      let end = idx;
+      if (lastClickedIdx > idx) {
+        start = idx;
+        end = lastClickedIdx;
+      }
+
+      const inRange = props.items.slice(start, end + 1);
+
+      if (selected) inRange.forEach((el) => newSelected.add(el.key));
+      else inRange.forEach((el) => newSelected.delete(el.key));
+    } else {
+      if (selected) newSelected.add(entry.key);
+      else newSelected.delete(entry.key);
+    }
+    props.setSelectedKeys(newSelected);
+  };
+
+  const showHeader = !!props.items.length || props.showHeaderWithNoItems;
+
+  return (
+    <ResultsTable>
+      {showHeader && (
+        <ResultsTableHeader>
+          <Checkbox
+            size="medium"
+            checked={headerCheckboxValue}
+            onClick={() => {
+              if (headerCheckboxValue === false) {
+                const allSet = new Set(props.items.map((el) => el.key));
+                props.setSelectedKeys(allSet);
+              }
+              if (
+                headerCheckboxValue === true ||
+                headerCheckboxValue === 'indeterminate'
+              ) {
+                props.setSelectedKeys(new Set());
+              }
+            }}
+          />
+          {props.headerItems && (
+            <ResultsTableHeaderOptions>
+              {props.headerItems}
+            </ResultsTableHeaderOptions>
+          )}
+        </ResultsTableHeader>
+      )}
+
+      {props.message && (
+        <ResultsTableMessage>{props.message}</ResultsTableMessage>
+      )}
+
+      <ResultsTableItems>
+        {props.items.map((entry) => (
+          <ItemRow
+            key={entry.key}
+            onClick={(event) => {
+              onItemSelectionChange(
+                entry,
+                !props.selectedKeys.has(entry.key),
+                event.shiftKey,
+              );
+            }}
+          >
+            <Checkbox
+              checked={props.selectedKeys.has(entry.key)}
+              size="medium"
+            />
+            <div>
+              {props.renderItem({
+                entry,
+                selected: props.selectedKeys.has(entry.key),
+              })}
+            </div>
+          </ItemRow>
+        ))}
+      </ResultsTableItems>
+    </ResultsTable>
+  );
+};

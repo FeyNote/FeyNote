@@ -12,7 +12,7 @@ const Container = styled.div`
 
 interface Props {
   undelete?: () => void;
-  deletedAt: string;
+  deletedAt: number;
   authorizedScope: CollaborationConnectionAuthorizedScope;
 }
 

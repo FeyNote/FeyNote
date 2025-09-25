@@ -4,7 +4,6 @@ import type { ArtifactType } from '@prisma/client';
 import { calendar, document, pencil } from 'ionicons/icons';
 import { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
 import styled from 'styled-components';
-import { Checkbox } from '../../sharedComponents/Checkbox';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { useContext, useMemo, type MouseEvent } from 'react';
@@ -15,25 +14,12 @@ const ItemRow = styled.div<{
   $numDataCols: number;
 }>`
   display: grid;
-  user-select: none;
 
-  grid-template-columns: min-content min-content auto repeat(
+  grid-template-columns: min-content auto repeat(
       ${(props) => props.$numDataCols},
       min-content
     );
   align-items: center;
-  padding: 16px;
-
-  transition: background-color 100ms;
-  background-color: var(--ion-background-color-step-50);
-  border-radius: 4px;
-  margin-top: 6px;
-  margin-bottom: 6px;
-
-  &:hover:not(:has(.itemTitleInner:hover)) {
-    background-color: var(--ion-background-color-step-100);
-    cursor: pointer;
-  }
 `;
 
 const ItemIcon = styled(IonIcon)`
@@ -68,8 +54,6 @@ interface Props {
   artifact: ArtifactSnapshot;
   incomingEdgeCount: number;
   outgoingEdgeCount: number;
-  selected: boolean;
-  onSelectionChanged: (selected: boolean, withShift: boolean) => void;
   dataViews: {
     createdAt: boolean;
     updatedAt: boolean;
@@ -111,14 +95,7 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
   }, [props.artifact.updatedAt]);
 
   return (
-    <ItemRow
-      onClick={(event) =>
-        props.onSelectionChanged(!props.selected, event.shiftKey)
-      }
-      $numDataCols={numDataCols}
-    >
-      <Checkbox checked={props.selected} size="medium" />
-
+    <ItemRow $numDataCols={numDataCols}>
       <ItemIcon icon={artifactTypeToIcon[props.artifact.meta.type]} />
       <ItemTitle>
         <span

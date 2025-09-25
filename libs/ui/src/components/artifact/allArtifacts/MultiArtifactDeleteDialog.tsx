@@ -76,7 +76,7 @@ export const MultiArtifactDeleteDialog: React.FC<Props> = (props) => {
       }`}
       open={!!resultStats}
       onOpenChange={() => {
-        if (resultStats?.total !== resultStats?.workingSetSize) {
+        if (resultStats?.total === resultStats?.workingSetSize) {
           props.close();
         }
       }}

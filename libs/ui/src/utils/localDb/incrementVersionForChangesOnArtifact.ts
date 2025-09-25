@@ -35,10 +35,6 @@ export const incrementVersionForChangesOnArtifact = (
       key: string;
       val: YArtifactUserAccess;
     }>;
-    console.log(
-      'writing artifact snapshot with meta',
-      getMetaFromYArtifact(doc),
-    );
     return appIdbStorageManager.updateLocalArtifactSnapshot(
       artifactId,
       {

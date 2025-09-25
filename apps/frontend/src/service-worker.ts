@@ -41,7 +41,9 @@ import { RouteHandlerCallbackOptions } from 'workbox-core';
 import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
 import { SyncManager } from '../../../libs/ui/src/utils/localDb/SyncManager';
 import {
+  getKvStoreEntry,
   getManifestDb,
+  KVStoreKeys,
   ObjectStoreName,
 } from '../../../libs/ui/src/utils/localDb';
 import { FileStreamDecoder } from '../../../libs/shared-utils/src/lib/parsers/stream/file/FileStreamDecoder';
@@ -482,22 +484,6 @@ function idbEdgeToEdge(edge: Edge): Edge {
 }
 
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdges/,
-  async () => {
-    const manifestDb = await getManifestDb();
-
-    const edges = await manifestDb.getAll(ObjectStoreName.Edges);
-
-    const result = edges.map(idbEdgeToEdge);
-
-    return encodeCacheResultForTrpc<
-      typeof trpc.artifact.getArtifactEdges.query
-    >(result);
-  },
-  'GET',
-);
-
-registerRoute(
   /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
   async (event) => {
     // Cache first
@@ -542,17 +528,17 @@ registerRoute(
 );
 
 registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactSnapshots/,
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdges/,
   async () => {
     const manifestDb = await getManifestDb();
 
-    const snapshots = await manifestDb.getAll(
-      ObjectStoreName.ArtifactSnapshots,
-    );
+    const edges = await manifestDb.getAll(ObjectStoreName.Edges);
+
+    const result = edges.map(idbEdgeToEdge);
 
     return encodeCacheResultForTrpc<
-      typeof trpc.artifact.getArtifactSnapshots.query
-    >(snapshots);
+      typeof trpc.artifact.getArtifactEdges.query
+    >(result);
   },
   'GET',
 );
@@ -583,6 +569,32 @@ registerRoute(
     return encodeCacheResultForTrpc<
       typeof trpc.artifact.getArtifactSnapshotById.query
     >(localArtifactSnapshot);
+  },
+  'GET',
+);
+
+registerRoute(
+  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactSnapshots/,
+  async (event) => {
+    const manifestDb = await getManifestDb();
+
+    const VALID_DAYS = 30;
+    const syncValidWindow = new Date();
+    syncValidWindow.setDate(syncValidWindow.getDate() - VALID_DAYS);
+    const lastSyncedAt = await getKvStoreEntry(KVStoreKeys.LastSyncedAt);
+
+    if (!lastSyncedAt || lastSyncedAt < syncValidWindow) {
+      const response = await fetch(event.request);
+      return response;
+    }
+
+    const snapshots = await manifestDb.getAll(
+      ObjectStoreName.ArtifactSnapshots,
+    );
+
+    return encodeCacheResultForTrpc<
+      typeof trpc.artifact.getArtifactSnapshots.query
+    >(snapshots);
   },
   'GET',
 );

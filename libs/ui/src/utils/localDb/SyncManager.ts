@@ -6,16 +6,13 @@ import {
   HocuspocusProviderWebsocket,
 } from '@hocuspocus/provider';
 import { getApiUrls } from '../getApiUrls';
-import { Doc, type XmlElement as YXmlElement, type YEvent } from 'yjs';
+import { Doc, encodeStateAsUpdate } from 'yjs';
 import { trpc } from '../trpc';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import {
-  ARTIFACT_META_KEY,
-  ARTIFACT_TIPTAP_BODY_KEY,
   Edge,
   getEdgeId,
   getMetaFromYArtifact,
-  getTiptapIdsFromYEvent,
   getUserAccessFromYArtifact,
   ImmediateDebouncer,
   type Manifest,
@@ -85,7 +82,7 @@ const SYNC_LOCK_ABORT_TIMEOUT_MINUTES = 6;
 /**
  * How many artifacts to sync at once
  */
-const SYNC_BATCH_SIZE = 5;
+const SYNC_BATCH_SIZE = 15;
 
 /**
  * How long to wait between syncing each batch
@@ -441,15 +438,8 @@ export class SyncManager {
     await indexeddbProvider.whenSynced;
 
     if (snapshot?.createdLocally) {
-      const meta = getMetaFromYArtifact(doc);
       await trpc.artifact.createArtifact.mutate({
-        id: artifactId,
-        title: meta.title,
-        theme: meta.theme,
-        type: meta.type,
-        linkAccessLevel: meta.linkAccessLevel,
-        createdAt: new Date(meta.createdAt),
-        deletedAt: meta.deletedAt ? new Date(meta.deletedAt) : undefined,
+        yBin: encodeStateAsUpdate(doc),
       });
     }
 
@@ -460,31 +450,6 @@ export class SyncManager {
       websocketProvider: ws,
       awareness: null,
     });
-
-    // Note: These do not listen for transaction.local but I'm generally okay with that, since
-    // search _can_ fall out of sync in rare cases (browser crash, etc).
-    // This isn't the worst performing thing to do, and we might as well be reindexing everything
-    const metaObserveListener = async () => {
-      await this.searchManager.indexPartialArtifact(artifactId, doc, []);
-    };
-
-    const docObserveListener = async (yEvents: YEvent<YXmlElement>[]) => {
-      const changedIds = yEvents.map(getTiptapIdsFromYEvent).flat();
-
-      if (!this.searchManager.getKnownIndexIds().has(artifactId)) {
-        await this.searchManager.indexPartialArtifact(artifactId, doc, 'all');
-      } else {
-        await this.searchManager.indexPartialArtifact(
-          artifactId,
-          doc,
-          changedIds,
-        );
-      }
-    };
-    doc
-      .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
-      .observeDeep(docObserveListener);
-    doc.getMap(ARTIFACT_META_KEY).observeDeep(metaObserveListener);
 
     const ttpSyncP = new Promise<void>((resolve) => {
       tiptapCollabProvider.on('synced', () => {
@@ -501,18 +466,26 @@ export class SyncManager {
     // It wires up all of the internal event listeners.
     tiptapCollabProvider.attach();
 
+    const cleanup = async () => {
+      tiptapCollabProvider.destroy();
+      await indexeddbProvider.destroy();
+    };
     const result = await Promise.race([timeout, ttpSyncP]);
+
+    if (result === false) {
+      console.error(
+        `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
+      );
+      await cleanup();
+      return;
+    }
+
+    await this.searchManager.indexPartialArtifact(artifactId, doc, 'all');
 
     if (tiptapCollabProvider.authorizedScope) {
       await appIdbStorageManager.setAuthorizedCollaborationScope(
         docName,
         tiptapCollabProvider.authorizedScope,
-      );
-    }
-
-    if (result === false) {
-      console.error(
-        `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
       );
     }
 
@@ -536,12 +509,7 @@ export class SyncManager {
       version: manifest.artifactVersions[artifactId],
     });
 
-    doc
-      .getXmlFragment(ARTIFACT_TIPTAP_BODY_KEY)
-      .unobserveDeep(docObserveListener);
-    doc.getMap(ARTIFACT_META_KEY).unobserveDeep(metaObserveListener);
-    tiptapCollabProvider.destroy();
-    await indexeddbProvider.destroy();
+    await cleanup();
   }
 
   async syncKnownUsers() {

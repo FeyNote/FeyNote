@@ -8,25 +8,31 @@ import { addArtifactToArtifactTree } from './artifactTree/addArtifactToArtifactT
 import { withCollaborationConnection } from './collaboration/collaborationManager';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import type { YArtifactUserAccess } from '@feynote/global-types';
+import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 
 export const createArtifact = async (args: {
-  title: string;
-  type?: ArtifactType;
-  theme?: ArtifactTheme;
-  yBin?: Uint8Array;
-  userAccess?:
-    | Map<
-        string,
-        {
-          key: string;
-          val: YArtifactUserAccess;
-        }
-      >
+  artifact:
     | {
-        key: string;
-        val: YArtifactUserAccess;
-      }[];
-  linkAccessLevel?: ArtifactAccessLevel;
+        title: string;
+        type?: ArtifactType;
+        theme?: ArtifactTheme;
+        userAccess?:
+          | Map<
+              string,
+              {
+                key: string;
+                val: YArtifactUserAccess;
+              }
+            >
+          | {
+              key: string;
+              val: YArtifactUserAccess;
+            }[];
+        linkAccessLevel?: ArtifactAccessLevel;
+      }
+    | {
+        y: YDoc | Uint8Array;
+      };
   tree?: {
     parentArtifactId: string;
     /** Lexographical sorting. Must be a fully uppercase string. It is recommended to add things around "X", or "Y". This is important! */
@@ -36,27 +42,36 @@ export const createArtifact = async (args: {
   // In preparation for local-first artifact creation
   const { id } = await trpc.artifact.getSafeArtifactId.query();
 
-  let userAccess: {
-    key: string;
-    val: YArtifactUserAccess;
-  }[] = [];
-  if (Array.isArray(args.userAccess)) {
-    userAccess = args.userAccess;
+  if ('y' in args.artifact) {
+    const yBin =
+      args.artifact.y instanceof YDoc
+        ? encodeStateAsUpdate(args.artifact.y)
+        : args.artifact.y;
+    await trpc.artifact.createArtifact.mutate({
+      yBin,
+    });
   } else {
-    for (const value of args.userAccess?.values() || []) {
-      userAccess.push(value);
+    let userAccess: {
+      key: string;
+      val: YArtifactUserAccess;
+    }[] = [];
+    if (Array.isArray(args.artifact.userAccess)) {
+      userAccess = args.artifact.userAccess;
+    } else {
+      for (const value of args.artifact.userAccess?.values() || []) {
+        userAccess.push(value);
+      }
     }
-  }
 
-  const result = await trpc.artifact.createArtifact.mutate({
-    id,
-    title: args.title,
-    type: args.type || 'tiptap',
-    theme: args.theme || 'default',
-    userAccess: userAccess.length ? userAccess : undefined,
-    linkAccessLevel: args.linkAccessLevel,
-    yBin: args.yBin,
-  });
+    await trpc.artifact.createArtifact.mutate({
+      id,
+      title: args.artifact.title,
+      type: args.artifact.type || 'tiptap',
+      theme: args.artifact.theme || 'default',
+      userAccess: userAccess.length ? userAccess : undefined,
+      linkAccessLevel: args.artifact.linkAccessLevel,
+    });
+  }
 
   if (args.tree) {
     const session = await appIdbStorageManager.getSession();
@@ -70,15 +85,17 @@ export const createArtifact = async (args: {
         // TS requires the additional check here
         if (args.tree) {
           addArtifactToArtifactTree({
-            yDoc: connection.yjsDoc,
+            ref: connection.yjsDoc,
             parentArtifactId: args.tree.parentArtifactId,
             order: args.tree.order,
-            newItemId: id,
+            id,
           });
         }
       },
     );
   }
 
-  return result;
+  return {
+    id,
+  };
 };

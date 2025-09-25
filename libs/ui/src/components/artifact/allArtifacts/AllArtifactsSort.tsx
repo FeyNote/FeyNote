@@ -1,7 +1,8 @@
-import { IonButton, IonIcon, IonLabel } from '@ionic/react';
+import { IonIcon } from '@ionic/react';
 import { filter } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { SelectDialog } from '../../sharedComponents/SelectDialog';
+import { Button } from '@radix-ui/themes';
 
 export enum AllArtifactsSortOrder {
   AlphabeticalAsc = 'alphabeticalAsc',
@@ -45,10 +46,10 @@ export const AllArtifactsSort: React.FC<Props> = (props) => {
         title: t(el[1]),
       }))}
     >
-      <IonButton className="ion-text-nowrap" fill="clear" size="small">
+      <Button variant="soft" size="2">
         <IonIcon icon={filter} slot="start" />
-        <IonLabel>{t(orderToI18n[props.currentSortOrder])}</IonLabel>
-      </IonButton>
+        {t(orderToI18n[props.currentSortOrder])}
+      </Button>
     </SelectDialog>
   );
 };

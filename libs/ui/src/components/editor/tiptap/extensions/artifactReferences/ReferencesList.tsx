@@ -201,11 +201,13 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       const title = capitalize(props.query);
 
       createArtifact({
-        title,
-        userAccess: shareWithCurrent ? userAccess.map : undefined,
-        linkAccessLevel: shareWithCurrent
-          ? artifactMeta.linkAccessLevel
-          : undefined,
+        artifact: {
+          title,
+          userAccess: shareWithCurrent ? userAccess.map : undefined,
+          linkAccessLevel: shareWithCurrent
+            ? artifactMeta.linkAccessLevel
+            : undefined,
+        },
       })
         .then(({ id }) => {
           props.command({
@@ -372,7 +374,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToTarget === 'coowner'
         ) {
           updateYArtifactMeta(targetCollabConnectionInfo.connection.yjsDoc, {
-            ...targetMeta,
             linkAccessLevel: linkAccessLevelsRanked[sourceIdx],
           });
         }
@@ -381,7 +382,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToSource === 'coowner'
         ) {
           updateYArtifactMeta(props.yDoc, {
-            ...sourceMeta,
             linkAccessLevel: linkAccessLevelsRanked[targetIdx],
           });
         }

@@ -1,11 +1,14 @@
-import { IonIcon } from '@ionic/react';
 import { Button, DropdownMenu } from '@radix-ui/themes';
-import { filter } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MultiArtifactMoveInTreeDialog } from './MultiArtifactMoveInTreeDialog';
 import { MultiArtifactDeleteDialog } from './MultiArtifactDeleteDialog';
 import { MultiArtifactSharingDialog } from './MultiArtifactSharingDialog';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  margin-left: auto;
+`;
 
 interface Props {
   selectedArtifactIds: ReadonlySet<string>;
@@ -17,15 +20,13 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
   const [showSharingUi, setShowSharingUi] = useState(false);
   const [showDeleteUi, setShowDeleteUi] = useState(false);
 
-  if (!props.selectedArtifactIds.size) return;
-
   return (
-    <>
+    <Container>
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger>
+        <DropdownMenu.Trigger disabled={!props.selectedArtifactIds.size}>
           <Button variant="soft">
-            <IonIcon icon={filter} slot="start" />
             {t('allArtifacts.actions')}
+            <DropdownMenu.TriggerIcon />
           </Button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content>
@@ -59,6 +60,6 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
           close={() => setShowSharingUi(false)}
         />
       )}
-    </>
+    </Container>
   );
 };

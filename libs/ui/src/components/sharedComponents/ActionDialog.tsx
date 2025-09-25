@@ -10,12 +10,14 @@ interface Props {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
+  triggerChildren?: React.ReactNode;
   children?: React.ReactNode;
   actionButtons?: {
     title: string;
     props: ButtonProps;
   }[];
+  size?: 'xlarge' | 'large' | 'medium';
 }
 
 /**
@@ -24,9 +26,22 @@ interface Props {
 export const ActionDialog: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
+  const maxWidth = (() => {
+    if (props.size === 'xlarge') {
+      return '1200px';
+    }
+    if (props.size === 'large') {
+      return '650px';
+    }
+    return '375px';
+  })();
+
   return (
     <Dialog.Root open={props.open} onOpenChange={props.onOpenChange}>
-      <Dialog.Content maxWidth="350px">
+      {props.triggerChildren && (
+        <Dialog.Trigger>{props.triggerChildren}</Dialog.Trigger>
+      )}
+      <Dialog.Content maxWidth={maxWidth}>
         <StyledDialogTitle>{props.title}</StyledDialogTitle>
         {props.description && (
           <Dialog.Description size="2" mb="4">

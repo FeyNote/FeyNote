@@ -227,6 +227,7 @@ export class SearchManager {
       } else {
         this.miniSearch.add(artifactIndexDoc);
       }
+      // "undefined" is used as the "title" index element, in other words in the "knownBlockIds set", "undefined" signifies the artifact itself.
       knownBlockIds.add(undefined);
     } else {
       if (this.miniSearch.has(artifactIndexId)) {

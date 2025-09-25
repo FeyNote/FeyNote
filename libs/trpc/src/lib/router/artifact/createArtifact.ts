@@ -11,14 +11,11 @@ import {
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import * as Sentry from '@sentry/node';
 import {
-  ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,
   constructYArtifact,
   getMetaFromYArtifact,
   getTextForJSONContent,
   getTiptapContentFromYjsDoc,
-  getUserAccessFromYArtifact,
-  updateYArtifactMeta,
 } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 import { ArtifactJSON, YArtifactMeta } from '@feynote/global-types';
@@ -26,27 +23,33 @@ import { TRPCError } from '@trpc/server';
 
 export const createArtifact = authenticatedProcedure
   .input(
-    z.object({
-      id: z.string().uuid(),
-      title: z.string(),
-      type: z.nativeEnum(ArtifactType),
-      theme: z.nativeEnum(ArtifactTheme),
-      // We follow our YKeyValue structure for userAccess
-      userAccess: z
-        .array(
-          z.object({
-            key: z.string(), // UserID
-            val: z.object({
-              accessLevel: z.nativeEnum(ArtifactAccessLevel),
+    z
+      .object({
+        id: z.string().uuid(),
+        title: z.string(),
+        type: z.nativeEnum(ArtifactType),
+        theme: z.nativeEnum(ArtifactTheme),
+        // We follow our YKeyValue structure for userAccess
+        userAccess: z
+          .array(
+            z.object({
+              key: z.string(), // UserID
+              val: z.object({
+                accessLevel: z.nativeEnum(ArtifactAccessLevel),
+              }),
             }),
-          }),
-        )
-        .optional(),
-      linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
-      deletedAt: z.date().optional(),
-      createdAt: z.date().optional(),
-      yBin: z.any().optional(),
-    }),
+          )
+          .optional(),
+        linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
+        deletedAt: z.date().optional(),
+        createdAt: z.date().optional(),
+        yBin: z.undefined(),
+      })
+      .or(
+        z.object({
+          yBin: z.any(),
+        }),
+      ),
   )
   .mutation(
     async ({
@@ -55,51 +58,61 @@ export const createArtifact = authenticatedProcedure
     }): Promise<{
       result: 'created' | 'exists';
     }> => {
-      let yDoc: YDoc | undefined;
-      const meta = {
-        id: input.id,
-        userId: ctx.session.userId,
-        title: input.title,
-        theme: input.theme,
-        type: input.type,
-        linkAccessLevel: input.linkAccessLevel ?? ArtifactAccessLevel.noaccess,
-        createdAt: input.createdAt?.getTime() || new Date().getTime(),
-        deletedAt: input.deletedAt?.getTime() ?? null,
-      } satisfies YArtifactMeta;
+      const { yDoc, artifactMeta } = (() => {
+        if ('yBin' in input) {
+          const yDoc = new YDoc();
+          applyUpdate(yDoc, input.yBin);
 
-      if (input.yBin) {
-        yDoc = new YDoc();
-        applyUpdate(yDoc, input.yBin);
+          // Even though we are overriding the meta here, we still want to validate it
+          const artifactMeta = getMetaFromYArtifact(yDoc);
+          yArtifactMetaZodSchema.parse(artifactMeta);
 
-        // Even though we are overriding the meta here, we still want to validate it
-        const artifactMeta = getMetaFromYArtifact(yDoc);
-        yArtifactMetaZodSchema.parse(artifactMeta);
+          if (artifactMeta.userId !== ctx.session.userId) {
+            throw new TRPCError({
+              message: 'You cannot create an artifact for another user',
+              code: 'BAD_REQUEST',
+            });
+          }
 
-        // We do not trust the client here and instead prefer to force the meta to be what was passed
-        updateYArtifactMeta(yDoc, meta);
-        const _yDoc = yDoc; // Immutable reference for TS
-        _yDoc.transact(() => {
-          _yDoc.getMap(ARTIFACT_META_KEY).set('id', meta.id);
-          _yDoc.getMap(ARTIFACT_META_KEY).set('userId', meta.userId);
-        });
-      } else {
-        yDoc = constructYArtifact(meta);
-      }
-
-      if (input.userAccess) {
-        const yKeyValue = getUserAccessFromYArtifact(yDoc);
-
-        for (const userAccess of input.userAccess) {
-          yKeyValue.set(userAccess.key, userAccess.val);
+          return { yDoc, artifactMeta };
         }
-      }
+
+        // Typescript does not want to narrow here in an "else" (at the time of writing), so we check individually
+        if ('id' in input) {
+          const artifactMeta = {
+            id: input.id,
+            userId: ctx.session.userId,
+            title: input.title,
+            theme: input.theme,
+            type: input.type,
+            linkAccessLevel:
+              input.linkAccessLevel ?? ArtifactAccessLevel.noaccess,
+            createdAt: input.createdAt?.getTime() || new Date().getTime(),
+            deletedAt: input.deletedAt?.getTime() ?? null,
+          } satisfies YArtifactMeta;
+
+          if (input.userAccess?.some((el) => el.key === ctx.session.userId)) {
+            throw new TRPCError({
+              message: 'You cannot share an artifact with yourself',
+              code: 'BAD_REQUEST',
+            });
+          }
+
+          const yDoc = constructYArtifact(artifactMeta, input.userAccess);
+
+          return { yDoc, artifactMeta };
+        }
+
+        // "Just Typescript things" TM
+        throw new Error('Unhandled conditional');
+      })();
 
       const json = {
         tiptapBody:
-          input.type === 'tiptap'
+          artifactMeta.type === 'tiptap'
             ? getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY)
             : undefined,
-        meta,
+        meta: artifactMeta,
       } satisfies ArtifactJSON;
 
       const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
@@ -111,7 +124,7 @@ export const createArtifact = authenticatedProcedure
 
       const existingConflict = await prisma.artifact.findUnique({
         where: {
-          id: input.id,
+          id: artifactMeta.id,
         },
         select: {
           id: true,
@@ -129,7 +142,7 @@ export const createArtifact = authenticatedProcedure
             "We've hit the very unlikely, and very unfortunate scenario where a UUID generated collided between two users",
             {
               extra: {
-                artifactId: input.id,
+                artifactId: artifactMeta.id,
                 userId: ctx.session.userId,
                 conflictedArtifactUserId: existingConflict.userId,
               },
@@ -144,13 +157,13 @@ export const createArtifact = authenticatedProcedure
 
       const artifact = await prisma.artifact.create({
         data: {
-          id: input.id,
-          title: input.title,
-          type: input.type,
+          id: artifactMeta.id,
+          title: artifactMeta.title,
+          type: artifactMeta.type,
           text,
           json,
           userId: ctx.session.userId,
-          theme: input.theme,
+          theme: artifactMeta.theme,
           yBin,
         },
         select: {

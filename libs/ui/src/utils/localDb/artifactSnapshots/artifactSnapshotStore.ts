@@ -21,6 +21,11 @@ class ArtifactSnapshotStore {
    * Helps us invalidate in-flight requests when a session changes
    */
   private sessionInvalidationRandom = crypto.randomUUID();
+  /**
+   * Helps us invalidate in-flight requests when a new event comes in
+   */
+  private loadAllArtifactSnapshotsRandom = crypto.randomUUID();
+  private loadArtifactSnapshotRandomByArtifactId = new Map<string, string>();
 
   private artifactSnapshotsById = new Map<string, ArtifactSnapshot>();
   private artifactSnapshots: ArtifactSnapshot[] = [];
@@ -50,10 +55,13 @@ class ArtifactSnapshotStore {
         this.notify([data.artifactId]);
       },
     );
-    eventManager.addEventListener(EventName.ArtifactUpdated, (_, data) => {
-      this.loadArtifactSnapshot(data.artifactId);
-      this.notify([data.artifactId]);
-    });
+    eventManager.addEventListener(
+      EventName.ArtifactUpdated,
+      async (_, data) => {
+        await this.loadArtifactSnapshot(data.artifactId);
+        this.notify([data.artifactId]);
+      },
+    );
 
     this.loadAllArtifactSnapshots().then(() => {
       this._isLoading = false;
@@ -108,6 +116,8 @@ class ArtifactSnapshotStore {
   }
 
   private async loadAllArtifactSnapshots() {
+    const inflightRandomBefore = (this.loadAllArtifactSnapshotsRandom =
+      crypto.randomUUID());
     const sessionRandomBefore = this.sessionInvalidationRandom;
     const result = await trpc.artifact.getArtifactSnapshots
       .query()
@@ -115,6 +125,7 @@ class ArtifactSnapshotStore {
         this.notifyFetchError(e);
       });
     if (!result) return;
+    if (inflightRandomBefore !== this.loadAllArtifactSnapshotsRandom) return;
     if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
 
     this.artifactSnapshotsById = new Map(result.map((el) => [el.id, el]));
@@ -122,10 +133,20 @@ class ArtifactSnapshotStore {
   }
 
   private async loadArtifactSnapshot(artifactId: string) {
+    const inflightRandomBefore = crypto.randomUUID();
+    this.loadArtifactSnapshotRandomByArtifactId.set(
+      artifactId,
+      inflightRandomBefore,
+    );
     const sessionRandomBefore = this.sessionInvalidationRandom;
     const response = await trpc.artifact.getArtifactSnapshotById
       .query({ id: artifactId })
       .catch((e) => {
+        if (
+          inflightRandomBefore !==
+          this.loadArtifactSnapshotRandomByArtifactId.get(artifactId)
+        )
+          return;
         if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
 
         if (e instanceof TRPCClientError) {
@@ -145,6 +166,11 @@ class ArtifactSnapshotStore {
       });
 
     if (!response) return;
+    if (
+      inflightRandomBefore !==
+      this.loadArtifactSnapshotRandomByArtifactId.get(artifactId)
+    )
+      return;
     if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
 
     this.artifactSnapshotsById.set(artifactId, response);

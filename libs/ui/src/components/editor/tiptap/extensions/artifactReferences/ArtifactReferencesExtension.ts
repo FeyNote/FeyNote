@@ -124,18 +124,20 @@ const ArtifactReferencesExtension = Mention.extend<ReferencePluginOptions>({
 });
 
 export const buildArtifactReferencesExtension = (args: {
-  artifactId: string;
+  artifactId: string | undefined;
   yDoc: YDoc;
 }) => {
   return ArtifactReferencesExtension.configure({
     artifactId: args.artifactId,
     suggestion: {
       items: getReferenceSuggestions(mentionMenuOptsRef),
-      render: renderReferenceList({
-        mentionMenuOptsRef,
-        artifactId: args.artifactId,
-        yDoc: args.yDoc,
-      }),
+      render: args.artifactId
+        ? renderReferenceList({
+            mentionMenuOptsRef,
+            artifactId: args.artifactId,
+            yDoc: args.yDoc,
+          })
+        : undefined,
       char: '@',
       allowSpaces: true,
       allow: () => mentionMenuOptsRef.enableMentionMenu,

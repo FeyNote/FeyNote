@@ -10,6 +10,12 @@ import { canAddArtifactToArtifactTreeAt } from '../../../utils/artifactTree/canA
 import { recursiveRemoveFromArtifactTree } from '../../../utils/artifactTree/recursiveRemoveFromArtifactTree';
 import { calculateOrderForArtifactTreeNode } from '../../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
+import styled from 'styled-components';
+
+const TreeContainer = styled.div`
+  background: var(--ion-card-background);
+  border-radius: 5px;
+`;
 
 interface Props {
   artifactIds: ReadonlySet<string>;
@@ -152,7 +158,7 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
       }`}
       open={!!resultStats}
       onOpenChange={() => {
-        if (resultStats?.total !== resultStats?.workingSetSize) {
+        if (resultStats?.total === resultStats?.workingSetSize) {
           props.close();
         }
       }}
@@ -172,7 +178,10 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
     <>
       <ActionDialog
         title={t('allArtifacts.moveInTree.title')}
-        description={t('allArtifacts.moveInTree.subtitle')}
+        description={t('allArtifacts.moveInTree.subtitle', {
+          count: props.artifactIds.size,
+        })}
+        size="large"
         open={true}
         onOpenChange={props.close}
         actionButtons={[
@@ -184,20 +193,22 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
           },
         ]}
       >
-        <ArtifactTree
-          treeId={treeId}
-          registerAsGlobalTreeDragHandler={false}
-          editable={false}
-          mode="select"
-          enableItemContextMenu={false}
-          onNodeClicked={(info) => {
-            if (info.targetType === 'item') {
-              setPendingMoveTarget(info.targetItem.toString());
-            } else {
-              throw new Error('Unsupported onNodeClicked targetType!');
-            }
-          }}
-        />
+        <TreeContainer>
+          <ArtifactTree
+            treeId={treeId}
+            registerAsGlobalTreeDragHandler={false}
+            editable={false}
+            mode="select"
+            enableItemContextMenu={false}
+            onNodeClicked={(info) => {
+              if (info.targetType === 'item') {
+                setPendingMoveTarget(info.targetItem.toString());
+              } else {
+                throw new Error('Unsupported onNodeClicked targetType!');
+              }
+            }}
+          />
+        </TreeContainer>
       </ActionDialog>
       {processingStatusDialog}
       {confirmationDialog}

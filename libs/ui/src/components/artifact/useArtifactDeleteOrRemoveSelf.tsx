@@ -38,7 +38,7 @@ export const useArtifactDeleteOrRemoveSelf = () => {
           Partial<YArtifactMeta>
         >;
 
-        map.set('deletedAt', new Date().toISOString());
+        map.set('deletedAt', new Date().getTime());
 
         return accessLevel;
       },

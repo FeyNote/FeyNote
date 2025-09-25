@@ -1,11 +1,12 @@
-import { IonIcon } from '@ionic/react';
-import { filter } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
 import { SelectDialog } from '../../sharedComponents/SelectDialog';
 import type { ArtifactType } from '@prisma/client';
 import { SessionContext } from '../../../context/session/SessionContext';
 import { Button } from '@radix-ui/themes';
+import { CiUser } from 'react-icons/ci';
+import { IoDocument } from 'react-icons/io5';
+import { TbCirclesRelation } from 'react-icons/tb';
 
 export enum AllArtifactsOrphansDisplaySetting {
   Include = 'include',
@@ -83,8 +84,8 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
         }
         options={byUserOptions}
       >
-        <Button variant="ghost" size="2">
-          <IonIcon icon={filter} slot="start" />
+        <Button variant="soft" size="2">
+          <CiUser width="16" height="16" />
           {props.currentFilters.byUser.size
             ? t('allArtifacts.filter.byUser.title.active', {
                 count: props.currentFilters.byUser.size,
@@ -108,8 +109,8 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
           title: t(allArtifactsOrphansDisplaySettingToI18n[el]),
         }))}
       >
-        <Button variant="ghost" size="2">
-          <IonIcon icon={filter} slot="start" />
+        <Button variant="soft" size="2">
+          <TbCirclesRelation width="16" height="16" />
           {t('allArtifacts.filter.orphans.title')}
         </Button>
       </SelectDialog>
@@ -137,8 +138,8 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
           title: t(el[1]),
         }))}
       >
-        <Button variant="ghost" size="2">
-          <IonIcon icon={filter} slot="start" />
+        <Button variant="soft" size="2">
+          <IoDocument width="16" height="16" />
           {props.currentFilters.onlyIncludeTypes.size
             ? t('allArtifacts.filter.onlyIncludeTypes.title.active', {
                 count: props.currentFilters.onlyIncludeTypes.size,
