@@ -36,7 +36,7 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
   }
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(edge0.targetArtifactId, false);
+    useArtifactPreviewTimer(edge0.targetArtifactId);
 
   const linkClicked = (
     event: React.MouseEvent<

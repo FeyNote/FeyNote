@@ -15,7 +15,7 @@ interface Props {
   children?: React.ReactNode;
   actionButtons?: {
     title: string;
-    props: ButtonProps;
+    props?: ButtonProps;
   }[];
   size?: 'xlarge' | 'large' | 'medium';
 }

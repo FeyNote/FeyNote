@@ -28,13 +28,13 @@ const socket = io(url.origin, {
 socket.on('error', () => {
   console.log('Websocket connection error');
 
-  eventManager.broadcast(EventName.WebsocketError, undefined);
+  eventManager.broadcast(EventName.WebsocketError);
 });
 
 socket.on('reconnect', () => {
   console.log('Reconnected to websocket server');
 
-  eventManager.broadcast(EventName.WebsocketReconnect, undefined);
+  eventManager.broadcast(EventName.WebsocketReconnect);
 });
 
 socket.on(EventName.ArtifactUpdated, (data) => {

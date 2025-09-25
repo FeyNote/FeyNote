@@ -7,8 +7,57 @@ import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-export const useArtifactDeleteOrRemoveSelf = () => {
+export function useArtifactDeleteOrRemoveSelfWithConfirmation() {
+  const { t } = useTranslation();
+  const [showConfirmationArtifactId, setShowConfirmationArtifactId] =
+    useState<string>();
+  const { deleteArtifactOrRemoveSelf } = useArtifactDeleteOrRemoveSelf();
+
+  /**
+   * You must render this out within your component so that it's part of the React tree!
+   */
+  const confirmationDialog = (
+    <ActionDialog
+      title={t('deleteArtifact.title')}
+      description={t('deleteArtifact.subtitle')}
+      open={!!showConfirmationArtifactId}
+      actionButtons={[
+        {
+          title: t('generic.cancel'),
+          props: {
+            onClick: () => setShowConfirmationArtifactId(undefined),
+          },
+        },
+        {
+          title: t('generic.confirm'),
+          props: {
+            color: 'red',
+            onClick: async () => {
+              showConfirmationArtifactId &&
+                deleteArtifactOrRemoveSelf(showConfirmationArtifactId);
+              setShowConfirmationArtifactId(undefined);
+            },
+          },
+        },
+      ]}
+    />
+  );
+
+  const deleteArtifactOrRemoveSelfWithConfirmation = (artifactId: string) => {
+    setShowConfirmationArtifactId(artifactId);
+  };
+
+  return {
+    deleteArtifactOrRemoveSelfWithConfirmation,
+    confirmationDialog,
+  };
+}
+
+export function useArtifactDeleteOrRemoveSelf() {
   const { session } = useSessionContext();
 
   /**
@@ -54,4 +103,4 @@ export const useArtifactDeleteOrRemoveSelf = () => {
   return {
     deleteArtifactOrRemoveSelf,
   };
-};
+}

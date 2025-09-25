@@ -35,7 +35,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
     );
   }
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(edge0.artifactId, false);
+    useArtifactPreviewTimer(edge0.artifactId);
 
   const linkClicked = (
     event: React.MouseEvent<

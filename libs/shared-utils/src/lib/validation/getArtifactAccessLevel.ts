@@ -44,20 +44,22 @@ const transformInfo = (
 /**
  * Can be passed either a YDoc or server-side artifact sharing info structure.
  * Returns access level for a given userId to that artifact
+ *
+ * @param currentUserId The id of the current signed-in user, or `undefined` if the user is not signed in
  */
 export const getArtifactAccessLevel = (
   _info: SimplePermissionsRepresentation | YDoc | ArtifactSnapshot,
-  currentUserId: string,
+  currentUserId: string | undefined,
 ): ArtifactAccessLevel => {
   const info = transformInfo(_info);
 
-  if (info.userId === currentUserId) {
+  if (currentUserId && info.userId === currentUserId) {
     return 'coowner';
   }
 
-  const artifactShare = info.artifactShares.find(
-    (share) => share.userId === currentUserId,
-  );
+  const artifactShare =
+    !!currentUserId &&
+    info.artifactShares.find((share) => share.userId === currentUserId);
   if (artifactShare) {
     return artifactShare.accessLevel;
   }

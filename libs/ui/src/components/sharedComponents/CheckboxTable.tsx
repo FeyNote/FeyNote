@@ -57,6 +57,11 @@ interface Props<T> {
   headerItems?: React.ReactNode;
   message?: React.ReactNode;
   renderItem: (args: { entry: Entry<T>; selected: boolean }) => React.ReactNode;
+  renderItemContainer?: (args: {
+    entry: Entry<T>;
+    selected: boolean;
+    children: React.ReactNode;
+  }) => React.ReactNode;
 }
 
 export const CheckboxTable = <T extends object>(props: Props<T>) => {
@@ -111,6 +116,39 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
 
   const showHeader = !!props.items.length || props.showHeaderWithNoItems;
 
+  const renderItem = (entry: Entry<T>) => {
+    const itemContents = (
+      <ItemRow
+        key={entry.key}
+        onClick={(event) => {
+          onItemSelectionChange(
+            entry,
+            !props.selectedKeys.has(entry.key),
+            event.shiftKey,
+          );
+        }}
+      >
+        <Checkbox checked={props.selectedKeys.has(entry.key)} size="medium" />
+        <div>
+          {props.renderItem({
+            entry,
+            selected: props.selectedKeys.has(entry.key),
+          })}
+        </div>
+      </ItemRow>
+    );
+
+    if (props.renderItemContainer) {
+      return props.renderItemContainer({
+        entry,
+        selected: props.selectedKeys.has(entry.key),
+        children: itemContents,
+      });
+    } else {
+      return itemContents;
+    }
+  };
+
   return (
     <ResultsTable>
       {showHeader && (
@@ -144,29 +182,7 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
       )}
 
       <ResultsTableItems>
-        {props.items.map((entry) => (
-          <ItemRow
-            key={entry.key}
-            onClick={(event) => {
-              onItemSelectionChange(
-                entry,
-                !props.selectedKeys.has(entry.key),
-                event.shiftKey,
-              );
-            }}
-          >
-            <Checkbox
-              checked={props.selectedKeys.has(entry.key)}
-              size="medium"
-            />
-            <div>
-              {props.renderItem({
-                entry,
-                selected: props.selectedKeys.has(entry.key),
-              })}
-            </div>
-          </ItemRow>
-        ))}
+        {props.items.map((entry) => renderItem(entry))}
       </ResultsTableItems>
     </ResultsTable>
   );

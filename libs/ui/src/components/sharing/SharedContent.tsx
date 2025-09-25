@@ -40,7 +40,7 @@ export const SharedContent: React.FC = () => {
   const { navigate } = useContext(PaneContext);
   const { session } = useContext(SessionContext);
   const { artifactSnapshots } = useArtifactSnapshots();
-  const { knownUsersById } = useKnownUsers();
+  const { getKnownUserById } = useKnownUsers();
   const incomingSharedArtifacts = useMemo(
     () =>
       artifactSnapshots
@@ -80,7 +80,7 @@ export const SharedContent: React.FC = () => {
                   {sharedArtifact.meta.title}
                   <p>
                     {t('sharedContent.sharedBy')}{' '}
-                    {knownUsersById?.get(sharedArtifact.meta.userId)?.name ||
+                    {getKnownUserById(sharedArtifact.meta.userId)?.name ||
                       t('sharedContent.unknownUser')}
                   </p>
                 </IonLabel>
