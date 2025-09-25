@@ -1,8 +1,7 @@
 import { IonContent, IonPage } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +11,7 @@ import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
 import { createArtifact } from '../../utils/createArtifact';
 
 export const NewArtifact: React.FC = () => {
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 

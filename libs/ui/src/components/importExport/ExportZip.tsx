@@ -1,10 +1,10 @@
 import { IonButton, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import styled from 'styled-components';
 import { trpc } from '../../utils/trpc';
 import type { ExportFormat } from '@feynote/prisma/types';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 
@@ -24,7 +24,7 @@ interface Props {
 
 export const ExportZip: React.FC<Props> = (props: Props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const instructions = useMemo(() => {
     if (props.type === 'json') {
       return t('export.options.json.instructions');

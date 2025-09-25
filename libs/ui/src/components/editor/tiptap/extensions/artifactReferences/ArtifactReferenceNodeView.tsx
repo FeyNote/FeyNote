@@ -1,10 +1,10 @@
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
-import { useContext, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
-import { PaneContext } from '../../../../../context/pane/PaneContext';
+import { usePaneContext } from '../../../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../../../utils/localDb/edges/useEdgesForArtifactId';
@@ -35,7 +35,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
   }
 
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { getEdge } = useEdgesForArtifactId(artifactId);
   const edge = useMemo(
     () =>

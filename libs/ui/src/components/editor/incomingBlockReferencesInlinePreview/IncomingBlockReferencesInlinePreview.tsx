@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHoverTimer } from '../tiptap/extensions/artifactReferences/useHoverTimer';
 import type { Edge } from '@feynote/shared-utils';
 import { StyledBoundedFloatingWindow } from '../../StyledBoundedFloatingWindow';
-import { PaneContext } from '../../../context/pane/PaneContext';
+import { usePaneContext } from '../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
@@ -40,7 +40,7 @@ export const IncomingBlockReferencesInlinePreview = (props: Props) => {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const { onMouseOut, onMouseOver, show, close } = useHoverTimer();
   const [edges, setEdges] = useState<Edge[]>([]);
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
 
   useEffect(() => {
     // We listen for edges so that we register that they are 'listened to' and not GC'd

@@ -13,8 +13,7 @@ import {
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { Doc as YDoc } from 'yjs';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { duplicateArtifact } from '../../utils/duplicateArtifact';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -43,7 +42,7 @@ interface Props {
 
 export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const onNewArtifactClicked = async () => {

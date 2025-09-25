@@ -18,7 +18,7 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -29,7 +29,7 @@ import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
@@ -127,7 +127,7 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();

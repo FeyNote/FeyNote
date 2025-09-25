@@ -1,13 +1,13 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { PaneNav } from '../../pane/PaneNav';
 import { SidemenuContext } from '../../../context/sidemenu/SidemenuContext';
-import { PaneContext } from '../../../context/pane/PaneContext';
+import { usePaneContext } from '../../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { AllArtifactsRightSidemenu } from './AllArtifactsRightSidemenu';
 import { trpc } from '../../../utils/trpc';
 import { AllArtifactsItem } from './AllArtifactsItem';
-import { SessionContext } from '../../../context/session/SessionContext';
+import { useSessionContext } from '../../../context/session/SessionContext';
 import { AllArtifactsSort, AllArtifactsSortOrder } from './AllArtifactsSort';
 import styled from 'styled-components';
 import {
@@ -56,10 +56,10 @@ const dateCompareWithFallback = (
 };
 
 export const AllArtifacts: React.FC = () => {
-  const { isPaneFocused, pane } = useContext(PaneContext);
+  const { isPaneFocused, pane } = usePaneContext();
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { t } = useTranslation();
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<

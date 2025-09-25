@@ -1,6 +1,6 @@
 import { PaneTransition } from '../../../../context/globalPane/GlobalPaneContext';
-import { useContext, useRef } from 'react';
-import { PaneContext } from '../../../../context/pane/PaneContext';
+import { useRef } from 'react';
+import { usePaneContext } from '../../../../context/pane/PaneContext';
 import { PaneableComponent } from '../../../../context/globalPane/PaneableComponent';
 import { CompactIonItem } from '../../../CompactIonItem';
 import { NowrapIonLabel } from '../../../NowrapIonLabel';
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const OutgoingReferenceItem: React.FC<Props> = (props) => {
-  const { pane, navigate } = useContext(PaneContext);
+  const { pane, navigate } = usePaneContext();
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
 

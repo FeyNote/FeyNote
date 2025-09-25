@@ -6,13 +6,13 @@ import {
   IonLabel,
   IonPage,
 } from '@ionic/react';
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { telescope } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -37,7 +37,7 @@ const StyledNullState = styled(NullState)`
 
 export const RecentArtifacts: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getKnownUserById } = useKnownUsers();

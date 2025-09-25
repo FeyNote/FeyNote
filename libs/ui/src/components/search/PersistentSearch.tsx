@@ -1,7 +1,7 @@
 import { IonIcon, IonInput, IonItem, IonLabel } from '@ionic/react';
 import { useContext, useEffect, useState, type MouseEvent } from 'react';
 import { trpc } from '../../utils/trpc';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { createArtifact } from '../../utils/createArtifact';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -78,7 +78,7 @@ interface Props {
 
 export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { updatePaneProps } = useContext(GlobalPaneContext);
-  const { pane, isPaneFocused, navigate } = useContext(PaneContext);
+  const { pane, isPaneFocused, navigate } = usePaneContext();
   const [searchText, setSearchText] = useState(initialTerm || '');
   const [searchResults, setSearchResults] = useState<
     {

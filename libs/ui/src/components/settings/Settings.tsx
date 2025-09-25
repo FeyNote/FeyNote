@@ -23,7 +23,7 @@ import {
   useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useContext, useMemo, type ComponentProps } from 'react';
+import { useMemo, type ComponentProps } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
@@ -31,7 +31,7 @@ import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { WelcomeModal } from '../dashboard/WelcomeModal';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { trpc } from '../../utils/trpc';
@@ -95,7 +95,7 @@ export const Settings: React.FC = () => {
   const { setPreference, getPreference, _preferencesService } =
     usePreferencesContext();
   const { session } = useSessionContext();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
   } satisfies ComponentProps<typeof WelcomeModal>);

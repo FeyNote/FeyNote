@@ -6,8 +6,8 @@ import { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
 import styled from 'styled-components';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
-import { useContext, useMemo, type MouseEvent } from 'react';
-import { PaneContext } from '../../../context/pane/PaneContext';
+import { useMemo, type MouseEvent } from 'react';
+import { usePaneContext } from '../../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
 
 const ItemRow = styled.div<{
@@ -65,7 +65,7 @@ interface Props {
 
 export const AllArtifactsItem: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
 
   const goTo = (event: MouseEvent) => {
     navigate(

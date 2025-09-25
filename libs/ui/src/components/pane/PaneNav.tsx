@@ -1,5 +1,5 @@
-import { useContext, useEffect } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { useEffect } from 'react';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { IonButton, IonIcon } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
@@ -27,7 +27,7 @@ interface Props {
 
 export const PaneNav: React.FC<Props> = (props) => {
   const { navigateHistoryBack, navigateHistoryForward, pane, renamePane } =
-    useContext(PaneContext);
+    usePaneContext();
 
   useEffect(() => {
     // Since pane itself is memoized, this does not cause re-render of entire pane, but rather just the tab title itself

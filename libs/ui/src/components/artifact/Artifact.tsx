@@ -5,7 +5,7 @@ import { PaneNav } from '../pane/PaneNav';
 import { ArtifactDropdownMenu } from './ArtifactDropdownMenu';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
@@ -34,7 +34,7 @@ interface ArtifactProps {
 }
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
-  const { pane, navigate, isPaneFocused } = useContext(PaneContext);
+  const { pane, navigate, isPaneFocused } = usePaneContext();
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { t } = useTranslation();
   // We use a ref instead of state because this method is called on every keystroke and we don't want

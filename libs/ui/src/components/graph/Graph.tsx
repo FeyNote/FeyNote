@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { Edge, PreferenceNames } from '@feynote/shared-utils';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { GraphRightSidemenu } from './GraphRightSidemenu';
 import { createPortal } from 'react-dom';
@@ -27,7 +27,7 @@ const StyledNullState = styled(NullState)`
 export const Graph: React.FC = () => {
   const { getPreference } = usePreferencesContext();
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
-  const { isPaneFocused } = useContext(PaneContext);
+  const { isPaneFocused } = usePaneContext();
   const { sidemenuContentRef } = useContext(SidemenuContext);
   const { session } = useSessionContext();
   const { t } = useTranslation();

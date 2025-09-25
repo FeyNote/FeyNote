@@ -25,7 +25,7 @@ import {
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useContext, useMemo, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
@@ -218,7 +218,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
   component(shape: ReferenceShape) {
-    const { navigate } = useContext(PaneContext);
+    const { navigate } = usePaneContext();
     const artifactId = useContext(TLDrawArtifactIdContext);
     if (!artifactId) {
       throw new Error('TLDrawReferenceUtil.component: missing artifactId');

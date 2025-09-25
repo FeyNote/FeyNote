@@ -7,7 +7,7 @@ import {
   IonPage,
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   chatboxEllipses,
   expand,
@@ -20,7 +20,7 @@ import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -60,7 +60,7 @@ const CardTitleButton = styled(IonButton)`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useSessionContext();

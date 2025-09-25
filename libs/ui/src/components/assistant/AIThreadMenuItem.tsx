@@ -1,8 +1,8 @@
 import { IonIcon, IonItem, IonLabel } from '@ionic/react';
 import { mail } from 'ionicons/icons';
 import styled from 'styled-components';
-import { useContext, useMemo } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { useMemo } from 'react';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,7 @@ interface Props {
 
 export const AIThreadMenuItem = (props: Props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const previewText = useMemo(() => {
     const previewMessage = props.thread.messages.find(
       (message) => !!message.parts.find((part) => part.type === 'text'),

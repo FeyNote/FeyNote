@@ -1,9 +1,9 @@
 import { IonButton, IonIcon, IonText } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ChangeEvent, useContext, useMemo, useRef, useState } from 'react';
+import { ChangeEvent, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { closeOutline } from 'ionicons/icons';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -43,7 +43,7 @@ export const ImportFromFile: React.FC<Props> = (props: Props) => {
   const [file, setFile] = useState<File | null>();
   const [fileInputError, setFileInputError] = useState<string | null>(null);
   const [disableUploadBtn, setDisableUploadBtn] = useState(false);
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [fileUploadProgress, setFileUploadProgress] = useState<null | number>(
     null,
