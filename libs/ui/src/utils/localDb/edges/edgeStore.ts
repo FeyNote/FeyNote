@@ -247,7 +247,10 @@ class EdgeStore {
       );
       if (!incoming) {
         incoming = [];
-        fetchedOutgoingEdgesByArtifactId.set(element.artifactId, incoming);
+        fetchedIncomingEdgesByArtifactId.set(
+          element.targetArtifactId,
+          incoming,
+        );
       }
       incoming.push(element);
 
@@ -258,7 +261,7 @@ class EdgeStore {
         if (!artifactBlocks) {
           artifactBlocks = new Map();
           fetchedIncomingEdgesByBlockIdByArtifactId.set(
-            element.artifactId,
+            element.targetArtifactId,
             artifactBlocks,
           );
         }
