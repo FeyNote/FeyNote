@@ -1,4 +1,5 @@
 import { getManifestDb, ObjectStoreName } from './localDb';
+import { sendMessageToSW, SWMessageType } from './sendMessageToSW';
 
 interface DebugStore {
   logs: {
@@ -146,5 +147,27 @@ export const createDebugDump = async (opts: {
     windowHeight: window.innerHeight,
     artifacts,
     tree,
+    sw: {
+      isPresent: !!navigator.serviceWorker.controller,
+      state: navigator.serviceWorker.controller?.state,
+      url: navigator.serviceWorker.controller?.scriptURL,
+      dump:
+        (await sendMessageToSW(
+          {
+            type: SWMessageType.GetDebugDump,
+          },
+          {
+            timeout: 2000,
+          },
+        ).catch((e) => {
+          console.error('Error while retrieving SW debug dump', e);
+        })) || 'failed',
+    },
+  };
+};
+
+export const createSWDebugDump = async () => {
+  return {
+    logs: debugStore.logs,
   };
 };

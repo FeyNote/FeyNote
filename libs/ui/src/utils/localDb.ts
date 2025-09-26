@@ -144,6 +144,7 @@ const connect = () => {
           'registration' in self &&
           self.registration instanceof ServiceWorkerRegistration
         ) {
+          console.info('Attempting to update service worker');
           // We're in a service worker
           self.registration.update();
         } else {

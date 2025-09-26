@@ -16,6 +16,7 @@ export * from './lib/parsers/stream/file/FileStreamDecoder';
 export * from './lib/parsers/stream/job/ImportJobStreamEncoder';
 export * from './lib/parsers/stream/job/ImportJobStreamDecoder';
 export * from './lib/parsers/stream/FeynoteAPIStreamMessageType';
+export * from './lib/parsers/readableStreamToUint8Array';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
 export * from './lib/text/capitalizeEachWord';

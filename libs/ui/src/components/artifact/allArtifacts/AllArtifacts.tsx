@@ -322,6 +322,7 @@ export const AllArtifacts: React.FC = () => {
           )}
           renderItemContainer={({ entry, children }) => (
             <ArtifactLinkContextMenu
+              key={entry.value.id}
               artifactId={entry.value.id}
               paneId={pane.id}
             >

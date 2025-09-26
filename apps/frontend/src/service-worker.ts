@@ -38,25 +38,33 @@ if (environment !== 'development') {
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
-import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
-import { SyncManager } from '../../../libs/ui/src/utils/localDb/SyncManager';
-import {
-  getKvStoreEntry,
-  getManifestDb,
-  KVStoreKeys,
-  ObjectStoreName,
-} from '../../../libs/ui/src/utils/localDb';
-import { FileStreamDecoder } from '../../../libs/shared-utils/src/lib/parsers/stream/file/FileStreamDecoder';
-import { readableStreamToUint8Array } from '../../../libs/shared-utils/src/lib/parsers/readableStreamToUint8Array';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
 import { Doc, encodeStateAsUpdate } from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { customTrpcTransformer } from '../../../libs/shared-utils/src/lib/customTrpcTransformer';
-import type { trpc } from '@feynote/ui';
+import {
+  type trpc,
+  getKvStoreEntry,
+  getManifestDb,
+  KVStoreKeys,
+  ObjectStoreName,
+  SyncManager,
+  SearchManager,
+  SWMessageType,
+  createSWDebugDump,
+  initDebugStoreConsoleMonkeypatch,
+} from '@feynote/ui-sw';
 import type { Resolver } from '@trpc/client';
-import { getEdgeId, type Edge } from '@feynote/shared-utils';
+import {
+  readableStreamToUint8Array,
+  getEdgeId,
+  type Edge,
+  customTrpcTransformer,
+  FileStreamDecoder,
+} from '@feynote/shared-utils';
+
+initDebugStoreConsoleMonkeypatch();
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
@@ -131,6 +139,31 @@ const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
       }
     }
   },
+});
+
+addEventListener('message', async (event) => {
+  if (!event.data?.type) {
+    console.error('Unexpected message without data|type', event);
+    return;
+  }
+
+  switch (event.data.type) {
+    case SWMessageType.GetDebugDump: {
+      const responsePort = event.ports[0];
+      if (!responsePort) {
+        console.error('No response port for getDebugDump');
+        return;
+      }
+
+      const debugDump = await createSWDebugDump();
+      responsePort.postMessage(JSON.parse(JSON.stringify(debugDump)));
+
+      break;
+    }
+    default: {
+      console.warn('Unhandled SW message', event);
+    }
+  }
 });
 
 const getTrpcInputForEvent = <T extends Resolver<any>>(

@@ -9,7 +9,12 @@ export { LocaldbStoreErrorHandlers } from './utils/localDb/LocaldbStoreErrorHand
 export { SyncManager } from './utils/localDb/SyncManager';
 export { SearchManager } from './utils/SearchManager';
 export { trpc } from './utils/trpc';
-export { getManifestDb, ObjectStoreName } from './utils/localDb';
+export {
+  getManifestDb,
+  ObjectStoreName,
+  getKvStoreEntry,
+  KVStoreKeys,
+} from './utils/localDb';
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export { NotFound } from './NotFound';
 export { Workspace } from './Workspace';
@@ -19,4 +24,7 @@ export { initI18Next } from './i18n/initI18Next';
 export { ShareviewApp } from './ShareviewApp';
 export { PrintviewApp } from './PrintviewApp';
 export * from './IonicReact19Compat';
-export { initDebugStoreConsoleMonkeypatch } from './utils/debugStore';
+export {
+  createSWDebugDump,
+  initDebugStoreConsoleMonkeypatch,
+} from './utils/debugStore';
