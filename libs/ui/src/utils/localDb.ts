@@ -128,7 +128,13 @@ const MIGRATION_VERSION = 4;
 const connect = () => {
   const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATION_VERSION, {
     blocking: async () => {
+      console.warn(
+        'Current database connection is blocking another connection',
+      );
+
       dbP.then((db) => {
+        console.warn('Closing and unblocking database connection');
+
         db.close();
 
         // This script can be used from a service worker, and if so we

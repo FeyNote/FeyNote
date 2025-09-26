@@ -36,6 +36,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { DebugDump } from './DebugDump';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -273,6 +274,11 @@ export const Settings: React.FC = () => {
             >
               {t('settings.help.contact')}
             </IonItem>
+            <DebugDump>
+              <IonItem lines="none" button detail={true}>
+                {t('settings.help.debugDownload')}
+              </IonItem>
+            </DebugDump>
           </IonList>
         </IonCard>
         <IonCard>

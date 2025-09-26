@@ -38,7 +38,10 @@ import {
   IonApp,
   PrintviewApp,
   LocaldbStoreErrorHandlers,
+  initDebugStoreConsoleMonkeypatch,
 } from '@feynote/ui';
+
+initDebugStoreConsoleMonkeypatch();
 
 initI18Next();
 
