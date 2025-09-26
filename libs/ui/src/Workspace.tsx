@@ -215,17 +215,46 @@ const MainGrid = styled.div<{
   transition: 0.4s;
 `;
 
+const LAST_PANE_STATE_LOCALSTORAGE_KEY = 'lastPaneState';
 export const Workspace: React.FC = () => {
   const { _model, _onActionListener, _onModelChangeListener } =
     useGlobalPaneContext();
   const { getPreference } = usePreferencesContext();
 
-  const [leftMenuOpen, setLeftMenuOpen] = useState(
-    getPreference(PreferenceNames.LeftPaneStartOpen),
-  );
-  const [rightMenuOpen, setRightMenuOpen] = useState(
-    getPreference(PreferenceNames.RightPaneStartOpen),
-  );
+  const [lastPaneState] = useState(() => {
+    return JSON.parse(
+      localStorage.getItem(LAST_PANE_STATE_LOCALSTORAGE_KEY) || '{}',
+    );
+  });
+  const [leftMenuOpen, setLeftMenuOpen] = useState(() => {
+    if (getPreference(PreferenceNames.PanesRememberOpenState)) {
+      return !!lastPaneState.leftPaneOpen;
+    } else {
+      return getPreference(PreferenceNames.LeftPaneStartOpen);
+    }
+  });
+  const [rightMenuOpen, setRightMenuOpen] = useState(() => {
+    if (getPreference(PreferenceNames.PanesRememberOpenState)) {
+      return !!lastPaneState.rightPaneOpen;
+    } else {
+      return getPreference(PreferenceNames.RightPaneStartOpen);
+    }
+  });
+
+  useEffect(() => {
+    if (
+      lastPaneState.leftPaneOpen !== leftMenuOpen ||
+      lastPaneState.rightPaneOpen !== rightMenuOpen
+    ) {
+      localStorage.setItem(
+        LAST_PANE_STATE_LOCALSTORAGE_KEY,
+        JSON.stringify({
+          leftPaneOpen: leftMenuOpen,
+          rightPaneOpen: rightMenuOpen,
+        }),
+      );
+    }
+  }, [leftMenuOpen, rightMenuOpen]);
 
   const toggleLeftSideMenu = () => {
     if (!leftMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {

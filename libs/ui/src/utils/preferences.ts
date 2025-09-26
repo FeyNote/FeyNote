@@ -21,11 +21,11 @@ export class PreferencesService {
   preferences: AppPreferences = {
     preferencesVersion: 0,
 
+    [PreferenceNames.PanesRememberOpenState]: true,
     [PreferenceNames.LeftPaneStartOpen]: true,
     [PreferenceNames.LeftPaneShowArtifactTree]: true,
     [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
-
     [PreferenceNames.RightPaneStartOpen]: true,
 
     [PreferenceNames.Language]: null,

@@ -138,6 +138,7 @@
   "settings.collaborationColor.darkorange": "Dark Orange",
   "settings.collaborationColor.red": "Red",
   "settings.collaborationColor.darkred": "Dark Red",
+  "settings.panesRememberOpenState": "Remember left & right menu open between restarts",
   "settings.leftSideMenu": "Start with left menu open",
   "settings.leftSideMenuShowArtifactTree": "Show document tree in left menu",
   "settings.leftSideMenuArtifactTreeShowUncategorized": "Show uncategorized documents section in document tree",

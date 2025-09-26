@@ -359,6 +359,26 @@ export const Settings: React.FC = () => {
             </IonListHeader>
             <IonItem lines="none" button>
               <IonToggle
+                checked={getPreference(PreferenceNames.PanesRememberOpenState)}
+                onIonChange={(event) => {
+                  setPreference(
+                    PreferenceNames.PanesRememberOpenState,
+                    event.detail.checked,
+                  );
+                  if (event.detail.checked) {
+                    setPreference(PreferenceNames.LeftPaneStartOpen, true);
+                    setPreference(PreferenceNames.RightPaneStartOpen, true);
+                  }
+                }}
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.panesRememberOpenState')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                disabled={getPreference(PreferenceNames.PanesRememberOpenState)}
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(
@@ -369,6 +389,22 @@ export const Settings: React.FC = () => {
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.leftSideMenu')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                disabled={getPreference(PreferenceNames.PanesRememberOpenState)}
+                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.RightPaneStartOpen,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.rightSideMenu')}
                 </IonLabel>
               </IonToggle>
             </IonItem>
@@ -420,21 +456,6 @@ export const Settings: React.FC = () => {
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.leftSideMenuShowRecentThreads')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.RightPaneStartOpen,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.rightSideMenu')}
                 </IonLabel>
               </IonToggle>
             </IonItem>
