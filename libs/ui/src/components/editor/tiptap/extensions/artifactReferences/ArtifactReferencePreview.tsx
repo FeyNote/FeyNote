@@ -8,7 +8,7 @@ import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoVie
 import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
 import { useSessionContext } from '../../../../../context/session/SessionContext';
 import { getFileUrlById } from '../../../../../utils/files/getFileUrlById';
-import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../../../../utils/collaboration/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
 import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWindow';
 

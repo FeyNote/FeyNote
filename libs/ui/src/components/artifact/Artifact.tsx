@@ -7,7 +7,7 @@ import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import {
   CollaborationConnectionAuthorizedScope,

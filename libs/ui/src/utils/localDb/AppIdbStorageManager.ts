@@ -8,8 +8,8 @@ import {
   KVStoreKeys,
   ObjectStoreName,
 } from './localDb';
-import { eventManager } from '../context/events/EventManager';
-import { EventName } from '../context/events/EventName';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 import type { ArtifactSnapshot } from '@feynote/global-types';
 
 export class AppIdbStorageManager {
@@ -19,6 +19,11 @@ export class AppIdbStorageManager {
       id: artifactId,
       version: new Date().getTime(),
     });
+  }
+
+  async getLastSyncedAt() {
+    const lastSyncedAt = await getKvStoreEntry(KVStoreKeys.LastSyncedAt);
+    return lastSyncedAt;
   }
 
   /**

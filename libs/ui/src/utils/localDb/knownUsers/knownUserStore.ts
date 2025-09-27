@@ -1,7 +1,7 @@
 import { eventManager } from '../../../context/events/EventManager';
 import { EventName } from '../../../context/events/EventName';
 import { trpc } from '../../trpc';
-import type { KnownUserDoc } from '../../localDb';
+import type { KnownUserDoc } from '../localDb';
 
 /**
  * Please do not interact with this class directly from React if avoidable.

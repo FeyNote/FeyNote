@@ -21,7 +21,7 @@ import {
   useGlobalPaneContext,
 } from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 
 const SearchContainer = styled.div`
   position: absolute;

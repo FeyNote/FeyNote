@@ -1,7 +1,7 @@
 import type { ArtifactAccessLevel } from '@prisma/client';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
-import type { KnownUserDoc } from '../../../utils/localDb';
+import type { KnownUserDoc } from '../../../utils/localDb/localDb';
 import { Button, DropdownMenu } from '@radix-ui/themes';
 
 const ItemRow = styled.div`

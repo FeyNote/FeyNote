@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { useTranslation } from 'react-i18next';
 import { downloadJSON } from '../../utils/downloadJSON';
-import { createDebugDump } from '../../utils/debugStore';
+import { createDebugDump } from '../../utils/localDb/debugStore';
 import { Grid, Switch } from '@radix-ui/themes';
 
 interface Props {

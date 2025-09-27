@@ -70,12 +70,13 @@ export function App() {
           }
         }, SW_UPDATE_INTERVAL_MS);
 
-        // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
+        registration?.sync?.register('manifest').catch((e: unknown) => {
+          console.error('Cannot register background sync', e);
+        });
+
+        // Periodic sync is not ratified yet and so therefore do not exist in typings
         const swRegistration = registration as unknown as
           | {
-              sync?: {
-                register: (name: string) => Promise<void>;
-              };
               periodicSync?: {
                 register: (
                   name: string,
@@ -84,10 +85,6 @@ export function App() {
               };
             }
           | undefined;
-
-        swRegistration?.sync?.register('manifest').catch((e: unknown) => {
-          console.error('Cannot register background sync', e);
-        });
 
         const PERIODIC_SYNC_INTERVAL_HOURS = 48;
         swRegistration?.periodicSync

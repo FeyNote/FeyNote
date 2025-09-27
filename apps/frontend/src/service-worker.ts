@@ -37,7 +37,7 @@ if (environment !== 'development') {
 
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { RouteHandlerCallbackOptions } from 'workbox-core';
+import { clientsClaim, RouteHandlerCallbackOptions } from 'workbox-core';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
@@ -276,10 +276,12 @@ const cacheListResponse = async (
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
+
+self.skipWaiting();
+clientsClaim();
+
 self.addEventListener('install', () => {
   console.log('Service Worker installed');
-
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {

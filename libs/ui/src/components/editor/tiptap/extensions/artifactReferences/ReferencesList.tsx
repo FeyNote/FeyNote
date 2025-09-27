@@ -28,14 +28,14 @@ import {
 } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
-import { createArtifact } from '../../../../../utils/createArtifact';
+import { createArtifact } from '../../../../../utils/localDb/createArtifact';
 import * as Sentry from '@sentry/react';
 import { useSessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
 import { usePreferencesContext } from '../../../../../context/preferences/PreferencesContext';
 import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
-import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../../../../utils/localDb/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
 
 const SuggestionListContainer = styled.div`

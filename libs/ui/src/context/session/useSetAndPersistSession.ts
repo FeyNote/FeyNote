@@ -1,4 +1,4 @@
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import { useGlobalPaneContext } from '../globalPane/GlobalPaneContext';
 import { SessionDTO } from '@feynote/shared-utils';
 

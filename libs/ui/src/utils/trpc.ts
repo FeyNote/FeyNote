@@ -1,10 +1,10 @@
 import type { AppRouter } from '@feynote/trpc';
 import { createTRPCProxyClient, httpLink, loggerLink } from '@trpc/client';
 import { getApiUrls } from './getApiUrls';
-import { appIdbStorageManager } from './AppIdbStorageManager';
+import { appIdbStorageManager } from './localDb/AppIdbStorageManager';
 import i18next from 'i18next';
 import { customTrpcTransformer } from '@feynote/shared-utils';
-import { captureTrpcRequest } from './debugStore';
+import { captureTrpcRequest } from './localDb/debugStore';
 
 export const trpc = createTRPCProxyClient<AppRouter>({
   links: [

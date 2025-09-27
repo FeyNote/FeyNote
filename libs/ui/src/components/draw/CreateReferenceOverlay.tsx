@@ -15,7 +15,7 @@ import {
 import { search } from 'ionicons/icons';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../calendar/CalendarSelectDate';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 
 const SearchContainer = styled.div`
   position: absolute;

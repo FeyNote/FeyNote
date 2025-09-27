@@ -13,7 +13,7 @@ import {
   getUserAccessFromYArtifact,
 } from '@feynote/shared-utils';
 import { Button, DropdownMenu } from '@radix-ui/themes';
-import type { KnownUserDoc } from '../../../utils/localDb';
+import type { KnownUserDoc } from '../../../utils/localDb/localDb';
 import { MultiArtifactSharingAddUserSearch } from './MultiArtifactSharingAddUserSearch';
 import { MultiArtifactSharingDialogUser } from './MultiArtifactSharingDialogUser';
 import styled from 'styled-components';

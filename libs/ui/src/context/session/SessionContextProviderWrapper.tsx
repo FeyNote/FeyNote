@@ -7,7 +7,7 @@ import {
 } from 'react';
 import * as Sentry from '@sentry/react';
 import { SessionContext, type SessionContextData } from './SessionContext';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
 import {

@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import type { ArtifactType } from '@prisma/client';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 
 export const NewArtifact: React.FC = () => {
   const { navigate } = usePaneContext();

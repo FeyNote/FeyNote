@@ -8,7 +8,7 @@ import {
   SupportedFontSize,
 } from '@feynote/shared-utils';
 import { trpc } from './trpc';
-import { appIdbStorageManager } from './AppIdbStorageManager';
+import { appIdbStorageManager } from './localDb/AppIdbStorageManager';
 import { getRandomColor } from './getRandomColor';
 
 const PREFERENCE_LOCALSTORAGE_KEY = 'preferences';

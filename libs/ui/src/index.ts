@@ -7,14 +7,14 @@ export { ToastContextProvider } from './context/toast/ToastContextProvider';
 export { Artifact } from './components/artifact/Artifact';
 export { LocaldbStoreErrorHandlers } from './utils/localDb/LocaldbStoreErrorHandlers';
 export { SyncManager } from './utils/localDb/SyncManager';
-export { SearchManager } from './utils/SearchManager';
+export { SearchManager } from './utils/localDb/SearchManager';
 export { trpc } from './utils/trpc';
 export {
   getManifestDb,
   ObjectStoreName,
   getKvStoreEntry,
   KVStoreKeys,
-} from './utils/localDb';
+} from './utils/localDb/localDb';
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export { NotFound } from './NotFound';
 export { Workspace } from './Workspace';
@@ -27,4 +27,4 @@ export * from './IonicReact19Compat';
 export {
   createSWDebugDump,
   initDebugStoreConsoleMonkeypatch,
-} from './utils/debugStore';
+} from './utils/localDb/debugStore';

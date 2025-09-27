@@ -839,6 +839,16 @@
   "template.introducingReferences.reference": "Astral Plane",
   "template.introducingReferences.p3": "If you update the text above, the welcome document will automatically update to reflect the changes. This is a powerful way to keep your content up-to-date and interconnected without managing it all yourself!",
 
+  "connectionStatus.online": "Online",
+  "connectionStatus.online.help": "You're online, and your content is cached locally. If you go offline, you can continue to edit your content.",
+  "connectionStatus.online.syncUnavailable.help": "You're online, but your browser does not support offline syncing. Using Firefox or Chrome will result in a faster, offline capable experience.",
+  "connectionStatus.offline": "Offline",
+  "connectionStatus.offline.help": "You're offline, but your changes will be synced to the server when you come back online as long as your browser is open.",
+  "connectionStatus.offline.syncUnavailable.help": "You're offline. Your browser does not support offline syncing, so your changes will NOT BE SAVED. Using Firefox or Chrome will result in a faster, offline capable experience.",
+  "connectionStatus.lastSynced": "Last Sync: {{lastSyncedAt}}",
+  "connectionStatus.neverSynced": "Last Sync: never",
+  "connectionStatus.syncUnavailable": "Sync & offline functionality not available!",
+
   "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
 
   "generic.error": "Error",

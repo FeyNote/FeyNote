@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { collaborationManager } from './collaborationManager';
+import { getCollaborationManager } from './collaborationManager';
 import { useSessionContext } from '../../context/session/SessionContext';
 
 /**
@@ -11,17 +11,19 @@ import { useSessionContext } from '../../context/session/SessionContext';
 export const useCollaborationConnection = (docName: string) => {
   const { session } = useSessionContext();
   const currentConnection =
-    useRef<ReturnType<typeof collaborationManager.get>>(undefined);
+    useRef<ReturnType<ReturnType<typeof getCollaborationManager>['get']>>(
+      undefined,
+    );
 
   if (!currentConnection.current) {
-    currentConnection.current = collaborationManager.get(docName, session);
+    currentConnection.current = getCollaborationManager().get(docName, session);
   }
 
   useEffect(() => {
     // WARN: Cleanup the initially-instantiated collaboration connection when this hook first rendered. This is critical.
     currentConnection.current?.release();
 
-    const connection = collaborationManager.get(docName, session);
+    const connection = getCollaborationManager().get(docName, session);
     currentConnection.current = connection;
 
     return () => {

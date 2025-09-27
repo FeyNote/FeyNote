@@ -17,7 +17,7 @@ import {
   KVStoreKeys,
   ObjectStoreName,
 } from './localDb';
-import { getIsViteDevelopment } from './getIsViteDevelopment';
+import { getIsViteDevelopment } from '../getIsViteDevelopment';
 
 /**
  * Enables some additional logging which is helpful for debugging

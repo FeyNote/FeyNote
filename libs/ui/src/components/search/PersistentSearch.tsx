@@ -2,7 +2,7 @@ import { IonIcon, IonInput, IonItem, IonLabel } from '@ionic/react';
 import { useEffect, useState, type MouseEvent } from 'react';
 import { trpc } from '../../utils/trpc';
 import { usePaneContext } from '../../context/pane/PaneContext';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import {

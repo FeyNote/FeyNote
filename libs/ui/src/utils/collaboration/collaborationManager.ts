@@ -7,9 +7,11 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
 import { ARTIFACT_META_KEY, type SessionDTO } from '@feynote/shared-utils';
 import { incrementVersionForChangesOnArtifact } from '../localDb/incrementVersionForChangesOnArtifact';
-import { appIdbStorageManager } from '../AppIdbStorageManager';
+import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 15000;
 const TIPTAP_COLLAB_AUTORELEASE_WAIT_MS = 2000;
@@ -170,24 +172,63 @@ export class CollaborationManagerConnection {
   }
 }
 
+export enum CollaborationManagerEventName {
+  NewWSInstance = 'newWSInstance',
+}
+
 class CollaborationManager {
   private session: SessionDTO | null = null;
 
-  private ws = this.getNewWsInstance();
+  private ws = this.constructNewWSInstance();
 
+  private eventListeners = new Map<
+    CollaborationManagerEventName,
+    Set<() => void>
+  >();
   private connectionByDocName = new Map<
     string,
     CollaborationManagerConnection
   >();
   private reservationsByDocName = new Map<string, Set<object>>();
 
-  private getNewWsInstance() {
+  private _lastSyncedAt: Date | undefined = undefined;
+  get lastSyncedAt() {
+    return this._lastSyncedAt;
+  }
+
+  constructor() {
+    this.updateLastSyncedAt();
+    eventManager.addEventListener(EventName.LocaldbSyncCompleted, () => {
+      this.updateLastSyncedAt();
+    });
+  }
+
+  getWSInstance() {
+    return this.ws;
+  }
+
+  private async updateLastSyncedAt() {
+    this._lastSyncedAt = await appIdbStorageManager.getLastSyncedAt();
+  }
+
+  private constructNewWSInstance() {
     return new HocuspocusProviderWebsocket({
       url: getApiUrls().hocuspocus,
       delay: 1000,
       minDelay: 1000,
       maxDelay: 10000,
     });
+  }
+
+  on(eventName: CollaborationManagerEventName, listener: () => void) {
+    const listeners = this.eventListeners.get(eventName) ?? new Set();
+    listeners.add(listener);
+    this.eventListeners.set(eventName, listeners);
+  }
+  off(eventName: CollaborationManagerEventName, listener: () => void) {
+    const listeners = this.eventListeners.get(eventName) ?? new Set();
+    listeners.delete(listener);
+    this.eventListeners.set(eventName, listeners);
   }
 
   get(docName: string, session: SessionDTO | null) {
@@ -254,11 +295,18 @@ class CollaborationManager {
   destroy() {
     this.disconnectAll();
     this.ws.destroy();
-    this.ws = this.getNewWsInstance();
+    this.ws = this.constructNewWSInstance();
   }
 }
 
-export const collaborationManager = new CollaborationManager();
+let collaborationManager: CollaborationManager | undefined = undefined;
+export const getCollaborationManager = () => {
+  if (collaborationManager) {
+    return collaborationManager;
+  }
+  collaborationManager = new CollaborationManager();
+  return collaborationManager;
+};
 
 /**
  * This handler follows a very similar pattern to storage with* handlers.
@@ -276,7 +324,10 @@ export const withCollaborationConnection = async <T>(
   timeout = 15000,
 ): Promise<T> => {
   const session = await appIdbStorageManager.getSession();
-  const { connection, release } = collaborationManager.get(docName, session);
+  const { connection, release } = getCollaborationManager().get(
+    docName,
+    session,
+  );
 
   await connection.syncedPromise.catch((e) => {
     release();
@@ -312,7 +363,10 @@ export const getSelfManagedCollaborationConnection = async (
   release: () => void;
 }> => {
   const session = await appIdbStorageManager.getSession();
-  const { connection, release } = collaborationManager.get(docName, session);
+  const { connection, release } = getCollaborationManager().get(
+    docName,
+    session,
+  );
 
   let released = false;
   setTimeout(() => {

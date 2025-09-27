@@ -4,12 +4,12 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { ArtifactLinkDropdownMenu } from './ArtifactLinkContextMenu';
 import { DropdownMenu } from '@radix-ui/themes';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
-import { duplicateArtifact } from '../../utils/duplicateArtifact';
+import { duplicateArtifact } from '../../utils/localDb/duplicateArtifact';
 
 interface Props {
   artifactId: string;

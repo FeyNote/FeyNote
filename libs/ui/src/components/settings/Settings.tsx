@@ -360,16 +360,12 @@ export const Settings: React.FC = () => {
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.PanesRememberOpenState)}
-                onIonChange={(event) => {
+                onIonChange={(event) =>
                   setPreference(
                     PreferenceNames.PanesRememberOpenState,
                     event.detail.checked,
-                  );
-                  if (event.detail.checked) {
-                    setPreference(PreferenceNames.LeftPaneStartOpen, true);
-                    setPreference(PreferenceNames.RightPaneStartOpen, true);
-                  }
-                }}
+                  )
+                }
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.panesRememberOpenState')}
@@ -378,7 +374,6 @@ export const Settings: React.FC = () => {
             </IonItem>
             <IonItem lines="none" button>
               <IonToggle
-                disabled={getPreference(PreferenceNames.PanesRememberOpenState)}
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(
@@ -394,7 +389,6 @@ export const Settings: React.FC = () => {
             </IonItem>
             <IonItem lines="none" button>
               <IonToggle
-                disabled={getPreference(PreferenceNames.PanesRememberOpenState)}
                 checked={getPreference(PreferenceNames.RightPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(

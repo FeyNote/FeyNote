@@ -25,7 +25,7 @@ import { IonItem } from '@ionic/react';
 import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import styled from 'styled-components';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
 
 const BottomSpacer = styled.div`

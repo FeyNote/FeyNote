@@ -8,7 +8,7 @@ import { IonItem } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
 import type { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';

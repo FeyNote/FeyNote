@@ -14,7 +14,7 @@ import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboratio
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { Doc as YDoc } from 'yjs';
 import { usePaneContext } from '../../context/pane/PaneContext';
-import { duplicateArtifact } from '../../utils/duplicateArtifact';
+import { duplicateArtifact } from '../../utils/localDb/duplicateArtifact';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -76,7 +76,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
 
   const isEditable = [
     CollaborationConnectionAuthorizedScope.CoOwner,
-    CollaborationConnectionAuthorizedScope.CoOwner,
+    CollaborationConnectionAuthorizedScope.ReadWrite,
   ].includes(props.authorizedScope);
 
   const file = (

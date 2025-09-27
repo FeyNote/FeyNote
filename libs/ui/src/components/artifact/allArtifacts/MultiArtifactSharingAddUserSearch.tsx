@@ -4,8 +4,8 @@ import { Box, Card, TextField, Text } from '@radix-ui/themes';
 import { GiMagnifyingGlass } from 'react-icons/gi';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
-import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
-import type { KnownUserDoc } from '../../../utils/localDb';
+import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';
+import type { KnownUserDoc } from '../../../utils/localDb/localDb';
 import styled from 'styled-components';
 
 const SectionHeader = styled.h2`

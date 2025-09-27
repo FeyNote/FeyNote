@@ -4,7 +4,7 @@ import {
   CollaborationManagerConnectionAuthenticationStatus,
   HocuspocusAuthorizedScope,
 } from './collaborationManager';
-import { useArtifactAccessLevel } from '../useArtifactAccessLevel';
+import { useArtifactAccessLevel } from './useArtifactAccessLevel';
 import { useCollaborationConnectionStatus } from './useCollaborationConnectionStatus';
 
 /**

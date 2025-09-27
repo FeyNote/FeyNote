@@ -3,7 +3,7 @@ import { trpc } from '../trpc';
 import { FileStreamEncoder } from '@feynote/shared-utils';
 import axios from 'axios';
 import { getApiUrls } from '../getApiUrls';
-import { appIdbStorageManager } from '../AppIdbStorageManager';
+import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 
 export const uploadFileToApi = async (args: {
   file: File;

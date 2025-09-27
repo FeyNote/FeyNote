@@ -163,7 +163,7 @@ const Menu = styled.div<{
   $side: 'left' | 'right';
   $open: boolean;
 }>`
-  max-height: 100vh;
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: var(--ion-background-color);
@@ -185,6 +185,8 @@ const Menu = styled.div<{
 
 const MenuInner = styled.div`
   width: ${MENU_SIZE_PX}px;
+  min-height: 100%;
+  overflow: hidden;
 `;
 
 const MenuButton = styled(IonButton)`
@@ -228,14 +230,20 @@ export const Workspace: React.FC = () => {
   });
   const [leftMenuOpen, setLeftMenuOpen] = useState(() => {
     if (getPreference(PreferenceNames.PanesRememberOpenState)) {
-      return !!lastPaneState.leftPaneOpen;
+      return !!(
+        lastPaneState.leftPaneOpen ??
+        getPreference(PreferenceNames.LeftPaneStartOpen)
+      );
     } else {
       return getPreference(PreferenceNames.LeftPaneStartOpen);
     }
   });
   const [rightMenuOpen, setRightMenuOpen] = useState(() => {
     if (getPreference(PreferenceNames.PanesRememberOpenState)) {
-      return !!lastPaneState.rightPaneOpen;
+      return !!(
+        lastPaneState.rightPaneOpen ??
+        getPreference(PreferenceNames.RightPaneStartOpen)
+      );
     } else {
       return getPreference(PreferenceNames.RightPaneStartOpen);
     }

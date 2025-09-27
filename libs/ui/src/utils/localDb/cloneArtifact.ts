@@ -1,7 +1,7 @@
-import { trpc } from './trpc';
+import { trpc } from '../trpc';
 import { applyUpdate, encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
-import { randomizeContentUUIDsInYDoc } from './edgesReferences/randomizeContentUUIDsInYDoc';
+import { randomizeContentUUIDsInYDoc } from '../edgesReferences/randomizeContentUUIDsInYDoc';
 
 export const cloneArtifact = async (args: {
   title: string;

@@ -8,7 +8,7 @@ import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';

@@ -1,6 +1,6 @@
 import { deleteDB } from 'idb';
 import * as Sentry from '@sentry/browser';
-import type { SearchManager } from '../SearchManager';
+import type { SearchManager } from './SearchManager';
 import {
   HocuspocusProvider,
   HocuspocusProviderWebsocket,
@@ -17,9 +17,9 @@ import {
   ImmediateDebouncer,
   type Manifest,
 } from '@feynote/shared-utils';
-import { getManifestDb, KVStoreKeys, ObjectStoreName } from '../localDb';
+import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 import { waitFor } from '../waitFor';
-import { appIdbStorageManager } from '../AppIdbStorageManager';
+import { appIdbStorageManager } from './AppIdbStorageManager';
 import { websocketClient } from '../../context/events/websocketClient';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';

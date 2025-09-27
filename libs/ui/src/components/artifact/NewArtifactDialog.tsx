@@ -7,7 +7,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
 import type { ArtifactType } from '@prisma/client';
 import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 interface Props {

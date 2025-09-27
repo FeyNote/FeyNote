@@ -1,5 +1,5 @@
 import { io } from 'socket.io-client';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import { eventManager } from './EventManager';
 import { EventName } from './EventName';
 import { getApiUrls } from '../../utils/getApiUrls';

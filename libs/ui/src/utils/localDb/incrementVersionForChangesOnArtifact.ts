@@ -5,7 +5,7 @@ import type {
   Map as YMap,
   Array as YArray,
 } from 'yjs';
-import { appIdbStorageManager } from '../AppIdbStorageManager';
+import { appIdbStorageManager } from './AppIdbStorageManager';
 import {
   ARTIFACT_META_KEY,
   ARTIFACT_TIPTAP_BODY_KEY,

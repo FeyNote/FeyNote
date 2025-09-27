@@ -28,12 +28,12 @@ import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
-import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../../utils/collaboration/useObserveYArtifactMeta';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
 } from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
-import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
+import { useObserveYArtifactUserAccess } from '../../../utils/collaboration/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
