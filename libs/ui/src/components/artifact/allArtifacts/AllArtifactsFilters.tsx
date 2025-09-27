@@ -6,6 +6,7 @@ import { Button } from '@radix-ui/themes';
 import { CiUser } from 'react-icons/ci';
 import { IoDocument } from 'react-icons/io5';
 import { TbCirclesRelation } from 'react-icons/tb';
+import { AllArtifactsFilterTitleText } from './AllArtifactsFilterTitleText';
 
 export enum AllArtifactsOrphansDisplaySetting {
   Include = 'include',
@@ -31,6 +32,7 @@ const allArtifactsOrphansDisplaySettingToI18n: Record<
 };
 
 export interface FilterOptions {
+  havingTitleText: string;
   byUser: ReadonlySet<string>;
   orphans: AllArtifactsOrphansDisplaySetting;
   onlyRelatedTo: ReadonlySet<string>;
@@ -63,6 +65,11 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
 
   return (
     <>
+      <AllArtifactsFilterTitleText
+        currentFilters={props.currentFilters}
+        onCurrentFiltersChange={props.onCurrentFiltersChange}
+      />
+
       <SelectDialog
         onChange={(value) => {
           const final =

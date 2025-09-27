@@ -24,6 +24,7 @@ import { ArtifactLinkContextMenu } from '../ArtifactLinkContextMenu';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 `;
 
@@ -115,6 +116,7 @@ export const AllArtifacts: React.FC = () => {
 
   // Allows user to filter by several different properties
   const [filters, setFilters] = useState<FilterOptions>(() => ({
+    havingTitleText: '',
     byUser: new Set(),
     orphans: AllArtifactsOrphansDisplaySetting.Include,
     onlyRelatedTo: new Set(),
@@ -122,6 +124,7 @@ export const AllArtifacts: React.FC = () => {
   }));
 
   const activeFilterCount =
+    Number(!!filters.havingTitleText.length) +
     Number(!!filters.byUser.size) +
     Number(filters.orphans !== AllArtifactsOrphansDisplaySetting.Include) +
     Number(!!filters.onlyRelatedTo.size) +
@@ -131,6 +134,15 @@ export const AllArtifacts: React.FC = () => {
     return artifactSnapshots
       ?.filter((artifact) => {
         if (!artifact.meta.userId) return false;
+
+        if (
+          filters.havingTitleText &&
+          !artifact.meta.title
+            .toLowerCase()
+            .includes(filters.havingTitleText.toLowerCase())
+        ) {
+          return false;
+        }
 
         if (filters.byUser.size && !filters.byUser.has(artifact.meta.userId)) {
           return false;

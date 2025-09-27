@@ -376,6 +376,8 @@
   "allArtifacts.filter.onlyIncludeTypes.tiptap": "Text Documents",
   "allArtifacts.filter.onlyIncludeTypes.calendar": "Calendar Documents",
   "allArtifacts.filter.onlyIncludeTypes.tldraw": "Drawing Documents",
+  "allArtifacts.filter.titleText": "Search",
+  "allArtifacts.filter.titleText.placeholder": "Filter by Title...",
   "allArtifacts.filter.byUser.title": "Users",
   "allArtifacts.filter.byUser.title.active": "Users ({{count}})",
   "allArtifacts.filter.byUser.modalTitle": "Only Show Documents Owned By",
