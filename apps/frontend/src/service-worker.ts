@@ -264,9 +264,6 @@ const cacheListResponse = async (
   } catch (e) {
     console.log(`Request failed`, e);
 
-    // TODO: check response for statuscode
-    // since we don't want to eat unauthorized errors
-
     const manifestDb = await getManifestDb();
     const cachedItems = await manifestDb.getAll(objectStoreName);
 
