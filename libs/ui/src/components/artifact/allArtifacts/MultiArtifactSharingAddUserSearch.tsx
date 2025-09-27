@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, TextField, Text } from '@radix-ui/themes';
-import { GiMagnifyingGlass } from '../../AppIcons';
+import { IoSearch } from '../../AppIcons';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';
@@ -105,7 +105,7 @@ export const MultiArtifactSharingAddUserSearch: React.FC<Props> = (props) => {
         }}
       >
         <TextField.Slot>
-          <GiMagnifyingGlass height="16" width="16" />
+          <IoSearch height="16" width="16" />
         </TextField.Slot>
       </TextField.Root>
       {searchResult ? (

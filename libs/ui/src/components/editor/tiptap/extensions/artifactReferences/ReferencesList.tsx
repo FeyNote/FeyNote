@@ -10,7 +10,7 @@ import {
   MdDraw,
   MdHorizontalRule,
   MdOutlineShortText,
-  MdSearch,
+  IoSearch,
   IoCalendar,
   IoDocument,
 } from '../../../../AppIcons';
@@ -654,7 +654,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       <SuggestionListContainer>
         <SuggestionListItem $selected={false}>
           <SuggestionListItemIcon>
-            <MdSearch size={18} />
+            <IoSearch size={18} />
           </SuggestionListItemIcon>
           <SuggestionListItemText>
             <SuggestionListItemTitle>

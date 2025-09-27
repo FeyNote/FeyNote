@@ -26,11 +26,7 @@ export {
   FaMinus,
 } from 'react-icons/fa';
 
-export {
-  GiBroadsword,
-  GiMonsterGrasp,
-  GiMagnifyingGlass,
-} from 'react-icons/gi';
+export { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 
 export {
   IoAdd,
@@ -39,6 +35,7 @@ export {
   IoChevronForward,
   IoDocument,
   IoCloudOutline,
+  IoSearch,
 } from 'react-icons/io5';
 
 export {
@@ -65,7 +62,6 @@ export {
   MdDraw,
   MdHorizontalRule,
   MdOutlineShortText,
-  MdSearch,
 } from 'react-icons/md';
 
 export {

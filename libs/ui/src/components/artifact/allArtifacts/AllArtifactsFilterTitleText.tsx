@@ -2,7 +2,7 @@ import { Box, Button, TextField } from '@radix-ui/themes';
 import type { FilterOptions } from './AllArtifactsFilters';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GiMagnifyingGlass } from '../../AppIcons';
+import { IoSearch } from '../../AppIcons';
 
 interface Props {
   currentFilters: FilterOptions;
@@ -28,7 +28,7 @@ export const AllArtifactsFilterTitleText: React.FC<Props> = (props) => {
           }
         }}
       >
-        <GiMagnifyingGlass width="16" height="16" />
+        <IoSearch width="16" height="16" />
         {t('allArtifacts.filter.titleText')}
       </Button>
 
@@ -47,7 +47,7 @@ export const AllArtifactsFilterTitleText: React.FC<Props> = (props) => {
             autoFocus={true}
           >
             <TextField.Slot>
-              <GiMagnifyingGlass height="16" width="16" />
+              <IoSearch height="16" width="16" />
             </TextField.Slot>
           </TextField.Root>
         </Box>
