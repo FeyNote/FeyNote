@@ -1,6 +1,7 @@
 import { program } from 'commander';
 import { reindexArtifacts } from './reindexArtifacts';
 import { convertMessagesV4ToV5 } from './convertMessagesV4ToV5';
+import { decryptDebugDump } from './decryptDebugDump';
 
 program
   .command('reindex')
@@ -42,6 +43,26 @@ program
     const cooldown = parseInt(options.cooldown);
 
     convertMessagesV4ToV5(pageSize, cooldown, true);
+  });
+
+program
+  .command('decryptDebugDump')
+  .option(
+    '--filename <string>',
+    'The path to the encrypted dump file',
+    'encrypted-dump.json',
+  )
+  .option(
+    '--outFilename <string>',
+    'The path to the encrypted dump file',
+    'decrypted-dump.json',
+  )
+  .description('Decrypt an encrypted debug dump file from Feynote')
+  .action((options) => {
+    decryptDebugDump({
+      filename: options.filename,
+      outFilename: options.outFilename,
+    });
   });
 
 program.parse(process.argv);

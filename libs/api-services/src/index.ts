@@ -70,3 +70,5 @@ export * from './lib/payments/stripe';
 export * from './lib/axios/proxyGetRequest';
 
 export * from './lib/converters/htmlToMarkdown';
+
+export * from './lib/crypto/decryptWithRSAKey';

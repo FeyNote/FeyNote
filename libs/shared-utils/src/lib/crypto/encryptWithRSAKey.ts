@@ -72,7 +72,8 @@ export async function encryptBlobWithRSAKey(
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv: initializationVector },
     aesKey,
-    u8arr,
+    // The cast here is required because of NodeJS vs Browser type deficiencies
+    u8arr as unknown as ArrayBuffer,
   );
 
   // Export AES key and wrap with RSA-OAEP

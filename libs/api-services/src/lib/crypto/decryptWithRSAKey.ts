@@ -1,5 +1,5 @@
-import * as crypto from 'crypto';
-import { EncryptedOutput } from './encryptWithRSAKey';
+import type { EncryptedOutput } from '@feynote/shared-utils';
+import { constants, privateDecrypt, createDecipheriv } from 'crypto';
 
 /**
  * Decrypt a payload produced by encryptWithRSAKey.
@@ -19,10 +19,10 @@ export function decryptWithRSAKey(
   }
 
   // Unwrap AES key with RSA-OAEP-SHA256
-  const rawAesKey = crypto.privateDecrypt(
+  const rawAesKey = privateDecrypt(
     {
       key: privateKeyPem,
-      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      padding: constants.RSA_PKCS1_OAEP_PADDING,
       oaepHash: 'sha256',
     },
     Buffer.from(data.key, 'base64'),
@@ -34,7 +34,7 @@ export function decryptWithRSAKey(
   const ciphertext = ctBuf.subarray(0, ctBuf.length - 16);
 
   // AES-GCM decrypt
-  const decipher = crypto.createDecipheriv(
+  const decipher = createDecipheriv(
     'aes-256-gcm',
     rawAesKey,
     Buffer.from(data.iv, 'base64'),
