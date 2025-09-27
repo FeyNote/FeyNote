@@ -23,7 +23,7 @@ import {
   RiStrikethrough,
   RiText,
   RiUnderline,
-} from 'react-icons/ri';
+} from '../../../../AppIcons';
 import {
   MenuButton,
   MenuButtonText,

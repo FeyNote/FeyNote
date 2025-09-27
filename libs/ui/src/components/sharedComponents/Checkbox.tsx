@@ -1,6 +1,6 @@
 import { Checkbox as RadixCheckbox } from 'radix-ui';
 import type { MouseEventHandler } from 'react';
-import { FaCheck, FaMinus } from 'react-icons/fa';
+import { FaCheck, FaMinus } from '../AppIcons';
 import styled from 'styled-components';
 
 const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{

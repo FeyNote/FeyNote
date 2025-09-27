@@ -2,7 +2,7 @@ import type { ArtifactSnapshot } from '@feynote/global-types';
 import { IonIcon } from '@ionic/react';
 import type { ArtifactType } from '@prisma/client';
 import { calendar, document, pencil } from 'ionicons/icons';
-import { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
+import { CiInboxIn, CiInboxOut, CiUser } from '../../AppIcons';
 import styled from 'styled-components';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';

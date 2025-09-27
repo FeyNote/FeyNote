@@ -6,7 +6,7 @@ import { useGlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
 import { usePreferencesContext } from './context/preferences/PreferencesContext';
-import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
+import { LuPanelLeft, LuPanelRight } from './components/AppIcons';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';

@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 import { Component } from 'react';
-import { MdHorizontalRule } from 'react-icons/md';
+import { MdHorizontalRule } from '../../../../AppIcons';
 import styled from 'styled-components';
 
 const SuggestionListContainer = styled.div`

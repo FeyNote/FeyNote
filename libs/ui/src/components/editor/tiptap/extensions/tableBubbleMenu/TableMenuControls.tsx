@@ -1,5 +1,4 @@
 import type { Editor } from '@tiptap/core';
-import { CgExtensionRemove } from 'react-icons/cg';
 import {
   RiDeleteColumn,
   RiDeleteRow,
@@ -10,7 +9,8 @@ import {
   RiLayoutColumnFill,
   RiLayoutRowFill,
   RiTableFill,
-} from 'react-icons/ri';
+  CgExtensionRemove,
+} from '../../../../AppIcons';
 import {
   MenuButton,
   MenuControlsContainer,

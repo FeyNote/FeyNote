@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, TextField, Text } from '@radix-ui/themes';
-import { GiMagnifyingGlass } from 'react-icons/gi';
+import { GiMagnifyingGlass } from '../../AppIcons';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
 import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';

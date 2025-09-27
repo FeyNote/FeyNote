@@ -1,10 +1,9 @@
 import styled from 'styled-components';
 import { useOnlineStatus } from '../../utils/collaboration/useOnlineStatus';
-import { IoCloudOutline } from 'react-icons/io5';
+import { IoCloudOutline, TbCloudQuestion, TbCloudX } from '../AppIcons';
 import { useLastSyncedAt } from '../../utils/localDb/useLastSyncedAt';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
-import { TbCloudQuestion, TbCloudX } from 'react-icons/tb';
 
 const Container = styled.div`
   font-size: 0.82rem;

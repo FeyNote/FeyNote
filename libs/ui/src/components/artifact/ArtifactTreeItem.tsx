@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
-import { IoChevronDown, IoChevronForward } from 'react-icons/io5';
+import { IoChevronDown, IoChevronForward } from '../AppIcons';
 
 const TreeListItem = styled.li<{
   $draggingOver: boolean;

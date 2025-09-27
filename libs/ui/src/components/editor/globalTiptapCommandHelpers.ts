@@ -1,8 +1,8 @@
 import type { Editor, Range } from '@tiptap/core';
-import { CgNotes } from 'react-icons/cg';
-import { GiMonsterGrasp } from 'react-icons/gi';
 import type { IconType } from 'react-icons/lib';
 import {
+  GiMonsterGrasp,
+  CgNotes,
   LuHeading1,
   LuHeading2,
   LuHeading3,
@@ -16,14 +16,8 @@ import {
   LuRedo,
   LuTable,
   LuUndo,
-} from 'react-icons/lu';
-import { MdHorizontalRule } from 'react-icons/md';
-import { RxMagicWand } from 'react-icons/rx';
-import {
-  liftBlockOrListItem,
-  sinkBlockOrListItem,
-} from './tiptap/extensions/indentation/IndentationExtension';
-import {
+  MdHorizontalRule,
+  RxMagicWand,
   RiAlignCenter,
   RiAlignLeft,
   RiAlignRight,
@@ -38,7 +32,11 @@ import {
   RiScissorsCutLine,
   RiStrikethrough,
   RiUnderline,
-} from 'react-icons/ri';
+} from '../AppIcons';
+import {
+  liftBlockOrListItem,
+  sinkBlockOrListItem,
+} from './tiptap/extensions/indentation/IndentationExtension';
 
 export type GlobalTiptapCommandHelperEntry = {
   title: string;

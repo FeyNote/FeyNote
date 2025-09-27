@@ -1,7 +1,6 @@
 import { Button, DropdownMenu } from '@radix-ui/themes';
 import type { Editor } from '@tiptap/core';
 import { useTranslation } from 'react-i18next';
-import { LuHeading, LuList } from 'react-icons/lu';
 import styled from 'styled-components';
 import {
   RiAlignLeft,
@@ -9,7 +8,10 @@ import {
   RiFontFamily,
   RiPrinterLine,
   RiText,
-} from 'react-icons/ri';
+  LuHeading,
+  LuList,
+  IoAdd,
+} from '../AppIcons';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { Doc as YDoc } from 'yjs';
@@ -18,7 +20,6 @@ import { duplicateArtifact } from '../../utils/localDb/duplicateArtifact';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { IoAdd } from 'react-icons/io5';
 import {
   globalTiptapCommandHelpers,
   type GlobalTiptapCommandHelperEntry,

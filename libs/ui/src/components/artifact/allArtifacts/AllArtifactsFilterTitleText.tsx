@@ -2,7 +2,7 @@ import { Box, Button, TextField } from '@radix-ui/themes';
 import type { FilterOptions } from './AllArtifactsFilters';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { GiMagnifyingGlass } from 'react-icons/gi';
+import { GiMagnifyingGlass } from '../../AppIcons';
 
 interface Props {
   currentFilters: FilterOptions;

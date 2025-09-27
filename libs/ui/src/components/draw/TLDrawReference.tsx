@@ -21,7 +21,9 @@ import {
   FaMapPin,
   FaStar,
   FaTree,
-} from 'react-icons/fa';
+  GiBroadsword,
+  GiMonsterGrasp,
+} from '../AppIcons';
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useContext, useMemo, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
@@ -30,7 +32,6 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
-import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 import styled from 'styled-components';
 import {
   ReferenceShapeIconOptions,

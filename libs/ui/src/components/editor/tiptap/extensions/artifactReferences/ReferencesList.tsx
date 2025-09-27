@@ -11,8 +11,9 @@ import {
   MdHorizontalRule,
   MdOutlineShortText,
   MdSearch,
-} from 'react-icons/md';
-import { IoCalendar, IoDocument } from 'react-icons/io5';
+  IoCalendar,
+  IoDocument,
+} from '../../../../AppIcons';
 import { t } from 'i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
 import {

@@ -3,9 +3,7 @@ import { SelectDialog } from '../../sharedComponents/SelectDialog';
 import type { ArtifactType } from '@prisma/client';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { Button } from '@radix-ui/themes';
-import { CiUser } from 'react-icons/ci';
-import { IoDocument } from 'react-icons/io5';
-import { TbCirclesRelation } from 'react-icons/tb';
+import { CiUser, IoDocument, TbCirclesRelation } from '../../AppIcons';
 import { AllArtifactsFilterTitleText } from './AllArtifactsFilterTitleText';
 
 export enum AllArtifactsOrphansDisplaySetting {
