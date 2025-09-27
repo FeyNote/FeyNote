@@ -3,8 +3,13 @@ export * from './lib/calendar/generateGregorianMondayCalendarConfig';
 export * from './lib/calendar/generateSessionCalendarConfig';
 export * from './lib/calendar/YCalendarConfig';
 export * from './lib/calendar/YCalendarMap';
+
+export * from './lib/crypto/DEBUG_DUMP_PUBLIC_KEY';
+export * from './lib/crypto/decryptWithRSAKey';
+export * from './lib/crypto/encryptWithRSAKey';
 export * from './lib/crypto/sha256Hex';
 export * from './lib/crypto/hmacSha256Hex';
+
 export * from './lib/edgesReferences/getEdgeId';
 export * from './lib/validation/assert';
 export * from './lib/validation/getArtifactAccessLevel';

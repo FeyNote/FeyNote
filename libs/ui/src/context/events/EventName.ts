@@ -6,6 +6,7 @@ export enum EventName {
 
   WebsocketError = 'websocket.error',
   WebsocketReconnect = 'websocket.reconnect',
+  WebsocketStatusChanged = 'websocket.statusChanged',
 
   LocaldbSessionUpdated = 'localdb.sessionUpdated',
   LocaldbEdgesUpdated = 'localdb.edgesUpdated',

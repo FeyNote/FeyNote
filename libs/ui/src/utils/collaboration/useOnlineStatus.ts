@@ -3,20 +3,32 @@ import {
   CollaborationManagerEventName,
   getCollaborationManager,
 } from './collaborationManager';
+import { websocketClient } from '../../context/events/websocketClient';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 
 export const useOnlineStatus = () => {
-  const [onlineStatus, setOnlineStatus] = useState(navigator.onLine);
-  const [connectionStatus, setConnectionStatus] = useState(
-    getCollaborationManager().getWSInstance().status,
+  const getIsServiceWorkerAvailable = () => {
+    return navigator.serviceWorker.controller?.state === 'activated';
+  };
+  const [serviceWorkerIsAvailable, setServiceWorkerIsAvailable] = useState(
+    getIsServiceWorkerAvailable(),
+  );
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [hocuspocusIsConnected, setHocuspocusIsConnected] = useState(
+    getCollaborationManager().getWSInstance().status === 'connected',
+  );
+  const [websocketIsConnected, setWebsocketIsConnected] = useState(
+    websocketClient.connected,
   );
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {
     const onlineListener = () => {
-      setOnlineStatus(true);
+      setIsOnline(true);
     };
     const offlineListener = () => {
-      setOnlineStatus(false);
+      setIsOnline(false);
     };
 
     window.addEventListener('online', onlineListener);
@@ -32,7 +44,7 @@ export const useOnlineStatus = () => {
     const wsInstance = getCollaborationManager().getWSInstance();
 
     const listener = () => {
-      setConnectionStatus(wsInstance.status);
+      setHocuspocusIsConnected(wsInstance.status === 'connected');
     };
 
     const wsEvents = ['status', 'open', 'connect', 'disconnect'];
@@ -62,8 +74,36 @@ export const useOnlineStatus = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const listener = () => {
+      setServiceWorkerIsAvailable(getIsServiceWorkerAvailable());
+    };
+
+    navigator.serviceWorker.addEventListener('controllerchange', listener);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('controllerchange', listener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const listener = () => {
+      setWebsocketIsConnected(websocketClient.connected);
+    };
+
+    eventManager.addEventListener([EventName.WebsocketStatusChanged], listener);
+    return () => {
+      eventManager.removeEventListener(
+        [EventName.WebsocketStatusChanged],
+        listener,
+      );
+    };
+  }, []);
+
   return {
-    onlineStatus,
-    connectionStatus,
+    isOnline,
+    serviceWorkerIsAvailable,
+    hocuspocusIsConnected,
+    websocketIsConnected,
   };
 };

@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { useTranslation } from 'react-i18next';
-import { downloadJSON } from '../../utils/downloadJSON';
+import { downloadBlobpartsAsFile } from '../../utils/downloadBlobpartsAsFile';
 import { createDebugDump } from '../../utils/localDb/debugStore';
 import { Grid, Switch } from '@radix-ui/themes';
+import {
+  DEBUG_DUMP_PUBLIC_KEY,
+  encryptUtf8WithRSAKey,
+} from '@feynote/shared-utils';
 
 interface Props {
   children: React.ReactNode;
@@ -21,7 +25,16 @@ export const DebugDump: React.FC<Props> = (props) => {
       withTree: debugIncludeTree,
     });
 
-    downloadJSON(dump, `debugDump-${Date.now()}.json`);
+    const encryptedDump = await encryptUtf8WithRSAKey(
+      JSON.stringify(dump),
+      DEBUG_DUMP_PUBLIC_KEY,
+    );
+
+    downloadBlobpartsAsFile({
+      data: [JSON.stringify(encryptedDump)],
+      mimetype: 'application/json',
+      filename: `feynote-debugDump-${Date.now()}.json`,
+    });
   };
 
   const debugDownloadDialog = (

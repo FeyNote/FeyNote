@@ -29,12 +29,38 @@ socket.on('error', () => {
   console.log('Websocket connection error');
 
   eventManager.broadcast(EventName.WebsocketError);
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
 });
 
 socket.on('reconnect', () => {
   console.log('Reconnected to websocket server');
 
   eventManager.broadcast(EventName.WebsocketReconnect);
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
+});
+
+socket.on('connect', () => {
+  console.log('Connected to websocket server');
+
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
+});
+
+socket.on('connect_error', () => {
+  console.log('Error connecting to websocket server');
+
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
+});
+
+socket.on('connect_timeout', () => {
+  console.log('Error connecting to websocket server');
+
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
+});
+
+socket.on('reconnect_error', () => {
+  console.log('Error connecting to websocket server');
+
+  eventManager.broadcast(EventName.WebsocketStatusChanged);
 });
 
 socket.on(EventName.ArtifactUpdated, (data) => {

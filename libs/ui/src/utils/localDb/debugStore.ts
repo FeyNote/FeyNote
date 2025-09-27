@@ -1,3 +1,4 @@
+import { websocketClient } from '../../context/events/websocketClient';
 import { getManifestDb, ObjectStoreName } from './localDb';
 import { sendMessageToSW, SWMessageType } from './sendMessageToSW';
 
@@ -162,6 +163,9 @@ export const createDebugDump = async (opts: {
         ).catch((e) => {
           console.error('Error while retrieving SW debug dump', e);
         })) || 'failed',
+    },
+    websocket: {
+      connected: websocketClient.connected,
     },
   };
 };

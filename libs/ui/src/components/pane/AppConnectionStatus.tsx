@@ -15,9 +15,13 @@ const Container = styled.div`
 `;
 
 export const AppConnectionStatus = () => {
-  const { onlineStatus } = useOnlineStatus();
+  const {
+    isOnline,
+    hocuspocusIsConnected,
+    websocketIsConnected,
+    serviceWorkerIsAvailable,
+  } = useOnlineStatus();
   const { lastSyncedAt } = useLastSyncedAt();
-  const hasSW = !!navigator.serviceWorker.controller;
   const { t } = useTranslation();
 
   const getMessage = () => {
@@ -29,8 +33,8 @@ export const AppConnectionStatus = () => {
     });
     const syncUnavailableMessage = t('connectionStatus.syncUnavailable');
 
-    if (onlineStatus) {
-      if (hasSW) {
+    if (isOnline && hocuspocusIsConnected && websocketIsConnected) {
+      if (serviceWorkerIsAvailable) {
         // All good, we are connected and the user has a service worker
         return {
           icon: IoCloudOutline,
@@ -52,7 +56,7 @@ export const AppConnectionStatus = () => {
         help: t('connectionStatus.online.syncUnavailable.help'),
       };
     } else {
-      if (hasSW) {
+      if (serviceWorkerIsAvailable) {
         // We're offline, but we do have a service worker
         return {
           icon: IoCloudOutline,

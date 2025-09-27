@@ -10,6 +10,7 @@ export type EventData = {
 
   [EventName.WebsocketError]: void;
   [EventName.WebsocketReconnect]: void;
+  [EventName.WebsocketStatusChanged]: void;
 
   [EventName.LocaldbSessionUpdated]: void;
   [EventName.LocaldbEdgesUpdated]: {
