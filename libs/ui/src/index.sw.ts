@@ -14,6 +14,6 @@ export {
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export {
   createSWDebugDump,
-  initDebugStoreConsoleMonkeypatch,
+  initDebugStoreMonkeypatch,
 } from './utils/localDb/debugStore';
 export { SWMessageType } from './utils/localDb/sendMessageToSW';

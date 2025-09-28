@@ -21,7 +21,7 @@ import {
   SearchManager,
   SWMessageType,
   createSWDebugDump,
-  initDebugStoreConsoleMonkeypatch,
+  initDebugStoreMonkeypatch,
 } from '@feynote/ui-sw';
 import { registerGetKnownUsersRoute } from './serviceWorkerLib/routes/user/registerGetKnownUsersRoute';
 import { registerGetArtifactEdgesByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesByIdRoute';
@@ -39,7 +39,7 @@ import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/regis
 import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
 import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
 
-initDebugStoreConsoleMonkeypatch();
+initDebugStoreMonkeypatch();
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);

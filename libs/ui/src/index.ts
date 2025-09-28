@@ -26,5 +26,5 @@ export { PrintviewApp } from './PrintviewApp';
 export * from './IonicReact19Compat';
 export {
   createSWDebugDump,
-  initDebugStoreConsoleMonkeypatch,
+  initDebugStoreMonkeypatch,
 } from './utils/localDb/debugStore';

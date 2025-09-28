@@ -1,4 +1,5 @@
 import { websocketClient } from '../../context/events/websocketClient';
+import { getIsViteDevelopment } from '../getIsViteDevelopment';
 import { getManifestDb, ObjectStoreName } from './localDb';
 import { sendMessageToSW, SWMessageType } from './sendMessageToSW';
 
@@ -17,29 +18,74 @@ const debugStore = {
   trpc: [],
 } satisfies DebugStore as DebugStore;
 
+function jsonFriendlyErrorReplacer(_key: string, value: unknown) {
+  if (value instanceof PromiseRejectionEvent) {
+    return {
+      reason: value.reason,
+    };
+  }
+  if (value instanceof ErrorEvent) {
+    return {
+      error: value.error,
+    };
+  }
+  if (value instanceof Error) {
+    const plaintextObj: Record<string, unknown> = {};
+    for (const key of Object.getOwnPropertyNames(value)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      plaintextObj[key] = (value as any)[key];
+    }
+    return plaintextObj;
+  }
+
+  return value;
+}
+
 const CONSOLE_LOGS_HISTORY_MAX = 500;
 let monkeyPatchInitialized = false;
-export const initDebugStoreConsoleMonkeypatch = () => {
-  if (!monkeyPatchInitialized) {
-    const methodsToPatch = ['log', 'info', 'warn', 'error'] as const;
 
-    for (const method of methodsToPatch) {
-      const boundMethod = console[method].bind(console);
+export const initDebugStoreMonkeypatch = () => {
+  if (monkeyPatchInitialized) return;
 
-      console[method] = function (...args) {
-        debugStore.logs.push({
-          type: method,
-          datetime: Date().toLocaleString(),
-          value: args,
-        });
-        if (debugStore.logs.length > CONSOLE_LOGS_HISTORY_MAX) {
-          debugStore.logs.splice(CONSOLE_LOGS_HISTORY_MAX);
-        }
-
-        boundMethod.apply(console, args);
-      };
-    }
+  if (getIsViteDevelopment()) {
+    console.warn('In dev mode, disabling debugStore monkeypatch');
+    return;
   }
+
+  const methodsToPatch = ['log', 'info', 'warn', 'error'] as const;
+
+  for (const method of methodsToPatch) {
+    const boundMethod = console[method].bind(console);
+
+    console[method] = function (...args) {
+      debugStore.logs.push({
+        type: method,
+        datetime: Date().toLocaleString(),
+        value: args,
+      });
+      if (debugStore.logs.length > CONSOLE_LOGS_HISTORY_MAX) {
+        debugStore.logs.splice(CONSOLE_LOGS_HISTORY_MAX);
+      }
+
+      boundMethod.apply(console, args);
+    };
+  }
+
+  window.addEventListener('error', (event) => {
+    debugStore.logs.push({
+      type: 'uncaughtError',
+      datetime: new Date().toLocaleString(),
+      value: event,
+    });
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    debugStore.logs.push({
+      type: 'unhandledRejection',
+      datetime: new Date().toLocaleString(),
+      value: event,
+    });
+  });
 
   monkeyPatchInitialized = true;
 };
@@ -168,6 +214,12 @@ export const createDebugDump = async (opts: {
       connected: websocketClient.connected,
     },
   };
+};
+
+export const stringifyDebugDump = (
+  dump: Awaited<ReturnType<typeof createDebugDump>>,
+) => {
+  return JSON.stringify(dump, jsonFriendlyErrorReplacer);
 };
 
 export const createSWDebugDump = async () => {

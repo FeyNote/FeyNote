@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { useTranslation } from 'react-i18next';
 import { downloadBlobpartsAsFile } from '../../utils/downloadBlobpartsAsFile';
-import { createDebugDump } from '../../utils/localDb/debugStore';
+import {
+  createDebugDump,
+  stringifyDebugDump,
+} from '../../utils/localDb/debugStore';
 import { Grid, Switch } from '@radix-ui/themes';
 import {
   DEBUG_DUMP_PUBLIC_KEY,
@@ -26,7 +29,7 @@ export const DebugDump: React.FC<Props> = (props) => {
     });
 
     const encryptedDump = await encryptUtf8WithRSAKey(
-      JSON.stringify(dump),
+      stringifyDebugDump(dump),
       DEBUG_DUMP_PUBLIC_KEY,
     );
 
