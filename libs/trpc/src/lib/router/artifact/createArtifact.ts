@@ -43,7 +43,6 @@ export const createArtifact = authenticatedProcedure
         linkAccessLevel: z.nativeEnum(ArtifactAccessLevel).optional(),
         deletedAt: z.date().optional(),
         createdAt: z.date().optional(),
-        yBin: z.undefined(),
       })
       .or(
         z.object({

@@ -29,10 +29,6 @@ export const constructYArtifact = (
     artifactMetaYMap.set('type', meta.type);
     artifactMetaYMap.set('linkAccessLevel', meta.linkAccessLevel);
     artifactMetaYMap.set('createdAt', meta.createdAt || new Date().getTime());
-    console.log(
-      'setting artifact deletedAt during construction',
-      meta.deletedAt,
-    );
     artifactMetaYMap.set('deletedAt', meta.deletedAt);
 
     if (userAccess) {
