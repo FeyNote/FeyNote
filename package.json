@@ -8,8 +8,8 @@
   },
   "private": true,
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.30",
-    "@ai-sdk/react": "^2.0.44",
+    "@ai-sdk/openai": "^2.0.32",
+    "@ai-sdk/react": "^2.0.48",
     "@astrojs/node": "^9.4.3",
     "@astrojs/react": "^4.3.0",
     "@astrojs/starlight": "^0.35.2",
