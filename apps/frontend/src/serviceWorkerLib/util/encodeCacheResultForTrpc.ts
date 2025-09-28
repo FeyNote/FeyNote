@@ -1,6 +1,7 @@
 import { customTrpcTransformer } from '@feynote/shared-utils';
 import type { Resolver } from '@trpc/client';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function encodeCacheResultForTrpc<T extends Resolver<any>>(
   result: Awaited<ReturnType<T>>,
 ) {

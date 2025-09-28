@@ -2,6 +2,7 @@ import { customTrpcTransformer } from '@feynote/shared-utils';
 import type { Resolver } from '@trpc/client';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getTrpcInputForEvent<T extends Resolver<any>>(
   event: RouteHandlerCallbackOptions,
 ) {

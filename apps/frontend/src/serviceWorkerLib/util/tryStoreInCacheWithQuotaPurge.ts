@@ -10,7 +10,7 @@ export async function tryStoreInCacheWithQuotaPurge(
   try {
     await limitCacheToMaxEntries(cache, maxCacheEntries - 1);
     await cache.put(request, response.clone());
-  } catch (err: any) {
+  } catch (err) {
     if (
       err instanceof DOMException &&
       (err.name === 'QuotaExceededError' ||

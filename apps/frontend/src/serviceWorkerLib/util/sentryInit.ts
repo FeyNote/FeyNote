@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 import * as Sentry from '@sentry/browser';
 
 let environment = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT;

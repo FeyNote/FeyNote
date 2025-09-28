@@ -7,7 +7,7 @@
 
 declare let self: ServiceWorkerGlobalScope;
 
-import './serviceWorkerLib/sentryInit';
+import './serviceWorkerLib/util/sentryInit';
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
