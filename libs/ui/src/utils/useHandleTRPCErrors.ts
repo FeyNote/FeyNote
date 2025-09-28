@@ -11,6 +11,12 @@ const openAlertTracker = {
   isOpen: false,
 };
 
+const offlineErrorMsgs = [
+  'NetworkError when attempting to fetch resource.',
+  'Failed to fetch',
+  'Load failed',
+];
+
 /**
  * Presents a user-facing message when capturing an error in hook-style.
  * This can also handle Axios errors, though we don't use Axios much.
@@ -32,6 +38,10 @@ export const useHandleTRPCErrors = () => {
     if (error instanceof TRPCClientError) {
       errorCode =
         (error as TRPCClientError<AppRouter>).data?.httpStatus || errorCode;
+      // Offline Fetch requests don't give us a statuscode to go off of
+      if (offlineErrorMsgs.includes(error.message)) {
+        errorCode = 0;
+      }
     }
     if (isAxiosError(error) && error.response) {
       errorCode = error.response.status;

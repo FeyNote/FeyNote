@@ -38,3 +38,15 @@ P3: One of the following -- This bug breaks the app in a minor way blocking the 
 P4: One of the following -- This bug breaks the app in a very minor way, this bug requires effort/bad behavior for the user to create, this bug affects only specific users in a non-blocking manner, we do not think this bug is worth prioritizing
 
 Not Planned: This bug is not something that will affect users or we do not believe it needs to be fixed
+
+## Working With Stripe Locally
+
+1. Ensure to enter Test Mode on the Feynote project
+
+2. Install the [Stripe Cli](https://docs.stripe.com/stripe-cli/install)
+
+3. Forward stripe events to your local webhook by running `stripe listen --forward-to localhost:80/api/stripe/webhook`
+
+4. Set the webhook signing secret from the above command into your .env file as `STRIPE_WEBHOOK_SECRET`
+
+5. Lastly, (likely not necessary) Verify STRIPE_API_KEY set in the docker-compose matches the test Secret Key set within the stripe dashboard

@@ -6,33 +6,39 @@ import {
   type ObjectStoreName,
 } from '@feynote/ui-sw';
 import { RouteHandlerCallbackOptions } from 'workbox-core';
-import { updateListCache } from './updateListCache';
+import { updateSingleCache } from './updateSingleCache';
+import { getTrpcInputForEvent } from './getTrpcInputForEvent';
 import { encodeCacheResultForTrpc } from './encodeCacheResultForTrpc';
 import type { Resolver } from '@trpc/client';
 
-export async function cacheListResponse<
+export async function cacheSingleResponse<
   T extends ObjectStoreName,
   U extends Resolver<{
-    input: void; // This method does not support caching things with custom arguments
-    output: FeynoteLocalDB[T]['value'][]; // This method only supports caching things with list responses
+    input: {
+      id: string; // This method only supports caching things with a defined ID as input
+    };
+    output: FeynoteLocalDB[T]['value'];
     transformer: any;
     errorShape: any;
   }>,
->(objectStoreName: T, event: RouteHandlerCallbackOptions, _resolver: U) {
+>(dbName: T, event: RouteHandlerCallbackOptions, _resolver: U) {
   try {
     const response = await fetch(event.request);
 
     if (response.status >= 200 && response.status < 300) {
-      updateListCache(objectStoreName, response.clone());
+      updateSingleCache(dbName, response.clone());
     }
 
     return response;
   } catch (e) {
     console.log(`Request failed`, e);
 
-    const manifestDb = await getManifestDb();
-    const cachedItems = await manifestDb.getAll<T>(objectStoreName);
+    const input = getTrpcInputForEvent<U>(event);
+    if (!input || !input.id) throw e;
 
-    return encodeCacheResultForTrpc<U>(cachedItems as Awaited<ReturnType<U>>);
+    const manifestDb = await getManifestDb();
+    const cachedItem = await manifestDb.get(dbName, input.id);
+
+    return encodeCacheResultForTrpc(cachedItem);
   }
 }

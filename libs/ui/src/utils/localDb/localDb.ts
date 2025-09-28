@@ -5,6 +5,7 @@ import type {
   DecodedFileStream,
   Edge,
   SessionDTO,
+  ThreadDTO,
 } from '@feynote/shared-utils';
 import { IDBPDatabase, openDB, type DBSchema } from 'idb';
 
@@ -40,6 +41,7 @@ export enum ObjectStoreName {
   Edges = 'edges',
   KnownUsers = 'knownUsers',
   KV = 'kvStore',
+  Threads = 'threads',
 }
 
 export enum KVStoreKeys {
@@ -117,13 +119,17 @@ export interface FeynoteLocalDB extends DBSchema {
       email: string;
     };
   };
+  [ObjectStoreName.Threads]: {
+    key: string;
+    value: ThreadDTO;
+  };
   [ObjectStoreName.KV]: {
     key: string;
     value: KVStoreValue[keyof KVStoreValue];
   };
 }
 
-const MIGRATION_VERSION = 4;
+const MIGRATION_VERSION = 5;
 
 const connect = () => {
   const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATION_VERSION, {
@@ -219,6 +225,9 @@ const connect = () => {
           knownUsersDb.createIndex('email', 'email', {
             unique: true,
           });
+          db.createObjectStore(ObjectStoreName.Threads, {
+            keyPath: 'id',
+          });
 
           return;
         }
@@ -240,6 +249,9 @@ const connect = () => {
           knownUsersDb.createIndex('email', 'email', {
             unique: true,
           });
+          db.createObjectStore(ObjectStoreName.Threads, {
+            keyPath: 'id',
+          });
 
           return;
         }
@@ -257,6 +269,9 @@ const connect = () => {
           knownUsersDb.createIndex('email', 'email', {
             unique: true,
           });
+          db.createObjectStore(ObjectStoreName.Threads, {
+            keyPath: 'id',
+          });
 
           return;
         }
@@ -270,8 +285,16 @@ const connect = () => {
           knownUsersDb.createIndex('email', 'email', {
             unique: true,
           });
+          db.createObjectStore(ObjectStoreName.Threads, {
+            keyPath: 'id',
+          });
 
           return;
+        }
+        case 4: {
+          db.createObjectStore(ObjectStoreName.Threads, {
+            keyPath: 'id',
+          });
         }
       }
     },

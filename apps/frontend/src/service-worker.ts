@@ -36,6 +36,8 @@ import { registerSearchArtifactTitlesRoute } from './serviceWorkerLib/routes/art
 import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
 import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
+import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
+import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
 
 initDebugStoreConsoleMonkeypatch();
 
@@ -222,3 +224,6 @@ registerSearchArtifactTitlesRoute(searchManager);
 registerCreateFileRoute(bgSyncQueue);
 registerFileRedirectRoute();
 registerGetSafeFileIdRoute();
+
+registerGetThreadsRoute();
+registerGetThreadRoute();
