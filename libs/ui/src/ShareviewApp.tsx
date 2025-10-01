@@ -1,4 +1,4 @@
-import { setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
@@ -29,7 +29,6 @@ import {
   GlobalPaneContextData,
 } from './context/globalPane/GlobalPaneContext';
 import { Model } from 'flexlayout-react';
-import { IonApp } from './IonicReact19Compat';
 import { ToastContextProvider } from './context/toast/ToastContextProvider';
 
 initI18Next();

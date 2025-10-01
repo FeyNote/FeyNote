@@ -23,7 +23,6 @@ export { ResetEmail } from './components/auth/ResetEmail';
 export { initI18Next } from './i18n/initI18Next';
 export { ShareviewApp } from './ShareviewApp';
 export { PrintviewApp } from './PrintviewApp';
-export * from './IonicReact19Compat';
 export {
   createSWDebugDump,
   initDebugStoreMonkeypatch,

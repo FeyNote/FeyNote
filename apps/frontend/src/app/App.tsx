@@ -15,7 +15,7 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-import { setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 
 import '@ionic/react/css/palettes/dark.class.css';
 import './light.class.css';
@@ -35,7 +35,6 @@ import {
   initI18Next,
   ResetPassword,
   ResetEmail,
-  IonApp,
   PrintviewApp,
   LocaldbStoreErrorHandlers,
   initDebugStoreMonkeypatch,
