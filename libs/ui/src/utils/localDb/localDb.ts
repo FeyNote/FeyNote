@@ -7,7 +7,16 @@ import type {
   SessionDTO,
   ThreadDTO,
 } from '@feynote/shared-utils';
-import { IDBPDatabase, openDB, type DBSchema } from 'idb';
+import { IDBPDatabase, openDB, type DBSchema, type OpenDBCallbacks } from 'idb';
+import { localdbMigration_1 } from './migrations/localdbMigration_1';
+import { localdbMigration_2 } from './migrations/localdbMigration_2';
+import { localdbMigration_3 } from './migrations/localdbMigration_3';
+import { localdbMigration_4 } from './migrations/localdbMigration_4';
+import { localdbMigration_5 } from './migrations/localdbMigration_5';
+
+export type MigrationArgs = Parameters<
+  NonNullable<OpenDBCallbacks<FeynoteLocalDB>['upgrade']>
+>;
 
 export interface AuthorizedCollaborationScopeDoc {
   docName: string;
@@ -129,10 +138,25 @@ export interface FeynoteLocalDB extends DBSchema {
   };
 }
 
-const MIGRATION_VERSION = 5;
+/**
+ * WARN: Please read this in it's entirety.
+ * 1. The length of this migrations array _must never decrease_.
+ * 2. Historical migrations should likely never be modified _ever_.
+ * 3. _The greatest of care should be taken when adding IndexedDB migrations_.
+ * 4. You MUST follow the rules of IndexedDB transactions in here.
+ *   1. That means _no_ async calls to non-IndexedDB related things
+ *   2. Good info: https://github.com/jakearchibald/idb?tab=readme-ov-file#transaction-lifetime
+ */
+const MIGRATIONS = [
+  localdbMigration_1,
+  localdbMigration_2,
+  localdbMigration_3,
+  localdbMigration_4,
+  localdbMigration_5,
+];
 
 const connect = () => {
-  const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATION_VERSION, {
+  const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATIONS.length, {
     blocking: async () => {
       console.warn(
         'Current database connection is blocking another connection',
@@ -163,139 +187,13 @@ const connect = () => {
         }
       });
     },
-    upgrade: (db, previousVersion, newVersion) => {
+    upgrade: async (db, previousVersion, newVersion, transaction, event) => {
       console.log(
         `Manifest DB upgrading from ${previousVersion} to ${newVersion}`,
       );
 
-      switch (previousVersion) {
-        case 0: {
-          db.createObjectStore(ObjectStoreName.Artifacts, {
-            keyPath: 'id',
-          });
-
-          db.createObjectStore(ObjectStoreName.ArtifactSnapshots, {
-            keyPath: 'id',
-          });
-
-          db.createObjectStore(ObjectStoreName.AuthorizedCollaborationScopes, {
-            keyPath: 'docName',
-          });
-
-          db.createObjectStore(ObjectStoreName.PendingArtifacts, {
-            keyPath: 'id',
-          });
-
-          db.createObjectStore(ObjectStoreName.ArtifactVersions, {
-            keyPath: 'id',
-          });
-
-          const edgesDb = db.createObjectStore(ObjectStoreName.Edges, {
-            keyPath: 'id',
-          });
-          edgesDb.createIndex('artifactId', 'artifactId', { unique: false });
-          edgesDb.createIndex(
-            'artifactId, artifactBlockId',
-            ['artifactId', 'artifactBlockId'],
-            { unique: false },
-          );
-          edgesDb.createIndex('targetArtifactId', 'targetArtifactId', {
-            unique: false,
-          });
-          edgesDb.createIndex(
-            'targetArtifactId, targetArtifactBlockId',
-            ['targetArtifactId', 'targetArtifactBlockId'],
-            { unique: false },
-          );
-
-          db.createObjectStore(ObjectStoreName.KV, {
-            keyPath: 'key',
-          });
-
-          db.createObjectStore(ObjectStoreName.PendingFiles, {
-            keyPath: 'id',
-          });
-
-          const knownUsersDb = db.createObjectStore(
-            ObjectStoreName.KnownUsers,
-            {
-              keyPath: 'id',
-            },
-          );
-          knownUsersDb.createIndex('email', 'email', {
-            unique: true,
-          });
-          db.createObjectStore(ObjectStoreName.Threads, {
-            keyPath: 'id',
-          });
-
-          return;
-        }
-        case 1: {
-          db.createObjectStore(ObjectStoreName.AuthorizedCollaborationScopes, {
-            keyPath: 'docName',
-          });
-
-          db.createObjectStore(ObjectStoreName.PendingFiles, {
-            keyPath: 'id',
-          });
-
-          const knownUsersDb = db.createObjectStore(
-            ObjectStoreName.KnownUsers,
-            {
-              keyPath: 'id',
-            },
-          );
-          knownUsersDb.createIndex('email', 'email', {
-            unique: true,
-          });
-          db.createObjectStore(ObjectStoreName.Threads, {
-            keyPath: 'id',
-          });
-
-          return;
-        }
-        case 2: {
-          db.createObjectStore(ObjectStoreName.PendingFiles, {
-            keyPath: 'id',
-          });
-
-          const knownUsersDb = db.createObjectStore(
-            ObjectStoreName.KnownUsers,
-            {
-              keyPath: 'id',
-            },
-          );
-          knownUsersDb.createIndex('email', 'email', {
-            unique: true,
-          });
-          db.createObjectStore(ObjectStoreName.Threads, {
-            keyPath: 'id',
-          });
-
-          return;
-        }
-        case 3: {
-          const knownUsersDb = db.createObjectStore(
-            ObjectStoreName.KnownUsers,
-            {
-              keyPath: 'id',
-            },
-          );
-          knownUsersDb.createIndex('email', 'email', {
-            unique: true,
-          });
-          db.createObjectStore(ObjectStoreName.Threads, {
-            keyPath: 'id',
-          });
-
-          return;
-        }
-        case 4: {
-          db.createObjectStore(ObjectStoreName.Threads, {
-            keyPath: 'id',
-          });
-        }
+      for (const migration of MIGRATIONS.slice(previousVersion)) {
+        await migration(db, previousVersion, newVersion, transaction, event);
       }
     },
   });
