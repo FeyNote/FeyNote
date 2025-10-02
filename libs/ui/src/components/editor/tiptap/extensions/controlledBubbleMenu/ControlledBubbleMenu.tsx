@@ -30,6 +30,15 @@ export const ControlledBubbleMenu = ({
   children,
   placement,
 }: Props) => {
+  const editorElement = editor.options.element as Element;
+  if (!editorElement || !editorElement.appendChild) {
+    // This is new as of Tiptap v3.6.0 (https://github.com/ueberdosis/tiptap/releases/tag/v3.6.0)
+    // We previously relied on this, and it looks like it's still here for now, so I've just gone
+    // ahead and typecasted it. This guard checks in case that assumption is no longer true.
+    console.error(
+      "Looks like editor.options.element wasn't an element as we'd hoped.",
+    );
+  }
   const { view } = editor;
   const {
     x,
@@ -44,7 +53,7 @@ export const ControlledBubbleMenu = ({
       offset({ mainAxis: 8 }),
       flip({
         padding: 8,
-        boundary: editor.options.element || undefined,
+        boundary: editorElement || undefined,
         fallbackPlacements: [
           'bottom',
           'top-start',

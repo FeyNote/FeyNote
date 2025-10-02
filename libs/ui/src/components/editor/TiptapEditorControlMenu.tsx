@@ -11,6 +11,7 @@ import {
   LuHeading,
   LuList,
   IoAdd,
+  LuTable,
 } from '../AppIcons';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
@@ -26,6 +27,7 @@ import {
 } from './globalTiptapCommandHelpers';
 import { useState } from 'react';
 import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
+import { useEditorState } from '@tiptap/react';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -48,6 +50,17 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
+
+  useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      if (!editor) return null;
+
+      return {
+        selection: editor.state.selection,
+      };
+    },
+  });
 
   const onDuplicateArtifactClicked = async () => {
     const id = await duplicateArtifact(props.yDoc).catch((e) => {
@@ -290,6 +303,47 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
             )}
             {renderCommandEntryItem(
               globalTiptapCommandHelpers.format.list.taskList,
+            )}
+          </DropdownMenu.SubContent>
+        </DropdownMenu.Sub>
+
+        <DropdownMenu.Separator />
+
+        <DropdownMenu.Sub>
+          <DropdownMenu.SubTrigger disabled={!props.editor.isActive('table')}>
+            <LuTable />
+            {t('tiptapControlMenu.format.table')}
+          </DropdownMenu.SubTrigger>
+          <DropdownMenu.SubContent>
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.insertColBefore,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.insertColAfter,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.deleteCol,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.insertRowAbove,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.insertRowBelow,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.deleteRow,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.toggleHeaderRow,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.toggleHeaderCol,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.toggleHeaderCell,
+            )}
+            {renderCommandEntryItem(
+              globalTiptapCommandHelpers.format.table.deleteTable,
             )}
           </DropdownMenu.SubContent>
         </DropdownMenu.Sub>
