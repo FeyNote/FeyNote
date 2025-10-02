@@ -7,8 +7,7 @@ import {
   IonPage,
 } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   chatboxEllipses,
   expand,
@@ -17,21 +16,20 @@ import {
   telescope,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import type { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { DashboardRightSideMenu } from './DashboardRightSideMenu';
-import { createPortal } from 'react-dom';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { GraphRenderer } from '../graph/GraphRenderer';
-import { SessionContext } from '../../context/session/SessionContext';
-import { getEdgeId, type Edge, type ThreadDTO } from '@feynote/shared-utils';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { type ThreadDTO } from '@feynote/shared-utils';
+import { type Edge } from '@feynote/shared-utils';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useEdges } from '../../utils/localDb/edges/useEdges';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -62,76 +60,58 @@ const CardTitleButton = styled(IonButton)`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate, isPaneFocused } = useContext(PaneContext);
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { navigate } = usePaneContext();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { session } = useContext(SessionContext);
-  const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
-  const recentArtifacts = useMemo(
-    () =>
-      artifacts
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-        .slice(0, 10),
-    [artifacts],
-  );
-  const incomingSharedArtifacts = useMemo(
-    () =>
-      artifacts
-        .filter((artifact) => artifact.userId !== session.userId)
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-        .slice(0, 10),
-    [artifacts],
-  );
-  const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
-    ThreadDTO[]
-  >([]);
+  const { session } = useSessionContext();
+  const { artifactSnapshots } = useArtifactSnapshots();
+  const { getEdgesForArtifactId } = useEdges();
+  const recentArtifacts = useMemo(() => {
+    if (!artifactSnapshots) return [];
+
+    return artifactSnapshots
+      ?.sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, 10);
+  }, [artifactSnapshots]);
+  const incomingSharedArtifacts = useMemo(() => {
+    if (!artifactSnapshots) return [];
+
+    return artifactSnapshots
+      ?.filter((artifact) => artifact.meta.userId !== session.userId)
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, 10);
+  }, [artifactSnapshots]);
+  const graphArtifacts = useMemo(() => {
+    if (!artifactSnapshots) return [];
+
+    return artifactSnapshots.map((artifact) => ({
+      id: artifact.id,
+      title: artifact.meta.title,
+    }));
+  }, [artifactSnapshots]);
+
+  const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] =
+    useState<ThreadDTO[]>();
   const edges = useMemo(() => {
-    return artifacts.reduce<Edge[]>((acc, artifact) => {
-      for (const reference of artifact.artifactReferences) {
-        acc.push({
-          id: getEdgeId(reference),
-          artifactId: reference.artifactId,
-          artifactBlockId: reference.artifactBlockId,
-          targetArtifactId: reference.targetArtifactId,
-          targetArtifactBlockId: reference.targetArtifactBlockId,
-          targetArtifactDate: reference.targetArtifactDate,
-          targetArtifactTitle: reference.targetArtifact?.title || null,
-          artifactTitle: artifact.title,
-          referenceText: reference.referenceText,
-          isBroken: reference.targetArtifact === null,
-        });
+    if (!artifactSnapshots) return [];
+
+    const map = artifactSnapshots.reduce<Map<string, Edge>>((acc, artifact) => {
+      const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+        artifact.id,
+      );
+
+      for (const edge of incomingEdges) {
+        acc.set(edge.id, edge);
       }
-      for (const reference of artifact.incomingArtifactReferences) {
-        acc.push({
-          id: getEdgeId(reference),
-          artifactId: reference.artifactId,
-          artifactBlockId: reference.artifactBlockId,
-          targetArtifactId: reference.targetArtifactId,
-          targetArtifactBlockId: reference.targetArtifactBlockId,
-          targetArtifactDate: reference.targetArtifactDate,
-          targetArtifactTitle: artifact.title,
-          artifactTitle: reference.artifact.title,
-          referenceText: reference.referenceText,
-          isBroken: false,
-        });
+      for (const edge of outgoingEdges) {
+        acc.set(edge.id, edge);
       }
 
       return acc;
-    }, []);
-  }, [artifacts]);
+    }, new Map());
 
-  const getUserArtifacts = async () => {
-    await trpc.artifact.getArtifacts
-      .query()
-      .then((_artifacts) => {
-        setArtifacts(_artifacts.filter((artifact) => !artifact.deletedAt));
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
-  };
+    return Array.from(map.values());
+  }, [artifactSnapshots, getEdgesForArtifactId]);
 
   const getUserThreads = async () => {
     trpc.ai.getThreads
@@ -145,14 +125,14 @@ export const Dashboard: React.FC = () => {
           ),
         );
       })
-      .catch((error) => {
-        handleTRPCErrors(error);
+      .catch(() => {
+        // Do nothing. We want to support offline, so if they don't load they don't load.
       });
   };
 
   const loadWithProgress = async () => {
     const progress = startProgressBar();
-    await Promise.allSettled([getUserArtifacts(), getUserThreads()]);
+    await Promise.allSettled([getUserThreads()]);
     progress.dismiss();
   };
 
@@ -206,7 +186,7 @@ export const Dashboard: React.FC = () => {
                   }
                   button
                 >
-                  {recentArtifact.title}
+                  {recentArtifact.meta.title}
                 </CompactIonItem>
               ))}
               {!recentArtifacts.length && (
@@ -238,9 +218,9 @@ export const Dashboard: React.FC = () => {
                   <IonIcon icon={expand} size="small" />
                 </CardTitleButton>
               </CardTitle>
-              {artifacts.length ? (
+              {artifactSnapshots?.length ? (
                 <GraphRenderer
-                  artifacts={artifacts}
+                  artifacts={graphArtifacts}
                   edges={edges}
                   enableInitialZoom={true}
                 />
@@ -252,63 +232,56 @@ export const Dashboard: React.FC = () => {
                 />
               )}
             </Card>
-            {
-              // <Card>
-              //   <CardTitle>
-              //     <IonIcon icon={pricetag} />
-              //     &nbsp;{t('dashboard.tags.title')}
-              //   </CardTitle>
-              //   [Coming soon!]
-              // </Card>
-            }
-            <Card>
-              <CardTitle>
-                <IonIcon icon={chatboxEllipses} />
-                &nbsp;{t('dashboard.aiThreads.title')}
-                <CardTitleButton
-                  onClick={(event) =>
-                    navigate(
-                      PaneableComponent.AIThreadsList,
-                      {},
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  size="small"
-                  fill="clear"
-                >
-                  <IonIcon icon={expand} size="small" />
-                </CardTitleButton>
-              </CardTitle>
-              {recentlyUpdatedThreads.map((recentThread) => (
-                <CompactIonItem
-                  lines="none"
-                  key={recentThread.id}
-                  onClick={(event) =>
-                    navigate(
-                      PaneableComponent.AIThread,
-                      { id: recentThread.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
-                    )
-                  }
-                  button
-                >
-                  {recentThread.title || t('generic.untitled')}
-                </CompactIonItem>
-              ))}
-              {!recentlyUpdatedThreads.length && (
-                <CardNullState
-                  size="small"
-                  title={t('dashboard.noRecentThreads.title')}
-                  message={t('dashboard.noRecentThreads.message')}
-                />
-              )}
-            </Card>
+            {recentlyUpdatedThreads && (
+              <Card>
+                <CardTitle>
+                  <IonIcon icon={chatboxEllipses} />
+                  &nbsp;{t('dashboard.aiThreads.title')}
+                  <CardTitleButton
+                    onClick={(event) =>
+                      navigate(
+                        PaneableComponent.AIThreadsList,
+                        {},
+                        event.metaKey || event.ctrlKey
+                          ? PaneTransition.NewTab
+                          : PaneTransition.Push,
+                        !(event.metaKey || event.ctrlKey),
+                      )
+                    }
+                    size="small"
+                    fill="clear"
+                  >
+                    <IonIcon icon={expand} size="small" />
+                  </CardTitleButton>
+                </CardTitle>
+                {recentlyUpdatedThreads.map((recentThread) => (
+                  <CompactIonItem
+                    lines="none"
+                    key={recentThread.id}
+                    onClick={(event) =>
+                      navigate(
+                        PaneableComponent.AIThread,
+                        { id: recentThread.id },
+                        event.metaKey || event.ctrlKey
+                          ? PaneTransition.NewTab
+                          : PaneTransition.Push,
+                        !(event.metaKey || event.ctrlKey),
+                      )
+                    }
+                    button
+                  >
+                    {recentThread.title || t('generic.untitled')}
+                  </CompactIonItem>
+                ))}
+                {!recentlyUpdatedThreads.length && (
+                  <CardNullState
+                    size="small"
+                    title={t('dashboard.noRecentThreads.title')}
+                    message={t('dashboard.noRecentThreads.message')}
+                  />
+                )}
+              </Card>
+            )}
             <Card>
               <CardTitle>
                 <IonIcon icon={people} />
@@ -346,7 +319,7 @@ export const Dashboard: React.FC = () => {
                   }
                   button
                 >
-                  {sharedArtifact.title}
+                  {sharedArtifact.meta.title}
                 </CompactIonItem>
               ))}
               {!incomingSharedArtifacts.length && (
@@ -360,15 +333,6 @@ export const Dashboard: React.FC = () => {
           </FlexContainer>
         )}
       </IonContent>
-      {isPaneFocused &&
-        sidemenuContentRef.current &&
-        createPortal(
-          <DashboardRightSideMenu
-            artifacts={artifacts}
-            reload={loadWithProgress}
-          />,
-          sidemenuContentRef.current,
-        )}
     </IonPage>
   );
 };

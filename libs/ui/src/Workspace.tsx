@@ -1,15 +1,12 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Actions, Layout, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import {
-  GlobalPaneContext,
-  PaneTransition,
-} from './context/globalPane/GlobalPaneContext';
+import { useGlobalPaneContext } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import { IonButton, IonContent, useIonPopover } from '@ionic/react';
-import { PreferencesContext } from './context/preferences/PreferencesContext';
-import { LuPanelLeft, LuPanelRight } from 'react-icons/lu';
+import { IonButton } from '@ionic/react';
+import { usePreferencesContext } from './context/preferences/PreferencesContext';
+import { LuPanelLeft, LuPanelRight } from './components/AppIcons';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
@@ -18,7 +15,6 @@ import { t } from 'i18next';
 import {
   PaneableComponent,
   paneableComponentNameToDefaultI18nTitle,
-  PaneableComponentProps,
 } from './context/globalPane/PaneableComponent';
 import {
   clearCustomDragData,
@@ -167,9 +163,10 @@ const Menu = styled.div<{
   $side: 'left' | 'right';
   $open: boolean;
 }>`
-  max-height: 100vh;
+  height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  background-color: var(--ion-background-color);
 
   ${(props) =>
     props.$open &&
@@ -188,6 +185,8 @@ const Menu = styled.div<{
 
 const MenuInner = styled.div`
   width: ${MENU_SIZE_PX}px;
+  min-height: 100%;
+  overflow: hidden;
 `;
 
 const MenuButton = styled(IonButton)`
@@ -218,17 +217,52 @@ const MainGrid = styled.div<{
   transition: 0.4s;
 `;
 
+const LAST_PANE_STATE_LOCALSTORAGE_KEY = 'lastPaneState';
 export const Workspace: React.FC = () => {
   const { _model, _onActionListener, _onModelChangeListener } =
-    useContext(GlobalPaneContext);
-  const { getPreference } = useContext(PreferencesContext);
+    useGlobalPaneContext();
+  const { getPreference } = usePreferencesContext();
 
-  const [leftMenuOpen, setLeftMenuOpen] = useState(
-    getPreference(PreferenceNames.LeftPaneStartOpen),
-  );
-  const [rightMenuOpen, setRightMenuOpen] = useState(
-    getPreference(PreferenceNames.RightPaneStartOpen),
-  );
+  const [lastPaneState] = useState(() => {
+    return JSON.parse(
+      localStorage.getItem(LAST_PANE_STATE_LOCALSTORAGE_KEY) || '{}',
+    );
+  });
+  const [leftMenuOpen, setLeftMenuOpen] = useState(() => {
+    if (getPreference(PreferenceNames.PanesRememberOpenState)) {
+      return !!(
+        lastPaneState.leftPaneOpen ??
+        getPreference(PreferenceNames.LeftPaneStartOpen)
+      );
+    } else {
+      return getPreference(PreferenceNames.LeftPaneStartOpen);
+    }
+  });
+  const [rightMenuOpen, setRightMenuOpen] = useState(() => {
+    if (getPreference(PreferenceNames.PanesRememberOpenState)) {
+      return !!(
+        lastPaneState.rightPaneOpen ??
+        getPreference(PreferenceNames.RightPaneStartOpen)
+      );
+    } else {
+      return getPreference(PreferenceNames.RightPaneStartOpen);
+    }
+  });
+
+  useEffect(() => {
+    if (
+      lastPaneState.leftPaneOpen !== leftMenuOpen ||
+      lastPaneState.rightPaneOpen !== rightMenuOpen
+    ) {
+      localStorage.setItem(
+        LAST_PANE_STATE_LOCALSTORAGE_KEY,
+        JSON.stringify({
+          leftPaneOpen: leftMenuOpen,
+          rightPaneOpen: rightMenuOpen,
+        }),
+      );
+    }
+  }, [leftMenuOpen, rightMenuOpen]);
 
   const toggleLeftSideMenu = () => {
     if (!leftMenuOpen && window.innerWidth < MIN_SCREEN_DOUBLE_MENU_PX) {
@@ -243,37 +277,6 @@ export const Workspace: React.FC = () => {
     }
     setRightMenuOpen(!rightMenuOpen);
   };
-
-  const contextMenuPaneIdRef = useRef<string>(undefined);
-  const PaneTabContextMenuWrapper = () => {
-    const paneId = contextMenuPaneIdRef.current;
-    const { navigate: globalNavigate, getPaneById } =
-      useContext(GlobalPaneContext);
-    const pane = getPaneById(paneId);
-
-    const navigate = <T extends PaneableComponent>(
-      component: T,
-      props: PaneableComponentProps[T],
-      transition: PaneTransition,
-    ) => {
-      globalNavigate(pane.id, component, props, transition);
-    };
-
-    if (!contextMenuPaneIdRef.current) return null;
-
-    return (
-      <IonContent onClick={popoverDismissRef.current}>
-        <PaneTabContextMenu pane={pane} navigate={navigate} />
-      </IonContent>
-    );
-  };
-
-  const popoverDismissRef = useRef<() => void>(undefined);
-
-  const [present, dismiss] = useIonPopover(PaneTabContextMenuWrapper, {
-    onDismiss: (data: unknown, role: string) => dismiss(data, role),
-  });
-  popoverDismissRef.current = dismiss;
 
   useEffect(() => {
     const listener = (event: DragEvent) => {
@@ -363,8 +366,11 @@ export const Workspace: React.FC = () => {
           onRenderTab={(node, renderValues) => {
             // data-node-id is used for dragging interactions since flexlayout-react doesn't provide
             // a way to figure out what the node is when dragging
+            const paneId = node.getId();
             renderValues.content = (
-              <div data-node-id={node.getId()}>{renderValues.content}</div>
+              <PaneTabContextMenu paneId={paneId}>
+                <div data-node-id={node.getId()}>{renderValues.content}</div>
+              </PaneTabContextMenu>
             );
           }}
           onAction={_onActionListener}
@@ -373,17 +379,6 @@ export const Workspace: React.FC = () => {
             if (event.button === 1 && node.getType() === 'tab') {
               _model.doAction(Actions.deleteTab(node.getId()));
             }
-          }}
-          onContextMenu={(node, event) => {
-            if (node.getType() !== 'tab') {
-              return;
-            }
-
-            event.preventDefault();
-            contextMenuPaneIdRef.current = node.getId();
-            present({
-              event: event.nativeEvent,
-            });
           }}
           onExternalDrag={() => {
             const customDragData = getCustomDragData();

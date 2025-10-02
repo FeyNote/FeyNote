@@ -17,7 +17,12 @@ if (environment !== 'development') {
     environment,
     dsn: 'https://c33be4806db6ac96de06c5de2f8ebc85@o4508428193955840.ingest.us.sentry.io/4508428202606592',
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
-    integrations: [Sentry.browserTracingIntegration()],
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.captureConsoleIntegration({
+        levels: ['error'],
+      }),
+    ],
     sampleRate: 1, //  Percentage of transactions to capture. 1.0 captures 100%
     // Controls which URLs distributed tracing should be enabled
     tracePropagationTargets: [

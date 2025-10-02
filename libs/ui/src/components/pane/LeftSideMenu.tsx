@@ -6,8 +6,8 @@ import {
   IonList,
   IonListHeader,
 } from '@ionic/react';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useEffect, useRef, useState } from 'react';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useTranslation } from 'react-i18next';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
@@ -18,8 +18,8 @@ import {
   type ThreadDTO,
 } from '@feynote/shared-utils';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import {
   chatboxEllipses,
@@ -31,19 +31,33 @@ import {
   settings,
   add,
   heart,
+  list,
 } from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
-import { GlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useGlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
+import { AppConnectionStatus } from './AppConnectionStatus';
 
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
 `;
+
+const Container = styled.div`
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto min-content;
+  padding-bottom: 10px;
+`;
+
+/**
+ * The globally unique tree id for react complex tree
+ */
+const TREE_ID = 'leftSideMenuArtifactTree';
 
 /**
  * The default number of recent artifacts to show
@@ -59,12 +73,12 @@ const RECENT_THREADS_LIMIT_INC = 10;
 const RELOAD_DEBOUNCE_INTERVAL = 5000;
 
 export const LeftSideMenu: React.FC = () => {
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
   const { t } = useTranslation();
 
-  const { getPreference } = useContext(PreferencesContext);
-  const { navigate, getPaneById } = useContext(GlobalPaneContext);
-  const { trigger: triggerGlobalSearch } = useContext(GlobalSearchContext);
+  const { getPreference } = usePreferencesContext();
+  const { navigate, getPaneById } = useGlobalPaneContext();
+  const { trigger: triggerGlobalSearch } = useGlobalSearchContext();
   const currentPane = getPaneById(undefined);
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
     ThreadDTO[]
@@ -128,180 +142,209 @@ export const LeftSideMenu: React.FC = () => {
   }, []);
 
   return (
-    <>
-      <IonCard>
-        <CompactIonItem
-          lines="none"
-          onClick={() => triggerGlobalSearch()}
-          button
-        >
-          <IonIcon icon={search} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.search')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Dashboard,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
-          }
-          button
-        >
-          <IonIcon icon={home} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.dashboard')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Graph,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
-          }
-          button
-        >
-          <IonIcon icon={gitNetwork} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.graph')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.NewArtifact,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
-          }
-          button
-        >
-          <IonIcon icon={add} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.new')}</IonLabel>
-        </CompactIonItem>
-      </IonCard>
-
-      <IonCard>
-        <IonList class="ion-no-padding">
-          <IonListHeader lines="full">
-            <IonIcon icon={pin} />
+    <Container>
+      <div>
+        <IonCard>
+          <CompactIonItem
+            lines="none"
+            onClick={() => triggerGlobalSearch()}
+            button
+          >
+            <IonIcon icon={search} size="small" />
             &nbsp;&nbsp;
-            <IonLabel>{t('menu.tree')}</IonLabel>
-            <InfoButton message={t('menu.tree.help')} />
-          </IonListHeader>
-        </IonList>
-        <ArtifactTree />
-      </IonCard>
+            <IonLabel>{t('menu.search')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.Dashboard,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={home} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.dashboard')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.AllArtifacts,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={list} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.allArtifacts')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.Graph,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={gitNetwork} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.graph')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.NewArtifact,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={add} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.new')}</IonLabel>
+          </CompactIonItem>
+        </IonCard>
 
-      {!!recentlyUpdatedThreads.length &&
-        getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (
-          <IonCard>
-            <IonList class="ion-no-padding">
-              <IonListHeader lines="full">
-                <IonIcon icon={chatboxEllipses} />
-                &nbsp;&nbsp;
-                <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
-              </IonListHeader>
-              {recentlyUpdatedThreads
-                .slice(0, recentlyUpdatedThreadsLimit)
-                .map((recentlyUpdatedThread) => (
-                  <CompactIonItem
-                    lines="none"
-                    key={recentlyUpdatedThread.id}
-                    onClick={(event) =>
-                      navigate(
-                        undefined,
-                        PaneableComponent.AIThread,
-                        { id: recentlyUpdatedThread.id },
-                        event.metaKey || event.ctrlKey
-                          ? PaneTransition.NewTab
-                          : PaneTransition.Push,
-                        !(event.metaKey || event.ctrlKey),
-                      )
-                    }
-                    button
+        <IonCard>
+          <IonList class="ion-no-padding">
+            <IonListHeader lines="full">
+              <IonIcon icon={pin} />
+              &nbsp;&nbsp;
+              <IonLabel>{t('menu.tree')}</IonLabel>
+              <InfoButton message={t('menu.tree.help')} />
+            </IonListHeader>
+          </IonList>
+          <ArtifactTree
+            treeId={TREE_ID}
+            registerAsGlobalTreeDragHandler={true}
+            editable={true}
+            mode="navigate"
+            enableItemContextMenu={true}
+          />
+        </IonCard>
+
+        {!!recentlyUpdatedThreads.length &&
+          getPreference(PreferenceNames.LeftPaneShowRecentThreads) && (
+            <IonCard>
+              <IonList class="ion-no-padding">
+                <IonListHeader lines="full">
+                  <IonIcon icon={chatboxEllipses} />
+                  &nbsp;&nbsp;
+                  <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
+                </IonListHeader>
+                {recentlyUpdatedThreads
+                  .slice(0, recentlyUpdatedThreadsLimit)
+                  .map((recentlyUpdatedThread) => (
+                    <CompactIonItem
+                      lines="none"
+                      key={recentlyUpdatedThread.id}
+                      onClick={(event) =>
+                        navigate(
+                          undefined,
+                          PaneableComponent.AIThread,
+                          { id: recentlyUpdatedThread.id },
+                          event.metaKey || event.ctrlKey
+                            ? PaneTransition.NewTab
+                            : PaneTransition.Push,
+                          !(event.metaKey || event.ctrlKey),
+                        )
+                      }
+                      button
+                    >
+                      <NowrapIonLabel>
+                        {recentlyUpdatedThread.title || t('generic.untitled')}
+                      </NowrapIonLabel>
+                    </CompactIonItem>
+                  ))}
+                {recentlyUpdatedThreads.length >
+                  recentlyUpdatedThreadsLimit && (
+                  <IonButton
+                    onClick={showMoreThreads}
+                    fill="clear"
+                    size="small"
+                    expand="full"
                   >
-                    <NowrapIonLabel>
-                      {recentlyUpdatedThread.title || t('generic.untitled')}
-                    </NowrapIonLabel>
-                  </CompactIonItem>
-                ))}
-              {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
-                <IonButton
-                  onClick={showMoreThreads}
-                  fill="clear"
-                  size="small"
-                  expand="full"
-                >
-                  <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-                </IonButton>
-              )}
-            </IonList>
-          </IonCard>
-        )}
+                    <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
+                  </IonButton>
+                )}
+              </IonList>
+            </IonCard>
+          )}
 
-      <IonCard>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Contribute,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
-          }
-          button
-        >
-          <IonIcon icon={heart} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.contribute')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Settings,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
-          }
-          button
-        >
-          <IonIcon icon={settings} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.settings')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem lines="none" onClick={signOut} button>
-          <IonIcon icon={logOut} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.signOut')}</IonLabel>
-        </CompactIonItem>
-      </IonCard>
-    </>
+        <IonCard>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.Contribute,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={heart} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.contribute')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigate(
+                undefined,
+                PaneableComponent.Settings,
+                {},
+                event.metaKey || event.ctrlKey
+                  ? PaneTransition.NewTab
+                  : PaneTransition.Push,
+                !(event.metaKey || event.ctrlKey),
+              )
+            }
+            button
+          >
+            <IonIcon icon={settings} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.settings')}</IonLabel>
+          </CompactIonItem>
+          <CompactIonItem lines="none" onClick={signOut} button>
+            <IonIcon icon={logOut} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.signOut')}</IonLabel>
+          </CompactIonItem>
+        </IonCard>
+      </div>
+      <AppConnectionStatus />
+    </Container>
   );
 };

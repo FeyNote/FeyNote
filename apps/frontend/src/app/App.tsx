@@ -5,6 +5,9 @@ import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
 
+import '@radix-ui/themes/styles.css';
+import { Theme } from '@radix-ui/themes';
+
 /* Optional CSS utils that can be commented out */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
@@ -12,7 +15,7 @@ import '@ionic/react/css/text-alignment.css';
 import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
-import { setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 
 import '@ionic/react/css/palettes/dark.class.css';
 import './light.class.css';
@@ -32,9 +35,12 @@ import {
   initI18Next,
   ResetPassword,
   ResetEmail,
-  IonApp,
   PrintviewApp,
+  LocaldbStoreErrorHandlers,
+  initDebugStoreMonkeypatch,
 } from '@feynote/ui';
+
+initDebugStoreMonkeypatch();
 
 initI18Next();
 
@@ -63,12 +69,13 @@ export function App() {
           }
         }, SW_UPDATE_INTERVAL_MS);
 
-        // Sync and periodic sync are not ratified yet and so therefore do not exist in typings
+        registration?.sync?.register('manifest').catch((e: unknown) => {
+          console.error('Cannot register background sync', e);
+        });
+
+        // Periodic sync is not ratified yet and so therefore do not exist in typings
         const swRegistration = registration as unknown as
           | {
-              sync?: {
-                register: (name: string) => Promise<void>;
-              };
               periodicSync?: {
                 register: (
                   name: string,
@@ -77,10 +84,6 @@ export function App() {
               };
             }
           | undefined;
-
-        swRegistration?.sync?.register('manifest').catch((e: unknown) => {
-          console.error('Cannot register background sync', e);
-        });
 
         const PERIODIC_SYNC_INTERVAL_HOURS = 48;
         swRegistration?.periodicSync
@@ -100,36 +103,40 @@ export function App() {
   const resetEmailToken = url.searchParams.get('resetEmailToken');
   if (resetEmailToken) {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <PreferencesContextProviderWrapper>
-              <ResetEmail
-                authResetToken={resetEmailToken}
-                redirectPath={window.location.origin}
-              />
-            </PreferencesContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <PreferencesContextProviderWrapper>
+                <ResetEmail
+                  authResetToken={resetEmailToken}
+                  redirectPath={window.location.origin}
+                />
+              </PreferencesContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
   const resetPasswordToken = url.searchParams.get('resetPasswordToken');
   if (resetPasswordToken) {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <PreferencesContextProviderWrapper>
-              <ResetPassword
-                authResetToken={resetPasswordToken}
-                redirectPath={window.location.origin}
-              />
-            </PreferencesContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <PreferencesContextProviderWrapper>
+                <ResetPassword
+                  authResetToken={resetPasswordToken}
+                  redirectPath={window.location.origin}
+                />
+              </PreferencesContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
@@ -140,30 +147,35 @@ export function App() {
 
   if (!path.length || path[0] === '') {
     return (
-      <ToastContextProvider>
-        <GlobalPaneContextProviderWrapper>
-          <IonApp>
-            <SidemenuContextProviderWrapper>
-              <PreferencesContextProviderWrapper>
-                <SessionContextProviderWrapper>
-                  <GlobalSearchContextProviderWrapper>
-                    <Workspace />
-                  </GlobalSearchContextProviderWrapper>
-                </SessionContextProviderWrapper>
-              </PreferencesContextProviderWrapper>
-            </SidemenuContextProviderWrapper>
-          </IonApp>
-        </GlobalPaneContextProviderWrapper>
-      </ToastContextProvider>
+      <Theme>
+        <ToastContextProvider>
+          <GlobalPaneContextProviderWrapper>
+            <IonApp>
+              <SidemenuContextProviderWrapper>
+                <PreferencesContextProviderWrapper>
+                  <SessionContextProviderWrapper>
+                    <GlobalSearchContextProviderWrapper>
+                      <LocaldbStoreErrorHandlers />
+                      <Workspace />
+                    </GlobalSearchContextProviderWrapper>
+                  </SessionContextProviderWrapper>
+                </PreferencesContextProviderWrapper>
+              </SidemenuContextProviderWrapper>
+            </IonApp>
+          </GlobalPaneContextProviderWrapper>
+        </ToastContextProvider>
+      </Theme>
     );
   }
 
   return (
-    <IonApp>
-      <PreferencesContextProviderWrapper>
-        <NotFound />
-      </PreferencesContextProviderWrapper>
-    </IonApp>
+    <Theme>
+      <IonApp>
+        <PreferencesContextProviderWrapper>
+          <NotFound />
+        </PreferencesContextProviderWrapper>
+      </IonApp>
+    </Theme>
   );
 }
 

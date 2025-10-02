@@ -1,7 +1,8 @@
 import { t } from 'i18next';
 import { Component } from 'react';
-import { MdHorizontalRule } from 'react-icons/md';
+import { MdHorizontalRule } from '../../../../AppIcons';
 import styled from 'styled-components';
+import type { GlobalTiptapCommandHelperEntry } from '../../../globalTiptapCommandHelpers';
 
 const SuggestionListContainer = styled.div`
   font-family: var(--ion-font-family);
@@ -67,17 +68,9 @@ const SuggestionListItemSubtitle = styled.div`
   font-size: 11px;
 `;
 
-export interface CommandItem {
-  title: string;
-  subtitle: string;
-  icon: React.FC<{
-    size: number;
-  }>;
-}
-
 interface Props {
-  items: CommandItem[];
-  command: (item: CommandItem) => void;
+  items: GlobalTiptapCommandHelperEntry[];
+  command: (item: GlobalTiptapCommandHelperEntry) => void;
 }
 
 interface State {
@@ -143,7 +136,9 @@ export class TiptapCommandsList extends Component<Props, State> {
   }
 
   render() {
+    console.log('hello');
     const { items } = this.props;
+    console.log('items are', items);
     return (
       <SuggestionListContainer>
         {items.map((item, index) => {
@@ -154,13 +149,17 @@ export class TiptapCommandsList extends Component<Props, State> {
               onClick={() => this.selectItem(index)}
             >
               <SuggestionListItemIcon>
-                <item.icon size={18} />
+                {item.icon && <item.icon size={18} />}
               </SuggestionListItemIcon>
               <SuggestionListItemText>
-                <SuggestionListItemTitle>{item.title}</SuggestionListItemTitle>
-                <SuggestionListItemSubtitle>
-                  {item.subtitle}
-                </SuggestionListItemSubtitle>
+                <SuggestionListItemTitle>
+                  {t(item.title)}
+                </SuggestionListItemTitle>
+                {item.subtitle && (
+                  <SuggestionListItemSubtitle>
+                    {t(item.subtitle)}
+                  </SuggestionListItemSubtitle>
+                )}
               </SuggestionListItemText>
             </SuggestionListItem>
           );

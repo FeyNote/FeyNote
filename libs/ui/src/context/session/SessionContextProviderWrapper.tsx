@@ -1,6 +1,13 @@
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import {
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentProps,
+} from 'react';
+import * as Sentry from '@sentry/react';
 import { SessionContext, type SessionContextData } from './SessionContext';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
 import {
@@ -27,7 +34,7 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
     useSetAndPersistSession();
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
-  });
+  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
@@ -39,8 +46,14 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
 
   useEffect(() => {
     if (!session?.token) {
+      Sentry.setUser(null);
       return;
     }
+
+    Sentry.setUser({
+      id: session.userId,
+      email: session.email,
+    });
 
     trpc.user.validateSession.query().catch((error) => {
       handleTRPCErrors(error);
@@ -55,6 +68,8 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
   }, []);
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
+    console.info('Session updated');
+
     await _setAndPersistSession(newSession);
     setSession(newSession);
 

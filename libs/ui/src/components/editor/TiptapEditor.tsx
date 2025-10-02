@@ -14,6 +14,9 @@ import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useToastContext } from '../../context/toast/ToastContext';
 import { useTranslation } from 'react-i18next';
 import { IncomingBlockReferencesInlinePreview } from './incomingBlockReferencesInlinePreview/IncomingBlockReferencesInlinePreview';
+import { TiptapEditorControlMenu } from './TiptapEditorControlMenu';
+import { ArtifactEditorContainer } from './ArtifactEditorContainer';
+import { type CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -28,10 +31,12 @@ type DocArgOptions =
     };
 
 type Props = {
+  showMenus?: boolean;
   artifactId: string | undefined; // Passing undefined here will disable artifact reference text lookup and other features
   setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
   theme: ArtifactTheme;
   editable: boolean;
+  authorizedScope: CollaborationConnectionAuthorizedScope;
   onReady?: () => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => Promise<string> | string;
@@ -100,43 +105,56 @@ export const TiptapEditor = (props: Props) => {
   }
 
   return (
-    <ArtifactEditorStyles data-theme={props.theme}>
-      {props.prepend}
-
-      <EditorContent editor={editor}></EditorContent>
-      {editor && props.editable && (
-        <BubbleMenu
+    <>
+      {props.showMenus && props.artifactId && (
+        <TiptapEditorControlMenu
+          artifactId={props.artifactId}
+          authorizedScope={props.authorizedScope}
+          yDoc={props.yDoc || props.yjsProvider.document}
           editor={editor}
-          shouldShow={({ editor, state, from, to }) => {
-            const { doc, selection } = state;
-            const { empty } = selection;
-            const isEmptyTextBlock =
-              !doc.textBetween(from, to).length &&
-              selection.$from.parent.type.name === 'paragraph';
-            const isFeynoteImage =
-              doc.nodeAt(from)?.type.name === 'feynoteImage';
-
-            if (
-              !editor.isEditable ||
-              empty ||
-              isEmptyTextBlock ||
-              isFeynoteImage
-            ) {
-              return false;
-            }
-
-            return true;
-          }}
-        >
-          <ArtifactBubbleMenuControls editor={editor} />
-        </BubbleMenu>
+        />
       )}
-      {editor && props.editable && <TableBubbleMenu editor={editor} />}
-      <IncomingBlockReferencesInlinePreview
-        artifactId={props.artifactId || ''}
-        onMouseOverRef={onIncomingReferenceCounterMouseOverRef}
-        onMouseOutRef={onIncomingReferenceCounterMouseOutRef}
-      />
-    </ArtifactEditorStyles>
+
+      <ArtifactEditorContainer>
+        <ArtifactEditorStyles data-theme={props.theme}>
+          {props.prepend}
+
+          <EditorContent editor={editor}></EditorContent>
+          {editor && props.editable && (
+            <BubbleMenu
+              editor={editor}
+              shouldShow={({ editor, state, from, to }) => {
+                const { doc, selection } = state;
+                const { empty } = selection;
+                const isEmptyTextBlock =
+                  !doc.textBetween(from, to).length &&
+                  selection.$from.parent.type.name === 'paragraph';
+                const isFeynoteImage =
+                  doc.nodeAt(from)?.type.name === 'feynoteImage';
+
+                if (
+                  !editor.isEditable ||
+                  empty ||
+                  isEmptyTextBlock ||
+                  isFeynoteImage
+                ) {
+                  return false;
+                }
+
+                return true;
+              }}
+            >
+              <ArtifactBubbleMenuControls editor={editor} />
+            </BubbleMenu>
+          )}
+          {editor && props.editable && <TableBubbleMenu editor={editor} />}
+          <IncomingBlockReferencesInlinePreview
+            artifactId={props.artifactId || ''}
+            onMouseOverRef={onIncomingReferenceCounterMouseOverRef}
+            onMouseOutRef={onIncomingReferenceCounterMouseOutRef}
+          />
+        </ArtifactEditorStyles>
+      </ArtifactEditorContainer>
+    </>
   );
 };

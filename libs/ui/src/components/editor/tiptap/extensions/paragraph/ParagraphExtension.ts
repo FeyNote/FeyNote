@@ -2,7 +2,7 @@ import {
   Paragraph as BaseParagraphExtension,
   ParagraphOptions as BaseParagraphOptions,
 } from '@tiptap/extension-paragraph';
-import type { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import type { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export interface ParagraphOptions extends BaseParagraphOptions {
   artifactId: string | undefined;
@@ -46,7 +46,7 @@ export const ParagraphExtension =
           }
 
           const incomingEdges =
-            this.options.edgeStore?.getIncomingEdgesForBlockInstant({
+            this.options.edgeStore?.getIncomingEdgesForBlock({
               artifactId: this.options.artifactId,
               blockId: node.attrs.id,
             });

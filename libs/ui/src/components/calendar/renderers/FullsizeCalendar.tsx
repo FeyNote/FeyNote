@@ -2,8 +2,7 @@ import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
 import type { CalendarRenderProps } from './CalendarRenderProps';
 import { chevronBack, chevronForward } from 'ionicons/icons';
-import { useContext } from 'react';
-import { PaneContext } from '../../../context/pane/PaneContext';
+import { usePaneContext } from '../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { Edge } from '@feynote/shared-utils';
@@ -92,7 +91,7 @@ interface FullsizeCalendarProps extends CalendarRenderProps {
 }
 
 export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
 
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);

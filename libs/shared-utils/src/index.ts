@@ -3,8 +3,12 @@ export * from './lib/calendar/generateGregorianMondayCalendarConfig';
 export * from './lib/calendar/generateSessionCalendarConfig';
 export * from './lib/calendar/YCalendarConfig';
 export * from './lib/calendar/YCalendarMap';
+
+export * from './lib/crypto/DEBUG_DUMP_PUBLIC_KEY';
+export * from './lib/crypto/encryptWithRSAKey';
 export * from './lib/crypto/sha256Hex';
 export * from './lib/crypto/hmacSha256Hex';
+
 export * from './lib/edgesReferences/getEdgeId';
 export * from './lib/validation/assert';
 export * from './lib/validation/getArtifactAccessLevel';
@@ -16,6 +20,7 @@ export * from './lib/parsers/stream/file/FileStreamDecoder';
 export * from './lib/parsers/stream/job/ImportJobStreamEncoder';
 export * from './lib/parsers/stream/job/ImportJobStreamDecoder';
 export * from './lib/parsers/stream/FeynoteAPIStreamMessageType';
+export * from './lib/parsers/readableStreamToUint8Array';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
 export * from './lib/text/capitalizeEachWord';

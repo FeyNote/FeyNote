@@ -23,10 +23,10 @@ import { ArtifactSharingAccessLevel } from './ArtifactSharingAccessLevel';
 import { ArtifactLinkAccessLevelSelect } from './ArtifactLinkAccessLevelSelect';
 import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
 import styled from 'styled-components';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
-import { useObserveYArtifactUserAccess } from '../../utils/useObserveYArtifactUserAccess';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
+import { useObserveYArtifactUserAccess } from '../../utils/collaboration/useObserveYArtifactUserAccess';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { ArtifactAccessLevel } from '@prisma/client';
 

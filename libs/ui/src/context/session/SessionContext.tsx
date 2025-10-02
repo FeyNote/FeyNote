@@ -1,12 +1,23 @@
 import type { SessionDTO } from '@feynote/shared-utils';
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 
 export interface SessionContextData {
   session: SessionDTO;
   setSession: (session: SessionDTO | null) => Promise<void>;
 }
 
-export const SessionContext = createContext<SessionContextData>({
-  session: null as unknown as SessionContextData['session'],
-  setSession: null as unknown as SessionContextData['setSession'],
-});
+export const SessionContext = createContext<SessionContextData | null>(null);
+
+export function useSessionContext(): SessionContextData;
+export function useSessionContext(optional: true): SessionContextData | null;
+export function useSessionContext(optional?: true): SessionContextData | null {
+  const context = useContext(SessionContext);
+
+  if (!context && !optional) {
+    throw new Error(
+      'Session used in component where session context was not provided!',
+    );
+  }
+
+  return context;
+}

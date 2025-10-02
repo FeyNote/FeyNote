@@ -1,5 +1,5 @@
 import { createPortal } from 'react-dom';
-import { MdOutlineDragIndicator } from 'react-icons/md';
+import { MdOutlineDragIndicator } from '../../../../AppIcons';
 import styled from 'styled-components';
 
 const Handle = styled.div`

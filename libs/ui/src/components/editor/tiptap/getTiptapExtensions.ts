@@ -69,9 +69,9 @@ import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink
 import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 import { FocusExtension } from './extensions/focus/FocusExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
-import { getEdgeStore } from '../../../utils/edgesReferences/edgeStore';
 import { FeynoteGenericFileExtension } from './extensions/feynoteGenericFile/FeynoteGenericFileExtension';
 import { FeynoteAudioExtension } from './extensions/feynoteAudio/FeynoteAudioExtension';
+import { getEdgeStore } from '../../../utils/localDb/edges/edgeStore';
 
 type DocArgOptions =
   | {
@@ -179,14 +179,10 @@ export const getTiptapExtensions = (args: {
         ]
       : []),
     CommandsExtension,
-    ...(args.artifactId
-      ? [
-          buildArtifactReferencesExtension({
-            artifactId: args.artifactId,
-            yDoc: args.y.yDoc || args.y.yjsProvider.document,
-          }),
-        ]
-      : []),
+    buildArtifactReferencesExtension({
+      artifactId: args.artifactId,
+      yDoc: args.y.yDoc || args.y.yjsProvider.document,
+    }),
     PlaceholderExtension.configure({
       placeholder: args.placeholder,
     }),

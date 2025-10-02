@@ -1,25 +1,24 @@
 import { IonButton, IonCard, IonContent, IonPage } from '@ionic/react';
-import { useContext, useRef } from 'react';
+import { useRef } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
-import { ArtifactContextMenu } from './ArtifactContextMenu';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { ArtifactDropdownMenu } from './ArtifactDropdownMenu';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { ArtifactRightSidemenu } from './rightSideMenu/ArtifactRightSidemenu';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
-import { useCollaborationConnection } from '../editor/collaborationManager';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
-import { useArtifactDelete } from './useArtifactDelete';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
-} from '../../utils/useCollaborationConnectionAuthorizedScope';
+} from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 
 const StatusMessage = styled.div`
   text-align: center;
@@ -35,8 +34,8 @@ interface ArtifactProps {
 }
 
 export const Artifact: React.FC<ArtifactProps> = (props) => {
-  const { pane, navigate, isPaneFocused } = useContext(PaneContext);
-  const { sidemenuContentRef } = useContext(SidemenuContext);
+  const { pane, navigate, isPaneFocused } = usePaneContext();
+  const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
   // We use a ref instead of state because this method is called on every keystroke and we don't want
   // to re-render the component stack top to bottom
@@ -44,8 +43,8 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     useRef<(content: TableOfContentData) => void>(undefined);
 
   const connection = useCollaborationConnection(`artifact:${props.id}`);
+
   const { title } = useObserveYArtifactMeta(connection.yjsDoc);
-  const { deleteArtifact } = useArtifactDelete();
   const { authorizedScope, collaborationConnectionStatus } =
     useCollaborationConnectionAuthorizedScope(connection);
 
@@ -120,7 +119,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     return renderBlockingMessage(
       t('artifact.noAccess.title'),
       t('artifact.noAccess.message'),
-      <IonButton size="small" onClick={connection.reauthenticate}>
+      <IonButton size="small" onClick={() => connection.reauthenticate()}>
         {t('artifact.noAccess.action')}
       </IonButton>,
     );
@@ -130,17 +129,18 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     <IonPage>
       <PaneNav
         title={title || ''}
-        popoverContents={
-          <ArtifactContextMenu
+        renderDropdownMenu={(children) => (
+          <ArtifactDropdownMenu
             artifactId={props.id}
             authorizedScope={authorizedScope}
-            triggerDelete={() => deleteArtifact(props.id)}
             triggerUndelete={undelete}
             connection={connection}
             pane={pane}
             navigate={navigate}
-          />
-        }
+          >
+            {children}
+          </ArtifactDropdownMenu>
+        )}
       />
       <IonContent
         className="ion-padding-start ion-padding-end"

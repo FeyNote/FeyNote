@@ -1,34 +1,28 @@
-import {
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { GlobalSearchContext } from './GlobalSearchContext';
 import {
   IonBackdrop,
   IonButton,
   IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { open, search } from 'ionicons/icons';
+import { open } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { SessionContext } from '../session/SessionContext';
+import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
+import { Box, TextField } from '@radix-ui/themes';
+import { IoSearch } from '../../components/AppIcons';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -70,16 +64,6 @@ const SearchResultsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const SearchInput = styled(IonInput)`
-  --background: transparent;
-  --highlight-height: 0;
-  --highlight-color-focused: var(--ion-text-color, #000000);
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
-`;
-
 const SearchResult = styled(IonItem)<{
   $selected: boolean;
 }>`
@@ -88,7 +72,7 @@ const SearchResult = styled(IonItem)<{
 `;
 
 const Backdrop = styled(IonBackdrop)`
-  opacity: 0.7;
+  opacity: 0.85;
   background: var(--ion-background-color, #aaaaaa);
 `;
 
@@ -126,7 +110,7 @@ const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
 }) => {
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<
@@ -137,12 +121,13 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       previewText: string;
     }[]
   >([]);
+  const [searching, setSearching] = useState(false);
   const maxSelectedIdx = searchResults.length; // We want to include the create button as a selectable item
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLIonInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const truncateTextWithEllipsis = (text: string) => {
     // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
@@ -164,19 +149,21 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   };
 
   const create = async () => {
-    const artifact = await createArtifact({
-      title: capitalizeEachWord(searchText).trim(),
+    const result = await createArtifact({
+      artifact: {
+        title: capitalizeEachWord(searchText).trim(),
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       undefined, // Open in currently focused pane rather than in specific pane
       PaneableComponent.Artifact,
       {
-        id: artifact.id,
+        id: result.id,
       },
       PaneTransition.Push,
     );
@@ -199,7 +186,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       setSelectedIdx(0);
 
       setTimeout(() => {
-        inputRef.current?.setFocus();
+        inputRef.current?.focus();
       });
     }
   }, [show]);
@@ -255,10 +242,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   }, [searchResults]);
 
   useEffect(() => {
+    setSelectedIdx(0);
+
     if (!searchText.trim().length) {
       setSearchResults([]);
+      setSearching(false);
       return;
     }
+
+    setSearching(true);
 
     let cancelled = false;
     const timeout = setTimeout(() => {
@@ -274,6 +266,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       ])
         .then(([titleResults, blockResults]) => {
           if (cancelled) return;
+          setSearching(false);
 
           const results: {
             artifact: ArtifactDTO;
@@ -283,6 +276,18 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
           }[] = [];
           const resultsByArtifactId = new Map<string, (typeof results)[0]>();
 
+          // We only want to display title results if there are no block results for that artifact
+          for (const titleResult of titleResults) {
+            if (!resultsByArtifactId.has(titleResult.artifact.id)) {
+              const result = {
+                artifact: titleResult.artifact,
+                highlights: [],
+                previewText: titleResult.artifact.previewText,
+              };
+              results.push(result);
+              resultsByArtifactId.set(titleResult.artifact.id, result);
+            }
+          }
           // We merge all the results under the same artifact entry in the UI, but we want to preserve as many highlights as we can
           for (const blockResult of blockResults) {
             const existingResult = resultsByArtifactId.get(
@@ -305,23 +310,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               resultsByArtifactId.set(blockResult.artifact.id, result);
             }
           }
-          // We only want to display title results if there are no block results for that artifact
-          for (const titleResult of titleResults) {
-            if (!resultsByArtifactId.has(titleResult.artifact.id)) {
-              const result = {
-                artifact: titleResult.artifact,
-                highlights: [],
-                previewText: titleResult.artifact.previewText,
-              };
-              results.push(result);
-              resultsByArtifactId.set(titleResult.artifact.id, result);
-            }
-          }
 
           setSearchResults(results);
         })
         .catch((error) => {
           handleTRPCErrors(error);
+          setSearching(false);
         });
     }, SEARCH_DELAY_MS);
 
@@ -342,7 +336,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     <>
       <Backdrop visible={true} onIonBackdropTap={hide} stopPropagation={true} />
       <SearchContainer>
-        {session ? (
+        {sessionContext?.session ? (
           <>
             <TitleContainer>
               <Title>{t('globalSearch.title')}</Title>
@@ -358,19 +352,20 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
             </TitleContainer>
 
             <FloatingSearchContainer>
-              <SearchInput
-                ref={inputRef}
-                onIonInput={(event) => setSearchText(event.detail.value || '')}
-                value={searchText}
-                placeholder={t('globalSearch.placeholder')}
-                inputMode="search"
-              >
-                <IonIcon
-                  slot="start"
-                  icon={search}
-                  aria-hidden="true"
-                ></IonIcon>
-              </SearchInput>
+              <Box>
+                <TextField.Root
+                  ref={inputRef}
+                  placeholder={t('globalSearch.placeholder')}
+                  onChange={(event) => setSearchText(event.target.value)}
+                  value={searchText}
+                  size="3"
+                  inputMode="search"
+                >
+                  <TextField.Slot>
+                    <IoSearch height="16" width="16" />
+                  </TextField.Slot>
+                </TextField.Root>
+              </Box>
 
               <SearchResultsContainer>
                 {searchResults.map((searchResult, idx) => (
@@ -424,7 +419,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                     </IonLabel>
                   </SearchResult>
                 ))}
-                {!!searchText.length && (
+                {!!searchText.length && !searching && (
                   <SearchResult
                     lines="none"
                     $selected={selectedIdx === maxSelectedIdx}

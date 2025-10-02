@@ -1,17 +1,18 @@
-import { IonIcon, IonItem, IonLabel, useIonAlert } from '@ionic/react';
+import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { pencil, trashBin } from 'ionicons/icons';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import type { PaneContextData } from '../../context/pane/PaneContext';
+import { DropdownMenu } from '@radix-ui/themes';
 
 interface Props {
   id: string;
   title: string;
   setTitle: (title: string) => void;
   navigate: PaneContextData['navigate'];
+  children: React.ReactNode;
 }
 
 export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
@@ -90,15 +91,18 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   };
 
   return (
-    <>
-      <IonItem button onClick={triggerRenameThreadAlert}>
-        <IonLabel>{t('assistant.thread.rename')}</IonLabel>
-        <IonIcon slot="start" size="small" icon={pencil} />
-      </IonItem>
-      <IonItem button onClick={triggerDeleteThreadAlert}>
-        <IonLabel>{t('assistant.thread.delete')}</IonLabel>
-        <IonIcon slot="start" size="small" icon={trashBin} />
-      </IonItem>
-    </>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>{props.children}</DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Root>
+          <DropdownMenu.Item onClick={triggerRenameThreadAlert}>
+            {t('assistant.thread.rename')}
+          </DropdownMenu.Item>
+          <DropdownMenu.Item color="red" onClick={triggerDeleteThreadAlert}>
+            {t('assistant.thread.delete')}
+          </DropdownMenu.Item>
+        </DropdownMenu.Root>
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
   );
 };

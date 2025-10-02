@@ -2,7 +2,7 @@ import {
   Heading as BaseHeadingExtension,
   HeadingOptions as BaseHeadingOptions,
 } from '@tiptap/extension-heading';
-import type { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import type { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export interface HeadingOptions extends BaseHeadingOptions {
   artifactId: string | undefined;
@@ -45,11 +45,10 @@ export const HeadingExtension = BaseHeadingExtension.extend<HeadingOptions>({
           return;
         }
 
-        const incomingEdges =
-          this.options.edgeStore?.getIncomingEdgesForBlockInstant({
-            artifactId: this.options.artifactId,
-            blockId: node.attrs.id,
-          });
+        const incomingEdges = this.options.edgeStore?.getIncomingEdgesForBlock({
+          artifactId: this.options.artifactId,
+          blockId: node.attrs.id,
+        });
 
         incomingEdgeCounter.innerText = `${incomingEdges?.length || 0}`;
 

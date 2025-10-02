@@ -15,6 +15,7 @@ export const buildIntroducingReferencesArtifact = (options: {
     type: 'tiptap',
     linkAccessLevel: 'noaccess',
     deletedAt: null,
+    createdAt: new Date().getTime(),
   } as const satisfies YArtifactMeta;
 
   const incomingReferenceBlockId = crypto.randomUUID();

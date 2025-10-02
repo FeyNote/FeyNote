@@ -43,7 +43,7 @@ export const IncomingBlockReferenceInlinePreviewItem: React.FC<Props> = (
 ) => {
   const ref = useRef<HTMLDivElement>(null);
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(props.edge.artifactId, props.edge.isBroken);
+    useArtifactPreviewTimer(props.edge.artifactId);
 
   return (
     <Container

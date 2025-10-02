@@ -65,7 +65,9 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
             theme: artifactMeta.theme,
             text,
             yBin,
-            deletedAt: artifactMeta.deletedAt,
+            deletedAt: artifactMeta.deletedAt
+              ? new Date(artifactMeta.deletedAt)
+              : null,
             json: {
               ...(artifact.json as unknown as Record<string, unknown>),
               tiptapBody,

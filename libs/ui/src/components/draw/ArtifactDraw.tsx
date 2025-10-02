@@ -1,13 +1,13 @@
 import { Doc as YDoc } from 'yjs';
-import { memo, useContext, useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import type { FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
 import { IonItem } from '@ionic/react';
 import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
-import { SessionContext } from '../../context/session/SessionContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import {
   ArrowDownToolbarItem,
   ArrowLeftToolbarItem,
@@ -64,9 +64,9 @@ import {
 } from 'tldraw';
 import 'tldraw/tldraw.css';
 import { useYjsTLDrawStore } from './useYjsTLDrawStore';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import styled from 'styled-components';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { TLDrawCustomGrid } from './TLDrawCustomGrid';
 import {
   TLDrawReferenceShapeTool,
@@ -140,8 +140,8 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const yMeta = useObserveYArtifactMeta(yDoc);
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
-  const { session } = useContext(SessionContext);
-  const { getPreference } = useContext(PreferencesContext);
+  const sessionContext = useSessionContext(true);
+  const { getPreference } = usePreferencesContext();
   const { t } = useTranslation();
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
@@ -151,12 +151,18 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
       props.collaborationConnection.tiptapCollabProvider.awareness?.setLocalStateField(
         'user',
         {
-          name: session ? session.email : t('generic.anonymous'),
+          name: sessionContext
+            ? sessionContext.session.email
+            : t('generic.anonymous'),
           color: preferredUserColor,
         },
       );
     }
-  }, [props.collaborationConnection, session, preferredUserColor]);
+  }, [
+    props.collaborationConnection,
+    sessionContext?.session,
+    preferredUserColor,
+  ]);
 
   const store = useYjsTLDrawStore({
     handleFileUpload: props.handleFileUpload,

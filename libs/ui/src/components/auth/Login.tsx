@@ -18,9 +18,9 @@ import {
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../utils/trpc';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { getIonInputClassNames } from './input';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
@@ -40,7 +40,7 @@ export const Login: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
 
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
 
   const submitLogin = () => {
     setIsLoading(true);

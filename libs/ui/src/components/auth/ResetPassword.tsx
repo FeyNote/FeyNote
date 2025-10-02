@@ -22,7 +22,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { validatePassword } from '@feynote/shared-utils';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 
 interface Props {
   redirectPath: string;

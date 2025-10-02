@@ -60,7 +60,7 @@ export default defineConfig({
       },
       injectManifest: {
         //TODO: https://github.com/RedChickenCo/FeyNote/issues/1202
-        maximumFileSizeToCacheInBytes: 5242880, // 2097152 is the default, increased here since our bundle size has grown over the limit
+        maximumFileSizeToCacheInBytes: 6000000, // 2097152 is the default, increased here since our bundle size has grown over the limit
         globIgnores: ['**\\/node_modules\\/**\\/*', 'index.html'],
         buildPlugins: {
           vite: [nxViteTsPaths()],
@@ -114,10 +114,9 @@ export default defineConfig({
       : []),
   ],
 
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
+  worker: {
+    plugins: () => [nxViteTsPaths()],
+  },
 
   test: {
     reporters: ['default'],

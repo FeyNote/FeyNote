@@ -1,14 +1,14 @@
-import { memo, useContext, useEffect, useRef, useState } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
-import { SessionContext } from '../../context/session/SessionContext';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
@@ -16,7 +16,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/useCollaborationConnectionAuthorizedScope';
+import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 const ArtifactRendererContainer = styled.div`
   height: 100%;
@@ -66,7 +66,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [editorReady, setEditorReady] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [fileUploadProgress, setFileUploadProgress] = useState(0);
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const [presentAlert] = useIonAlert();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
@@ -145,8 +145,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   if (type === 'tiptap') {
     return render(
       <ArtifactEditor
+        showMenus={true}
         artifactId={props.artifactId}
         editable={isEditable}
+        authorizedScope={props.authorizedScope}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
@@ -210,7 +212,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           setIsUploadingFile(false);
         }}
         getFileUrl={(fileId) => {
-          return getFileUrlById(fileId, session);
+          return getFileUrlById(fileId, sessionContext?.session);
         }}
         showBottomSpacer={true}
       />,
@@ -263,7 +265,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           return response;
         }}
         getFileUrl={(fileId) => {
-          return getFileUrlById(fileId, session);
+          return getFileUrlById(fileId, sessionContext?.session);
         }}
       />,
     );

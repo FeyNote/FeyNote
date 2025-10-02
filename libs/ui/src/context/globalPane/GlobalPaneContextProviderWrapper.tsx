@@ -20,7 +20,7 @@ import {
 } from './PaneableComponent';
 import { t } from 'i18next';
 import { useFlexLayout } from './useFlexLayout';
-import { getManifestDb, ObjectStoreName } from '../../utils/localDb';
+import { getManifestDb, ObjectStoreName } from '../../utils/localDb/localDb';
 
 class PaneNotFoundError extends Error {
   constructor(paneId: string) {

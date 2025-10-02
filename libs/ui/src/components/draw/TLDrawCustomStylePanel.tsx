@@ -18,8 +18,9 @@ import {
   FaMapPin,
   FaStar,
   FaTree,
-} from 'react-icons/fa';
-import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
+  GiBroadsword,
+  GiMonsterGrasp,
+} from '../AppIcons';
 
 const ReferenceIconOptionsContainer = styled.div`
   display: grid;

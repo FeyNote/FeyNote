@@ -21,26 +21,26 @@ import {
   FaMapPin,
   FaStar,
   FaTree,
-} from 'react-icons/fa';
+  GiBroadsword,
+  GiMonsterGrasp,
+} from '../AppIcons';
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
-import { useContext, useRef } from 'react';
+import { useContext, useMemo, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
-import { useEdgesForArtifactId } from '../../utils/edgesReferences/useEdgesForArtifactId';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
-import { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 import styled from 'styled-components';
 import {
   ReferenceShapeIconOptions,
   ReferenceShapeProps,
 } from '@feynote/shared-utils';
+import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
   $isHandMode: boolean;
-  $isBroken: boolean;
   $radius: number;
   $type: ReferenceIconTLDrawStyle;
 }>`
@@ -62,12 +62,6 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   pointer-events: all;
   text-align: center;
   vertical-align: middle;
-
-  ${({ $isHandMode, $isBroken }) =>
-    $isHandMode &&
-    `
-    cursor: ${$isBroken ? 'not-allowed' : 'pointer'};
-  `}
 
   svg {
     overflow: visible;
@@ -225,7 +219,7 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
   component(shape: ReferenceShape) {
-    const { navigate } = useContext(PaneContext);
+    const { navigate } = usePaneContext();
     const artifactId = useContext(TLDrawArtifactIdContext);
     if (!artifactId) {
       throw new Error('TLDrawReferenceUtil.component: missing artifactId');
@@ -235,20 +229,22 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
     const ref = useRef<HTMLDivElement>(null);
 
     const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
-    const edge = getEdge({
-      artifactId,
-      artifactBlockId: shape.id,
-      targetArtifactId: shape.props.targetArtifactId,
-      targetArtifactBlockId: shape.props.targetArtifactBlockId,
-      targetArtifactDate: shape.props.targetArtifactDate,
-    });
+    const edge = useMemo(
+      () =>
+        getEdge({
+          artifactId,
+          artifactBlockId: shape.id,
+          targetArtifactId: shape.props.targetArtifactId,
+          targetArtifactBlockId: shape.props.targetArtifactBlockId,
+          targetArtifactDate: shape.props.targetArtifactDate,
+        }),
+      [getEdge],
+    );
     const referenceText = edge?.referenceText || shape.props.referenceText;
-    const isBroken = edge ? edge.isBroken : false;
-
     const isHandMode = this.editor.getCurrentToolId() === 'hand';
 
     const { previewInfo, onMouseOver, onMouseOut, close } =
-      useArtifactPreviewTimer(shape.props.targetArtifactId, isBroken);
+      useArtifactPreviewTimer(shape.props.targetArtifactId);
 
     const linkClicked = (
       event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
@@ -257,8 +253,6 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
 
       event.preventDefault();
       event.stopPropagation();
-
-      if (isBroken) return;
 
       close();
 
@@ -308,7 +302,6 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
         $radius={radius}
         $isHandMode={isHandMode}
         $type={shape.props.icon}
-        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onClick={linkClicked}

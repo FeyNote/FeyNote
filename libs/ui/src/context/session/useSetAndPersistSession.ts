@@ -1,10 +1,9 @@
-import { useContext } from 'react';
-import { appIdbStorageManager } from '../../utils/AppIdbStorageManager';
-import { GlobalPaneContext } from '../globalPane/GlobalPaneContext';
+import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
+import { useGlobalPaneContext } from '../globalPane/GlobalPaneContext';
 import { SessionDTO } from '@feynote/shared-utils';
 
 export const useSetAndPersistSession = () => {
-  const { resetLayout } = useContext(GlobalPaneContext);
+  const { resetLayout } = useGlobalPaneContext();
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {
     if (newSession) {

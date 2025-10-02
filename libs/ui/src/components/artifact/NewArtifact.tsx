@@ -1,34 +1,35 @@
 import { IonContent, IonPage } from '@ionic/react';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
 import type { ArtifactType } from '@prisma/client';
 import { PaneNav } from '../pane/PaneNav';
 import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 
 export const NewArtifact: React.FC = () => {
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const newArtifact = async (type: ArtifactType) => {
-    const artifact = await createArtifact({
-      title: t('generic.untitled'),
-      type,
+    const result = await createArtifact({
+      artifact: {
+        title: t('generic.untitled'),
+        type,
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     navigate(
       PaneableComponent.Artifact,
-      { id: artifact.id },
+      { id: result.id },
       PaneTransition.Replace,
     );
   };

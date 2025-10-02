@@ -18,9 +18,9 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
@@ -29,7 +29,7 @@ import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
@@ -127,11 +127,11 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentAlert] = useIonAlert();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
@@ -141,7 +141,9 @@ export const AIThread: React.FC<Props> = (props) => {
       transport: new DefaultChatTransport({
         api: `${getApiUrls().rest}/message/`,
         headers: {
-          Authorization: session?.token ? `Bearer ${session.token}` : '',
+          Authorization: sessionContext?.session.token
+            ? `Bearer ${sessionContext.session.token}`
+            : '',
           'Content-Type': 'application/json',
         },
         body: {
@@ -303,14 +305,16 @@ export const AIThread: React.FC<Props> = (props) => {
     <IonPage>
       <PaneNav
         title={title || t('assistant.thread.emptyTitle')}
-        popoverContents={
+        renderDropdownMenu={(children) => (
           <AIThreadOptionsPopover
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
             setTitle={setTitle}
             navigate={navigate}
-          />
-        }
+          >
+            {children}
+          </AIThreadOptionsPopover>
+        )}
       />
       <IonContent>
         <ChatContainer>
