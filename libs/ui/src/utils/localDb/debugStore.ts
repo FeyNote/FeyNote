@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 import { websocketClient } from '../../context/events/websocketClient';
 import { getIsViteDevelopment } from '../getIsViteDevelopment';
 import { getManifestDb, ObjectStoreName } from './localDb';
@@ -71,7 +73,7 @@ export const initDebugStoreMonkeypatch = () => {
     };
   }
 
-  window.addEventListener('error', (event) => {
+  self.addEventListener('error', (event) => {
     debugStore.logs.push({
       type: 'uncaughtError',
       datetime: new Date().toLocaleString(),
@@ -79,7 +81,7 @@ export const initDebugStoreMonkeypatch = () => {
     });
   });
 
-  window.addEventListener('unhandledrejection', (event) => {
+  self.addEventListener('unhandledrejection', (event) => {
     debugStore.logs.push({
       type: 'unhandledRejection',
       datetime: new Date().toLocaleString(),
@@ -147,6 +149,7 @@ function dumpIndexedDBTable(name: string) {
 
         getAllReq.onsuccess = () => {
           result[storeName] = getAllReq.result;
+          // eslint-disable-next-line no-loop-func
           if (--pending === 0) {
             db.close();
             resolve(result);
@@ -190,8 +193,8 @@ export const createDebugDump = async (opts: {
     logs: debugStore.logs,
     trpc: debugStore.trpc,
     userAgent: navigator.userAgent,
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
+    windowWidth: self.innerWidth,
+    windowHeight: self.innerHeight,
     artifacts,
     tree,
     sw: {
