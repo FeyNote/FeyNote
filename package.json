@@ -100,7 +100,7 @@
     "react-complex-tree": "^2.6.0",
     "react-dom": "19.1.1",
     "react-force-graph-2d": "^1.29.0",
-    "react-i18next": "^15.7.3",
+    "react-i18next": "^16.0.0",
     "react-icons": "^5.5.0",
     "react-is": "19.1.1",
     "remove-markdown": "^0.6.2",
