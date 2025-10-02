@@ -6,6 +6,7 @@ import {
 import { useMemo } from 'react';
 import { ControlledBubbleMenu } from '../controlledBubbleMenu/ControlledBubbleMenu';
 import { TableMenuControls } from './TableMenuControls';
+import { useEditorState } from '@tiptap/react';
 
 interface Props {
   editor: Editor;
@@ -32,6 +33,18 @@ export const TableBubbleMenu: React.FC<Props> = (props) => {
   // We want to position the table menu outside the entire table, rather than at the
   // current cursor position, so that it's essentially static even as the table changes
   // in size and doesn't "block" things within the table while you're trying to edit.
+
+  // New tiptap versions are not reactive in that you have to watch/filter for events for performance reasons
+  useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      if (!editor) return null;
+
+      return {
+        isEditable: editor.isActive('table'),
+      };
+    },
+  });
 
   // NOTE: Popper accepts an `anchorEl` prop as an HTML element, virtualElement
   // (https://popper.js.org/docs/v2/virtual-elements/), or a function that returns

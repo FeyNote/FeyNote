@@ -17,6 +17,7 @@ import {
   MenuDivider,
 } from '../BubbleMenuControlStyles';
 import { useTranslation } from 'react-i18next';
+import { useEditorState } from '@tiptap/react';
 
 interface Props {
   editor: Editor;
@@ -28,6 +29,17 @@ interface Props {
  */
 export const TableMenuControls: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+
+  useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      if (!editor) return null;
+
+      return {
+        selection: editor.state.selection,
+      };
+    },
+  });
 
   return (
     <MenuControlsContainer>

@@ -32,6 +32,16 @@ import {
   RiScissorsCutLine,
   RiStrikethrough,
   RiUnderline,
+  RiInsertColumnLeft,
+  RiTableFill,
+  CgExtensionRemove,
+  RiLayoutColumnFill,
+  RiLayoutRowFill,
+  RiDeleteRow,
+  RiInsertRowBottom,
+  RiInsertRowTop,
+  RiDeleteColumn,
+  RiInsertColumnRight,
 } from '../AppIcons';
 import {
   liftBlockOrListItem,
@@ -55,7 +65,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.hr',
       keywords: ['hr', '-'],
       subtitle: 'editor.commandMenu.hr.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: MdHorizontalRule,
       command: (args) => {
         args.editor
@@ -70,7 +80,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.table',
       keywords: [],
       subtitle: 'editor.commandMenu.table.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: LuTable,
       command: (args) => {
         args.editor
@@ -85,7 +95,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.monster',
       keywords: ['stats'],
       subtitle: 'editor.commandMenu.monster.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: GiMonsterGrasp,
       command: (args) => {
         args.editor
@@ -100,7 +110,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.wideMonster',
       keywords: ['stats'],
       subtitle: 'editor.commandMenu.wideMonster.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: GiMonsterGrasp,
       command: (args) => {
         args.editor
@@ -115,7 +125,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.spell',
       keywords: [],
       subtitle: 'editor.commandMenu.spell.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: RxMagicWand,
       command: (args) => {
         args.editor
@@ -130,7 +140,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.note',
       keywords: [],
       subtitle: 'editor.commandMenu.note.subtitle',
-      enabled: (editor: Editor) => !editor.isActive('table'),
+      enabled: (editor) => !editor.isActive('table'),
       icon: CgNotes,
       command: (args) => {
         args.editor
@@ -146,7 +156,7 @@ export const globalTiptapCommandHelpers = {
       keywords: [],
       subtitle: 'editor.commandMenu.link.subtitle',
       enabled: () => true,
-      active: (editor: Editor) => editor.isActive('link'),
+      active: (editor) => editor.isActive('link'),
       icon: RiLink,
       command: (args) => {
         args.editor.chain().focus().setHyperlink().run();
@@ -158,7 +168,7 @@ export const globalTiptapCommandHelpers = {
       toggleBold: {
         title: 'editor.commandMenu.bold',
         keywords: ['bold'],
-        enabled: (editor: Editor) => editor.can().toggleBold(),
+        enabled: (editor) => editor.can().toggleBold(),
         icon: RiBold,
         command: (args) => {
           args.editor.chain().focus().toggleBold().run();
@@ -167,7 +177,7 @@ export const globalTiptapCommandHelpers = {
       toggleItalic: {
         title: 'editor.commandMenu.italic',
         keywords: ['italic'],
-        enabled: (editor: Editor) => editor.can().toggleItalic(),
+        enabled: (editor) => editor.can().toggleItalic(),
         icon: RiItalic,
         command: (args) => {
           args.editor.chain().focus().toggleItalic().run();
@@ -176,7 +186,7 @@ export const globalTiptapCommandHelpers = {
       toggleUnderline: {
         title: 'editor.commandMenu.underline',
         keywords: ['italic'],
-        enabled: (editor: Editor) => editor.can().toggleUnderline(),
+        enabled: (editor) => editor.can().toggleUnderline(),
         icon: RiUnderline,
         command: (args) => {
           args.editor.chain().focus().toggleUnderline().run();
@@ -185,10 +195,103 @@ export const globalTiptapCommandHelpers = {
       toggleStrike: {
         title: 'editor.commandMenu.strike',
         keywords: ['italic'],
-        enabled: (editor: Editor) => editor.can().toggleStrike(),
+        enabled: (editor) => editor.can().toggleStrike(),
         icon: RiStrikethrough,
         command: (args) => {
           args.editor.chain().focus().toggleStrike().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+    },
+    table: {
+      insertColBefore: {
+        title: 'editor.tableBubbleMenu.insertColBefore',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().addColumnBefore(),
+        icon: RiInsertColumnLeft,
+        command: (args) => {
+          args.editor.chain().focus().addColumnBefore().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      insertColAfter: {
+        title: 'editor.tableBubbleMenu.insertColAfter',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().addColumnAfter(),
+        icon: RiInsertColumnRight,
+        command: (args) => {
+          args.editor.chain().focus().addColumnAfter().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      deleteCol: {
+        title: 'editor.tableBubbleMenu.deleteCol',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().deleteColumn(),
+        icon: RiDeleteColumn,
+        command: (args) => {
+          args.editor.chain().focus().deleteColumn().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      insertRowAbove: {
+        title: 'editor.tableBubbleMenu.insertRowAbove',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().addRowBefore(),
+        icon: RiInsertRowTop,
+        command: (args) => {
+          args.editor.chain().focus().addRowBefore().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      insertRowBelow: {
+        title: 'editor.tableBubbleMenu.insertRowBelow',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().addRowAfter(),
+        icon: RiInsertRowBottom,
+        command: (args) => {
+          args.editor.chain().focus().addRowAfter().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      deleteRow: {
+        title: 'editor.tableBubbleMenu.deleteRow',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().deleteRow(),
+        icon: RiDeleteRow,
+        command: (args) => {
+          args.editor.chain().focus().deleteRow().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      toggleHeaderRow: {
+        title: 'editor.tableBubbleMenu.toggleHeaderRow',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().toggleHeaderRow(),
+        icon: RiLayoutRowFill,
+        command: (args) => {
+          args.editor.chain().focus().toggleHeaderRow().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      toggleHeaderCol: {
+        title: 'editor.tableBubbleMenu.toggleHeaderCol',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().toggleHeaderColumn(),
+        icon: RiLayoutColumnFill,
+        command: (args) => {
+          args.editor.chain().focus().toggleHeaderColumn().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      toggleHeaderCell: {
+        title: 'editor.tableBubbleMenu.toggleHeaderCell',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().toggleHeaderCell(),
+        active: (editor) => editor.isActive('tableHeader'),
+        icon: RiTableFill,
+        command: (args) => {
+          args.editor.chain().focus().toggleHeaderCell().run();
+        },
+      } satisfies GlobalTiptapCommandHelperEntry,
+      deleteTable: {
+        title: 'editor.tableBubbleMenu.deleteTable',
+        keywords: ['table'],
+        enabled: (editor) => editor.can().deleteTable(),
+        icon: CgExtensionRemove,
+        command: (args) => {
+          args.editor.chain().focus().deleteTable().run();
         },
       } satisfies GlobalTiptapCommandHelperEntry,
     },
@@ -197,8 +300,8 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.font.default',
         keywords: ['font'],
         subtitle: 'editor.commandMenu.font.default.subtitle',
-        enabled: (editor: Editor) => editor.can().unsetFontFamily(),
-        active: (editor: Editor) => editor.isActive({ fontFamily: '' }),
+        enabled: (editor) => editor.can().unsetFontFamily(),
+        active: (editor) => editor.isActive({ fontFamily: '' }),
         icon: undefined,
         command: (args) => {
           args.editor.chain().focus().unsetFontFamily().run();
@@ -209,9 +312,9 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Roboto, Helvetica Neue, sans-serif' },
         subtitle: 'editor.commandMenu.font.sans.subtitle',
-        enabled: (editor: Editor) =>
+        enabled: (editor) =>
           editor.can().setFontFamily('Roboto, Helvetica Neue, sans-serif'),
-        active: (editor: Editor) =>
+        active: (editor) =>
           editor.isActive({ fontFamily: 'Roboto, Helvetica Neue, sans-serif' }),
         icon: undefined,
         command: (args) => {
@@ -227,9 +330,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Times, serif' },
         subtitle: 'editor.commandMenu.font.serif.subtitle',
-        enabled: (editor: Editor) => editor.can().setFontFamily('Times, serif'),
-        active: (editor: Editor) =>
-          editor.isActive({ fontFamily: 'Times, serif' }),
+        enabled: (editor) => editor.can().setFontFamily('Times, serif'),
+        active: (editor) => editor.isActive({ fontFamily: 'Times, serif' }),
         icon: undefined,
         command: (args) => {
           args.editor.chain().focus().setFontFamily('Times, serif').run();
@@ -240,9 +342,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Libre Baskerville' },
         subtitle: 'editor.commandMenu.font.libreBaskerville.subtitle',
-        enabled: (editor: Editor) =>
-          editor.can().setFontFamily('Libre Baskerville'),
-        active: (editor: Editor) =>
+        enabled: (editor) => editor.can().setFontFamily('Libre Baskerville'),
+        active: (editor) =>
           editor.isActive({ fontFamily: 'Libre Baskerville' }),
         icon: undefined,
         command: (args) => {
@@ -254,10 +355,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'MrEavesRemake' },
         subtitle: 'editor.commandMenu.font.mrEavesRemake.subtitle',
-        enabled: (editor: Editor) =>
-          editor.can().setFontFamily('MrEavesRemake'),
-        active: (editor: Editor) =>
-          editor.isActive({ fontFamily: 'MrEavesRemake' }),
+        enabled: (editor) => editor.can().setFontFamily('MrEavesRemake'),
+        active: (editor) => editor.isActive({ fontFamily: 'MrEavesRemake' }),
         icon: undefined,
         command: (args) => {
           args.editor.chain().focus().setFontFamily('MrEavesRemake').run();
@@ -268,8 +367,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Allison' },
         subtitle: 'editor.commandMenu.font.allison.subtitle',
-        enabled: (editor: Editor) => editor.can().setFontFamily('Allison'),
-        active: (editor: Editor) => editor.isActive({ fontFamily: 'Allison' }),
+        enabled: (editor) => editor.can().setFontFamily('Allison'),
+        active: (editor) => editor.isActive({ fontFamily: 'Allison' }),
         icon: undefined,
         command: (args) => {
           args.editor.chain().focus().setFontFamily('Allison').run();
@@ -280,9 +379,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Italianno' },
         subtitle: 'editor.commandMenu.font.italianno.subtitle',
-        enabled: (editor: Editor) => editor.can().setFontFamily('Italianno'),
-        active: (editor: Editor) =>
-          editor.isActive({ fontFamily: 'Italianno' }),
+        enabled: (editor) => editor.can().setFontFamily('Italianno'),
+        active: (editor) => editor.isActive({ fontFamily: 'Italianno' }),
         icon: undefined,
         command: (args) => {
           args.editor.chain().focus().setFontFamily('Italianno').run();
@@ -293,9 +391,8 @@ export const globalTiptapCommandHelpers = {
         keywords: ['font'],
         style: { fontFamily: 'Monsieur La Doulaise' },
         subtitle: 'editor.commandMenu.font.monsieurLaDoulaise.subtitle',
-        enabled: (editor: Editor) =>
-          editor.can().setFontFamily('Monsieur La Doulaise'),
-        active: (editor: Editor) =>
+        enabled: (editor) => editor.can().setFontFamily('Monsieur La Doulaise'),
+        active: (editor) =>
           editor.isActive({ fontFamily: 'Monsieur La Doulaise' }),
         icon: undefined,
         command: (args) => {
@@ -311,8 +408,8 @@ export const globalTiptapCommandHelpers = {
       left: {
         title: 'editor.commandMenu.align.left',
         keywords: ['align', 'left'],
-        enabled: (editor: Editor) => editor.can().setTextAlign('left'),
-        active: (editor: Editor) => editor.isActive({ textAlign: 'left' }),
+        enabled: (editor) => editor.can().setTextAlign('left'),
+        active: (editor) => editor.isActive({ textAlign: 'left' }),
         icon: RiAlignLeft,
         command: (args) => {
           args.editor.chain().focus().setTextAlign('left').run();
@@ -321,8 +418,8 @@ export const globalTiptapCommandHelpers = {
       center: {
         title: 'editor.commandMenu.align.center',
         keywords: ['align', 'center'],
-        enabled: (editor: Editor) => editor.can().setTextAlign('center'),
-        active: (editor: Editor) => editor.isActive({ textAlign: 'center' }),
+        enabled: (editor) => editor.can().setTextAlign('center'),
+        active: (editor) => editor.isActive({ textAlign: 'center' }),
         icon: RiAlignCenter,
         command: (args) => {
           args.editor.chain().focus().setTextAlign('center').run();
@@ -331,8 +428,8 @@ export const globalTiptapCommandHelpers = {
       right: {
         title: 'editor.commandMenu.align.right',
         keywords: ['align', 'right'],
-        enabled: (editor: Editor) => editor.can().setTextAlign('right'),
-        active: (editor: Editor) => editor.isActive({ textAlign: 'right' }),
+        enabled: (editor) => editor.can().setTextAlign('right'),
+        active: (editor) => editor.isActive({ textAlign: 'right' }),
         icon: RiAlignRight,
         command: (args) => {
           args.editor.chain().focus().setTextAlign('right').run();
@@ -426,8 +523,8 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.bulletList',
         keywords: ['list', 'bullet', 'unordered', 'ul', '-', '*'],
         subtitle: 'editor.commandMenu.bulletList.subtitle',
-        enabled: (editor: Editor) => editor.can().toggleBulletList(),
-        active: (editor: Editor) => editor.isActive('bulletList'),
+        enabled: (editor) => editor.can().toggleBulletList(),
+        active: (editor) => editor.isActive('bulletList'),
         icon: LuList,
         command: (args) => {
           args.editor.chain().focus().setParagraph().toggleBulletList().run();
@@ -437,8 +534,8 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.orderedList',
         keywords: ['list', 'numbered', 'ordered', 'ol', '-', '*', '1'],
         subtitle: 'editor.commandMenu.orderedList.subtitle',
-        enabled: (editor: Editor) => editor.can().toggleOrderedList(),
-        active: (editor: Editor) => editor.isActive('orderedList'),
+        enabled: (editor) => editor.can().toggleOrderedList(),
+        active: (editor) => editor.isActive('orderedList'),
         icon: LuListOrdered,
         command: (args) => {
           args.editor.chain().focus().setParagraph().toggleOrderedList().run();
@@ -448,8 +545,8 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.taskList',
         keywords: ['list', 'task', '-', '*', '['],
         subtitle: 'editor.commandMenu.taskList.subtitle',
-        enabled: (editor: Editor) => editor.can().toggleTaskList(),
-        active: (editor: Editor) => editor.isActive('taskList'),
+        enabled: (editor) => editor.can().toggleTaskList(),
+        active: (editor) => editor.isActive('taskList'),
         icon: RiListCheck2,
         command: (args) => {
           args.editor.chain().focus().setParagraph().toggleOrderedList().run();

@@ -136,9 +136,7 @@ export class TiptapCommandsList extends Component<Props, State> {
   }
 
   render() {
-    console.log('hello');
     const { items } = this.props;
-    console.log('items are', items);
     return (
       <SuggestionListContainer>
         {items.map((item, index) => {

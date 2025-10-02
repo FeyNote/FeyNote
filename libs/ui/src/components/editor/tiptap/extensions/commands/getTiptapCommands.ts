@@ -30,6 +30,16 @@ export const getTiptapCommands = ({
     globalTiptapCommandHelpers.format.align.right,
     globalTiptapCommandHelpers.format.sinkBlock,
     globalTiptapCommandHelpers.format.liftBlock,
+    globalTiptapCommandHelpers.format.table.insertColBefore,
+    globalTiptapCommandHelpers.format.table.insertColAfter,
+    globalTiptapCommandHelpers.format.table.deleteCol,
+    globalTiptapCommandHelpers.format.table.insertRowAbove,
+    globalTiptapCommandHelpers.format.table.insertRowBelow,
+    globalTiptapCommandHelpers.format.table.deleteRow,
+    globalTiptapCommandHelpers.format.table.toggleHeaderRow,
+    globalTiptapCommandHelpers.format.table.toggleHeaderCol,
+    globalTiptapCommandHelpers.format.table.toggleHeaderCell,
+    globalTiptapCommandHelpers.format.table.deleteTable,
   ];
 
   return commands
