@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { Checkbox } from './Checkbox';
+import { List, type RowComponentProps } from 'react-window';
 
 const ResultsTable = styled.div`
   display: grid;
+  grid-template-rows: 34px min-content auto;
+  height: 100%;
 `;
 
 const ResultsTableHeader = styled.div`
@@ -12,6 +15,7 @@ const ResultsTableHeader = styled.div`
   align-items: center;
   padding-left: 16px;
   padding-right: 16px;
+  padding-bottom: 2px;
 `;
 
 const ResultsTableHeaderOptions = styled.div`
@@ -20,7 +24,10 @@ const ResultsTableHeaderOptions = styled.div`
   margin-left: 18px;
 `;
 
-const ResultsTableItems = styled.div``;
+const ResultsTableItems = styled.div`
+  min-height: 0;
+  overflow: hidden;
+`;
 
 const ResultsTableMessage = styled.div``;
 
@@ -49,6 +56,18 @@ interface Entry<T> {
   value: T;
 }
 
+function RowComponent<T>({
+  index,
+  items,
+  renderItem,
+  style,
+}: RowComponentProps<{
+  items: Entry<T>[];
+  renderItem: (entry: Entry<T>) => React.ReactNode;
+}>) {
+  return <div style={style}>{renderItem(items[index])}</div>;
+}
+
 interface Props<T> {
   items: Entry<T>[];
   selectedKeys: ReadonlySet<string>;
@@ -62,8 +81,13 @@ interface Props<T> {
     selected: boolean;
     children: React.ReactNode;
   }) => React.ReactNode;
+  rowHeight?: number; // If not provided, will be a default
 }
 
+/**
+ * This table _must_ be rendered within some fixed-height container
+ * with position: relative to enable proper virtual scrolling
+ */
 export const CheckboxTable = <T extends object>(props: Props<T>) => {
   // To track shift-click operations
   const [lastClickedKey, setLastClickedKey] = useState<string>();
@@ -182,7 +206,12 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
       )}
 
       <ResultsTableItems>
-        {props.items.map((entry) => renderItem(entry))}
+        <List
+          rowComponent={RowComponent}
+          rowCount={props.items.length}
+          rowHeight={props.rowHeight || 62}
+          rowProps={{ items: props.items, renderItem }}
+        />
       </ResultsTableItems>
     </ResultsTable>
   );

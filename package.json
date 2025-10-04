@@ -103,6 +103,7 @@
     "react-i18next": "^16.0.0",
     "react-icons": "^5.5.0",
     "react-is": "19.1.1",
+    "react-window": "^2.2.0",
     "remove-markdown": "^0.6.2",
     "sanitize-html": "^2.17.0",
     "sharp": "^0.34.4",
