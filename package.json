@@ -185,7 +185,7 @@
     "nx": "21.3.11",
     "prettier": "^3.6.2",
     "prisma": "^6.16.2",
-    "rollup-plugin-visualizer": "^6.0.3",
+    "rollup-plugin-visualizer": "^6.0.4",
     "ts-jest": "29.4.4",
     "typescript": "^5.9.2",
     "vite": "6.3.6",
