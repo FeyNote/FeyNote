@@ -13,28 +13,27 @@ import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
 import {
-  useContext,
   useEffect,
   useMemo,
   useState,
+  type ComponentProps,
   type RefObject,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
-import { CollaborationManagerConnection } from '../../editor/collaborationManager';
-import { SessionContext } from '../../../context/session/SessionContext';
+import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
+import { useSessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
-import { useObserveYArtifactMeta } from '../../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../../utils/collaboration/useObserveYArtifactMeta';
 import {
   CollaborationConnectionAuthorizedScope,
   useCollaborationConnectionAuthorizedScope,
-} from '../../../utils/useCollaborationConnectionAuthorizedScope';
-import { useEdgesForArtifactId } from '../../../utils/edgesReferences/useEdgesForArtifactId';
-import { useObserveYArtifactUserAccess } from '../../../utils/useObserveYArtifactUserAccess';
+} from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { useObserveYArtifactUserAccess } from '../../../utils/collaboration/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
@@ -43,10 +42,11 @@ import { GraphRenderer } from '../../graph/GraphRenderer';
 import styled from 'styled-components';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
+import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
 
 const GraphContainer = styled.div`
   height: 200px;
@@ -66,7 +66,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
     props.connection,
   );
-  const { navigate } = useContext(GlobalPaneContext);
+  const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [presentSharingModal, dismissSharingModal] = useIonModal(
     ArtifactSharingManagementModal,
@@ -74,9 +74,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       artifactId: props.artifactId,
       connection: props.connection,
       dismiss: () => dismissSharingModal(),
-    },
+    } satisfies ComponentProps<typeof ArtifactSharingManagementModal>,
   );
-  const { session } = useContext(SessionContext);
+  const { session } = useSessionContext();
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
   const { userAccessYKV, _rerenderReducerValue } =
     useObserveYArtifactUserAccess(props.connection.yjsDoc);
@@ -161,6 +161,9 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         // We don't want to show self-references in the incoming artifact references list
         if (el.artifactId === props.artifactId) return acc;
 
+        // We don't want to show references coming from artifacts that are deleted
+        if (el.artifactDeleted) return acc;
+
         acc[el.artifactId] ||= [];
         acc[el.artifactId].push(el);
         return acc;
@@ -171,14 +174,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const outgoingEdgesByArtifactId = useMemo(() => {
     return Object.entries(
       outgoingEdges.reduce<{ [key: string]: Edge[] }>((acc, el) => {
-        // We don't want to show broken references in the referenced artifact list
-        if (el.isBroken) return acc;
-
         // We don't want to show self-references in the referenced artifact list
         if (el.targetArtifactId === props.artifactId) return acc;
-
-        // We don't want to include broken references in the referenced artifact list (kinda TBD)
-        if (!el.targetArtifactTitle) return acc;
 
         acc[el.targetArtifactId] ||= [];
         acc[el.targetArtifactId].push(el);

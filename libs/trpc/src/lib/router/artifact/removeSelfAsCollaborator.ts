@@ -3,6 +3,7 @@ import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { hocuspocusTrpcClient } from '@feynote/api-services';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
+import { TRPCClientError } from '@trpc/client';
 
 export const removeSelfAsCollaborator = authenticatedProcedure
   .input(
@@ -24,10 +25,23 @@ export const removeSelfAsCollaborator = authenticatedProcedure
       });
     }
 
-    await hocuspocusTrpcClient.doc.removeUserAccessToDoc.mutate({
-      userId: ctx.session.userId,
-      documentName: `artifact:${input.artifactId}`,
-    });
+    await hocuspocusTrpcClient.doc.removeUserAccessToDoc
+      .mutate({
+        userId: ctx.session.userId,
+        documentName: `artifact:${input.artifactId}`,
+      })
+      .catch((e) => {
+        if (e instanceof TRPCClientError) {
+          if (e.data?.httpStatus === 400) {
+            throw new TRPCError({
+              message: e.message,
+              code: 'BAD_REQUEST',
+            });
+          }
+        }
+
+        throw e;
+      });
 
     return 'Ok';
   });

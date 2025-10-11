@@ -1,7 +1,7 @@
 import { trpc } from '../trpc';
 import axios from 'axios';
 import { getApiUrls } from '../getApiUrls';
-import { appIdbStorageManager } from '../AppIdbStorageManager';
+import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 import { ImportJobStreamEncoder } from '@feynote/shared-utils';
 import type { ImportFormat } from '@feynote/prisma/types';
 

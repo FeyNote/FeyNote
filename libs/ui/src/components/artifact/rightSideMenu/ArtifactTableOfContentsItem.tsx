@@ -1,12 +1,11 @@
 import type { TableOfContentDataItem } from '@tiptap/extension-table-of-contents';
-import { useContext, type MouseEvent } from 'react';
+import { type MouseEvent } from 'react';
 import { CompactIonItem } from '../../CompactIonItem';
 import { TextSelection } from '@tiptap/pm/state';
 import styled from 'styled-components';
 import { scrollBlockIntoView } from '../../editor/scrollBlockIntoView';
 import { animateHighlightBlock } from '../../editor/animateHighlightBlock';
-import { PaneContext } from '../../../context/pane/PaneContext';
-import { useContextMenu } from '../../../utils/contextMenu/useContextMenu';
+import { usePaneContext } from '../../../context/pane/PaneContext';
 import { ArtifactTableOfContentsItemContextMenu } from './ArtifactTableOfContentsItemContextMenu';
 
 const ToCItem = styled(CompactIonItem)<{ $isActive: boolean }>`
@@ -25,17 +24,7 @@ interface Props {
 }
 
 export const ArtifactTableOfContentsItem: React.FC<Props> = (props) => {
-  const { pane, navigate } = useContext(PaneContext);
-
-  const { onContextMenu } = useContextMenu(
-    ArtifactTableOfContentsItemContextMenu,
-    {
-      navigate,
-      paneId: pane.id,
-      currentArtifactId: props.artifactId,
-      blockId: props.item.id,
-    },
-  );
+  const { pane } = usePaneContext();
 
   const onItemClick = (event: MouseEvent) => {
     const { id, editor, dom } = props.item;
@@ -60,17 +49,22 @@ export const ArtifactTableOfContentsItem: React.FC<Props> = (props) => {
   };
 
   return (
-    <ToCItem
-      $isActive={props.item.isActive}
-      onClick={(event) => onItemClick(event)}
-      onContextMenu={onContextMenu}
-      lines="none"
-      button
-      style={{
-        '--toc-level': props.item.level,
-      }}
+    <ArtifactTableOfContentsItemContextMenu
+      paneId={pane.id}
+      artifactId={props.artifactId}
+      artifactBlockId={props.item.id}
     >
-      {props.item.textContent}
-    </ToCItem>
+      <ToCItem
+        $isActive={props.item.isActive}
+        onClick={(event) => onItemClick(event)}
+        lines="none"
+        button
+        style={{
+          '--toc-level': props.item.level,
+        }}
+      >
+        {props.item.textContent}
+      </ToCItem>
+    </ArtifactTableOfContentsItemContextMenu>
   );
 };

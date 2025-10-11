@@ -18,6 +18,7 @@ export const buildWelcomeArtifact = (options: {
     type: 'tiptap',
     linkAccessLevel: 'noaccess',
     deletedAt: null,
+    createdAt: new Date().getTime(),
   } as const satisfies YArtifactMeta;
 
   const jsonContent = {

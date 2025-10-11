@@ -40,22 +40,26 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
 
         applyUpdate(args.document, artifact.yBin);
 
-        const artifactMetaMap = args.document.getMap(
-          ARTIFACT_META_KEY,
-        ) as TypedMap<Partial<YArtifactMeta>>;
-        if (!artifactMetaMap.get('id')) artifactMetaMap.set('id', artifact.id);
-        if (!artifactMetaMap.get('userId'))
-          artifactMetaMap.set('userId', artifact.userId);
-        if (!artifactMetaMap.get('title'))
-          artifactMetaMap.set('title', artifact.title);
-        if (!artifactMetaMap.get('theme'))
-          artifactMetaMap.set('theme', artifact.theme);
-        if (!artifactMetaMap.get('type'))
-          artifactMetaMap.set('type', artifact.type);
-        if (!artifactMetaMap.get('linkAccessLevel'))
-          artifactMetaMap.set('linkAccessLevel', 'noaccess');
-        if (!artifactMetaMap.get('deletedAt'))
-          artifactMetaMap.set('deletedAt', null);
+        args.document.transact(() => {
+          const artifactMetaMap = args.document.getMap(
+            ARTIFACT_META_KEY,
+          ) as TypedMap<Partial<YArtifactMeta>>;
+
+          if (!artifactMetaMap.get('id'))
+            artifactMetaMap.set('id', artifact.id);
+          if (!artifactMetaMap.get('userId'))
+            artifactMetaMap.set('userId', artifact.userId);
+          if (!artifactMetaMap.get('title'))
+            artifactMetaMap.set('title', artifact.title);
+          if (!artifactMetaMap.get('theme'))
+            artifactMetaMap.set('theme', artifact.theme);
+          if (!artifactMetaMap.get('type'))
+            artifactMetaMap.set('type', artifact.type);
+          if (!artifactMetaMap.get('linkAccessLevel'))
+            artifactMetaMap.set('linkAccessLevel', 'noaccess');
+          if (artifactMetaMap.get('deletedAt') === undefined)
+            artifactMetaMap.set('deletedAt', null);
+        });
 
         return;
       }

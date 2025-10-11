@@ -1,7 +1,8 @@
-import { Editor, Extension } from '@tiptap/core';
+import { Editor, Extension, Range } from '@tiptap/core';
 import { Suggestion } from '@tiptap/suggestion';
 import { getTiptapCommands } from './getTiptapCommands';
 import { renderCommandList } from './renderCommandList';
+import type { GlobalTiptapCommandHelperEntry } from '../../../globalTiptapCommandHelpers';
 
 // We do this to prevent a hanging / from triggering the mention menu
 // anytime the user navigates close to it. An object is necessary here so that we can pass by reference
@@ -42,14 +43,17 @@ export const CommandsExtension = Extension.create({
           editor: Editor;
           range: Range;
           props: {
-            command: (props: {
-              editor: Editor;
-              range: Range;
-              props: unknown;
-            }) => void;
+            command: (
+              args: Parameters<GlobalTiptapCommandHelperEntry['command']>[0],
+            ) => void;
           };
         }) => {
-          args.props.command(args);
+          // We want to remove the slash command that the user has been typing itself
+          args.editor.chain().deleteRange(args.range).run();
+          args.props.command({
+            editor: args.editor,
+            range: args.range,
+          });
         },
       },
     };

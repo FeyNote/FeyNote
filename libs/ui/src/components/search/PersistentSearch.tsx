@@ -1,13 +1,13 @@
 import { IonIcon, IonInput, IonItem, IonLabel } from '@ionic/react';
-import { useContext, useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
 import { trpc } from '../../utils/trpc';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { createArtifact } from '../../utils/createArtifact';
+import { usePaneContext } from '../../context/pane/PaneContext';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import {
-  GlobalPaneContext,
   PaneTransition,
+  useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
@@ -77,8 +77,8 @@ interface Props {
 }
 
 export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
-  const { updatePaneProps } = useContext(GlobalPaneContext);
-  const { pane, isPaneFocused, navigate } = useContext(PaneContext);
+  const { updatePaneProps } = useGlobalPaneContext();
+  const { pane, isPaneFocused, navigate } = usePaneContext();
   const [searchText, setSearchText] = useState(initialTerm || '');
   const [searchResults, setSearchResults] = useState<
     {
@@ -120,13 +120,15 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   }, [searchText]);
 
   const create = async (event: MouseEvent | KeyboardEvent) => {
-    const artifact = await createArtifact({
-      title: capitalizeEachWord(searchText).trim(),
+    const result = await createArtifact({
+      artifact: {
+        title: capitalizeEachWord(searchText).trim(),
+      },
     }).catch((error) => {
       handleTRPCErrors(error);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
     persistSearchTextToPaneState();
 
@@ -138,7 +140,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     navigate(
       PaneableComponent.Artifact,
       {
-        id: artifact.id,
+        id: result.id,
       },
       paneTransition,
     );

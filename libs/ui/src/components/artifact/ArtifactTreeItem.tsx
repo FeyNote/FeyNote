@@ -1,12 +1,10 @@
 import { TreeItem, TreeItemIndex, TreeRenderProps } from 'react-complex-tree';
 import styled from 'styled-components';
-import { useRef } from 'react';
-import { IonContent, useIonPopover } from '@ionic/react';
 
-import { InternalTreeItem, UNCATEGORIZED_ITEM_ID } from './ArtifactTree';
+import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
-import { IoChevronDown, IoChevronForward } from 'react-icons/io5';
+import { IoChevronDown, IoChevronForward } from '../AppIcons';
 
 const TreeListItem = styled.li<{
   $draggingOver: boolean;
@@ -124,11 +122,10 @@ interface ArtifactTreeItemProps {
   setExpandedItemsRef: React.MutableRefObject<
     (expandedItems: string[]) => void
   >;
+  enableContextMenu: boolean;
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
-  const popoverDismissRef = useRef<() => void>(undefined);
-
   const expandAll = () => {
     const expandedItems = new Set(props.expandedItemsRef.current);
     expandedItems.add(props.treeRenderProps.item.data.id);
@@ -159,81 +156,74 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     props.setExpandedItemsRef.current(Array.from(expandedItems));
   };
 
-  const popoverContents = (
-    <IonContent onClick={popoverDismissRef.current}>
-      <ArtifactTreeItemContextMenu
-        artifactId={props.treeRenderProps.item.data.id}
-        expandAll={expandAll}
-        collapseAll={collapseAll}
-      />
-    </IonContent>
-  );
-
-  const [presentContextMenuPopover, dismissContextMenuPopover] = useIonPopover(
-    popoverContents,
-    {
-      onDismiss: (data: unknown, role: string) =>
-        dismissContextMenuPopover(data, role),
-    },
-  );
-  popoverDismissRef.current = dismissContextMenuPopover;
-
   const interactiveElementProps =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
     props.treeRenderProps.context.interactiveElementProps as any;
-
-  const onContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID) return;
-
-    presentContextMenuPopover({
-      event: e.nativeEvent,
-    });
-  };
 
   return (
     <>
       <TreeListItem
         {...props.treeRenderProps.context.itemContainerWithChildrenProps}
         $isUncategorized={
-          props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+          props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
         }
         $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
         className={`rct-tree-item-li`}
       >
         <TreeItemContainer
           $isUncategorized={
-            props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+            props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
           }
         >
           {props.treeRenderProps.item.isFolder ? (
-            <div
-              {...props.treeRenderProps.context.arrowProps}
-              className={`rct-tree-item-arrow`}
-              onContextMenu={onContextMenu}
+            <ArtifactTreeItemContextMenu
+              enabled={
+                props.enableContextMenu &&
+                props.treeRenderProps.item.data.id !==
+                  UNCATEGORIZED_TREE_NODE_ID
+              }
+              artifactId={props.treeRenderProps.item.data.id}
+              paneId={undefined}
+              expandAll={expandAll}
+              collapseAll={collapseAll}
             >
-              {props.treeRenderProps.context.isExpanded ? (
-                <IoChevronDown />
-              ) : (
-                <IoChevronForward />
-              )}
-            </div>
+              <div
+                {...props.treeRenderProps.context.arrowProps}
+                className={`rct-tree-item-arrow`}
+              >
+                {props.treeRenderProps.context.isExpanded ? (
+                  <IoChevronDown />
+                ) : (
+                  <IoChevronForward />
+                )}
+              </div>
+            </ArtifactTreeItemContextMenu>
           ) : (
             <div className={`rct-tree-item-arrow`} />
           )}
-          <TreeItemButton
-            {...props.treeRenderProps.context.itemContainerWithoutChildrenProps}
-            {...interactiveElementProps}
-            $isUncategorized={
-              props.treeRenderProps.item.data.id === UNCATEGORIZED_ITEM_ID
+          <ArtifactTreeItemContextMenu
+            enabled={
+              props.enableContextMenu &&
+              props.treeRenderProps.item.data.id !== UNCATEGORIZED_TREE_NODE_ID
             }
-            className={`rct-tree-item-button`}
-            onContextMenu={onContextMenu}
+            artifactId={props.treeRenderProps.item.data.id}
+            paneId={undefined}
+            expandAll={expandAll}
+            collapseAll={collapseAll}
           >
-            {props.treeRenderProps.title}
-          </TreeItemButton>
+            <TreeItemButton
+              {...props.treeRenderProps.context
+                .itemContainerWithoutChildrenProps}
+              {...interactiveElementProps}
+              $isUncategorized={
+                props.treeRenderProps.item.data.id ===
+                UNCATEGORIZED_TREE_NODE_ID
+              }
+              className={`rct-tree-item-button`}
+            >
+              {props.treeRenderProps.title}
+            </TreeItemButton>
+          </ArtifactTreeItemContextMenu>
         </TreeItemContainer>
       </TreeListItem>
       {props.treeRenderProps.children}

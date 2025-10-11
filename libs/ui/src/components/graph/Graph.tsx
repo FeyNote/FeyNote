@@ -2,23 +2,21 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
-import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext, useEffect, useMemo, useReducer, useState } from 'react';
-import type { ArtifactDTO } from '@feynote/global-types';
+import { useEffect, useMemo, useReducer } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
-import { Edge, getEdgeId, PreferenceNames } from '@feynote/shared-utils';
-import { useCollaborationConnection } from '../editor/collaborationManager';
-import { SessionContext } from '../../context/session/SessionContext';
+import { Edge, PreferenceNames } from '@feynote/shared-utils';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { GraphRightSidemenu } from './GraphRightSidemenu';
 import { createPortal } from 'react-dom';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useEdges } from '../../utils/localDb/edges/useEdges';
 
 const GRAPH_ARTIFACTS_YKV_KEY = 'graphArtifacts';
 
@@ -29,14 +27,13 @@ const StyledNullState = styled(NullState)`
 export const Graph: React.FC = () => {
   const { getPreference } = usePreferencesContext();
   const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
-  const { isPaneFocused } = useContext(PaneContext);
-  const { sidemenuContentRef } = useContext(SidemenuContext);
-  const { session } = useContext(SessionContext);
+  const { isPaneFocused } = usePaneContext();
+  const { sidemenuContentRef } = useSidemenuContext();
+  const { session } = useSessionContext();
   const { t } = useTranslation();
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const [initialLoadCompleted, setInitialLoadCompleted] = useState(false);
-  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
-  const { handleTRPCErrors } = useHandleTRPCErrors();
+  const { artifactSnapshotsLoading, artifactSnapshots } =
+    useArtifactSnapshots();
+  const { getEdgesForArtifactId } = useEdges();
 
   const showOrphans = getPreference(PreferenceNames.GraphShowOrphans);
 
@@ -75,92 +72,59 @@ export const Graph: React.FC = () => {
   }, [artifactsYKV]);
 
   const graphArtifacts = useMemo(() => {
-    return artifacts
+    if (artifactSnapshotsLoading) return [];
+
+    return artifactSnapshots
       .filter((artifact) => {
         if (showOrphans) return true;
 
-        return (
-          artifact.artifactReferences.length ||
-          artifact.incomingArtifactReferences.length
+        const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+          artifact.id,
         );
+
+        return outgoingEdges.length || incomingEdges.length;
       })
       .map((artifact) => ({
         id: artifact.id,
-        title: artifact.title,
+        title: artifact.meta.title,
       }));
-  }, [artifacts, showOrphans]);
+  }, [artifactSnapshots, getEdgesForArtifactId, showOrphans]);
 
   const artifactPositions = useMemo(() => {
     const positions = new Map<string, { x: number; y: number }>();
-    for (const artifact of artifacts) {
+    for (const artifact of artifactSnapshots || []) {
       const position = artifactsYKV.get(artifact.id);
       if (position?.lock) {
         positions.set(artifact.id, position.lock);
       }
     }
     return positions;
-  }, [_rerenderReducerValue, artifactsYKV, artifacts]);
-
-  const load = async () => {
-    await trpc.artifact.getArtifacts
-      .query()
-      .then((_artifacts) => {
-        setArtifacts(_artifacts.filter((artifact) => !artifact.deletedAt));
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
-  };
+  }, [_rerenderReducerValue, artifactsYKV, artifactSnapshots]);
 
   const edges = useMemo(() => {
-    return artifacts.reduce<Edge[]>((acc, artifact) => {
-      for (const reference of artifact.artifactReferences) {
-        acc.push({
-          id: getEdgeId(reference),
-          artifactId: reference.artifactId,
-          artifactBlockId: reference.artifactBlockId,
-          targetArtifactId: reference.targetArtifactId,
-          targetArtifactBlockId: reference.targetArtifactBlockId,
-          targetArtifactDate: reference.targetArtifactDate,
-          targetArtifactTitle: reference.targetArtifact?.title || null,
-          artifactTitle: artifact.title,
-          referenceText: reference.referenceText,
-          isBroken: reference.targetArtifact === null,
-        });
+    const map = artifactSnapshots.reduce<Map<string, Edge>>((acc, artifact) => {
+      const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+        artifact.id,
+      );
+
+      for (const edge of incomingEdges) {
+        acc.set(edge.id, edge);
       }
-      for (const reference of artifact.incomingArtifactReferences) {
-        acc.push({
-          id: getEdgeId(reference),
-          artifactId: reference.artifactId,
-          artifactBlockId: reference.artifactBlockId,
-          targetArtifactId: reference.targetArtifactId,
-          targetArtifactBlockId: reference.targetArtifactBlockId,
-          targetArtifactDate: reference.targetArtifactDate,
-          targetArtifactTitle: artifact.title,
-          artifactTitle: reference.artifact.title,
-          referenceText: reference.referenceText,
-          isBroken: false,
-        });
+      for (const edge of outgoingEdges) {
+        acc.set(edge.id, edge);
       }
 
       return acc;
-    }, []);
-  }, [artifacts]);
+    }, new Map());
 
-  useEffect(() => {
-    const progress = startProgressBar();
-    load().then(() => {
-      progress.dismiss();
-      setInitialLoadCompleted(true);
-    });
-  }, []);
+    return Array.from(map.values());
+  }, [artifactSnapshots, getEdgesForArtifactId]);
 
   return (
     <IonPage>
       <PaneNav title={t('graph.title')} />
-      {ProgressBar}
       <IonContent>
-        {initialLoadCompleted && artifacts.length ? (
+        {artifactSnapshots?.length ? (
           <GraphRenderer
             artifacts={graphArtifacts}
             edges={edges}

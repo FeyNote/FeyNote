@@ -1,7 +1,20 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 
-export const GlobalSearchContext = createContext({
-  // We cast to unknown so that any usage of this context without initialization blows up in
-  // catastrophic fashion
-  trigger: null as unknown as () => void,
-});
+interface GlobalSearchContextData {
+  trigger: () => void;
+}
+
+export const GlobalSearchContext =
+  createContext<GlobalSearchContextData | null>(null);
+
+export const useGlobalSearchContext = () => {
+  const val = useContext(GlobalSearchContext);
+
+  if (!val) {
+    throw new Error(
+      'GlobalSearchContext used within component that does not inherit from GlobalSearchContextProvider',
+    );
+  }
+
+  return val;
+};

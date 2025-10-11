@@ -6,7 +6,7 @@ import { ReactNodeViewRenderer } from '@tiptap/react';
 import { ArtifactReferenceNodeView } from './ArtifactReferenceNodeView';
 import { t } from 'i18next';
 import { Doc as YDoc } from 'yjs';
-import { getEdgeStore } from '../../../../../utils/edgesReferences/edgeStore';
+import { getEdgeStore } from '../../../../../utils/localDb/edges/edgeStore';
 
 export type ReferencePluginOptions = MentionOptions & {
   artifactId: string | undefined;
@@ -14,7 +14,7 @@ export type ReferencePluginOptions = MentionOptions & {
 
 // We do this to prevent a hanging @ from triggering the mention menu
 // anytime the user navigates close to it. An object is necessary here so that we can pass by reference
-const mentionMenuOptsRef = {
+export const mentionMenuOptsRef = {
   enableMentionMenu: false,
   componentRef: {
     current: null,
@@ -124,18 +124,20 @@ const ArtifactReferencesExtension = Mention.extend<ReferencePluginOptions>({
 });
 
 export const buildArtifactReferencesExtension = (args: {
-  artifactId: string;
+  artifactId: string | undefined;
   yDoc: YDoc;
 }) => {
   return ArtifactReferencesExtension.configure({
     artifactId: args.artifactId,
     suggestion: {
       items: getReferenceSuggestions(mentionMenuOptsRef),
-      render: renderReferenceList({
-        mentionMenuOptsRef,
-        artifactId: args.artifactId,
-        yDoc: args.yDoc,
-      }),
+      render: args.artifactId
+        ? renderReferenceList({
+            mentionMenuOptsRef,
+            artifactId: args.artifactId,
+            yDoc: args.yDoc,
+          })
+        : undefined,
       char: '@',
       allowSpaces: true,
       allow: () => mentionMenuOptsRef.enableMentionMenu,
@@ -143,7 +145,7 @@ export const buildArtifactReferencesExtension = (args: {
     renderHTML({ options, node }) {
       const edgeStore = getEdgeStore();
       const edge = this.artifactId
-        ? edgeStore.getEdgeInstant({
+        ? edgeStore.getEdge({
             artifactId: this.artifactId,
             artifactBlockId: node.attrs.id,
             targetArtifactId: node.attrs.artifactId,
@@ -163,7 +165,7 @@ export const buildArtifactReferencesExtension = (args: {
     renderText({ options, node }) {
       const edgeStore = getEdgeStore();
       const edge = this.artifactId
-        ? edgeStore.getEdgeInstant({
+        ? edgeStore.getEdge({
             artifactId: this.artifactId,
             artifactBlockId: node.attrs.id,
             targetArtifactId: node.attrs.artifactId,

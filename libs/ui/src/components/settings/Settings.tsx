@@ -23,19 +23,20 @@ import {
   useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useContext, useMemo } from 'react';
-import { PreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useMemo, type ComponentProps } from 'react';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { WelcomeModal } from '../dashboard/WelcomeModal';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { DebugDump } from './DebugDump';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -93,12 +94,12 @@ const colorOptions = {
 export const Settings: React.FC = () => {
   const [presentAlert] = useIonAlert();
   const { setPreference, getPreference, _preferencesService } =
-    useContext(PreferencesContext);
-  const { session } = useContext(SessionContext);
-  const { navigate } = useContext(PaneContext);
+    usePreferencesContext();
+  const { session } = useSessionContext();
+  const { navigate } = usePaneContext();
   const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
     dismiss: () => dismissWelcomeModal(),
-  });
+  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const languageOptions = useMemo(() => {
@@ -273,6 +274,11 @@ export const Settings: React.FC = () => {
             >
               {t('settings.help.contact')}
             </IonItem>
+            <DebugDump>
+              <IonItem lines="none" button detail={true}>
+                {t('settings.help.debugDownload')}
+              </IonItem>
+            </DebugDump>
           </IonList>
         </IonCard>
         <IonCard>
@@ -353,6 +359,21 @@ export const Settings: React.FC = () => {
             </IonListHeader>
             <IonItem lines="none" button>
               <IonToggle
+                checked={getPreference(PreferenceNames.PanesRememberOpenState)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.PanesRememberOpenState,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.panesRememberOpenState')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
                 checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
                 onIonChange={(event) =>
                   setPreference(
@@ -363,6 +384,21 @@ export const Settings: React.FC = () => {
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.leftSideMenu')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.RightPaneStartOpen,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.rightSideMenu')}
                 </IonLabel>
               </IonToggle>
             </IonItem>
@@ -414,21 +450,6 @@ export const Settings: React.FC = () => {
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.leftSideMenuShowRecentThreads')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.RightPaneStartOpen,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.rightSideMenu')}
                 </IonLabel>
               </IonToggle>
             </IonItem>

@@ -1,4 +1,4 @@
-import { setupIonicReact } from '@ionic/react';
+import { IonApp, setupIonicReact } from '@ionic/react';
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
@@ -10,6 +10,10 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
+
+import { Theme } from '@radix-ui/themes';
+import '@radix-ui/themes/styles.css';
+
 import './css/global.css';
 import { initI18Next } from './i18n/initI18Next';
 import { PreferencesContextProviderWrapper } from './context/preferences/PreferencesContextProviderWrapper';
@@ -25,7 +29,6 @@ import {
   GlobalPaneContextData,
 } from './context/globalPane/GlobalPaneContext';
 import { Model } from 'flexlayout-react';
-import { IonApp } from './IonicReact19Compat';
 import { ToastContextProvider } from './context/toast/ToastContextProvider';
 
 initI18Next();
@@ -108,16 +111,18 @@ export const ShareviewApp: React.FC<Props> = (props) => {
   );
 
   return (
-    <ToastContextProvider>
-      <IonApp>
-        <PreferencesContextProviderWrapper>
-          <GlobalPaneContext.Provider value={globalPaneContextValue}>
-            <PaneContext.Provider value={paneContextValue}>
-              <ArtifactShareView artifactId={props.id} />
-            </PaneContext.Provider>
-          </GlobalPaneContext.Provider>
-        </PreferencesContextProviderWrapper>
-      </IonApp>
-    </ToastContextProvider>
+    <Theme>
+      <ToastContextProvider>
+        <IonApp>
+          <PreferencesContextProviderWrapper>
+            <GlobalPaneContext.Provider value={globalPaneContextValue}>
+              <PaneContext.Provider value={paneContextValue}>
+                <ArtifactShareView artifactId={props.id} />
+              </PaneContext.Provider>
+            </GlobalPaneContext.Provider>
+          </PreferencesContextProviderWrapper>
+        </IonApp>
+      </ToastContextProvider>
+    </Theme>
   );
 };

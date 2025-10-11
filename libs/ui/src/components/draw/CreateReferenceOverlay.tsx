@@ -15,7 +15,7 @@ import {
 import { search } from 'ionicons/icons';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../calendar/CalendarSelectDate';
-import { createArtifact } from '../../utils/createArtifact';
+import { createArtifact } from '../../utils/localDb/createArtifact';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -109,15 +109,17 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
   const create = async () => {
     const title = capitalizeEachWord(searchText).trim();
 
-    const artifact = await createArtifact({
-      title,
+    const result = await createArtifact({
+      artifact: {
+        title,
+      },
     }).catch((e) => {
       handleTRPCErrors(e);
     });
 
-    if (!artifact) return;
+    if (!result) return;
 
-    props.onSelected(artifact.id, undefined, undefined, title);
+    props.onSelected(result.id, undefined, undefined, title);
   };
 
   useEffect(() => {

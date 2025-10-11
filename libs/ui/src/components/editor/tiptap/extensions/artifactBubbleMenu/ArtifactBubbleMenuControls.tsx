@@ -23,7 +23,7 @@ import {
   RiStrikethrough,
   RiText,
   RiUnderline,
-} from 'react-icons/ri';
+} from '../../../../AppIcons';
 import {
   MenuButton,
   MenuButtonText,
@@ -546,14 +546,14 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
 
       <MenuButton
         title={t('editor.bubbleMenu.outdent')}
-        onClick={() => props.editor.chain().focus().outdent().run()}
+        onClick={() => props.editor.chain().focus().liftBlock().run()}
       >
         <RiIndentDecrease />
       </MenuButton>
 
       <MenuButton
         title={t('editor.bubbleMenu.indent')}
-        onClick={() => props.editor.chain().focus().indent().run()}
+        onClick={() => props.editor.chain().focus().sinkBlock().run()}
       >
         <RiIndentIncrease />
       </MenuButton>

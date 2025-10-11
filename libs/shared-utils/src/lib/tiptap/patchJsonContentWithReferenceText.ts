@@ -12,7 +12,6 @@ export function patchJsonContentWithReferenceText(
     targetArtifactId: string;
     targetArtifactBlockId?: string;
     referenceText: string;
-    isBroken: boolean;
   }[],
 ) {
   const referenceByReferenceId = new Map<string, (typeof references)[0]>();
@@ -30,7 +29,6 @@ export function patchJsonContentWithReferenceText(
         jsonContent.attrs['artifactId'] + jsonContent.attrs['artifactBlockId'],
       );
       if (!reference) return;
-      jsonContent.attrs['isBroken'] = reference.isBroken;
       jsonContent.attrs['referenceText'] = reference.referenceText;
     }
   });

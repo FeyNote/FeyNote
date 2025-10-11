@@ -1,9 +1,9 @@
-import { useContext, useEffect, useRef } from 'react';
-import { PaneContext } from '../../context/pane/PaneContext';
-import { IonButton, IonContent, IonIcon, useIonPopover } from '@ionic/react';
+import { useEffect } from 'react';
+import { usePaneContext } from '../../context/pane/PaneContext';
+import { IonButton, IonIcon } from '@ionic/react';
 import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
 import styled from 'styled-components';
-import { DefaultContextMenu } from '../contextMenu/DefaultContextMenu';
+import { DefaultPaneDropdownMenu } from './DefaultPaneDropdownMenu';
 
 const NavContainer = styled.div`
   display: flex;
@@ -22,30 +22,42 @@ const NavGroup = styled.div`
 interface Props {
   title: string;
   // Pass null to disable the popover. Not passing this prop will use the default context menu
-  popoverContents?: React.ReactNode | null;
+  renderDropdownMenu?: ((children: React.ReactNode) => React.ReactNode) | null;
 }
 
 export const PaneNav: React.FC<Props> = (props) => {
   const { navigateHistoryBack, navigateHistoryForward, pane, renamePane } =
-    useContext(PaneContext);
-
-  const popoverDismissRef = useRef<() => void>(undefined);
-
-  const popoverContents = (
-    <IonContent onClick={popoverDismissRef.current}>
-      {props.popoverContents || <DefaultContextMenu paneId={pane.id} />}
-    </IonContent>
-  );
-
-  const [present, dismiss] = useIonPopover(popoverContents, {
-    onDismiss: (data: unknown, role: string) => dismiss(data, role),
-  });
-  popoverDismissRef.current = dismiss;
+    usePaneContext();
 
   useEffect(() => {
     // Since pane itself is memoized, this does not cause re-render of entire pane, but rather just the tab title itself
     renamePane(props.title);
   }, [props.title]);
+
+  const renderDropdownButton = () => {
+    const contents = (
+      <IonButton
+        size="small"
+        fill="clear"
+        disabled={props.renderDropdownMenu === null}
+      >
+        <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
+      </IonButton>
+    );
+
+    if (props.renderDropdownMenu) {
+      return props.renderDropdownMenu(contents);
+    }
+    if (props.renderDropdownMenu !== null) {
+      return (
+        <DefaultPaneDropdownMenu paneId={pane.id}>
+          {contents}
+        </DefaultPaneDropdownMenu>
+      );
+    }
+
+    return contents;
+  };
 
   return (
     <NavContainer>
@@ -68,14 +80,7 @@ export const PaneNav: React.FC<Props> = (props) => {
         </IonButton>
       </NavGroup>
       <NavGroup style={{ textAlign: 'right' }}>
-        <IonButton
-          size="small"
-          fill="clear"
-          disabled={props.popoverContents === null}
-          onClick={(e) => present({ event: e.nativeEvent })}
-        >
-          <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
-        </IonButton>
+        {renderDropdownButton()}
       </NavGroup>
     </NavContainer>
   );

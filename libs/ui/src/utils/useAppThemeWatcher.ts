@@ -31,9 +31,14 @@ export const useAppThemeWatcher = (preferences: AppPreferences) => {
       theme === AppTheme.Light,
     );
     document.documentElement.classList.toggle(
+      'light',
+      theme === AppTheme.Light,
+    );
+    document.documentElement.classList.toggle(
       'ion-palette-dark',
       theme === AppTheme.Dark,
     );
+    document.documentElement.classList.toggle('dark', theme === AppTheme.Dark);
   };
 
   useEffect(() => {

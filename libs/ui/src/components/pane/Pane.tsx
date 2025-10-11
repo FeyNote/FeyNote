@@ -1,5 +1,5 @@
-import { memo, useContext, useMemo } from 'react';
-import { GlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { memo, useMemo } from 'react';
+import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import {
   PaneContext,
   type PaneContextData,
@@ -34,7 +34,7 @@ export const Pane: React.FC<Props> = memo((props) => {
     navigate,
     focusedPaneId,
     renamePane,
-  } = useContext(GlobalPaneContext);
+  } = useGlobalPaneContext();
 
   const pane = getPaneById(props.id);
   const isPaneFocused = pane.id === focusedPaneId;

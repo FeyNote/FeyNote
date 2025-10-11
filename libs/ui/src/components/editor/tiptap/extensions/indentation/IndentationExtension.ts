@@ -1,4 +1,4 @@
-import { Extension, KeyboardShortcutCommand } from '@tiptap/core';
+import { Extension, KeyboardShortcutCommand, type Editor } from '@tiptap/core';
 import { Node } from 'prosemirror-model';
 import { TextSelection, Transaction, Selection } from 'prosemirror-state';
 import { findWrapping } from 'prosemirror-transform';
@@ -7,8 +7,8 @@ import { autoJoin } from 'prosemirror-commands';
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     indent: {
-      indent: () => ReturnType;
-      outdent: () => ReturnType;
+      sinkBlock: () => ReturnType;
+      liftBlock: () => ReturnType;
     };
   }
 }
@@ -18,7 +18,7 @@ export const IndentationExtension = Extension.create({
 
   addCommands(this) {
     return {
-      indent: () => {
+      sinkBlock: () => {
         return (tiptapCommandProps) => {
           const pmCommand = autoJoin(
             (state, dispatch) => {
@@ -40,7 +40,7 @@ export const IndentationExtension = Extension.create({
           );
         };
       },
-      outdent: () => {
+      liftBlock: () => {
         return (tiptapCommandProps) => {
           const pmCommand = autoJoin(
             (state, dispatch) => {
@@ -91,6 +91,35 @@ const getNodeRange = (doc: Node, selection: Selection) => {
     });
 };
 
+export function sinkBlockOrListItem(editor: Editor) {
+  // Always return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
+  if (editor.isActive('listItem') && editor.can().sinkListItem('listItem')) {
+    editor.chain().focus().sinkListItem('listItem').run();
+    return true;
+  }
+
+  editor.chain().focus().sinkBlock().run();
+  return true;
+}
+
+export function liftBlockOrListItem(editor: Editor) {
+  // Always return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
+  const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
+  if (editor.isActive('listItem') && editor.can().liftListItem('listItem')) {
+    // List items always take precedence over indentation
+    editor.chain().focus().liftListItem('listItem').run();
+    return true;
+  }
+
+  if (!nodeRange?.depth) {
+    // We are not nested, so we do not do anything
+    return true;
+  }
+
+  editor.chain().focus().liftBlock().run();
+  return true;
+}
+
 function keyboardBackspaceHandler(): KeyboardShortcutCommand {
   return (args) => {
     const { editor } = args;
@@ -109,35 +138,14 @@ function keyboardBackspaceHandler(): KeyboardShortcutCommand {
 }
 
 function keyboardIndentHandler(): KeyboardShortcutCommand {
-  // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
-  return ({ editor }): true => {
-    if (editor.isActive('listItem') && editor.can().sinkListItem('listItem')) {
-      editor.chain().focus().sinkListItem('listItem').run();
-      return true;
-    }
-
-    editor.chain().focus().indent().run();
-    return true;
+  return ({ editor }) => {
+    return sinkBlockOrListItem(editor);
   };
 }
 
 function keyboardOutdentHandler(): KeyboardShortcutCommand {
-  // Return true because we always want to eat the tab key so that focus doesn't accidentally leave the editor
-  return ({ editor }): true => {
-    const nodeRange = getNodeRange(editor.state.doc, editor.state.selection);
-    if (editor.isActive('listItem') && editor.can().liftListItem('listItem')) {
-      // List items always take precedence over indentation
-      editor.chain().focus().liftListItem('listItem').run();
-      return true;
-    }
-
-    if (!nodeRange?.depth) {
-      // We are not nested, so we do not do anything
-      return true;
-    }
-
-    editor.chain().focus().outdent().run();
-    return true;
+  return ({ editor }) => {
+    return liftBlockOrListItem(editor);
   };
 }
 

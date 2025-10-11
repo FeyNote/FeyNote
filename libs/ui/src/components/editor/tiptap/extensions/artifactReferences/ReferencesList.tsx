@@ -1,6 +1,5 @@
 import {
   forwardRef,
-  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -11,9 +10,10 @@ import {
   MdDraw,
   MdHorizontalRule,
   MdOutlineShortText,
-  MdSearch,
-} from 'react-icons/md';
-import { IoCalendar, IoDocument } from 'react-icons/io5';
+  IoSearch,
+  IoCalendar,
+  IoDocument,
+} from '../../../../AppIcons';
 import { t } from 'i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
 import {
@@ -29,14 +29,14 @@ import {
 } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../../../../calendar/CalendarSelectDate';
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
-import { createArtifact } from '../../../../../utils/createArtifact';
+import { createArtifact } from '../../../../../utils/localDb/createArtifact';
 import * as Sentry from '@sentry/react';
-import { SessionContext } from '../../../../../context/session/SessionContext';
+import { useSessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
 import { useIonAlert, type AlertButton } from '@ionic/react';
-import { PreferencesContext } from '../../../../../context/preferences/PreferencesContext';
-import { getSelfManagedCollaborationConnection } from '../../../collaborationManager';
-import { appIdbStorageManager } from '../../../../../utils/AppIdbStorageManager';
+import { usePreferencesContext } from '../../../../../context/preferences/PreferencesContext';
+import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
+import { appIdbStorageManager } from '../../../../../utils/localDb/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
 
 const SuggestionListContainer = styled.div`
@@ -130,10 +130,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       artifactDate?: string | undefined;
     }
   >(undefined);
-  const { getPreference, setPreference } = useContext(PreferencesContext);
+  const { getPreference, setPreference } = usePreferencesContext();
   const [presentAlert] = useIonAlert();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
 
   const showCreateButton =
     props.items.length !== 0 && !!props.query.trim().length;
@@ -201,11 +201,13 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       const title = capitalize(props.query);
 
       createArtifact({
-        title,
-        userAccess: shareWithCurrent ? userAccess.map : undefined,
-        linkAccessLevel: shareWithCurrent
-          ? artifactMeta.linkAccessLevel
-          : undefined,
+        artifact: {
+          title,
+          userAccess: shareWithCurrent ? userAccess.map : undefined,
+          linkAccessLevel: shareWithCurrent
+            ? artifactMeta.linkAccessLevel
+            : undefined,
+        },
       })
         .then(({ id }) => {
           props.command({
@@ -372,7 +374,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToTarget === 'coowner'
         ) {
           updateYArtifactMeta(targetCollabConnectionInfo.connection.yjsDoc, {
-            ...targetMeta,
             linkAccessLevel: linkAccessLevelsRanked[sourceIdx],
           });
         }
@@ -381,7 +382,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToSource === 'coowner'
         ) {
           updateYArtifactMeta(props.yDoc, {
-            ...sourceMeta,
             linkAccessLevel: linkAccessLevelsRanked[targetIdx],
           });
         }
@@ -654,7 +654,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       <SuggestionListContainer>
         <SuggestionListItem $selected={false}>
           <SuggestionListItemIcon>
-            <MdSearch size={18} />
+            <IoSearch size={18} />
           </SuggestionListItemIcon>
           <SuggestionListItemText>
             <SuggestionListItemTitle>
@@ -670,7 +670,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
   }
 
   const referenceItemSubtitleI18n = (item: ReferenceItem) => {
-    const x = item.artifact.userId === session?.userId ? 'personal' : 'shared';
+    const x =
+      item.artifact.userId === sessionContext?.session.userId
+        ? 'personal'
+        : 'shared';
     const i18nVals = {
       block: {
         personal: 'editor.referenceMenu.artifactBlock',

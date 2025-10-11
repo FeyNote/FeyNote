@@ -1,6 +1,6 @@
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { trpc } from '../../utils/trpc';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
 import { setWelcomeModalPending } from '../../utils/welcomeModalState';
@@ -15,7 +15,7 @@ const getGoogleRef = () => {
 };
 
 export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
   const buttonRef = useRef<HTMLDivElement>(undefined);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 

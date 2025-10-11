@@ -13,5 +13,6 @@ export const yArtifactMetaZodSchema = z.object({
   theme: z.nativeEnum(ArtifactTheme),
   type: z.nativeEnum(ArtifactType),
   linkAccessLevel: z.nativeEnum(ArtifactAccessLevel),
-  deletedAt: z.string().nullable(),
+  deletedAt: z.number().nullable(),
+  createdAt: z.number(),
 }) satisfies ZodSchema<YArtifactMeta>;

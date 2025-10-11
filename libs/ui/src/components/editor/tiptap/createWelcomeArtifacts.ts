@@ -1,8 +1,8 @@
 import { trpc } from '../../../utils/trpc';
 import { buildWelcomeArtifact } from './templates/buildWelcomeArtifact';
 import { buildIntroducingReferencesArtifact } from './templates/buildIntroducingReferencesArtifact';
-import { withCollaborationConnection } from '../collaborationManager';
-import { appIdbStorageManager } from '../../../utils/AppIdbStorageManager';
+import { withCollaborationConnection } from '../../../utils/collaboration/collaborationManager';
+import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';
 import { addArtifactToArtifactTree } from '../../../utils/artifactTree/addArtifactToArtifactTree';
 
 export const createWelcomeArtifacts = async () => {
@@ -22,27 +22,18 @@ export const createWelcomeArtifacts = async () => {
     id: introducingReferencesId,
     userId: session.userId,
   });
-  const introducingReferences = await trpc.artifact.createArtifact.mutate({
-    id: introducingReferencesTemplate.result.id,
-    title: introducingReferencesTemplate.result.title,
-    type: introducingReferencesTemplate.result.type,
-    theme: introducingReferencesTemplate.result.theme,
+  await trpc.artifact.createArtifact.mutate({
     yBin: introducingReferencesTemplate.result.yBin,
   });
 
   const welcomeTemplate = buildWelcomeArtifact({
     id: welcomeId,
     userId: session.userId,
-    relationArtifactId: introducingReferences.id,
+    relationArtifactId: introducingReferencesId,
     relationArtifactBlockId:
       introducingReferencesTemplate.meta.incomingReferenceBlockId,
   });
-
-  const welcome = await trpc.artifact.createArtifact.mutate({
-    id: welcomeTemplate.result.id,
-    title: welcomeTemplate.result.title,
-    type: welcomeTemplate.result.type,
-    theme: welcomeTemplate.result.theme,
+  await trpc.artifact.createArtifact.mutate({
     yBin: welcomeTemplate.result.yBin,
   });
 
@@ -51,16 +42,16 @@ export const createWelcomeArtifacts = async () => {
     async (connection) => {
       connection.yjsDoc.transact(() => {
         addArtifactToArtifactTree({
-          yDoc: connection.yjsDoc,
+          ref: connection.yjsDoc,
           parentArtifactId: null,
           order: 'X',
-          newItemId: welcome.id,
+          id: welcomeId,
         });
         addArtifactToArtifactTree({
-          yDoc: connection.yjsDoc,
+          ref: connection.yjsDoc,
           parentArtifactId: null,
           order: 'XX',
-          newItemId: introducingReferences.id,
+          id: introducingReferencesId,
         });
       });
     },

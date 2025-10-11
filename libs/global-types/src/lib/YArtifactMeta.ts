@@ -11,7 +11,8 @@ export interface YArtifactMeta {
   theme: ArtifactTheme;
   type: ArtifactType;
   linkAccessLevel: ArtifactAccessLevel;
-  deletedAt: string | null;
+  createdAt: number;
+  deletedAt: number | null;
 }
 
 export interface UpdatableYArtifactMeta {
@@ -19,5 +20,5 @@ export interface UpdatableYArtifactMeta {
   theme: ArtifactTheme;
   type: ArtifactType;
   linkAccessLevel: ArtifactAccessLevel;
-  deletedAt: string | null;
+  deletedAt: number | null;
 }

@@ -17,6 +17,7 @@ export const setPreferences = authenticatedProcedure
     z.object({
       preferencesVersion: z.number().min(0),
 
+      [PreferenceNames.PanesRememberOpenState]: z.boolean(),
       [PreferenceNames.LeftPaneStartOpen]: z.boolean(),
       [PreferenceNames.LeftPaneShowArtifactTree]: z.boolean(),
       [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: z.boolean(),

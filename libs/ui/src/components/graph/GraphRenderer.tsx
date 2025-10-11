@@ -5,7 +5,6 @@ import ForceGraph2D, {
 import {
   memo,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -13,7 +12,7 @@ import {
   type ComponentProps,
 } from 'react';
 import { isDarkMode } from '../../utils/isDarkMode';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import styled from 'styled-components';
@@ -88,7 +87,7 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
   const forceGraphRef =
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(null);
   const initialZoomPerformedRef = useRef(!props.enableInitialZoom);
-  const { navigate, pane, isPaneFocused } = useContext(PaneContext);
+  const { navigate, pane, isPaneFocused } = usePaneContext();
   const [highlightNodes, setHighlightNodes] = useState(
     new Set<FeynoteGraphNode>(),
   );

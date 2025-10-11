@@ -1,4 +1,4 @@
-import { createContext } from 'react';
+import { createContext, useContext } from 'react';
 import type {
   PaneTracker,
   PaneTransition,
@@ -22,6 +22,16 @@ export interface PaneContextData {
   isPaneFocused: boolean;
 }
 
-export const PaneContext = createContext<PaneContextData>(
-  null as unknown as PaneContextData,
-);
+export const PaneContext = createContext<PaneContextData | null>(null);
+
+export const usePaneContext = (): PaneContextData => {
+  const val = useContext(PaneContext);
+
+  if (!val) {
+    throw new Error(
+      'PaneContext used within component that does not inherit from PaneContextProvider',
+    );
+  }
+
+  return val;
+};

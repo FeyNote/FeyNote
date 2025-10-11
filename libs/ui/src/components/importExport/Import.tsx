@@ -2,9 +2,9 @@ import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { JobSummary } from '@feynote/prisma/types';
@@ -18,7 +18,7 @@ export const Import: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
 
   useEffect(() => {

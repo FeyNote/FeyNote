@@ -1,21 +1,20 @@
 import styled from 'styled-components';
-import { useContext, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
 import { TiptapPreview } from '../../../TiptapPreview';
 import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
 import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
 import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
-import { SessionContext } from '../../../../../context/session/SessionContext';
+import { useSessionContext } from '../../../../../context/session/SessionContext';
 import { getFileUrlById } from '../../../../../utils/files/getFileUrlById';
-import { useObserveYArtifactMeta } from '../../../../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../../../../utils/collaboration/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
 import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWindow';
 
 export interface ReferencePreviewInfo {
   artifactYBin: Uint8Array | undefined;
   artifactInaccessible: boolean;
-  isBroken: boolean;
 }
 
 const PREVIEW_WIDTH_PX = 600;
@@ -46,7 +45,7 @@ interface Props {
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
-  const { session } = useContext(SessionContext);
+  const sessionContext = useSessionContext(true);
   const [ready, setReady] = useState(false);
 
   const yDoc = useMemo(() => {
@@ -103,7 +102,7 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
           yDoc={yDoc}
           editable={false}
           getFileUrl={(fileId) => {
-            return getFileUrlById(fileId, session);
+            return getFileUrlById(fileId, sessionContext?.session);
           }}
           onReady={() => setReady(true)}
         />
@@ -118,19 +117,6 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     </>
   );
 
-  const brokenMessage = (
-    <>
-      <Header>{t('referencePreview.broken')}</Header>
-      {props.referenceText && (
-        <div>
-          {t('referencePreview.broken.message')}
-          <br />
-          {props.referenceText}
-        </div>
-      )}
-    </>
-  );
-
   return (
     <StyledBoundedFloatingWindow
       ref={containerRef}
@@ -140,11 +126,8 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
       maxHeight={PREVIEW_MAX_HEIGHT_PX}
       onClick={(event) => props.onClick?.(event)}
     >
-      {props.previewInfo.isBroken && brokenMessage}
       {props.previewInfo.artifactInaccessible && inaccessibleMessage}
-      {!props.previewInfo.artifactInaccessible &&
-        !props.previewInfo.isBroken &&
-        previewContent}
+      {!props.previewInfo.artifactInaccessible && previewContent}
     </StyledBoundedFloatingWindow>
   );
 };

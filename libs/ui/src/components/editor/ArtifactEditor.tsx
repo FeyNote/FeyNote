@@ -8,10 +8,10 @@ import { IonItem } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
-import { useObserveYArtifactMeta } from '../../utils/useObserveYArtifactMeta';
+import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
-import { ArtifactEditorContainer } from './ArtifactEditorContainer';
+import type { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -34,9 +34,11 @@ type DocArgOptions =
     };
 
 type Props = {
+  showMenus?: boolean;
   artifactId: string;
   setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
   editable: boolean;
+  authorizedScope: CollaborationConnectionAuthorizedScope;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
@@ -77,9 +79,7 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
 
   return (
     <div data-print-target={`artifact:${props.artifactId}`}>
-      <ArtifactEditorContainer>
-        <TiptapEditor {...props} theme={theme} prepend={titleInput} />
-      </ArtifactEditorContainer>
+      <TiptapEditor {...props} theme={theme} prepend={titleInput} />
 
       {props.showBottomSpacer && <BottomSpacer />}
     </div>

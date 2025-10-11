@@ -7,51 +7,39 @@
 
 declare let self: ServiceWorkerGlobalScope;
 
-import * as Sentry from '@sentry/browser';
-
-let environment = import.meta.env.MODE || import.meta.env.VITE_ENVIRONMENT;
-if (environment !== 'development') {
-  const hostname = self.location.hostname;
-
-  if (environment === 'production' && hostname.includes('.beta.')) {
-    // We don't do separate builds for beta/production, so hostname check is the best
-    // approach
-    environment = 'beta';
-  }
-
-  Sentry.init({
-    release: import.meta.env.VITE_APP_VERSION,
-    environment,
-    dsn: 'https://c33be4806db6ac96de06c5de2f8ebc85@o4508428193955840.ingest.us.sentry.io/4508428202606592',
-    transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
-
-    tracesSampleRate: 1,
-
-    initialScope: {
-      extra: {
-        source: 'serviceworker',
-      },
-    },
-  });
-}
-
+import './serviceWorkerLib/util/sentryInit';
 import { registerRoute } from 'workbox-routing';
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { RouteHandlerCallbackOptions } from 'workbox-core';
-import { SearchManager } from '../../../libs/ui/src/utils/SearchManager';
-import { SyncManager } from '../../../libs/ui/src/utils/SyncManager';
-import {
-  getManifestDb,
-  ObjectStoreName,
-} from '../../../libs/ui/src/utils/localDb';
-import { FileStreamDecoder } from '../../../libs/shared-utils/src/lib/parsers/stream/file/FileStreamDecoder';
-import { readableStreamToUint8Array } from '../../../libs/shared-utils/src/lib/parsers/readableStreamToUint8Array';
+import { clientsClaim } from 'workbox-core';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { Queue } from 'workbox-background-sync';
-import { Doc, encodeStateAsUpdate } from 'yjs';
-import { IndexeddbPersistence } from 'y-indexeddb';
-import { customTrpcTransformer } from '../../../libs/shared-utils/src/lib/customTrpcTransformer';
+import {
+  getManifestDb,
+  ObjectStoreName,
+  SyncManager,
+  SearchManager,
+  SWMessageType,
+  createSWDebugDump,
+  initDebugStoreMonkeypatch,
+} from '@feynote/ui-sw';
+import { registerGetKnownUsersRoute } from './serviceWorkerLib/routes/user/registerGetKnownUsersRoute';
+import { registerGetArtifactEdgesByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesByIdRoute';
+import { registerGetArtifactEdgesRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesRoute';
+import { registerGetArtifactSnapshotByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotByIdRoute';
+import { registerGetArtifactSnapshotsRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotsRoute';
+import { registerGetArtifactYBinByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactYBinByIdRoute';
+import { registerGetSafeArtifactIdRoute } from './serviceWorkerLib/routes/artifact/registerGetSafeArtifactIdRoute';
+import { registerSearchArtifactBlocksRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactBlocksRoute';
+import { registerSearchArtifactsRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactsRoute';
+import { registerSearchArtifactTitlesRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactTitlesRoute';
+import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
+import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
+import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
+import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
+import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
+
+initDebugStoreMonkeypatch();
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST);
@@ -128,157 +116,39 @@ const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
   },
 });
 
-const getTrpcInputForEvent = <T>(event: RouteHandlerCallbackOptions) => {
-  const encodedInput = event.url.searchParams.get('input');
-  if (!encodedInput) return;
+addEventListener('message', async (event) => {
+  if (!event.data?.type) {
+    console.error('Unexpected message without data|type', event);
+    return;
+  }
 
-  const input = customTrpcTransformer.deserialize(JSON.parse(encodedInput));
+  switch (event.data.type) {
+    case SWMessageType.GetDebugDump: {
+      const responsePort = event.ports[0];
+      if (!responsePort) {
+        console.error('No response port for getDebugDump');
+        return;
+      }
 
-  return input as T;
-};
+      const debugDump = await createSWDebugDump();
+      responsePort.postMessage(JSON.parse(JSON.stringify(debugDump)));
 
-const encodeCacheResultForTrpc = (result: unknown) => {
-  return new Response(
-    JSON.stringify({
-      result: {
-        data: customTrpcTransformer.serialize(result),
-      },
-    }),
-    {
-      headers: {
-        swcache: 'true',
-        'content-type': 'application/json',
-      },
-    },
-  );
-};
-
-async function tryStoreInCacheWithQuotaPurge(
-  cache: Cache,
-  request: Request,
-  response: Response,
-  maxCacheEntries = 50,
-) {
-  try {
-    await limitCacheToMaxEntries(cache, maxCacheEntries - 1);
-    await cache.put(request, response.clone());
-  } catch (err: any) {
-    if (
-      err instanceof DOMException &&
-      (err.name === 'QuotaExceededError' ||
-        err.name === 'NS_ERROR_DOM_QUOTA_REACHED')
-    ) {
-      await purgeOldestEntries(cache);
+      break;
+    }
+    default: {
+      console.warn('Unhandled SW message', event);
     }
   }
-}
-
-async function purgeOldestEntries(cache: Cache, maxToDelete = 5) {
-  const requests = await cache.keys();
-  for (let i = 0; i < Math.min(maxToDelete, requests.length); i++) {
-    await cache.delete(requests[i]);
-  }
-}
-
-async function limitCacheToMaxEntries(cache: Cache, maxEntries = 50) {
-  const requests = await cache.keys();
-  if (requests.length > maxEntries) {
-    await purgeOldestEntries(cache, requests.length - maxEntries);
-  }
-}
-
-const updateListCache = async (
-  objectStoreName: ObjectStoreName,
-  trpcResponse: Response,
-) => {
-  const json = await trpcResponse.json();
-  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
-    id: string;
-    updatedAt: string;
-  }[];
-  const manifestDb = await getManifestDb();
-
-  const tx = manifestDb.transaction(objectStoreName, 'readwrite');
-  const store = tx.objectStore(objectStoreName);
-  await store.clear();
-  for (const item of deserialized) {
-    await manifestDb.put(objectStoreName, item);
-  }
-  await tx.done;
-};
-
-const updateSingleCache = async (
-  objectStoreName: ObjectStoreName,
-  trpcResponse: Response,
-) => {
-  const json = await trpcResponse.json();
-  const deserialized = customTrpcTransformer.deserialize(json.result.data) as {
-    id: string;
-  };
-
-  const manifestDb = await getManifestDb();
-  await manifestDb.put(objectStoreName, deserialized);
-};
-
-const cacheListResponse = async (
-  objectStoreName: ObjectStoreName,
-  event: RouteHandlerCallbackOptions,
-) => {
-  try {
-    const response = await fetch(event.request);
-
-    if (response.status >= 200 && response.status < 300) {
-      updateListCache(objectStoreName, response.clone());
-    }
-
-    return response;
-  } catch (e) {
-    console.log(`Request failed`, e);
-
-    // TODO: check response for statuscode
-    // since we don't want to eat unauthorized errors
-
-    const manifestDb = await getManifestDb();
-    const cachedItems = await manifestDb.getAll(objectStoreName);
-
-    return encodeCacheResultForTrpc(cachedItems);
-  }
-};
-
-const cacheSingleResponse = async (
-  dbName: ObjectStoreName,
-  event: RouteHandlerCallbackOptions,
-) => {
-  try {
-    const response = await fetch(event.request);
-
-    if (response.status >= 200 && response.status < 300) {
-      updateSingleCache(dbName, response.clone());
-    }
-
-    return response;
-  } catch (e) {
-    console.log(`Request failed`, e);
-
-    // TODO: check response for statuscode
-    // since we don't want to eat unauthorized errors
-
-    const input = getTrpcInputForEvent<{ id: string }>(event);
-    if (!input || !input.id) throw e;
-
-    const manifestDb = await getManifestDb();
-    const cachedItem = await manifestDb.get(dbName, input.id);
-
-    return encodeCacheResultForTrpc(cachedItem);
-  }
-};
+});
 
 const APP_SRC_CACHE_NAME = 'app-asset-cache';
 const APP_SRC_PRECACHE_URLS = ['/', '/index.html', '/locales/en-us.json'];
+
+self.skipWaiting();
+clientsClaim();
+
 self.addEventListener('install', () => {
   console.log('Service Worker installed');
-
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -339,382 +209,21 @@ registerRoute(
   }),
 );
 
-// Artifact assets are immutable. Should be cached indefinitely, but we need to limit them so
-// we don't "anger" the browser by caching too much
-const ARTIFACT_ASSET_CACHE_NAME = 'artifact-asset-cache';
-const ARTIFACT_ASSET_CACHE_MAX_ENTRIES = 100;
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/file\/(.*?)\/redirect/,
-  async (event) => {
-    const fileId = event.url.pathname.match(/\/file\/(.*?)\/redirect/)?.[1];
-    if (!fileId) throw new Error('No fileId found in URL');
+registerGetKnownUsersRoute();
 
-    const manifestDb = await getManifestDb();
-    const pendingFile = await manifestDb.get(
-      ObjectStoreName.PendingFiles,
-      fileId,
-    );
+registerGetArtifactEdgesByIdRoute();
+registerGetArtifactEdgesRoute();
+registerGetArtifactSnapshotByIdRoute();
+registerGetArtifactSnapshotsRoute();
+registerGetArtifactYBinByIdRoute();
+registerGetSafeArtifactIdRoute();
+registerSearchArtifactsRoute(searchManager);
+registerSearchArtifactBlocksRoute(searchManager);
+registerSearchArtifactTitlesRoute(searchManager);
 
-    if (pendingFile) {
-      return new Response(
-        pendingFile.fileContentsUint8 as Buffer<ArrayBuffer>,
-        {
-          headers: {
-            'Content-Type': pendingFile.mimetype,
-            'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
-            swcache: 'true',
-            'Accept-Ranges': 'bytes',
-            'Content-Length': pendingFile.fileSize.toString(),
-          },
-        },
-      );
-    }
+registerCreateFileRoute(bgSyncQueue);
+registerFileRedirectRoute();
+registerGetSafeFileIdRoute();
 
-    // Try to see if we have anything in the cache
-    const cache = await caches.open(ARTIFACT_ASSET_CACHE_NAME);
-    const cachedResponse = await cache.match(event.request);
-    if (cachedResponse) return cachedResponse;
-
-    // Fall back to server
-    const response = await fetch(event.request);
-    if (
-      response.status === 0 ||
-      response.status === 200 ||
-      response.status === 302
-    ) {
-      await tryStoreInCacheWithQuotaPurge(
-        cache,
-        event.request,
-        response,
-        ARTIFACT_ASSET_CACHE_MAX_ENTRIES,
-      );
-    }
-
-    return response;
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/file\.createFile/,
-  async (event) => {
-    const clonedRequest = event.request.clone();
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      // We need a second instance of the cloned request so we can store it in the bgSyncQueue
-      const clonedRequest2 = clonedRequest.clone();
-      const blob = await clonedRequest.blob();
-      const input = await new FileStreamDecoder(blob.stream()).decode();
-      const fileContentsUint8 = await readableStreamToUint8Array(
-        input.fileContents,
-      );
-
-      await bgSyncQueue.pushRequest({
-        request: clonedRequest2,
-        metadata: {
-          type: 'trpc.file.createFile',
-          storedAsId: input.id,
-        },
-      });
-
-      const manifestDb = await getManifestDb();
-      await manifestDb.put(ObjectStoreName.PendingFiles, {
-        ...input,
-        fileContents: null,
-        fileContentsUint8,
-      });
-
-      return encodeCacheResultForTrpc({
-        id: input.id,
-        name: input.fileName,
-        mimetype: input.mimetype,
-        storageKey: 'UPLOADED_OFFLINE',
-      });
-    }
-  },
-  'POST',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/file\.getSafeFileId/,
-  async (event) => {
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      // When offline we rely on the very low chance of a uuid collision
-      const candidateId = crypto.randomUUID();
-      return encodeCacheResultForTrpc({ id: candidateId });
-    }
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactYBinById/,
-  async (event) => {
-    // Cache first
-    const input = getTrpcInputForEvent<{ id: string }>(event);
-    if (!input || !input.id)
-      throw new Error('No id provided in procedure input');
-
-    const docName = `artifact:${input.id}`;
-    const manifestDb = await getManifestDb();
-    const manifestArtifactVersion = await manifestDb.get(
-      ObjectStoreName.ArtifactVersions,
-      input.id,
-    );
-    if (!manifestArtifactVersion) {
-      const response = await fetch(event.request);
-      // TODO: consider syncing to indexeddb here since it'd be nearly "free"
-
-      return response;
-    }
-
-    const idbPersistence = new IndexeddbPersistence(docName, new Doc());
-    await idbPersistence.whenSynced;
-
-    const yBin = encodeStateAsUpdate(idbPersistence.doc);
-
-    await idbPersistence.destroy();
-
-    return encodeCacheResultForTrpc({
-      yBin,
-    });
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactEdgesById/,
-  async (event) => {
-    // Cache only, unless we do not have that artifact locally
-    const input = getTrpcInputForEvent<{
-      id: string;
-    }>(event);
-    if (!input || !input.id)
-      throw new Error('No id provided in procedure input');
-
-    const manifestDb = await getManifestDb();
-
-    const localArtifactVersion = await manifestDb.get(
-      ObjectStoreName.ArtifactVersions,
-      input.id,
-    );
-    if (!localArtifactVersion) {
-      const response = await fetch(event.request);
-
-      return response;
-    }
-
-    const outgoingEdges = await manifestDb.getAllFromIndex(
-      ObjectStoreName.Edges,
-      'artifactId',
-      input.id,
-    );
-    const incomingEdges = await manifestDb.getAllFromIndex(
-      ObjectStoreName.Edges,
-      'targetArtifactId',
-      input.id,
-    );
-
-    return encodeCacheResultForTrpc({
-      outgoingEdges,
-      incomingEdges,
-    });
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifactById/,
-  async (event) => {
-    return cacheSingleResponse(ObjectStoreName.Artifacts, event);
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getArtifacts/,
-  async (event) => {
-    return cacheListResponse(ObjectStoreName.Artifacts, event);
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifacts/,
-  async (event) => {
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
-      if (!input || !input.query) throw new Error('No query provided');
-
-      const searchResults = searchManager.search(input.query);
-      const artifactIds = new Set(
-        searchResults.map((searchResult) => searchResult.artifactId),
-      );
-
-      const manifestDb = await getManifestDb();
-      const results = [];
-      for (const artifactId of artifactIds) {
-        const artifact = await manifestDb.get(
-          ObjectStoreName.Artifacts,
-          artifactId,
-        );
-        results.push({
-          artifact,
-          // We have no highlighting support while offline at this time.
-          // It would require loading each search result's yBin from indexeddb,
-          // applying it to a yDoc, converting it to tiptap json, getting all text,
-          // and then correlating the match text from minisearch
-          // The above is too heavy a lift.
-          highlight: undefined,
-        });
-      }
-
-      const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
-    }
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifactTitles/,
-  async (event) => {
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
-      if (!input || !input.query) throw new Error('No query provided');
-
-      const searchResults = searchManager.search(input.query);
-      const artifactIds = new Set(
-        searchResults
-          .filter((searchResult) => !searchResult.blockId)
-          .map((searchResult) => searchResult.artifactId),
-      );
-
-      const manifestDb = await getManifestDb();
-      const results = [];
-      for (const artifactId of artifactIds) {
-        const artifact = await manifestDb.get(
-          ObjectStoreName.Artifacts,
-          artifactId,
-        );
-        results.push({
-          artifact,
-          highlight: undefined,
-        });
-      }
-
-      const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
-    }
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.searchArtifactBlocks/,
-  async (event) => {
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      const input = getTrpcInputForEvent<{ query: string; limit?: number }>(
-        event,
-      );
-      if (!input || !input.query) throw new Error('No query provided');
-
-      const searchResults = searchManager.search(input.query);
-
-      const manifestDb = await getManifestDb();
-      const results = [];
-      for (const searchResult of searchResults) {
-        if (!searchResult.blockId) continue;
-
-        const artifact = await manifestDb.get(
-          ObjectStoreName.Artifacts,
-          searchResult.artifactId,
-        );
-        results.push({
-          artifact,
-          blockId: searchResult.blockId,
-          blockText: searchResult.previewText,
-          // This isn't exact, since the search engine would normally return marked results, but we don't want to calculate that ourselves manually at the moment. Additionally, the previewText isn't that long to begin with, so not much to work with here hence the shortcut.
-          highlight: searchResult.previewText.substring(0, 100),
-        });
-      }
-
-      const limitedResults = results.slice(0, input.limit || 50);
-      return encodeCacheResultForTrpc(limitedResults);
-    }
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/artifact\.getSafeArtifactId/,
-  async (event) => {
-    try {
-      const response = await fetch(event.request);
-
-      return response;
-    } catch (_e) {
-      const manifestDb = await getManifestDb();
-
-      while (true) {
-        // We can at least check local artifacts which isn't globally guaranteed but oh well
-        const candidateId = crypto.randomUUID();
-        const artifact = await manifestDb.get(
-          ObjectStoreName.Artifacts,
-          candidateId,
-        );
-        if (!artifact) {
-          return encodeCacheResultForTrpc({ id: candidateId });
-        }
-      }
-    }
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/user\.getKnownUsers/,
-  async (event) => {
-    return cacheListResponse(ObjectStoreName.KnownUsers, event);
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/ai\.getThreads/,
-  async (event) => {
-    return cacheListResponse(ObjectStoreName.Threads, event);
-  },
-  'GET',
-);
-
-registerRoute(
-  /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/ai\.getThread/,
-  async (event) => {
-    return cacheSingleResponse(ObjectStoreName.Threads, event);
-  },
-  'GET',
-);
+registerGetThreadsRoute();
+registerGetThreadRoute();

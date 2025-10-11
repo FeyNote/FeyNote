@@ -1,13 +1,13 @@
 import { NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { ArtifactReferenceSpan } from './ArtifactReferenceSpan';
 import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
-import { useContext, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
-import { PaneContext } from '../../../../../context/pane/PaneContext';
+import { usePaneContext } from '../../../../../context/pane/PaneContext';
 import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
-import { useEdgesForArtifactId } from '../../../../../utils/edgesReferences/useEdgesForArtifactId';
+import { useEdgesForArtifactId } from '../../../../../utils/localDb/edges/useEdgesForArtifactId';
 
 const ArtifactReferenceLink = styled.a`
   cursor: pointer;
@@ -35,24 +35,25 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
   }
 
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { getEdge } = useEdgesForArtifactId(artifactId);
-  const edge = getEdge({
-    artifactId,
-    artifactBlockId,
-    targetArtifactId,
-    targetArtifactBlockId,
-    targetArtifactDate,
-  });
-  const isBroken = edge ? edge.isBroken : false;
+  const edge = useMemo(
+    () =>
+      getEdge({
+        artifactId,
+        artifactBlockId,
+        targetArtifactId,
+        targetArtifactBlockId,
+        targetArtifactDate,
+      }),
+    [getEdge],
+  );
 
   const ref = useRef<HTMLSpanElement>(null);
 
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    if (isBroken) return;
-
     let paneTransition = PaneTransition.Push;
     if (event.metaKey || event.ctrlKey) {
       paneTransition = PaneTransition.NewTab;
@@ -70,7 +71,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   };
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
-    useArtifactPreviewTimer(targetArtifactId, edge?.isBroken ?? false);
+    useArtifactPreviewTimer(targetArtifactId);
 
   let referenceText = edge?.referenceText || props.node.attrs.referenceText;
   if (targetArtifactDate) {
@@ -81,7 +82,6 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     <StyledNodeViewWrapper>
       <ArtifactReferenceSpan
         ref={ref}
-        $isBroken={isBroken}
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
       >

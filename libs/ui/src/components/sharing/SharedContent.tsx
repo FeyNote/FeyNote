@@ -6,24 +6,19 @@ import {
   IonLabel,
   IonPage,
 } from '@ionic/react';
-import { trpc } from '../../utils/trpc';
-import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { people } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import { SessionContext } from '../../context/session/SessionContext';
-import { SidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { createPortal } from 'react-dom';
-import { SharedContentRightSideMenu } from './SharedContentRightSideMenu';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 
 const Title = styled(IonCardTitle)`
   padding: 8px;
@@ -42,51 +37,24 @@ const StyledNullState = styled(NullState)`
 
 export const SharedContent: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate, isPaneFocused } = useContext(PaneContext);
-  const { sidemenuContentRef } = useContext(SidemenuContext);
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { session } = useContext(SessionContext);
-  const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [artifacts, setArtifacts] = useState<ArtifactDTO[]>([]);
+  const { navigate } = usePaneContext();
+  const { session } = useSessionContext();
+  const { artifactSnapshots } = useArtifactSnapshots();
+  const { getKnownUserById } = useKnownUsers();
   const incomingSharedArtifacts = useMemo(
     () =>
-      artifacts
-        .filter((artifact) => artifact.userId !== session.userId)
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      artifactSnapshots
+        ?.filter((artifact) => artifact.meta.userId !== session.userId)
+        .sort((a, b) => b.updatedAt - a.updatedAt)
         .slice(0, 10),
-    [artifacts],
+    [artifactSnapshots],
   );
-
-  const getUserArtifacts = async () => {
-    await trpc.artifact.getArtifacts
-      .query()
-      .then((_artifacts) => {
-        setArtifacts(_artifacts.filter((artifact) => !artifact.deletedAt));
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
-  };
-
-  const loadWithProgress = async () => {
-    const progress = startProgressBar();
-    await getUserArtifacts();
-    progress.dismiss();
-  };
-
-  useEffect(() => {
-    loadWithProgress().then(() => {
-      setInitialLoadComplete(true);
-    });
-  }, []);
 
   return (
     <IonPage>
       <PaneNav title={t('sharedContent.title')} />
       <IonContent>
-        {ProgressBar}
-        {initialLoadComplete && (
+        {incomingSharedArtifacts && (
           <Card>
             <Title>
               <IonIcon icon={people} />
@@ -109,10 +77,10 @@ export const SharedContent: React.FC = () => {
                 button
               >
                 <IonLabel>
-                  {sharedArtifact.title}
+                  {sharedArtifact.meta.title}
                   <p>
                     {t('sharedContent.sharedBy')}{' '}
-                    {sharedArtifact.user?.name ||
+                    {getKnownUserById(sharedArtifact.meta.userId)?.name ||
                       t('sharedContent.unknownUser')}
                   </p>
                 </IonLabel>
@@ -128,12 +96,6 @@ export const SharedContent: React.FC = () => {
           </Card>
         )}
       </IonContent>
-      {isPaneFocused &&
-        sidemenuContentRef.current &&
-        createPortal(
-          <SharedContentRightSideMenu reload={loadWithProgress} />,
-          sidemenuContentRef.current,
-        )}
     </IonPage>
   );
 };

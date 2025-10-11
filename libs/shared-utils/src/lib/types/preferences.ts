@@ -48,11 +48,11 @@ export enum ArtifactReferenceExistingArtifactSharingMode {
 }
 
 export enum PreferenceNames {
+  PanesRememberOpenState = 'panes.rememberOpenState',
   LeftPaneStartOpen = 'leftPane.startOpen',
   LeftPaneShowArtifactTree = 'leftPane.showArtifactTree',
   LeftPaneArtifactTreeShowUncategorized = 'leftPane.appTree.showUncategorized',
   LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
-
   RightPaneStartOpen = 'rightPane.startOpen',
 
   Language = 'global.language',
@@ -71,11 +71,11 @@ export enum PreferenceNames {
 export interface AppPreferences {
   preferencesVersion: number;
 
+  [PreferenceNames.PanesRememberOpenState]: boolean;
   [PreferenceNames.LeftPaneStartOpen]: boolean;
   [PreferenceNames.LeftPaneShowArtifactTree]: boolean;
   [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: boolean;
   [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
-
   [PreferenceNames.RightPaneStartOpen]: boolean;
 
   [PreferenceNames.Language]: null | SupportedLanguages;

@@ -9,6 +9,9 @@ import {
 } from '@feynote/api-services';
 import { publicProcedure } from '../../trpc';
 
+/**
+ * @deprecated Please use ArtifactSnapshots rather than ArtifactDTOs
+ */
 export const getArtifactById = publicProcedure
   .input(
     z.object({

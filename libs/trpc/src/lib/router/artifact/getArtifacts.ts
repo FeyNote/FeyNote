@@ -4,6 +4,9 @@ import { artifactDetail } from '@feynote/prisma/types';
 import { ArtifactDTO } from '@feynote/global-types';
 import { artifactDetailToArtifactDTO } from '@feynote/api-services';
 
+/**
+ * @deprecated Please use ArtifactSnapshots rather than ArtifactDTOs
+ */
 export const getArtifacts = authenticatedProcedure.query(
   async ({ ctx }): Promise<ArtifactDTO[]> => {
     const [ownedArtifacts, sharedArtifacts] = await Promise.all([

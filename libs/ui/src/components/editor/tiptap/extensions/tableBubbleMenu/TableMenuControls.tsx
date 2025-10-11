@@ -1,5 +1,4 @@
 import type { Editor } from '@tiptap/core';
-import { CgExtensionRemove } from 'react-icons/cg';
 import {
   RiDeleteColumn,
   RiDeleteRow,
@@ -10,13 +9,15 @@ import {
   RiLayoutColumnFill,
   RiLayoutRowFill,
   RiTableFill,
-} from 'react-icons/ri';
+  CgExtensionRemove,
+} from '../../../../AppIcons';
 import {
   MenuButton,
   MenuControlsContainer,
   MenuDivider,
 } from '../BubbleMenuControlStyles';
 import { useTranslation } from 'react-i18next';
+import { useEditorState } from '@tiptap/react';
 
 interface Props {
   editor: Editor;
@@ -28,6 +29,17 @@ interface Props {
  */
 export const TableMenuControls: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+
+  useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      if (!editor) return null;
+
+      return {
+        selection: editor.state.selection,
+      };
+    },
+  });
 
   return (
     <MenuControlsContainer>

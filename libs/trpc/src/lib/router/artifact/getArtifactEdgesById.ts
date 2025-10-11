@@ -33,6 +33,7 @@ export const getArtifactEdgesById = publicProcedure
             },
           },
           linkAccessLevel: true,
+          deletedAt: true,
         },
       });
 
@@ -70,6 +71,7 @@ export const getArtifactEdgesById = publicProcedure
                 },
               },
               linkAccessLevel: true,
+              deletedAt: true,
             },
           },
         },
@@ -90,6 +92,7 @@ export const getArtifactEdgesById = publicProcedure
           targetArtifact: {
             select: {
               title: true,
+              deletedAt: true,
             },
           },
         },
@@ -111,13 +114,14 @@ export const getArtifactEdgesById = publicProcedure
               id: getEdgeId(edge),
               artifactId: edge.artifactId,
               artifactBlockId: edge.artifactBlockId,
+              artifactTitle: edge.artifact.title,
+              artifactDeleted: !!edge.artifact.deletedAt,
               targetArtifactId: edge.targetArtifactId,
               targetArtifactBlockId: edge.targetArtifactBlockId,
               targetArtifactDate: edge.targetArtifactDate,
-              isBroken: !edge.referenceTargetArtifactId,
-              referenceText: edge.referenceText,
-              artifactTitle: edge.artifact.title,
               targetArtifactTitle: artifact.title,
+              targetArtifactDeleted: !!artifact.deletedAt,
+              referenceText: edge.referenceText,
             };
           }),
         outgoingEdges: outgoingEdges.map((edge) => {
@@ -125,13 +129,15 @@ export const getArtifactEdgesById = publicProcedure
             id: getEdgeId(edge),
             artifactId: edge.artifactId,
             artifactBlockId: edge.artifactBlockId,
+            artifactTitle: artifact.title,
+            artifactDeleted: !!artifact.deletedAt,
             targetArtifactId: edge.targetArtifactId,
             targetArtifactBlockId: edge.targetArtifactBlockId,
             targetArtifactDate: edge.targetArtifactDate,
-            isBroken: !edge.referenceTargetArtifactId,
-            referenceText: edge.referenceText,
-            artifactTitle: artifact.title,
             targetArtifactTitle: edge.targetArtifact?.title || null,
+            targetArtifactDeleted:
+              !!edge.targetArtifact && !!edge.targetArtifact.deletedAt,
+            referenceText: edge.referenceText,
           };
         }),
       };

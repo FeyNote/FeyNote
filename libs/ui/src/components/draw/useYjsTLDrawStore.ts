@@ -29,7 +29,7 @@ import {
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { Doc as YDoc, Transaction as YTransaction } from 'yjs';
 import { FileDTO } from '@feynote/global-types';
-import { CollaborationManagerConnection } from '../editor/collaborationManager';
+import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
 
 const YJS_PERSIST_INTERVAL_MS = 1000;
 const AWARENESS_PUBLISH_INTERVAL_MS = 20;
