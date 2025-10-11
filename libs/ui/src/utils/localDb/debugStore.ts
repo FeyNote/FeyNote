@@ -197,6 +197,7 @@ export const createDebugDump = async (opts: {
     windowHeight: self.innerHeight,
     artifacts,
     tree,
+    version: import.meta.env.VITE_APP_VERSION,
     sw: {
       isPresent: !!navigator.serviceWorker.controller,
       state: navigator.serviceWorker.controller?.state,
