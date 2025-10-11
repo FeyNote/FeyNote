@@ -181,6 +181,7 @@ const connect = () => {
           // We're in a window
           const confirmed = prompt(
             'A new version of the app is available. The app will refresh to load the new version',
+            'Click ok to reload',
           );
           if (confirmed) self.location.reload();
           else alert('The app will not work correctly until it is refreshed');
