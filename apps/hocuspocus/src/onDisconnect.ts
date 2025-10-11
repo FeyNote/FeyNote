@@ -10,7 +10,8 @@ export async function onDisconnect(args: onDisconnectPayload) {
   metrics.hocuspocusDisconnect.inc({
     document_type: type,
   });
-  metrics.hocuspocusConnectionCount.set(args.instance.getConnectionsCount());
+  metrics.hocuspocusClientCount.set(args.instance.getConnectionsCount());
+  metrics.hocuspocusDocumentCount.set(args.instance.getDocumentsCount());
 
   switch (type) {
     case SupportedDocumentType.Artifact: {
