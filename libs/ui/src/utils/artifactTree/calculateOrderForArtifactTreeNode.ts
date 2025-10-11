@@ -36,6 +36,7 @@ const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
     return 'Y';
   }
 
+  console.log('orders passed', a, b);
   if (a.localeCompare(b) > 0) {
     throw new Error('a must be greater than b');
   }
@@ -43,24 +44,26 @@ const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
   return _calculateOrderBetween(a, b);
 };
 
+export type TreeOrderCalculationLocation =
+  | {
+      position: 'between';
+      afterNodeId: string;
+      beforeNodeId: string;
+    }
+  | {
+      position: 'beginning';
+    }
+  | {
+      position: 'end';
+    };
+
 interface Args {
   treeYKV: YKeyValue<{
     parentNodeId: string | null;
     order: string;
   }>;
   parentNodeId: string | null;
-  location:
-    | {
-        position: 'between';
-        afterNodeId: string;
-        beforeNodeId: string;
-      }
-    | {
-        position: 'beginning';
-      }
-    | {
-        position: 'end';
-      };
+  location: TreeOrderCalculationLocation;
 }
 
 export const calculateOrderForArtifactTreeNode = (args: Args): string => {

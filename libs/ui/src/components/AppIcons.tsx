@@ -39,6 +39,7 @@ export {
 } from 'react-icons/io5';
 
 export {
+  LuFolderTree,
   LuHeading,
   LuHeading1,
   LuHeading2,
