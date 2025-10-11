@@ -447,6 +447,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     count: tree.getItems().length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 32,
+    paddingEnd: 75,
   });
 
   return (
@@ -464,6 +465,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
             <ArtifactTreeItem
               key={itemInstance.getId()}
               itemInstance={itemInstance}
+              virtualizer={virtualizer}
               virtualItemInstance={virtualItem}
               treeItemsById={treeItemsById}
               itemIdsByParentId={itemIdsByParentId}

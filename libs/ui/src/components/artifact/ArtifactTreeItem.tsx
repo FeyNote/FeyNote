@@ -5,7 +5,7 @@ import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
 import { IoChevronDown, IoChevronForward } from '../AppIcons';
 import { ItemInstance } from '@headless-tree/core';
-import { VirtualItem } from '@tanstack/react-virtual';
+import { VirtualItem, type Virtualizer } from '@tanstack/react-virtual';
 import { MouseEvent } from 'react';
 
 const TreeListItem = styled.li<{
@@ -87,6 +87,7 @@ const TreeItemButton = styled.button<{
 
 interface ArtifactTreeItemProps {
   itemInstance: ItemInstance<InternalTreeItem | undefined>;
+  virtualizer: Virtualizer<HTMLDivElement, Element>;
   virtualItemInstance: VirtualItem;
   treeItemsById: Map<string, InternalTreeItem>;
   itemIdsByParentId: Map<string | null, string[]>;
@@ -155,6 +156,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         transform: `translateY(${props.virtualItemInstance.start}px)`,
         paddingLeft: `${props.itemInstance.getItemMeta().level * 20}px`,
       }}
+      ref={props.virtualizer.measureElement}
     >
       <ArtifactTreeItemContextMenu
         enabled={

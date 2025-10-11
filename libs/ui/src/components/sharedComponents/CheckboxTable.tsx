@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Checkbox } from './Checkbox';
-import { List, type RowComponentProps } from 'react-window';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 const ResultsTable = styled.div`
   display: grid;
-  grid-template-rows: 34px min-content auto;
+  grid-template-rows: min-content min-content auto;
   height: 100%;
 `;
 
@@ -26,7 +26,7 @@ const ResultsTableHeaderOptions = styled.div`
 
 const ResultsTableItems = styled.div`
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 `;
 
 const ResultsTableMessage = styled.div``;
@@ -43,7 +43,7 @@ const ItemRow = styled.div`
   background-color: var(--ion-background-color-step-50);
   border-radius: 4px;
   margin-top: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 
   &:hover:not(:has(.itemTitleInner:hover)) {
     background-color: var(--ion-background-color-step-100);
@@ -54,18 +54,6 @@ const ItemRow = styled.div`
 interface Entry<T> {
   key: string;
   value: T;
-}
-
-function RowComponent<T>({
-  index,
-  items,
-  renderItem,
-  style,
-}: RowComponentProps<{
-  items: Entry<T>[];
-  renderItem: (entry: Entry<T>) => React.ReactNode;
-}>) {
-  return <div style={style}>{renderItem(items[index])}</div>;
 }
 
 interface Props<T> {
@@ -81,7 +69,7 @@ interface Props<T> {
     selected: boolean;
     children: React.ReactNode;
   }) => React.ReactNode;
-  rowHeight?: number; // If not provided, will be a default
+  estimatedRowHeight?: number;
 }
 
 /**
@@ -91,6 +79,7 @@ interface Props<T> {
 export const CheckboxTable = <T extends object>(props: Props<T>) => {
   // To track shift-click operations
   const [lastClickedKey, setLastClickedKey] = useState<string>();
+  const parentRef = useRef(null);
 
   const headerCheckboxValue = (() => {
     if (!props.items.length) {
@@ -104,6 +93,13 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
     }
     return true;
   })();
+
+  const rowVirtualizer = useVirtualizer({
+    count: props.items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => props.estimatedRowHeight || 50,
+    overscan: 5,
+  });
 
   const onItemSelectionChange = (
     entry: Entry<T>,
@@ -205,13 +201,30 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
         <ResultsTableMessage>{props.message}</ResultsTableMessage>
       )}
 
-      <ResultsTableItems>
-        <List
-          rowComponent={RowComponent}
-          rowCount={props.items.length}
-          rowHeight={props.rowHeight || 62}
-          rowProps={{ items: props.items, renderItem }}
-        />
+      <ResultsTableItems ref={parentRef}>
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => (
+            <div
+              key={virtualItem.key}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+              ref={rowVirtualizer.measureElement}
+            >
+              {renderItem(props.items[virtualItem.index])}
+            </div>
+          ))}
+        </div>
       </ResultsTableItems>
     </ResultsTable>
   );

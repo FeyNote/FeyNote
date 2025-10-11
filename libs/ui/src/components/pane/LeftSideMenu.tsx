@@ -47,6 +47,11 @@ const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
 `;
 
+const TreeCard = styled(SidebarCard)`
+  display: grid;
+  grid-template-rows: min-content auto;
+`;
+
 const ShowMoreButtonText = styled.span`
   font-size: 0.75rem;
 `;
@@ -254,7 +259,7 @@ export const LeftSideMenu: React.FC = () => {
       </SidebarCard>
 
       {showTreeCard && (
-        <SidebarCard>
+        <TreeCard>
           <IonList class="ion-no-padding">
             <IonListHeader lines="full">
               <LuFolderTree color="rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54)" />
@@ -270,7 +275,7 @@ export const LeftSideMenu: React.FC = () => {
             mode="navigate"
             enableItemContextMenu={true}
           />
-        </SidebarCard>
+        </TreeCard>
       )}
 
       {showThreadsCard && (
