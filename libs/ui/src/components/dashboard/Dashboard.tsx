@@ -18,7 +18,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
@@ -62,7 +61,6 @@ export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const { navigate } = usePaneContext();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
@@ -130,14 +128,8 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  const loadWithProgress = async () => {
-    const progress = startProgressBar();
-    await Promise.allSettled([getUserThreads()]);
-    progress.dismiss();
-  };
-
   useEffect(() => {
-    loadWithProgress().then(() => {
+    getUserThreads().then(() => {
       setInitialLoadComplete(true);
     });
   }, []);
@@ -146,7 +138,6 @@ export const Dashboard: React.FC = () => {
     <IonPage>
       <PaneNav title={t('dashboard.title')} />
       <IonContent>
-        {ProgressBar}
         {initialLoadComplete && (
           <FlexContainer>
             <Card>

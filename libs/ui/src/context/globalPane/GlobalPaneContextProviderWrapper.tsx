@@ -6,10 +6,10 @@ import {
   type PaneTracker,
 } from './GlobalPaneContext';
 import {
+  Action,
   Actions,
   DockLocation,
   Model,
-  type Action,
   type TabNode,
   type TabSetNode,
 } from 'flexlayout-react';
@@ -86,7 +86,7 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
       getFirstTab().getId()
     );
   };
-  const [focusedPaneId, setFocusedPaneId] = useState(getFocusedPaneId());
+  const [focusedPaneId, setFocusedPaneId] = useState(() => getFocusedPaneId());
 
   const getSelectedTabForTabset = (
     tabsetId: string = layout.getFirstTabSet().getId(),
@@ -363,8 +363,17 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
   };
 
   const onActionListener = (action: Action) => {
-    // Placeholder for now, but can be used to cancel actions
-    // or react to actions
+    if (action.type === Actions.DELETE_TAB) {
+      let tabCount = 0;
+      layout.visitNodes((node) => {
+        if (node.getType() === 'tab') {
+          tabCount++;
+        }
+      });
+
+      // Returning undefined cancels the tab delete action
+      if (tabCount <= 1) return;
+    }
 
     return action;
   };
@@ -403,6 +412,11 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
     // We're doing this because FlexLayout v0.8+ doesn't trigger a re-render of our component
     // anymore when the layout changes. This is a workaround to force a re-render.
     triggerRerender();
+    setTimeout(() => {
+      // And this is to fix the padding issue where panes will creep outside of their containers
+      // I love flexlayout, I swear I do... (kill me)
+      triggerRerender();
+    });
   };
 
   const value = useMemo(
