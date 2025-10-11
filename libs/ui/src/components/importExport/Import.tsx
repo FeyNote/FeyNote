@@ -9,6 +9,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import type { JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
+import { GFP } from './GFP';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
 const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
@@ -104,6 +105,7 @@ export const Import: React.FC = () => {
             {t('import.options.obsidian')}
           </IonItem>
         </IonList>
+        <GFP />
       </IonContent>
     </IonPage>
   );

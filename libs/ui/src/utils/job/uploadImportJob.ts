@@ -7,7 +7,7 @@ import type { ImportFormat } from '@feynote/prisma/types';
 
 export const uploadImportJob = async (args: {
   file: File;
-  format: 'obsidian' | 'logseq';
+  format: 'obsidian' | 'logseq' | 'docx';
   onProgress?: (progress: number) => void;
 }) => {
   const { id } = await trpc.file.getSafeFileId.query();

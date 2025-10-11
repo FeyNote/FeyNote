@@ -54,6 +54,7 @@ export const createImportJob = authenticatedProcedure
     }
 
     try {
+      console.log(`recieved file with mimetype; ${input.mimetype}`)
       const { uploadResult, transformedMimetype } =
         await transformAndUploadFileToS3ForUser({
           userId: ctx.session.userId,

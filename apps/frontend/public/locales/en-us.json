@@ -243,6 +243,7 @@
   "import.jobList": "Import Jobs",
   "import.options.obsidian": "Import From Obsidian",
   "import.options.logseq": "Import From Logseq",
+  "import.options.google": "Import From Google",
   "import.file.header": "File Selection",
   "import.file.browse": "Browse",
   "import.file.error.type": "Invalid file type selected. File must be of type(s);",

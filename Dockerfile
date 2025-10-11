@@ -3,7 +3,9 @@ FROM node:24.2-alpine
 WORKDIR /app
 
 # dev watch script
+RUN apk update
 RUN apk add --no-cache inotify-tools
+RUN apk add --no-cache pandoc
 RUN npm install -g tsx
 
 COPY .npmrc .npmrc

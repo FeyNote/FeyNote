@@ -21,6 +21,8 @@ export enum ExportFormat {
 export enum ImportFormat {
   Obsidian = 'obsidian',
   Logseq = 'logseq',
+  TxtMd = 'textMd',
+  Docx = 'docx'
 }
 
 export enum JobErrorCode {

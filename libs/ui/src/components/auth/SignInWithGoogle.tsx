@@ -63,7 +63,7 @@ export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
   const googleSignInBtnOnLoadHook = useCallback(() => {
     getGoogleRef()?.accounts.id.initialize({
       client_id:
-        '458922288770-fig3hth6vu4ujhlg9slhsmbcrv2atug6.apps.googleusercontent.com',
+        process.env.GOOGLE_GSI_CLIENT,
       context: 'signin',
       ux_mode: 'popup',
       callback: signInWithGoogle,
