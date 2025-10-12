@@ -130,7 +130,7 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
       )}
       {props.dataViews.outgoingEdgeCount && (
         <ItemDataslot
-          title={t('allArtifacts.outgoingEdgeCount', {
+          title={t('allArtifacts.outgoingReferences', {
             count: props.outgoingEdgeCount,
           })}
         >
@@ -140,7 +140,7 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
       )}
       {props.dataViews.incomingEdgeCount && (
         <ItemDataslot
-          title={t('allArtifacts.incomingEdgeCount', {
+          title={t('allArtifacts.incomingReferences', {
             count: props.incomingEdgeCount,
           })}
         >
