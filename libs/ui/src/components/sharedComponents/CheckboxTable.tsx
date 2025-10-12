@@ -97,7 +97,7 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
   const rowVirtualizer = useVirtualizer({
     count: props.items.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => props.estimatedRowHeight || 50,
+    estimateSize: () => props.estimatedRowHeight || 62,
     overscan: 5,
   });
 
