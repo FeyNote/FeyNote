@@ -20,7 +20,7 @@ import {
 } from './PaneableComponent';
 import { t } from 'i18next';
 import { useFlexLayout } from './useFlexLayout';
-import { getManifestDb, ObjectStoreName } from '../../utils/localDb/localDb';
+import { getArtifactSnapshotStore } from '../../utils/localDb/artifactSnapshots/artifactSnapshotStore';
 
 class PaneNotFoundError extends Error {
   constructor(paneId: string) {
@@ -306,14 +306,12 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
     if (pane.currentView.component === PaneableComponent.Artifact) {
       const artifactId = pane.currentView.props.id;
 
-      const manifestDb = await getManifestDb();
-      const artifact = await manifestDb.get(
-        ObjectStoreName.Artifacts,
-        artifactId,
-      );
-      if (!artifact) return;
+      const artifactSnapshotStore = getArtifactSnapshotStore();
+      const snapshot =
+        artifactSnapshotStore.getArtifactSnapshotById(artifactId);
+      if (!snapshot) return;
 
-      updatedTitle = artifact.title;
+      updatedTitle = snapshot.meta.title;
     }
 
     if (!updatedTitle) {
