@@ -496,6 +496,11 @@
   "editor.placeholder": "Changes are automatically saved. Use / to bring up the command menu, or @ to reference another document",
   "editor.placeholder.readOnlyEmpty": "Document has no content",
   "editor.emptyReference": "Untitled Reference",
+  "editor.hyperlink.remove": "Remove link",
+  "editor.hyperlink.edit": "Edit link",
+  "editor.hyperlink.copy": "Copy link",
+  "editor.statsheet.copy": "Copy block to clipboard",
+  "editor.statsheet.delete": "Delete block",
 
   "tiptapControlMenu.file": "File",
   "tiptapControlMenu.file.new": "Create New Document",

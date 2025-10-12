@@ -2,6 +2,7 @@ import { Editor, type Node } from '@tiptap/core';
 import { editHyperlinkHandler } from './editHyperlink';
 import { Copy, LinkSlash, Pencil } from './icons';
 import Tooltip from '../helpers/tippyHelper';
+import { t } from 'i18next';
 
 export type THyperlinkPreviewModalOptions = {
   editor: Editor;
@@ -33,17 +34,21 @@ export function previewHyperlinkModal(
   hrefTitle.innerText = href;
 
   newBubble.append(hrefTitle);
+  console.log('dis be here');
 
   hyperlinkModal.classList.add('hyperlink-preview-modal');
 
   removeButton.classList.add('hyperlink-preview-modal__remove-button');
   removeButton.innerHTML = LinkSlash();
+  removeButton.setAttribute('title', t('editor.hyperlink.remove'));
 
   editButton.classList.add('hyperlink-preview-modal__edit-button');
   editButton.innerHTML = Pencil();
+  editButton.setAttribute('title', t('editor.hyperlink.edit'));
 
   copyButton.classList.add('hyperlink-preview-modal__copy-button');
   copyButton.innerHTML = Copy();
+  copyButton.setAttribute('title', t('editor.hyperlink.copy'));
 
   removeButton.addEventListener('click', () => {
     options.tippy.hide();
