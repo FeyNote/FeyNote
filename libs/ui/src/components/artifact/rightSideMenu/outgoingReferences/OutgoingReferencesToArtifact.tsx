@@ -71,13 +71,13 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
         currentArtifactId={edge0.artifactId}
         edge={edge0}
       >
-        <CompactIonItem lines="none" button>
-          <NowrapIonLabel
-            ref={ref}
-            onMouseOver={onMouseOver}
-            onMouseOut={onMouseOut}
-            onClick={linkClicked}
-          >
+        <CompactIonItem
+          onMouseOver={onMouseOver}
+          onMouseOut={onMouseOut}
+          lines="none"
+          button
+        >
+          <NowrapIonLabel ref={ref} onClick={linkClicked}>
             {artifactTitle}
             <p>
               {t('artifactRightSideMenu.outgoing.title.subtitle', {
