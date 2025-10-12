@@ -152,6 +152,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
       }
       $isDragTarget={props.itemInstance.isDragTarget()}
+      data-index={props.virtualItemInstance.index}
       style={{
         transform: `translateY(${props.virtualItemInstance.start}px)`,
         paddingLeft: `${props.itemInstance.getItemMeta().level * 20}px`,

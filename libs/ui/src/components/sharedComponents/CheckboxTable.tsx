@@ -212,6 +212,7 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
           {rowVirtualizer.getVirtualItems().map((virtualItem) => (
             <div
               key={virtualItem.key}
+              data-index={virtualItem.index}
               style={{
                 position: 'absolute',
                 top: 0,
