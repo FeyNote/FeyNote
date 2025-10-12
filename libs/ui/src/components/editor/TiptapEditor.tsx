@@ -17,6 +17,7 @@ import { IncomingBlockReferencesInlinePreview } from './incomingBlockReferencesI
 import { TiptapEditorControlMenu } from './TiptapEditorControlMenu';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
 import { type CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { LinkPopover } from './tiptap/extensions/tiptap-ui/components/tiptap-ui/link-popover';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -148,6 +149,15 @@ export const TiptapEditor = (props: Props) => {
             </BubbleMenu>
           )}
           {editor && props.editable && <TableBubbleMenu editor={editor} />}
+          {editor && props.editable && (
+            <LinkPopover
+              editor={editor}
+              hideWhenUnavailable={true}
+              autoOpenOnLinkActive={true}
+              onSetLink={() => console.log('Link set!')}
+              onOpenChange={(isOpen) => console.log('Popover opened:', isOpen)}
+            />
+          )}
           <IncomingBlockReferencesInlinePreview
             artifactId={props.artifactId || ''}
             onMouseOverRef={onIncomingReferenceCounterMouseOverRef}

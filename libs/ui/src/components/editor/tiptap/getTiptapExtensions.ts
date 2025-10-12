@@ -64,9 +64,6 @@ import { Editor, type Extensions } from '@tiptap/core';
 import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExtension';
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
-import { HyperlinkExtension } from './extensions/link/HyperlinkExtension';
-import { previewHyperlinkModal } from './extensions/link/modals/previewHyperlink';
-import { setHyperlinkModal } from './extensions/link/modals/setHyperlink';
 import { FocusExtension } from './extensions/focus/FocusExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
 import { FeynoteGenericFileExtension } from './extensions/feynoteGenericFile/FeynoteGenericFileExtension';
@@ -147,16 +144,6 @@ export const getTiptapExtensions = (args: {
     }),
     DropcursorExtension,
     GapcursorExtension,
-    HyperlinkExtension.configure({
-      hyperlinkOnPaste: false,
-      openOnClick: true,
-      modals: args.editable
-        ? {
-            previewHyperlink: previewHyperlinkModal,
-            setHyperlink: setHyperlinkModal,
-          }
-        : undefined,
-    }),
     TableExtension.configure({
       resizable: false,
       allowTableNodeSelection: false,
