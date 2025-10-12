@@ -1,0 +1,143 @@
+import * as React from "react"
+import { cn } from "../../lib/tiptap-utils"
+import { css } from "styled-components"
+
+export const CardStyles = css`
+  --tiptap-card-bg-color: var(--white);
+  --tiptap-card-border-color: var(--tt-gray-light-a-100);
+  --tiptap-card-group-label-color: var(--tt-gray-light-a-800);
+
+  .dark {
+    --tiptap-card-bg-color: var(--tt-gray-dark-50);
+    --tiptap-card-border-color: var(--tt-gray-dark-a-100);
+    --tiptap-card-group-label-color: var(--tt-gray-dark-a-800);
+  }
+
+  .tiptap-card {
+    --padding: 0.375rem;
+    --border-width: 1px;
+
+    border-radius: calc(var(--padding) + var(--tt-radius-lg));
+    box-shadow: var(--tt-shadow-elevated-md);
+    background-color: var(--tiptap-card-bg-color);
+    border: 1px solid var(--tiptap-card-border-color);
+    display: flex;
+    flex-direction: column;
+    outline: none;
+    align-items: center;
+
+    position: relative;
+    min-width: 0;
+    word-wrap: break-word;
+    background-clip: border-box;
+  }
+
+  .tiptap-card-header {
+    padding: 0.375rem;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: var(--border-width) solid var(--tiptap-card-border-color);
+  }
+
+  .tiptap-card-body {
+    padding: 0.375rem;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  .tiptap-card-item-group {
+    position: relative;
+    display: flex;
+    vertical-align: middle;
+    min-width: max-content;
+
+    &[data-orientation="vertical"] {
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    &[data-orientation="horizontal"] {
+      gap: 0.25rem;
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .tiptap-card-group-label {
+    padding-top: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-bottom: 0.25rem;
+    line-height: normal;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: normal;
+    text-transform: capitalize;
+    color: var(--tiptap-card-group-label-color);
+  }
+`
+
+export const Card = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
+  ({ className, ...props }, ref) => {
+    return <div ref={ref} className={cn("tiptap-card", className)} {...props} />
+  }
+)
+
+export const CardHeader = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  return (
+    <div ref={ref} className={cn("tiptap-card-header", className)} {...props} />
+  )
+})
+
+export const CardBody = React.forwardRef<HTMLDivElement, React.ComponentProps<"div">>(
+  ({ className, ...props }, ref) => {
+    return (
+      <div ref={ref} className={cn("tiptap-card-body", className)} {...props} />
+    )
+  }
+)
+
+export const CardItemGroup = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div"> & {
+    orientation?: "horizontal" | "vertical"
+  }
+>(({ className, orientation = "vertical", ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      data-orientation={orientation}
+      className={cn("tiptap-card-item-group", className)}
+      {...props}
+    />
+  )
+})
+
+export const CardGroupLabel = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  return (
+    <div
+      ref={ref}
+      className={cn("tiptap-card-group-label", className)}
+      {...props}
+    />
+  )
+})
+
+export const CardFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => {
+  return (
+    <div ref={ref} className={cn("tiptap-card-footer", className)} {...props} />
+  )
+})
+

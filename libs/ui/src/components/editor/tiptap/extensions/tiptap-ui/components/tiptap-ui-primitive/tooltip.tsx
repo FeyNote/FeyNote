@@ -17,7 +17,54 @@ import {
   type ReferenceType,
   FloatingDelayGroup,
 } from "@floating-ui/react"
-import "@feynote/api-services/components/tiptap-ui-primitive/tooltip/tooltip.scss"
+import "./tooltip.scss"
+import { css } from "styled-components"
+
+export const TooltipStyles = css`
+.tiptap-tooltip {
+  --tt-tooltip-bg: var(--tt-gray-light-900);
+  --tt-tooltip-text: var(--white);
+  --tt-kbd: var(--tt-gray-dark-a-400);
+
+  .dark & {
+    --tt-tooltip-bg: var(--white);
+    --tt-tooltip-text: var(--tt-gray-light-600);
+    --tt-kbd: var(--tt-gray-light-a-400);
+  }
+}
+
+.tiptap-tooltip {
+  z-index: 200;
+  overflow: hidden;
+  border-radius: var(--tt-radius-md, 0.375rem);
+  background-color: var(--tt-tooltip-bg);
+  padding: 0.375rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--tt-tooltip-text);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  text-align: center;
+
+  kbd {
+    display: inline-block;
+    text-align: center;
+    vertical-align: baseline;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      Roboto,
+      "Helvetica Neue",
+      Arial,
+      "Noto Sans",
+      sans-serif;
+    text-transform: capitalize;
+    color: var(--tt-kbd);
+  }
+}
+`
 
 interface TooltipProviderProps {
   children: React.ReactNode
@@ -181,13 +228,13 @@ export const TooltipTrigger = React.forwardRef<
   }
 
   return (
-    <button
+    <StyledButton
       ref={ref}
       data-tooltip-state={context.open ? "open" : "closed"}
       {...context.getReferenceProps(props)}
     >
       {children}
-    </button>
+    </StyledButton>
   )
 })
 
@@ -223,7 +270,3 @@ export const TooltipContent = React.forwardRef<
 
   return content
 })
-
-Tooltip.displayName = "Tooltip"
-TooltipTrigger.displayName = "TooltipTrigger"
-TooltipContent.displayName = "TooltipContent"
