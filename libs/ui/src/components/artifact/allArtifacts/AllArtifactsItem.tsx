@@ -5,10 +5,9 @@ import { calendar, document, pencil } from 'ionicons/icons';
 import { CiInboxIn, CiInboxOut, CiUser } from '../../AppIcons';
 import styled from 'styled-components';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { useMemo, type MouseEvent } from 'react';
-import { usePaneContext } from '../../../context/pane/PaneContext';
 import { useTranslation } from 'react-i18next';
+import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
 
 const ItemRow = styled.div<{
   $numDataCols: number;
@@ -65,17 +64,12 @@ interface Props {
 
 export const AllArtifactsItem: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const goTo = (event: MouseEvent) => {
-    navigate(
-      PaneableComponent.Artifact,
-      { id: props.artifact.id },
-      event.metaKey || event.ctrlKey
-        ? PaneTransition.NewTab
-        : PaneTransition.Push,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: props.artifact.id,
+    });
   };
 
   const numDataCols = 4;

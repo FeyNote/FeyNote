@@ -27,9 +27,8 @@ import {
 import { ArtifactReferencePreview } from '../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useContext, useMemo, useRef } from 'react';
 import { useArtifactPreviewTimer } from '../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
-import { usePaneContext } from '../../context/pane/PaneContext';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { tldrawToolEventDriver } from './tldrawToolEventDriver';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 import styled from 'styled-components';
@@ -219,7 +218,8 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
   component(shape: ReferenceShape) {
-    const { navigate } = usePaneContext();
+    const { navigateWithKeyboardHandler } =
+      useNavigateWithKeyboardHandler(true);
     const artifactId = useContext(TLDrawArtifactIdContext);
     if (!artifactId) {
       throw new Error('TLDrawReferenceUtil.component: missing artifactId');
@@ -256,20 +256,11 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
 
       close();
 
-      let paneTransition = PaneTransition.Push;
-      if (event.metaKey || event.ctrlKey) {
-        paneTransition = PaneTransition.NewTab;
-      }
-      navigate(
-        PaneableComponent.Artifact,
-        {
-          id: shape.props.targetArtifactId,
-          focusBlockId: shape.props.targetArtifactBlockId || undefined,
-          focusDate: shape.props.targetArtifactDate || undefined,
-        },
-        paneTransition,
-        !(event.metaKey || event.ctrlKey),
-      );
+      navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+        id: shape.props.targetArtifactId,
+        focusBlockId: shape.props.targetArtifactBlockId || undefined,
+        focusDate: shape.props.targetArtifactDate || undefined,
+      });
     };
 
     const contents = (

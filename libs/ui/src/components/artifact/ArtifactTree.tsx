@@ -20,10 +20,6 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 
 import { useSessionContext } from '../../context/session/SessionContext';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../../context/globalPane/GlobalPaneContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -38,6 +34,7 @@ import {
 } from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -98,7 +95,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const setExpandedItemsRef = useRef(setExpandedItems);
   setExpandedItemsRef.current = setExpandedItems;
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const { navigate } = useGlobalPaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;
@@ -422,23 +419,9 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       return;
     }
 
-    if (event.ctrlKey || event.metaKey) {
-      navigate(
-        undefined,
-        PaneableComponent.Artifact,
-        { id: item.id },
-        PaneTransition.NewTab,
-        true,
-      );
-    } else {
-      navigate(
-        undefined,
-        PaneableComponent.Artifact,
-        { id: item.id },
-        PaneTransition.Push,
-        true,
-      );
-    }
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: item.id,
+    });
   };
 
   const parentRef = useRef<HTMLDivElement | null>(null);

@@ -4,10 +4,9 @@ import { useArtifactPreviewTimer } from './useArtifactPreviewTimer';
 import { useMemo, useRef } from 'react';
 import { ArtifactReferencePreview } from './ArtifactReferencePreview';
 import styled from 'styled-components';
-import { usePaneContext } from '../../../../../context/pane/PaneContext';
-import { PaneTransition } from '../../../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../../../utils/localDb/edges/useEdgesForArtifactId';
+import { useNavigateWithKeyboardHandler } from '../../../../../utils/useNavigateWithKeyboardHandler';
 
 const ArtifactReferenceLink = styled.a`
   cursor: pointer;
@@ -35,8 +34,8 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
     );
   }
 
-  const { navigate } = usePaneContext();
   const { getEdge } = useEdgesForArtifactId(artifactId);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const edge = useMemo(
     () =>
       getEdge({
@@ -54,20 +53,11 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   const linkClicked = (
     event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
   ) => {
-    let paneTransition = PaneTransition.Push;
-    if (event.metaKey || event.ctrlKey) {
-      paneTransition = PaneTransition.NewTab;
-    }
-    navigate(
-      PaneableComponent.Artifact,
-      {
-        id: targetArtifactId,
-        focusBlockId: targetArtifactBlockId || undefined,
-        focusDate: targetArtifactDate || undefined,
-      },
-      paneTransition,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: targetArtifactId,
+      focusBlockId: targetArtifactBlockId || undefined,
+      focusDate: targetArtifactDate || undefined,
+    });
   };
 
   const { previewInfo, onMouseOver, onMouseOut, close } =

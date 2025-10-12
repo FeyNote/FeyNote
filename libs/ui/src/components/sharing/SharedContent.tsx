@@ -12,10 +12,9 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
-import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
@@ -37,7 +36,7 @@ const StyledNullState = styled(NullState)`
 
 export const SharedContent: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getKnownUserById } = useKnownUsers();
@@ -65,13 +64,10 @@ export const SharedContent: React.FC = () => {
                 lines="none"
                 key={sharedArtifact.id}
                 onClick={(event) =>
-                  navigate(
+                  navigateWithKeyboardHandler(
+                    event,
                     PaneableComponent.Artifact,
                     { id: sharedArtifact.id },
-                    event.metaKey || event.ctrlKey
-                      ? PaneTransition.NewTab
-                      : PaneTransition.Push,
-                    !(event.metaKey || event.ctrlKey),
                   )
                 }
                 button

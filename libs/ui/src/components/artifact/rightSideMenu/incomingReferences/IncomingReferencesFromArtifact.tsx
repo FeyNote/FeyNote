@@ -1,7 +1,7 @@
-import { PaneTransition } from '../../../../context/globalPane/GlobalPaneContext';
 import { useRef, useState } from 'react';
 import { usePaneContext } from '../../../../context/pane/PaneContext';
 import { PaneableComponent } from '../../../../context/globalPane/PaneableComponent';
+import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
 import { CompactIonItem } from '../../../CompactIonItem';
 import { NowrapIonLabel } from '../../../NowrapIonLabel';
 import { useArtifactPreviewTimer } from '../../../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
@@ -23,7 +23,8 @@ interface Props {
 }
 
 export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
-  const { pane, navigate } = usePaneContext();
+  const { pane } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -47,18 +48,9 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
     event.preventDefault();
     event.stopPropagation();
 
-    let paneTransition = PaneTransition.Push;
-    if (event.metaKey || event.ctrlKey) {
-      paneTransition = PaneTransition.NewTab;
-    }
-    navigate(
-      PaneableComponent.Artifact,
-      {
-        id: edge0.artifactId,
-      },
-      paneTransition,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: edge0.artifactId,
+    });
   };
 
   return (

@@ -17,10 +17,7 @@ import {
   PreferenceNames,
   type ThreadDTO,
 } from '@feynote/shared-utils';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../../context/globalPane/GlobalPaneContext';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import {
   chatboxEllipses,
   gitNetwork,
@@ -42,6 +39,7 @@ import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
 import { AppConnectionStatus } from './AppConnectionStatus';
 import { LuFolderTree } from '../AppIcons';
+import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 
 const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
@@ -96,7 +94,8 @@ export const LeftSideMenu: React.FC = () => {
   const { t } = useTranslation();
 
   const { getPreference } = usePreferencesContext();
-  const { navigate, getPaneById } = useGlobalPaneContext();
+  const { getPaneById } = useGlobalPaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const { trigger: triggerGlobalSearch } = useGlobalSearchContext();
   const currentPane = getPaneById(undefined);
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
@@ -183,15 +182,7 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Dashboard,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
+            navigateWithKeyboardHandler(event, PaneableComponent.Dashboard, {})
           }
           button
         >
@@ -202,14 +193,10 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
+            navigateWithKeyboardHandler(
+              event,
               PaneableComponent.AllArtifacts,
               {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
             )
           }
           button
@@ -221,15 +208,7 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Graph,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
+            navigateWithKeyboardHandler(event, PaneableComponent.Graph, {})
           }
           button
         >
@@ -240,14 +219,10 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
+            navigateWithKeyboardHandler(
+              event,
               PaneableComponent.NewArtifact,
               {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
             )
           }
           button
@@ -293,14 +268,10 @@ export const LeftSideMenu: React.FC = () => {
                   lines="none"
                   key={recentlyUpdatedThread.id}
                   onClick={(event) =>
-                    navigate(
-                      undefined,
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.AIThread,
                       { id: recentlyUpdatedThread.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   button
@@ -328,15 +299,7 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Contribute,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
+            navigateWithKeyboardHandler(event, PaneableComponent.Contribute, {})
           }
           button
         >
@@ -347,15 +310,7 @@ export const LeftSideMenu: React.FC = () => {
         <CompactIonItem
           lines="none"
           onClick={(event) =>
-            navigate(
-              undefined,
-              PaneableComponent.Settings,
-              {},
-              event.metaKey || event.ctrlKey
-                ? PaneTransition.NewTab
-                : PaneTransition.Push,
-              !(event.metaKey || event.ctrlKey),
-            )
+            navigateWithKeyboardHandler(event, PaneableComponent.Settings, {})
           }
           button
         >

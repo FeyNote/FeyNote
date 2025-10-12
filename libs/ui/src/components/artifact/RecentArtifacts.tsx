@@ -12,13 +12,12 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
-import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 
 const Title = styled(IonCardTitle)`
   padding: 8px;
@@ -37,7 +36,6 @@ const StyledNullState = styled(NullState)`
 
 export const RecentArtifacts: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getKnownUserById } = useKnownUsers();
@@ -45,6 +43,7 @@ export const RecentArtifacts: React.FC = () => {
     () => artifactSnapshots?.sort((a, b) => b.updatedAt - a.updatedAt),
     [artifactSnapshots],
   );
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
 
   return (
     <IonPage>
@@ -61,13 +60,10 @@ export const RecentArtifacts: React.FC = () => {
                 lines="none"
                 key={artifact.id}
                 onClick={(event) =>
-                  navigate(
+                  navigateWithKeyboardHandler(
+                    event,
                     PaneableComponent.Artifact,
                     { id: artifact.id },
-                    event.metaKey || event.ctrlKey
-                      ? PaneTransition.NewTab
-                      : PaneTransition.Push,
-                    !(event.metaKey || event.ctrlKey),
                   )
                 }
                 button

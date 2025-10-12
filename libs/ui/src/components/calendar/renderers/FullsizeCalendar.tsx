@@ -2,9 +2,8 @@ import { IonButton, IonIcon } from '@ionic/react';
 import styled from 'styled-components';
 import type { CalendarRenderProps } from './CalendarRenderProps';
 import { chevronBack, chevronForward } from 'ionicons/icons';
-import { usePaneContext } from '../../../context/pane/PaneContext';
-import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
+import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
 import { Edge } from '@feynote/shared-utils';
 
 const CalendarContainer = styled.div``;
@@ -91,7 +90,7 @@ interface FullsizeCalendarProps extends CalendarRenderProps {
 }
 
 export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
-  const { navigate } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
 
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);
@@ -110,14 +109,9 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
               onClick={(event) => (
                 event.preventDefault(),
                 event.stopPropagation(),
-                navigate(
-                  PaneableComponent.Artifact,
-                  { id: edge.artifactId },
-                  event.metaKey || event.ctrlKey
-                    ? PaneTransition.NewTab
-                    : PaneTransition.Push,
-                  !(event.metaKey || event.ctrlKey),
-                )
+                navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+                  id: edge.artifactId,
+                })
               )}
             >
               {edge.artifactTitle}
