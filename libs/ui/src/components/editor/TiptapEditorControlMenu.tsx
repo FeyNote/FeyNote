@@ -78,12 +78,14 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
     commandEntry: GlobalTiptapCommandHelperEntry,
   ) => (
     <DropdownMenu.Item
-      onClick={() =>
+      onClick={() => {
+        if (!commandEntry.enabled(props.editor)) return;
+
         commandEntry.command({
           editor: props.editor,
           range: props.editor.state.selection,
-        })
-      }
+        });
+      }}
       disabled={!commandEntry.enabled(props.editor)}
     >
       {commandEntry.icon && <commandEntry.icon />}
