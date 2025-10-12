@@ -7,6 +7,7 @@ export const MenuControlsContainer = styled.div`
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
   padding: 2px 3px;
   border-radius: 4px;
+  z-index: 1;
 `;
 
 export const MenuButton = styled.button<{
