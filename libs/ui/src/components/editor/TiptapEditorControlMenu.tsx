@@ -28,6 +28,10 @@ import {
 import { useState } from 'react';
 import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
 import { useEditorState } from '@tiptap/react';
+import {
+  CreateLinkDialog,
+  createLinkDialogDefaultOnSubmit,
+} from './tiptap/extensions/artifactBubbleMenu/CreateLinkDialog';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -50,6 +54,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
+  const [insertLinkDialogOpen, setInsertLinkDialogOpen] = useState(false);
 
   useEditorState({
     editor: props.editor,
@@ -171,7 +176,12 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.wideMonster)}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.spell)}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.link)}
+        {renderCommandEntryItem({
+          ...globalTiptapCommandHelpers.insert.link,
+          command: () => {
+            setInsertLinkDialogOpen(true);
+          },
+        })}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
@@ -374,6 +384,13 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
               }
             : undefined
         }
+      />
+      <CreateLinkDialog
+        open={insertLinkDialogOpen}
+        onOpenChange={setInsertLinkDialogOpen}
+        onSubmit={(args) => {
+          createLinkDialogDefaultOnSubmit(props.editor, args);
+        }}
       />
     </>
   );

@@ -123,6 +123,7 @@ export const PrintviewApp: React.FC<Props> = (props) => {
           </PreferencesContextProviderWrapper>
         </IonApp>
       </ToastContextProvider>
+      <div id="portal-target"></div>
     </Theme>
   );
 };

@@ -32,6 +32,11 @@ import {
 } from '../BubbleMenuControlStyles';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
+import {
+  CreateLinkDialog,
+  createLinkDialogDefaultOnSubmit,
+} from './CreateLinkDialog';
+import { useEditorState } from '@tiptap/react';
 
 const BlockMenu = styled.div`
   position: absolute;
@@ -62,6 +67,23 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false);
   const [showFontMenu, setShowFontMenu] = useState(false);
   const [showJustifyMenu, setShowJustifyMenu] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkDialogInitialValues, setLinkDialogInitialValues] = useState({
+    url: '',
+    label: '',
+  });
+
+  useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      if (!editor) return null;
+
+      return {
+        selection: editor.state.selection,
+        isLinkActive: editor.isActive('link'),
+      };
+    },
+  });
 
   const onMouseLeave = () => {
     mouseLeaveTimeoutRef.current = window.setTimeout(() => {
@@ -563,12 +585,33 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.setLink')}
         onClick={() => {
-          props.editor.chain().focus().setHyperlink().run();
+          if (props.editor.isActive('link')) {
+            props.editor.chain().focus().unsetLink().run();
+          } else {
+            const selectedTextContent = props.editor.state.doc.textBetween(
+              props.editor.state.selection.from,
+              props.editor.state.selection.to,
+            );
+            setLinkDialogInitialValues({
+              url: '',
+              label: selectedTextContent,
+            });
+            setShowLinkDialog(true);
+          }
         }}
         $active={props.editor.isActive('link')}
       >
         <RiLink />
       </MenuButton>
+
+      <CreateLinkDialog
+        initialValues={linkDialogInitialValues}
+        open={showLinkDialog}
+        onOpenChange={setShowLinkDialog}
+        onSubmit={(args) => {
+          createLinkDialogDefaultOnSubmit(props.editor, args);
+        }}
+      />
     </MenuControlsContainer>
   );
 };

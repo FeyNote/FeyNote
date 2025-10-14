@@ -116,6 +116,7 @@ export function App() {
             </IonApp>
           </GlobalPaneContextProviderWrapper>
         </ToastContextProvider>
+        <div id="portal-target"></div>
       </Theme>
     );
   }
@@ -136,6 +137,7 @@ export function App() {
             </IonApp>
           </GlobalPaneContextProviderWrapper>
         </ToastContextProvider>
+        <div id="portal-target"></div>
       </Theme>
     );
   }
@@ -164,6 +166,7 @@ export function App() {
             </IonApp>
           </GlobalPaneContextProviderWrapper>
         </ToastContextProvider>
+        <div id="portal-target"></div>
       </Theme>
     );
   }
@@ -175,6 +178,7 @@ export function App() {
           <NotFound />
         </PreferencesContextProviderWrapper>
       </IonApp>
+      <div id="portal-target"></div>
     </Theme>
   );
 }

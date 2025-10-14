@@ -158,8 +158,9 @@ export const globalTiptapCommandHelpers = {
       enabled: () => true,
       active: (editor) => editor.isActive('link'),
       icon: RiLink,
-      command: (args) => {
-        args.editor.chain().focus().setHyperlink().run();
+      command: () => {
+        // You must override this method as it requires additional interactivity.
+        // See CreateLinkDialog
       },
     } satisfies GlobalTiptapCommandHelperEntry,
   },
