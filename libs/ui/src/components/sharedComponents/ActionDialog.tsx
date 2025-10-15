@@ -7,6 +7,7 @@ const StyledDialogTitle = styled(Dialog.Title)`
 `;
 
 interface Props {
+  defaultOpen?: boolean;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
   title: string;
@@ -60,7 +61,11 @@ export const ActionDialog: React.FC<Props> = (props) => {
   };
 
   return (
-    <Dialog.Root open={props.open} onOpenChange={props.onOpenChange}>
+    <Dialog.Root
+      defaultOpen={props.defaultOpen}
+      open={props.open}
+      onOpenChange={props.onOpenChange}
+    >
       {props.triggerChildren && (
         <Dialog.Trigger>{props.triggerChildren}</Dialog.Trigger>
       )}

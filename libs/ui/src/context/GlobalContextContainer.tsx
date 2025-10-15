@@ -10,6 +10,7 @@ import { SidemenuContextProviderWrapper } from './sidemenu/SidemenuContextProvid
 import { GlobalSearchContextProviderWrapper } from './globalSearch/GlobalSearchContextProviderWrapper';
 import { LocaldbStoreErrorHandlers } from '../utils/localDb/LocaldbStoreErrorHandlers';
 import { SessionContextProviderWrapper } from './session/SessionContextProviderWrapper';
+import { AlertContextProvider } from './alert/AlertContextProvider';
 
 interface Props {
   children: React.ReactNode;
@@ -62,19 +63,19 @@ export const GlobalContextContainer: React.FC<Props> = (props) => {
   };
 
   return (
-    <PreferencesContextProviderWrapper>
-      <Theme>
+    <Theme>
+      <AlertContextProvider>
         <ToastContextProvider>
-          <IonApp>
+          <PreferencesContextProviderWrapper>
             <SidemenuContextProviderWrapper>
               {renderPaneProviders(
-                renderAuthenticatedProviders(props.children),
+                <IonApp>{renderAuthenticatedProviders(props.children)}</IonApp>,
               )}
             </SidemenuContextProviderWrapper>
-          </IonApp>
+          </PreferencesContextProviderWrapper>
         </ToastContextProvider>
-        <div id="portal-target"></div>
-      </Theme>
-    </PreferencesContextProviderWrapper>
+      </AlertContextProvider>
+      <div id="portal-target"></div>
+    </Theme>
   );
 };
