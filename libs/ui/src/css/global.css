@@ -167,3 +167,35 @@
   --cursor-slider-thumb-active: grabbing;
   --cursor-switch: pointer;
 }
+
+html.light {
+  --text-color: #000000;
+  --general-background: #ffffff;
+
+  --card-background: #ffffff;
+  --card-background-hover: #f3f3f3;
+  --card-background-active: #e8e8e8;
+  --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+
+  --floating-background: #ffffff;
+  --floating-background-hint: #aaaaaa;
+  --floating-background-hover: #f3f3f3;
+  --floating-background-active: #e8e8e8;
+  --floating-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+}
+
+html.dark {
+  --text-color: #ffffff;
+  --general-background: #121212;
+
+  --card-background: #1e1e1e;
+  --card-background-hover: #181818;
+  --card-background-active: #141414;
+  --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.5);
+
+  --floating-background: #2a2a2a;
+  --floating-background-hint: #444444;
+  --floating-background-hover: #181818;
+  --floating-background-active: #141414;
+  --floating-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.7);
+}

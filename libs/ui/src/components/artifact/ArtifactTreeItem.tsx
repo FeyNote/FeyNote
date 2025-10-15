@@ -48,7 +48,7 @@ const ItemArrow = styled.div`
   border-radius: 4px;
 
   &:hover {
-    background-color: var(--ion-background-color);
+    background-color: var(--card-background-hover);
   }
 `;
 
@@ -63,7 +63,7 @@ const TreeItemButton = styled.button<{
   flex-grow: 1;
   background-color: transparent;
   height: 32px;
-  color: var(--ion-text-color);
+  color: var(--text-color);
   outline: none;
   border-radius: 5px;
   padding-left: 8px;
@@ -80,7 +80,7 @@ const TreeItemButton = styled.button<{
     `
     cursor: pointer;
     &:hover {
-      background-color: var(--ion-background-color);
+      background-color: var(--card-background-hover);
     }
   `}
 `;

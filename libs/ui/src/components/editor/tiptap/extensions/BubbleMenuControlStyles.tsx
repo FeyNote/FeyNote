@@ -3,8 +3,8 @@ import styled from 'styled-components';
 export const MenuControlsContainer = styled.div`
   display: flex;
   position: relative;
-  background: var(--ion-background-color-step-250, #ffffff);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
+  background: var(--floating-background);
+  box-shadow: var(--floating-box-shadow);
   padding: 2px 3px;
   border-radius: 4px;
   z-index: 1;
@@ -15,9 +15,9 @@ export const MenuButton = styled.button<{
 }>`
   background: ${(props) =>
     props.$active
-      ? `var(--ion-background-color, #cccccc)`
-      : `var(--ion-background-color-step-250, #ffffff)`};
-  color: var(--ion-text-color, #000000);
+      ? `var(--floating-background-active)`
+      : `var(--floating-background)`};
+  color: var(--text-color);
   padding: 4px;
   border-radius: 4px;
   font-size: 1.15rem;
@@ -26,12 +26,7 @@ export const MenuButton = styled.button<{
   align-items: center;
 
   &:hover {
-    ${(props) =>
-      props.$active
-        ? ``
-        : `
-      background: var(--ion-background-color, #cccccc);
-    `}
+    background: var(--floating-background-hover);
   }
 
   &:disabled {
@@ -44,7 +39,7 @@ export const MenuButton = styled.button<{
 `;
 
 export const MenuDivider = styled.div`
-  border-right: 1px solid var(--ion-text-color, #cccccc);
+  border-right: 1px solid var(--floating-background-hint);
   margin-left: 4px;
   margin-right: 4px;
 `;
