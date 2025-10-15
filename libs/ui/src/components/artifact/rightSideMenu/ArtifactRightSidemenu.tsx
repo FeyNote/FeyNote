@@ -6,7 +6,6 @@ import {
   IonListHeader,
   IonSelect,
   IonSelectOption,
-  useIonAlert,
   useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../../info/InfoButton';
@@ -47,6 +46,7 @@ import {
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
+import { useAlertContext } from '../../../context/alert/AlertContext';
 
 const GraphContainer = styled.div`
   height: 200px;
@@ -62,7 +62,7 @@ interface Props {
 
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
     props.connection,
   );
@@ -234,24 +234,28 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   };
 
   const removeSelfAsCollaborator = () => {
-    presentAlert({
-      header: t('artifactRenderer.artifactSharedToYou.remove.confirm.header'),
-      message: t('artifactRenderer.artifactSharedToYou.remove.confirm.message'),
-      buttons: [
+    showAlert({
+      title: t('artifactRenderer.artifactSharedToYou.remove.confirm.header'),
+      children: t(
+        'artifactRenderer.artifactSharedToYou.remove.confirm.message',
+      ),
+      actionButtons: [
         {
-          text: t('generic.cancel'),
-          role: 'cancel',
+          title: t('generic.cancel'),
+          props: {
+            color: 'gray',
+          },
         },
         {
-          text: t('generic.confirm'),
-          role: 'confirm',
+          title: t('generic.confirm'),
+          props: {
+            role: 'confirm',
+            onClick: () => {
+              _removeSelfAsCollaborator();
+            },
+          },
         },
       ],
-      onDidDismiss: (event) => {
-        if (event.detail.role === 'confirm') {
-          _removeSelfAsCollaborator();
-        }
-      },
     });
   };
 

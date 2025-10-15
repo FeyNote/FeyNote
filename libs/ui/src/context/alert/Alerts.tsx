@@ -21,7 +21,7 @@ export const Alerts: React.FC<Props> = (props) => {
   return (
     <>
       {alerts.map((data, index) => (
-        <ActionDialog key={index} {...data} />
+        <ActionDialog key={index} {...data} defaultOpen={true} />
       ))}
     </>
   );
