@@ -39,6 +39,7 @@ export {
   IoCloudOutline,
   IoSearch,
   IoTrash,
+  IoInformation,
 } from 'react-icons/io5';
 
 export {

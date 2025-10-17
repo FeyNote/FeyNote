@@ -1,9 +1,25 @@
-import { IonButton, IonContent, IonIcon, useIonPopover } from '@ionic/react';
-import { informationCircle } from 'ionicons/icons';
+import { Tooltip } from '@radix-ui/themes';
+import { IoInformation } from 'react-icons/io5';
+import styled from 'styled-components';
 
-const buildInfoPopover = (message: string) => {
-  return () => <IonContent className="ion-padding">{message}</IonContent>;
-};
+const Container = styled.div`
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const IconBackdrop = styled.div`
+  background: var(--ion-color-primary-shade);
+  color: black;
+  border-radius: 100%;
+  height: 12px;
+  width: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
 
 interface Props {
   slot?: string;
@@ -11,22 +27,16 @@ interface Props {
 }
 
 export const InfoButton = (props: Props) => {
-  const [present, dismiss] = useIonPopover(buildInfoPopover(props.message), {
-    onDismiss: (data: unknown, role: string) => dismiss(data, role),
-  });
-
   // React applies the slot property even if you pass slot={undefined} :|
   const slotProps = props.slot ? { slot: props.slot } : {};
 
   return (
-    <IonButton
-      size="small"
-      {...slotProps}
-      fill="clear"
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      onClick={(event: any) => present({ event })}
-    >
-      <IonIcon slot="icon-only" icon={informationCircle} />
-    </IonButton>
+    <Container {...slotProps}>
+      <Tooltip content={props.message}>
+        <IconBackdrop>
+          <IoInformation size="10" />
+        </IconBackdrop>
+      </Tooltip>
+    </Container>
   );
 };
