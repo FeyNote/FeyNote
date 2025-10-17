@@ -247,7 +247,7 @@ export const Settings: React.FC = () => {
             </IonListHeader>
             <IonItem
               lines="none"
-              href="https://feynote.com/documentation"
+              href="https://docs.feynote.com"
               target="_blank"
               detail={true}
             >
