@@ -6,18 +6,11 @@ import {
   IonListHeader,
   IonSelect,
   IonSelectOption,
-  useIonModal,
 } from '@ionic/react';
 import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentProps,
-  type RefObject,
-} from 'react';
+import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
 import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
@@ -26,7 +19,7 @@ import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18
 import { cog, link, person } from 'ionicons/icons';
 import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
-import { ArtifactSharingManagementModal } from '../ArtifactSharingManagementModal';
+import { ArtifactSharingManagement } from '../ArtifactSharingManagement';
 import { useObserveYArtifactMeta } from '../../../utils/collaboration/useObserveYArtifactMeta';
 import {
   CollaborationConnectionAuthorizedScope,
@@ -47,6 +40,7 @@ import {
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
 import { useAlertContext } from '../../../context/alert/AlertContext';
+import { ActionDialog } from '../../sharedComponents/ActionDialog';
 
 const GraphContainer = styled.div`
   height: 200px;
@@ -68,14 +62,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
   const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [presentSharingModal, dismissSharingModal] = useIonModal(
-    ArtifactSharingManagementModal,
-    {
-      artifactId: props.artifactId,
-      connection: props.connection,
-      dismiss: () => dismissSharingModal(),
-    } satisfies ComponentProps<typeof ArtifactSharingManagementModal>,
-  );
+  const [showManagementDialog, setShowSharingManagementDialog] =
+    useState(false);
   const { session } = useSessionContext();
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
   const { userAccessYKV, _rerenderReducerValue } =
@@ -259,6 +247,25 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     });
   };
 
+  const sharingManagementDialog = (
+    <ActionDialog
+      title={t('artifactSharing.title')}
+      size="large"
+      open={showManagementDialog}
+      onOpenChange={setShowSharingManagementDialog}
+      actionButtons={[
+        {
+          title: t('generic.close'),
+        },
+      ]}
+    >
+      <ArtifactSharingManagement
+        artifactId={props.artifactId}
+        connection={props.connection}
+      />
+    </ActionDialog>
+  );
+
   const isDeleted = !!artifactMeta.deletedAt;
   const artifactSharingSettings = authorizedScope ===
     CollaborationConnectionAuthorizedScope.CoOwner &&
@@ -274,7 +281,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <CompactIonItem
             lines="none"
             key={key}
-            onClick={() => presentSharingModal()}
+            onClick={() => setShowSharingManagementDialog(true)}
             button
           >
             <NowrapIonLabel>
@@ -286,7 +293,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           artifactMeta.linkAccessLevel !== 'noaccess' && (
             <CompactIonItem
               lines="none"
-              onClick={() => presentSharingModal()}
+              onClick={() => setShowSharingManagementDialog(true)}
               button
             >
               <NowrapIonLabel>
@@ -306,7 +313,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           lines="none"
           button
           detail={true}
-          onClick={() => presentSharingModal()}
+          onClick={() => setShowSharingManagementDialog(true)}
         >
           <NowrapIonLabel>
             {t('artifactRenderer.artifactShares.manage')}
@@ -405,6 +412,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           </GraphContainer>
         </IonCard>
       )}
+      {sharingManagementDialog}
     </>
   );
 };
