@@ -5,7 +5,7 @@ export const upsertLogin = async (name: string, email: string) => {
   const { session, created } = await prisma.$transaction(async (tx) => {
     const existingUser = await tx.user.findUnique({
       where: {
-        email,
+        email: email.toLowerCase(),
       },
       select: {
         id: true,
@@ -17,7 +17,7 @@ export const upsertLogin = async (name: string, email: string) => {
       user = await tx.user.create({
         data: {
           name,
-          email,
+          email: email.toLowerCase(),
         },
       });
     }
