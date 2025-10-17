@@ -19,17 +19,15 @@ import {
   IonSelect,
   IonSelectOption,
   IonToggle,
-  useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useMemo, type ComponentProps } from 'react';
+import { useMemo, useRef } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { WelcomeModal } from '../dashboard/WelcomeModal';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -37,6 +35,10 @@ import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DebugDump } from './DebugDump';
 import { useAlertContext } from '../../context/alert/AlertContext';
+import {
+  WelcomeDialog,
+  type WelcomeDialogRef,
+} from '../dashboard/WelcomeDialog';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -97,10 +99,8 @@ export const Settings: React.FC = () => {
     usePreferencesContext();
   const { session } = useSessionContext();
   const { navigate } = usePaneContext();
-  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
-    dismiss: () => dismissWelcomeModal(),
-  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
+  const welcomeDialogRef = useRef<WelcomeDialogRef>(null);
 
   const languageOptions = useMemo(() => {
     try {
@@ -257,7 +257,7 @@ export const Settings: React.FC = () => {
               lines="none"
               button
               detail={true}
-              onClick={() => presentWelcomeModal()}
+              onClick={() => welcomeDialogRef.current?.show()}
             >
               {t('settings.help.welcome')}
             </IonItem>
@@ -609,6 +609,7 @@ export const Settings: React.FC = () => {
           </IonLabel>
         </IonItem>
       </IonContent>
+      <WelcomeDialog ref={welcomeDialogRef} />
     </IonPage>
   );
 };

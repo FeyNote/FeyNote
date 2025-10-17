@@ -19,6 +19,7 @@ import {
   setCustomDragData,
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
+import { WelcomeDialog } from './components/dashboard/WelcomeDialog';
 
 const MENU_SIZE_PX = 300;
 /**
@@ -430,6 +431,7 @@ export const Workspace: React.FC = () => {
           <RightSideMenu />
         </MenuInner>
       </Menu>
+      <WelcomeDialog />
     </MainGrid>
   );
 };
