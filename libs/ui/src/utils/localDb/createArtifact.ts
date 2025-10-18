@@ -31,6 +31,7 @@ export const createArtifact = async (args: {
         linkAccessLevel?: ArtifactAccessLevel;
       }
     | {
+        id: string; // This must match the id in the ydoc!
         y: YDoc | Uint8Array;
       };
   tree?: {
@@ -39,10 +40,10 @@ export const createArtifact = async (args: {
     order: string;
   };
 }) => {
-  // In preparation for local-first artifact creation
-  const { id } = await trpc.artifact.getSafeArtifactId.query();
+  let id: string | undefined;
 
   if ('y' in args.artifact) {
+    id = args.artifact.id;
     const yBin =
       args.artifact.y instanceof YDoc
         ? encodeStateAsUpdate(args.artifact.y)
@@ -51,6 +52,9 @@ export const createArtifact = async (args: {
       yBin,
     });
   } else {
+    // In preparation for local-first artifact creation
+    id = (await trpc.artifact.getSafeArtifactId.query()).id;
+
     let userAccess: {
       key: string;
       val: YArtifactUserAccess;
