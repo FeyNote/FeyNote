@@ -21,7 +21,7 @@ import {
   IonToggle,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
@@ -35,10 +35,6 @@ import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DebugDump } from './DebugDump';
 import { useAlertContext } from '../../context/alert/AlertContext';
-import {
-  WelcomeDialog,
-  type WelcomeDialogRef,
-} from '../dashboard/WelcomeDialog';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -100,7 +96,6 @@ export const Settings: React.FC = () => {
   const { session } = useSessionContext();
   const { navigate } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const welcomeDialogRef = useRef<WelcomeDialogRef>(null);
 
   const languageOptions = useMemo(() => {
     try {
@@ -252,14 +247,6 @@ export const Settings: React.FC = () => {
               detail={true}
             >
               {t('settings.help.docs')}
-            </IonItem>
-            <IonItem
-              lines="none"
-              button
-              detail={true}
-              onClick={() => welcomeDialogRef.current?.show()}
-            >
-              {t('settings.help.welcome')}
             </IonItem>
             <IonItem
               lines="none"
@@ -609,7 +596,6 @@ export const Settings: React.FC = () => {
           </IonLabel>
         </IonItem>
       </IonContent>
-      <WelcomeDialog ref={welcomeDialogRef} />
     </IonPage>
   );
 };

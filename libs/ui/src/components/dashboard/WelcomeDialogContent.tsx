@@ -135,10 +135,6 @@ export const WelcomeModal: React.FC<Props> = (props) => {
           </Card>
         </Box>
       </CardListContainer>
-      <br />
-      <Text size="2" color="gray">
-        {t('welcome.footer')}
-      </Text>
     </div>
   );
 };

@@ -244,7 +244,6 @@
   "welcome.example.description": "Open a sandbox document to see what Feynote is capable of, with example content",
   "welcome.ai.title": "Generate/Import Content",
   "welcome.ai.description": "The assistant can help you generate content or import content from any URL.",
-  "welcome.footer": "You can always access this guide by clicking the welcome guide button on the settings page (in the left sidemenu)",
 
   "import.title": "Import Documents",
   "import.jobList": "Import Jobs",
