@@ -152,12 +152,10 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
       }
       $isDragTarget={props.itemInstance.isDragTarget()}
-      data-index={props.virtualItemInstance.index}
       style={{
         transform: `translateY(${props.virtualItemInstance.start}px)`,
         paddingLeft: `${props.itemInstance.getItemMeta().level * 20}px`,
       }}
-      ref={props.virtualizer.measureElement}
     >
       <ArtifactTreeItemContextMenu
         enabled={
@@ -169,6 +167,8 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         collapseAll={collapseAll}
       >
         <TreeItemContainer
+          data-index={props.virtualItemInstance.index}
+          ref={props.virtualizer.measureElement}
           $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
         >
           {!!props.itemIdsByParentId.get(item.id)?.length && (

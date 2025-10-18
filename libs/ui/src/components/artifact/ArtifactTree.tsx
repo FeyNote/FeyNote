@@ -437,7 +437,6 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     <TreeContainer ref={parentRef}>
       <TreeVirtualizer
         {...tree.getContainerProps()}
-        className="tree"
         style={{
           height: `${virtualizer.getTotalSize()}px`,
         }}
