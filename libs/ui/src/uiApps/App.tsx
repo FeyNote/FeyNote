@@ -1,19 +1,23 @@
 import { sharedAppInit } from './sharedAppInit';
 
-import { useRegisterSW } from 'virtual:pwa-register/react';
 import { ResetEmail } from '../components/auth/ResetEmail';
 import { GlobalContextContainer } from '../context/GlobalContextContainer';
 import { ResetPassword } from '../components/auth/ResetPassword';
 import { PrintviewApp } from './PrintviewApp';
 import { Workspace } from '../Workspace';
 import { NotFound } from '../NotFound';
+import type { useRegisterSW } from 'virtual:pwa-register/react';
 
 sharedAppInit();
 
 const SW_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
 
-export function App() {
-  useRegisterSW({
+interface Props {
+  useRegisterSW: typeof useRegisterSW;
+}
+
+export function App(props: Props) {
+  props.useRegisterSW({
     onRegisteredSW(swURL, registration) {
       if (registration) {
         setInterval(async () => {
