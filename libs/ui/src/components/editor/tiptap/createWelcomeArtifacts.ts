@@ -4,6 +4,8 @@ import { buildIntroducingReferencesArtifact } from './templates/buildIntroducing
 import { withCollaborationConnection } from '../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';
 import { addArtifactToArtifactTree } from '../../../utils/artifactTree/addArtifactToArtifactTree';
+import { eventManager } from '../../../context/events/EventManager';
+import { EventName } from '../../../context/events/EventName';
 
 export const createWelcomeArtifacts = async () => {
   const session = await appIdbStorageManager.getSession();
@@ -37,6 +39,11 @@ export const createWelcomeArtifacts = async () => {
     yBin: welcomeTemplate.result.yBin,
   });
 
+  eventManager.broadcast(EventName.ArtifactWelcomeCreated, {
+    welcomeId,
+    introducingReferencesId,
+  });
+
   await withCollaborationConnection(
     `userTree:${session.userId}`,
     async (connection) => {
@@ -49,8 +56,8 @@ export const createWelcomeArtifacts = async () => {
         });
         addArtifactToArtifactTree({
           ref: connection.yjsDoc,
-          parentArtifactId: null,
-          order: 'XX',
+          parentArtifactId: welcomeId,
+          order: 'X',
           id: introducingReferencesId,
         });
       });

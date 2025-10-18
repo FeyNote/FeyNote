@@ -1,6 +1,5 @@
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { WelcomeModal } from './WelcomeDialogContent';
-import { useSessionContext } from '../../context/session/SessionContext';
 import { useTranslation } from 'react-i18next';
 import {
   forwardRef,
@@ -10,9 +9,13 @@ import {
   useState,
 } from 'react';
 import {
-  getWelcomeModalPending,
-  setWelcomeModalPending,
-} from '../../utils/welcomeModalState';
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { welcomePendingSimpleref } from '../../utils/localDb/welcomePendingState';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 
 export interface WelcomeDialogRef {
   show: () => void;
@@ -20,16 +23,49 @@ export interface WelcomeDialogRef {
 
 export const WelcomeDialog = memo(
   forwardRef<WelcomeDialogRef, void>((_, ref) => {
-    const { session } = useSessionContext();
     const { t } = useTranslation();
-    const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+    const { navigate } = useGlobalPaneContext();
+    const [showWelcomeModal, setShowWelcomeModal] = useState(
+      welcomePendingSimpleref.welcomePending,
+    );
 
     useEffect(() => {
-      if (getWelcomeModalPending()) {
-        setWelcomeModalPending(false);
-        setShowWelcomeModal(true);
-      }
-    }, [session]);
+      const listener = (
+        _: EventName,
+        data: {
+          welcomeId: string;
+          introducingReferencesId: string;
+        },
+      ) => {
+        navigate(
+          undefined,
+          PaneableComponent.Artifact,
+          {
+            id: data.welcomeId,
+          },
+          PaneTransition.Push,
+          true,
+        );
+        navigate(
+          undefined,
+          PaneableComponent.Artifact,
+          {
+            id: data.introducingReferencesId,
+          },
+          PaneTransition.NewTab,
+          false,
+        );
+      };
+
+      eventManager.addEventListener(EventName.ArtifactWelcomeCreated, listener);
+
+      return () => {
+        eventManager.removeEventListener(
+          EventName.ArtifactWelcomeCreated,
+          listener,
+        );
+      };
+    }, []);
 
     useImperativeHandle(ref, () => ({
       show: () => setShowWelcomeModal(true),

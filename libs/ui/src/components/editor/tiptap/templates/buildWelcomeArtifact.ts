@@ -11,7 +11,7 @@ export const buildWelcomeArtifact = (options: {
   relationArtifactBlockId: string;
 }) => {
   const meta = {
-    id: crypto.randomUUID(),
+    id: options.id,
     userId: options.userId,
     title: t('template.welcome.title'),
     theme: 'default',

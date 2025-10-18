@@ -54,7 +54,7 @@ export const WelcomeModal: React.FC<Props> = (props) => {
       undefined, // Navigate within current focused pane rather than specific pane
       PaneableComponent.NewArtifact,
       {},
-      PaneTransition.Push,
+      PaneTransition.NewTab,
     );
   };
 
@@ -67,7 +67,7 @@ export const WelcomeModal: React.FC<Props> = (props) => {
           undefined,
           PaneableComponent.AIThread,
           { id: thread.id },
-          PaneTransition.Push,
+          PaneTransition.NewTab,
         );
       })
       .catch((error) => {
@@ -78,6 +78,20 @@ export const WelcomeModal: React.FC<Props> = (props) => {
   return (
     <div>
       <CardListContainer>
+        <Box>
+          <Card asChild>
+            <CardButton onClick={props.dismiss}>
+              <Reset>
+                <Heading as="h2" size="3">
+                  {t('welcome.example.title')}
+                </Heading>
+              </Reset>
+              <Text as="div" color="gray" size="2">
+                {t('welcome.example.description')}
+              </Text>
+            </CardButton>
+          </Card>
+        </Box>
         <Box>
           <Card asChild>
             <CardLink href="https://docs.feynote.com" target="_blank">
@@ -102,20 +116,6 @@ export const WelcomeModal: React.FC<Props> = (props) => {
               </Reset>
               <Text as="div" color="gray" size="2">
                 {t('welcome.artifact.description')}
-              </Text>
-            </CardButton>
-          </Card>
-        </Box>
-        <Box>
-          <Card asChild>
-            <CardButton onClick={props.dismiss}>
-              <Reset>
-                <Heading as="h2" size="3">
-                  {t('welcome.dashboard.title')}
-                </Heading>
-              </Reset>
-              <Text as="div" color="gray" size="2">
-                {t('welcome.dashboard.description')}
               </Text>
             </CardButton>
           </Card>

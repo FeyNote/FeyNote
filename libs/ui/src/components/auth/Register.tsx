@@ -25,8 +25,8 @@ import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
-import { setWelcomeModalPending } from '../../utils/welcomeModalState';
 import { useSessionContext } from '../../context/session/SessionContext';
+import { welcomePendingSimpleref } from '../../utils/localDb/welcomePendingState';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -60,7 +60,7 @@ export const Register: React.FC<Props> = (props) => {
         password,
       })
       .then((_session) => {
-        setWelcomeModalPending(true);
+        welcomePendingSimpleref.welcomePending = true;
         setSession(_session).then(() => {
           createWelcomeArtifacts();
         });
