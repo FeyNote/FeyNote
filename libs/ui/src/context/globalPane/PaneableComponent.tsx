@@ -43,7 +43,7 @@ export enum PaneableComponent {
   NonPanedComponent = 'NonPanedComponent',
 }
 
-const emptyFunc = () => null;
+const emptyFunc: React.FC = () => null;
 
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
