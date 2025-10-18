@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 
 const Container = styled.div`
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
   gap: 8px;

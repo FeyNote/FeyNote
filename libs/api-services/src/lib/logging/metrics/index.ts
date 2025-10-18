@@ -54,8 +54,8 @@ export const metrics = {
     labelNames: [],
   }),
 
-  hocuspocusConnection: new client.Counter({
-    name: 'hocuspocus_connection',
+  hocuspocusConnect: new client.Counter({
+    name: 'hocuspocus_connect',
     help: 'New connection opened to a document',
     labelNames: ['document_type'],
   }),
@@ -64,9 +64,14 @@ export const metrics = {
     help: 'Client disconnected from a document',
     labelNames: ['document_type'],
   }),
-  hocuspocusConnectionCount: new client.Gauge({
-    name: 'hocuspocus_connection_count',
-    help: 'Total number of connections',
+  hocuspocusDocumentCount: new client.Gauge({
+    name: 'hocuspocus_document_count',
+    help: 'Total number of documents open',
+    labelNames: [],
+  }),
+  hocuspocusClientCount: new client.Gauge({
+    name: 'hocuspocus_client_count',
+    help: 'Total number of clients',
     labelNames: [],
   }),
   hocuspocusMessage: new client.Counter({

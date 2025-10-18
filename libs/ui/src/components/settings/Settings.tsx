@@ -19,24 +19,22 @@ import {
   IonSelect,
   IonSelectOption,
   IonToggle,
-  useIonAlert,
-  useIonModal,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useMemo, type ComponentProps } from 'react';
+import { useMemo } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
 import { help, person, tv } from 'ionicons/icons';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { WelcomeModal } from '../dashboard/WelcomeModal';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DebugDump } from './DebugDump';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -92,14 +90,11 @@ const colorOptions = {
 };
 
 export const Settings: React.FC = () => {
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const { setPreference, getPreference, _preferencesService } =
     usePreferencesContext();
   const { session } = useSessionContext();
   const { navigate } = usePaneContext();
-  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
-    dismiss: () => dismissWelcomeModal(),
-  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   const languageOptions = useMemo(() => {
@@ -137,36 +132,43 @@ export const Settings: React.FC = () => {
     // When enabling, we need to worry about local vs cloud version, since
     // we don't want to wipe either the local or cloud version of a user's
     // preferences without asking.
-    presentAlert({
-      header: t('settings.preferencesSync.header'),
-      message: t('settings.preferencesSync.message'),
-      buttons: [
+    showAlert({
+      title: t('settings.preferencesSync.header'),
+      children: t('settings.preferencesSync.message'),
+      actionButtons: [
         {
-          text: t('generic.cancel'),
-          handler: () => {
-            window.location.reload();
+          title: t('generic.cancel'),
+          props: {
+            color: 'gray',
+            onClick: () => {
+              window.location.reload();
+            },
           },
         },
         {
-          text: t('settings.preferencesSync.local'),
-          handler: () => {
-            setPreference(PreferenceNames.PreferencesSync, value);
+          title: t('settings.preferencesSync.local'),
+          props: {
+            onClick: () => {
+              setPreference(PreferenceNames.PreferencesSync, value);
+            },
           },
         },
         {
-          text: t('settings.preferencesSync.remote'),
-          handler: () => {
-            // Set directly on service so as not to cause a sync
-            _preferencesService.preferences[PreferenceNames.PreferencesSync] =
-              value;
-            // Must persist preferences local-only first so that the sync setting is preserved
-            _preferencesService.save(true);
-            // Load cloud settings into our local, (they are not saved to localstorage yet)
-            _preferencesService.load();
-            // Persist cloud-downloaded settings to localstorage
-            _preferencesService.save(true);
-            // Trigger re-render of app
-            setPreference(PreferenceNames.PreferencesSync, value);
+          title: t('settings.preferencesSync.remote'),
+          props: {
+            onClick: () => {
+              // Set directly on service so as not to cause a sync
+              _preferencesService.preferences[PreferenceNames.PreferencesSync] =
+                value;
+              // Must persist preferences local-only first so that the sync setting is preserved
+              _preferencesService.save(true);
+              // Load cloud settings into our local, (they are not saved to localstorage yet)
+              _preferencesService.load();
+              // Persist cloud-downloaded settings to localstorage
+              _preferencesService.save(true);
+              // Trigger re-render of app
+              setPreference(PreferenceNames.PreferencesSync, value);
+            },
           },
         },
       ],
@@ -188,16 +190,12 @@ export const Settings: React.FC = () => {
       .catch((e) => {
         handleTRPCErrors(e, {
           409: () => {
-            presentAlert({
-              header: t('settings.account.triggerResetEmail.noPassword.header'),
-              message: t(
+            showAlert({
+              title: t('settings.account.triggerResetEmail.noPassword.header'),
+              children: t(
                 'settings.account.triggerResetEmail.noPassword.message',
               ),
-              buttons: [
-                {
-                  text: t('generic.okay'),
-                },
-              ],
+              actionButtons: 'okay',
             });
           },
         });
@@ -205,14 +203,10 @@ export const Settings: React.FC = () => {
 
     if (!result) return;
 
-    await presentAlert({
-      header: t('settings.account.triggerResetEmail.header'),
-      message: t('settings.account.triggerResetEmail.message'),
-      buttons: [
-        {
-          text: t('generic.okay'),
-        },
-      ],
+    showAlert({
+      title: t('settings.account.triggerResetEmail.header'),
+      children: t('settings.account.triggerResetEmail.message'),
+      actionButtons: 'okay',
     });
   };
 
@@ -228,14 +222,10 @@ export const Settings: React.FC = () => {
 
     if (!result) return;
 
-    await presentAlert({
-      header: t('settings.account.triggerResetPassword.header'),
-      message: t('settings.account.triggerResetPassword.message'),
-      buttons: [
-        {
-          text: t('generic.okay'),
-        },
-      ],
+    showAlert({
+      title: t('settings.account.triggerResetPassword.header'),
+      children: t('settings.account.triggerResetPassword.message'),
+      actionButtons: 'okay',
     });
   };
 
@@ -252,19 +242,11 @@ export const Settings: React.FC = () => {
             </IonListHeader>
             <IonItem
               lines="none"
-              href="https://feynote.com/documentation"
+              href="https://docs.feynote.com"
               target="_blank"
               detail={true}
             >
               {t('settings.help.docs')}
-            </IonItem>
-            <IonItem
-              lines="none"
-              button
-              detail={true}
-              onClick={() => presentWelcomeModal()}
-            >
-              {t('settings.help.welcome')}
             </IonItem>
             <IonItem
               lines="none"

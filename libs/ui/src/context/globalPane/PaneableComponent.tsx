@@ -37,7 +37,13 @@ export enum PaneableComponent {
   ImportFromLogseq = 'ImportFromLogseq',
   ImportFromObsidian = 'ImportFromObsidian',
   PersistentSearch = 'PersistentSearch',
+  /**
+   * This is included to support no-pane components
+   */
+  NonPanedComponent = 'NonPanedComponent',
 }
+
+const emptyFunc: React.FC = () => null;
 
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
@@ -60,6 +66,7 @@ export type PaneableComponentProps = {
     typeof ImportFromObsidian
   >;
   [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
+  [PaneableComponent.NonPanedComponent]: ComponentProps<typeof emptyFunc>;
 };
 
 export const getPaneableComponent = <T extends PaneableComponent>(
@@ -84,6 +91,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.ImportFromLogseq]: ImportFromLogseq,
     [PaneableComponent.ImportFromObsidian]: ImportFromObsidian,
     [PaneableComponent.PersistentSearch]: PersistentSearch,
+    [PaneableComponent.NonPanedComponent]: emptyFunc,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
@@ -115,4 +123,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.ImportFromLogseq]: 'importFromLogseq.title',
   [PaneableComponent.ImportFromObsidian]: 'importFromObsidian.title',
   [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
+  [PaneableComponent.NonPanedComponent]: 'generic.error',
 } satisfies Record<PaneableComponent, string>;

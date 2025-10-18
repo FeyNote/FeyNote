@@ -14,10 +14,10 @@ import {
 import { isDarkMode } from '../../utils/isDarkMode';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import styled from 'styled-components';
 import { useWidthObserver } from '../../utils/useWidthObserver';
 import type { Edge } from '@feynote/shared-utils';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 
 function drawRoundedRect(
   ctx: CanvasRenderingContext2D,
@@ -87,7 +87,8 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
   const forceGraphRef =
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(null);
   const initialZoomPerformedRef = useRef(!props.enableInitialZoom);
-  const { navigate, pane, isPaneFocused } = usePaneContext();
+  const { pane, isPaneFocused } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const [highlightNodes, setHighlightNodes] = useState(
     new Set<FeynoteGraphNode>(),
   );
@@ -179,14 +180,9 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
   };
 
   const handleNodeClick = (node: FeynoteGraphNode, event: MouseEvent) => {
-    navigate(
-      PaneableComponent.Artifact,
-      { id: node.id },
-      event.metaKey || event.ctrlKey
-        ? PaneTransition.NewTab
-        : PaneTransition.Push,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: node.id,
+    });
   };
 
   const handleNodeHover = (node: FeynoteGraphNode | null) => {

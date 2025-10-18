@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react';
 import { useHoverTimer } from '../tiptap/extensions/artifactReferences/useHoverTimer';
 import type { Edge } from '@feynote/shared-utils';
 import { StyledBoundedFloatingWindow } from '../../StyledBoundedFloatingWindow';
-import { usePaneContext } from '../../../context/pane/PaneContext';
-import { PaneTransition } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { IncomingBlockReferenceInlinePreviewItem } from './IncomingBlockReferenceInlinePreviewItem';
 import { getEdgeStore } from '../../../utils/localDb/edges/edgeStore';
+import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
 
 const Container = styled.div`
   background-color: var(--ion-background-color);
@@ -40,7 +39,7 @@ export const IncomingBlockReferencesInlinePreview = (props: Props) => {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const { onMouseOut, onMouseOver, show, close } = useHoverTimer();
   const [edges, setEdges] = useState<Edge[]>([]);
-  const { navigate } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
 
   useEffect(() => {
     // We listen for edges so that we register that they are 'listened to' and not GC'd
@@ -72,19 +71,10 @@ export const IncomingBlockReferencesInlinePreview = (props: Props) => {
     event.stopPropagation();
     event.preventDefault();
 
-    let paneTransition = PaneTransition.Push;
-    if (event.metaKey || event.ctrlKey) {
-      paneTransition = PaneTransition.NewTab;
-    }
-    navigate(
-      PaneableComponent.Artifact,
-      {
-        id: artifactId,
-        focusBlockId: blockId,
-      },
-      paneTransition,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: artifactId,
+      focusBlockId: blockId,
+    });
 
     close();
   };

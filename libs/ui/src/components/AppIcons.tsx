@@ -26,6 +26,8 @@ export {
   FaMinus,
 } from 'react-icons/fa';
 
+export { FaPencil } from 'react-icons/fa6';
+
 export { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 
 export {
@@ -36,9 +38,12 @@ export {
   IoDocument,
   IoCloudOutline,
   IoSearch,
+  IoTrash,
+  IoInformation,
 } from 'react-icons/io5';
 
 export {
+  LuFolderTree,
   LuHeading,
   LuHeading1,
   LuHeading2,
@@ -95,6 +100,7 @@ export {
   RiIndentIncrease,
   RiItalic,
   RiLink,
+  RiLinkUnlink,
   RiListCheck2,
   RiListOrdered,
   RiListUnordered,
@@ -106,4 +112,9 @@ export {
 
 export { RxMagicWand } from 'react-icons/rx';
 
-export { TbCirclesRelation, TbCloudQuestion, TbCloudX } from 'react-icons/tb';
+export {
+  TbLabel,
+  TbCirclesRelation,
+  TbCloudQuestion,
+  TbCloudX,
+} from 'react-icons/tb';

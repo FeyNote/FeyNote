@@ -1,4 +1,3 @@
-import { PaneTransition } from '../../../../context/globalPane/GlobalPaneContext';
 import { useRef } from 'react';
 import { usePaneContext } from '../../../../context/pane/PaneContext';
 import { PaneableComponent } from '../../../../context/globalPane/PaneableComponent';
@@ -9,15 +8,17 @@ import { ArtifactReferencePreview } from '../../../editor/tiptap/extensions/arti
 import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
+import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
 
 interface Props {
   edge: Edge;
 }
 
 export const IncomingReferenceItem: React.FC<Props> = (props) => {
-  const { pane, navigate } = usePaneContext();
+  const { pane } = usePaneContext();
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
     useArtifactPreviewTimer(props.edge.artifactId);
@@ -30,19 +31,10 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
     event.preventDefault();
     event.stopPropagation();
 
-    let paneTransition = PaneTransition.Push;
-    if (event.metaKey || event.ctrlKey) {
-      paneTransition = PaneTransition.NewTab;
-    }
-    navigate(
-      PaneableComponent.Artifact,
-      {
-        id: props.edge.artifactId,
-        focusBlockId: props.edge.artifactBlockId,
-      },
-      paneTransition,
-      !(event.metaKey || event.ctrlKey),
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: props.edge.artifactId,
+      focusBlockId: props.edge.artifactBlockId,
+    });
   };
 
   const title = props.edge.targetArtifactBlockId

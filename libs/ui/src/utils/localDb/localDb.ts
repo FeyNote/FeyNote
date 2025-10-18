@@ -13,6 +13,7 @@ import { localdbMigration_2 } from './migrations/localdbMigration_2';
 import { localdbMigration_3 } from './migrations/localdbMigration_3';
 import { localdbMigration_4 } from './migrations/localdbMigration_4';
 import { localdbMigration_5 } from './migrations/localdbMigration_5';
+import { localdbMigration_6 } from './migrations/localdbMigration_6';
 
 export type MigrationArgs = Parameters<
   NonNullable<OpenDBCallbacks<FeynoteLocalDB>['upgrade']>
@@ -153,6 +154,7 @@ const MIGRATIONS = [
   localdbMigration_3,
   localdbMigration_4,
   localdbMigration_5,
+  localdbMigration_6,
 ];
 
 const connect = () => {
@@ -181,6 +183,7 @@ const connect = () => {
           // We're in a window
           const confirmed = prompt(
             'A new version of the app is available. The app will refresh to load the new version',
+            'Click ok to reload',
           );
           if (confirmed) self.location.reload();
           else alert('The app will not work correctly until it is refreshed');

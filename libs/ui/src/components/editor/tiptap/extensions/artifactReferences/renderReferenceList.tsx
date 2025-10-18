@@ -1,34 +1,10 @@
 /* eslint @typescript-eslint/no-explicit-any: 0 */
-import { posToDOMRect, ReactRenderer, type Editor } from '@tiptap/react';
+import { ReactRenderer } from '@tiptap/react';
 import { ReferencesList } from './ReferencesList';
 import { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { ReferenceListItem } from './ReferenceListItem';
 import type { Doc as YDoc } from 'yjs';
-import { computePosition, flip, shift } from '@floating-ui/react-dom';
-
-const updatePosition = (editor: Editor, element: HTMLElement) => {
-  const virtualElement = {
-    getBoundingClientRect: () =>
-      posToDOMRect(
-        editor.view,
-        editor.state.selection.from,
-        editor.state.selection.to,
-      ),
-  };
-
-  element.style.position = 'absolute';
-
-  computePosition(virtualElement, element, {
-    placement: 'bottom-start',
-    strategy: 'absolute',
-    middleware: [shift(), flip()],
-  }).then(({ x, y, strategy }) => {
-    element.style.width = 'max-content';
-    element.style.position = strategy;
-    element.style.left = `${x}px`;
-    element.style.top = `${y}px`;
-  });
-};
+import { updatePosition } from '../helpers/updatePosition';
 
 export const renderReferenceList = (args: {
   mentionMenuOptsRef: {

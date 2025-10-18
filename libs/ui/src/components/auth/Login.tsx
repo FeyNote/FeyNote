@@ -6,7 +6,6 @@ import {
   IonInput,
   IonItem,
   IonPage,
-  useIonAlert,
 } from '@ionic/react';
 import {
   CenteredContainer,
@@ -25,6 +24,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
@@ -38,7 +38,7 @@ export const Login: React.FC<Props> = (props) => {
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
 
   const { setSession } = useSessionContext();
 
@@ -64,9 +64,9 @@ export const Login: React.FC<Props> = (props) => {
 
   const submitTriggerReset = () => {
     if (!email) {
-      presentAlert({
-        message: t('auth.login.forgot.noEmail'),
-        buttons: [t('generic.okay')],
+      showAlert({
+        title: t('auth.login.forgot.noEmail'),
+        actionButtons: 'okay',
       });
       return;
     }
@@ -78,19 +78,19 @@ export const Login: React.FC<Props> = (props) => {
         returnUrl: window.location.origin,
       })
       .then((_session) => {
-        presentAlert({
-          header: t('auth.login.forgot.submitted.header'),
-          message: t('auth.login.forgot.submitted.message'),
-          buttons: [t('generic.okay')],
+        showAlert({
+          title: t('auth.login.forgot.submitted.header'),
+          children: t('auth.login.forgot.submitted.message'),
+          actionButtons: 'okay',
         });
       })
       .catch((error) => {
         handleTRPCErrors(error, {
           404: () => {
-            presentAlert({
-              header: t('auth.login.forgot.notFound.header'),
-              message: t('auth.login.forgot.notFound.message'),
-              buttons: [t('generic.okay')],
+            showAlert({
+              title: t('auth.login.forgot.notFound.header'),
+              children: t('auth.login.forgot.notFound.message'),
+              actionButtons: 'okay',
             });
           },
         });

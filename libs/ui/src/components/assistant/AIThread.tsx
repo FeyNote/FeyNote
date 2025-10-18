@@ -9,7 +9,6 @@ import {
   IonPage,
   IonSpinner,
   IonTextarea,
-  useIonAlert,
 } from '@ionic/react';
 import {
   pencilOutline,
@@ -36,6 +35,7 @@ import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -133,7 +133,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const textAreaRef = useRef<HTMLIonTextareaElement>(null);
   const [input, setInput] = useState('');
   const { messages, setMessages, status, sendMessage, regenerate } =
@@ -171,10 +171,10 @@ export const AIThread: React.FC<Props> = (props) => {
           // Vercel does not expose the status code on the error property, only via its message object
           const status = JSON.parse(error.message).status;
           if (status === 429) {
-            presentAlert({
-              header: t('aiThread.createMessage.error.rateLimit.header'),
-              message: t('aiThread.createMessage.error.rateLimit.message'),
-              buttons: [t('generic.okay')],
+            showAlert({
+              title: t('aiThread.createMessage.error.rateLimit.header'),
+              children: t('aiThread.createMessage.error.rateLimit.message'),
+              actionButtons: 'okay',
             });
             return;
           }

@@ -5,7 +5,6 @@ import {
   IonCardTitle,
   IonInput,
   IonPage,
-  useIonAlert,
 } from '@ionic/react';
 import * as Sentry from '@sentry/react';
 import {
@@ -23,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { validateEmail } from '@feynote/shared-utils';
 import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 interface Props {
   redirectPath: string;
@@ -39,7 +39,7 @@ export const ResetEmail: React.FC<Props> = (props) => {
   const [confirmEmailIsValid, setConfirmEmailIsValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
 
   const _submitReset = () => {
     if (!emailIsValid || !confirmEmailIsValid) {
@@ -60,32 +60,48 @@ export const ResetEmail: React.FC<Props> = (props) => {
           Sentry.captureException(e);
         }
 
-        await presentAlert({
-          header: t('auth.resetEmail.success.header'),
-          message: t('auth.resetEmail.success.message'),
-          buttons: [t('generic.okay')],
-          onDidDismiss: () => {
-            window.location.href = props.redirectPath;
-          },
+        showAlert({
+          title: t('auth.resetEmail.success.header'),
+          children: t('auth.resetEmail.success.message'),
+          actionButtons: [
+            {
+              title: t('generic.okay'),
+              props: {
+                onClick: () => {
+                  window.location.href = props.redirectPath;
+                },
+              },
+            },
+          ],
         });
       })
       .catch((error) => {
         handleTRPCErrors(error, {
           403: () => {
-            presentAlert({
-              header: t('auth.resetEmail.expired.header'),
-              message: t('auth.resetEmail.expired.message'),
-              buttons: [t('generic.okay')],
-              onDidDismiss: () => {
-                window.location.href = props.redirectPath;
-              },
+            showAlert({
+              title: t('auth.resetEmail.expired.header'),
+              children: t('auth.resetEmail.expired.message'),
+              actionButtons: [
+                {
+                  title: t('generic.okay'),
+                  props: {
+                    onClick: () => {
+                      window.location.href = props.redirectPath;
+                    },
+                  },
+                },
+              ],
             });
           },
           409: () => {
-            presentAlert({
-              header: t('auth.resetEmail.conflict.header'),
-              message: t('auth.resetEmail.conflict.message'),
-              buttons: [t('generic.okay')],
+            showAlert({
+              title: t('auth.resetEmail.conflict.header'),
+              children: t('auth.resetEmail.conflict.message'),
+              actionButtons: [
+                {
+                  title: t('generic.okay'),
+                },
+              ],
             });
           },
         });
@@ -100,23 +116,26 @@ export const ResetEmail: React.FC<Props> = (props) => {
       return;
     }
 
-    presentAlert({
-      header: t('auth.resetEmail.confirm.header'),
-      message: t('auth.resetEmail.confirm.message'),
-      buttons: [
+    showAlert({
+      title: t('auth.resetEmail.confirm.header'),
+      children: t('auth.resetEmail.confirm.message'),
+      actionButtons: [
         {
-          text: t('generic.cancel'),
+          title: t('generic.cancel'),
+          props: {
+            color: 'gray',
+          },
         },
         {
-          text: t('generic.confirm'),
-          role: 'confirm',
+          title: t('generic.confirm'),
+          props: {
+            role: 'confirm',
+            onClick: () => {
+              _submitReset();
+            },
+          },
         },
       ],
-      onDidDismiss: (event) => {
-        if (event.detail.role === 'confirm') {
-          _submitReset();
-        }
-      },
     });
   };
 

@@ -1,4 +1,3 @@
-import { TreeItem } from 'react-complex-tree';
 import * as Sentry from '@sentry/react';
 
 import { InternalTreeItem } from '../../components/artifact/ArtifactTree';
@@ -9,8 +8,9 @@ import { InternalTreeItem } from '../../components/artifact/ArtifactTree';
 const MAX_CHILD_RECURSE_DEPTH = 100;
 
 export const getAllChildIdsForTreeItem = (
-  itemsById: Record<string, TreeItem<InternalTreeItem>>,
-  item: TreeItem<InternalTreeItem>,
+  itemsById: Map<string, InternalTreeItem>,
+  itemIdsByParentId: Map<string | null, string[]>,
+  item: InternalTreeItem,
   depth: number,
 ): string[] => {
   if (depth > MAX_CHILD_RECURSE_DEPTH) {
@@ -24,13 +24,18 @@ export const getAllChildIdsForTreeItem = (
   }
 
   const childIds: string[] = [];
-  item.children?.forEach((child) => {
-    childIds.push(child.toString());
+  itemIdsByParentId.get(item.id)?.forEach((child) => {
+    childIds.push(child);
 
-    const childNode = itemsById[child.toString()];
+    const childNode = itemsById.get(child);
     if (childNode) {
       childIds.push(
-        ...getAllChildIdsForTreeItem(itemsById, childNode, depth + 1),
+        ...getAllChildIdsForTreeItem(
+          itemsById,
+          itemIdsByParentId,
+          childNode,
+          depth + 1,
+        ),
       );
     }
   });

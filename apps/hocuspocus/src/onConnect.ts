@@ -6,10 +6,11 @@ export async function onConnect(args: onConnectPayload) {
   try {
     const [type] = splitDocumentName(args.documentName);
 
-    metrics.hocuspocusConnection.inc({
+    metrics.hocuspocusConnect.inc({
       document_type: type,
     });
-    metrics.hocuspocusConnectionCount.set(args.instance.getConnectionsCount());
+    metrics.hocuspocusClientCount.set(args.instance.getConnectionsCount());
+    metrics.hocuspocusDocumentCount.set(args.instance.getDocumentsCount());
   } catch (e) {
     if (!(e instanceof Error) || e.message) {
       logger.error(e);

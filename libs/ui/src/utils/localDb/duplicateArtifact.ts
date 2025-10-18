@@ -9,16 +9,17 @@ export const duplicateArtifact = async (yjsDoc: YDoc) => {
 
   const newTitle = t('artifact.duplicateTitle', { title });
 
-  const newYDoc = await cloneArtifact({
+  const { id, newYDoc } = await cloneArtifact({
     title: newTitle,
     y: yjsDoc,
   });
 
   const result = await createArtifact({
     artifact: {
+      id,
       y: newYDoc,
     },
   });
 
-  return result?.id;
+  return result.id;
 };

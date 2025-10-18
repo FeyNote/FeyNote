@@ -18,12 +18,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { PaneNav } from '../pane/PaneNav';
-import { usePaneContext } from '../../context/pane/PaneContext';
 import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { GraphRenderer } from '../graph/GraphRenderer';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
@@ -60,9 +58,8 @@ const CardTitleButton = styled(IonButton)`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
@@ -130,14 +127,8 @@ export const Dashboard: React.FC = () => {
       });
   };
 
-  const loadWithProgress = async () => {
-    const progress = startProgressBar();
-    await Promise.allSettled([getUserThreads()]);
-    progress.dismiss();
-  };
-
   useEffect(() => {
-    loadWithProgress().then(() => {
+    getUserThreads().then(() => {
       setInitialLoadComplete(true);
     });
   }, []);
@@ -146,7 +137,6 @@ export const Dashboard: React.FC = () => {
     <IonPage>
       <PaneNav title={t('dashboard.title')} />
       <IonContent>
-        {ProgressBar}
         {initialLoadComplete && (
           <FlexContainer>
             <Card>
@@ -155,13 +145,10 @@ export const Dashboard: React.FC = () => {
                 &nbsp;{t('dashboard.recents.title')}
                 <CardTitleButton
                   onClick={(event) =>
-                    navigate(
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.RecentArtifacts,
                       {},
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   size="small"
@@ -175,13 +162,10 @@ export const Dashboard: React.FC = () => {
                   lines="none"
                   key={recentArtifact.id}
                   onClick={(event) =>
-                    navigate(
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.Artifact,
                       { id: recentArtifact.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   button
@@ -203,13 +187,10 @@ export const Dashboard: React.FC = () => {
                 &nbsp;{t('dashboard.graph.title')}
                 <CardTitleButton
                   onClick={(event) =>
-                    navigate(
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.Graph,
                       {},
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   size="small"
@@ -239,13 +220,10 @@ export const Dashboard: React.FC = () => {
                   &nbsp;{t('dashboard.aiThreads.title')}
                   <CardTitleButton
                     onClick={(event) =>
-                      navigate(
+                      navigateWithKeyboardHandler(
+                        event,
                         PaneableComponent.AIThreadsList,
                         {},
-                        event.metaKey || event.ctrlKey
-                          ? PaneTransition.NewTab
-                          : PaneTransition.Push,
-                        !(event.metaKey || event.ctrlKey),
                       )
                     }
                     size="small"
@@ -259,13 +237,10 @@ export const Dashboard: React.FC = () => {
                     lines="none"
                     key={recentThread.id}
                     onClick={(event) =>
-                      navigate(
+                      navigateWithKeyboardHandler(
+                        event,
                         PaneableComponent.AIThread,
                         { id: recentThread.id },
-                        event.metaKey || event.ctrlKey
-                          ? PaneTransition.NewTab
-                          : PaneTransition.Push,
-                        !(event.metaKey || event.ctrlKey),
                       )
                     }
                     button
@@ -288,13 +263,10 @@ export const Dashboard: React.FC = () => {
                 &nbsp;{t('dashboard.sharedContent.title')}
                 <CardTitleButton
                   onClick={(event) =>
-                    navigate(
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.SharedContent,
                       {},
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   size="small"
@@ -308,13 +280,10 @@ export const Dashboard: React.FC = () => {
                   lines="none"
                   key={sharedArtifact.id}
                   onClick={(event) =>
-                    navigate(
+                    navigateWithKeyboardHandler(
+                      event,
                       PaneableComponent.Artifact,
                       { id: sharedArtifact.id },
-                      event.metaKey || event.ctrlKey
-                        ? PaneTransition.NewTab
-                        : PaneTransition.Push,
-                      !(event.metaKey || event.ctrlKey),
                     )
                   }
                   button

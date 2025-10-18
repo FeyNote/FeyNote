@@ -28,6 +28,10 @@ import {
 import { useState } from 'react';
 import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
 import { useEditorState } from '@tiptap/react';
+import {
+  CreateLinkDialog,
+  createLinkDialogDefaultOnSubmit,
+} from './tiptap/extensions/artifactBubbleMenu/CreateLinkDialog';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -50,14 +54,114 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
+  const [insertLinkDialogOpen, setInsertLinkDialogOpen] = useState(false);
 
   useEditorState({
     editor: props.editor,
     selector: ({ editor }) => {
-      if (!editor) return null;
-
       return {
         selection: editor.state.selection,
+
+        editUndo: globalTiptapCommandHelpers.edit.undo.enabled(),
+        editRedo: globalTiptapCommandHelpers.edit.redo.enabled(),
+        editCut: globalTiptapCommandHelpers.edit.cut.enabled(),
+        editCopy: globalTiptapCommandHelpers.edit.copy.enabled(),
+        editSelectAll: globalTiptapCommandHelpers.edit.selectAll.enabled(),
+        editDelete: globalTiptapCommandHelpers.edit.delete.enabled(),
+        insertHr: globalTiptapCommandHelpers.insert.hr.enabled(editor),
+        insertTable: globalTiptapCommandHelpers.insert.table.enabled(editor),
+        insertMonster:
+          globalTiptapCommandHelpers.insert.monster.enabled(editor),
+        insertWideMonster:
+          globalTiptapCommandHelpers.insert.wideMonster.enabled(editor),
+        insertSpell: globalTiptapCommandHelpers.insert.spell.enabled(editor),
+        insertNote: globalTiptapCommandHelpers.insert.note.enabled(editor),
+        insertLink: globalTiptapCommandHelpers.insert.link.enabled(),
+        formatTextToggleBold:
+          globalTiptapCommandHelpers.format.text.toggleBold.enabled(editor),
+        formatTextToggleItalic:
+          globalTiptapCommandHelpers.format.text.toggleItalic.enabled(editor),
+        formatTextToggleUnderline:
+          globalTiptapCommandHelpers.format.text.toggleUnderline.enabled(
+            editor,
+          ),
+        formatTextToggleStrike:
+          globalTiptapCommandHelpers.format.text.toggleStrike.enabled(editor),
+        formatFontDefault:
+          globalTiptapCommandHelpers.format.font.default.enabled(editor),
+        formatFontSans:
+          globalTiptapCommandHelpers.format.font.sans.enabled(editor),
+        formatFontSerif:
+          globalTiptapCommandHelpers.format.font.serif.enabled(editor),
+        formatFontLibreBaskerville:
+          globalTiptapCommandHelpers.format.font.libreBaskerville.enabled(
+            editor,
+          ),
+        formatFontMrEavesRemake:
+          globalTiptapCommandHelpers.format.font.mrEavesRemake.enabled(editor),
+        formatFontAllison:
+          globalTiptapCommandHelpers.format.font.allison.enabled(editor),
+        formatFontItalianno:
+          globalTiptapCommandHelpers.format.font.italianno.enabled(editor),
+        formatFontMonsieurLaDoulaise:
+          globalTiptapCommandHelpers.format.font.monsieurLaDoulaise.enabled(
+            editor,
+          ),
+        formatAlignLeft:
+          globalTiptapCommandHelpers.format.align.left.enabled(editor),
+        formatAlignCenter:
+          globalTiptapCommandHelpers.format.align.center.enabled(editor),
+        formatAlignRight:
+          globalTiptapCommandHelpers.format.align.right.enabled(editor),
+        formatParagraph: globalTiptapCommandHelpers.format.paragraph.enabled(),
+        formatHeadingH1: globalTiptapCommandHelpers.format.heading.h1.enabled(),
+        formatHeadingH2: globalTiptapCommandHelpers.format.heading.h2.enabled(),
+        formatHeadingH3: globalTiptapCommandHelpers.format.heading.h3.enabled(),
+        formatHeadingH4: globalTiptapCommandHelpers.format.heading.h4.enabled(),
+        formatHeadingH5: globalTiptapCommandHelpers.format.heading.h5.enabled(),
+        formatHeadingH6: globalTiptapCommandHelpers.format.heading.h6.enabled(),
+        formatSinkBlock: globalTiptapCommandHelpers.format.sinkBlock.enabled(),
+        formatLiftBlock: globalTiptapCommandHelpers.format.liftBlock.enabled(),
+        formatListBulletList:
+          globalTiptapCommandHelpers.format.list.bulletList.enabled(editor),
+        formatListOrderedList:
+          globalTiptapCommandHelpers.format.list.orderedList.enabled(editor),
+        formatListTaskList:
+          globalTiptapCommandHelpers.format.list.taskList.enabled(editor),
+        formatTableInsertColBefore:
+          globalTiptapCommandHelpers.format.table.insertColBefore.enabled(
+            editor,
+          ),
+        formatTableInsertColAfter:
+          globalTiptapCommandHelpers.format.table.insertColAfter.enabled(
+            editor,
+          ),
+        formatTableDeleteCol:
+          globalTiptapCommandHelpers.format.table.deleteCol.enabled(editor),
+        formatTableInsertRowAbove:
+          globalTiptapCommandHelpers.format.table.insertRowAbove.enabled(
+            editor,
+          ),
+        formatTableInsertRowBelow:
+          globalTiptapCommandHelpers.format.table.insertRowBelow.enabled(
+            editor,
+          ),
+        formatTableDeleteRow:
+          globalTiptapCommandHelpers.format.table.deleteRow.enabled(editor),
+        formatTableToggleHeaderRow:
+          globalTiptapCommandHelpers.format.table.toggleHeaderRow.enabled(
+            editor,
+          ),
+        formatTableToggleHeaderCol:
+          globalTiptapCommandHelpers.format.table.toggleHeaderCol.enabled(
+            editor,
+          ),
+        formatTableToggleHeaderCell:
+          globalTiptapCommandHelpers.format.table.toggleHeaderCell.enabled(
+            editor,
+          ),
+        formatTableDeleteTable:
+          globalTiptapCommandHelpers.format.table.deleteTable.enabled(editor),
       };
     },
   });
@@ -78,12 +182,14 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
     commandEntry: GlobalTiptapCommandHelperEntry,
   ) => (
     <DropdownMenu.Item
-      onClick={() =>
+      onClick={() => {
+        if (!commandEntry.enabled(props.editor)) return;
+
         commandEntry.command({
           editor: props.editor,
           range: props.editor.state.selection,
-        })
-      }
+        });
+      }}
       disabled={!commandEntry.enabled(props.editor)}
     >
       {commandEntry.icon && <commandEntry.icon />}
@@ -169,7 +275,12 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.wideMonster)}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.spell)}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.link)}
+        {renderCommandEntryItem({
+          ...globalTiptapCommandHelpers.insert.link,
+          command: () => {
+            setInsertLinkDialogOpen(true);
+          },
+        })}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
@@ -372,6 +483,13 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
               }
             : undefined
         }
+      />
+      <CreateLinkDialog
+        open={insertLinkDialogOpen}
+        onOpenChange={setInsertLinkDialogOpen}
+        onSubmit={(args) => {
+          createLinkDialogDefaultOnSubmit(props.editor, args);
+        }}
       />
     </>
   );
