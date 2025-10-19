@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { SessionContext } from '../../context/session/SessionContext';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { uploadImportJob } from '../../utils/job/uploadImportJob';
-import { PaneContext } from '../../context/pane/PaneContext';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { useTranslation } from 'react-i18next';
@@ -26,9 +26,9 @@ export const GFP: React.FC<SignInWithGoogleProps> = (props) => {
   const [isPickerInit, setIsPickerInit] = useState(false)
   const [isClientLoaded, setIsClientLoaded] = useState(false)
   const [accessToken, setAccessToken] = useState(null)
-  const { setSession } = useContext(SessionContext);
+  const { setSession } = useSessionContext();
   const buttonRef = useRef<HTMLDivElement>(undefined);
-  const { navigate } = useContext(PaneContext);
+  const { navigate } = usePaneContext();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [fileUploadProgress, setFileUploadProgress] = useState<null | number>(

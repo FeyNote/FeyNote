@@ -2,7 +2,7 @@ import { importFromZip } from './importFromZip';
 import { logseqToStandardizedImport } from './logseq/logseqToStandardizedImport';
 import { obsidianToStandardizedImport } from './obsidian/obsidianToStandardizedImport';
 import { prisma } from '@feynote/prisma/client';
-import { ImportFormat, type JobSummary } from '@feynote/prisma/types';
+import { type JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
 import { textMdToStandardizedImport } from './textMdToStandardizedImport';
 import { docxToStandardizedImport } from './docxToStandardizedImport';
@@ -27,7 +27,7 @@ export const importJobHandler = async (job: JobSummary) => {
   const progressTracker = new JobProgressTracker(job.id, 2);
 
   switch (importFormat) {
-    case ImportFormat.Obsidian: {
+    case 'obsidian':
       await importFromZip({
         storageKey: importFile.storageKey,
         job,
@@ -36,8 +36,7 @@ export const importJobHandler = async (job: JobSummary) => {
         progressTracker,
       });
       break;
-    }
-    case ImportFormat.Logseq: {
+    case 'logseq':
       await importFromZip({
         storageKey: importFile.storageKey,
         job,
@@ -46,8 +45,8 @@ export const importJobHandler = async (job: JobSummary) => {
         progressTracker,
       });
       break;
-    }
-    case ImportFormat.TxtMd: {
+    case 'markdown':
+    case 'text':
       await importFromZip({
         storageKey: importFile.storageKey,
         job,
@@ -56,8 +55,8 @@ export const importJobHandler = async (job: JobSummary) => {
         progressTracker,
       });
       break;
-    }
-    case ImportFormat.Docx: {
+    case 'gdrive':
+    case 'docx':
       await importFromZip({
         storageKey: importFile.storageKey,
         job,
@@ -66,11 +65,9 @@ export const importJobHandler = async (job: JobSummary) => {
         progressTracker,
       });
       break;
-    }
-    default: {
+    default:
       throw new Error(
         `Invalid import format detected: ${importFormat} for job ${job.id}`,
       );
-    }
   }
 };

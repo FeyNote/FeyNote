@@ -1,4 +1,4 @@
-import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
@@ -6,9 +6,7 @@ import { useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import type { JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
-import { usePaneContext } from '../../context/pane/PaneContext';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { Button } from '@radix-ui/themes';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
 const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
@@ -18,7 +16,6 @@ export const Export: React.FC = () => {
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { navigate } = usePaneContext();
 
   useEffect(() => {
     const progress = startProgressBar();
@@ -67,43 +64,17 @@ export const Export: React.FC = () => {
       <IonContent className="ion-padding">
         {ProgressBar}
         {!!jobs.length && (
-          <JobList
-            title={t('export.jobList')}
-            hasMoreJobs={hasMoreJobs}
-            jobs={jobs}
-            getMoreJobs={getMoreJobs}
-            jobClickHandler={openJobUrls}
-          />
+          <>
+            <JobList
+              title={t('export.jobList')}
+              hasMoreJobs={hasMoreJobs}
+              jobs={jobs}
+              getMoreJobs={getMoreJobs}
+              jobClickHandler={openJobUrls}
+            />
+            <br />
+          </>
         )}
-        <br />
-        <IonList>
-          <IonItem
-            lines="none"
-            button
-            onClick={() => {
-              navigate(PaneableComponent.ExportToJson, {}, PaneTransition.Push);
-            }}
-            target="_blank"
-            detail={true}
-          >
-            {t('export.options.json')}
-          </IonItem>
-          <IonItem
-            lines="none"
-            button
-            onClick={() => {
-              navigate(
-                PaneableComponent.ExportToMarkdown,
-                {},
-                PaneTransition.Push,
-              );
-            }}
-            target="_blank"
-            detail={true}
-          >
-            {t('export.options.markdown')}
-          </IonItem>
-        </IonList>
       </IonContent>
     </IonPage>
   );

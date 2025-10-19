@@ -12,8 +12,13 @@ export { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
 
 export { CgNotes, CgExtensionRemove } from 'react-icons/cg';
 
+export { SiLogseq, SiObsidian } from 'react-icons/si';
+
+export { AiFillFileMarkdown, AiFillFileText } from 'react-icons/ai';
+
 export {
   FaAnchor,
+  FaGoogleDrive,
   FaCircle,
   FaFlag,
   FaFortAwesome,
@@ -106,4 +111,4 @@ export {
 
 export { RxMagicWand } from 'react-icons/rx';
 
-export { TbCirclesRelation, TbCloudQuestion, TbCloudX } from 'react-icons/tb';
+export { TbCirclesRelation, TbCloudQuestion, TbCloudX, TbFileTypeDocx } from 'react-icons/tb';
