@@ -28,7 +28,7 @@
     "@hocuspocus/provider": "3.2.4",
     "@hocuspocus/server": "3.2.4",
     "@hocuspocus/transformer": "3.2.4",
-    "@ionic/react": "^8.7.6",
+    "@ionic/react": "^8.7.7",
     "@prisma/client": "^6.17.1",
     "@radix-ui/themes": "^3.2.1",
     "@sentry/esbuild-plugin": "^4.4.0",
