@@ -8,7 +8,7 @@ const SuggestionListContainer = styled.div`
   font-family: var(--ion-font-family);
   width: min(350px, 100vw);
   max-height: 450px;
-  background-color: var(--ion-card-background, #ffffff);
+  background-color: var(--card-background);
   border-radius: 4px;
   box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
   color: var(--ion-text-color, #000000);
@@ -26,12 +26,10 @@ const SuggestionListItem = styled.button<{
 
   border-radius: 4px;
 
-  color: var(--ion-text-color, #000000);
-  background-color: var(--ion-card-background);
+  color: var(--text-color);
+  background-color: var(--card-background);
   ${(props) =>
-    props.$selected
-      ? `background-color: var(--ion-background-color, #dddddd);`
-      : ``}
+    props.$selected ? `background-color: var(--card-background-active);` : ``}
   width: 100%;
   min-height: 52px;
 
@@ -39,13 +37,13 @@ const SuggestionListItem = styled.button<{
   padding-bottom: 6px;
 
   &:hover {
-    background-color: var(--ion-background-color, #dddddd);
+    background-color: var(--card-background-hover);
   }
 `;
 
 const SuggestionListItemIcon = styled.div`
   text-align: center;
-  background-color: var(--ion-background-color, #ffffff);
+  background-color: var(--card-background);
   height: 34px;
   width: 34px;
   border-radius: 6px;
@@ -64,7 +62,7 @@ const SuggestionListItemTitle = styled.div`
 `;
 
 const SuggestionListItemSubtitle = styled.div`
-  color: rgba(var(--ion-text-color-rgb, rgb(0, 0, 0)), 0.8);
+  color: var(--text-color-dim);
   font-size: 11px;
 `;
 

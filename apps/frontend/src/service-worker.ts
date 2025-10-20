@@ -148,6 +148,8 @@ self.skipWaiting();
 clientsClaim();
 
 self.addEventListener('install', () => {
+  self.skipWaiting();
+
   console.log('Service Worker installed');
 });
 

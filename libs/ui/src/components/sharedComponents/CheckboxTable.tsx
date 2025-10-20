@@ -40,7 +40,7 @@ const ItemRow = styled.div`
   padding: 16px;
 
   transition: background-color 100ms;
-  background-color: var(--ion-background-color-step-50);
+  background-color: var(--card-background);
   border-radius: 4px;
   margin-top: 6px;
   margin-bottom: 0;

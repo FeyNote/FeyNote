@@ -157,20 +157,33 @@ export class AppIdbStorageManager {
     await manifestDb.clear(ObjectStoreName.PendingFiles);
 
     const databases = await indexedDB.databases();
-    for (const database of databases) {
-      if (!database.name) continue;
-      if (
-        database.name.startsWith('artifact:') ||
-        database.name.startsWith('userTree:')
-      ) {
-        try {
-          await deleteDB(database.name);
-        } catch (e) {
-          console.error('Failed to delete artifact IDB', database.name, e);
-          Sentry.captureException(e);
-        }
-      }
+
+    if (databases.length > 400) {
+      console.warn(
+        'User has a large number of databases, this may take a moment',
+      );
     }
+
+    /**
+     * In the case that a user has a large number of databases this can take a long time
+     * We delete all in parallel because we're on the client and don't care much
+     */
+    await Promise.all(
+      databases.map(async (database) => {
+        if (!database.name) return;
+        if (
+          database.name.startsWith('artifact:') ||
+          database.name.startsWith('userTree:')
+        ) {
+          try {
+            await deleteDB(database.name);
+          } catch (e) {
+            console.error('Failed to delete artifact IDB', database.name, e);
+            Sentry.captureException(e);
+          }
+        }
+      }),
+    );
   }
 }
 
