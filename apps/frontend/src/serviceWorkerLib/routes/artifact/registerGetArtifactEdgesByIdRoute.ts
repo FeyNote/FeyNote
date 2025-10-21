@@ -3,6 +3,7 @@ import { getTrpcInputForEvent } from '../../util/getTrpcInputForEvent';
 import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
 import { idbEdgeToEdge } from '../../util/idbEdgeToEdge';
+import * as Sentry from '@sentry/browser';
 
 export function registerGetArtifactEdgesByIdRoute() {
   registerRoute(
@@ -16,35 +17,39 @@ export function registerGetArtifactEdgesByIdRoute() {
       if (!input || !input.id)
         throw new Error('No id provided in procedure input');
 
-      const manifestDb = await getManifestDb();
+      try {
+        const manifestDb = await getManifestDb();
 
-      const localArtifactVersion = await manifestDb.get(
-        ObjectStoreName.ArtifactVersions,
-        input.id,
-      );
-      if (!localArtifactVersion) {
-        const response = await fetch(event.request);
+        const localArtifactVersion = await manifestDb.get(
+          ObjectStoreName.ArtifactVersions,
+          input.id,
+        );
+        if (!localArtifactVersion) {
+          return fetch(event.request);
+        }
 
-        return response;
+        const outgoingEdges = await manifestDb.getAllFromIndex(
+          ObjectStoreName.Edges,
+          'artifactId',
+          input.id,
+        );
+        const incomingEdges = await manifestDb.getAllFromIndex(
+          ObjectStoreName.Edges,
+          'targetArtifactId',
+          input.id,
+        );
+
+        return encodeCacheResultForTrpc<
+          typeof trpc.artifact.getArtifactEdgesById.query
+        >({
+          outgoingEdges: outgoingEdges.map(idbEdgeToEdge),
+          incomingEdges: incomingEdges.map(idbEdgeToEdge),
+        });
+      } catch (e) {
+        console.error(e);
+        Sentry.captureException(e);
+        return fetch(event.request);
       }
-
-      const outgoingEdges = await manifestDb.getAllFromIndex(
-        ObjectStoreName.Edges,
-        'artifactId',
-        input.id,
-      );
-      const incomingEdges = await manifestDb.getAllFromIndex(
-        ObjectStoreName.Edges,
-        'targetArtifactId',
-        input.id,
-      );
-
-      return encodeCacheResultForTrpc<
-        typeof trpc.artifact.getArtifactEdgesById.query
-      >({
-        outgoingEdges: outgoingEdges.map(idbEdgeToEdge),
-        incomingEdges: incomingEdges.map(idbEdgeToEdge),
-      });
     },
     'GET',
   );

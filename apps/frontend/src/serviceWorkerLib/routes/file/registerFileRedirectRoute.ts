@@ -1,6 +1,7 @@
 import { getManifestDb, ObjectStoreName } from '@feynote/ui-sw';
 import { registerRoute } from 'workbox-routing';
 import { tryStoreInCacheWithQuotaPurge } from '../../util/tryStoreInCacheWithQuotaPurge';
+import * as Sentry from '@sentry/browser';
 
 /**
  * Artifact assets are immutable. Should be cached indefinitely, but we need to limit them so
@@ -15,25 +16,31 @@ export function registerFileRedirectRoute() {
       const fileId = event.url.pathname.match(/\/file\/(.*?)\/redirect/)?.[1];
       if (!fileId) throw new Error('No fileId found in URL');
 
-      const manifestDb = await getManifestDb();
-      const pendingFile = await manifestDb.get(
-        ObjectStoreName.PendingFiles,
-        fileId,
-      );
-
-      if (pendingFile) {
-        return new Response(
-          pendingFile.fileContentsUint8 as Buffer<ArrayBuffer>,
-          {
-            headers: {
-              'Content-Type': pendingFile.mimetype,
-              'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
-              swcache: 'true',
-              'Accept-Ranges': 'bytes',
-              'Content-Length': pendingFile.fileSize.toString(),
-            },
-          },
+      try {
+        const manifestDb = await getManifestDb();
+        const pendingFile = await manifestDb.get(
+          ObjectStoreName.PendingFiles,
+          fileId,
         );
+
+        if (pendingFile) {
+          return new Response(
+            pendingFile.fileContentsUint8 as Buffer<ArrayBuffer>,
+            {
+              headers: {
+                'Content-Type': pendingFile.mimetype,
+                'Content-Disposition': `attachment; filename="${pendingFile.fileName}"`,
+                swcache: 'true',
+                'Accept-Ranges': 'bytes',
+                'Content-Length': pendingFile.fileSize.toString(),
+              },
+            },
+          );
+        }
+      } catch (e) {
+        console.error(e);
+        Sentry.captureException(e);
+        return fetch(event.request);
       }
 
       // Try to see if we have anything in the cache
