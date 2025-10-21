@@ -9,7 +9,7 @@ export {
   ObjectStoreName,
   getKvStoreEntry,
   KVStoreKeys,
-  FeynoteLocalDB,
+  type FeynoteLocalDB,
 } from './utils/localDb/localDb';
 export { getIsViteDevelopment } from './utils/getIsViteDevelopment';
 export {

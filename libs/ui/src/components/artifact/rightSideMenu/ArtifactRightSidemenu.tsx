@@ -42,6 +42,8 @@ import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForA
 import { useAlertContext } from '../../../context/alert/AlertContext';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
 
+const LOCAL_GRAPH_ENABLED = false;
+
 const GraphContainer = styled.div`
   height: 200px;
 `;
@@ -392,7 +394,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           ))}
         </IonCard>
       )}
-      {!!edges.length && (
+      {LOCAL_GRAPH_ENABLED && !!edges.length && (
         <IonCard>
           <IonListHeader>
             <IonIcon icon={link} size="small" />

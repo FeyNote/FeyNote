@@ -6,8 +6,8 @@ import styled from 'styled-components';
 const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
   $size: number;
 }>`
-  transition: background-color 100ms;
-  background-color: var(--ion-background-color);
+  transition: background-color 150ms;
+  background-color: var(--general-background);
   ${(props) => `
     width: ${props.$size}px;
     min-width: ${props.$size}px;
@@ -17,11 +17,10 @@ const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.4);
-  outline: 1px solid var(--ion-background-color-step-400);
+  outline: 1px solid var(--text-color-dim);
 
   &:hover {
-    background-color: var(--ion-background-color-step-100);
+    background-color: var(--general-background-hover);
   }
 
   &:focus {
@@ -30,7 +29,7 @@ const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
 `;
 
 const StyledCheckboxIndicator = styled(RadixCheckbox.Indicator)`
-  color: var(--ion-text-color);
+  color: var(--text-color);
   display: flex;
   align-items: center;
 `;

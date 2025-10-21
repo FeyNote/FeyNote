@@ -171,10 +171,10 @@ const Menu = styled.div<{
     ${
       props.$side === 'left'
         ? `
-      border-right: 1px solid var(--ion-card-background, #dddddd);
+      border-right: 1px solid var(--general-background-hint);
     `
         : `
-      border-left: 1px solid var(--ion-card-background, #dddddd);
+      border-left: 1px solid var(--general-background-hint);
     `
     }
   `}
