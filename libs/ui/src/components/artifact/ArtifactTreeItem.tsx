@@ -48,7 +48,7 @@ const ItemArrow = styled.div`
   border-radius: 4px;
 
   &:hover {
-    background-color: var(--general-background-hover);
+    background-color: var(--card-background-hover);
   }
 `;
 
