@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
+import * as Sentry from '@sentry/browser';
 import type { ArtifactDTO, ArtifactSnapshot } from '@feynote/global-types';
 import type {
   DecodedFileStream,
@@ -157,7 +158,34 @@ const MIGRATIONS = [
   localdbMigration_6,
 ];
 
-const connect = () => {
+let errorShown = false;
+const onDbError = () => {
+  if (
+    'registration' in self &&
+    self.registration instanceof ServiceWorkerRegistration
+  ) {
+    // We're in a service worker
+    console.error(
+      'Attempting to unregister service worker since localdb is broken',
+    );
+    self.registration.unregister();
+  } else {
+    if (errorShown) return;
+    errorShown = true;
+
+    // We're in a window
+    const confirmed = prompt(
+      'We encountered an error with your browser. If this continues please contact us.',
+      'Click ok to reload',
+    );
+    if (confirmed) self.location.reload();
+    else alert('The app will not work correctly until it is refreshed');
+  }
+};
+
+const connect = async (healthRef: { healthy: boolean }) => {
+  console.info('Connecting to localdb');
+  healthRef.healthy = true;
   const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATIONS.length, {
     blocking: async () => {
       console.warn(
@@ -199,14 +227,32 @@ const connect = () => {
         await migration(db, previousVersion, newVersion, transaction, event);
       }
     },
+    terminated: () => {
+      console.error('Manifest DB was terminated unexpectedly!');
+      healthRef.healthy = false;
+
+      onDbError();
+    },
   });
 
-  return dbP;
+  return dbP.catch((e) => {
+    healthRef.healthy = false;
+    Sentry.captureException(e);
+    throw e;
+  });
 };
 
+let dbHealthRef = {
+  healthy: true,
+};
 let manifestDbP: Promise<IDBPDatabase<FeynoteLocalDB>> | undefined = undefined;
 export async function getManifestDb() {
-  if (!manifestDbP) manifestDbP = connect();
+  if (!manifestDbP || !dbHealthRef.healthy) {
+    dbHealthRef = {
+      healthy: true,
+    };
+    manifestDbP = connect(dbHealthRef);
+  }
 
   const manifestDb = await manifestDbP;
   return manifestDb;
