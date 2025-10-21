@@ -166,9 +166,9 @@ const onDbError = () => {
   ) {
     // We're in a service worker
     console.error(
-      'Attempting to unregister service worker since localdb is broken',
+      'Attempting to update service worker since localdb is broken',
     );
-    self.registration.unregister();
+    self.registration.update();
   } else {
     if (errorShown) return;
     errorShown = true;
@@ -197,15 +197,11 @@ const connect = async (healthRef: { healthy: boolean }) => {
 
         db.close();
 
-        // This script can be used from a service worker, and if so we
-        // want to trigger an update of the service worker to the latest
-        // else reload the page.
         if (
           'registration' in self &&
           self.registration instanceof ServiceWorkerRegistration
         ) {
           console.info('Attempting to update service worker');
-          // We're in a service worker
           self.registration.update();
         } else {
           // We're in a window
@@ -238,6 +234,8 @@ const connect = async (healthRef: { healthy: boolean }) => {
   return dbP.catch((e) => {
     healthRef.healthy = false;
     Sentry.captureException(e);
+
+    onDbError();
     throw e;
   });
 };
