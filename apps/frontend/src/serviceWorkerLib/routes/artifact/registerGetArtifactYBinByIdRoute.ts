@@ -4,6 +4,7 @@ import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
+import * as Sentry from '@sentry/browser';
 
 export function registerGetArtifactYBinByIdRoute() {
   registerRoute(
@@ -17,30 +18,36 @@ export function registerGetArtifactYBinByIdRoute() {
       if (!input || !input.id)
         throw new Error('No id provided in procedure input');
 
-      const docName = `artifact:${input.id}`;
-      const manifestDb = await getManifestDb();
-      const manifestArtifactVersion = await manifestDb.get(
-        ObjectStoreName.ArtifactVersions,
-        input.id,
-      );
-      if (!manifestArtifactVersion) {
-        const response = await fetch(event.request);
+      try {
+        const docName = `artifact:${input.id}`;
+        const manifestDb = await getManifestDb();
+        const manifestArtifactVersion = await manifestDb.get(
+          ObjectStoreName.ArtifactVersions,
+          input.id,
+        );
+        if (!manifestArtifactVersion) {
+          const response = await fetch(event.request);
 
-        return response;
+          return response;
+        }
+
+        const idbPersistence = new IndexeddbPersistence(docName, new YDoc());
+        await idbPersistence.whenSynced;
+
+        const yBin = encodeStateAsUpdate(idbPersistence.doc);
+
+        await idbPersistence.destroy();
+
+        return encodeCacheResultForTrpc<
+          typeof trpc.artifact.getArtifactYBinById.query
+        >({
+          yBin,
+        });
+      } catch (e) {
+        console.error(e);
+        Sentry.captureException(e);
+        return fetch(event.request);
       }
-
-      const idbPersistence = new IndexeddbPersistence(docName, new YDoc());
-      await idbPersistence.whenSynced;
-
-      const yBin = encodeStateAsUpdate(idbPersistence.doc);
-
-      await idbPersistence.destroy();
-
-      return encodeCacheResultForTrpc<
-        typeof trpc.artifact.getArtifactYBinById.query
-      >({
-        yBin,
-      });
     },
     'GET',
   );
