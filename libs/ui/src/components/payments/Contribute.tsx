@@ -212,6 +212,7 @@ export const Contribute: React.FC = () => {
         <ContributeDescription className="ion-padding">
           {t('contribute.description')}
         </ContributeDescription>
+        <br />
         {subscriptions.length > 0 && (
           <CurrentSubscriptionCard className="ion-padding">
             <IonCardTitle>{t('contribute.currentSubscriptions')}</IonCardTitle>
