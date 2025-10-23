@@ -67,18 +67,18 @@ const { title } = Astro.props;
         background-attachment: fixed;
         background-repeat: no-repeat;
         background-size: cover;
-        background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
+        background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
       }
 
       @media (min-width: 1121px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
+          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
         }
       }
 
       @media (min-width: 2241px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
+          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
         }
       }
     </style>
@@ -87,10 +87,11 @@ const { title } = Astro.props;
     <div class="nav">
       <a class="title" href="/">FeyNote (Alpha!)</a>
 
-      <a class="nav-item" href="https://discord.gg/Tz8trXrd4C">Discord</a>
+      <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
       <a class="nav-item" href="/pricing">Pricing</a>
       <a class="nav-item" href="/features">Features</a>
       <a class="nav-item" href="https://docs.feynote.com">Docs</a>
+      <a class="nav-item" href="/about">About</a>
     </div>
     <div class="content">
       <slot />

@@ -171,7 +171,9 @@
   "settings.version": "Application Version: {{version}}",
 
   "contribute.title": "Contribute",
-  "contribute.description": "FeyNote is a small project we made to fulfill our TTRPG needs. We want to make the platform accessible to anyone, but we also need your support. We only charge for features that are costly for us to host.",
+  "contribute.description": "FeyNote is a very small project (just me and my friend!), and we made it to fulfill our own TTRPG needs. Our goal is to make a platform accessible to anyone, but we also need your support.",
+  "contribute.description.2": "The only benefits you'll unlock here are things that are very costly for us to host. Even then, we provide free-level access to everything.",
+  "contribute.about": "Read more about us here.",
   "contribute.currentSubscriptions": "Current Subscriptions",
   "contribute.tier1.monthly": "Quill Bearer (Monthly)",
   "contribute.tier1.yearly": "Quill Bearer (Yearly)",
