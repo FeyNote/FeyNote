@@ -215,7 +215,10 @@ export const Contribute: React.FC = () => {
           {t('contribute.description')}
         </ContributeDescription>
         <ContributeDescription className="ion-padding">
-          {t('contribute.description.2')}
+          {t('contribute.description.2')}&nbsp;
+          <a href="https://feynote.com/about" target="_blank" rel="noreferrer">
+            {t('contribute.about')}
+          </a>
         </ContributeDescription>
         <br />
         {subscriptions.length > 0 && (
