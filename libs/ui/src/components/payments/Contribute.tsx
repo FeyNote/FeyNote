@@ -34,10 +34,12 @@ const OfferingCard = styled(IonCard)`
   grid-template-rows: auto 1fr;
 
   ul {
-    margin-left: auto;
-    margin-right: auto;
     text-align: left;
   }
+`;
+
+const OfferingCardDescription = styled.p`
+  text-align: left;
 `;
 
 const FrequencySelector = styled.div`
@@ -47,7 +49,7 @@ const FrequencySelector = styled.div`
 
 const ContributeDescription = styled.p`
   max-width: 700px;
-  text-align: center;
+  text-align: left;
   margin: auto;
 `;
 
@@ -212,6 +214,9 @@ export const Contribute: React.FC = () => {
         <ContributeDescription className="ion-padding">
           {t('contribute.description')}
         </ContributeDescription>
+        <ContributeDescription className="ion-padding">
+          {t('contribute.description.2')}
+        </ContributeDescription>
         <br />
         {subscriptions.length > 0 && (
           <CurrentSubscriptionCard className="ion-padding">
@@ -259,7 +264,9 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.free')}</IonCardTitle>
 
-            <p>{t('contribute.free.description')}</p>
+            <OfferingCardDescription>
+              {t('contribute.free.description')}
+            </OfferingCardDescription>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
@@ -278,7 +285,9 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier1')}</IonCardTitle>
 
-            <p>{t('contribute.tier1.description')}</p>
+            <OfferingCardDescription>
+              {t('contribute.tier1.description')}
+            </OfferingCardDescription>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
@@ -308,7 +317,9 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier2')}</IonCardTitle>
 
-            <p>{t('contribute.tier2.description')}</p>
+            <OfferingCardDescription>
+              {t('contribute.tier2.description')}
+            </OfferingCardDescription>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
@@ -338,7 +349,9 @@ export const Contribute: React.FC = () => {
           <OfferingCard>
             <IonCardTitle>{t('contribute.tier3')}</IonCardTitle>
 
-            <p>{t('contribute.tier3.description')}</p>
+            <OfferingCardDescription>
+              {t('contribute.tier3.description')}
+            </OfferingCardDescription>
 
             <CapabilitiesHeader>
               {t('contribute.capabilities')}
