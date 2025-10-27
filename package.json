@@ -183,7 +183,7 @@
     "jest-util": "30.2.0",
     "jiti": "2.6.1",
     "jsdom": "~27.0.1",
-    "lint-staged": "^16.2.4",
+    "lint-staged": "^16.2.6",
     "nx": "21.3.11",
     "prettier": "^3.6.2",
     "prisma": "^6.17.1",
