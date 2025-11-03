@@ -68,7 +68,7 @@
     "@tiptap/html": "^3.8.0",
     "@tiptap/react": "3.8.0",
     "@tiptap/suggestion": "3.8.0",
-    "@trpc/client": "^11.7.0",
+    "@trpc/client": "^11.7.1",
     "@trpc/server": "^11.1.1",
     "@types/cors": "^2.8.19",
     "@types/dedent": "^0.7.2",
