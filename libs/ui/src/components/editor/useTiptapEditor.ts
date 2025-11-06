@@ -1,4 +1,4 @@
-import { Editor, useEditor } from '@tiptap/react';
+import { Editor, selectionToInsertionEnd, useEditor } from '@tiptap/react';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { Doc as YDoc } from 'yjs';
 
@@ -82,6 +82,27 @@ export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
     extensions,
     onCreate: () => {
       args.onReady?.();
+    },
+    editorProps: {
+      handleDOMEvents: {
+        compositionend: (view, event) => {
+          const compositionEvent = event as CompositionEvent;
+
+          // Convert IME newlines to new paragraphs
+          if (compositionEvent.data.endsWith('\n')) {
+            const { state, dispatch } = view;
+            const { to } = state.selection;
+            const tr = state.tr.insert(
+              to,
+              editor.schema.nodes.paragraph.create(),
+            );
+            selectionToInsertionEnd(tr, tr.steps.length - 1, -1);
+            dispatch(tr);
+          }
+
+          return false;
+        },
+      },
     },
   });
 
