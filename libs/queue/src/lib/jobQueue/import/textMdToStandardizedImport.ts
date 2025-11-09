@@ -6,7 +6,7 @@ import path from 'path';
 import { getSafeArtifactId } from "@feynote/api-services";
 import { marked } from "marked";
 import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
-import { generateJSON } from "@tiptap/core";
+import { generateJSON } from "@tiptap/html";
 import { ArtifactAccessLevel, ArtifactTheme, ArtifactType } from "@prisma/client";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
@@ -29,7 +29,7 @@ export const textMdToStandardizedImport = async (args: {
     if (extension !== '.md' && extension !== '.txt') {
       continue
     }
-    let content = JSON.parse(await readFile(filePath, 'utf-8'));
+    let content = await readFile(filePath, 'utf8');
     const artifactId = (await getSafeArtifactId()).id;
     if (extension === '.md') {
       content = await replaceMarkdownMediaLinks(

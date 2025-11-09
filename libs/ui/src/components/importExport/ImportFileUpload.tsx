@@ -26,6 +26,13 @@ const Subtext = styled(IonText)`
   display: block;
 `;
 
+const HelpText = styled.div`
+  opacity: 0.6;
+  font-size: 12px;
+  font-style: italics;
+  padding-top: 8px;
+`;
+
 const Container = styled.div`
   display: flex;
   align-items: center;
@@ -61,6 +68,26 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
         return t('importFileUpload.instructions.default');
     }
   }, [props.format, t]);
+
+  const help = useMemo(() => {
+    switch (props.format) {
+      case 'obsidian':
+        return {
+          text: t('importFileUpload.help.obsidian'),
+          docsLink: 'https://docs.feynote.com/import/obsidian',
+        }
+      case 'logseq':
+        return {
+          text: t('importFileUpload.help.logseq'),
+          docsLink: 'https://docs.feynote.com/import/logseq',
+        }
+      default:
+        return {
+          text: t('importFileUpload.help.default'),
+          docsLink: 'https://docs.feynote.com/import/zip',
+        }
+    }
+  }, []);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
@@ -163,6 +190,7 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
             type="file"
             onChange={handleFileChange}
           />
+          <HelpText><a href={help.docsLink}>{help.text}</a></HelpText>
         </div>
       </IonContent>
     </IonPage>

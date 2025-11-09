@@ -5,7 +5,7 @@ import { readFile } from "fs/promises";
 import path from 'path';
 import { convertFile, FileFormat, getSafeArtifactId } from "@feynote/api-services";
 import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
-import { generateJSON } from "@tiptap/core";
+import { generateJSON } from "@tiptap/html";
 import { ArtifactAccessLevel, ArtifactTheme, ArtifactType } from "@prisma/client";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
@@ -35,21 +35,21 @@ export const docxToStandardizedImport = async (args: {
         extra: {
           userId: args.job.userId,
           jobId: args.job.id,
-          fileBaseName: path.basename(e.filePath)
+          fileBaseName: path.basename(filePath)
         },
       });
       throw new Error(e)
     })
-
     convertedFilePaths.push(convertedFilePath)
   }
 
   for (let i = 0; i < convertedFilePaths.length; i++) {
-    const filePath = args.filePaths[i];
+    const filePath = convertedFilePaths[i];
     const basename = path.basename(filePath);
-    const html = JSON.parse(await readFile(filePath, 'utf-8'));
+    const html = await readFile(filePath, 'utf-8');
     const artifactId = (await getSafeArtifactId()).id;
     const title = path.parse(basename).name;
+    console.log(`\n\ntitle: ${title}\n\n`)
 
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
