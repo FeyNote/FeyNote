@@ -70,6 +70,10 @@ io.on('connection', (socket) => {
     metrics.websocketMessageIncoming.inc();
   });
 
+  socket.on('disconnect', () => {
+    console.log("disconnect");
+  });
+
   metrics.websocketConnection.inc();
   const clientCount = io.of('/').sockets.size;
   metrics.websocketConnectionCount.set(clientCount);

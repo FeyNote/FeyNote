@@ -10,8 +10,13 @@ const { title } = Astro.props;
     <meta charset="utf-8" />
     <title>{title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="icon" type="image/x-icon" href="https://static.feynote.com/assets/favicon-20240925.ico" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="921628de-7259-4592-ae46-667d8d1f8b46"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
     <GlobalStyles />
     <style>
       html {
@@ -20,8 +25,26 @@ const { title } = Astro.props;
       body {
         margin: 0;
         padding: 8px;
-        color: white;
         min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          --bg-gradient-start: rgba(0,0,0,0.6);
+          --bg-gradient-end: rgba(0,0,0,0.8);
+          color: white;
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        body {
+          --bg-gradient-start: rgba(255,255,255,1);
+          --bg-gradient-end: rgba(255,255,255,0.0);
+          color: black;
+        }
       }
 
       a {
@@ -55,7 +78,7 @@ const { title } = Astro.props;
       }
 
       .content {
-        max-width: min(700px, 90%);
+        max-width: min(1500px, 90%);
         margin-top: 60px;
         margin-left: auto;
         margin-right: auto;
@@ -67,18 +90,18 @@ const { title } = Astro.props;
         background-attachment: fixed;
         background-repeat: no-repeat;
         background-size: cover;
-        background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
+        background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
       }
 
       @media (min-width: 1121px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
+          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
         }
       }
 
       @media (min-width: 2241px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
+          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
         }
       }
     </style>

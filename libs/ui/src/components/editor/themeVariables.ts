@@ -19,7 +19,7 @@ export const themeVariables = {
   `,
   classic: `
     --sheet-text-color: black;
-    --sheet-font-family: BookInsanityRemake;
+    --sheet-font-family: Libre Baskerville;
     --sheet-h1-color: #58180D;
     --sheet-h1-font-family: MrEavesRemake;
     --sheet-h2-color: #58180D;
