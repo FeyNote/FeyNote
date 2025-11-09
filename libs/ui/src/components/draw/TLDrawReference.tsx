@@ -11,6 +11,7 @@ import {
   StyleProp,
   T,
   TLBaseShape,
+  track,
 } from 'tldraw';
 import {
   FaAnchor,
@@ -37,18 +38,22 @@ import {
   ReferenceShapeProps,
 } from '@feynote/shared-utils';
 import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
+import { useTLDrawClusters } from './TLDrawClusterContext';
+import { isRepresentativeShape, getShapeCluster } from './clusteringUtils';
+import { getEditorClusterMap } from './TLDrawClusteringReactor';
 
 const StyledHTMLContainer = styled(HTMLContainer)<{
   $isHandMode: boolean;
   $radius: number;
   $type: ReferenceIconTLDrawStyle;
+  $isClustered?: boolean;
 }>`
   position: relative;
   margin-left: ${({ $radius }) => -$radius}px;
   margin-top: ${({ $radius }) => -$radius}px;
   width: ${({ $radius }) => $radius * 2}px;
   height: ${({ $radius }) => $radius * 2}px;
-  font-size: ${({ $radius }) => $radius * 2}px;
+  font-size: ${({ $radius, $isClustered }) => ($isClustered ? $radius * 2.5 : $radius * 2)}px;
   border-radius: 100%;
   ${({ $type }) =>
     $type === 'circle'
@@ -61,6 +66,7 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   pointer-events: all;
   text-align: center;
   vertical-align: middle;
+  transition: transform 0.2s ease;
 
   svg {
     overflow: visible;
@@ -70,6 +76,32 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
     }
   }
 `;
+
+const ClusterCountBadge = styled.div<{
+  $radius: number;
+}>`
+  font-size: ${(props) => props.$radius * 1.5}px;
+  line-height: ${(props) => props.$radius * 2}px;
+`;
+
+// const ClusterCountBadge = styled.div`
+//   position: absolute;
+//   top: -4px;
+//   right: -4px;
+//   background-color: #ff4444;
+//   color: white;
+//   border-radius: 50%;
+//   min-width: 20px;
+//   min-height: 20px;
+//   display: flex;
+//   align-items: center;
+//   justify-content: center;
+//   font-size: 12px;
+//   font-weight: bold;
+//   padding: 2px;
+//   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+//   z-index: 1;
+// `;
 
 export const referenceIconTLDrawStyle = StyleProp.defineEnum('reference:icon', {
   defaultValue: 'circle',
@@ -217,101 +249,9 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
    * Render method — the React component that will be rendered for the shape. It takes the
    * shape as an argument. HTMLContainer is just a div that's being used to wrap. We can get the shape's bounds using our own getGeometry method.
    */
-  component(shape: ReferenceShape) {
-    const { navigateWithKeyboardHandler } =
-      useNavigateWithKeyboardHandler(true);
-    const artifactId = useContext(TLDrawArtifactIdContext);
-    if (!artifactId) {
-      throw new Error('TLDrawReferenceUtil.component: missing artifactId');
-    }
-
-    const radius = this.getRadius();
-    const ref = useRef<HTMLDivElement>(null);
-
-    const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
-    const edge = useMemo(
-      () =>
-        getEdge({
-          artifactId,
-          artifactBlockId: shape.id,
-          targetArtifactId: shape.props.targetArtifactId,
-          targetArtifactBlockId: shape.props.targetArtifactBlockId,
-          targetArtifactDate: shape.props.targetArtifactDate,
-        }),
-      [getEdge],
-    );
-    const referenceText = edge?.referenceText || shape.props.referenceText;
-    const isHandMode = this.editor.getCurrentToolId() === 'hand';
-
-    const { previewInfo, onMouseOver, onMouseOut, close } =
-      useArtifactPreviewTimer(shape.props.targetArtifactId);
-
-    const linkClicked = (
-      event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
-    ) => {
-      if (!isHandMode) return;
-
-      event.preventDefault();
-      event.stopPropagation();
-
-      close();
-
-      navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
-        id: shape.props.targetArtifactId,
-        focusBlockId: shape.props.targetArtifactBlockId || undefined,
-        focusDate: shape.props.targetArtifactDate || undefined,
-      });
-    };
-
-    const contents = (
-      <>
-        <div
-          ref={ref}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: '100%',
-          }}
-        />
-        {previewInfo && ref.current && isHandMode && (
-          <ArtifactReferencePreview
-            artifactId={artifactId}
-            previewInfo={previewInfo}
-            referenceText={referenceText}
-            artifactBlockId={shape.props.targetArtifactBlockId || undefined}
-            artifactDate={shape.props.targetArtifactDate || undefined}
-            previewTarget={ref.current}
-            onClick={linkClicked}
-          />
-        )}
-      </>
-    );
-
-    return (
-      <StyledHTMLContainer
-        id={shape.id}
-        $radius={radius}
-        $isHandMode={isHandMode}
-        $type={shape.props.icon}
-        onMouseOver={onMouseOver}
-        onMouseOut={onMouseOut}
-        onClick={linkClicked}
-      >
-        {shape.props.icon === 'pin' && <FaMapPin />}
-        {shape.props.icon === 'star' && <FaStar />}
-        {shape.props.icon === 'fort' && <FaFortAwesome />}
-        {shape.props.icon === 'tree' && <FaTree />}
-        {shape.props.icon === 'flag' && <FaFlag />}
-        {shape.props.icon === 'anchor' && <FaAnchor />}
-        {shape.props.icon === 'heart' && <FaHeart />}
-        {shape.props.icon === 'home' && <FaHome />}
-        {shape.props.icon === 'sword' && <GiBroadsword />}
-        {shape.props.icon === 'monster' && <GiMonsterGrasp />}
-
-        {contents}
-      </StyledHTMLContainer>
-    );
-  }
+  component = (shape: ReferenceShape) => {
+    return <ReferenceShapeComponent shape={shape} util={this} />;
+  };
 
   // Indicator — used when hovering over a shape or when it's selected; must return only SVG elements here
   indicator(shape: ReferenceShape) {
@@ -322,3 +262,131 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
     );
   }
 }
+
+const ReferenceShapeComponent: React.FC<{ shape: ReferenceShape; util: TLDrawReferenceUtil }> = track(({ shape, util }) => {
+  const { navigateWithKeyboardHandler } =
+    useNavigateWithKeyboardHandler(true);
+  const artifactId = useContext(TLDrawArtifactIdContext);
+  if (!artifactId) {
+    throw new Error('TLDrawReferenceUtil.component: missing artifactId');
+  }
+
+  // Track camera to make this component reactive to zoom changes
+  const camera = util.editor.getCamera();
+  const zoomLevel = util.editor.getZoomLevel();
+
+  // Get clustering information from the WeakMap
+  const clusterMap = getEditorClusterMap(util.editor);
+  const cluster = getShapeCluster(shape.id, clusterMap);
+  const isRepresentative = isRepresentativeShape(shape.id, clusterMap);
+
+  const radius = util.getRadius();
+  const ref = useRef<HTMLDivElement>(null);
+
+  const { getEdge } = useEdgesForArtifactId(shape.props.targetArtifactId);
+  const edge = useMemo(
+    () =>
+      getEdge({
+        artifactId,
+        artifactBlockId: shape.id,
+        targetArtifactId: shape.props.targetArtifactId,
+        targetArtifactBlockId: shape.props.targetArtifactBlockId,
+        targetArtifactDate: shape.props.targetArtifactDate,
+      }),
+    [getEdge],
+  );
+  const referenceText = edge?.referenceText || shape.props.referenceText;
+  const isHandMode = util.editor.getCurrentToolId() === 'hand';
+
+  const { previewInfo, onMouseOver, onMouseOut, close } =
+    useArtifactPreviewTimer(shape.props.targetArtifactId);
+
+  const linkClicked = (
+    event: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>,
+  ) => {
+    if (!isHandMode) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    close();
+
+    // If this is a cluster, zoom in instead of navigating
+    if (cluster && cluster.count > 1) {
+      const bounds = util.editor.getShapePageBounds(shape);
+      if (bounds) {
+        // Calculate the target zoom level to reveal clustered items
+        const currentZoom = util.editor.getZoomLevel();
+        const targetZoom = Math.min(currentZoom * 2, 8); // Zoom in 2x, max 8x
+
+        util.editor.zoomToBounds(bounds, {
+          targetZoom,
+          animation: { duration: 300 },
+        });
+      }
+      return;
+    }
+
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: shape.props.targetArtifactId,
+      focusBlockId: shape.props.targetArtifactBlockId || undefined,
+      focusDate: shape.props.targetArtifactDate || undefined,
+    });
+  };
+
+  const contents = (
+    <>
+      <div
+        ref={ref}
+        style={{
+          position: 'absolute',
+          top: '100%',
+          left: '100%',
+        }}
+      />
+      {previewInfo && ref.current && isHandMode && (
+        <ArtifactReferencePreview
+          artifactId={artifactId}
+          previewInfo={previewInfo}
+          referenceText={referenceText}
+          artifactBlockId={shape.props.targetArtifactBlockId || undefined}
+          artifactDate={shape.props.targetArtifactDate || undefined}
+          previewTarget={ref.current}
+          onClick={linkClicked}
+        />
+      )}
+    </>
+  );
+
+  // Hide shapes that are part of a cluster but not the representative
+  if (cluster && !isRepresentative) {
+    return null;
+  }
+
+  return (
+    <StyledHTMLContainer
+      id={shape.id}
+      $radius={radius}
+      $isHandMode={isHandMode}
+      $type={shape.props.icon}
+      $isClustered={!!cluster}
+      onMouseOver={cluster ? undefined : onMouseOver}
+      onMouseOut={onMouseOut}
+      onClick={linkClicked}
+    >
+      {cluster && <ClusterCountBadge $radius={radius}>{cluster.count}</ClusterCountBadge>}
+      {shape.props.icon === 'pin' && <FaMapPin />}
+      {shape.props.icon === 'star' && <FaStar />}
+      {shape.props.icon === 'fort' && <FaFortAwesome />}
+      {shape.props.icon === 'tree' && <FaTree />}
+      {shape.props.icon === 'flag' && <FaFlag />}
+      {shape.props.icon === 'anchor' && <FaAnchor />}
+      {shape.props.icon === 'heart' && <FaHeart />}
+      {shape.props.icon === 'home' && <FaHome />}
+      {shape.props.icon === 'sword' && <GiBroadsword />}
+      {shape.props.icon === 'monster' && <GiMonsterGrasp />}
+
+      {contents}
+    </StyledHTMLContainer>
+  );
+});

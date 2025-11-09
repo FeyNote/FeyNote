@@ -76,6 +76,7 @@ import { CreateReferenceOverlayWrapper } from './CreateReferenceOverlayWrapper';
 import { TLDrawArtifactIdContext } from './TLDrawArtifactIdContext';
 import { TLDrawCustomStylePanel } from './TLDrawCustomStylePanel';
 import { t } from 'i18next';
+import { TLDrawClusteringReactor } from './TLDrawClusteringReactor';
 
 const ARTIFACT_DRAW_META_KEY = 'artifactDrawMeta';
 const MAX_ASSET_SIZE_MB = 25;
@@ -337,7 +338,9 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
             assetUrls={customAssetUrls}
             overrides={uiOverrides}
           >
-            <CreateReferenceOverlayWrapper />
+            <TLDrawClusteringReactor>
+              <CreateReferenceOverlayWrapper />
+            </TLDrawClusteringReactor>
           </Tldraw>
         </TLDrawArtifactIdContext.Provider>
       </StyledArtifactDrawStyles>
