@@ -40,37 +40,37 @@ const ImportOptionTitle = styled.div`
 `;
 
 const IMPORT_OPTIONS: {
-  logo: ReactNode,
+  component: ReactNode,
   title: string,
   type: ImportFormat
 }[] = [
   {
-    logo: <TbFileTypeDocx />,
+    component: <TbFileTypeDocx />,
     title: 'import.options.docx',
     type: 'docx'
   },
   {
-    logo: <FaGoogleDrive />,
+    component: <FaGoogleDrive />,
     title: 'import.options.gdrive',
-    type: 'docx'
+    type: 'gdrive'
   },
   {
-    logo: <SiObsidian />,
+    component: <SiObsidian />,
     title: 'import.options.obsidian',
     type: 'obsidian'
   },
   {
-    logo: <SiLogseq />,
+    component: <SiLogseq />,
     title: 'import.options.logseq',
     type: 'logseq'
   },
   {
-    logo: <AiFillFileMarkdown />,
+    component: <AiFillFileMarkdown />,
     title: 'import.options.markdown',
     type: 'markdown'
   },
   {
-    logo: <AiFillFileText />,
+    component: <AiFillFileText />,
     title: 'import.options.text',
     type: 'text',
   },
@@ -137,26 +137,27 @@ export const Import: React.FC = () => {
           />
         )}
         <br />
-        <ImportOptionsHeader>Import Options</ImportOptionsHeader>
+        <ImportOptionsHeader>{t('import.options.title')}</ImportOptionsHeader>
         <ImportOptionsContainer>
           { IMPORT_OPTIONS.map((option, i) => {
               return (
                 <StyledImportCard key={`option-${i}`} asChild>
                   <Button onClick={() => {
-                    if (option.type !== 'gdrive') {
-                      navigate(
-                        undefined, // Open in currently focused pane rather than in specific pane
-                        PaneableComponent.ImportFileUpload,
-                        {
-                          format: option.type,
-                        },
-                        PaneTransition.Push,
-                      );
+                    if (option.type === 'gdrive') {
+                      launchGFP();
                       return
                     }
-                    // TODO: Enable GFP
+                    navigate(
+                      undefined, // Open in currently focused pane rather than in specific pane
+                      PaneableComponent.ImportFileUpload,
+                      {
+                        format: option.type,
+                      },
+                      PaneTransition.Push,
+                    );
+                    return
                   }}>
-                    {option.logo}
+                    {option.component}
                     <ImportOptionTitle>{t(option.title)}</ImportOptionTitle>
                   </Button>
                 </StyledImportCard>

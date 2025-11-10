@@ -1,6 +1,5 @@
 import { exec } from 'child_process';
-import { tmpdir } from 'os';
-import { join, parse } from 'path';
+import { join, parse, basename } from 'path';
 
 export enum FileFormat {
   Html = 'html',
@@ -11,12 +10,12 @@ export enum FileFormat {
 
 export async function convertFile(args: {
   inputFilePath: string,
+  outputDir: string,
   inputFormat: FileFormat,
   outputFormat: FileFormat,
 }): Promise<string> {
-  const tempDir = tmpdir();
-  const outputUrl = join(tempDir, `${Date.now()}-${crypto.randomUUID()}`);
-  const title = parse(basename).name;
+  const title = parse(basename(args.inputFilePath)).name;
+  const outputUrl = join(args.outputDir, title);
   return new Promise<string>((res, rej) => {
     exec(
       `pandoc -f ${args.inputFormat} -t ${args.outputFormat} -o "${outputUrl}" "${args.inputFilePath}"`,

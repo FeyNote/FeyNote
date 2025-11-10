@@ -1,8 +1,7 @@
 import type { JobSummary } from "@feynote/prisma/types";
 import type { JobProgressTracker } from "../JobProgressTracker";
 import type { StandardizedImportInfo } from "./StandardizedImportInfo";
-import { readFile } from "fs/promises";
-import path from 'path';
+import path, { join } from 'path';
 import { convertFile, FileFormat, getSafeArtifactId } from "@feynote/api-services";
 import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
 import { generateJSON } from "@tiptap/html";
@@ -10,6 +9,8 @@ import { ArtifactAccessLevel, ArtifactTheme, ArtifactType } from "@prisma/client
 import { TiptapTransformer } from "@hocuspocus/transformer";
 import { applyUpdate, encodeStateAsUpdate } from "yjs";
 import * as Sentry from '@sentry/node';
+import { tmpdir } from "os";
+import { rm, mkdir, readFile } from 'fs/promises';
 
 export const docxToStandardizedImport = async (args: {
   job: JobSummary;
@@ -23,11 +24,15 @@ export const docxToStandardizedImport = async (args: {
 
   const convertedFilePaths: string[] = []
 
+  const tempDir = tmpdir();
+  const outputDir = join(tempDir, `${Date.now()}-${crypto.randomUUID()}`)
+  await mkdir(outputDir)
   for await (const filePath of args.filePaths) {
     if (path.extname(filePath) !== '.docx') continue
 
     const convertedFilePath = await convertFile({
       inputFilePath: filePath,
+      outputDir,
       inputFormat: FileFormat.Docx,
       outputFormat: FileFormat.Html,
     }).catch((e) => {
@@ -49,7 +54,6 @@ export const docxToStandardizedImport = async (args: {
     const html = await readFile(filePath, 'utf-8');
     const artifactId = (await getSafeArtifactId()).id;
     const title = path.parse(basename).name;
-    console.log(`\n\ntitle: ${title}\n\n`)
 
     const extensions = getTiptapServerExtensions({});
     const tiptap = generateJSON(html, extensions);
@@ -89,5 +93,7 @@ export const docxToStandardizedImport = async (args: {
       step: 1,
     });
   }
+
+  await rm(outputDir, { recursive: true });
   return importInfo
 }

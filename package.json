@@ -151,6 +151,7 @@
     "@swc/core": "1.13.5",
     "@swc/plugin-styled-components": "^9.1.0",
     "@types/express": "4.17.21",
+    "@types/google.picker": "^0.0.51",
     "@types/jest": "30.0.0",
     "@types/morgan": "^1.9.10",
     "@types/node": "24.5.2",

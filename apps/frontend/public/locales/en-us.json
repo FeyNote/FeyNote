@@ -248,6 +248,7 @@
 
   "import.title": "Import Documents",
   "import.jobList": "Import Jobs",
+  "import.options.title": "Import Options",
   "import.options.obsidian": "Obsidian",
   "import.options.logseq": "Logseq",
   "import.options.gdrive": "GDrive",
