@@ -141,6 +141,7 @@
   "settings.panesRememberOpenState": "Remember left & right menu open between restarts",
   "settings.leftSideMenu": "Start with left menu open",
   "settings.leftSideMenuShowArtifactTree": "Show document tree in left menu",
+  "settings.leftSideMenuArtifactTreeAutoExpandOnNavigate": "Automatically reveal documents within tree",
   "settings.leftSideMenuArtifactTreeShowUncategorized": "Show uncategorized documents section in document tree",
   "settings.leftSideMenuShowRecentThreads": "Show recent AI threads in left menu",
   "settings.rightSideMenu": "Start with right menu open",

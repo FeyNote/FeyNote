@@ -25,11 +25,11 @@ export const TLDrawClusteringReactor: React.FC<{
     'calculate-clusters',
     () => {
       // Track camera state to trigger on zoom/pan changes
-      const camera = editor.getCamera();
+      const _camera = editor.getCamera();
       const zoomLevel = editor.getZoomLevel();
 
       // Get all reference shapes without tracking them
-      const referenceShapes = editor
+      const _referenceShapes = editor
         .getCurrentPageShapes()
         .filter((shape) => shape.type === 'reference');
 
@@ -37,20 +37,31 @@ export const TLDrawClusteringReactor: React.FC<{
 
       // Recalculate clusters
       const newClusterMap = calculateClusters(editor);
-      console.log('[Clustering] Found', Object.keys(newClusterMap).length, 'shapes in clusters');
+      console.log(
+        '[Clustering] Found',
+        Object.keys(newClusterMap).length,
+        'shapes in clusters',
+      );
 
       // Store in WeakMap so shape components can access it
       editorClusterMaps.set(editor, newClusterMap);
 
       setClusterMap(newClusterMap);
-      setUpdateCounter(prev => prev + 1);
+      setUpdateCounter((prev) => prev + 1);
     },
-    [editor]
+    [editor],
   );
 
   useEffect(() => {
-    console.log('[Clustering] ClusterMap state updated, counter:', updateCounter);
-    console.log('[Clustering] Current clusterMap has', Object.keys(clusterMap).length, 'entries');
+    console.log(
+      '[Clustering] ClusterMap state updated, counter:',
+      updateCounter,
+    );
+    console.log(
+      '[Clustering] Current clusterMap has',
+      Object.keys(clusterMap).length,
+      'entries',
+    );
   }, [clusterMap, updateCounter]);
 
   return (

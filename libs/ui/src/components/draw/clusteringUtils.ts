@@ -1,4 +1,4 @@
-import { Editor, TLShape } from 'tldraw';
+import { Editor, Vec } from 'tldraw';
 import { ReferenceShape } from './TLDrawReference';
 
 export interface ShapeCluster {
@@ -28,7 +28,7 @@ const CLUSTER_RADIUS_PX = 7;
  */
 export function calculateClusters(
   editor: Editor,
-  clusterRadiusPx: number = CLUSTER_RADIUS_PX
+  clusterRadiusPx: number = CLUSTER_RADIUS_PX,
 ): ClusterMap {
   // Get all reference shapes
   const referenceShapes = editor
@@ -41,7 +41,7 @@ export function calculateClusters(
 
   // Convert shapes to screen coordinates
   const shapesWithScreenPos = referenceShapes.map((shape) => {
-    const pagePos = editor.getShapePageBounds(shape)!.center;
+    const pagePos = editor.getShapePageBounds(shape)?.center || new Vec();
     const screenPos = editor.pageToScreen(pagePos);
     return {
       shape,
@@ -59,18 +59,20 @@ export function calculateClusters(
     }
 
     // Find all nearby shapes
-    const nearbyShapes = shapesWithScreenPos.filter(({ shape: otherShape, screenPos: otherScreenPos }) => {
-      if (assignedShapes.has(otherShape.id)) {
-        return false;
-      }
+    const nearbyShapes = shapesWithScreenPos.filter(
+      ({ shape: otherShape, screenPos: otherScreenPos }) => {
+        if (assignedShapes.has(otherShape.id)) {
+          return false;
+        }
 
-      const distance = Math.sqrt(
-        Math.pow(screenPos.x - otherScreenPos.x, 2) +
-        Math.pow(screenPos.y - otherScreenPos.y, 2)
-      );
+        const distance = Math.sqrt(
+          Math.pow(screenPos.x - otherScreenPos.x, 2) +
+            Math.pow(screenPos.y - otherScreenPos.y, 2),
+        );
 
-      return distance <= clusterRadiusPx;
-    });
+        return distance <= clusterRadiusPx;
+      },
+    );
 
     if (nearbyShapes.length > 1) {
       // Create a cluster
@@ -81,8 +83,12 @@ export function calculateClusters(
       memberShapeIds.forEach((id) => assignedShapes.add(id));
 
       // Calculate center position of cluster
-      const centerX = nearbyShapes.reduce((sum, { screenPos }) => sum + screenPos.x, 0) / nearbyShapes.length;
-      const centerY = nearbyShapes.reduce((sum, { screenPos }) => sum + screenPos.y, 0) / nearbyShapes.length;
+      const centerX =
+        nearbyShapes.reduce((sum, { screenPos }) => sum + screenPos.x, 0) /
+        nearbyShapes.length;
+      const centerY =
+        nearbyShapes.reduce((sum, { screenPos }) => sum + screenPos.y, 0) /
+        nearbyShapes.length;
 
       clusters.push({
         clusterId: `cluster-${representativeShape.id}`,
@@ -108,7 +114,10 @@ export function calculateClusters(
 /**
  * Determines if a shape is the representative of its cluster.
  */
-export function isRepresentativeShape(shapeId: string, clusterMap: ClusterMap): boolean {
+export function isRepresentativeShape(
+  shapeId: string,
+  clusterMap: ClusterMap,
+): boolean {
   const cluster = clusterMap[shapeId];
   if (!cluster) {
     return true; // Not in a cluster, so it represents itself
@@ -119,6 +128,9 @@ export function isRepresentativeShape(shapeId: string, clusterMap: ClusterMap): 
 /**
  * Gets the cluster for a given shape, if it exists.
  */
-export function getShapeCluster(shapeId: string, clusterMap: ClusterMap): ShapeCluster | null {
+export function getShapeCluster(
+  shapeId: string,
+  clusterMap: ClusterMap,
+): ShapeCluster | null {
   return clusterMap[shapeId] || null;
 }

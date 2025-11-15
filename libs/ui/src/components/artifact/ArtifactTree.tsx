@@ -35,6 +35,7 @@ import {
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
+import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -68,6 +69,8 @@ export const UNCATEGORIZED_TREE_NODE_ID = 'uncategorized';
  */
 export const UNCATEGORIZED_CHILD_INDEX = 'X';
 
+const USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY = 'userTreeExpandedItemIds';
+
 interface Props {
   treeId: string; // This should be globally unique!
   registerAsGlobalTreeDragHandler: boolean; // This should only be enabled for the sidemenu tree
@@ -79,6 +82,7 @@ interface Props {
     targetId: string;
     treeId: string;
   }) => void;
+  enableOpenItemMemory?: boolean;
 }
 
 export const ArtifactTree: React.FC<Props> = (props) => {
@@ -88,12 +92,36 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );
+  const leftPaneArtifactTreeAutoExpandOnNavigate = getPreference(
+    PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
+  );
   const { artifactSnapshots } = useArtifactSnapshots();
-  const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [expandedItems, setExpandedItems] = useState<string[]>(() => {
+    if (!props.enableOpenItemMemory) return [];
+    try {
+      const mem = JSON.parse(
+        localStorage.getItem(USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY) || '[]',
+      );
+      if (Array.isArray(mem)) return mem;
+      return [];
+    } catch (_e) {
+      return [];
+    }
+  });
+  useEffect(() => {
+    setTimeout(() => {
+      // We offload this outside of the render cycle so it doesn't hang UI updates
+      localStorage.setItem(
+        USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY,
+        JSON.stringify(expandedItems),
+      );
+    });
+  }, [expandedItems]);
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
-  const setExpandedItemsRef = useRef(setExpandedItems);
-  setExpandedItemsRef.current = setExpandedItems;
+  const globalPaneContext = useGlobalPaneContext();
+  const focusedPane = globalPaneContext.getPaneById(undefined);
+
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
@@ -306,6 +334,33 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     });
   };
 
+  const getAllParentsOf = (itemId: string): string[] => {
+    const treeItem = treeItemsById.get(itemId);
+    if (!treeItem) return [];
+    if (!treeItem.parentId || treeItem.parentId === ROOT_TREE_NODE_ID)
+      return [];
+
+    return [treeItem.parentId, ...getAllParentsOf(treeItem.parentId)];
+  };
+
+  const focusedArtifactId: string | undefined =
+    focusedPane.currentView.component === PaneableComponent.Artifact
+      ? focusedPane.currentView.props.id
+      : undefined;
+  useEffect(() => {
+    if (!leftPaneArtifactTreeAutoExpandOnNavigate) return;
+    if (!focusedArtifactId) return;
+
+    const parents = getAllParentsOf(focusedArtifactId);
+
+    const set = new Set(expandedItemsRef.current);
+    for (const parent of parents) {
+      set.add(parent);
+    }
+    set.add(focusedArtifactId);
+    setExpandedItems([...set]);
+  }, [focusedPane.currentView.navigationEventId]);
+
   const tree = useTree({
     state: {
       expandedItems,
@@ -392,13 +447,14 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     }
   };
 
-  const onItemBodyClick = (
+  const onItemBodyFirstClick = (
     event: MouseEvent,
     itemInstance: ItemInstance<InternalTreeItem | undefined>,
   ) => {
     const item = treeItemsById.get(itemInstance.getId());
     if (!item) {
-      throw new Error('Item that does not exist in tree was somehow clicked');
+      console.error('Item that does not exist in tree was somehow clicked');
+      return;
     }
 
     if (props.onNodeClicked) {
@@ -415,13 +471,27 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     if (item.id === UNCATEGORIZED_TREE_NODE_ID) {
       // We ignore clicks on uncategorized because it's not navigable
-      // actions.toggleExpandedState();
       return;
     }
 
     navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
       id: item.id,
     });
+  };
+
+  const onItemBodyDoubleClick = (
+    _event: MouseEvent,
+    itemInstance: ItemInstance<InternalTreeItem | undefined>,
+  ) => {
+    const item = treeItemsById.get(itemInstance.getId());
+    if (!item) {
+      console.error('Item that does not exist in tree was somehow clicked');
+      return;
+    }
+
+    setExpandedItems(
+      Array.from(new Set([...expandedItemsRef.current, item.id])),
+    );
   };
 
   const parentRef = useRef<HTMLDivElement | null>(null);
@@ -454,7 +524,13 @@ export const ArtifactTree: React.FC<Props> = (props) => {
               expandedItems={expandedItems}
               setExpandedItems={setExpandedItems}
               enableContextMenu={props.enableItemContextMenu}
-              onBodyClick={(event) => onItemBodyClick(event, itemInstance)}
+              onBodyFirstClick={(event) =>
+                onItemBodyFirstClick(event, itemInstance)
+              }
+              onBodyDoubleClick={(event) =>
+                onItemBodyDoubleClick(event, itemInstance)
+              }
+              isActive={focusedArtifactId === itemInstance.getId()}
             />
           );
         })}

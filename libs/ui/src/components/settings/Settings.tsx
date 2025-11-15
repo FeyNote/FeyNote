@@ -404,6 +404,23 @@ export const Settings: React.FC = () => {
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(
+                  PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.leftSideMenuArtifactTreeAutoExpandOnNavigate')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={getPreference(
                   PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
                 )}
                 onIonChange={(event) =>

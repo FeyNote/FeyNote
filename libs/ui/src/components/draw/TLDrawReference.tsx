@@ -38,7 +38,6 @@ import {
   ReferenceShapeProps,
 } from '@feynote/shared-utils';
 import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
-import { useTLDrawClusters } from './TLDrawClusterContext';
 import { isRepresentativeShape, getShapeCluster } from './clusteringUtils';
 import { getEditorClusterMap } from './TLDrawClusteringReactor';
 
@@ -53,7 +52,8 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   margin-top: ${({ $radius }) => -$radius}px;
   width: ${({ $radius }) => $radius * 2}px;
   height: ${({ $radius }) => $radius * 2}px;
-  font-size: ${({ $radius, $isClustered }) => ($isClustered ? $radius * 2.5 : $radius * 2)}px;
+  font-size: ${({ $radius, $isClustered }) =>
+    $isClustered ? $radius * 2.5 : $radius * 2}px;
   border-radius: 100%;
   ${({ $type }) =>
     $type === 'circle'
@@ -263,17 +263,19 @@ export class TLDrawReferenceUtil extends ShapeUtil<ReferenceShape> {
   }
 }
 
-const ReferenceShapeComponent: React.FC<{ shape: ReferenceShape; util: TLDrawReferenceUtil }> = track(({ shape, util }) => {
-  const { navigateWithKeyboardHandler } =
-    useNavigateWithKeyboardHandler(true);
+const ReferenceShapeComponent: React.FC<{
+  shape: ReferenceShape;
+  util: TLDrawReferenceUtil;
+}> = track(({ shape, util }) => {
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const artifactId = useContext(TLDrawArtifactIdContext);
   if (!artifactId) {
     throw new Error('TLDrawReferenceUtil.component: missing artifactId');
   }
 
   // Track camera to make this component reactive to zoom changes
-  const camera = util.editor.getCamera();
-  const zoomLevel = util.editor.getZoomLevel();
+  const _camera = util.editor.getCamera();
+  const _zoomLevel = util.editor.getZoomLevel();
 
   // Get clustering information from the WeakMap
   const clusterMap = getEditorClusterMap(util.editor);
@@ -374,7 +376,9 @@ const ReferenceShapeComponent: React.FC<{ shape: ReferenceShape; util: TLDrawRef
       onMouseOut={onMouseOut}
       onClick={linkClicked}
     >
-      {cluster && <ClusterCountBadge $radius={radius}>{cluster.count}</ClusterCountBadge>}
+      {cluster && (
+        <ClusterCountBadge $radius={radius}>{cluster.count}</ClusterCountBadge>
+      )}
       {shape.props.icon === 'pin' && <FaMapPin />}
       {shape.props.icon === 'star' && <FaStar />}
       {shape.props.icon === 'fort' && <FaFortAwesome />}

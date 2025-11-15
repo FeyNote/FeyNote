@@ -249,6 +249,7 @@ export const LeftSideMenu: React.FC = () => {
             editable={true}
             mode="navigate"
             enableItemContextMenu={true}
+            enableOpenItemMemory={true}
           />
         </TreeCard>
       )}

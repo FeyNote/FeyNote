@@ -7,6 +7,7 @@ import { IoChevronDown, IoChevronForward } from '../AppIcons';
 import { ItemInstance } from '@headless-tree/core';
 import { VirtualItem, type Virtualizer } from '@tanstack/react-virtual';
 import { MouseEvent } from 'react';
+import { useSingleDoubleClick } from '../../utils/useSingleDoubleClick';
 
 const TreeListItem = styled.li<{
   $isDragTarget: boolean;
@@ -34,7 +35,7 @@ const TreeItemContainer = styled.div<{
 }>`
   display: flex;
   align-items: center;
-  padding-left: 8px;
+  padding-left: 10px;
 `;
 
 const ItemArrow = styled.div`
@@ -52,8 +53,14 @@ const ItemArrow = styled.div`
   }
 `;
 
+const TreeLevelSink = styled.div`
+  margin-left: 20px;
+  border-left: 1px solid var(--card-background-active);
+`;
+
 const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
+  $isActive: boolean;
 }>`
   white-space: nowrap;
   overflow: hidden;
@@ -68,6 +75,12 @@ const TreeItemButton = styled.button<{
   border-radius: 5px;
   padding-left: 8px;
   padding-right: 8px;
+
+  ${(props) =>
+    props.$isActive &&
+    `
+    background-color: var(--card-background-active);
+  `}
 
   ${(props) =>
     props.$isUncategorized &&
@@ -91,16 +104,22 @@ interface ArtifactTreeItemProps {
   virtualItemInstance: VirtualItem;
   treeItemsById: Map<string, InternalTreeItem>;
   itemIdsByParentId: Map<string | null, string[]>;
+  isActive: boolean;
   expandedItems: string[];
   setExpandedItems: (expandedItems: string[]) => void;
   enableContextMenu: boolean;
-  onBodyClick: (event: MouseEvent) => void;
+  onBodyFirstClick: (event: MouseEvent) => void;
+  onBodyDoubleClick: (event: MouseEvent) => void;
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   const item = props.treeItemsById.get(props.itemInstance.getId());
-  if (!item)
-    throw new Error('Attempted to render item that is not in the tree');
+
+  const { onClick, onDoubleClick } = useSingleDoubleClick(
+    undefined,
+    props.onBodyDoubleClick,
+    props.onBodyFirstClick,
+  );
 
   const setExpanded = (expanded: boolean) => {
     const expandedItems = new Set(props.expandedItems);
@@ -114,6 +133,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   };
 
   const expandAll = () => {
+    if (!item) return;
     const expandedItems = new Set(props.expandedItems);
     expandedItems.add(props.itemInstance.getId());
 
@@ -130,6 +150,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   };
 
   const collapseAll = () => {
+    if (!item) return;
     const expandedItems = new Set(props.expandedItems);
     expandedItems.delete(props.itemInstance.getId());
 
@@ -145,18 +166,18 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     props.setExpandedItems(Array.from(expandedItems));
   };
 
-  return (
-    <TreeListItem
-      {...props.itemInstance.getProps()}
-      $isUncategorized={
-        props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
-      }
-      $isDragTarget={props.itemInstance.isDragTarget()}
-      style={{
-        transform: `translateY(${props.virtualItemInstance.start}px)`,
-        paddingLeft: `${props.itemInstance.getItemMeta().level * 20}px`,
-      }}
-    >
+  if (!item) {
+    // When removing an item from the tree there is a render before the virtualized
+    // list removes the item that this component will be renderered
+    return null;
+  }
+
+  const renderSink = (content: React.ReactNode) => {
+    return <TreeLevelSink>{content}</TreeLevelSink>;
+  };
+
+  const renderContents = () => {
+    const innerContent = (
       <ArtifactTreeItemContextMenu
         enabled={
           props.enableContextMenu && item.id !== UNCATEGORIZED_TREE_NODE_ID
@@ -172,22 +193,47 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
           $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
         >
           {!!props.itemIdsByParentId.get(item.id)?.length && (
-            <ItemArrow>
+            <ItemArrow
+              onClick={() => setExpanded(!props.itemInstance.isExpanded())}
+            >
               {props.itemInstance.isExpanded() ? (
-                <IoChevronDown onClick={() => setExpanded(false)} size={16} />
+                <IoChevronDown size={16} />
               ) : (
-                <IoChevronForward onClick={() => setExpanded(true)} size={16} />
+                <IoChevronForward size={16} />
               )}
             </ItemArrow>
           )}
           <TreeItemButton
-            onClick={props.onBodyClick}
+            onClick={onClick}
+            onDoubleClick={onDoubleClick}
             $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
+            $isActive={props.isActive}
           >
             {item.title}
           </TreeItemButton>
         </TreeItemContainer>
       </ArtifactTreeItemContextMenu>
+    );
+
+    let previousContent = innerContent;
+    for (let i = 0; i < props.itemInstance.getItemMeta().level; i++) {
+      previousContent = renderSink(previousContent);
+    }
+    return previousContent;
+  };
+
+  return (
+    <TreeListItem
+      {...props.itemInstance.getProps()}
+      $isUncategorized={
+        props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
+      }
+      $isDragTarget={props.itemInstance.isDragTarget()}
+      style={{
+        transform: `translateY(${props.virtualItemInstance.start}px)`,
+      }}
+    >
+      {renderContents()}
     </TreeListItem>
   );
 };
