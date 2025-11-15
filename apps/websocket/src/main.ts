@@ -71,12 +71,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log("disconnect");
+    metrics.websocketConnectionCount.set(io.of('/').sockets.size);
   });
 
   metrics.websocketConnection.inc();
-  const clientCount = io.of('/').sockets.size;
-  metrics.websocketConnectionCount.set(clientCount);
+  metrics.websocketConnectionCount.set(io.of('/').sockets.size);
 });
 
 io.listen(globalServerConfig.websocket.wsPort);
