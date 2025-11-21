@@ -75,7 +75,7 @@
     "@types/multer": "^2.0.0",
     "@types/remove-markdown": "^0.3.4",
     "ai": "^5.0.2",
-    "astro": "^5.15.8",
+    "astro": "^5.16.0",
     "axios": "^1.13.2",
     "bullmq": "^5.63.0",
     "commander": "^14.0.2",
