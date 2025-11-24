@@ -93,7 +93,7 @@
     "idb": "^8.0.3",
     "ionicons": "^8.0.13",
     "ioredis": "^5.8.2",
-    "marked": "^17.0.0",
+    "marked": "^17.0.1",
     "minisearch": "^7.2.0",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
