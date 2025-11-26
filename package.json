@@ -161,7 +161,7 @@
     "@types/react-is": "19.2.0",
     "@types/sanitize-html": "^2.16.0",
     "@types/serviceworker": "^0.0.167",
-    "@types/styled-components": "5.1.35",
+    "@types/styled-components": "5.1.36",
     "@types/turndown": "^5.0.6",
     "@types/zip-stream": "^7.0.0",
     "@typescript-eslint/eslint-plugin": "8.44.1",
