@@ -334,7 +334,7 @@
   "graph.settings.lockedArtifacts": "Locked Documents",
   "graph.settings.lockedArtifacts.help": "These documents are locked in place and will not move. You can use this to organize your graph into sections.",
   "graph.nullState.title": "No Documents",
-  "graph.nullState.message": "Click the plus button in the bottom right corner to create one!",
+  "graph.nullState.message": "Create a document in the left side menu!",
 
   "newArtifact.title": "New Document",
   "artifact.title": "Document",
