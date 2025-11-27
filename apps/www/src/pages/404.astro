@@ -1,0 +1,44 @@
+---
+import RootLayout from '../components/RootLayout.astro'
+import GoToAppButton from '../components/GoToAppButton.astro'
+---
+<style>
+  .center {
+    text-align: center;
+  }
+
+  .page-content {
+    max-width: min(1500px, 75%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  @media (prefers-color-scheme: light) {
+    .cloud-content {
+      background: var(--card-bg);
+      padding: 20px;
+      box-shadow: 1px 1px 20px rgba(0,0,0,0.2);
+    }
+  }
+
+  h2 {
+    font-size: 1rem;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+</style>
+<RootLayout title="About Us - Feynote">
+  <div class="page-content">
+    <h1>Not Found</h1>
+
+    The resource you specified was not found.
+
+    <br />
+    <br />
+    <br />
+
+    <div class="center">
+      <GoToAppButton />
+    </div>
+  </div>
+</RootLayout>

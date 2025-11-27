@@ -3,13 +3,41 @@ import RootLayout from '../components/RootLayout.astro'
 import GoToAppButton from '../components/GoToAppButton.astro'
 ---
 <style>
+  .page-content {
+    max-width: min(1500px, 90%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pricing-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .pricing-card {
+    width: min(100%, 300px);
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+    background: var(--card-bg);
+    border-radius: 4px;
+    padding: 15px;
+  }
+
+  .pricing-card h2 {
+    font-size: 1.3rem;
+    margin-top: 4px;
+  }
+
   .center {
     text-align: center;
   }
 </style>
 <RootLayout title="Pricing - Feynote">
-  <div>
-    <h1 class="center">Pricing</h1>
+  <div class="page-content">
+    <h1>Always Free</h1>
+
+    <br />
 
     All features within FeyNote are <i>completely</i> free to use and it's our goal for this platform to be an accessible place without any ads or limits on amount of content.
 
@@ -19,7 +47,67 @@ import GoToAppButton from '../components/GoToAppButton.astro'
 
     <br /><br />
 
-    All funds that are contributed go directly towards the improvement of the platform. We're not a for-profit corporation. If you find FeyNote useful, please consider supporting us!<br />
+    All funds that are contributed go directly towards the improvement of the platform, and our artists. We do not seek to make a profit from this app. If you find FeyNote useful, please consider supporting us!
+
+    <br /><br />
+    <br /><br />
+
+    <div class="pricing-list">
+      <div class="pricing-card">
+        <h2>Free</h2>
+
+        <div>
+          All application functionality, for free.
+        </div>
+
+        <ul>
+          <li>Unlimited documents</li>
+          <li>Unlimited embedded images</li>
+          <li>Unlimited devices</li>
+          <li>Document revisions (up to 10)</li>
+          <li>Content Importer</li>
+          <li>Absolutely zero ads, ever</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h2>Quill Bearer</h2>
+
+        <div>
+          $2/mo or $20/yr
+        </div>
+
+        <ul>
+          <li>High resolution images (2k)</li>
+          <li>Larger embedded files (20MB)</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h2>Inkling</h2>
+
+        <div>
+          $5/mo or $40/yr
+        </div>
+
+        <ul>
+          <li>High resolution images (4k)</li>
+          <li>Larger embedded files (50MB)</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h2>Tome Keeper</h2>
+
+        <div>
+          $10/mo or $80/yr
+        </div>
+
+        <ul>
+          <li>That's it - but thank you, we really appreciate it</li>
+        </ul>
+      </div>
+    </div>
 
     <br />
     <br />

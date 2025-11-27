@@ -1,0 +1,60 @@
+---
+import RootLayout from '../../components/RootLayout.astro'
+import GoToAppButton from '../../components/GoToAppButton.astro'
+import { getCollection, getEntry, render } from 'astro:content';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+if (!post) {
+  return Astro.redirect('/404');
+}
+const { Content } = await render(post);
+---
+<style>
+  .page-content {
+    max-width: min(1500px, 75%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .post a {
+    text-decoration: none;
+    display: grid;
+    grid-template-columns: 100px auto;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .post img {
+    width: 100px;
+  }
+
+  .page-content > h1 {
+    font-family: "Libre Baskerville";
+    margin-bottom: 0;
+  }
+
+  time {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+</style>
+<RootLayout title={post.data.title + " - FeyNote"}>
+  <div class="page-content">
+    <h1>{post.data.title}</h1>
+    <time>{post.data.publishDate.toLocaleDateString()}</time>&nbsp;&nbsp;&nbsp;&nbsp;<time>{post.data.readingTime}</time>
+    <br />
+    <br />
+
+    <Content />
+  </div>
+</RootLayout>
