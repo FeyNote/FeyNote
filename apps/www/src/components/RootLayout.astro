@@ -86,7 +86,8 @@ const finalStructuredData = structuredData || defaultStructuredData;
     <script defer src="https://cloud.umami.is/script.js" data-website-id="921628de-7259-4592-ae46-667d8d1f8b46"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"></noscript>
 
     <GlobalStyles />
     <style>
@@ -126,8 +127,8 @@ const finalStructuredData = structuredData || defaultStructuredData;
       }
 
       .nav {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto auto;
         align-items: center;
         justify-content: left;
         height: 40px;
@@ -147,6 +148,12 @@ const finalStructuredData = structuredData || defaultStructuredData;
 
       .nav .title img {
         width: 30px;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        line-height: 2rem;
       }
 
       .nav .nav-item {
@@ -191,16 +198,18 @@ const finalStructuredData = structuredData || defaultStructuredData;
   <body class="fantasy-bg">
     <div class="nav">
       <a class="title" href="/">
-        <img src="https://static.feynote.com/icons/feynote-icon-60x60-20251130.png" />
+        <img src="https://static.feynote.com/icons/feynote-icon-60x60-20251130.png" alt="FeyNote logo" />
         FeyNote
       </a>
 
-      <a class="nav-item" href="/pricing">Pricing</a>
-      <a class="nav-item" href="/blog">Blog</a>
-      <a class="nav-item" href="/about">About</a>
-      <a class="nav-item" href="https://docs.feynote.com">Docs</a>
-      <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
-      <a class="nav-item" href="https://github.com/redchickenco/feynote" target="_blank">GitHub</a>
+      <div class="nav-links">
+        <a class="nav-item" href="/pricing">Pricing</a>
+        <a class="nav-item" href="/blog">Blog</a>
+        <a class="nav-item" href="/about">About</a>
+        <a class="nav-item" href="https://docs.feynote.com">Docs</a>
+        <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
+        <a class="nav-item" href="https://github.com/redchickenco/feynote" target="_blank">GitHub</a>
+      </div>
     </div>
     <div class="content">
       <slot />
