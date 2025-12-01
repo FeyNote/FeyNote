@@ -85,7 +85,10 @@ const sortedPosts = posts.sort((a, b) =>
     margin-bottom: 10px;
   }
 </style>
-<RootLayout title="Blog - Feynote">
+<RootLayout
+  title="Blog - FeyNote"
+  description="Tips, guides, and updates for TTRPG players and Dungeon Masters. Learn how to organize your D&D campaigns, build worlds, and get the most out of FeyNote."
+>
   <div class="page-content">
     <h1>Our Blog</h1>
     <br />
@@ -93,7 +96,7 @@ const sortedPosts = posts.sort((a, b) =>
       {sortedPosts.map(post => (
         <li class="post">
           <a href={`/blog/${post.slug}`}>
-            <img src={post.data.featuredImageUrl} />
+            <img src={post.data.featuredImageUrl} alt={`Featured image for ${post.data.title}`} />
             <div class="post-title">
               <h2>{post.data.title}</h2>
               <time>{post.data.publishDate.toLocaleDateString()}</time>

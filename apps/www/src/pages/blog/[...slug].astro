@@ -18,6 +18,32 @@ if (!post) {
   return Astro.redirect('/404');
 }
 const { Content } = await render(post);
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": post.data.title,
+  "description": post.data.description,
+  "image": post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg",
+  "datePublished": post.data.publishDate.toISOString(),
+  "dateModified": post.data.updatedDate?.toISOString() || post.data.publishDate.toISOString(),
+  "author": {
+    "@type": "Person",
+    "name": post.data.author || "FeyNote Team"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "FeyNote",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://static.feynote.com/icons/feynote-icon-original-20241220.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": `https://feynote.com/blog/${post.slug}`
+  }
+};
 ---
 <style>
   .page-content {
@@ -55,7 +81,13 @@ const { Content } = await render(post);
     margin-bottom: 10px;
   }
 </style>
-<RootLayout title={post.data.title + " - FeyNote"}>
+<RootLayout
+  title={post.data.title + " - FeyNote"}
+  description={post.data.description}
+  image={post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"}
+  ogType="article"
+  structuredData={articleSchema}
+>
   <div class="page-content">
     <div class="blog-content-container standard-box-shadow">
       <h1>{post.data.title}</h1>
