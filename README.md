@@ -10,8 +10,6 @@
 
 </div>
 
----
-
 ## ✨ What is FeyNote?
 
 FeyNote is a free, open-source note-taking application specifically designed for tabletop RPG enthusiasts and world-builders. Whether you're a dungeon master crafting intricate campaigns or a player keeping track of your character's journey, FeyNote provides powerful tools to organize, share, and bring your TTRPG worlds to life.
@@ -58,8 +56,6 @@ _Fully customizable fantasy calendar system_
 - **JSON**: Export documents in structured JSON format
 - **Markdown**: Standard markdown export for portability
 
----
-
 ## 🛠️ Tech Stack
 
 FeyNote is built with modern web technologies:
@@ -74,8 +70,6 @@ FeyNote is built with modern web technologies:
 - **Search**: Typesense (for online) + MiniSearch (for offline)
 - **Content Import, Scraping, any (light) AI**: AI SDK
 - **Website**: Astro
-
----
 
 ## 🚀 Getting Started
 
@@ -134,8 +128,6 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
 4. Set the webhook signing secret in your `.env` file as `STRIPE_WEBHOOK_SECRET`
 5. Set the API key in your `.env` file as `STRIPE_API_KEY`
 
----
-
 ## 🗂️ Project Structure
 
 ```
@@ -153,8 +145,6 @@ feynote/
 ├── prisma/               # Database schema and migrations
 └── scripts/              # Utility scripts
 ```
-
----
 
 ## 🤝 Contributing
 
@@ -193,8 +183,6 @@ We welcome contributions from the community! FeyNote is built by TTRPG enthusias
    ```
 6. **Open a Pull Request**
 
----
-
 ## 📜 License
 
 FeyNote uses a **dual-license model**:
@@ -215,8 +203,6 @@ This license section is not a complete overview of the licensing terms. See [LIC
 
 All contributors must sign our [CLA](CLA.md), which assigns copyright to the project maintainers (Julian Poyourow and Chris Meyer) to enable dual licensing.
 
----
-
 ## 🌟 Roadmap
 
 We're actively working on:
@@ -227,8 +213,6 @@ We're actively working on:
 - **Native Apps**: Desktop and mobile applications
 - **Additional Export Formats**: More ways to export your content
 
----
-
 ## 💬 Community & Support
 
 - **Website**: [feynote.com](https://feynote.com)
@@ -237,16 +221,12 @@ We're actively working on:
 - **Email**: julian@poyourow.com
 - **Commercial Licensing**: julian@poyourow.com
 
----
-
 ## 👥 Team
 
 **Julian Poyourow** - Co-creator, Software Engineer @ Mozilla, creator of [RecipeSage](https://recipesage.com)
 **Chris Meyer** - Co-creator, Software Engineer @ 2U
 
 We're both passionate TTRPG players and software engineers who built FeyNote to enhance the tabletop gaming experience for ourselves and the community.
-
----
 
 <div align="center">
 
