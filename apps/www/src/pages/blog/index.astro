@@ -10,26 +10,69 @@ const sortedPosts = posts.sort((a, b) =>
 ---
 <style>
   .page-content {
-    max-width: min(1500px, 90%);
+    max-width: min(1500px, 100%);
     margin-left: auto;
     margin-right: auto;
   }
 
+  ul {
+    padding: 0;
+  }
+
+  .posts-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+
+  @media (max-width: 2000px) {
+    .posts-container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 1400px) {
+    .posts-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .posts-container {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .post {
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
     list-style: none;
     margin-bottom: 40px;
+    background: var(--blogpost-bg);
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+  }
+
+  .post:hover {
+    opacity: 0.9;
+  }
+
+  .post-title {
+    padding: 20px;
   }
 
   .post a {
     text-decoration: none;
     display: grid;
-    grid-template-columns: 100px auto;
-    gap: 20px;
-    align-items: center;
+    grid-template-rows: auto auto;
   }
 
   .post img {
-    width: 100px;
+    height: 300px;
+    width: 100%;
+    object-fit: cover;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .post h2 {
@@ -44,14 +87,14 @@ const sortedPosts = posts.sort((a, b) =>
 </style>
 <RootLayout title="Blog - Feynote">
   <div class="page-content">
-    <h1>Blog</h1>
+    <h1>Our Blog</h1>
     <br />
-    <ul>
+    <ul class="posts-container">
       {sortedPosts.map(post => (
         <li class="post">
           <a href={`/blog/${post.slug}`}>
             <img src={post.data.featuredImageUrl} />
-            <div>
+            <div class="post-title">
               <h2>{post.data.title}</h2>
               <time>{post.data.publishDate.toLocaleDateString()}</time>
               <p>{post.data.preview}</p>

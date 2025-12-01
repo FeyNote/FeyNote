@@ -1,6 +1,6 @@
 ---
 title: So You've Found a Cursed Item... A Player's Guide to Embracing the Chaos
-featuredImageUrl: https://static.feynote.com/icons/feynote-icon-original-20241220.png
+featuredImageUrl: https://static.feynote.com/screenshots/feynote-graph-20240924.png
 description: A new blog begins
 preview: A new blog begins
 readingTime: 1 Minute Read

@@ -19,7 +19,7 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       gap: var(--gap-size);
 
       margin-top: 100px;
-      margin-bottom: 80px;
+      margin-bottom: 120px;
     }
 
     .main-split-left {
@@ -39,12 +39,32 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       }
     }
 
+    .sections-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(auto, min-content);
+      gap: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .sections-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .section {
-      margin-top: 80px;
+      margin-top: 40px;
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      justify-items: center;
+    }
+
+    .section h2 {
+      margin: 0;
     }
 
     .section .description {
-      margin-bottom: 30px;
       max-width: min(90%, 700px);
       margin-left: auto;
       margin-right: auto;
@@ -54,6 +74,15 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       max-width: min(100%, max(50%, 700px));
       border-radius: 8px;
       box-shadow: 1px 1px 7px rgba(0,0,0,0.5);
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      object-position: top left;
+    }
+
+    .main-split img.preview {
+      width: auto;
+      height: auto;
     }
   </style>
   <div>
@@ -79,67 +108,69 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       </div>
     </div>
 
-    <div class="section center">
-      <h2>Statblocks, Spells, and Items</h2>
+    <div class="sections-container">
+      <div class="section center">
+        <h2>Statblocks, Spells, and Items</h2>
 
-      <div class="description">
-        Your monsters, spells, and items exist <b>inside</b> of your notes.<br />
-        Create custom content, or tweak official content as you edit.
+        <div class="description">
+          Your monsters, spells, and items exist <b>inside</b> of your notes.<br />
+          Create custom content, or tweak official content as you edit.
+        </div>
+
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg" alt="FeyNote Embedded Statblocks" />
       </div>
 
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg" alt="FeyNote Calendar" />
-    </div>
+      <div class="section center">
+        <h2>Link Related Content</h2>
 
-    <div class="section center">
-      <h2>Link Related Content</h2>
+        <div class="description">
+          Quickly reference related content, which automatically updates as you edit.<br />
+          Keep track of storylines, NPCs, and important events.
+        </div>
 
-      <div class="description">
-        Quickly reference related content, which automatically updates as you edit.<br />
-        Keep track of storylines, NPCs, and important events.
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg" alt="FeyNote Linked Content" />
       </div>
 
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg" alt="FeyNote Calendar" />
-    </div>
+      <div class="section center">
+        <h2>Sharing and Collaboration</h2>
 
-    <div class="section center">
-      <h2>Sharing and Collaboration</h2>
+        <div class="description">
+          FeyNote is built with sharing in mind from the ground up.<br />
+          Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
+        </div>
 
-      <div class="description">
-        FeyNote is built with sharing in mind from the ground up.<br />
-        Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg" alt="FeyNote Sharing Options" />
       </div>
 
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg" alt="FeyNote Sharing Options" />
-    </div>
+      <div class="section center">
+        <h2>Fantasy Calendars</h2>
 
-    <div class="section center">
-      <h2>Fantasy Calendars</h2>
+        <div class="description">
+          FeyNote's calendar functionality is wildly customizable. Customize the number of months in a year, the number of days in each month, and the names of everything!
+        </div>
 
-      <div class="description">
-        FeyNote's calendar functionality is wildly customizable. Customize the number of months in a year, the number of days in each month, and the names of everything!
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg" alt="FeyNote Calendar" />
       </div>
 
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg" alt="FeyNote Calendar" />
-    </div>
+      <div class="section center">
+        <h2>Graph <i>and</i> Tree Organization</h2>
 
-    <div class="section center">
-      <h2>Graph <i>and</i> Tree Organization</h2>
+        <div class="description">
+          Don't choose between graph or tree, have both! You can create a hierarchy of high level topics, as well as view a web of interconnected TTRPG content.
+        </div>
 
-      <div class="description">
-        Don't choose between graph or tree, have both! You can create a hierarchy of high level topics, as well as view a web of interconnected TTRPG content.
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg" alt="FeyNote Graph Visualizer" />
       </div>
 
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg" alt="FeyNote Graph Visualizer" />
-    </div>
+      <div class="section center">
+        <h2>Automatically Grab and Format Content</h2>
 
-    <div class="section center">
-      <h2>Automatically Grab and Format Content</h2>
+        <div class="description">
+          Whether you play Dungeons and Dragons, OpenLegend, Starfinder, or another tabletop system, our fantasy note taking tool makes formatting/creating custom monster blocks and items, as well as grabbing content from URLs easy!
+        </div>
 
-      <div class="description">
-        Whether you play Dungeons and Dragons, OpenLegend, Starfinder, or another tabletop system, our fantasy note taking tool makes formatting/creating custom monster blocks and items, as well as grabbing content from URLs easy!
+        <img class="preview" src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg" alt="FeyNote AI Thread" />
       </div>
-
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg" alt="FeyNote AI Thread" />
     </div>
   </div>
 </RootLayout>
