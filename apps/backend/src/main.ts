@@ -70,14 +70,19 @@ app.use(function (req, res, next) {
   const timer = metrics.apiRequest.startTimer();
   res.on('finish', function () {
     const time = timer();
-    metrics.apiRequest.observe(
-      {
-        status_code: res.statusCode,
-        method: req.method,
-        path: req.route?.path || req.path,
-      },
-      time,
-    );
+    const path = req.baseUrl + (req.route?.path || req.path);
+
+    // We don't capture 404s here because endpoint probing blows up our cardinality
+    if (res.statusCode !== 404) {
+      metrics.apiRequest.observe(
+        {
+          status_code: res.statusCode,
+          method: req.method,
+          path,
+        },
+        time,
+      );
+    }
   });
 
   next();

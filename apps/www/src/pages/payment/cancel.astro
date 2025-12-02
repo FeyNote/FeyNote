@@ -7,9 +7,8 @@ import GoToAppButton from '../../components/GoToAppButton.astro'
     text-align: center;
   }
 
-  ul {
-    text-align: left;
-    max-width: 80%;
+  .main {
+    max-width: 900px;
     margin-left: auto;
     margin-right: auto;
   }
@@ -19,10 +18,16 @@ import GoToAppButton from '../../components/GoToAppButton.astro'
   description="Your payment was cancelled. Return to FeyNote anytime to explore our free TTRPG note-taking features."
   noindex={true}
 >
-  <div class="center">
+  <div class="main center">
     <h1>Payment Cancelled</h1>
 
-    We're sorry to see you go! If you have any feedback on why you decided to cancel, please don't hesitate to reach out to us on Discord. We're always looking for ways to improve!
+    We're sorry to see you go!
+    <br />
+    <br />
+    If you have any feedback on why you decided to cancel, please don't hesitate to reach out to us on Discord. We're always looking for ways to improve!
+
+    <br />
+    <br />
 
     <GoToAppButton />
   </div>

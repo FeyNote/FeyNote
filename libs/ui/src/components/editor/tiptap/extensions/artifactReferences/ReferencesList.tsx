@@ -97,7 +97,7 @@ const SuggestionListItemTitle = styled.div`
 
 const SuggestionListItemSubtitle = styled.div`
   color: rgba(var(--ion-text-color-rgb, rgb(0, 0, 0)), 0.8);
-  font-size: 11px;
+  font-size: 0.6875rem;
 `;
 
 export interface ReferenceItem {
