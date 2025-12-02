@@ -8,7 +8,6 @@ export enum Capability {
   HighResImages = 'highResImages',
   UltraHighResImages = 'ultraHighResImages',
 
-  AssistantEnhancedMessageLimit = 'assistantEnhancedMessageHistory',
   AssistantEnhancedMessageContext = 'assistantEnhancedMessageContext',
   AssistantLimitedEnhancedModel = 'assistantLimitedEnhancedModel',
   AssistantUnlimitedEnhancedModel = 'assistantUnlimitedEnhancedModel',
@@ -39,8 +38,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier1Yearly]: {
@@ -49,8 +48,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier1Forever]: {
@@ -59,8 +58,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.LargeFiles,
       Capability.HighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier2Monthly]: {
@@ -69,7 +68,6 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
       Capability.AssistantLimitedEnhancedModel,
     ],
@@ -80,7 +78,6 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
       Capability.AssistantLimitedEnhancedModel,
     ],
@@ -91,7 +88,6 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
       Capability.AssistantLimitedEnhancedModel,
     ],
@@ -102,9 +98,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
-      Capability.AssistantUnlimitedEnhancedModel,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier3Yearly]: {
@@ -113,9 +108,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
-      Capability.AssistantUnlimitedEnhancedModel,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
   [SubscriptionModelName.Tier3Forever]: {
@@ -124,9 +118,8 @@ export const SUBSCRIPTION_MODELS = {
     capabilities: [
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
-      Capability.AssistantEnhancedMessageLimit,
       Capability.AssistantEnhancedMessageContext,
-      Capability.AssistantUnlimitedEnhancedModel,
+      Capability.AssistantLimitedEnhancedModel,
     ],
   },
 } satisfies Record<SubscriptionModelName, SubscriptionModel> as Record<

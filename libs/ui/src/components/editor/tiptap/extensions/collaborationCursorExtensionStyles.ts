@@ -2,7 +2,7 @@ import { css } from 'styled-components';
 
 export const collaborationCursorExtensionStyles = css`
   /* Give a remote user a caret */
-  .collaboration-cursor__caret {
+  .collaboration-carets__caret {
     border-left: 1px solid #0d0d0d;
     border-right: 1px solid #0d0d0d;
     margin-left: -1px;
@@ -29,7 +29,7 @@ export const collaborationCursorExtensionStyles = css`
   }
 
   /* Render the username above the caret */
-  .collaboration-cursor__label {
+  .collaboration-carets__label {
     border-radius: 3px 3px 3px 0;
     color: #0d0d0d;
     font-size: 12px;

@@ -19,7 +19,7 @@ export const getByEmail = authenticatedProcedure
     }> => {
       const user = await prisma.user.findUnique({
         where: {
-          email: input.email,
+          email: input.email.toLowerCase(),
         },
         select: {
           id: true,

@@ -1,0 +1,110 @@
+---
+import RootLayout from '../../components/RootLayout.astro'
+import GoToAppButton from '../../components/GoToAppButton.astro'
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const sortedPosts = posts.sort((a, b) =>
+  b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+);
+---
+<style>
+  .page-content {
+    max-width: min(1500px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  ul {
+    padding: 0;
+  }
+
+  .posts-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+  }
+
+  @media (max-width: 2000px) {
+    .posts-container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 1400px) {
+    .posts-container {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .posts-container {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .post {
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    list-style: none;
+    margin-bottom: 40px;
+    background: var(--blogpost-bg);
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+  }
+
+  .post:hover {
+    opacity: 0.9;
+  }
+
+  .post-title {
+    padding: 20px;
+  }
+
+  .post a {
+    text-decoration: none;
+    display: grid;
+    grid-template-rows: auto auto;
+  }
+
+  .post img {
+    height: 300px;
+    width: 100%;
+    object-fit: cover;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .post h2 {
+    font-size: 1.4rem;
+    margin-bottom: 0;
+  }
+
+  .post time {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+  }
+</style>
+<RootLayout
+  title="Blog - FeyNote"
+  description="Tips, guides, and updates for TTRPG players and Dungeon Masters. Learn how to organize your D&D campaigns, build worlds, and get the most out of FeyNote."
+>
+  <div class="page-content">
+    <h1>Our Blog</h1>
+    <br />
+    <ul class="posts-container">
+      {sortedPosts.map(post => (
+        <li class="post">
+          <a href={`/blog/${post.slug}`}>
+            <img src={post.data.featuredImageUrl} alt={`Featured image for ${post.data.title}`} />
+            <div class="post-title">
+              <h2>{post.data.title}</h2>
+              <time>{post.data.publishDate.toLocaleDateString()}</time>
+              <p>{post.data.preview}</p>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</RootLayout>

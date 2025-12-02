@@ -51,6 +51,7 @@ export enum PreferenceNames {
   PanesRememberOpenState = 'panes.rememberOpenState',
   LeftPaneStartOpen = 'leftPane.startOpen',
   LeftPaneShowArtifactTree = 'leftPane.showArtifactTree',
+  LeftPaneArtifactTreeAutoExpandOnNavigate = 'leftPane.appTree.autoExpandOnNavigate',
   LeftPaneArtifactTreeShowUncategorized = 'leftPane.appTree.showUncategorized',
   LeftPaneShowRecentThreads = 'leftPane.showRecentThreads',
   RightPaneStartOpen = 'rightPane.startOpen',
@@ -74,6 +75,7 @@ export interface AppPreferences {
   [PreferenceNames.PanesRememberOpenState]: boolean;
   [PreferenceNames.LeftPaneStartOpen]: boolean;
   [PreferenceNames.LeftPaneShowArtifactTree]: boolean;
+  [PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate]: boolean;
   [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: boolean;
   [PreferenceNames.LeftPaneShowRecentThreads]: boolean;
   [PreferenceNames.RightPaneStartOpen]: boolean;

@@ -34,7 +34,8 @@ export enum PaneTransition {
 
 export interface HistoryNode {
   component: PaneableComponent;
-  props: Record<string, string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  props: Record<any, any>;
   navigationEventId: string;
 }
 

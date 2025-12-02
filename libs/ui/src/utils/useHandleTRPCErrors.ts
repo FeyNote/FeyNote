@@ -1,4 +1,3 @@
-import { useIonAlert } from '@ionic/react';
 import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +5,7 @@ import { useSessionContext } from '../context/session/SessionContext';
 import { useSetAndPersistSession } from '../context/session/useSetAndPersistSession';
 import * as Sentry from '@sentry/react';
 import { isAxiosError } from 'axios';
+import { useAlertContext } from '../context/alert/AlertContext';
 
 const openAlertTracker = {
   isOpen: false,
@@ -22,7 +22,7 @@ const offlineErrorMsgs = [
  * This can also handle Axios errors, though we don't use Axios much.
  */
 export const useHandleTRPCErrors = () => {
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const { t } = useTranslation();
   const setSession = useSessionContext(true)?.setSession;
   const { setAndPersistSession: _setAndPersistSession } =
@@ -52,17 +52,20 @@ export const useHandleTRPCErrors = () => {
         return errorCode;
       }
       openAlertTracker.isOpen = true;
-      presentAlert({
-        header: t('generic.error'),
-        message: handler,
-        buttons: [
+      showAlert({
+        defaultOpen: true,
+        title: t('generic.error'),
+        description: handler,
+        actionButtons: [
           {
-            text: t('generic.okay'),
-            role: 'cancel',
+            title: t('generic.okay'),
+            props: {
+              role: 'cancel',
+            },
           },
         ],
-        onDidDismiss: () => {
-          openAlertTracker.isOpen = false;
+        onOpenChange: (open) => {
+          if (!open) openAlertTracker.isOpen = false;
         },
       });
       return errorCode;
@@ -98,17 +101,20 @@ export const useHandleTRPCErrors = () => {
     }
 
     openAlertTracker.isOpen = true;
-    presentAlert({
-      header: t('generic.error'),
-      message: defaultErrorMessages[errorCode],
-      buttons: [
+    showAlert({
+      defaultOpen: true,
+      title: t('generic.error'),
+      description: defaultErrorMessages[errorCode],
+      actionButtons: [
         {
-          text: t('generic.okay'),
-          role: 'cancel',
+          title: t('generic.okay'),
+          props: {
+            role: 'cancel',
+          },
         },
       ],
-      onDidDismiss: () => {
-        openAlertTracker.isOpen = false;
+      onOpenChange: (open) => {
+        if (!open) openAlertTracker.isOpen = false;
       },
     });
 

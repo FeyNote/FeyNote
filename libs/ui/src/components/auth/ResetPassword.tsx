@@ -5,7 +5,6 @@ import {
   IonCardTitle,
   IonInput,
   IonPage,
-  useIonAlert,
 } from '@ionic/react';
 import * as Sentry from '@sentry/react';
 import {
@@ -23,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
 import { validatePassword } from '@feynote/shared-utils';
 import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 interface Props {
   redirectPath: string;
@@ -40,7 +40,7 @@ export const ResetPassword: React.FC<Props> = (props) => {
   const [confirmPasswordIsValid, setConfirmPasswordIsValid] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
 
   const submitReset = () => {
     if (!passwordIsValid || !confirmPasswordIsValid) {
@@ -61,25 +61,37 @@ export const ResetPassword: React.FC<Props> = (props) => {
           Sentry.captureException(e);
         }
 
-        await presentAlert({
-          header: t('auth.resetPassword.success.header'),
-          message: t('auth.resetPassword.success.message'),
-          buttons: [t('generic.okay')],
-          onDidDismiss: () => {
-            window.location.href = props.redirectPath;
-          },
+        showAlert({
+          title: t('auth.resetPassword.success.header'),
+          children: t('auth.resetPassword.success.message'),
+          actionButtons: [
+            {
+              title: t('generic.okay'),
+              props: {
+                onClick: () => {
+                  window.location.href = props.redirectPath;
+                },
+              },
+            },
+          ],
         });
       })
       .catch((error) => {
         handleTRPCErrors(error, {
           403: () => {
-            presentAlert({
-              header: t('auth.resetPassword.expired.header'),
-              message: t('auth.resetPassword.expired.message'),
-              buttons: [t('generic.okay')],
-              onDidDismiss: () => {
-                window.location.href = props.redirectPath;
-              },
+            showAlert({
+              title: t('auth.resetPassword.expired.header'),
+              children: t('auth.resetPassword.expired.message'),
+              actionButtons: [
+                {
+                  title: t('generic.okay'),
+                  props: {
+                    onClick: () => {
+                      window.location.href = props.redirectPath;
+                    },
+                  },
+                },
+              ],
             });
           },
         });

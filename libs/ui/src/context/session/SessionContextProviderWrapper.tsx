@@ -1,21 +1,9 @@
-import {
-  ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentProps,
-} from 'react';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import * as Sentry from '@sentry/react';
 import { SessionContext, type SessionContextData } from './SessionContext';
 import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import type { SessionDTO } from '@feynote/shared-utils';
 import { Auth } from '../../components/auth/Auth';
-import {
-  getWelcomeModalPending,
-  setWelcomeModalPending,
-} from '../../utils/welcomeModalState';
-import { useIonModal } from '@ionic/react';
-import { WelcomeModal } from '../../components/dashboard/WelcomeModal';
 import { useSetAndPersistSession } from './useSetAndPersistSession';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -32,17 +20,7 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
   const [session, setSession] = useState<SessionDTO | null>(null);
   const { setAndPersistSession: _setAndPersistSession } =
     useSetAndPersistSession();
-  const [presentWelcomeModal, dismissWelcomeModal] = useIonModal(WelcomeModal, {
-    dismiss: () => dismissWelcomeModal(),
-  } satisfies ComponentProps<typeof WelcomeModal>);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-
-  useEffect(() => {
-    if (getWelcomeModalPending()) {
-      setWelcomeModalPending(false);
-      presentWelcomeModal();
-    }
-  }, [session]);
 
   useEffect(() => {
     if (!session?.token) {

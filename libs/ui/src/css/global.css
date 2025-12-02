@@ -167,3 +167,41 @@
   --cursor-slider-thumb-active: grabbing;
   --cursor-switch: pointer;
 }
+
+html.light {
+  --text-color: #000000;
+  --text-color-dim: #444444;
+  --general-background: #ffffff;
+  --general-background-hover: #efefef;
+  --general-background-hint: #efefef;
+
+  --card-background: #efefef;
+  --card-background-hover: #dbdbdb;
+  --card-background-active: #e0e0e0;
+  --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+
+  --floating-background: #ffffff;
+  --floating-background-hint: #aaaaaa;
+  --floating-background-hover: #f3f3f3;
+  --floating-background-active: #e8e8e8;
+  --floating-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+}
+
+html.dark {
+  --text-color: #ffffff;
+  --text-color-dim: #999999;
+  --general-background: #121212;
+  --general-background-hover: #1e1e1e;
+  --general-background-hint: #1e1e1e;
+
+  --card-background: #1e1e1e;
+  --card-background-hover: #161616;
+  --card-background-active: #121212;
+  --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.5);
+
+  --floating-background: #2a2a2a;
+  --floating-background-hint: #444444;
+  --floating-background-hover: #181818;
+  --floating-background-active: #141414;
+  --floating-box-shadow: 1px 1px 8px rgba(0, 0, 0, 0.7);
+}

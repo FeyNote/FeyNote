@@ -7,7 +7,6 @@ import { monsterStatsheetExtensionStyles } from './tiptap/extensions/statsheet/m
 import { spellSheetExtensionStyles } from './tiptap/extensions/statsheet/spellSheet/spellSheetExtensionStyles';
 import { ttrpgNoteExtensionStyles } from './tiptap/extensions/ttrpgNote/ttrpgNoteExtensionStyles';
 import { themeVariables } from './themeVariables';
-import { hyperlinkExtensionStyles } from './tiptap/extensions/link/hyperlinkExtensionStyles';
 import { diceDecorationExtensionStyles } from './tiptap/extensions/diceDecoration/diceDecorationExtensionStyles';
 import { feynoteMediaExtensionStyles } from './tiptap/extensions/feynoteMedia/feynoteMediaExtensionStyles';
 import { feynoteGenericFileExtensionStyles } from './tiptap/extensions/feynoteGenericFile/feynoteGenericFileExtensionStyles';
@@ -224,7 +223,6 @@ export const ArtifactEditorStyles = styled.div`
   ${monsterStatsheetExtensionStyles}
   ${spellSheetExtensionStyles}
   ${ttrpgNoteExtensionStyles}
-  ${hyperlinkExtensionStyles}
   ${feynoteMediaExtensionStyles}
   ${feynoteGenericFileExtensionStyles}
   ${feynoteAudioExtensionStyles}

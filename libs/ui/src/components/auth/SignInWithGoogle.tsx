@@ -3,7 +3,7 @@ import { trpc } from '../../utils/trpc';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { createWelcomeArtifacts } from '../editor/tiptap/createWelcomeArtifacts';
-import { setWelcomeModalPending } from '../../utils/welcomeModalState';
+import { welcomePendingSimpleref } from '../../utils/localDb/welcomePendingState';
 
 export interface SignInWithGoogleProps {
   className?: string;
@@ -38,10 +38,12 @@ export const SignInWithGoogle: React.FC<SignInWithGoogleProps> = (props) => {
       trpc.user.signInWithGoogle
         .mutate(args)
         .then((response) => {
+          if (response.created) {
+            welcomePendingSimpleref.welcomePending = true;
+          }
           setSession(response.session).then(() => {
             if (response.created) {
               createWelcomeArtifacts();
-              setWelcomeModalPending(true);
             }
           });
         })

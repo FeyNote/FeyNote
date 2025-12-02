@@ -5,16 +5,15 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../../context/globalPane/GlobalPaneContext';
+import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { search } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
+import { ArtifactLinkContextMenu } from '../artifact/ArtifactLinkContextMenu';
 
 const PaneContent = styled.div`
   padding: 20px;
@@ -78,7 +77,7 @@ interface Props {
 
 export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { updatePaneProps } = useGlobalPaneContext();
-  const { pane, isPaneFocused, navigate } = usePaneContext();
+  const { pane, isPaneFocused } = usePaneContext();
   const [searchText, setSearchText] = useState(initialTerm || '');
   const [searchResults, setSearchResults] = useState<
     {
@@ -92,6 +91,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const [selectedIdx, setSelectedIdx] = useState<number>(0);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const truncateTextWithEllipsis = (text: string) => {
     // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
@@ -132,18 +132,9 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
 
     persistSearchTextToPaneState();
 
-    const paneTransition =
-      event.ctrlKey || event.metaKey
-        ? PaneTransition.NewTab
-        : PaneTransition.Push;
-
-    navigate(
-      PaneableComponent.Artifact,
-      {
-        id: result.id,
-      },
-      paneTransition,
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: result.id,
+    });
   };
 
   const open = (
@@ -153,15 +144,10 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   ) => {
     persistSearchTextToPaneState();
 
-    const paneTransition =
-      event.ctrlKey || event.metaKey
-        ? PaneTransition.NewTab
-        : PaneTransition.Push;
-    navigate(
-      PaneableComponent.Artifact,
-      { id: artifactId, focusBlockId: blockId },
-      paneTransition,
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: artifactId,
+      focusBlockId: blockId,
+    });
   };
 
   useEffect(() => {
@@ -179,11 +165,9 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
         if (selectedIdx < searchResults.length) {
           persistSearchTextToPaneState();
 
-          navigate(
-            PaneableComponent.Artifact,
-            { id: searchResults[selectedIdx].artifact.id },
-            PaneTransition.Push,
-          );
+          navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+            id: searchResults[selectedIdx].artifact.id,
+          });
         } else {
           create(event);
         }
@@ -293,44 +277,53 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
         </SearchInput>
         <SearchResultsContainer>
           {searchResults.map((searchResult, idx) => (
-            <SearchResult
-              lines="none"
+            <ArtifactLinkContextMenu
               key={searchResult.artifact.id}
-              $selected={selectedIdx === idx}
-              onMouseOver={() => setSelectedIdx(idx)}
-              onClick={(event) =>
-                open(event, searchResult.artifact.id, searchResult.blockId)
-              }
-              button
+              artifactId={searchResult.artifact.id}
+              paneId={pane.id}
             >
-              <IonLabel>
-                {searchResult.artifact.title}
-                {searchResult.highlights
-                  .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
-                  .map((highlight) => (
-                    <ResultWithHighlightsWrapper
-                      dangerouslySetInnerHTML={{
-                        __html: '…' + highlight + '…',
-                      }}
-                    ></ResultWithHighlightsWrapper>
-                  ))}
-                {searchResult.highlights.length >
-                  MAX_DISPLAYED_HIGHLIGHT_COUNT && (
-                  <p>
-                    <i>
-                      {t('globalSearch.moreHighlights', {
-                        count:
-                          searchResult.highlights.length -
-                          MAX_DISPLAYED_HIGHLIGHT_COUNT,
-                      })}
-                    </i>
-                  </p>
-                )}
-                {!searchResult.highlights.length && (
-                  <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
-                )}
-              </IonLabel>
-            </SearchResult>
+              <SearchResult
+                lines="none"
+                $selected={selectedIdx === idx}
+                onMouseOver={() => setSelectedIdx(idx)}
+                onClick={(event) =>
+                  open(event, searchResult.artifact.id, searchResult.blockId)
+                }
+                button
+              >
+                <IonLabel>
+                  {searchResult.artifact.title}
+                  {searchResult.highlights
+                    .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
+                    .map((highlight, idx) => (
+                      <ResultWithHighlightsWrapper
+                        key={idx}
+                        dangerouslySetInnerHTML={{
+                          __html: '…' + highlight + '…',
+                        }}
+                      ></ResultWithHighlightsWrapper>
+                    ))}
+                  {searchResult.highlights.length >
+                    MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                    <p>
+                      <i>
+                        {t('globalSearch.moreHighlights', {
+                          count:
+                            searchResult.highlights.length -
+                            MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                        })}
+                      </i>
+                    </p>
+                  )}
+                  {!searchResult.highlights.length &&
+                    searchResult.previewText && (
+                      <p>
+                        {truncateTextWithEllipsis(searchResult.previewText)}
+                      </p>
+                    )}
+                </IonLabel>
+              </SearchResult>
+            </ArtifactLinkContextMenu>
           ))}
           {!!searchText.length && (
             <SearchResult

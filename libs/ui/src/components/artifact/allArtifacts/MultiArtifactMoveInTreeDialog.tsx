@@ -201,11 +201,7 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
             mode="select"
             enableItemContextMenu={false}
             onNodeClicked={(info) => {
-              if (info.targetType === 'item') {
-                setPendingMoveTarget(info.targetItem.toString());
-              } else {
-                throw new Error('Unsupported onNodeClicked targetType!');
-              }
+              setPendingMoveTarget(info.targetId);
             }}
           />
         </TreeContainer>

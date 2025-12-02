@@ -5,7 +5,6 @@ import { CollaborationManagerConnection } from '../../utils/collaboration/collab
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
-import { useIonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
@@ -17,6 +16,7 @@ import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
 import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { useAlertContext } from '../../context/alert/AlertContext';
 
 const ArtifactRendererContainer = styled.div`
   height: 100%;
@@ -67,7 +67,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [fileUploadProgress, setFileUploadProgress] = useState(0);
   const sessionContext = useSessionContext(true);
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
@@ -95,15 +95,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         setCollabReady(true);
       })
       .catch(() => {
-        presentAlert({
-          header: t('generic.error'),
-          message: t('generic.connectionError'),
-          buttons: [
-            {
-              text: t('generic.okay'),
-              role: 'cancel',
-            },
-          ],
+        showAlert({
+          title: t('generic.error'),
+          children: t('generic.connectionError'),
+          actionButtons: 'okay',
         });
       });
   }, [props.connection]);

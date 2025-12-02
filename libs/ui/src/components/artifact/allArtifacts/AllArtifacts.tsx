@@ -16,11 +16,14 @@ import {
   type FilterOptions,
 } from './AllArtifactsFilters';
 import { AllArtifactsActions } from './AllArtifactsActions';
-import { IonContent, IonPage } from '@ionic/react';
 import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../../utils/localDb/edges/useEdges';
 import { CheckboxTable } from '../../sharedComponents/CheckboxTable';
 import { ArtifactLinkContextMenu } from '../ArtifactLinkContextMenu';
+import {
+  PaneContent,
+  PaneContentContainer,
+} from '../../pane/PaneContentContainer';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -260,12 +263,9 @@ export const AllArtifacts: React.FC = () => {
   }, [sortedFilteredArtifacts]);
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('allArtifacts.title')} />
-      <IonContent
-        className="ion-padding-start ion-padding-end"
-        style={{ position: 'relative' }}
-      >
+      <PaneContent style={{ overflowY: 'hidden' }}>
         <CheckboxTable
           selectedKeys={selectedArtifactIds}
           setSelectedKeys={setSelectedArtifactIds}
@@ -342,10 +342,10 @@ export const AllArtifacts: React.FC = () => {
             </ArtifactLinkContextMenu>
           )}
         />
-      </IonContent>
+      </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(<AllArtifactsRightSidemenu />, sidemenuContentRef.current)}
-    </IonPage>
+    </PaneContentContainer>
   );
 };

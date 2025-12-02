@@ -1,5 +1,5 @@
 export const openArtifactPrint = (artifactId: string) => {
   window.open(
-    `${window.location.hostname}?printArtifactId=${artifactId}&autoPrint=true`,
+    `${window.location.protocol}//${window.location.hostname}?printArtifactId=${artifactId}&autoPrint=true`,
   );
 };

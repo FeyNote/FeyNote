@@ -6,3 +6,4 @@ export * from './lib/WebsocketMessageEvent';
 export * from './lib/WebsocketMessageJSON';
 export * from './lib/YArtifactMeta';
 export * from './lib/YArtifactUserAccess';
+export * from './lib/ZodShape';

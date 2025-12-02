@@ -3,9 +3,9 @@ import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { trpc } from '../../utils/trpc';
-import { useIonAlert } from '@ionic/react';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
+import { useAlertContext } from '../../context/alert/AlertContext';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { Edge, type SessionDTO } from '@feynote/shared-utils';
@@ -21,7 +21,7 @@ interface Props {
 
 export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const [edges, setEdges] = useState<{
     incomingEdges: Edge[];
     outgoingEdges: Edge[];
@@ -49,28 +49,32 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       .catch((error) => {
         handleTRPCErrors(error, {
           401: () => {
-            presentAlert({
-              header: t('readonlyArtifactViewer.unauthorized.header'),
-              message: t('readonlyArtifactViewer.unauthorized.message'),
-              buttons: [
+            showAlert({
+              title: t('readonlyArtifactViewer.unauthorized.header'),
+              children: t('readonlyArtifactViewer.unauthorized.message'),
+              actionButtons: [
                 {
-                  text: t('generic.okay'),
-                  handler: () => {
-                    window.location.href = '/';
+                  title: t('generic.okay'),
+                  props: {
+                    onClick: () => {
+                      window.location.href = '/';
+                    },
                   },
                 },
               ],
             });
           },
           404: () => {
-            presentAlert({
-              header: t('readonlyArtifactViewer.notFound.header'),
-              message: t('readonlyArtifactViewer.notFound.message'),
-              buttons: [
+            showAlert({
+              title: t('readonlyArtifactViewer.notFound.header'),
+              children: t('readonlyArtifactViewer.notFound.message'),
+              actionButtons: [
                 {
-                  text: t('generic.okay'),
-                  handler: () => {
-                    window.location.href = '/';
+                  title: t('generic.okay'),
+                  props: {
+                    onClick: () => {
+                      window.location.href = '/';
+                    },
                   },
                 },
               ],

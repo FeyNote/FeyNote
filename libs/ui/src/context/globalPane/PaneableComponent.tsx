@@ -31,7 +31,13 @@ export enum PaneableComponent {
   Import = 'Import',
   ImportFileUpload = 'ImportFileUpload',
   PersistentSearch = 'PersistentSearch',
+  /**
+   * This is included to support no-pane components
+   */
+  NonPanedComponent = 'NonPanedComponent',
 }
+
+const emptyFunc: React.FC = () => null;
 
 export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
@@ -49,6 +55,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.ImportFileUpload]: ComponentProps<typeof ImportFileUpload>;
   [PaneableComponent.Export]: ComponentProps<typeof Export>;
   [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
+  [PaneableComponent.NonPanedComponent]: ComponentProps<typeof emptyFunc>;
 };
 
 export const getPaneableComponent = <T extends PaneableComponent>(
@@ -70,6 +77,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Import]: Import,
     [PaneableComponent.ImportFileUpload]: ImportFileUpload,
     [PaneableComponent.PersistentSearch]: PersistentSearch,
+    [PaneableComponent.NonPanedComponent]: emptyFunc,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
@@ -98,4 +106,5 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Import]: 'import.title',
   [PaneableComponent.ImportFileUpload]: 'importFileUpload.title',
   [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
+  [PaneableComponent.NonPanedComponent]: 'generic.error',
 } satisfies Record<PaneableComponent, string>;

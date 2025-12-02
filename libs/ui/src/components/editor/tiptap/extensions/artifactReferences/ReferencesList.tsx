@@ -4,6 +4,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type ComponentProps,
 } from 'react';
 import styled from 'styled-components';
 import {
@@ -33,11 +34,12 @@ import { createArtifact } from '../../../../../utils/localDb/createArtifact';
 import * as Sentry from '@sentry/react';
 import { useSessionContext } from '../../../../../context/session/SessionContext';
 import type { Doc as YDoc } from 'yjs';
-import { useIonAlert, type AlertButton } from '@ionic/react';
 import { usePreferencesContext } from '../../../../../context/preferences/PreferencesContext';
 import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/localDb/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
+import { useAlertContext } from '../../../../../context/alert/AlertContext';
+import type { ActionDialog } from '../../../../sharedComponents/ActionDialog';
 
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
@@ -131,7 +133,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
     }
   >(undefined);
   const { getPreference, setPreference } = usePreferencesContext();
-  const [presentAlert] = useIonAlert();
+  const { showAlert } = useAlertContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const sessionContext = useSessionContext(true);
 
@@ -237,55 +239,56 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
       isShared &&
       defaultSharingMode === ArtifactReferenceNewArtifactSharingMode.Prompt
     ) {
-      presentAlert({
-        header: t('editor.referenceMenu.newArtifactShareWithCurrent.header'),
-        message: t('editor.referenceMenu.newArtifactShareWithCurrent.message'),
-        buttons: [
+      showAlert({
+        title: t('editor.referenceMenu.newArtifactShareWithCurrent.header'),
+        description: t(
+          'editor.referenceMenu.newArtifactShareWithCurrent.message',
+        ),
+        actionButtons: [
           {
-            text: t('editor.referenceMenu.newArtifactShareWithCurrent.never'),
-            role: 'never',
+            title: t('editor.referenceMenu.newArtifactShareWithCurrent.never'),
+            props: {
+              onClick: () => {
+                setPreference(
+                  PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                  ArtifactReferenceNewArtifactSharingMode.Never,
+                );
+                _createItem(false);
+              },
+            },
           },
           {
-            text: t('editor.referenceMenu.newArtifactShareWithCurrent.always'),
-            role: 'always',
+            title: t('editor.referenceMenu.newArtifactShareWithCurrent.always'),
+            props: {
+              role: 'always',
+              onClick: () => {
+                setPreference(
+                  PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+                  ArtifactReferenceNewArtifactSharingMode.Always,
+                );
+                _createItem(true);
+              },
+            },
           },
           {
-            text: t('editor.referenceMenu.newArtifactShareWithCurrent.no'),
-            role: 'no',
+            title: t('editor.referenceMenu.newArtifactShareWithCurrent.no'),
+            props: {
+              role: 'no',
+              onClick: () => {
+                _createItem(false);
+              },
+            },
           },
           {
-            text: t('editor.referenceMenu.newArtifactShareWithCurrent.yes'),
-            role: 'yes',
+            title: t('editor.referenceMenu.newArtifactShareWithCurrent.yes'),
+            props: {
+              role: 'yes',
+              onClick: () => {
+                _createItem(true);
+              },
+            },
           },
         ],
-        onDidDismiss: (event) => {
-          switch (event.detail.role) {
-            case 'never': {
-              setPreference(
-                PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
-                ArtifactReferenceNewArtifactSharingMode.Never,
-              );
-              _createItem(false);
-              break;
-            }
-            case 'always': {
-              setPreference(
-                PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
-                ArtifactReferenceNewArtifactSharingMode.Always,
-              );
-              _createItem(true);
-              break;
-            }
-            case 'yes': {
-              _createItem(true);
-              break;
-            }
-            case 'no': {
-              _createItem(false);
-              break;
-            }
-          }
-        },
       });
     } else if (
       isShared &&
@@ -506,10 +509,10 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         return;
       }
 
-      const header = t(
+      const title = t(
         'editor.referenceMenu.existingArtifactShareWithCurrent.header',
       );
-      const subHeader = t(
+      const description = t(
         'editor.referenceMenu.existingArtifactShareWithCurrent.subHeader',
       );
       let message = '';
@@ -526,86 +529,95 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           'editor.referenceMenu.existingArtifactShareWithCurrent.message.diff.usersMissingFromSource',
         );
 
-      const buttons: AlertButton[] = [];
+      const actionButtons: ComponentProps<
+        typeof ActionDialog
+      >['actionButtons'] = [];
 
       if (linkAccessLevelDiff) {
-        buttons.push({
-          text: t(
+        actionButtons.push({
+          title: t(
             'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.linkAccessLevel',
           ),
-          role: 'linkAccessLevel',
+          props: {
+            onClick: () => {
+              propagateHigherLinkAccessLevel();
+              _submit();
+              targetCollabConnectionInfo.release();
+            },
+          },
         });
       }
 
       if (usersMissingFromTarget.length) {
-        buttons.push({
-          text: t(
+        actionButtons.push({
+          title: t(
             'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromTarget',
           ),
-          role: 'usersMissingFromTarget',
+          props: {
+            onClick: () => {
+              propagateSourceUsersToTarget();
+              _submit();
+              targetCollabConnectionInfo.release();
+            },
+          },
         });
       }
 
       if (usersMissingFromSource.length) {
-        buttons.push({
-          text: t(
+        actionButtons.push({
+          title: t(
             'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.sync.usersMissingFromSource',
           ),
-          role: 'usersMissingFromSource',
+          props: {
+            onClick: () => {
+              propagateTargetUsersToSource();
+              _submit();
+              targetCollabConnectionInfo.release();
+            },
+          },
         });
       }
 
       if (numberOfDiffs.length > 1) {
-        buttons.push({
-          text: t(
+        actionButtons.push({
+          title: t(
             'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.syncAll',
           ),
-          role: 'all',
+          props: {
+            onClick: () => {
+              propagateHigherLinkAccessLevel();
+              propagateSourceUsersToTarget();
+              propagateTargetUsersToSource();
+              _submit();
+              targetCollabConnectionInfo.release();
+            },
+          },
         });
       }
 
-      buttons.push({
-        text: t(
+      actionButtons.push({
+        title: t(
           'editor.referenceMenu.existingArtifactShareWithCurrent.actions.diff.noSync',
         ),
-        role: 'none',
+        props: {
+          onClick: () => {
+            _submit();
+            targetCollabConnectionInfo.release();
+          },
+        },
       });
 
-      presentAlert({
-        header,
-        subHeader,
-        message,
-        buttons,
-        onDidDismiss: async (event) => {
-          switch (event.detail.role) {
-            case 'none': {
-              _submit();
-              break;
-            }
-            case 'all': {
-              propagateHigherLinkAccessLevel();
-              propagateSourceUsersToTarget();
-              propagateTargetUsersToSource();
-              _submit();
-              break;
-            }
-            case 'linkAccessLevel': {
-              propagateHigherLinkAccessLevel();
-              _submit();
-              break;
-            }
-            case 'usersMissingFromTarget': {
-              propagateSourceUsersToTarget();
-              _submit();
-              break;
-            }
-            case 'usersMissingFromSource': {
-              propagateTargetUsersToSource();
-              _submit();
-              break;
-            }
+      showAlert({
+        title,
+        description,
+        children: message,
+        actionButtons,
+        onOpenChange: (open) => {
+          if (!open) {
+            setTimeout(() => {
+              targetCollabConnectionInfo.release();
+            });
           }
-          targetCollabConnectionInfo.release();
         },
       });
       return;

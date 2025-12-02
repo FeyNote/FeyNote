@@ -32,16 +32,21 @@ import {
 } from '../BubbleMenuControlStyles';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
+import {
+  CreateLinkDialog,
+  createLinkDialogDefaultOnSubmit,
+} from './CreateLinkDialog';
+import { useEditorState } from '@tiptap/react';
 
 const BlockMenu = styled.div`
   position: absolute;
   top: 100%;
-  background: var(--ion-background-color-step-250, #ffffff);
-  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
+  background: var(--floating-background);
+  box-shadow: var(--floating-box-shadow);
   border-radius: 4px;
   display: flex;
   flex-direction: column;
-  color: var(--ion-text-color, #000000);
+  color: var(--text-color);
   font-size: 1.1rem;
   padding: 3px;
 `;
@@ -62,6 +67,59 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   const [showBlockMenu, setShowBlockMenu] = useState(false);
   const [showFontMenu, setShowFontMenu] = useState(false);
   const [showJustifyMenu, setShowJustifyMenu] = useState(false);
+  const [showLinkDialog, setShowLinkDialog] = useState(false);
+  const [linkDialogInitialValues, setLinkDialogInitialValues] = useState({
+    url: '',
+    label: '',
+  });
+
+  const editorState = useEditorState({
+    editor: props.editor,
+    selector: ({ editor }) => {
+      return {
+        selection: editor.state.selection,
+
+        isOrderedListActive: editor.isActive('orderedList'),
+        isBulletListActive: editor.isActive('bulletList'),
+        isTaskListActive: editor.isActive('taskList'),
+        isParagraphActive: editor.isActive('paragraph'),
+        isBoldActive: editor.isActive('bold'),
+        isItalicActive: editor.isActive('italic'),
+        isUnderlineActive: editor.isActive('underline'),
+        isStrikeActive: editor.isActive('strike'),
+        isLinkActive: editor.isActive('link'),
+        isHeading1Active: editor.isActive('heading', { level: 1 }),
+        isHeading2Active: editor.isActive('heading', { level: 2 }),
+        isHeading3Active: editor.isActive('heading', { level: 3 }),
+        isHeading4Active: editor.isActive('heading', { level: 4 }),
+        isHeading5Active: editor.isActive('heading', { level: 5 }),
+        isHeading6Active: editor.isActive('heading', { level: 6 }),
+        isSansActive: editor.isActive({
+          fontFamily: 'Roboto, Helvetica Neue, sans-serif',
+        }),
+        isSerifActive: editor.isActive({ fontFamily: 'Times, serif' }),
+        isLibreBaskervilleActive: editor.isActive({
+          fontFamily: 'Libre Baskerville',
+        }),
+        isMrEavesRemakeActive: editor.isActive({ fontFamily: 'MrEavesRemake' }),
+        isAllisonActive: editor.isActive({ fontFamily: 'Allison' }),
+        isItaliannoActive: editor.isActive({ fontFamily: 'Italianno' }),
+        isMonsieurLaDoulaiseActive: editor.isActive({
+          fontFamily: 'Monsieur La Doulaise',
+        }),
+        isAlignLeftActive: editor.isActive({ textAlign: 'left' }),
+        isAlignCenterActive: editor.isActive({ textAlign: 'center' }),
+        isAlignRightActive: editor.isActive({ textAlign: 'right' }),
+
+        canSetFont: editor.can().setFontFamily('anything'),
+        canToggleBold: editor.can().toggleBold(),
+        canToggleItalic: editor.can().toggleItalic(),
+        canToggleUnderline: editor.can().toggleUnderline(),
+        canToggleStrike: editor.can().toggleStrike(),
+        canSetTextAlign: editor.can().setTextAlign('left'),
+      };
+    },
+  });
 
   const onMouseLeave = () => {
     mouseLeaveTimeoutRef.current = window.setTimeout(() => {
@@ -97,61 +155,61 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   };
 
   const getActiveBlockStyle = () => {
-    if (props.editor.isActive('orderedList')) {
+    if (editorState.isOrderedListActive) {
       return {
         icon: <RiListOrdered />,
         key: 'orderedList',
       };
     }
-    if (props.editor.isActive('bulletList')) {
+    if (editorState.isBulletListActive) {
       return {
         icon: <RiListUnordered />,
         key: 'bulletList',
       };
     }
-    if (props.editor.isActive('taskList')) {
+    if (editorState.isTaskListActive) {
       return {
         icon: <RiListCheck2 />,
         key: 'taskList',
       };
     }
-    if (props.editor.isActive('paragraph')) {
+    if (editorState.isParagraphActive) {
       return {
         icon: <RiParagraph />,
         key: 'paragraph',
       };
     }
-    if (props.editor.isActive('heading', { level: 1 })) {
+    if (editorState.isHeading1Active) {
       return {
         icon: <RiH1 />,
         key: 'heading1',
       };
     }
-    if (props.editor.isActive('heading', { level: 2 })) {
+    if (editorState.isHeading2Active) {
       return {
         icon: <RiH2 />,
         key: 'heading2',
       };
     }
-    if (props.editor.isActive('heading', { level: 3 })) {
+    if (editorState.isHeading3Active) {
       return {
         icon: <RiH3 />,
         key: 'heading3',
       };
     }
-    if (props.editor.isActive('heading', { level: 4 })) {
+    if (editorState.isHeading4Active) {
       return {
         icon: <RiH4 />,
         key: 'heading4',
       };
     }
-    if (props.editor.isActive('heading', { level: 5 })) {
+    if (editorState.isHeading5Active) {
       return {
         icon: <RiH5 />,
         key: 'heading5',
       };
     }
-    if (props.editor.isActive('heading', { level: 6 })) {
+    if (editorState.isHeading6Active) {
       return {
         icon: <RiH6 />,
         key: 'heading6',
@@ -163,41 +221,37 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   const activeBlockStyle = getActiveBlockStyle();
 
   const getActiveFontFamily = () => {
-    if (
-      props.editor.isActive({
-        fontFamily: 'Roboto, Helvetica Neue, sans-serif',
-      })
-    ) {
+    if (editorState.isSansActive) {
       return {
         key: 'sans-serif',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'Times, serif' })) {
+    if (editorState.isSerifActive) {
       return {
         key: 'serif',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'Libre Baskerville' })) {
+    if (editorState.isLibreBaskervilleActive) {
       return {
         key: 'libre-baskerville',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'MrEavesRemake' })) {
+    if (editorState.isMrEavesRemakeActive) {
       return {
         key: 'mr-eaves-remake',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'Allison' })) {
+    if (editorState.isAllisonActive) {
       return {
         key: 'allison',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'Italianno' })) {
+    if (editorState.isItaliannoActive) {
       return {
         key: 'italianno',
       };
     }
-    if (props.editor.isActive({ fontFamily: 'Monsieur La Doulaise' })) {
+    if (editorState.isMonsieurLaDoulaiseActive) {
       return {
         key: 'monsieur-la-doulaise',
       };
@@ -208,19 +262,19 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
   const activeFontFamily = getActiveFontFamily();
 
   const getActiveJustify = () => {
-    if (props.editor.isActive({ textAlign: 'left' })) {
+    if (editorState.isAlignLeftActive) {
       return {
         icon: <RiAlignLeft />,
         key: 'left',
       };
     }
-    if (props.editor.isActive({ textAlign: 'center' })) {
+    if (editorState.isAlignCenterActive) {
       return {
         icon: <RiAlignCenter />,
         key: 'center',
       };
     }
-    if (props.editor.isActive({ textAlign: 'right' })) {
+    if (editorState.isAlignRightActive) {
       return {
         icon: <RiAlignRight />,
         key: 'right',
@@ -248,13 +302,13 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
           <MenuButton
             onClick={() => {
               const chain = props.editor.chain().focus();
-              if (props.editor.isActive('bulletList')) {
+              if (editorState.isBulletListActive) {
                 chain.toggleBulletList();
               }
-              if (props.editor.isActive('orderedList')) {
+              if (editorState.isOrderedListActive) {
                 chain.toggleOrderedList();
               }
-              if (props.editor.isActive('taskList')) {
+              if (editorState.isTaskListActive) {
                 chain.toggleTaskList();
               }
               chain.setParagraph().run();
@@ -346,7 +400,7 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.font')}
         onClick={toggleFontMenu}
-        disabled={!props.editor.can().setFontFamily('anything')}
+        disabled={!editorState.canSetFont}
       >
         {<RiFontSansSerif />}
       </MenuButton>
@@ -462,8 +516,8 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.bold')}
         onClick={() => props.editor.chain().focus().toggleBold().run()}
-        disabled={!props.editor.can().toggleBold()}
-        $active={props.editor.isActive('bold')}
+        disabled={!editorState.canToggleBold}
+        $active={editorState.isBoldActive}
       >
         <RiBold />
       </MenuButton>
@@ -471,8 +525,8 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.italic')}
         onClick={() => props.editor.chain().focus().toggleItalic().run()}
-        disabled={!props.editor.can().toggleItalic()}
-        $active={props.editor.isActive('italic')}
+        disabled={!editorState.canToggleItalic}
+        $active={editorState.isItalicActive}
       >
         <RiItalic />
       </MenuButton>
@@ -480,8 +534,8 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.underline')}
         onClick={() => props.editor.chain().focus().toggleUnderline().run()}
-        disabled={!props.editor.can().toggleUnderline()}
-        $active={props.editor.isActive('underline')}
+        disabled={!editorState.canToggleUnderline}
+        $active={editorState.isUnderlineActive}
       >
         <RiUnderline />
       </MenuButton>
@@ -489,8 +543,8 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.strike')}
         onClick={() => props.editor.chain().focus().toggleStrike().run()}
-        disabled={!props.editor.can().toggleStrike()}
-        $active={props.editor.isActive('strike')}
+        disabled={!editorState.canToggleStrike}
+        $active={editorState.isStrikeActive}
       >
         <RiStrikethrough />
       </MenuButton>
@@ -500,7 +554,7 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.align')}
         onClick={toggleJustifyMenu}
-        disabled={!props.editor.can().setTextAlign('left')}
+        disabled={!editorState.canSetTextAlign}
       >
         {activeJustify?.icon || <RiAlignLeft />}
       </MenuButton>
@@ -563,12 +617,33 @@ export const ArtifactBubbleMenuControls: React.FC<Props> = (props) => {
       <MenuButton
         title={t('editor.bubbleMenu.setLink')}
         onClick={() => {
-          props.editor.chain().focus().setHyperlink().run();
+          if (editorState.isLinkActive) {
+            props.editor.chain().focus().unsetLink().run();
+          } else {
+            const selectedTextContent = props.editor.state.doc.textBetween(
+              props.editor.state.selection.from,
+              props.editor.state.selection.to,
+            );
+            setLinkDialogInitialValues({
+              url: '',
+              label: selectedTextContent,
+            });
+            setShowLinkDialog(true);
+          }
         }}
-        $active={props.editor.isActive('link')}
+        $active={editorState.isLinkActive}
       >
         <RiLink />
       </MenuButton>
+
+      <CreateLinkDialog
+        initialValues={linkDialogInitialValues}
+        open={showLinkDialog}
+        onOpenChange={setShowLinkDialog}
+        onSubmit={(args) => {
+          createLinkDialogDefaultOnSubmit(props.editor, args);
+        }}
+      />
     </MenuControlsContainer>
   );
 };

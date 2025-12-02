@@ -14,4 +14,6 @@ export enum EventName {
   LocaldbSyncCompleted = 'localdb.syncCompleted',
   LocaldbArtifactSnapshotUpdated = 'localdb.artifactSnapshotUpdated',
   LocaldbKnownUsersUpdated = 'localdb.knownUsersUpdated',
+
+  ArtifactWelcomeCreated = 'artifact.welcomeCreated',
 }

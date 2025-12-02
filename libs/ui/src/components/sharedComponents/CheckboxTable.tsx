@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Checkbox } from './Checkbox';
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 const ResultsTable = styled.div`
   display: grid;
+  grid-template-rows: min-content min-content auto;
+  height: 100%;
 `;
 
 const ResultsTableHeader = styled.div`
@@ -12,6 +15,7 @@ const ResultsTableHeader = styled.div`
   align-items: center;
   padding-left: 16px;
   padding-right: 16px;
+  padding-bottom: 2px;
 `;
 
 const ResultsTableHeaderOptions = styled.div`
@@ -20,7 +24,10 @@ const ResultsTableHeaderOptions = styled.div`
   margin-left: 18px;
 `;
 
-const ResultsTableItems = styled.div``;
+const ResultsTableItems = styled.div`
+  min-height: 0;
+  overflow: auto;
+`;
 
 const ResultsTableMessage = styled.div``;
 
@@ -33,10 +40,10 @@ const ItemRow = styled.div`
   padding: 16px;
 
   transition: background-color 100ms;
-  background-color: var(--ion-background-color-step-50);
+  background-color: var(--card-background);
   border-radius: 4px;
   margin-top: 6px;
-  margin-bottom: 6px;
+  margin-bottom: 0;
 
   &:hover:not(:has(.itemTitleInner:hover)) {
     background-color: var(--ion-background-color-step-100);
@@ -62,11 +69,17 @@ interface Props<T> {
     selected: boolean;
     children: React.ReactNode;
   }) => React.ReactNode;
+  estimatedRowHeight?: number;
 }
 
+/**
+ * This table _must_ be rendered within some fixed-height container
+ * with position: relative to enable proper virtual scrolling
+ */
 export const CheckboxTable = <T extends object>(props: Props<T>) => {
   // To track shift-click operations
   const [lastClickedKey, setLastClickedKey] = useState<string>();
+  const parentRef = useRef(null);
 
   const headerCheckboxValue = (() => {
     if (!props.items.length) {
@@ -80,6 +93,13 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
     }
     return true;
   })();
+
+  const rowVirtualizer = useVirtualizer({
+    count: props.items.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => props.estimatedRowHeight || 62,
+    overscan: 5,
+  });
 
   const onItemSelectionChange = (
     entry: Entry<T>,
@@ -181,8 +201,31 @@ export const CheckboxTable = <T extends object>(props: Props<T>) => {
         <ResultsTableMessage>{props.message}</ResultsTableMessage>
       )}
 
-      <ResultsTableItems>
-        {props.items.map((entry) => renderItem(entry))}
+      <ResultsTableItems ref={parentRef}>
+        <div
+          style={{
+            height: `${rowVirtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualItem) => (
+            <div
+              key={virtualItem.key}
+              data-index={virtualItem.index}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualItem.start}px)`,
+              }}
+              ref={rowVirtualizer.measureElement}
+            >
+              {renderItem(props.items[virtualItem.index])}
+            </div>
+          ))}
+        </div>
       </ResultsTableItems>
     </ResultsTable>
   );

@@ -1,35 +1,32 @@
-import { TreeItem, TreeItemIndex, TreeRenderProps } from 'react-complex-tree';
 import styled from 'styled-components';
 
 import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
 import { IoChevronDown, IoChevronForward } from '../AppIcons';
+import { ItemInstance } from '@headless-tree/core';
+import { VirtualItem, type Virtualizer } from '@tanstack/react-virtual';
+import { MouseEvent } from 'react';
+import { useSingleDoubleClick } from '../../utils/useSingleDoubleClick';
 
 const TreeListItem = styled.li<{
-  $draggingOver: boolean;
+  $isDragTarget: boolean;
   $isUncategorized: boolean;
 }>`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   font-size: 0.8rem;
   list-style-type: none;
   padding: 0;
   margin: 0;
 
-  ${({ $draggingOver }) =>
-    $draggingOver &&
+  ${({ $isDragTarget }) =>
+    $isDragTarget &&
     `
     background-color: var(--ion-color-primary);
     color: var(--ion-color-primary);
-  `}
-
-  ${({ $isUncategorized }) =>
-    $isUncategorized &&
-    `
-    &:hover {
-      .rct-tree-item-arrow {
-        background-color: var(--ion-background-color);
-      }
-    }
   `}
 `;
 
@@ -38,43 +35,32 @@ const TreeItemContainer = styled.div<{
 }>`
   display: flex;
   align-items: center;
-  padding-left: 8px;
+  padding-left: 10px;
+`;
 
-  .rct-tree-item-arrow {
-    width: 20px;
-    height: 20px;
-    flex-shrink: 0;
+const ItemArrow = styled.div`
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: var(--card-background-hover);
   }
+`;
 
-  .rct-tree-item-arrow:has(svg) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 4px;
-    ${(props) =>
-      props.$isUncategorized &&
-      `
-      cursor: default;
-    `}
-    ${(props) =>
-      !props.$isUncategorized &&
-      `
-      cursor: pointer;
-    `}
-
-    &:hover {
-      background-color: var(--ion-background-color);
-    }
-  }
-
-  .rct-tree-item-arrow svg {
-    width: 18px;
-    height: 18px;
-  }
+const TreeLevelSink = styled.div`
+  margin-left: 20px;
+  border-left: 1px solid var(--card-background-active);
 `;
 
 const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
+  $isActive: boolean;
 }>`
   white-space: nowrap;
   overflow: hidden;
@@ -84,11 +70,17 @@ const TreeItemButton = styled.button<{
   flex-grow: 1;
   background-color: transparent;
   height: 32px;
-  color: var(--ion-text-color);
+  color: var(--text-color);
   outline: none;
   border-radius: 5px;
   padding-left: 8px;
   padding-right: 8px;
+
+  ${(props) =>
+    props.$isActive &&
+    `
+    background-color: var(--card-background-active);
+  `}
 
   ${(props) =>
     props.$isUncategorized &&
@@ -101,132 +93,147 @@ const TreeItemButton = styled.button<{
     `
     cursor: pointer;
     &:hover {
-      background-color: var(--ion-background-color);
+      background-color: var(--card-background-hover);
     }
   `}
 `;
 
 interface ArtifactTreeItemProps {
-  treeRenderProps: Parameters<
-    NonNullable<
-      TreeRenderProps<
-        InternalTreeItem,
-        'expandedItems' | 'selectedItems'
-      >['renderItem']
-    >
-  >[0];
-  itemsRef: React.MutableRefObject<
-    Record<TreeItemIndex, TreeItem<InternalTreeItem>>
-  >;
-  expandedItemsRef: React.MutableRefObject<string[]>;
-  setExpandedItemsRef: React.MutableRefObject<
-    (expandedItems: string[]) => void
-  >;
+  itemInstance: ItemInstance<InternalTreeItem | undefined>;
+  virtualizer: Virtualizer<HTMLDivElement, Element>;
+  virtualItemInstance: VirtualItem;
+  treeItemsById: Map<string, InternalTreeItem>;
+  itemIdsByParentId: Map<string | null, string[]>;
+  isActive: boolean;
+  expandedItems: string[];
+  setExpandedItems: (expandedItems: string[]) => void;
   enableContextMenu: boolean;
+  onBodyFirstClick: (event: MouseEvent) => void;
+  onBodyDoubleClick: (event: MouseEvent) => void;
 }
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
+  const item = props.treeItemsById.get(props.itemInstance.getId());
+
+  const { onClick, onDoubleClick } = useSingleDoubleClick(
+    undefined,
+    props.onBodyDoubleClick,
+    props.onBodyFirstClick,
+  );
+
+  const setExpanded = (expanded: boolean) => {
+    const expandedItems = new Set(props.expandedItems);
+    if (expanded) {
+      expandedItems.add(props.itemInstance.getId());
+    } else {
+      expandedItems.delete(props.itemInstance.getId());
+    }
+
+    props.setExpandedItems(Array.from(expandedItems));
+  };
+
   const expandAll = () => {
-    const expandedItems = new Set(props.expandedItemsRef.current);
-    expandedItems.add(props.treeRenderProps.item.data.id);
+    if (!item) return;
+    const expandedItems = new Set(props.expandedItems);
+    expandedItems.add(props.itemInstance.getId());
 
     const childIds = getAllChildIdsForTreeItem(
-      props.itemsRef.current,
-      props.treeRenderProps.item,
+      props.treeItemsById,
+      props.itemIdsByParentId,
+      item,
       0,
     );
     for (const childId of childIds) {
       expandedItems.add(childId);
     }
-    props.setExpandedItemsRef.current(Array.from(expandedItems));
+    props.setExpandedItems(Array.from(expandedItems));
   };
 
   const collapseAll = () => {
-    const expandedItems = new Set(props.expandedItemsRef.current);
-    expandedItems.delete(props.treeRenderProps.item.data.id);
+    if (!item) return;
+    const expandedItems = new Set(props.expandedItems);
+    expandedItems.delete(props.itemInstance.getId());
 
     const childIds = getAllChildIdsForTreeItem(
-      props.itemsRef.current,
-      props.treeRenderProps.item,
+      props.treeItemsById,
+      props.itemIdsByParentId,
+      item,
       0,
     );
     for (const childId of childIds) {
       expandedItems.delete(childId);
     }
-    props.setExpandedItemsRef.current(Array.from(expandedItems));
+    props.setExpandedItems(Array.from(expandedItems));
   };
 
-  const interactiveElementProps =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- typing is broken here
-    props.treeRenderProps.context.interactiveElementProps as any;
+  if (!item) {
+    // When removing an item from the tree there is a render before the virtualized
+    // list removes the item that this component will be renderered
+    return null;
+  }
 
-  return (
-    <>
-      <TreeListItem
-        {...props.treeRenderProps.context.itemContainerWithChildrenProps}
-        $isUncategorized={
-          props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
+  const renderSink = (content: React.ReactNode) => {
+    return <TreeLevelSink>{content}</TreeLevelSink>;
+  };
+
+  const renderContents = () => {
+    const innerContent = (
+      <ArtifactTreeItemContextMenu
+        enabled={
+          props.enableContextMenu && item.id !== UNCATEGORIZED_TREE_NODE_ID
         }
-        $draggingOver={props.treeRenderProps.context.isDraggingOver || false}
-        className={`rct-tree-item-li`}
+        artifactId={item.id}
+        paneId={undefined}
+        expandAll={expandAll}
+        collapseAll={collapseAll}
       >
         <TreeItemContainer
-          $isUncategorized={
-            props.treeRenderProps.item.data.id === UNCATEGORIZED_TREE_NODE_ID
-          }
+          data-index={props.virtualItemInstance.index}
+          ref={props.virtualizer.measureElement}
+          $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
         >
-          {props.treeRenderProps.item.isFolder ? (
-            <ArtifactTreeItemContextMenu
-              enabled={
-                props.enableContextMenu &&
-                props.treeRenderProps.item.data.id !==
-                  UNCATEGORIZED_TREE_NODE_ID
-              }
-              artifactId={props.treeRenderProps.item.data.id}
-              paneId={undefined}
-              expandAll={expandAll}
-              collapseAll={collapseAll}
+          {!!props.itemIdsByParentId.get(item.id)?.length && (
+            <ItemArrow
+              onClick={() => setExpanded(!props.itemInstance.isExpanded())}
             >
-              <div
-                {...props.treeRenderProps.context.arrowProps}
-                className={`rct-tree-item-arrow`}
-              >
-                {props.treeRenderProps.context.isExpanded ? (
-                  <IoChevronDown />
-                ) : (
-                  <IoChevronForward />
-                )}
-              </div>
-            </ArtifactTreeItemContextMenu>
-          ) : (
-            <div className={`rct-tree-item-arrow`} />
+              {props.itemInstance.isExpanded() ? (
+                <IoChevronDown size={16} />
+              ) : (
+                <IoChevronForward size={16} />
+              )}
+            </ItemArrow>
           )}
-          <ArtifactTreeItemContextMenu
-            enabled={
-              props.enableContextMenu &&
-              props.treeRenderProps.item.data.id !== UNCATEGORIZED_TREE_NODE_ID
-            }
-            artifactId={props.treeRenderProps.item.data.id}
-            paneId={undefined}
-            expandAll={expandAll}
-            collapseAll={collapseAll}
+          <TreeItemButton
+            onClick={onClick}
+            onDoubleClick={onDoubleClick}
+            $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
+            $isActive={props.isActive}
           >
-            <TreeItemButton
-              {...props.treeRenderProps.context
-                .itemContainerWithoutChildrenProps}
-              {...interactiveElementProps}
-              $isUncategorized={
-                props.treeRenderProps.item.data.id ===
-                UNCATEGORIZED_TREE_NODE_ID
-              }
-              className={`rct-tree-item-button`}
-            >
-              {props.treeRenderProps.title}
-            </TreeItemButton>
-          </ArtifactTreeItemContextMenu>
+            {item.title}
+          </TreeItemButton>
         </TreeItemContainer>
-      </TreeListItem>
-      {props.treeRenderProps.children}
-    </>
+      </ArtifactTreeItemContextMenu>
+    );
+
+    let previousContent = innerContent;
+    for (let i = 0; i < props.itemInstance.getItemMeta().level; i++) {
+      previousContent = renderSink(previousContent);
+    }
+    return previousContent;
+  };
+
+  return (
+    <TreeListItem
+      {...props.itemInstance.getProps()}
+      $isUncategorized={
+        props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
+      }
+      $isDragTarget={props.itemInstance.isDragTarget()}
+      style={{
+        transform: `translateY(${props.virtualItemInstance.start}px)`,
+      }}
+    >
+      {renderContents()}
+    </TreeListItem>
   );
 };

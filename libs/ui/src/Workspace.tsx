@@ -12,17 +12,14 @@ import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
 import { NewPaneButton } from './components/pane/NewPaneButton';
 import { t } from 'i18next';
-import {
-  PaneableComponent,
-  paneableComponentNameToDefaultI18nTitle,
-} from './context/globalPane/PaneableComponent';
+import { paneableComponentNameToDefaultI18nTitle } from './context/globalPane/PaneableComponent';
 import {
   clearCustomDragData,
   getCustomDragData,
   setCustomDragData,
-  startTreeDrag,
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
+import { WelcomeDialog } from './components/dashboard/WelcomeDialog';
 
 const MENU_SIZE_PX = 300;
 /**
@@ -58,7 +55,7 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tabset_tabbar_outer_top {
-    background: var(--ion-card-background, #ffffff);
+    background: var(--card-background);
   }
 
   .flexlayout__tabset:first-child .flexlayout__tabset_tabbar_outer_top {
@@ -174,10 +171,10 @@ const Menu = styled.div<{
     ${
       props.$side === 'left'
         ? `
-      border-right: 1px solid var(--ion-card-background, #dddddd);
+      border-right: 1px solid var(--general-background-hint);
     `
         : `
-      border-left: 1px solid var(--ion-card-background, #dddddd);
+      border-left: 1px solid var(--general-background-hint);
     `
     }
   `}
@@ -190,7 +187,7 @@ const MenuInner = styled.div`
 `;
 
 const MenuButton = styled(IonButton)`
-  background: var(--ion-card-background, #ffffff);
+  background: var(--card-background);
 `;
 
 const MainGrid = styled.div<{
@@ -308,10 +305,6 @@ export const Workspace: React.FC = () => {
         component: config.component,
         props: config.props,
       });
-
-      if (config.component === PaneableComponent.Artifact) {
-        startTreeDrag();
-      }
     };
 
     window.addEventListener('drag', listener);
@@ -399,6 +392,8 @@ export const Workspace: React.FC = () => {
                 },
               },
               // Unused, but kept for reference --
+              // We don't use dragData because it's not available at the time of dragging, only at the time of drop
+              // This makes it highly inconvenient
               //onDrop: (node?: Node, event?: React.DragEvent<HTMLElement>) => {
               //  if (!node || !event) return;  // aborted drag
               //  return; // Do something with the drop event (now has access to dataTransfer)
@@ -436,6 +431,7 @@ export const Workspace: React.FC = () => {
           <RightSideMenu />
         </MenuInner>
       </Menu>
+      <WelcomeDialog />
     </MainGrid>
   );
 };

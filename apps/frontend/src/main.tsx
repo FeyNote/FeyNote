@@ -40,7 +40,8 @@ if (environment !== 'development') {
 
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
-import App from './app/App';
+import { App } from '@feynote/ui';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -48,6 +49,6 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <StrictMode>
-    <App />
+    <App useRegisterSW={useRegisterSW} />
   </StrictMode>,
 );

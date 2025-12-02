@@ -6,6 +6,10 @@ import { EventName } from './EventName';
 
 export type EventData = {
   [EventName.ArtifactUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ArtifactUpdated];
+  [EventName.ArtifactWelcomeCreated]: {
+    welcomeId: string;
+    introducingReferencesId: string;
+  };
   [EventName.ThreadUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ThreadUpdated];
 
   [EventName.WebsocketError]: void;
