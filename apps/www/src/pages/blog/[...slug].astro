@@ -1,0 +1,101 @@
+---
+import RootLayout from '../../components/RootLayout.astro'
+import GoToAppButton from '../../components/GoToAppButton.astro'
+import { getCollection, getEntry, render } from 'astro:content';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+if (!post) {
+  return Astro.redirect('/404');
+}
+const { Content } = await render(post);
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": post.data.title,
+  "description": post.data.description,
+  "image": post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg",
+  "datePublished": post.data.publishDate.toISOString(),
+  "dateModified": post.data.updatedDate?.toISOString() || post.data.publishDate.toISOString(),
+  "author": {
+    "@type": "Person",
+    "name": post.data.author || "FeyNote Team"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "FeyNote",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://static.feynote.com/icons/feynote-icon-original-20241220.png"
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": `https://feynote.com/blog/${post.slug}`
+  }
+};
+---
+<style>
+  .page-content {
+    max-width: min(1200px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .post a {
+    text-decoration: none;
+    display: grid;
+    grid-template-columns: 100px auto;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .post img {
+    width: 100px;
+  }
+
+  .page-content > h1 {
+    font-family: "Libre Baskerville";
+    margin-bottom: 0;
+  }
+
+  .blog-content-container {
+    color: var(--blogpost-text-color);
+    padding: 20px;
+    background: var(--blogpost-bg);
+    border-radius: 8px;
+  }
+
+  time {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+</style>
+<RootLayout
+  title={post.data.title + " - FeyNote"}
+  description={post.data.description}
+  image={post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"}
+  ogType="article"
+  structuredData={articleSchema}
+>
+  <div class="page-content">
+    <div class="blog-content-container standard-box-shadow">
+      <h1>{post.data.title}</h1>
+      <time>{post.data.publishDate.toLocaleDateString()}</time>&nbsp;&nbsp;&nbsp;&nbsp;<time>{post.data.readingTime}</time>
+      <br />
+      <br />
+
+      <Content />
+    </div>
+  </div>
+</RootLayout>

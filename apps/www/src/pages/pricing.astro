@@ -3,23 +3,91 @@ import RootLayout from '../components/RootLayout.astro'
 import GoToAppButton from '../components/GoToAppButton.astro'
 ---
 <style>
+  .page-content {
+    max-width: min(1500px, 90%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .pricing-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+  }
+
+  .pricing-card {
+    width: min(100%, 350px);
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+    background: var(--card-bg);
+    border-radius: 4px;
+    padding: 15px;
+  }
+
+  .pricing-card h2 {
+    font-size: 1.3rem;
+    margin-top: 4px;
+  }
+
   .center {
     text-align: center;
   }
 </style>
-<RootLayout title="Pricing - Feynote">
-  <div>
-    <h1 class="center">Pricing</h1>
+<RootLayout
+  title="Pricing - FeyNote"
+  description="Free TTRPG note-taking app with no ads or limits. Unlimited D&D notes, monster statblocks, and campaign organization. Optional pay-what-you-want contributions for extra features."
+>
+  <div class="page-content">
+    <h1>Always Free</h1>
 
-    All features within FeyNote are <i>completely</i> free to use and it's our goal for this platform to be an accessible place without any ads or limits on amount of content.
+    <br />
+
+    All features within FeyNote are <i>completely</i> free to use and it's our commitment for this platform to be an accessible place without any ads or limits on amount of content.
 
     <br /><br />
 
-    We <i>do</i> have some benefits for contributors (similar to a Patreon-like contributor model), those supporter tiers <i>only</i> increase limits on things that are exceedingly costly to host, such as extra-large file uploads.
+    We <i>do</i> have some benefits for contributors (similar to a Patreon-like contributor model), but <i>only</i> increases limits on things that are exceedingly costly to host, such as extra-large file uploads.
 
     <br /><br />
 
-    All funds that are contributed go directly towards the improvement of the platform. We're not a for-profit corporation. If you find FeyNote useful, please consider supporting us!<br />
+    All funds that are contributed go directly towards the improvement of the platform and to our artists. We do not seek to make a profit from this app. If you find FeyNote useful, please consider supporting us!
+
+    <br /><br />
+    <br /><br />
+
+    <div class="pricing-list">
+      <div class="pricing-card">
+        <h2>Free</h2>
+
+        <div>
+          All application functionality, for free.
+        </div>
+
+        <ul>
+          <li>Unlimited documents</li>
+          <li>Unlimited embedded images</li>
+          <li>Unlimited devices</li>
+          <li>Document revision history (up to 10)</li>
+          <li>Content Importer</li>
+          <li>Absolutely zero ads, ever</li>
+        </ul>
+      </div>
+
+      <div class="pricing-card">
+        <h2>Choose Your Price</h2>
+
+        <div>
+          Contribute whatever you'd like.<br /><br />
+          The functionality unlocked here is costly for us to host and is unlocked for contributors as a thank you.
+        </div>
+
+        <ul>
+          <li>High resolution images (4k)</li>
+          <li>Large attachments (25MB)</li>
+          <li>More revision history (up to 25)</li>
+        </ul>
+      </div>
+    </div>
 
     <br />
     <br />

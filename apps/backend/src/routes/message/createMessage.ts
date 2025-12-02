@@ -19,7 +19,6 @@ import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
 
 const DAILY_ABUSE_LIMIT = 3000; // 120 messages per hour
-const DAILY_MESSAGING_CAP_FREE_TIER = 360; // 15 messages per hour
 const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 10;
 
 const schema = {
@@ -66,14 +65,6 @@ export const createMessage = defineExpressHandler(
     }
 
     let model = AIModel.GPT4_MINI;
-    if (
-      !capabilities.has(Capability.AssistantEnhancedMessageLimit) &&
-      numOfPreviousMessagesSent > DAILY_MESSAGING_CAP_FREE_TIER
-    ) {
-      throw new TooManyRequestsExpressError(
-        'Number of messages sent is beyond allocated threshold for the given tier',
-      );
-    }
     if (
       (capabilities.has(Capability.AssistantLimitedEnhancedModel) &&
         numOfPreviousMessagesSent < DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) ||

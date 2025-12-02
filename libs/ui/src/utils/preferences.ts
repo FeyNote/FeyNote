@@ -24,6 +24,7 @@ export class PreferencesService {
     [PreferenceNames.PanesRememberOpenState]: true,
     [PreferenceNames.LeftPaneStartOpen]: true,
     [PreferenceNames.LeftPaneShowArtifactTree]: true,
+    [PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate]: true,
     [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: true,
     [PreferenceNames.LeftPaneShowRecentThreads]: true,
     [PreferenceNames.RightPaneStartOpen]: true,

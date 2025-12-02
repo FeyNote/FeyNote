@@ -2,35 +2,133 @@
 import GlobalStyles from './GlobalStyles.astro';
 import GoToAppButton from '../components/GoToAppButton.astro';
 
-const { title } = Astro.props;
+const {
+  title,
+  description,
+  image = "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg",
+  ogType = "website",
+  noindex = false,
+  structuredData = null
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const defaultStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://feynote.com/#organization",
+      "name": "FeyNote",
+      "url": "https://feynote.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://static.feynote.com/icons/feynote-icon-original-20241220.png"
+      },
+      "description": "Free note-taking app for world-builders and tabletop RPG players",
+      "sameAs": [
+        "https://github.com/redchickenco/feynote",
+        "https://discord.gg/Tz8trXrd4C"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://feynote.com/#website",
+      "url": "https://feynote.com",
+      "name": "FeyNote",
+      "publisher": {
+        "@id": "https://feynote.com/#organization"
+      }
+    }
+  ]
+};
+
+const finalStructuredData = structuredData || defaultStructuredData;
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="darkreader-lock" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <link rel="canonical" href={canonicalURL} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:site_name" content="FeyNote" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="FeyNote Blog" href="/rss.xml" />
+
+    <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="https://static.feynote.com/assets/favicon-20240925.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/ios/180.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-192-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(finalStructuredData)} />
+
     <script defer src="https://cloud.umami.is/script.js" data-website-id="921628de-7259-4592-ae46-667d8d1f8b46"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"></noscript>
+
     <GlobalStyles />
     <style>
       html {
         min-height: 100vh;
       }
+
       body {
         margin: 0;
         padding: 8px;
-        color: white;
         min-height: 100vh;
+        font-family: "Inter", sans-serif;
+        font-weight: 400;
+        font-style: normal;
       }
 
-      a {
-        color: inherit;
+      @media (prefers-color-scheme: dark) {
+        body {
+          --bg-gradient-start: rgba(0,0,0,0.6);
+          --bg-gradient-end: rgba(0,0,0,0.8);
+          --card-bg: rgba(0,0,15,0.7);
+          --blogpost-bg: rgba(0,0,0,0.7);
+          --blogpost-text-color: rgb(240,240,240);
+          color: white;
+        }
+      }
+
+      @media (prefers-color-scheme: light) {
+        body {
+          --bg-gradient-start: rgba(255,255,255,1);
+          --bg-gradient-end: rgba(255,255,255,0.03);
+          --card-bg: rgba(255,255,255,0.7);
+          --blogpost-bg: white;
+          --blogpost-text-color: rgb(0,0,0);
+          color: black;
+        }
       }
 
       .nav {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto auto;
         align-items: center;
         justify-content: left;
         height: 40px;
@@ -40,8 +138,22 @@ const { title } = Astro.props;
 
       .nav .title {
         font-size: 1.2rem;
-        margin-right: 30px;
+        margin-right: 35px;
         text-decoration: none;
+
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .nav .title img {
+        width: 30px;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        line-height: 2rem;
       }
 
       .nav .nav-item {
@@ -55,7 +167,7 @@ const { title } = Astro.props;
       }
 
       .content {
-        max-width: min(700px, 90%);
+        max-width: min(1500px, 85%);
         margin-top: 60px;
         margin-left: auto;
         margin-right: auto;
@@ -67,31 +179,37 @@ const { title } = Astro.props;
         background-attachment: fixed;
         background-repeat: no-repeat;
         background-size: cover;
-        background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
+        background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
       }
 
       @media (min-width: 1121px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
+          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
         }
       }
 
       @media (min-width: 2241px) {
         .fantasy-bg {
-          background-image: linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.8)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
+          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
         }
       }
     </style>
   </head>
   <body class="fantasy-bg">
     <div class="nav">
-      <a class="title" href="/">FeyNote (Beta!)</a>
+      <a class="title" href="/">
+        <img src="https://static.feynote.com/icons/feynote-icon-60x60-20251130.png" alt="FeyNote logo" />
+        FeyNote
+      </a>
 
-      <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
-      <a class="nav-item" href="/pricing">Pricing</a>
-      <a class="nav-item" href="/features">Features</a>
-      <a class="nav-item" href="https://docs.feynote.com">Docs</a>
-      <a class="nav-item" href="/about">About</a>
+      <div class="nav-links">
+        <a class="nav-item" href="/pricing">Pricing</a>
+        <a class="nav-item" href="/blog">Blog</a>
+        <a class="nav-item" href="/about">About</a>
+        <a class="nav-item" href="https://docs.feynote.com">Docs</a>
+        <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
+        <a class="nav-item" href="https://github.com/redchickenco/feynote" target="_blank">GitHub</a>
+      </div>
     </div>
     <div class="content">
       <slot />

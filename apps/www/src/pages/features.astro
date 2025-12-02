@@ -7,6 +7,23 @@ import GoToAppButton from '../components/GoToAppButton.astro'
     text-align: center;
   }
 
+  .feature-section {
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.7);
+    background: rgba(0,0,0,0.7);
+    padding: 5px 20px;
+    margin-bottom: 20px;
+  }
+
+  .feature-section > div {
+    display: grid;
+    gap: 5px;
+    grid-template-columns: 130px auto;
+    margin-bottom: 20px;
+  }
+  .feature-section div div:first-child {
+    font-weight: bold;
+  }
+
   ul {
     text-align: left;
     max-width: 80%;
@@ -14,48 +31,134 @@ import GoToAppButton from '../components/GoToAppButton.astro'
     margin-right: auto;
   }
 </style>
-<RootLayout title="Features - Feynote">
-  <div class="center">
+<RootLayout
+  title="Features - FeyNote"
+  description="D&D and TTRPG campaign management features: embed monster statblocks, real-time collaboration, offline editing, fantasy calendars, graph visualization, and import from Obsidian or Logseq."
+>
+  <div>
     <h1>Feature List</h1>
 
-    FeyNote is very early on in development and we're working hard to bring all of our ideas to the platform. Here are a few of our highlight features, as well as a few we hope to add soon.
+    FeyNote is early on in it's development and we're working hard to bring all of our ideas to the platform. Here are a few of our highlight features, as well as a few we hope to add soon.
 
     <br /><br />
 
-    <h2>
-      Current Features
-    </h2>
-    <ul>
-      <li>Embedded statblocks, spells, and items within your notes</li>
-      <li>Sharing and collaboration with granular permission control</li>
-      <li>Graph visualization for connected content</li>
-      <li>Outgoing and incoming (backlinks) references between your documents</li>
-      <li>Block-style editing with herarchy</li>
-      <li>Fantasy (completely arbitrary!) calendars</li>
-      <li>Offline editing, search, and browsing</li>
-      <li>Editor themes</li>
-      <li>Paneable UI - work with content side-by-side or in multiple tabs</li>
-      <li>Dark and light mode</li>
-      <li>AI chat with the capability to generate monsters and items</li>
-      <li>AI capability to automatically scrape TTRPG content from a URL</li>
-      <li>Capability to import content from Obsidian and Logseq</li>
-      <li>Capability to export documents to JSON or Markdown</li>
-    </ul>
-
-    <h2>
-      Upcoming Features
-    </h2>
-    <ul>
-      <li>Automatic detection of unlinked references</li>
-      <li>Import document content from Google Docs</li>
-      <li>More themes</li>
-      <li>Desktop and mobile apps</li>
-    </ul>
-
+    <div>
+      <div class="features">
+        <div class="feature-section">
+          <h3>Core Features</h3>
+          <div>
+            <div>TTRPG Content</div>
+            <div>Embed your statblocks, spells, and items directly within your notes.</div>
+          </div>
+          <div>
+            <div>Real-time Collaboration</div>
+            <div>Share your document with others, and edit at the same time with live cursors!</div>
+          </div>
+          <div>
+            <div>Offline First</div>
+            <div>The entire site works offline, so that you can edit your notes on the go.</div>
+          </div>
+          <div>
+            <div>Themeable</div>
+            <div>We've built several options for themeing so that your content looks exactly like your source books.</div>
+          </div>
+          <div>
+            <div>Paneable UI</div>
+            <div>Have multiple documents open side-by-side or in multiple in-app tabs.</div>
+          </div>
+          <div>
+            <div>Import URLs</div>
+            <div>Paste a URL into FeyNote and your content will be pulled and automatically formatted for your notes.</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>Relationships and References</h3>
+          <div>
+            <div>Tree</div>
+            <div>Organize your content in a traditional hierarchy (if you like!).</div>
+          </div>
+          <div>
+            <div>Graph</div>
+            <div>View your content as a connected graph of nodes, helpful for browsing or seeing relationships.</div>
+          </div>
+          <div>
+            <div>References</div>
+            <div>Connect your notes by creating deep references to other documents. Text is automatically kept up-to-date as you edit.</div>
+          </div>
+          <div>
+            <div>Previews</div>
+            <div>Outgoing and incoming (backlinks) references between your documents</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>Text</h3>
+          <div>
+            <div>Block-Style Nesting</div>
+            <div>Organize your notes in bullet-journal style blocks, editing with herarchy for summarized notes.</div>
+          </div>
+          <div>
+            <div>Rich Fonts</div>
+            <div>Choose from a myriad of different fonts to fit your theme</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>Calendars</h3>
+          <div>
+            <div>Customization</div>
+            <div>Create an entirely arbitrary date system and organize your notes by date in your world.</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>Supported Import Formats</h3>
+          <div>
+            <div>Obsidian</div>
+          </div>
+          <div>
+            <div>Logseq</div>
+          </div>
+          <div>
+            <div>URL</div>
+            <div>Automatically pull TTRPG content from a URL</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>Supported Export Formats</h3>
+          <div>
+            <div>JSON</div>
+            <div>Capability to export documents to JSON.</div>
+          </div>
+          <div>
+            <div>Markdown</div>
+            <div>Capability to export documents to Markdown.</div>
+          </div>
+        </div>
+        <div class="feature-section">
+          <h3>We're working hard on the following</h3>
+          <div>
+            <div>Unlinked References</div>
+            <div>Automatic detection of content that is missing a reference, for example NPC names</div>
+          </div>
+          <div>
+            <div>Google Docs</div>
+            <div>The ability to import downloads from Google Docs</div>
+          </div>
+          <div>
+            <div>More Themes</div>
+            <div>New and improved theming functionality</div>
+          </div>
+          <div>
+            <div>Desktop/Mobile Apps</div>
+            <div>The ability to download FeyNote to your device as a native application</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <br />
     <br />
 
-    <GoToAppButton />
+    <div class="center">
+      <GoToAppButton />
+    </div>
   </div>
 </RootLayout>

@@ -25,6 +25,7 @@ const artifact = await prisma.artifact.findUnique({
   <head>
     <meta charset="utf-8" />
     <title>{artifact.title} - FeyNote</title>
+    <meta name="description" content={`${artifact.title} - Print view for TTRPG content on FeyNote. Free note-taking app for D&D and tabletop RPG campaigns.`} />
     <meta name="darkreader-lock" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="https://static.feynote.com/assets/favicon-20240925.ico" />

@@ -2,88 +2,236 @@
 import RootLayout from '../components/RootLayout.astro'
 import GoToAppButton from '../components/GoToAppButton.astro';
 ---
-<style>
-  h1 {
-    font-size: 2.5rem;
-  }
+<RootLayout
+  title="FeyNote - Free TTRPG & D&D Note-Taking App"
+  description="A free note-taking app for world-builders and tabletop RPG players. Embed statblocks and spells, collaborate on session notes, and organize your world with maps, calendars, and graph visualization."
+  image="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
+>
+  <style>
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 500;
+    }
 
-  .center {
-    text-align: center;
-  }
+    .center {
+      text-align: center;
+    }
 
-  .title-section {
-    margin-top: 100px;
-    margin-bottom: 100px;
-  }
+    .main-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap-size);
 
-  .section {
-    margin-top: 50px;
-  }
+      margin-top: 100px;
+      margin-bottom: 120px;
+    }
 
-  img.preview {
-    max-width: 100%;
-    border-radius: 8px;
-    box-shadow: 1px 1px 7px rgba(0,0,0,0.5);
-    margin-bottom: 10px;
-  }
-</style>
-<RootLayout title="Feynote">
-  <div class="center">
-    <div class="title-section">
-      <h1>Welcome to FeyNote!</h1>
+    .main-split-left {
+      align-content: center;
+    }
 
-      A free note-taking app for world-builders and tabletop RPG players.<br />
+    .main-split-right {
+      align-content: center;
+      text-align: center;
+    }
 
-      Embed statblocks and spells, encourage collaborative session notes, and organize your world by placing pins on a map.
+    @media (max-width: 1200px) {
+      .main-split {
+        grid-template-columns: unset;
+        grid-template-rows: auto auto;
+        gap: 40px;
+      }
+    }
 
-      <br />
-      <br />
+    .sections-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(auto, min-content);
+      gap: 20px;
+    }
 
-      <GoToAppButton />
+    @media (max-width: 1200px) {
+      .sections-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .section {
+      margin-top: 40px;
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      justify-items: center;
+    }
+
+    .section h2 {
+      margin: 0;
+    }
+
+    .section .description {
+      max-width: min(90%, 700px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    img.preview {
+      max-width: min(100%, max(50%, 700px));
+      border-radius: 8px;
+      box-shadow: 1px 1px 7px rgba(0,0,0,0.5);
+      height: 100%;
+      width: 100%;
+      object-fit: cover;
+      object-position: top left;
+    }
+
+    .main-split img.preview {
+      width: auto;
+      height: auto;
+    }
+  </style>
+  <div>
+    <div class="main-split">
+      <div class="main-split-left">
+        <h1>Welcome to FeyNote!</h1>
+
+        A free note-taking app for world-builders and tabletop RPG players.
+
+        <br />
+        <br />
+
+        Embed statblocks and spells, collaborate on session notes, and organize your world notes by placing pins on a map.
+
+        <br />
+        <br />
+
+        <GoToAppButton />
+      </div>
+
+      <div class="main-split-right">
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-artifact-800x454-20240924.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-artifact-1500x852-20240924.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
+          alt="FeyNote Artifact Editor"
+          fetchpriority="high"
+          loading="eager"
+        />
+      </div>
     </div>
 
-    <div class="section">
-      <h2>Advanced Editor</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg" alt="FeyNote Artifact Editor" />
+    <div class="sections-container">
+      <div class="section center">
+        <h2>Statblocks, Spells, and Items</h2>
 
-      FeyNote's editor is very powerful. We've added the ability to embed monsters, spells, and items directly into your notes.<br />
-      Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
-    </div>
+        <div class="description">
+          Your monsters, spells, and items exist <b>inside</b> of your notes.<br />
+          Create custom content, or tweak official content as you edit.
+        </div>
 
-    <div class="section">
-      <h2>Sharing and Collaboration</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg" alt="FeyNote Sharing Options" />
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-embedded-statblocks-800x495-20251129.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-embedded-statblocks-1500x928-20251129.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg"
+          alt="FeyNote Embedded Statblocks"
+        />
+      </div>
 
-      FeyNote is built with sharing in mind from the ground up. Live collaborate or share read-only copies with players, the choice is yours!
-    </div>
+      <div class="section center">
+        <h2>Link Related Content</h2>
 
-    <div class="section">
-      <h2>References and Linked Content</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg" alt="FeyNote Calendar" />
+        <div class="description">
+          Quickly reference related content, which automatically updates as you edit.<br />
+          Keep track of storylines, NPCs, and important events.
+        </div>
 
-      You can quickly and easily reference related content between your artifacts, reducing duplication and keeping your references up to date when the content changes. You can choose how to organize your content, whether that be in a graph-like structure or in a nested tree-like structure.
-    </div>
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-references-800x465-20240924.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-references-20240924.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg"
+          alt="FeyNote Linked Content"
+        />
+      </div>
 
-    <div class="section">
-      <h2>Fantasy Calendars</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg" alt="FeyNote Calendar" />
+      <div class="section center">
+        <h2>Sharing and Collaboration</h2>
 
-      FeyNote's calendar functionality is extremely flexible. You can specify any fantasy calendar layout you might imagine.<br />
-      Customize the number of months in a year, the number of days in each month, and the names of everything!
-    </div>
+        <div class="description">
+          FeyNote is built with sharing in mind from the ground up.<br />
+          Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
+        </div>
 
-    <div class="section">
-      <h2>Graph Visualization</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg" alt="FeyNote Graph Visualizer" />
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-sharing-800x454-20240924.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-sharing-1500x852-20240924.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg"
+          alt="FeyNote Sharing Options"
+        />
+      </div>
 
-      Visualize the content within your collection in a graph view. Particularly useful for large collections with lots of relationships, the graph view gives you a browsable view of everything in your collection.
-    </div>
+      <div class="section center">
+        <h2>Fantasy Calendars</h2>
 
-    <div class="section">
-      <h2>Assistant and Content Scraping</h2>
-      <img class="preview" src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg" alt="FeyNote AI Thread" />
+        <div class="description">
+          FeyNote's calendar functionality is wildly customizable. Customize the number of months in a year, the number of days in each month, and the names of everything!
+        </div>
 
-      Don't worry, we've only included AI because it's genuinely helpful for some things such as formatting/creating custom monster blocks and items, as well as scraping content from the web!
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-calendar-800x454-20240924.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-calendar-1500x852-20240924.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg"
+          alt="FeyNote Calendar"
+        />
+      </div>
+
+      <div class="section center">
+        <h2>Graph <i>and</i> Tree Organization</h2>
+
+        <div class="description">
+          Don't choose between graph or tree, have both! You can create a hierarchy of high level topics, as well as view a web of interconnected TTRPG content.
+        </div>
+
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-graph-800x454-20240924.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-graph-1500x852-20240924.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-graph-20240924.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg"
+          alt="FeyNote Graph Visualizer"
+        />
+      </div>
+
+      <div class="section center">
+        <h2>Automatically Grab and Format Content</h2>
+
+        <div class="description">
+          Whether you play Dungeons and Dragons, OpenLegend, Starfinder, or another tabletop system, our fantasy note taking tool makes formatting/creating custom monster blocks and items, as well as grabbing content from URLs easy!
+        </div>
+
+        <img
+          class="preview"
+          srcset="https://static.feynote.com/screenshots/feynote-chatbot-800x463-20250716.jpg 800w,
+                  https://static.feynote.com/screenshots/feynote-chatbot-1500x868-20250716.jpg 1500w,
+                  https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg 2000w"
+          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
+          src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg"
+          alt="FeyNote AI Thread"
+        />
+      </div>
     </div>
   </div>
 </RootLayout>

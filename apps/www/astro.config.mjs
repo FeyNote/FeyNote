@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
@@ -8,8 +9,8 @@ export default defineConfig({
     // Listens on any origin host (0.0.0.0), necessary for dev env and deployment
     host: true,
   },
-  // Adds React support
-  integrations: [react()],
+  site: 'https://feynote.com',
+  integrations: [react(), sitemap()],
   output: 'server',
   adapter: node({
     mode: 'standalone',

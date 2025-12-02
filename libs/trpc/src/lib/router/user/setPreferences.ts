@@ -11,6 +11,7 @@ import {
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
 import { z } from 'zod';
+import type { ZodShape } from '@feynote/global-types';
 
 export const setPreferences = authenticatedProcedure
   .input(
@@ -20,24 +21,24 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.PanesRememberOpenState]: z.boolean(),
       [PreferenceNames.LeftPaneStartOpen]: z.boolean(),
       [PreferenceNames.LeftPaneShowArtifactTree]: z.boolean(),
+      [PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate]: z.boolean(),
       [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]: z.boolean(),
       [PreferenceNames.LeftPaneShowRecentThreads]: z.boolean(),
       [PreferenceNames.RightPaneStartOpen]: z.boolean(),
-      [PreferenceNames.Language]: z.nativeEnum(SupportedLanguages).nullable(),
-      [PreferenceNames.FontSize]: z.nativeEnum(SupportedFontSize),
-      [PreferenceNames.Theme]: z.nativeEnum(AppTheme),
+      [PreferenceNames.Language]: z.enum(SupportedLanguages).nullable(),
+      [PreferenceNames.FontSize]: z.enum(SupportedFontSize),
+      [PreferenceNames.Theme]: z.enum(AppTheme),
       [PreferenceNames.CollaborationColor]: z.string().length(7),
-      [PreferenceNames.PreferencesSync]: z.nativeEnum(PreferencesSync),
+      [PreferenceNames.PreferencesSync]: z.enum(PreferencesSync),
       [PreferenceNames.GraphShowOrphans]: z.boolean(),
       [PreferenceNames.GraphLockNodeOnDrag]: z.boolean(),
-      [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: z.nativeEnum(
+      [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: z.enum(
         ArtifactReferenceNewArtifactSharingMode,
       ),
-      [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
-        z.nativeEnum(ArtifactReferenceExistingArtifactSharingMode),
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    }) satisfies z.ZodSchema<AppPreferences, any, any>,
+      [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: z.enum(
+        ArtifactReferenceExistingArtifactSharingMode,
+      ),
+    } satisfies ZodShape<AppPreferences>),
   )
   .mutation(async ({ ctx, input }): Promise<string> => {
     await prisma.user.update({
@@ -45,7 +46,41 @@ export const setPreferences = authenticatedProcedure
         id: ctx.session.userId,
       },
       data: {
-        preferences: input,
+        // We rebuild preferences as an object here to eliminate "extra" properties.
+        // One _could_ use Zod's strict mode to do this, but then we'd 400 any request with an extra (potentially legacy) property. This is better.
+        preferences: {
+          preferencesVersion: input.preferencesVersion,
+
+          [PreferenceNames.PanesRememberOpenState]:
+            input[PreferenceNames.PanesRememberOpenState],
+          [PreferenceNames.LeftPaneStartOpen]:
+            input[PreferenceNames.LeftPaneStartOpen],
+          [PreferenceNames.LeftPaneShowArtifactTree]:
+            input[PreferenceNames.LeftPaneShowArtifactTree],
+          [PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate]:
+            input[PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate],
+          [PreferenceNames.LeftPaneArtifactTreeShowUncategorized]:
+            input[PreferenceNames.LeftPaneArtifactTreeShowUncategorized],
+          [PreferenceNames.LeftPaneShowRecentThreads]:
+            input[PreferenceNames.LeftPaneShowRecentThreads],
+          [PreferenceNames.RightPaneStartOpen]:
+            input[PreferenceNames.RightPaneStartOpen],
+          [PreferenceNames.Language]: input[PreferenceNames.Language],
+          [PreferenceNames.FontSize]: input[PreferenceNames.FontSize],
+          [PreferenceNames.Theme]: input[PreferenceNames.Theme],
+          [PreferenceNames.CollaborationColor]:
+            input[PreferenceNames.CollaborationColor],
+          [PreferenceNames.PreferencesSync]:
+            input[PreferenceNames.PreferencesSync],
+          [PreferenceNames.GraphShowOrphans]:
+            input[PreferenceNames.GraphShowOrphans],
+          [PreferenceNames.GraphLockNodeOnDrag]:
+            input[PreferenceNames.GraphLockNodeOnDrag],
+          [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]:
+            input[PreferenceNames.ArtifactReferenceNewArtifactSharingMode],
+          [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
+            input[PreferenceNames.ArtifactReferenceExistingArtifactSharingMode],
+        } satisfies AppPreferences,
       },
     });
 
