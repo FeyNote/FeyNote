@@ -1,5 +1,4 @@
 export const CAPABILITY_GRACE_PERIOD_DAYS = 7;
-export const MULTIPLE_IMAGES_UNLOCKED_LIMIT = 10;
 
 export enum Capability {
   LargeFiles = 'largeFiles',
@@ -20,6 +19,9 @@ export interface SubscriptionModel {
 }
 
 export enum SubscriptionModelName {
+  PYOMonthly = 'pyo-monthly',
+  PYOYearly = 'pyo-yearly',
+  PYOForever = 'pyo-forever',
   Tier1Monthly = 'tier1-monthly',
   Tier1Yearly = 'tier1-yearly',
   Tier1Forever = 'tier1-forever',
@@ -32,6 +34,36 @@ export enum SubscriptionModelName {
 }
 
 export const SUBSCRIPTION_MODELS = {
+  [SubscriptionModelName.PYOMonthly]: {
+    title: 'Choose Your Price (Monthly)',
+    expiresInDays: 31,
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.PYOYearly]: {
+    title: 'Choose Your Price (Monthly)',
+    expiresInDays: 365,
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.PYOForever]: {
+    title: 'Choose Your Price (Forever)',
+    expiresInDays: 3650, // 10 years - okay, not quite forever
+    capabilities: [
+      Capability.LargeFiles,
+      Capability.HighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
   [SubscriptionModelName.Tier1Monthly]: {
     title: 'Quill Bearer (Monthly)',
     expiresInDays: 31,
