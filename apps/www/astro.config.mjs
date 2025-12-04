@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
+import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,13 +11,15 @@ export default defineConfig({
     host: true,
   },
   site: 'https://feynote.com',
-  integrations: [react(), sitemap()],
+  integrations: [react(), sitemap(), mdx()],
   output: 'server',
   adapter: node({
     mode: 'standalone',
   }),
   image: {
     domains: ['static.feynote.com'],
+    layout: 'constrained',
+    responsiveStyles: true,
   },
   vite: {
     server: {
