@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import GlobalStyles from './GlobalStyles.astro';
 import GoToAppButton from '../components/GoToAppButton.astro';
 
@@ -198,7 +199,13 @@ const finalStructuredData = structuredData || defaultStructuredData;
   <body class="fantasy-bg">
     <div class="nav">
       <a class="title" href="/">
-        <img src="https://static.feynote.com/icons/feynote-icon-60x60-20251130.png" alt="FeyNote logo" />
+        <Image
+          src="https://static.feynote.com/icons/feynote-icon-original-20241220.png"
+          alt="FeyNote logo"
+          height="30"
+          width="30"
+          layout="fixed"
+        />
         FeyNote
       </a>
 

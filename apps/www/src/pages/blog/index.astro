@@ -96,7 +96,12 @@ const sortedPosts = posts.sort((a, b) =>
       {sortedPosts.map(post => (
         <li class="post">
           <a href={`/blog/${post.slug}`}>
-            <img src={post.data.featuredImageUrl} alt={`Featured image for ${post.data.title}`} />
+            <Image
+              src={post.data.featuredImageUrl}
+              alt={`Featured image for ${post.data.title}`}
+              inferSize={true}
+              layout="constrained"
+            />
             <div class="post-title">
               <h2>{post.data.title}</h2>
               <time>{post.data.publishDate.toLocaleDateString()}</time>

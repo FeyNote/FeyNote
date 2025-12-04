@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import RootLayout from '../components/RootLayout.astro'
 import GoToAppButton from '../components/GoToAppButton.astro';
 ---
@@ -108,16 +109,14 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       </div>
 
       <div class="main-split-right">
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-artifact-800x454-20240924.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-artifact-1500x852-20240924.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
           alt="FeyNote Artifact Editor"
           fetchpriority="high"
           loading="eager"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
     </div>
@@ -131,14 +130,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Create custom content, or tweak official content as you edit.
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-embedded-statblocks-800x495-20251129.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-embedded-statblocks-1500x928-20251129.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg"
           alt="FeyNote Embedded Statblocks"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
 
@@ -150,13 +147,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Keep track of storylines, NPCs, and important events.
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-references-800x465-20240924.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-references-20240924.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg"
           alt="FeyNote Linked Content"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
 
@@ -168,14 +164,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-sharing-800x454-20240924.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-sharing-1500x852-20240924.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg"
           alt="FeyNote Sharing Options"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
 
@@ -186,14 +180,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           FeyNote's calendar functionality is wildly customizable. Customize the number of months in a year, the number of days in each month, and the names of everything!
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-calendar-800x454-20240924.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-calendar-1500x852-20240924.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg"
           alt="FeyNote Calendar"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
 
@@ -204,14 +196,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Don't choose between graph or tree, have both! You can create a hierarchy of high level topics, as well as view a web of interconnected TTRPG content.
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-graph-800x454-20240924.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-graph-1500x852-20240924.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-graph-20240924.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg"
           alt="FeyNote Graph Visualizer"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
 
@@ -222,14 +212,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Whether you play Dungeons and Dragons, OpenLegend, Starfinder, or another tabletop system, our fantasy note taking tool makes formatting/creating custom monster blocks and items, as well as grabbing content from URLs easy!
         </div>
 
-        <img
+        <Image
           class="preview"
-          srcset="https://static.feynote.com/screenshots/feynote-chatbot-800x463-20250716.jpg 800w,
-                  https://static.feynote.com/screenshots/feynote-chatbot-1500x868-20250716.jpg 1500w,
-                  https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg 2000w"
-          sizes="(max-width: 1200px) min(85vw, 700px), min(42.5vw, 700px)"
           src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg"
           alt="FeyNote AI Thread"
+          inferSize={true}
+          layout="constrained"
         />
       </div>
     </div>
