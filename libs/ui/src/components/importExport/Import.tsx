@@ -2,7 +2,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { trpc } from '../../utils/trpc';
 import type { ImportFormat, JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
@@ -11,6 +11,7 @@ import { Button, Card } from '@radix-ui/themes';
 import { AiFillFileMarkdown, AiFillFileText, FaGoogleDrive, SiLogseq, SiObsidian, TbFileTypeDocx } from '../AppIcons';
 import { PaneTransition, useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { GFP, type GFPRefValue, ViewGroup, ViewId } from './GFP';
 
 const ImportOptionsContainer = styled.div`
   display: flex;
@@ -80,6 +81,7 @@ const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
+  const gfpRef = useRef<null | GFPRefValue>(null)
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
@@ -143,8 +145,9 @@ export const Import: React.FC = () => {
               return (
                 <StyledImportCard key={`option-${i}`} asChild>
                   <Button onClick={() => {
-                    if (option.type === 'gdrive') {
-                      launchGFP();
+                    if (option.type === 'gdrive' && gfpRef.current) {
+                      gfpRef.current.createPicker([ViewId.DOCS])
+                      gfpRef.current.togglePicker();
                       return
                     }
                     navigate(
@@ -166,6 +169,7 @@ export const Import: React.FC = () => {
           }
         </ImportOptionsContainer>
       </IonContent>
+      <GFP ref={gfpRef} />
     </IonPage>
   );
 };

@@ -1,12 +1,13 @@
-import { useCallback, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { useSessionContext } from '../../context/session/SessionContext';
+import { useCallback, useImperativeHandle, useState, type Dispatch, type SetStateAction } from 'react';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { uploadImportJob } from '../../utils/job/uploadImportJob';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { useTranslation } from 'react-i18next';
+import { useScript } from '../../utils/useScript';
 
+// Typings taken from https://www.npmjs.com/package/@types/google.picker as they don't expose them as an ingestible commonjs package
 type PickerBuilder = {
   addView(viewOrViewId: DocsView | DocsUploadView | ViewId): PickerBuilder;
   addViewGroup(viewGroup: ViewGroup): PickerBuilder;
@@ -68,7 +69,6 @@ export interface DocumentObject {
   [Document.PARENT_ID]?: string;
   [Document.PHONE_NUMBERS]?: Array<{ type: string; number: string }>;
   [Document.SERVICE_ID]?: string;
-  [Document.THUMBNAILS]?: ThumbnailObject[];
   [Document.TYPE]?: string;
   [Document.URL]?: string;
   isShared?: boolean;
@@ -94,7 +94,6 @@ export type ParentDocumentObject = Pick<
     | Document.ID
     | Document.IS_NEW
     | Document.SERVICE_ID
-    | Document.THUMBNAILS
     | Document.TYPE
     | Document.URL
 >;
@@ -104,13 +103,6 @@ export enum Thumbnail {
     URL = "url",
     HEIGHT = "height",
     WIDTH = "width",
-}
-
-export interface ThumbnailObject {
-    [Thumbnail.TYPE]: string;
-    [Thumbnail.URL]: string;
-    [Thumbnail.HEIGHT]: number;
-    [Thumbnail.WIDTH]: number;
 }
 
 export type DocsUploadView = {
@@ -314,7 +306,7 @@ export type Locales =
     | "zh-TW"
     | "zu";
 
-export type DocumentThumbnailObject = ThumbnailObject;
+// End of typings
 
 const getGoogleRef = () => {
   return (window as any).google;
@@ -324,15 +316,22 @@ const getGAPIRef = () => {
   return (window as any).gapi;
 };
 
+export interface GFPRefValue {
+  togglePicker: () => void;
+  createPicker: (viewIds: ViewId[]) => void;
+  setFileSelectionCallback: (callback: (data: ResponseObject) => void) => void;
+}
+
 interface Props {
-  ref: any;
+  ref: React.Ref<GFPRefValue>;
 }
 
 export const GFP: React.FC<Props> = ({ ref }) => {
   const [tokenClient, setTokenClient] = useState<null | any>(null);
   const [isPickerLoaded, setIsPickerLoaded] = useState(false)
   const [picker, setPicker] = useState<Picker | null>(null)
-  const [customCallback, setCustomCallback] = useState<((data: ResponseObject) => void) | null>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const [fileSelectionCallback, setFileSelectionCallback] = useState<((data: ResponseObject) => void) | null>(null)
   const [accessToken, setAccessToken] = useState(null)
   const { navigate } = usePaneContext();
   const { t } = useTranslation();
@@ -343,21 +342,23 @@ export const GFP: React.FC<Props> = ({ ref }) => {
 
   useImperativeHandle(ref, () => {
     return {
-      showPicker() {
+      togglePicker() {
         if (!picker) return
-        picker.setVisible(true);
+        const newVisibility = !isVisible
+        picker.setVisible(newVisibility)
+        setIsVisible(newVisibility)
       },
-      hidePicker() {
-        if (!picker) return
-        picker.setVisible(false);
-      },
-      createPicker(viewGroup: ViewGroup) {
+      createPicker(viewIds: ViewId[]) {
         if (isPickerLoaded) {
           if (!accessToken) {
             return fetchAccessToken()
           }
           const google = getGoogleRef()
           if (!google) return
+          const viewGroup = (new google.picker.ViewGroup() as ViewGroup)
+          for(const viewId of viewIds) {
+            viewGroup.addView(viewId)
+          }
           const picker = (new google.picker.PickerBuilder() as PickerBuilder)
               .addViewGroup(viewGroup)
               .setOAuthToken(accessToken)
@@ -365,8 +366,8 @@ export const GFP: React.FC<Props> = ({ ref }) => {
               .setCallback((data) => {
                 const google = getGoogleRef()
                 if (!google) return
-                if (customCallback) {
-                  customCallback(data)
+                if (fileSelectionCallback) {
+                  fileSelectionCallback(data)
                   return
                 }
                 if (data[Response.ACTION] === Action.PICKED) {
@@ -380,9 +381,7 @@ export const GFP: React.FC<Props> = ({ ref }) => {
           setPicker(picker)
         }
       },
-      setCustomCallback(callback: NonNullable<typeof customCallback>) {
-        setCustomCallback(callback)
-      }
+      setFileSelectionCallback,
     }
   })
 
@@ -428,6 +427,7 @@ export const GFP: React.FC<Props> = ({ ref }) => {
   }
 
   const onGAPILoad = useCallback(() => {
+    console.log('on GAPILoad')
     const gapi = getGAPIRef()
     if (!gapi) return
     gapi.load('picker', () => {
@@ -437,6 +437,7 @@ export const GFP: React.FC<Props> = ({ ref }) => {
   }, [])
 
   const onGSILoad = useCallback(async () => {
+    console.log('on GSI Load')
     const tokenClient = await getGoogleRef()?.accounts.oauth2.initTokenClient({
       client_id: '458922288770-u99e4b2eq5pl4fd26nnk8kmt6mtqogka.apps.googleusercontent.com',
       scope: 'https://www.googleapis.com/auth/drive.readonly',
@@ -451,10 +452,8 @@ export const GFP: React.FC<Props> = ({ ref }) => {
     setTokenClient(tokenClient)
   }, []);
 
-  return (
-    <>
-      <script async src="https://accounts.google.com/gsi/client" onLoad={onGSILoad} />
-      <script async src="https://apis.google.com/js/api.js" onLoad={onGAPILoad} />
-    </>
-  );
+  useScript("https://accounts.google.com/gsi/client", onGSILoad);
+  useScript("https://apis.google.com/js/api.js", onGAPILoad);
+
+  return null;
 };
