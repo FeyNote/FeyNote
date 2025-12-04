@@ -8,13 +8,14 @@ publishDate: 2025-12-01
 updatedDate: 2025-12-01
 ---
 
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
 
-<Image
+<Picture
   src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
   alt="asdf"
   layout="constrained"
   inferSize={true}
+  formats={['avif', 'webp']}
   style="width: 100%; height: auto;"
 />
 

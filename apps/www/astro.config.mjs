@@ -12,7 +12,7 @@ export default defineConfig({
   },
   site: 'https://feynote.com',
   integrations: [react(), sitemap(), mdx()],
-  output: 'server',
+  output: 'static',
   adapter: node({
     mode: 'standalone',
   }),

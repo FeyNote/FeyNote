@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
 import RootLayout from '../components/RootLayout.astro'
 import GoToAppButton from '../components/GoToAppButton.astro';
 ---
@@ -109,13 +109,14 @@ import GoToAppButton from '../components/GoToAppButton.astro';
       </div>
 
       <div class="main-split-right">
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
           alt="FeyNote Artifact Editor"
           fetchpriority="high"
           loading="eager"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -130,11 +131,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Create custom content, or tweak official content as you edit.
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg"
           alt="FeyNote Embedded Statblocks"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -147,11 +149,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Keep track of storylines, NPCs, and important events.
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-references-20240924.jpg"
           alt="FeyNote Linked Content"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -164,11 +167,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Edit offline when away from an internet connection, and your content will sync up when you come back online (yes, even though it's a website!).
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg"
           alt="FeyNote Sharing Options"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -180,11 +184,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           FeyNote's calendar functionality is wildly customizable. Customize the number of months in a year, the number of days in each month, and the names of everything!
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg"
           alt="FeyNote Calendar"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -196,11 +201,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Don't choose between graph or tree, have both! You can create a hierarchy of high level topics, as well as view a web of interconnected TTRPG content.
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-graph-20240924.jpg"
           alt="FeyNote Graph Visualizer"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>
@@ -212,11 +218,12 @@ import GoToAppButton from '../components/GoToAppButton.astro';
           Whether you play Dungeons and Dragons, OpenLegend, Starfinder, or another tabletop system, our fantasy note taking tool makes formatting/creating custom monster blocks and items, as well as grabbing content from URLs easy!
         </div>
 
-        <Image
+        <Picture
           class="preview"
           src="https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg"
           alt="FeyNote AI Thread"
           inferSize={true}
+          formats={['avif', 'webp']}
           layout="constrained"
         />
       </div>

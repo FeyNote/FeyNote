@@ -1,5 +1,5 @@
 ---
-import { Image } from 'astro:assets';
+import { Picture } from 'astro:assets';
 import RootLayout from '../../components/RootLayout.astro'
 import GoToAppButton from '../../components/GoToAppButton.astro'
 import { getCollection } from 'astro:content';
@@ -97,10 +97,11 @@ const sortedPosts = posts.sort((a, b) =>
       {sortedPosts.map(post => (
         <li class="post">
           <a href={`/blog/${post.slug}`}>
-            <Image
+            <Picture
               src={post.data.featuredImageUrl}
               alt={`Featured image for ${post.data.title}`}
               inferSize={true}
+              formats={['avif', 'webp']}
               layout="constrained"
             />
             <div class="post-title">
