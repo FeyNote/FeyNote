@@ -122,7 +122,7 @@
     "typesense": "^2.1.0",
     "uint8array-extras": "^1.5.0",
     "uuid": "^13.0.0",
-    "winston": "^3.18.3",
+    "winston": "^3.19.0",
     "workbox-routing": "^7.4.0",
     "workbox-strategies": "^7.4.0",
     "workbox-sw": "^7.4.0",
