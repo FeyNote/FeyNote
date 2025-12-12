@@ -70,7 +70,7 @@ export const trpc = createTRPCProxyClient<AppRouter>({
       colorMode: 'none',
     }),
     httpLink({
-      url: getApiUrls().trpc,
+      url: getApiUrls().trpc + `?version=${import.meta.env.VITE_APP_VERSION}`,
       transformer: customTrpcTransformer,
       headers: async () => {
         const session = await appIdbStorageManager.getSession();
