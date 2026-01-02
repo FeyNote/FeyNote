@@ -40,7 +40,7 @@ import { FileHandler as FileHandlerExtension } from '@tiptap/extension-file-hand
 import {
   TableOfContents as TableOfContentsExtension,
   type TableOfContentData,
-} from '@tiptap/extension-table-of-contents';
+} from './extensions/toc/tableOfContents';
 import {
   Collaboration as CollaborationExtension,
   isChangeOrigin,
@@ -234,17 +234,14 @@ export const getTiptapExtensions = (args: {
     }),
     FocusExtension,
     ClipboardExtension,
-    ...(args.onTocUpdate
-      ? [
-          TableOfContentsExtension.configure({
-            onUpdate(content) {
-              setTimeout(() => {
-                args.onTocUpdate?.(content);
-              });
-            },
-          }),
-        ]
-      : []),
+    TableOfContentsExtension.configure({
+      anchorTypes: [TiptapBlockType.Heading],
+      onUpdate(content) {
+        setTimeout(() => {
+          args.onTocUpdate?.(content);
+        });
+      },
+    }),
     DiceDecorationExtension.configure({
       onRollDice: args.onRollDice,
     }),
