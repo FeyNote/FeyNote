@@ -12,6 +12,7 @@ import { SubscriptionModelName } from '@feynote/shared-utils';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
+import { TierCard } from './TierCard';
 
 const CurrentSubscriptionCard = styled(IonCard)`
   max-width: 400px;
@@ -20,26 +21,16 @@ const CurrentSubscriptionCard = styled(IonCard)`
 `;
 
 const OfferingContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-const OfferingCard = styled(IonCard)`
-  width: min(380px, 95%);
-  padding: 16px;
-  text-align: center;
-
+  padding-top: 15px;
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr repeat(4, auto);
+  grid-template-columns: repeat(auto-fit, min(440px, 100%));
+  justify-items: center;
+  justify-content: center;
 
-  ul {
-    text-align: left;
+  > * {
+    margin: 10px;
   }
-`;
-
-const OfferingCardDescription = styled.p`
-  text-align: left;
 `;
 
 const FrequencySelector = styled.div`
@@ -53,15 +44,10 @@ const ContributeDescription = styled.p`
   margin: auto;
 `;
 
-const CapabilitiesHeader = styled.h2`
-  font-size: 18px;
-`;
-
-const HiddenListItem = styled.li`
-  visibility: hidden;
-`;
-
 const subscriptionModelNameToI18n = {
+  [SubscriptionModelName.PYOMonthly]: 'contribute.pyo.monthly',
+  [SubscriptionModelName.PYOYearly]: 'contribute.pyo.yearly',
+  [SubscriptionModelName.PYOForever]: 'contribute.pyo.forever',
   [SubscriptionModelName.Tier1Monthly]: 'contribute.tier1.monthly',
   [SubscriptionModelName.Tier1Yearly]: 'contribute.tier1.yearly',
   [SubscriptionModelName.Tier1Forever]: 'contribute.tier1.forever',
@@ -74,6 +60,9 @@ const subscriptionModelNameToI18n = {
 } satisfies Record<SubscriptionModelName, string>;
 
 const subscriptionModelNameToPrice = {
+  [SubscriptionModelName.PYOMonthly]: 2,
+  [SubscriptionModelName.PYOYearly]: 10,
+  [SubscriptionModelName.PYOForever]: -1,
   [SubscriptionModelName.Tier1Monthly]: 2,
   [SubscriptionModelName.Tier1Yearly]: 20,
   [SubscriptionModelName.Tier1Forever]: -1,
@@ -88,7 +77,7 @@ const subscriptionModelNameToPrice = {
 export const Contribute: React.FC = () => {
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const [viewInMonthly, setViewInMonthly] = useState(true);
+  const [viewInMonthly, setViewInMonthly] = useState(false);
   const [subscriptions, setSubscriptions] = useState<
     {
       id: string;
@@ -117,10 +106,14 @@ export const Contribute: React.FC = () => {
     load();
   }, []);
 
-  const subscribe = async (name: SubscriptionModelName) => {
+  const subscribe = async (
+    name: SubscriptionModelName,
+    amount: number | undefined,
+  ) => {
     const response = await trpc.payment.createStripeCheckoutSession
       .mutate({
         subscriptionModelName: name,
+        amount,
         successUrl: 'https://feynote.com/payment/success',
         cancelUrl: 'https://feynote.com/payment/cancel',
       })
@@ -143,44 +136,6 @@ export const Contribute: React.FC = () => {
     if (!response) return;
 
     window.open(response.url, '_blank', 'noopener,noreferrer');
-  };
-
-  const renderPrice = (price: number) => {
-    return <div>${price.toFixed(2)}</div>;
-  };
-
-  const renderButtonForSubscription = (name: SubscriptionModelName) => {
-    if (subscriptions.length === 0) {
-      return (
-        <IonButton
-          onClick={() => {
-            subscribe(name);
-          }}
-        >
-          {t('contribute.subscribe')}
-        </IonButton>
-      );
-    }
-
-    return (
-      <IonButton onClick={manageSubscriptions}>
-        {t('contribute.manage')}
-      </IonButton>
-    );
-  };
-
-  const renderFreeButton = () => {
-    if (subscriptions.length === 0) {
-      return (
-        <IonButton disabled={true}>{t('contribute.activePlan')}</IonButton>
-      );
-    }
-
-    return (
-      <IonButton onClick={manageSubscriptions}>
-        {t('contribute.manage')}
-      </IonButton>
-    );
   };
 
   const renderSubscriptionExpirationInformation = (subscription: {
@@ -264,123 +219,59 @@ export const Contribute: React.FC = () => {
         </FrequencySelector>
 
         <OfferingContainer>
-          <OfferingCard>
-            <IonCardTitle>{t('contribute.free')}</IonCardTitle>
-
-            <OfferingCardDescription>
-              {t('contribute.free.description')}
-            </OfferingCardDescription>
-
-            <CapabilitiesHeader>
-              {t('contribute.capabilities')}
-            </CapabilitiesHeader>
-            <ul>
-              <li>{t('contribute.free.capabilities1')}</li>
-              <li>{t('contribute.free.capabilities2')}</li>
-              <li>{t('contribute.free.capabilities3')}</li>
-              <li>{t('contribute.free.capabilities4')}</li>
-              <li>{t('contribute.free.capabilities5')}</li>
-            </ul>
-            <div aria-hidden={true}>{t('contribute.free')}</div>
-            {renderFreeButton()}
-          </OfferingCard>
-
-          <OfferingCard>
-            <IonCardTitle>{t('contribute.tier1')}</IonCardTitle>
-
-            <OfferingCardDescription>
-              {t('contribute.tier1.description')}
-            </OfferingCardDescription>
-
-            <CapabilitiesHeader>
-              {t('contribute.capabilities')}
-            </CapabilitiesHeader>
-            <ul>
-              <li>{t('contribute.tier1.capabilities1')}</li>
-              <li>{t('contribute.tier1.capabilities2')}</li>
-              <li>{t('contribute.tier1.capabilities3')}</li>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-            </ul>
-
-            {renderPrice(
-              subscriptionModelNameToPrice[
+          <TierCard
+            title={t('contribute.free')}
+            description={t('contribute.free.description')}
+            capabilities={[
+              t('contribute.free.capabilities1'),
+              t('contribute.free.capabilities2'),
+              t('contribute.free.capabilities3'),
+              t('contribute.free.capabilities4'),
+              t('contribute.free.capabilities5'),
+            ]}
+            action={subscriptions.length === 0 ? 'current' : 'manage'}
+            pricing={{
+              mode: 'free',
+            }}
+            onManage={manageSubscriptions}
+            onSubscribe={() => {
+              // Do nothing
+            }}
+          />
+          <TierCard
+            title={t('contribute.pyo')}
+            description={t('contribute.pyo.description')}
+            capabilities={[
+              t('contribute.pyo.capabilities1'),
+              t('contribute.pyo.capabilities2'),
+              t('contribute.pyo.capabilities3'),
+              t('contribute.pyo.capabilities4'),
+            ]}
+            action={subscriptions.length === 0 ? 'subscribe' : 'manage'}
+            pricing={{
+              mode: 'pyo',
+              minimum:
+                subscriptionModelNameToPrice[
+                  viewInMonthly
+                    ? SubscriptionModelName.PYOMonthly
+                    : SubscriptionModelName.PYOYearly
+                ],
+              suggested: viewInMonthly ? [2, 4, 6] : [10, 20, 40],
+            }}
+            onManage={manageSubscriptions}
+            onSubscribe={(amount) =>
+              subscribe(
                 viewInMonthly
-                  ? SubscriptionModelName.Tier1Monthly
-                  : SubscriptionModelName.Tier1Yearly
-              ],
-            )}
-            {renderButtonForSubscription(
-              viewInMonthly
-                ? SubscriptionModelName.Tier1Monthly
-                : SubscriptionModelName.Tier1Yearly,
-            )}
-          </OfferingCard>
-
-          <OfferingCard>
-            <IonCardTitle>{t('contribute.tier2')}</IonCardTitle>
-
-            <OfferingCardDescription>
-              {t('contribute.tier2.description')}
-            </OfferingCardDescription>
-
-            <CapabilitiesHeader>
-              {t('contribute.capabilities')}
-            </CapabilitiesHeader>
-            <ul>
-              <li>{t('contribute.tier2.capabilities1')}</li>
-              <li>{t('contribute.tier2.capabilities2')}</li>
-              <li>{t('contribute.tier2.capabilities3')}</li>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-            </ul>
-
-            {renderPrice(
-              subscriptionModelNameToPrice[
-                viewInMonthly
-                  ? SubscriptionModelName.Tier2Monthly
-                  : SubscriptionModelName.Tier2Yearly
-              ],
-            )}
-            {renderButtonForSubscription(
-              viewInMonthly
-                ? SubscriptionModelName.Tier2Monthly
-                : SubscriptionModelName.Tier2Yearly,
-            )}
-          </OfferingCard>
-
-          <OfferingCard>
-            <IonCardTitle>{t('contribute.tier3')}</IonCardTitle>
-
-            <OfferingCardDescription>
-              {t('contribute.tier3.description')}
-            </OfferingCardDescription>
-
-            <CapabilitiesHeader>
-              {t('contribute.capabilities')}
-            </CapabilitiesHeader>
-            <ul>
-              <li>{t('contribute.tier3.capabilities1')}</li>
-              <li>{t('contribute.tier3.capabilities2')}</li>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-              <HiddenListItem aria-hidden={true}></HiddenListItem>
-            </ul>
-
-            {renderPrice(
-              subscriptionModelNameToPrice[
-                viewInMonthly
-                  ? SubscriptionModelName.Tier3Monthly
-                  : SubscriptionModelName.Tier3Yearly
-              ],
-            )}
-            {renderButtonForSubscription(
-              viewInMonthly
-                ? SubscriptionModelName.Tier3Monthly
-                : SubscriptionModelName.Tier3Yearly,
-            )}
-          </OfferingCard>
+                  ? SubscriptionModelName.PYOMonthly
+                  : SubscriptionModelName.PYOYearly,
+                amount,
+              )
+            }
+          />
         </OfferingContainer>
+        <br />
+        <br />
+        <br />
         <br />
       </IonContent>
     </IonPage>

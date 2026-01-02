@@ -1,16 +1,35 @@
-import type { JobSummary } from "@feynote/prisma/types";
-import type { JobProgressTracker } from "../JobProgressTracker";
-import type { StandardizedImportInfo } from "./StandardizedImportInfo";
+import type { JobSummary } from '@feynote/prisma/types';
+import type { JobProgressTracker } from '../JobProgressTracker';
+import type { StandardizedImportInfo } from './StandardizedImportInfo';
+import { JSDOM } from 'jsdom';
 import path, { join } from 'path';
-import { convertFile, FileFormat, getSafeArtifactId } from "@feynote/api-services";
-import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
-import { generateJSON } from "@tiptap/html";
-import { ArtifactAccessLevel, ArtifactTheme, ArtifactType } from "@prisma/client";
-import { TiptapTransformer } from "@hocuspocus/transformer";
-import { applyUpdate, encodeStateAsUpdate } from "yjs";
+import {
+  convertFile,
+  FileFormat,
+  getSafeArtifactId,
+} from '@feynote/api-services';
+import {
+  addMissingBlockIds,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  constructYArtifact,
+  getTextForJSONContent,
+  getTiptapServerExtensions,
+} from '@feynote/shared-utils';
+import { generateJSON } from '@tiptap/html';
+import {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
+import { TiptapTransformer } from '@hocuspocus/transformer';
+import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import * as Sentry from '@sentry/node';
-import { tmpdir } from "os";
+import { tmpdir } from 'os';
 import { rm, mkdir, readFile } from 'fs/promises';
+import { updateIdsOnHeaders } from './html/updateIdsOnHeaders';
+import { replaceBlockquotes } from './html/replaceBlockquotes';
+import { updateReferencedHeaders } from './html/updateReferencedHeaders';
+import type { ArtifactBlockInfo } from './ArtifactBlockInfo';
 
 export const docxToStandardizedImport = async (args: {
   job: JobSummary;
@@ -22,13 +41,13 @@ export const docxToStandardizedImport = async (args: {
     mediaFilesToUpload: [],
   };
 
-  const convertedFilePaths: string[] = []
+  const convertedFilePaths: string[] = [];
 
   const tempDir = tmpdir();
-  const outputDir = join(tempDir, `${Date.now()}-${crypto.randomUUID()}`)
-  await mkdir(outputDir)
+  const outputDir = join(tempDir, `${Date.now()}-${crypto.randomUUID()}`);
+  await mkdir(outputDir);
   for await (const filePath of args.filePaths) {
-    if (path.extname(filePath) !== '.docx') continue
+    if (path.extname(filePath) !== '.docx') continue;
 
     const convertedFilePath = await convertFile({
       inputFilePath: filePath,
@@ -40,19 +59,26 @@ export const docxToStandardizedImport = async (args: {
         extra: {
           userId: args.job.userId,
           jobId: args.job.id,
-          fileBaseName: path.basename(filePath)
+          fileBaseName: path.basename(filePath),
         },
       });
-      throw new Error(e)
-    })
-    convertedFilePaths.push(convertedFilePath)
+      throw new Error(e);
+    });
+    convertedFilePaths.push(convertedFilePath);
   }
 
   for (let i = 0; i < convertedFilePaths.length; i++) {
     const filePath = convertedFilePaths[i];
     const basename = path.basename(filePath);
-    const html = await readFile(filePath, 'utf-8');
     const artifactId = (await getSafeArtifactId()).id;
+    let html = await readFile(filePath, 'utf-8');
+    const jsdom = new JSDOM(html);
+    const idToBlockInfo = new Map<string, ArtifactBlockInfo>();
+    replaceBlockquotes(jsdom);
+    updateIdsOnHeaders(jsdom, idToBlockInfo, artifactId);
+    updateReferencedHeaders(jsdom, idToBlockInfo);
+    html = jsdom.window.document.documentElement.outerHTML;
+
     const title = path.parse(basename).name;
 
     const extensions = getTiptapServerExtensions({});
@@ -95,5 +121,5 @@ export const docxToStandardizedImport = async (args: {
   }
 
   await rm(outputDir, { recursive: true });
-  return importInfo
-}
+  return importInfo;
+};

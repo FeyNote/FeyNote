@@ -2,23 +2,31 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { trpc } from '../../utils/trpc';
 import type { ImportFormat, JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
 import { Button, Card } from '@radix-ui/themes';
-import { AiFillFileMarkdown, AiFillFileText, FaGoogleDrive, SiLogseq, SiObsidian, TbFileTypeDocx } from '../AppIcons';
-import { PaneTransition, useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import {
+  AiFillFileMarkdown,
+  AiFillFileText,
+  SiLogseq,
+  SiObsidian,
+  TbFileTypeDocx,
+} from '../AppIcons';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { GFP, type GFPRefValue, ViewGroup, ViewId } from './GFP';
 
 const ImportOptionsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 16px 16px;
-`
+`;
 
 const StyledImportCard = styled(Card)`
   display: flex;
@@ -41,47 +49,41 @@ const ImportOptionTitle = styled.div`
 `;
 
 const IMPORT_OPTIONS: {
-  component: ReactNode,
-  title: string,
-  type: ImportFormat
+  component: ReactNode;
+  title: string;
+  type: ImportFormat;
 }[] = [
   {
     component: <TbFileTypeDocx />,
     title: 'import.options.docx',
-    type: 'docx'
-  },
-  {
-    component: <FaGoogleDrive />,
-    title: 'import.options.gdrive',
-    type: 'gdrive'
+    type: 'docx',
   },
   {
     component: <SiObsidian />,
     title: 'import.options.obsidian',
-    type: 'obsidian'
+    type: 'obsidian',
   },
   {
     component: <SiLogseq />,
     title: 'import.options.logseq',
-    type: 'logseq'
+    type: 'logseq',
   },
   {
     component: <AiFillFileMarkdown />,
     title: 'import.options.markdown',
-    type: 'markdown'
+    type: 'markdown',
   },
   {
     component: <AiFillFileText />,
     title: 'import.options.text',
     type: 'text',
   },
-]
+];
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
 const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
-  const gfpRef = useRef<null | GFPRefValue>(null)
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
@@ -141,15 +143,11 @@ export const Import: React.FC = () => {
         <br />
         <ImportOptionsHeader>{t('import.options.title')}</ImportOptionsHeader>
         <ImportOptionsContainer>
-          { IMPORT_OPTIONS.map((option, i) => {
-              return (
-                <StyledImportCard key={`option-${i}`} asChild>
-                  <Button onClick={() => {
-                    if (option.type === 'gdrive' && gfpRef.current) {
-                      gfpRef.current.createPicker([ViewId.DOCS])
-                      gfpRef.current.togglePicker();
-                      return
-                    }
+          {IMPORT_OPTIONS.map((option, i) => {
+            return (
+              <StyledImportCard key={`option-${i}`} asChild>
+                <Button
+                  onClick={() => {
                     navigate(
                       undefined, // Open in currently focused pane rather than in specific pane
                       PaneableComponent.ImportFileUpload,
@@ -158,18 +156,17 @@ export const Import: React.FC = () => {
                       },
                       PaneTransition.Push,
                     );
-                    return
-                  }}>
-                    {option.component}
-                    <ImportOptionTitle>{t(option.title)}</ImportOptionTitle>
-                  </Button>
-                </StyledImportCard>
-              )
-            })
-          }
+                    return;
+                  }}
+                >
+                  {option.component}
+                  <ImportOptionTitle>{t(option.title)}</ImportOptionTitle>
+                </Button>
+              </StyledImportCard>
+            );
+          })}
         </ImportOptionsContainer>
       </IonContent>
-      <GFP ref={gfpRef} />
     </IonPage>
   );
 };

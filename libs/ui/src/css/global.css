@@ -168,6 +168,10 @@
   --cursor-switch: pointer;
 }
 
+html {
+  --card-border-radius: 4px;
+}
+
 html.light {
   --text-color: #000000;
   --text-color-dim: #444444;

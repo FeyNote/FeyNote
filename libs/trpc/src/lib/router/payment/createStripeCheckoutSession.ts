@@ -11,6 +11,7 @@ export const createStripeCheckoutSession = authenticatedProcedure
   .input(
     z.object({
       subscriptionModelName: z.nativeEnum(SubscriptionModelName),
+      amount: z.number().min(1).max(100000).optional(), // This is in cents
       successUrl: z.string(),
       cancelUrl: z.string(),
     }),
@@ -23,6 +24,39 @@ export const createStripeCheckoutSession = authenticatedProcedure
       id: string;
       url: string;
     }> => {
+      if (input.amount && input.amount % 100 !== 0) {
+        throw new TRPCError({
+          message:
+            'Unfortunately only whole dollar amounts are supported due to Stripe limitations',
+          code: 'BAD_REQUEST',
+        });
+      }
+
+      const amount = input.amount ?? 100;
+      const amountAsDollars = amount / 100;
+
+      if (
+        input.subscriptionModelName === SubscriptionModelName.PYOMonthly &&
+        amountAsDollars < 2
+      ) {
+        throw new TRPCError({
+          message:
+            'Unfortunately the PYO monthly plan supports a minimum of $2 due to Stripe fees',
+          code: 'BAD_REQUEST',
+        });
+      }
+
+      if (
+        input.subscriptionModelName === SubscriptionModelName.PYOYearly &&
+        amountAsDollars < 10
+      ) {
+        throw new TRPCError({
+          message:
+            'Unfortunately the PYO yearly plan supports a minimum of $10 due to Stripe fees',
+          code: 'BAD_REQUEST',
+        });
+      }
+
       const user = await prisma.user.findUniqueOrThrow({
         where: {
           id: ctx.session.userId,
@@ -85,7 +119,7 @@ export const createStripeCheckoutSession = authenticatedProcedure
         line_items: [
           {
             price: price.id,
-            quantity: 1,
+            quantity: input.amount ? input.amount / 100 : 1,
           },
         ],
         mode: 'subscription',

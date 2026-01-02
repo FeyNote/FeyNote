@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import node from '@astrojs/node';
 import sitemap from '@astrojs/sitemap';
+import mdx from '@astrojs/mdx';
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,11 +11,16 @@ export default defineConfig({
     host: true,
   },
   site: 'https://feynote.com',
-  integrations: [react(), sitemap()],
-  output: 'server',
+  integrations: [react(), sitemap(), mdx()],
+  output: 'static',
   adapter: node({
     mode: 'standalone',
   }),
+  image: {
+    domains: ['static.feynote.com'],
+    layout: 'constrained',
+    responsiveStyles: true,
+  },
   vite: {
     server: {
       // Currently hardcoded since allowedHosts: true is broken (GH issue here: https://github.com/withastro/astro/issues/13060)

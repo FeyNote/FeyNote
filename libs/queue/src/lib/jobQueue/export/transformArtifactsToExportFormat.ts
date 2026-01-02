@@ -29,15 +29,17 @@ export const transformArtifactsToArtifactExports = (
     title += type === 'markdown' ? '.md' : '.json';
 
     switch (type) {
-      case 'markdown':
+      case 'markdown': {
         const extensions = getTiptapServerExtensions({ userFileToS3Map });
         const html = generateHTML(tiptap, extensions);
         let markdown = `${artifactSummary.id}\n`;
         markdown += htmlToMarkdown(html);
         return { title, content: markdown };
-      case 'json':
+      }
+      case 'json': {
         const content = JSON.stringify(tiptap);
         return { title, content };
+      }
     }
   });
   return artifactExports;

@@ -1,5 +1,4 @@
 export const CAPABILITY_GRACE_PERIOD_DAYS = 7;
-export const MULTIPLE_IMAGES_UNLOCKED_LIMIT = 10;
 
 export enum Capability {
   LargeFiles = 'largeFiles',
@@ -11,6 +10,8 @@ export enum Capability {
   AssistantEnhancedMessageContext = 'assistantEnhancedMessageContext',
   AssistantLimitedEnhancedModel = 'assistantLimitedEnhancedModel',
   AssistantUnlimitedEnhancedModel = 'assistantUnlimitedEnhancedModel',
+
+  MoreRevisions = 'moreRevisions',
 }
 
 export interface SubscriptionModel {
@@ -20,6 +21,9 @@ export interface SubscriptionModel {
 }
 
 export enum SubscriptionModelName {
+  PYOMonthly = 'pyo-monthly',
+  PYOYearly = 'pyo-yearly',
+  PYOForever = 'pyo-forever',
   Tier1Monthly = 'tier1-monthly',
   Tier1Yearly = 'tier1-yearly',
   Tier1Forever = 'tier1-forever',
@@ -32,10 +36,44 @@ export enum SubscriptionModelName {
 }
 
 export const SUBSCRIPTION_MODELS = {
+  [SubscriptionModelName.PYOMonthly]: {
+    title: 'Choose Your Price (Monthly)',
+    expiresInDays: 31,
+    capabilities: [
+      Capability.MoreRevisions,
+      Capability.LargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.PYOYearly]: {
+    title: 'Choose Your Price (Monthly)',
+    expiresInDays: 365,
+    capabilities: [
+      Capability.MoreRevisions,
+      Capability.LargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
+  [SubscriptionModelName.PYOForever]: {
+    title: 'Choose Your Price (Forever)',
+    expiresInDays: 3650, // 10 years - okay, not quite forever
+    capabilities: [
+      Capability.MoreRevisions,
+      Capability.LargeFiles,
+      Capability.UltraHighResImages,
+      Capability.AssistantEnhancedMessageContext,
+      Capability.AssistantLimitedEnhancedModel,
+    ],
+  },
   [SubscriptionModelName.Tier1Monthly]: {
     title: 'Quill Bearer (Monthly)',
     expiresInDays: 31,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.LargeFiles,
       Capability.HighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -46,6 +84,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Quill Bearer (Yearly)',
     expiresInDays: 365,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.LargeFiles,
       Capability.HighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -56,6 +95,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Quill Bearer (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
+      Capability.MoreRevisions,
       Capability.LargeFiles,
       Capability.HighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -66,6 +106,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Inkling (Monthly)',
     expiresInDays: 31,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -76,6 +117,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Inkling (Yearly)',
     expiresInDays: 365,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -86,6 +128,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Inkling (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -96,6 +139,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Tome Keeper (Monthly)',
     expiresInDays: 31,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -106,6 +150,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Tome Keeper (Yearly)',
     expiresInDays: 365,
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,
@@ -116,6 +161,7 @@ export const SUBSCRIPTION_MODELS = {
     title: 'Tome Keeper (Forever)',
     expiresInDays: 3650, // 10 years - okay, not quite forever
     capabilities: [
+      Capability.MoreRevisions,
       Capability.UltraLargeFiles,
       Capability.UltraHighResImages,
       Capability.AssistantEnhancedMessageContext,

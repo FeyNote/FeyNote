@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import type { JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
-import { Button } from '@radix-ui/themes';
 
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
 const REFRESH_JOBS_INTERVAL_SECONDS = 2000;

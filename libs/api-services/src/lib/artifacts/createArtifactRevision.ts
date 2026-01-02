@@ -1,7 +1,10 @@
 import { prisma } from '@feynote/prisma/client';
 import { Prisma } from '@prisma/client';
+import { getUserHasCapability } from '../payments/getUserHasCapability';
+import { Capability } from '@feynote/shared-utils';
 
 const REVISIONS_TO_KEEP = 10;
+const REVISIONS_TO_KEEP_MORE = 25;
 
 export async function createArtifactRevision(
   artifactId: string,
@@ -39,7 +42,6 @@ export async function createArtifactRevision(
   delete artifactJson.yBin;
   delete artifactJson.files;
 
-  // TODO: validate if user can create revisions/if we nuke an old revision depending on sub level
   const createP = tx.artifactRevision.create({
     data: {
       artifactId: artifact.id,
@@ -51,11 +53,18 @@ export async function createArtifactRevision(
     },
   });
 
+  const hasMoreRevisions = await getUserHasCapability(
+    artifact.userId,
+    Capability.MoreRevisions,
+  );
+  const revisionsToKeep = hasMoreRevisions
+    ? REVISIONS_TO_KEEP_MORE
+    : REVISIONS_TO_KEEP;
   const deleteP = tx.artifactRevision.deleteMany({
     where: {
       artifactId,
       revisionId: {
-        lt: revisionId - REVISIONS_TO_KEEP,
+        lt: revisionId - revisionsToKeep,
       },
     },
   });
