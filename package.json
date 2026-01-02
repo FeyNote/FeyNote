@@ -21,7 +21,7 @@
     "@aws-sdk/s3-request-presigner": "^3.962.0",
     "@dice-roller/rpg-dice-roller": "^6.0.0-alpha.6",
     "@floating-ui/react-dom": "^2.1.6",
-    "@headless-tree/core": "^1.5.1",
+    "@headless-tree/core": "^1.6.1",
     "@headless-tree/react": "^1.6.1",
     "@hocuspocus/extension-database": "3.4.0",
     "@hocuspocus/extension-logger": "3.4.0",
