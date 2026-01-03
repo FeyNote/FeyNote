@@ -108,11 +108,12 @@ jobs:
       - run:
           name: build-and-push-multiarch
           command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --file ./scripts/selfhost/Dockerfile.selfhost.app \
-              --build-arg APP_VERSION=${CIRCLE_TAG} \
-              --tag feynote/feynote-selfhost-app:${CIRCLE_TAG} \
+              --build-arg APP_VERSION=${TAG} \
+              --tag feynote/feynote-selfhost-app:${TAG} \
               --push \
               .
   push_selfhost_proxy:
@@ -132,11 +133,12 @@ jobs:
       - run:
           name: build-and-push-multiarch
           command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
             docker buildx build \
               --platform linux/amd64,linux/arm64 \
               --file ./scripts/selfhost/Dockerfile.selfhost.proxy \
-              --build-arg APP_VERSION=${CIRCLE_TAG} \
-              --tag feynote/feynote-selfhost-proxy:${CIRCLE_TAG} \
+              --build-arg APP_VERSION=${TAG} \
+              --tag feynote/feynote-selfhost-proxy:${TAG} \
               --push \
               .
 
