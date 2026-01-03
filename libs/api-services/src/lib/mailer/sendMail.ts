@@ -43,7 +43,10 @@ export const sendMail = async (mail: Mail) => {
     ReplyToAddresses: [globalServerConfig.email.replyToAddress],
   };
 
-  if (process.env['NODE_ENV'] === 'development') {
+  if (
+    process.env['NODE_ENV'] === 'development' ||
+    globalServerConfig.selfhost
+  ) {
     logger.info(dedent`
       ======= sendEmail =======
       To: ${mail.to}
@@ -53,7 +56,7 @@ export const sendMail = async (mail: Mail) => {
       ${mail.html}
       Text:
       ${mail.plain}
-      ======= This mail was not sent due to development mode =======
+      ======= This mail was not sent due to development or selfhost mode =======
     `);
   } else {
     await ses.send(
