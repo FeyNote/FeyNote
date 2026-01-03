@@ -7,6 +7,8 @@ export * from './lib/user/triggerResetPassword';
 
 export * from './lib/error';
 
+export * from './lib/files/convertFile';
+
 export * from './lib/openai/openai';
 export * from './lib/openai/retrieveMessageContext';
 export * from './lib/openai/utils/SystemMessage';

@@ -10,7 +10,7 @@ export const replaceMarkdownMediaLinks = async (
   content: string,
   importInfo: StandardizedImportInfo,
   artifactId: string,
-  baseMediaNameToPath: Map<string, string>,
+  baseMediaNameToPath?: Map<string, string>,
 ): Promise<string> => {
   /**
    * Returns four matching elements
@@ -32,7 +32,7 @@ export const replaceMarkdownMediaLinks = async (
 
     const src = srcMatch.startsWith('http')
       ? srcMatch
-      : baseMediaNameToPath.get(basename(srcMatch));
+      : baseMediaNameToPath?.get(basename(srcMatch));
     if (!src) continue;
     content = await performMediaReplacement({
       match: matchingGroups[0],

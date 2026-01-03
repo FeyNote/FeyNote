@@ -26,6 +26,18 @@ import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
 import type { JobProgressTracker } from '../../JobProgressTracker';
 import type { JobSummary } from '@feynote/prisma/types';
 
+const replaceBlockquotes = (content: string): string => {
+  // Returns two elements; > Blockquote text
+  // 0. The full match
+  // 1. The blockquote text
+  const blockQuoteRegex = /> (.*)/g;
+  for (const matchingGroups of content.matchAll(blockQuoteRegex)) {
+    const text = matchingGroups[1];
+    const replacementHtml = `\n<div data-content-type="blockGroup">${text}</div>\n`;
+    content = content.replace(matchingGroups[0], replacementHtml);
+  }
+  return content;
+};
 const convertLogseqTableToMarkdown = (logseqTable: string): string => {
   const lines = logseqTable.split('\n');
   const numOfCols = lines[0].split(/\|[^|]*\|/).length;
@@ -43,19 +55,6 @@ const replaceTables = (content: string): string => {
     const logseqTable = matchingGroups[0];
     const table = convertLogseqTableToMarkdown(logseqTable);
     content = content.replace(matchingGroups[0], table);
-  }
-  return content;
-};
-
-const replaceBlockquotes = (content: string): string => {
-  // Returns two elements; > Blockquote text
-  // 0. The full match
-  // 1. The blockquote text
-  const blockQuoteRegex = /> (.*)/g;
-  for (const matchingGroups of content.matchAll(blockQuoteRegex)) {
-    const text = matchingGroups[1];
-    const replacementHtml = `\n<div data-content-type="blockGroup">${text}</div>\n`;
-    content = content.replace(matchingGroups[0], replacementHtml);
   }
   return content;
 };

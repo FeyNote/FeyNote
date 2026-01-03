@@ -1,15 +1,84 @@
-import { IonContent, IonItem, IonList, IonPage } from '@ionic/react';
+import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { trpc } from '../../utils/trpc';
-import { usePaneContext } from '../../context/pane/PaneContext';
-import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
-import type { JobSummary } from '@feynote/prisma/types';
+import type { ImportFormat, JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
+import styled from 'styled-components';
+import { Button, Card } from '@radix-ui/themes';
+import {
+  AiFillFileMarkdown,
+  AiFillFileText,
+  SiLogseq,
+  SiObsidian,
+  TbFileTypeDocx,
+} from '../AppIcons';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 
+const ImportOptionsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 16px;
+`;
+
+const StyledImportCard = styled(Card)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  font-size: 32px;
+  width: 200px;
+`;
+
+const ImportOptionsHeader = styled.h2`
+  text-align: center;
+  width: 100%;
+  padding-bottom: 16px;
+`;
+
+const ImportOptionTitle = styled.div`
+  weight: bold;
+  font-size: 16px;
+`;
+
+const IMPORT_OPTIONS: {
+  component: ReactNode;
+  title: string;
+  type: ImportFormat;
+}[] = [
+  {
+    component: <TbFileTypeDocx />,
+    title: 'import.options.docx',
+    type: 'docx',
+  },
+  {
+    component: <SiObsidian />,
+    title: 'import.options.obsidian',
+    type: 'obsidian',
+  },
+  {
+    component: <SiLogseq />,
+    title: 'import.options.logseq',
+    type: 'logseq',
+  },
+  {
+    component: <AiFillFileMarkdown />,
+    title: 'import.options.markdown',
+    type: 'markdown',
+  },
+  {
+    component: <AiFillFileText />,
+    title: 'import.options.text',
+    type: 'text',
+  },
+];
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
 const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
@@ -17,8 +86,8 @@ export const Import: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
-  const { navigate } = usePaneContext();
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
+  const { navigate } = useGlobalPaneContext();
 
   useEffect(() => {
     const progress = startProgressBar();
@@ -72,38 +141,31 @@ export const Import: React.FC = () => {
           />
         )}
         <br />
-        <IonList>
-          <IonItem
-            lines="none"
-            button
-            onClick={() => {
-              navigate(
-                PaneableComponent.ImportFromLogseq,
-                {},
-                PaneTransition.Push,
-              );
-            }}
-            target="_blank"
-            detail={true}
-          >
-            {t('import.options.logseq')}
-          </IonItem>
-          <IonItem
-            lines="none"
-            button
-            onClick={() => {
-              navigate(
-                PaneableComponent.ImportFromObsidian,
-                {},
-                PaneTransition.Push,
-              );
-            }}
-            target="_blank"
-            detail={true}
-          >
-            {t('import.options.obsidian')}
-          </IonItem>
-        </IonList>
+        <ImportOptionsHeader>{t('import.options.title')}</ImportOptionsHeader>
+        <ImportOptionsContainer>
+          {IMPORT_OPTIONS.map((option, i) => {
+            return (
+              <StyledImportCard key={`option-${i}`} asChild>
+                <Button
+                  onClick={() => {
+                    navigate(
+                      undefined, // Open in currently focused pane rather than in specific pane
+                      PaneableComponent.ImportFileUpload,
+                      {
+                        format: option.type,
+                      },
+                      PaneTransition.Push,
+                    );
+                    return;
+                  }}
+                >
+                  {option.component}
+                  <ImportOptionTitle>{t(option.title)}</ImportOptionTitle>
+                </Button>
+              </StyledImportCard>
+            );
+          })}
+        </ImportOptionsContainer>
       </IonContent>
     </IonPage>
   );
