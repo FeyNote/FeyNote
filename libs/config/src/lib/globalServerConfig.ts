@@ -2,6 +2,7 @@ import { coerceBoolean } from './coerceBoolean';
 import { getEnvOrThrow } from './getEnvOrThrow';
 
 export const globalServerConfig = {
+  selfhost: coerceBoolean(process.env['SELFHOST'] || 'false'),
   logger: {
     level: process.env['LOGGER_LEVEL'] || 'http',
     transports: {
@@ -12,17 +13,18 @@ export const globalServerConfig = {
     },
   },
   email: {
-    fromName: getEnvOrThrow('EMAIL_FROM_NAME'),
-    fromAddress: getEnvOrThrow('EMAIL_FROM_ADDRESS'),
-    replyToAddress: getEnvOrThrow('EMAIL_REPLY_TO_ADDRESS'),
+    fromName: process.env['EMAIL_FROM_NAME'] || 'Feynote',
+    fromAddress: process.env['EMAIL_FROM_ADDRESS'] || 'noreply@example.com',
+    replyToAddress:
+      process.env['EMAIL_REPLY_TO_ADDRESS'] || 'support@example.com',
   },
   aws: {
-    region: getEnvOrThrow('AWS_REGION'),
-    accessKeyId: getEnvOrThrow('AWS_ACCESS_KEY_ID'),
-    secretAccessKey: getEnvOrThrow('AWS_SECRET_ACCESS_KEY'),
+    region: process.env['AWS_REGION'] || 'us-east-1',
+    accessKeyId: process.env['AWS_ACCESS_KEY_ID'] || '',
+    secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] || '',
     buckets: {
-      artifact: getEnvOrThrow('AWS_BUCKET_ARTIFACT'),
-      job: getEnvOrThrow('AWS_BUCKET_JOB'),
+      artifact: process.env['AWS_BUCKET_ARTIFACT'] || '',
+      job: process.env['AWS_BUCKET_JOB'] || '',
     },
   },
   typesense: {
@@ -30,13 +32,13 @@ export const globalServerConfig = {
     nodes: getEnvOrThrow('TYPESENSE_NODES'),
   },
   openai: {
-    apiKey: getEnvOrThrow('OPENAI_API_KEY'),
+    apiKey: process.env['OPENAI_API_KEY'] || '',
   },
   proxy: {
-    enabled: coerceBoolean(getEnvOrThrow('PROXY_ENABLED')),
-    url: getEnvOrThrow('PROXY_URL'),
-    username: getEnvOrThrow('PROXY_USERNAME'),
-    password: getEnvOrThrow('PROXY_PASSWORD'),
+    enabled: coerceBoolean(process.env['PROXY_ENABLED'] || 'false'),
+    url: process.env['PROXY_URL'] || '',
+    username: process.env['PROXY_USERNAME'] || '',
+    password: process.env['PROXY_PASSWORD'] || '',
   },
   api: {
     port: parseInt(process.env['API_PORT'] || '8080'),
@@ -122,7 +124,7 @@ export const globalServerConfig = {
     },
   },
   stripe: {
-    webhookSecret: getEnvOrThrow('STRIPE_WEBHOOK_SECRET'),
-    apiKey: getEnvOrThrow('STRIPE_API_KEY'),
+    webhookSecret: process.env['STRIPE_WEBHOOK_SECRET'] || '',
+    apiKey: process.env['STRIPE_API_KEY'] || '',
   },
 };

@@ -1,0 +1,171 @@
+# THIS DOCKER COMPOSE FILE IS NOT INTENDED FOR SELFHOST USE.
+# Use the instructions in the README for how to run a selfhost copy.
+#
+# This docker-compose runs a lot of services and in livereload mode which will be quite heavy
+# and undesireable when running yourself.
+
+name: feynote
+services:
+  proxy:
+    image: nginx
+    volumes:
+      - ./scripts/dev/nginx-dev.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - '80:80'
+      - '8080:8080'
+      - '8081:8081'
+    command: nginx -g 'daemon off;'
+    depends_on:
+      - frontend
+      - backend
+      - www
+    stop_grace_period: 1s
+  frontend:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: npx nx serve frontend
+    env_file:
+      - ./common.env
+    depends_on:
+      - backend
+    stop_grace_period: 1s
+  www:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: npx nx serve www
+    env_file:
+      - ./common.env
+      - ./.secrets.env
+    depends_on:
+      - backend
+    stop_grace_period: 1s
+  docs:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: npx nx serve docs
+    env_file:
+      - ./common.env
+    stop_grace_period: 1s
+  hocuspocus:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    ports:
+      - '9001:9229'
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: ./scripts/dev/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/hocuspocus/tsconfig.json --enable-source-maps ./apps/hocuspocus/src/main.ts' ./apps/hocuspocus ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    environment:
+      SWC_NODE_PROJECT: ./apps/hocuspocus/tsconfig.json
+    env_file:
+      - ./common.env
+      - ./.secrets.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
+    stop_grace_period: 1s
+  backend:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    ports:
+      - '9000:9229'
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: ./scripts/dev/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/backend/tsconfig.json --enable-source-maps ./apps/backend/src/main.ts' ./apps/backend ./libs/trpc ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    environment:
+      SWC_NODE_PROJECT: ./apps/backend/tsconfig.json
+    env_file:
+      - ./common.env
+      - ./.secrets.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
+    stop_grace_period: 1s
+  queue-worker:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    ports:
+      - '9002:9229'
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: ./scripts/dev/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/queue-worker/tsconfig.json --enable-source-maps ./apps/queue-worker/src/main.ts' ./apps/queue-worker ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    environment:
+      SWC_NODE_PROJECT: ./apps/queue-worker/tsconfig.json
+    env_file:
+      - ./common.env
+      - ./.secrets.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
+    stop_grace_period: 1s
+  websocket:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    ports:
+      - '9003:9229'
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+      - ./prisma:/app/prisma
+    command: ./scripts/dev/watchandrun.sh 'tsx --inspect=0.0.0.0 --tsconfig ./apps/websocket/tsconfig.json --enable-source-maps ./apps/websocket/src/main.ts' ./apps/websocket ./libs/prisma ./libs/queue ./libs/api-services ./libs/search ./libs/global-types ./libs/config ./libs/shared-utils
+    environment:
+      SWC_NODE_PROJECT: ./apps/websocket/tsconfig.json
+    env_file:
+      - ./common.env
+      - ./.secrets.env
+    depends_on:
+      - postgres
+      - typesense
+      - valkey
+    stop_grace_period: 1s
+  nxgraph:
+    build:
+      context: .
+      dockerfile: ./scripts/dev/Dockerfile.development
+    ports:
+      - '4211:4211'
+    environment:
+      APP_VERSION: development
+    volumes:
+      - ./apps:/app/apps
+      - ./libs:/app/libs
+    command: ./scripts/dev/watchandrun.sh 'npx nx graph --host=0.0.0.0 --open=false' ./apps ./libs
+    stop_grace_period: 1s
+  postgres:
+    image: postgres:16.0
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: feynote
+      POSTGRES_USER: feynote
+      POSTGRES_PASSWORD: feynote
+  typesense:
+    image: typesense/typesense:29.0
+    restart: on-failure
+    command: '--data-dir /media --api-key=feynote --enable-cors'
+  valkey:
+    image: valkey/valkey:9.0.1-trixie

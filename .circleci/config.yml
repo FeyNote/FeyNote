@@ -91,6 +91,54 @@ jobs:
       - run:
           name: push
           command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
+  push_selfhost_app:
+    resource_class: arm.large
+    machine:
+      image: cimg/base:2026.01
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: setup-buildx
+          command: |
+            docker buildx create --use --name multiarch-builder --driver docker-container
+            docker buildx inspect --bootstrap
+      - run:
+          name: build-and-push-multiarch
+          command: |
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --file ./scripts/selfhost/Dockerfile.selfhost.app \
+              --build-arg APP_VERSION=${CIRCLE_TAG} \
+              --tag feynote/feynote-selfhost-app:${CIRCLE_TAG} \
+              --push \
+              .
+  push_selfhost_proxy:
+    resource_class: arm.large
+    machine:
+      image: cimg/base:2026.01
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: setup-buildx
+          command: |
+            docker buildx create --use --name multiarch-builder --driver docker-container
+            docker buildx inspect --bootstrap
+      - run:
+          name: build-and-push-multiarch
+          command: |
+            docker buildx build \
+              --platform linux/amd64,linux/arm64 \
+              --file ./scripts/selfhost/Dockerfile.selfhost.proxy \
+              --build-arg APP_VERSION=${CIRCLE_TAG} \
+              --tag feynote/feynote-selfhost-proxy:${CIRCLE_TAG} \
+              --push \
+              .
 
 workflows:
   version: 2
@@ -124,5 +172,21 @@ workflows:
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - push_selfhost_app:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
+            branches:
+              ignore: /.*/
+      - push_selfhost_proxy:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
             branches:
               ignore: /.*/

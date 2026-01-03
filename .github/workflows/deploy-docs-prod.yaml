@@ -31,4 +31,4 @@ jobs:
           aws-region: us-east-1
 
       - name: Push
-        run: ./scripts/deploy-docs.sh prod ${{ inputs.tag }}
+        run: ./scripts/prod/deploy-docs.sh prod ${{ inputs.tag }}

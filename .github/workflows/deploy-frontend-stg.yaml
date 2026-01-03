@@ -30,4 +30,4 @@ jobs:
           aws-region: us-east-1
 
       - name: Push
-        run: ./scripts/deploy-frontend.sh stg ${{ inputs.tag }}
+        run: ./scripts/prod/deploy-frontend.sh stg ${{ inputs.tag }}

@@ -1,0 +1,127 @@
+# FeyNote for personal, selfhosted use
+# This file was last updated 2025-12-15
+# When updating your config, please apply an UPGRADING.md instructions since your selfhost configuration's release date
+
+services:
+  # Nginx reverse proxy with frontend and docs
+  proxy:
+    image: feynote/feynote-selfhost-proxy:v1.0.0-beta13
+    ports:
+      - '${FEYNOTE_SELFHOST_HTTP_PORT:-7271}:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - feynote
+
+  # Main Feynote application - all backend services in one container
+  # Includes: Backend API, Hocuspocus, Websocket, Queue Worker, and WWW (Astro)
+  app:
+    image: feynote/feynote-selfhost-app:v1.0.0-beta13
+    environment:
+      # Please leave all of these as-is
+      HOCUSPOCUS_REDIS_HOST: redis
+      HOCUSPOCUS_REDIS_PORT: 6379
+      WEBSOCKET_REDIS_HOST: redis
+      WEBSOCKET_REDIS_PORT: 6379
+      WORKER_REDIS_HOST: redis
+      WORKER_REDIS_PORT: 6379
+      # Please change this via your .env file rather than directly here!
+      DATABASE_URL: postgresql://${POSTGRES_USER:-feynote}:${POSTGRES_PASSWORD:-feynote}@postgres:5432/${POSTGRES_DB:-feynote}
+      # Please change this via your .env file rather than directly here!
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-feynote-selfhost}
+      TYPESENSE_NODES: '[{"host": "typesense", "port": 8108, "protocol": "http"}]'
+      # Please change this via your .env file rather than directly here!
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - app_data:/app/data
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--spider',
+          '-q',
+          'http://localhost:3000/api/trpc/health',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      typesense:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - feynote
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-feynote}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-feynote}
+      POSTGRES_DB: ${POSTGRES_DB:-feynote}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-feynote}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - feynote
+
+  # Redis for real-time features and queue
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - feynote
+
+  # Typesense for search
+  typesense:
+    image: typesense/typesense:27.1
+    environment:
+      TYPESENSE_DATA_DIR: /data
+      TYPESENSE_API_KEY: ${TYPESENSE_API_KEY:-feynote-selfhost}
+    volumes:
+      - typesense_data:/data
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8108/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - feynote
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  typesense_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  feynote:
+    driver: bridge
