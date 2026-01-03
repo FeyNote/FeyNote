@@ -91,8 +91,8 @@ jobs:
       - run:
           name: push
           command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
-  push_selfhost_app:
-    resource_class: arm.large
+  push_selfhost_app_amd64:
+    resource_class: medium
     machine:
       image: ubuntu-2204:current
     steps:
@@ -101,23 +101,36 @@ jobs:
           name: docker-login
           command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
       - run:
-          name: setup-buildx
-          command: |
-            docker buildx create --use --name multiarch-builder --driver docker-container
-            docker buildx inspect --bootstrap
-      - run:
-          name: build-and-push-multiarch
+          name: build-and-push-amd64
           command: |
             TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
+            docker build \
               --file ./scripts/selfhost/Dockerfile.selfhost.app \
               --build-arg APP_VERSION=${TAG} \
-              --tag feynote/feynote-selfhost-app:${TAG} \
-              --push \
+              --tag feynote/feynote-selfhost-app:${TAG}-amd64 \
               .
-  push_selfhost_proxy:
-    resource_class: arm.large
+            docker push feynote/feynote-selfhost-app:${TAG}-amd64
+  push_selfhost_app_arm64:
+    resource_class: arm.medium
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: build-and-push-arm64
+          command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
+            docker build \
+              --file ./scripts/selfhost/Dockerfile.selfhost.app \
+              --build-arg APP_VERSION=${TAG} \
+              --tag feynote/feynote-selfhost-app:${TAG}-arm64 \
+              .
+            docker push feynote/feynote-selfhost-app:${TAG}-arm64
+  combine_selfhost_app_manifest:
+    resource_class: medium
     machine:
       image: ubuntu-2204:current
     steps:
@@ -128,19 +141,74 @@ jobs:
       - run:
           name: setup-buildx
           command: |
-            docker buildx create --use --name multiarch-builder --driver docker-container
+            docker buildx create --use --name manifest-builder --driver docker-container
             docker buildx inspect --bootstrap
       - run:
-          name: build-and-push-multiarch
+          name: create-and-push-manifest
           command: |
             TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
+            docker buildx imagetools create -t feynote/feynote-selfhost-app:${TAG} \
+              feynote/feynote-selfhost-app:${TAG}-amd64 \
+              feynote/feynote-selfhost-app:${TAG}-arm64
+  push_selfhost_proxy_amd64:
+    resource_class: medium
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: build-and-push-amd64
+          command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
+            docker build \
               --file ./scripts/selfhost/Dockerfile.selfhost.proxy \
               --build-arg APP_VERSION=${TAG} \
-              --tag feynote/feynote-selfhost-proxy:${TAG} \
-              --push \
+              --tag feynote/feynote-selfhost-proxy:${TAG}-amd64 \
               .
+            docker push feynote/feynote-selfhost-proxy:${TAG}-amd64
+  push_selfhost_proxy_arm64:
+    resource_class: arm.medium
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: build-and-push-arm64
+          command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
+            docker build \
+              --file ./scripts/selfhost/Dockerfile.selfhost.proxy \
+              --build-arg APP_VERSION=${TAG} \
+              --tag feynote/feynote-selfhost-proxy:${TAG}-arm64 \
+              .
+            docker push feynote/feynote-selfhost-proxy:${TAG}-arm64
+  combine_selfhost_proxy_manifest:
+    resource_class: medium
+    machine:
+      image: ubuntu-2204:current
+    steps:
+      - checkout
+      - run:
+          name: docker-login
+          command: echo "$DOCKER_PAT" | docker login --username $DOCKER_USER --password-stdin
+      - run:
+          name: setup-buildx
+          command: |
+            docker buildx create --use --name manifest-builder --driver docker-container
+            docker buildx inspect --bootstrap
+      - run:
+          name: create-and-push-manifest
+          command: |
+            TAG=${CIRCLE_TAG:-dev-$(git rev-parse --short HEAD)}
+            docker buildx imagetools create -t feynote/feynote-selfhost-proxy:${TAG} \
+              feynote/feynote-selfhost-proxy:${TAG}-amd64 \
+              feynote/feynote-selfhost-proxy:${TAG}-arm64
 
 workflows:
   version: 2
@@ -176,7 +244,7 @@ workflows:
               only: /^v[0-9]+(\.[0-9]+)*.*/
             branches:
               ignore: /.*/
-      - push_selfhost_app:
+      - push_selfhost_app_amd64:
           requires:
             - build_and_test
           filters:
@@ -184,12 +252,7 @@ workflows:
               only: /.*/
             branches:
               only: /.*/
-          # filters:
-          #   tags:
-          #     only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
-          #   branches:
-          #     ignore: /.*/
-      - push_selfhost_proxy:
+      - push_selfhost_app_arm64:
           requires:
             - build_and_test
           filters:
@@ -197,8 +260,37 @@ workflows:
               only: /.*/
             branches:
               only: /.*/
-          # filters:
-          #   tags:
-          #     only: /^v[0-9]+\.[0-9]+\.[0-9]+$/
-          #   branches:
-          #     ignore: /.*/
+      - combine_selfhost_app_manifest:
+          requires:
+            - push_selfhost_app_amd64
+            - push_selfhost_app_arm64
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - push_selfhost_proxy_amd64:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - push_selfhost_proxy_arm64:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - combine_selfhost_proxy_manifest:
+          requires:
+            - push_selfhost_proxy_amd64
+            - push_selfhost_proxy_arm64
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
