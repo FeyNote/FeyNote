@@ -18,7 +18,7 @@ export async function convertFile(args: {
   const outputUrl = join(args.outputDir, title);
   return new Promise<string>((res, rej) => {
     exec(
-      `pandoc -f ${args.inputFormat} -t ${args.outputFormat} -o "${outputUrl}" "${args.inputFilePath}"`,
+      `pandoc --preserve-tabs -f ${args.inputFormat} -t ${args.outputFormat} -o "${outputUrl}" "${args.inputFilePath}"`,
       (e) => {
         if (e) {
           rej(e);

@@ -9,8 +9,6 @@ x-common-env-vars: &common-env-vars
   HOCUSPOCUS_REDIS_HOST: valkey
   WEBSOCKET_REDIS_HOST: valkey
   STRIPE_API_KEY: sk_test_51QZhUtEHixV6tgdWnpCBvgiQiPaTEifG5MWU9oK4juqexnXL2QcSsrs8nKc44G64DEhifwSRoN4nErbXgPBZI2If00g9BilVjF
-  GOOGLE_GSI_CLIENT: 458922288770-fig3hth6vu4ujhlg9slhsmbcrv2atug6.apps.googleusercontent.com
-  GOOGLE_GFP_CLIENT: 458922288770-u99e4b2eq5pl4fd26nnk8kmt6mtqogka.apps.googleusercontent.com
   NODE_ENV: development
   VITE_ENVIRONMENT: development
   APP_VERSION: development

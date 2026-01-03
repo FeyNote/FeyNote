@@ -1,14 +1,15 @@
 import { type JSDOM } from 'jsdom';
 
-export function replaceBlockquotes(jsdom: JSDOM) {
-  const blockquoteEles =
-    jsdom.window.document.getElementsByTagName('blockquote');
-  for (const blockquoteEle of blockquoteEles) {
-    const textContent = blockquoteEle.textContent;
-    const blockEle = document.createElement('div');
-    blockEle.setAttribute('data-content-type', 'blockGroup');
-    blockEle.textContent = textContent;
-    jsdom.window.document.insertBefore(blockEle, blockquoteEle);
-    blockquoteEle.remove();
+export function replaceBlockquotes(jsdom: JSDOM): void {
+  const blockquotes = jsdom.window.document.querySelectorAll('blockquote');
+  for (const blockquote of blockquotes) {
+    const textContent = blockquote.textContent;
+    const newDiv = jsdom.window.document.createElement('div');
+    newDiv.setAttribute('data-content-type', 'blockGroup');
+    newDiv.textContent = textContent;
+    const parentNode = blockquote.parentNode
+    if (!parentNode) return
+    parentNode.insertBefore(newDiv, blockquote);
+    blockquote.remove();
   }
 }

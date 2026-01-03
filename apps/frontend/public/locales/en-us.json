@@ -248,7 +248,6 @@
   "import.options.title": "Import Options",
   "import.options.obsidian": "Obsidian",
   "import.options.logseq": "Logseq",
-  "import.options.gdrive": "GDrive",
   "import.options.docx": "Docx",
   "import.options.markdown": "Markdown",
   "import.options.text": "Text",

@@ -60,8 +60,8 @@ export const importJobHandler = async (job: JobSummary) => {
       await importFromZip({
         storageKey: importFile.storageKey,
         job,
-        processor: (filePaths) =>
-          docxToStandardizedImport({ job, filePaths, progressTracker }),
+        processor: (filePaths, extractDest) =>
+          docxToStandardizedImport({ job, filePaths, extractDest, progressTracker }),
         progressTracker,
       });
       break;
