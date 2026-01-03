@@ -29,6 +29,9 @@ ENV WEBSOCKET_REST_PORT=3004
 ENV WORKER_REST_PORT=3005
 ENV WWW_PORT=3006
 
+# This is only used for the build stage and does not make it into the final container
+ENV NODE_OPTIONS=--max-old-space-size=4096
+
 RUN npx nx run-many -t build -p frontend,docs
 
 FROM nginx:alpine
