@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/License-Dual-blue.svg)](#LICENSE)
 
-[Website & App](https://feynote.com) • [Documentation](https://docs.feynote.com) • [Discord](https://discord.gg/Tz8trXrd4C) • [Report Bug](https://github.com/redchickenco/feynote/issues)
+[Website & App](https://feynote.com) • [Documentation](https://docs.feynote.com) • [Discord](https://discord.gg/Tz8trXrd4C) • [Report Bug](https://github.com/feynote/feynote/issues)
 
 </div>
 
@@ -109,13 +109,15 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
 4. **Start**
 
    ```bash
-   ./scripts/dev/localStart.sh
+   make start
    ```
 
 5. **Access the application**
    - Application: http://localhost:80
    - Website: http://localhost:8080
    - Docs: http://localhost:8081
+
+You can see all commands for local dev via `make
 
 #### Working with Stripe (Payment Testing)
 
