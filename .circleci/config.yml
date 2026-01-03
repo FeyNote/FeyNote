@@ -94,7 +94,7 @@ jobs:
   push_selfhost_app:
     resource_class: arm.large
     machine:
-      image: cimg/base:2026.01
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
@@ -118,7 +118,7 @@ jobs:
   push_selfhost_proxy:
     resource_class: arm.large
     machine:
-      image: cimg/base:2026.01
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run:
