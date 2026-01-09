@@ -13,8 +13,14 @@ import {
   scrapeUrlTool,
   generate5eObjectTool,
 } from '@feynote/api-services';
-import { convertToModelMessages, type ModelMessage } from 'ai';
+import {
+  convertToModelMessages,
+  InvalidToolInputError,
+  NoSuchToolError,
+  type ModelMessage,
+} from 'ai';
 import { Capability, ToolName } from '@feynote/shared-utils';
+import * as Sentry from '@sentry/node';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
 
@@ -36,7 +42,7 @@ export const createMessage = defineExpressHandler(
     const requestMessages = req.body.messages;
     let messages: ModelMessage[] = [];
     try {
-      messages = convertToModelMessages([...requestMessages]);
+      messages = await convertToModelMessages([...requestMessages]);
       messages.unshift(systemMessage.ttrpgAssistant);
     } catch (_) {
       throw new BadRequestExpressError(
@@ -84,6 +90,21 @@ export const createMessage = defineExpressHandler(
     });
 
     res.setHeader('Transfer-Encoding', 'chunked');
-    stream.pipeUIMessageStreamToResponse(res);
+    stream.pipeUIMessageStreamToResponse(res, {
+      onError: (err) => {
+        let issue = 'An unknown error occurred.';
+        if (NoSuchToolError.isInstance(err)) {
+          issue = 'The model tried to call a unknown tool.';
+        } else if (InvalidToolInputError.isInstance(err)) {
+          issue = 'ERROR: The model called a tool with invalid inputs.';
+        }
+        Sentry.captureException(err, {
+          extra: {
+            issue,
+          },
+        });
+        return `I'm sorry an error has occurred while generating your message please try again.`;
+      },
+    });
   },
 );

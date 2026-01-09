@@ -16,9 +16,10 @@ updates:
         patterns:
           - 'multer'
           - '@types/multer'
-      tiptap:
+      tiptapAndHocuspocus:
         patterns:
           - '@tiptap*'
+          - '*hocuspocus*'
       eslint:
         patterns:
           - '*eslint*'
@@ -35,9 +36,6 @@ updates:
       socketio:
         patterns:
           - '*socketio*'
-      hocuspocus:
-        patterns:
-          - '*hocuspocus*'
       workbox:
         patterns:
           - '*workbox*'
