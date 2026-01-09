@@ -1,11 +1,11 @@
 import { Capability } from '@feynote/shared-utils';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 
 const MAX_MESSAGE_LIMIT = 10;
 export function limitNumOfMessagesByCapability(
-  messages: CoreMessage[],
+  messages: ModelMessage[],
   capabilities: Set<Capability>,
-): CoreMessage[] {
+): ModelMessage[] {
   if (capabilities.has(Capability.AssistantEnhancedMessageContext)) {
     return messages.slice(-MAX_MESSAGE_LIMIT);
   }
