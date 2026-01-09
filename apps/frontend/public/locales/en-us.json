@@ -772,6 +772,7 @@
   "aiThread.card.format.query": "Format the following monster info into a stat sheet;\nShadow Wraith\nNeutral Evil\nArmor Class: 15\nHit Points: 84 (12d10 + 24)\nSpeed: 0 ft., fly 60 ft. (hover)\nSTR DEX CON INT WIS CHA\n6 (-2) 20 (+5) 14 (+2) 1 (-5) 12 (+1) 16 (+3)\nSkills: Stealth +10\nSenses: Darkvision 60 ft., passive Perception 11\nLanguages: Understands Common but can't speak\nChallenge: 7 (2,900 XP)\n\nLife Drain (Recharge 5-6): The Shadow Wraith can drain the life force from a creature it touches. The target must succeed on a DC 15 Constitution saving throw or take 27 (6d8) necrotic damage, and the Shadow Wraith regains hit points equal to half the damage dealt.\n\nActions\nShadow Strike: Melee Weapon Attack: +9 to hit, reach 5 ft., one target. Hit: 18 (4d6 + 5) necrotic damage.",
   "aiThread.createMessage.error.rateLimit.header": "Daily Messaging Limit Reached",
   "aiThread.createMessage.error.rateLimit.message": "Due to cost concerns and to prevent abuse we must limit the number of messages from our free tier subscribers. Your messaging limit will be reset in twenty-four hours.",
+  "aiAssistantMessage.error": "Sorry there was an error generating your message, please try again.",
 
   "monsterStatblock.ac": "Armor Class:",
   "monsterStatblock.hp": "Hit Points:",

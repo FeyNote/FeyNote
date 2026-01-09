@@ -9,6 +9,7 @@ export const generate5eMonsterTool = tool({
   description:
     'A function that generates and displays a DND 5e Monster to the user',
   inputSchema: getGenerate5eMonsterSchema(),
+  strict: true,
   execute: async (_: Generate5eMonsterParams) => {
     return '';
   },

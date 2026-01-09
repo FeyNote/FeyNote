@@ -6,7 +6,7 @@ export async function generateAssistantText(
   messages: ModelMessage[],
   model: AIModel,
   tools?: Record<string, Tool>,
-) {
+): ReturnType<typeof generateText> {
   const result = await generateText({
     model: openai(model),
     tools,

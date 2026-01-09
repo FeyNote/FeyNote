@@ -31,7 +31,7 @@ export const createThreadTitle = authenticatedProcedure
       (message) => message.vercelJsonV5 as unknown as FeynoteUIMessage,
     );
 
-    const messages = convertToModelMessages([...feynoteUIMessages]);
+    const messages = await convertToModelMessages([...feynoteUIMessages]);
     messages.unshift(systemMessage.nameGeneration);
     const { text } = await generateAssistantText(messages, AIModel.GPT4_MINI);
     await prisma.thread.update({
