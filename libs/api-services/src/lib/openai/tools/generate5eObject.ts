@@ -9,6 +9,7 @@ export const generate5eObjectTool = tool({
   description:
     'A function that generates and displays a DND 5e item or spell to the user',
   inputSchema: getGenerate5eObjectSchema(),
+  strict: true,
   execute: async (generatedObject: Generate5eObjectParams) => {
     return `
     ---

@@ -133,6 +133,7 @@ export const scrapeUrlTool = tool({
   description:
     'A function that scrapes and displays the content of a given url. Do not reiterate the output of this tool call on subsequent calls',
   inputSchema: getScrapeUrlSchema(),
+  strict: true,
   execute: displayUrlExecutor,
 });
 
