@@ -386,6 +386,9 @@ export const getTiptapServerExtensions = (props: Props) => {
           {
             tag: `div[data-media-type="${FeynoteEditorMediaType.Image}"]`,
           },
+          {
+            tag: `span[data-media-type="${FeynoteEditorMediaType.Image}"]`,
+          },
         ];
       },
       addOptions() {
