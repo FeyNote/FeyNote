@@ -22,7 +22,7 @@
     "@dice-roller/rpg-dice-roller": "^6.0.0-alpha.6",
     "@floating-ui/react-dom": "^2.1.6",
     "@headless-tree/core": "^1.6.1",
-    "@headless-tree/react": "^1.6.1",
+    "@headless-tree/react": "^1.6.2",
     "@hocuspocus/extension-database": "3.4.3",
     "@hocuspocus/extension-logger": "3.4.3",
     "@hocuspocus/extension-redis": "3.4.3",
