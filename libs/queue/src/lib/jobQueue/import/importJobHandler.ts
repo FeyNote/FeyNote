@@ -55,7 +55,6 @@ export const importJobHandler = async (job: JobSummary) => {
         progressTracker,
       });
       break;
-    case 'gdrive':
     case 'docx':
       await importFromZip({
         storageKey: importFile.storageKey,

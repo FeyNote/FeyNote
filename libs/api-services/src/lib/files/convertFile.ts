@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { join, parse, basename } from 'path';
+import { join, parse, basename, normalize } from 'path';
 
 export enum FileFormat {
   Html = 'html',
@@ -21,6 +21,7 @@ export async function convertFile(args: {
   inputFormat: FileFormat;
   outputFormat: FileFormat;
 }): Promise<string> {
+  const normalizedFilePath = normalize(args.inputFilePath);
   const title = parse(basename(args.inputFilePath)).name;
   const outputUrl = join(
     args.outputDir,
@@ -28,7 +29,7 @@ export async function convertFile(args: {
   );
   return new Promise<string>((res, rej) => {
     exec(
-      `pandoc --preserve-tabs -f ${args.inputFormat} -t ${args.outputFormat} -o "${outputUrl}" "${args.inputFilePath}"`,
+      `pandoc --preserve-tabs -f "${args.inputFormat}" -t "${args.outputFormat}" -o "${outputUrl}" "${normalizedFilePath}"`,
       (e) => {
         if (e) {
           rej(e);
