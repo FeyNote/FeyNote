@@ -1,7 +1,10 @@
 import { createWriteStream } from 'fs';
 import type Stream from 'stream';
 
-export const saveFileStreamToDisk = async (stream: Stream.Readable, destination: string) => {
+export const saveFileStreamToDisk = async (
+  stream: Stream.Readable,
+  destination: string,
+) => {
   if (!stream) throw new Error('Error streaming file from s3');
 
   const fileStream = createWriteStream(destination);

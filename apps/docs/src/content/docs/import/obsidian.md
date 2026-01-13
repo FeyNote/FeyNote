@@ -16,6 +16,7 @@ Select your operating system to get started:
 ## Windows
 
 ### Table of Contents
+
 1. [Step 1: Open the Ellipsis Menu](#step-1-open-the-ellipsis-menu)
 2. [Step 2: Show in System Explorer](#step-2-show-in-system-explorer)
 3. [Step 3: Locate and Zip Your Vault](#step-3-locate-and-zip-your-vault)
@@ -23,6 +24,7 @@ Select your operating system to get started:
 ---
 
 ### Step 1: Open the Ellipsis Menu
+
 Importing your files from Obsidian can be done in a few simple steps;
 
 1. First open up Obsidian and find the ellipsis located in the top right corner of your application.
@@ -32,6 +34,7 @@ Importing your files from Obsidian can be done in a few simple steps;
 ---
 
 ### Step 2: Show in System Explorer
+
 Select the option from the dropdown menu called **"Show in System Explorer"**.
 
 ![Cursor hovering "Show In System Explorer" option in the ellipsis dropdown](https://static.feynote.com/screenshots/import-instructions/obsidian/show-in-system-explorer-20250527.png)
@@ -39,6 +42,7 @@ Select the option from the dropdown menu called **"Show in System Explorer"**.
 ---
 
 ### Step 3: Locate and Zip Your Vault
+
 Clicking on that dropdown option will open up your system's file explorer and plant you somewhere within your **"Obsidian Vault"** folder.  
 Navigate outwards to where you can select this folder, right-click, and select the option to compress it to a zip.
 

@@ -75,17 +75,17 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
         return {
           text: t('importFileUpload.help.obsidian'),
           docsLink: 'https://docs.feynote.com/import/obsidian',
-        }
+        };
       case 'logseq':
         return {
           text: t('importFileUpload.help.logseq'),
           docsLink: 'https://docs.feynote.com/import/logseq',
-        }
+        };
       default:
         return {
           text: t('importFileUpload.help.default'),
           docsLink: 'https://docs.feynote.com/import/zip',
-        }
+        };
     }
   }, []);
 
@@ -190,7 +190,9 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
             type="file"
             onChange={handleFileChange}
           />
-          <HelpText><a href={help.docsLink}>{help.text}</a></HelpText>
+          <HelpText>
+            <a href={help.docsLink}>{help.text}</a>
+          </HelpText>
         </div>
       </IonContent>
     </IonPage>

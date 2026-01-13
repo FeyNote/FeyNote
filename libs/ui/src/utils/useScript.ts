@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react';
 
 export function useScript(url: string, onLoad?: () => void) {
   useEffect(() => {
@@ -12,6 +12,6 @@ export function useScript(url: string, onLoad?: () => void) {
 
     return () => {
       document.body.removeChild(script);
-    }
+    };
   }, [url]);
-};
+}

@@ -1,17 +1,27 @@
-import type { JobSummary } from "@feynote/prisma/types";
-import type { JobProgressTracker } from "../JobProgressTracker";
-import type { StandardizedImportInfo } from "./StandardizedImportInfo";
-import { readFile } from "fs/promises";
+import type { JobSummary } from '@feynote/prisma/types';
+import type { JobProgressTracker } from '../JobProgressTracker';
+import type { StandardizedImportInfo } from './StandardizedImportInfo';
+import { readFile } from 'fs/promises';
 import path from 'path';
-import { getSafeArtifactId } from "@feynote/api-services";
-import { marked } from "marked";
-import { addMissingBlockIds, ARTIFACT_TIPTAP_BODY_KEY, constructYArtifact, getTextForJSONContent, getTiptapServerExtensions } from "@feynote/shared-utils";
-import { generateJSON } from "@tiptap/html";
-import { ArtifactAccessLevel, ArtifactTheme, ArtifactType } from "@prisma/client";
-import { TiptapTransformer } from "@hocuspocus/transformer";
-import { applyUpdate, encodeStateAsUpdate } from "yjs";
-import { replaceMarkdownMediaLinks } from "./replaceMarkdownMediaLinks";
-import { replaceMarkdownMediaTags } from "./replaceMarkdownMediaTags";
+import { getSafeArtifactId } from '@feynote/api-services';
+import { marked } from 'marked';
+import {
+  addMissingBlockIds,
+  ARTIFACT_TIPTAP_BODY_KEY,
+  constructYArtifact,
+  getTextForJSONContent,
+  getTiptapServerExtensions,
+} from '@feynote/shared-utils';
+import { generateJSON } from '@tiptap/html';
+import {
+  ArtifactAccessLevel,
+  ArtifactTheme,
+  ArtifactType,
+} from '@prisma/client';
+import { TiptapTransformer } from '@hocuspocus/transformer';
+import { applyUpdate, encodeStateAsUpdate } from 'yjs';
+import { replaceMarkdownMediaLinks } from './replaceMarkdownMediaLinks';
+import { replaceMarkdownMediaTags } from './replaceMarkdownMediaTags';
 
 export const textMdToStandardizedImport = async (args: {
   job: JobSummary;
@@ -24,10 +34,10 @@ export const textMdToStandardizedImport = async (args: {
   };
   for (let i = 0; i < args.filePaths.length; i++) {
     const filePath = args.filePaths[i];
-    const extension = path.extname(filePath)
+    const extension = path.extname(filePath);
     const basename = path.basename(filePath);
     if (extension !== '.md' && extension !== '.txt') {
-      continue
+      continue;
     }
     let content = await readFile(filePath, 'utf8');
     const artifactId = (await getSafeArtifactId()).id;
@@ -37,11 +47,7 @@ export const textMdToStandardizedImport = async (args: {
         importInfo,
         artifactId,
       );
-      content = await replaceMarkdownMediaTags(
-        content,
-        importInfo,
-        artifactId,
-      );
+      content = await replaceMarkdownMediaTags(content, importInfo, artifactId);
     }
     const title = path.parse(basename).name;
 
@@ -84,5 +90,5 @@ export const textMdToStandardizedImport = async (args: {
       step: 1,
     });
   }
-  return importInfo
-}
+  return importInfo;
+};

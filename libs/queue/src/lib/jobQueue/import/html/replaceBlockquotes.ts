@@ -7,8 +7,8 @@ export function replaceBlockquotes(jsdom: JSDOM): void {
     const newDiv = jsdom.window.document.createElement('div');
     newDiv.setAttribute('data-content-type', 'blockGroup');
     newDiv.textContent = textContent;
-    const parentNode = blockquote.parentNode
-    if (!parentNode) return
+    const parentNode = blockquote.parentNode;
+    if (!parentNode) return;
     parentNode.insertBefore(newDiv, blockquote);
     blockquote.remove();
   }
