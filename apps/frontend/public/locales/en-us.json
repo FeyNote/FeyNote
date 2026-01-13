@@ -258,11 +258,10 @@
 
   "export.title": "Export Documents",
   "export.jobList": "Export Jobs",
-  "export.options.markdown": "Export to Markdown",
-  "export.options.markdown.content": "Please note that block references will not be preserved in markdown exports.",
-  "export.options.json": "Export to Json",
-  "export.options.json.content": "References will be reserved as JSON properties.",
-  "export.button.download": "Download Zip",
+  "export.options.title": "Export Options",
+  "export.options.markdown": "Markdown",
+  "export.options.json": "Json",
+  "export.options.subtext": "Please note that block references will only be preserved in the json exports.",
 
   "importFileUpload.title": "Import File",
   "importFileUpload.instructions.logseq": "Please select a zipped JSON export of your graph alongside your logseq assets directory if you wish to preserve images. (Note: Support for org mode is in-progress, and only documents of markdown format will be imported)",

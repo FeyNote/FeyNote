@@ -14,6 +14,8 @@ export { CgNotes, CgExtensionRemove } from 'react-icons/cg';
 
 export { SiLogseq, SiObsidian } from 'react-icons/si';
 
+export { BsFiletypeJson } from 'react-icons/bs';
+
 export { AiFillFileMarkdown, AiFillFileText } from 'react-icons/ai';
 
 export {

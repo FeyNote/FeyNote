@@ -51,32 +51,32 @@ const ImportOptionTitle = styled.div`
 const IMPORT_OPTIONS: {
   component: ReactNode;
   title: string;
-  type: ImportFormat;
+  format: ImportFormat;
 }[] = [
   {
     component: <TbFileTypeDocx />,
     title: 'import.options.docx',
-    type: 'docx',
+    format: 'docx',
   },
   {
     component: <SiObsidian />,
     title: 'import.options.obsidian',
-    type: 'obsidian',
+    format: 'obsidian',
   },
   {
     component: <SiLogseq />,
     title: 'import.options.logseq',
-    type: 'logseq',
+    format: 'logseq',
   },
   {
     component: <AiFillFileMarkdown />,
     title: 'import.options.markdown',
-    type: 'markdown',
+    format: 'markdown',
   },
   {
     component: <AiFillFileText />,
     title: 'import.options.text',
-    type: 'text',
+    format: 'text',
   },
 ];
 const NUM_OF_INITAL_JOBS_SHOWN = 5;
@@ -152,7 +152,7 @@ export const Import: React.FC = () => {
                       undefined, // Open in currently focused pane rather than in specific pane
                       PaneableComponent.ImportFileUpload,
                       {
-                        format: option.type,
+                        format: option.format,
                       },
                       PaneTransition.Push,
                     );
