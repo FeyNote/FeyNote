@@ -278,6 +278,8 @@
   "jobList.format.obsidian": "Obsidian",
   "jobList.format.markdown": "Markdown",
   "jobList.format.json": "Json",
+  "jobList.format.text": "Text",
+  "jobList.format.docx": "DocX",
   "jobList.format.unknown": "Unknown Format",
   "jobList.error.unknown": "I'm sorry an unknown error has occurred, please try your upload again. If your problem persists please contact support.",
   "jobList.success": "Job successfully finished.",

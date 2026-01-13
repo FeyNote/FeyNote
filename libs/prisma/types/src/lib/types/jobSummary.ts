@@ -22,7 +22,6 @@ export const zImportFormat = z.enum([
   'text',
   'markdown',
   'docx',
-  'gdrive',
 ]);
 export type ImportFormat = z.infer<typeof zImportFormat>;
 
