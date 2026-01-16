@@ -9,7 +9,11 @@ import {
   IonNote,
 } from '@ionic/react';
 import { arrowDown, document as documentIcon } from 'ionicons/icons';
-import { type JobSummary } from '@feynote/prisma/types';
+import {
+  type ExportFormat,
+  type ImportFormat,
+  type JobSummary,
+} from '@feynote/prisma/types';
 import { ProgressBar } from '../info/ProgressBar';
 
 const JobsContainer = styled.div`
@@ -29,15 +33,15 @@ export const JobList: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
   const formatToTranslationString: Record<
-    NonNullable<
-      JobSummary['meta']['importFormat'] | JobSummary['meta']['exportFormat']
-    >,
+    NonNullable<ImportFormat | ExportFormat>,
     string
   > = {
     logseq: t('jobList.format.logseq'),
     obsidian: t('jobList.format.obsidian'),
     json: t('jobList.format.json'),
     markdown: t('jobList.format.markdown'),
+    text: t('jobList.format.text'),
+    docx: t('jobList.format.docx'),
   };
 
   const ErrorCodeToTranslationString: Record<

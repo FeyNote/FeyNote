@@ -66,7 +66,10 @@ export const replaceObsidianReferences = async (
       markdown = markdown.replace(matchingGroups[0], replacementHtml);
     } else {
       const referencedArtifactId = titleToArtifactIdMap.get(documentReference);
-      const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${referencedArtifactId || brokenReferenceId}" data-artifact-reference-text="${documentReference}"></span>`;
+      let replacementHtml = `<span>${documentReference}</span>`;
+      if (referencedArtifactId) {
+        replacementHtml = `<span data-type="artifactReference" data-artifact-id="${referencedArtifactId}" data-artifact-reference-text="${documentReference}"></span>`;
+      }
       markdown = markdown.replace(matchingGroups[0], replacementHtml);
     }
   }

@@ -32,6 +32,6 @@ export const performMediaReplacement = async (args: {
     });
   }
 
-  const replacementHtml = `<div data-media-type="${fileType}" data-fallback="${src}" data-file-id="${id}" data-storage-key="${storageKey}" data-title="${title}" data-alt="${alt}" />`;
+  const replacementHtml = `<div data-file-type="${fileType}" data-file-id="${id}" data-storage-key="${storageKey}" data-title="${title}" data-alt="${alt}" />`;
   return content.replace(match, `\n\n${replacementHtml}\n\n`);
 };

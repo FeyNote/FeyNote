@@ -1,7 +1,6 @@
 import { readdir } from 'fs/promises';
 import { join } from 'path';
 import extract from 'extract-zip';
-import { tmpdir } from 'os';
 import { sanitizeFilePath } from '@feynote/api-services';
 
 class FileLimitExceededError extends Error {
@@ -12,11 +11,12 @@ class FileLimitExceededError extends Error {
 }
 
 const MAX_FILE_LIMIT = 10000;
-export const extractFilesFromZip = async (zipDest: string) => {
-  const tempDir = tmpdir();
-  const extractDest = join(tempDir, `${Date.now()}-${crypto.randomUUID()}`);
+export const extractFilesFromZip = async (
+  zipPath: string,
+  extractDest: string,
+) => {
   let fileCounter = 0;
-  await extract(zipDest, {
+  await extract(zipPath, {
     dir: extractDest,
     onEntry: (_, __) => {
       fileCounter++;
@@ -36,5 +36,5 @@ export const extractFilesFromZip = async (zipDest: string) => {
       return sanitizedPath;
     },
   );
-  return { filePaths, extractDest };
+  return filePaths;
 };

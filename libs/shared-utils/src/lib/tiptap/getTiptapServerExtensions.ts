@@ -357,6 +357,171 @@ export const getTiptapServerExtensions = (props: Props) => {
       },
     }),
     Node.create({
+      name: 'feynoteGeneric',
+      group() {
+        return this.options.inline ? 'inline' : 'block';
+      },
+      addAttributes() {
+        return {
+          fileId: {
+            parseHTML: (element) => element.getAttribute('data-file-id'),
+            default: null,
+          },
+          storageKey: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-storage-key'),
+          },
+          alt: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-alt'),
+          },
+          title: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-title'),
+          },
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: `div[data-file-type="${FeynoteEditorMediaType.Generic}"]`,
+          },
+          {
+            tag: `span[data-file-type="${FeynoteEditorMediaType.Generic}"]`,
+          },
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        const fileId = HTMLAttributes['fileId'];
+        const alt =
+          HTMLAttributes['alt'] ||
+          HTMLAttributes['title'] ||
+          HTMLAttributes['fileId'];
+        let src = this.options.getSrcForFileId(fileId);
+        if (props.userFileToS3Map?.has(fileId)) {
+          src = props.userFileToS3Map.get(fileId);
+        }
+
+        return [
+          'div',
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+            src,
+            alt,
+          }),
+        ];
+      },
+    }),
+    Node.create({
+      name: 'feynoteVideo',
+      group() {
+        return this.options.inline ? 'inline' : 'block';
+      },
+      addAttributes() {
+        return {
+          fileId: {
+            parseHTML: (element) => element.getAttribute('data-file-id'),
+            default: null,
+          },
+          storageKey: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-storage-key'),
+          },
+          alt: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-alt'),
+          },
+          title: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-title'),
+          },
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: `div[data-file-type="${FeynoteEditorMediaType.Video}"]`,
+          },
+          {
+            tag: `span[data-file-type="${FeynoteEditorMediaType.Video}"]`,
+          },
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        const fileId = HTMLAttributes['fileId'];
+        const alt =
+          HTMLAttributes['alt'] ||
+          HTMLAttributes['title'] ||
+          HTMLAttributes['fileId'];
+        let src = this.options.getSrcForFileId(fileId);
+        if (props.userFileToS3Map?.has(fileId)) {
+          src = props.userFileToS3Map.get(fileId);
+        }
+
+        return [
+          'video',
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+            src,
+            alt,
+          }),
+        ];
+      },
+    }),
+    Node.create({
+      name: 'feynoteAudio',
+      group() {
+        return this.options.inline ? 'inline' : 'block';
+      },
+      addAttributes() {
+        return {
+          fileId: {
+            parseHTML: (element) => element.getAttribute('data-file-id'),
+            default: null,
+          },
+          storageKey: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-storage-key'),
+          },
+          alt: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-alt'),
+          },
+          title: {
+            default: null,
+            parseHTML: (element) => element.getAttribute('data-title'),
+          },
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: `div[data-file-type="${FeynoteEditorMediaType.Audio}"]`,
+          },
+          {
+            tag: `span[data-file-type="${FeynoteEditorMediaType.Audio}"]`,
+          },
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        const fileId = HTMLAttributes['fileId'];
+        const alt =
+          HTMLAttributes['alt'] ||
+          HTMLAttributes['title'] ||
+          HTMLAttributes['fileId'];
+        let src = this.options.getSrcForFileId(fileId);
+        if (props.userFileToS3Map?.has(fileId)) {
+          src = props.userFileToS3Map.get(fileId);
+        }
+
+        return [
+          'audio',
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+            src,
+            alt,
+          }),
+        ];
+      },
+    }),
+    Node.create({
       name: 'feynoteImage',
       group() {
         return this.options.inline ? 'inline' : 'block';
@@ -384,7 +549,10 @@ export const getTiptapServerExtensions = (props: Props) => {
       parseHTML() {
         return [
           {
-            tag: `div[data-media-type="${FeynoteEditorMediaType.Image}"]`,
+            tag: `div[data-file-type="${FeynoteEditorMediaType.Image}"]`,
+          },
+          {
+            tag: `span[data-file-type="${FeynoteEditorMediaType.Image}"]`,
           },
         ];
       },

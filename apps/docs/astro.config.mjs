@@ -59,7 +59,18 @@ export default defineConfig({
         },
         {
           label: 'Settings',
-          items: ['settings/general', 'settings/import', 'settings/export'],
+          items: [
+            'settings/general',
+            {
+              label: 'Import',
+              items: [
+                'settings/import/logseq',
+                'settings/import/obsidian',
+                'settings/import/zip',
+              ],
+            },
+            'settings/export',
+          ],
         },
       ],
     }),
