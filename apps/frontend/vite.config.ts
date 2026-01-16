@@ -59,7 +59,7 @@ export default defineConfig({
         type: 'module',
       },
       injectManifest: {
-        //TODO: https://github.com/RedChickenCo/FeyNote/issues/1202
+        //TODO: https://github.com/FeyNote/FeyNote/issues/1202
         maximumFileSizeToCacheInBytes: 6000000, // 2097152 is the default, increased here since our bundle size has grown over the limit
         globIgnores: ['**\\/node_modules\\/**\\/*', 'index.html'],
         buildPlugins: {

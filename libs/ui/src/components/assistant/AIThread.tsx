@@ -154,7 +154,7 @@ export const AIThread: React.FC<Props> = (props) => {
         return crypto.randomUUID();
       },
       onFinish: async (data) => {
-        //TODO: https://github.com/RedChickenCo/FeyNote/issues/1201
+        //TODO: https://github.com/FeyNote/FeyNote/issues/1201
         await trpc.ai.saveMessage.mutate({
           threadId: props.id,
           message: data.message,
@@ -358,7 +358,6 @@ export const AIThread: React.FC<Props> = (props) => {
           )}
           <ChatTextContainer>
             <IonTextarea
-              autoGrow={true}
               ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}

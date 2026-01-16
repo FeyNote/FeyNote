@@ -24,7 +24,7 @@ interface LogseqPageProperties {
     assets: [
       {
         id: string;
-        type: 'image'; // TODO: Verify typings when implementing TLDRAW https://github.com/RedChickenCo/FeyNote/issues/845
+        type: 'image'; // TODO: Verify typings when implementing TLDRAW https://github.com/FeyNote/FeyNote/issues/845
         src: string;
         size: number[];
       },

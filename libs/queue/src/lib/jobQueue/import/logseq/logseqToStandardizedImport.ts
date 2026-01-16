@@ -229,7 +229,7 @@ const convertLogseqBlockToHtml = async (
         pageNameToIdMap,
       );
     case 'org':
-      return block.content; // TODO: Implement org mode support https://github.com/RedChickenCo/FeyNote/issues/846
+      return block.content; // TODO: Implement org mode support https://github.com/FeyNote/FeyNote/issues/846
     default:
       throw new Error(`Unrecognized block format: ${block.format}`);
   }
@@ -269,7 +269,7 @@ const handleLogseqGraph = async (args: {
 }) => {
   const pageNameToIdMap = new Map<string, string>();
   for (const page of args.json.blocks) {
-    // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
+    // TODO: Implement Logseq Whiteboards https://github.com/FeyNote/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const title = page['page-name'];
     const id = (await getSafeArtifactId()).id;
@@ -283,7 +283,7 @@ const handleLogseqGraph = async (args: {
 
   for (let i = 0; i < args.json.blocks.length; i++) {
     const page = args.json.blocks[i];
-    // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
+    // TODO: Implement Logseq Whiteboards https://github.com/FeyNote/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     const id =
       pageNameToIdMap.get(page['page-name']) || (await getSafeArtifactId()).id;
