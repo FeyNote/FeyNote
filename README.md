@@ -6,26 +6,26 @@
 
 [![License](https://img.shields.io/badge/License-Dual-blue.svg)](#LICENSE)
 
-[🌐 Website & App](https://feynote.com) • [📖 Documentation](https://docs.feynote.com) • [💬 Discord](https://discord.gg/Tz8trXrd4C) • [🐛 Report Bug](https://github.com/redchickenco/feynote/issues)
+[Website & App](https://feynote.com) • [Documentation](https://docs.feynote.com) • [Discord](https://discord.gg/Tz8trXrd4C) • [Report Bug](https://github.com/feynote/feynote/issues)
 
 </div>
 
-## ✨ What is FeyNote?
+## What is FeyNote?
 
 FeyNote is a free, open-source note-taking application specifically designed for tabletop RPG enthusiasts and world-builders. Whether you're a dungeon master crafting intricate campaigns or a player keeping track of your character's journey, FeyNote provides powerful tools to organize, share, and bring your TTRPG worlds to life.
 
 ### Why FeyNote? Key Features:
 
-- **📊 TTRPG-First Design**: Embed statblocks, spells, and items directly within your notes. Create custom content or tweak official content as you edit. FeyNote makes formatting and creating custom monster blocks, items, and other TTRPG content effortless.
-- **🔗 Link/Reference Content**: Create references between documents that automatically update as you edit
-- **🌐 Offline**: Full functionality offline with automatic sync when you reconnect
-- **👥 Real-Time Collaboration**: Edit simultaneously with your party or co-DMs with live cursors
-- **📅 Custom Calendars**: Build entirely custom date systems for your fantasy worlds
-- **🌳 Flexible Organization**: Use both tree hierarchies and graph views to organize content depending on your preference
-- **🌳 Automatic Import**: Use both tree hierarchies and graph views to organize content depending on your preference
+- **TTRPG-First Design**: Embed statblocks, spells, and items directly within your notes. Create custom content or tweak official content as you edit. FeyNote makes formatting and creating custom monster blocks, items, and other TTRPG content effortless.
+- **Link/Reference Content**: Create references between documents that automatically update as you edit
+- **Offline**: Full functionality offline with automatic sync when you reconnect
+- **Real-Time Collaboration**: Edit simultaneously with your party or co-DMs with live cursors
+- **Custom Calendars**: Build entirely custom date systems for your fantasy worlds
+- **Flexible Organization**: Use both tree hierarchies and graph views to organize content depending on your preference
+- **Automatic Import**: Use both tree hierarchies and graph views to organize content depending on your preference
 - **Block-Style Nesting**: Organize notes in bullet-journal style with hierarchical blocks
 
-### 🖼️ Screenshots
+### Screenshots
 
 <div align="center">
 
@@ -56,7 +56,7 @@ _Fully customizable fantasy calendar system_
 - **JSON**: Export documents in structured JSON format
 - **Markdown**: Standard markdown export for portability
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 FeyNote is built with modern web technologies:
 
@@ -71,7 +71,7 @@ FeyNote is built with modern web technologies:
 - **Content Import, Scraping, any (light) AI**: AI SDK
 - **Website**: Astro
 
-## 🚀 Getting Started
+## Getting Started
 
 ### For Users
 
@@ -109,13 +109,15 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
 4. **Start**
 
    ```bash
-   ./scripts/localStart.sh
+   ./dev.sh start
    ```
 
 5. **Access the application**
    - Application: http://localhost:80
    - Website: http://localhost:8080
    - Docs: http://localhost:8081
+
+You can see all commands for local dev via `make
 
 #### Working with Stripe (Payment Testing)
 
@@ -128,7 +130,7 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
 4. Set the webhook signing secret in your `.env` file as `STRIPE_WEBHOOK_SECRET`
 5. Set the API key in your `.env` file as `STRIPE_API_KEY`
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 feynote/
@@ -146,7 +148,7 @@ feynote/
 └── scripts/              # Utility scripts
 ```
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions from the community! FeyNote is built by TTRPG enthusiasts, for TTRPG enthusiasts.
 
@@ -183,7 +185,7 @@ We welcome contributions from the community! FeyNote is built by TTRPG enthusias
    ```
 6. **Open a Pull Request**
 
-## 📜 License
+## License
 
 FeyNote uses a **dual-license model**:
 
@@ -203,7 +205,11 @@ This license section is not a complete overview of the licensing terms. See [LIC
 
 All contributors must sign our [CLA](CLA.md), which assigns copyright to the project maintainers (Julian Poyourow and Chris Meyer) to enable dual licensing.
 
-## 🌟 Roadmap
+## Selfhost
+
+To selfhost FeyNote in your personal homelab, there's a dedicated [README here](./selfhosting-toolkit/README.md)
+
+## Roadmap
 
 We're actively working on:
 
@@ -213,7 +219,7 @@ We're actively working on:
 - **Native Apps**: Desktop and mobile applications
 - **Additional Export Formats**: More ways to export your content
 
-## 💬 Community & Support
+## Community & Support
 
 - **Website**: [feynote.com](https://feynote.com)
 - **Documentation**: [docs.feynote.com](https://docs.feynote.com)
@@ -221,7 +227,7 @@ We're actively working on:
 - **Email**: julian@poyourow.com
 - **Commercial Licensing**: julian@poyourow.com
 
-## 👥 Team
+## Team
 
 **Julian Poyourow** - Co-creator, Software Engineer @ Mozilla, creator of [RecipeSage](https://recipesage.com)
 **Chris Meyer** - Co-creator, Software Engineer @ 2U
@@ -230,6 +236,6 @@ We're both passionate TTRPG players and software engineers who built FeyNote to 
 
 <div align="center">
 
-**Built with ❤️ for the TTRPG community**
+**Built with <3 for the TTRPG community**
 
 </div>
