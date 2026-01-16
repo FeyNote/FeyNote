@@ -22,7 +22,7 @@ ENV APP_VERSION=$APP_VERSION
 ENV VITE_APP_VERSION=$APP_VERSION
 ENV SELFHOST=true
 
-RUN npx nx run-many -t build -p backend,hocuspocus,queue-worker,websocket,www
+RUN npx nx run-many -t build -p backend,hocuspocus,queue-worker,websocket,www,cli
 
 FROM node:24.7-alpine
 
@@ -50,6 +50,7 @@ ENV HOCUSPOCUS_INTERNAL_REST_BASE_URL=http://localhost:3002
 ENV LOGGER_LEVEL=info
 ENV LOGGER_TRANSPORTS_CONSOLE=true
 ENV LOGGER_TRANSPORTS_SENTRY=false
+ENV SEARCH_PROVIDER=typesense
 
 EXPOSE 3000 3001 3002 3003 3004 3005 3006
 

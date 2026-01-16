@@ -7,8 +7,8 @@ echo "Starting Feynote..."
 echo "Running migrations..."
 npx prisma migrate deploy
 
-echo "Creating search indexes..."
-npx nx run search:migrate
+echo "Updating search indexes..."
+node dist/apps/cli/main.js migrateSearchProvider
 
 # Start all services in the background
 echo "Starting backend API..."

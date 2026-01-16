@@ -1,5 +1,5 @@
 import { coerceBoolean } from './coerceBoolean';
-import { getEnvOrThrow } from './getEnvOrThrow';
+import { getEnvOrThrow, RequiredForSelfhost } from './getEnvOrThrow';
 
 export const globalServerConfig = {
   selfhost: coerceBoolean(process.env['SELFHOST'] || 'false'),
@@ -13,32 +13,37 @@ export const globalServerConfig = {
     },
   },
   email: {
-    fromName: process.env['EMAIL_FROM_NAME'] || 'Feynote',
-    fromAddress: process.env['EMAIL_FROM_ADDRESS'] || 'noreply@example.com',
-    replyToAddress:
-      process.env['EMAIL_REPLY_TO_ADDRESS'] || 'support@example.com',
+    enabled:
+      process.env['NODE_ENV'] === 'production' &&
+      process.env['SELFHOST'] !== 'true',
+    fromName: getEnvOrThrow('EMAIL_FROM_NAME', ''),
+    fromAddress: getEnvOrThrow('EMAIL_FROM_ADDRESS', ''),
+    replyToAddress: getEnvOrThrow('EMAIL_REPLY_TO_ADDRESS', ''),
   },
   aws: {
-    region: process.env['AWS_REGION'] || 'us-east-1',
-    accessKeyId: process.env['AWS_ACCESS_KEY_ID'] || '',
-    secretAccessKey: process.env['AWS_SECRET_ACCESS_KEY'] || '',
+    region: getEnvOrThrow('AWS_REGION', 'us-east-1'),
+    accessKeyId: getEnvOrThrow('AWS_ACCESS_KEY_ID', 'selfhost-placeholder'),
+    secretAccessKey: getEnvOrThrow(
+      'AWS_SECRET_ACCESS_KEY',
+      'selfhost-placeholder',
+    ),
     buckets: {
-      artifact: process.env['AWS_BUCKET_ARTIFACT'] || '',
-      job: process.env['AWS_BUCKET_JOB'] || '',
+      artifact: getEnvOrThrow('AWS_BUCKET_ARTIFACT', 'selfhost-placeholder'),
+      job: getEnvOrThrow('AWS_BUCKET_JOB', 'selfhost-placeholder'),
     },
   },
   typesense: {
-    apiKey: getEnvOrThrow('TYPESENSE_API_KEY'),
-    nodes: getEnvOrThrow('TYPESENSE_NODES'),
+    apiKey: getEnvOrThrow('TYPESENSE_API_KEY', RequiredForSelfhost),
+    nodes: getEnvOrThrow('TYPESENSE_NODES', RequiredForSelfhost),
   },
   openai: {
-    apiKey: process.env['OPENAI_API_KEY'] || '',
+    apiKey: getEnvOrThrow('OPENAI_API_KEY', undefined),
   },
   proxy: {
-    enabled: coerceBoolean(process.env['PROXY_ENABLED'] || 'false'),
-    url: process.env['PROXY_URL'] || '',
-    username: process.env['PROXY_USERNAME'] || '',
-    password: process.env['PROXY_PASSWORD'] || '',
+    enabled: coerceBoolean(getEnvOrThrow('PROXY_ENABLED', false)),
+    url: getEnvOrThrow('PROXY_URL', ''),
+    username: getEnvOrThrow('PROXY_USERNAME', ''),
+    password: getEnvOrThrow('PROXY_PASSWORD', ''),
   },
   api: {
     port: parseInt(process.env['API_PORT'] || '8080'),
@@ -46,8 +51,11 @@ export const globalServerConfig = {
   hocuspocus: {
     wsPort: parseInt(process.env['HOCUSPOCUS_WS_PORT'] || '8080'),
     restPort: parseInt(process.env['HOCUSPOCUS_REST_PORT'] || '8081'),
-    internalRestBaseUrl: getEnvOrThrow('HOCUSPOCUS_INTERNAL_REST_BASE_URL'),
-    apiKey: getEnvOrThrow('HOCUSPOCUS_API_KEY'),
+    internalRestBaseUrl: getEnvOrThrow(
+      'HOCUSPOCUS_INTERNAL_REST_BASE_URL',
+      RequiredForSelfhost,
+    ),
+    apiKey: getEnvOrThrow('HOCUSPOCUS_API_KEY', 'feynote-selfhost'),
     writeDelayMs: parseInt(process.env['HOCUSPOCUS_WRITE_DELAY_MS'] || '2000'),
     maxWriteDelayMs: parseInt(
       process.env['HOCUSPOCUS_MAX_WRITE_DELAY_MS'] || '10000',
@@ -94,7 +102,7 @@ export const globalServerConfig = {
     ),
     queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
     redis: {
-      host: getEnvOrThrow('WORKER_REDIS_HOST'),
+      host: getEnvOrThrow('WORKER_REDIS_HOST', RequiredForSelfhost),
       port: parseInt(process.env['WORKER_REDIS_PORT'] || '6379'),
       keyPrefix: process.env['WORKER_REDIS_KEY_PREFIX'] || 'fnworker_',
     },
@@ -124,7 +132,10 @@ export const globalServerConfig = {
     },
   },
   stripe: {
-    webhookSecret: process.env['STRIPE_WEBHOOK_SECRET'] || '',
-    apiKey: process.env['STRIPE_API_KEY'] || '',
+    webhookSecret: getEnvOrThrow(
+      'STRIPE_WEBHOOK_SECRET',
+      'selfhost-placeholder',
+    ),
+    apiKey: getEnvOrThrow('STRIPE_API_KEY', 'selfhost-placeholder'),
   },
 };

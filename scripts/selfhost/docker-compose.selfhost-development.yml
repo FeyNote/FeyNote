@@ -5,7 +5,9 @@
 services:
   # Nginx reverse proxy with frontend and docs, serves as entrypoint and router for app and services
   proxy:
-    image: feynote/feynote-selfhost-proxy:dev-f9b3a029 # Please do not change this verison number yourself!
+    build:
+      context: ../..
+      dockerfile: ./scripts/selfhost/Dockerfile.selfhost.proxy
     ports:
       - '${FEYNOTE_SELFHOST_HTTP_PORT:-7271}:80'
     depends_on:
@@ -18,7 +20,9 @@ services:
   # Main Feynote application - all backend services in one container
   # Includes: Backend API, Hocuspocus, Websocket, Queue Worker, and WWW (Astro)
   app:
-    image: feynote/feynote-selfhost-app:local-amd64 # Please do not change this verison number yourself!
+    build:
+      context: ../..
+      dockerfile: ./scripts/selfhost/Dockerfile.selfhost.app
     environment:
       # Please leave all of these as-is
       HOCUSPOCUS_REDIS_HOST: redis
@@ -39,13 +43,7 @@ services:
       - app_data:/app/data
     healthcheck:
       test:
-        [
-          'CMD',
-          'wget',
-          '--spider',
-          '-q',
-          'http://localhost:3000/api/trpc/health',
-        ]
+        ['CMD', 'wget', '--spider', '-q', 'http://localhost:3000/trpc/health']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -63,7 +61,7 @@ services:
 
   # PostgreSQL Database for content storage
   postgres:
-    image: postgres:16-alpine # Please do not change this verison number yourself!
+    image: postgres:16-alpine
     environment:
       # Please change these via your .env file rather than directly here!
       POSTGRES_USER: ${POSTGRES_USER:-feynote}
@@ -82,8 +80,8 @@ services:
 
   # Redis for real-time features (such as collaboration) and queued jobs such as importing content
   redis:
-    image: redis:7-alpine # Please do not change this verison number yourself!
-    command: redis-server --maxmemory 1Gb --maxmemory-policy noeviction
+    image: redis:7-alpine
+    command: redis-server --maxmemory 512mb --maxmemory-policy noeviction
     volumes:
       - redis_data:/data
     healthcheck:
@@ -97,7 +95,7 @@ services:
 
   # Typesense for advanced fulltext search
   typesense:
-    image: typesense/typesense:27.1 # Please do not change this verison number yourself!
+    image: typesense/typesense:27.1
     environment:
       TYPESENSE_DATA_DIR: /data
       # Please change this via your .env file rather than directly here!
