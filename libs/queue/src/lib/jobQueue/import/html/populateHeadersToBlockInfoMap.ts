@@ -10,6 +10,7 @@ export function populateHeadersToBlockInfoMap(
   const headers = jsdom.window.document.querySelectorAll('h1,h2,h3,h4,h5,h6');
   for (const header of headers) {
     const id = header.id;
+    if (!id) return;
     const blockId = randomUUID();
     idToBlockInfo.set(`${artifactId}-${id}`, {
       id: blockId,

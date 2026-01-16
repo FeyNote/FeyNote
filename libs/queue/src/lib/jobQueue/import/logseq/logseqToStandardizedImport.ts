@@ -130,9 +130,9 @@ const replaceLogseqPageReferences = (
   const pageReferenceRegex = /\[(.*)\]?\(\[\[(.*?)\]\]\)|\[\[(.*)\]\]/g;
   for (const matchingGroups of content.matchAll(pageReferenceRegex)) {
     const title = matchingGroups[2] || matchingGroups[3];
-    const id =
-      pageNameToIdMap.get(title) || `00000000-0000-0000-0000-000000000000`;
-    const replacementHtml = `<span data-type="artifactReference" data-artifact-id="${id}" data-artifact-reference-text="${title}"></span>`;
+    const id = pageNameToIdMap.get(title);
+    let replacementHtml = `<span data-type="artifactReference" data-artifact-id="${id}" data-artifact-reference-text="${title}"></span>`;
+    if (!id) replacementHtml = `<span>${title}</span>`;
     content = content.replace(matchingGroups[0], replacementHtml);
   }
   return content;

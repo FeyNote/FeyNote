@@ -15,11 +15,9 @@ import {
   SiObsidian,
   TbFileTypeDocx,
 } from '../AppIcons';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../../context/globalPane/GlobalPaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { usePaneContext } from '../../context/pane/PaneContext';
 
 const ImportOptionsContainer = styled.div`
   display: flex;
@@ -87,7 +85,7 @@ export const Import: React.FC = () => {
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const { navigate } = useGlobalPaneContext();
+  const { navigate } = usePaneContext();
 
   useEffect(() => {
     const progress = startProgressBar();
@@ -149,7 +147,6 @@ export const Import: React.FC = () => {
                 <Button
                   onClick={() => {
                     navigate(
-                      undefined, // Open in currently focused pane rather than in specific pane
                       PaneableComponent.ImportFileUpload,
                       {
                         format: option.format,

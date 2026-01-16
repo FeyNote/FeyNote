@@ -9,9 +9,9 @@ import type { StandardizedImportInfo } from '../StandardizedImportInfo';
 
 export async function updateMediaLinks(
   jsdom: JSDOM,
-  baseMediaNameToPath: Map<string, string>,
   artifactId: string,
   importInfo: StandardizedImportInfo,
+  outputDir: string,
 ) {
   const mediaEls = jsdom.window.document.querySelectorAll('img,video,audio');
   for await (const mediaEl of mediaEls) {
@@ -28,13 +28,11 @@ export async function updateMediaLinks(
         associatedArtifactId: artifactId,
         storageKey,
       });
-    } else {
-      const path = baseMediaNameToPath.get(`${artifactId}-${src}`);
-      if (!path) continue;
+    } else if (src.startsWith(outputDir)) {
       importInfo.mediaFilesToUpload.push({
         id,
         associatedArtifactId: artifactId,
-        path,
+        path: src,
         storageKey,
       });
     }
@@ -48,12 +46,11 @@ export async function updateMediaLinks(
     const alt = mediaEl.getAttribute('alt') || title;
 
     const newMediaSpan = jsdom.window.document.createElement('span');
-    newMediaSpan.setAttribute('data-media-type', fileType);
-    newMediaSpan.setAttribute('data-fallback', src);
+    newMediaSpan.setAttribute('data-file-type', fileType);
     newMediaSpan.setAttribute('data-file-id', id);
     newMediaSpan.setAttribute('data-storage-key', storageKey);
     newMediaSpan.setAttribute('data-title', title);
-    newMediaSpan.setAttribute('alt', alt);
+    newMediaSpan.setAttribute('data-alt', alt);
 
     mediaEl.parentNode?.replaceChild(newMediaSpan, mediaEl);
   }

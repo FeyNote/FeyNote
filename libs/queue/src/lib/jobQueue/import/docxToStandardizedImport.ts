@@ -2,9 +2,9 @@ import type { JobSummary } from '@feynote/prisma/types';
 import type { JobProgressTracker } from '../JobProgressTracker';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
 import { JSDOM } from 'jsdom';
-import path, { join, normalize, sep } from 'path';
+import path from 'path';
 import {
-  convertFile,
+  convertFileWithPandoc,
   FileFormat,
   getSafeArtifactId,
 } from '@feynote/api-services';
@@ -24,7 +24,7 @@ import {
 import { TiptapTransformer } from '@hocuspocus/transformer';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 import * as Sentry from '@sentry/node';
-import { rm, readFile, mkdtemp } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { updateHeaderDataId } from './html/updateHeaderDataId';
 import { replaceBlockquotes } from './html/replaceBlockquotes';
 import { updateReferencedAnchors } from './html/updateReferencedAnchors';
@@ -32,10 +32,6 @@ import type { ArtifactBlockInfo } from './ArtifactBlockInfo';
 import { updateDocxBookmarks } from './html/updateDocxBookmarks';
 import { populateHeadersToBlockInfoMap } from './html/populateHeadersToBlockInfoMap';
 import { populateBookmarksToBlockInfoMap } from './html/populateBookmarksToBlockInfoMap';
-import { extractFilesFromZip } from './extractFilesFromZip';
-import { isAudioPath } from './isAudioPath';
-import { isVideoPath } from './isVideoPath';
-import { isImagePath } from './isImagePath';
 import { updateMediaLinks } from './html/updateMediaLinks';
 
 export const docxToStandardizedImport = async (args: {
@@ -51,14 +47,13 @@ export const docxToStandardizedImport = async (args: {
 
   const convertedFilePaths: string[] = [];
 
-  const prefix = join(args.tempWorkingDir, sep);
-  const outputDir = await mkdtemp(prefix);
-  for await (const docxPath of args.filePaths) {
-    if (path.extname(docxPath) !== '.docx') continue;
+  for (let i = 0; i < args.filePaths.length; i++) {
+    const filePath = args.filePaths[i];
+    if (path.extname(filePath) !== '.docx') continue;
 
-    const convertedFilePath = await convertFile({
-      inputFilePath: docxPath,
-      outputDir,
+    const convertedFilePath = await convertFileWithPandoc({
+      inputFilePath: filePath,
+      outputDir: args.tempWorkingDir,
       inputFormat: FileFormat.Docx,
       outputFormat: FileFormat.Html,
     }).catch((e) => {
@@ -66,10 +61,15 @@ export const docxToStandardizedImport = async (args: {
         extra: {
           userId: args.job.userId,
           jobId: args.job.id,
-          fileBaseName: path.basename(docxPath),
+          fileBaseName: path.basename(filePath),
         },
       });
-      throw new Error(e);
+      throw e;
+    });
+
+    args.progressTracker.onProgress({
+      progress: Math.floor((i / args.filePaths.length) * 100),
+      step: 1,
     });
     convertedFilePaths.push(convertedFilePath);
   }
@@ -78,7 +78,7 @@ export const docxToStandardizedImport = async (args: {
   const idToBlockInfo = new Map<string, ArtifactBlockInfo>();
 
   // Must preprocess references to get the correct reference text for artifact block replacements
-  for await (const docxPath of convertedFilePaths) {
+  for (const docxPath of convertedFilePaths) {
     if (path.extname(docxPath) !== '.html') continue;
     const basename = path.basename(docxPath);
     // Populate ArtifactId Map
@@ -91,34 +91,6 @@ export const docxToStandardizedImport = async (args: {
     const jsdom = new JSDOM(html);
     populateHeadersToBlockInfoMap(jsdom, idToBlockInfo, artifactId);
     populateBookmarksToBlockInfoMap(jsdom, idToBlockInfo, artifactId);
-  }
-
-  const baseMediaNameToPath = new Map<string, string>();
-  // Populate The BaseMedia Map
-  for await (const docxPath of args.filePaths) {
-    if (path.extname(docxPath) !== '.docx') continue;
-    const basename = path.basename(docxPath);
-    // Populate ArtifactId Map
-    const title = path.parse(basename).name;
-    const artifactId = titleToArtifactIdMap.get(title);
-
-    const prefix = join(args.tempWorkingDir, sep);
-    const docTempPath = await mkdtemp(prefix);
-    const filePaths = await extractFilesFromZip(docxPath, docTempPath);
-    for await (const filePath of filePaths) {
-      if (
-        !isAudioPath(filePath) &&
-        !isVideoPath(filePath) &&
-        !isImagePath(filePath)
-      )
-        continue;
-      // DocX files store media assets in a "word/" directory
-      const relativePath = normalize(filePath).replace(
-        join(normalize(docTempPath), 'word', sep),
-        '',
-      );
-      baseMediaNameToPath.set(`${artifactId}-${relativePath}`, filePath);
-    }
   }
 
   for (let i = 0; i < convertedFilePaths.length; i++) {
@@ -137,7 +109,7 @@ export const docxToStandardizedImport = async (args: {
     updateHeaderDataId(jsdom, idToBlockInfo, artifactId);
     updateDocxBookmarks(jsdom, idToBlockInfo, artifactId);
     updateReferencedAnchors(jsdom, idToBlockInfo, artifactId);
-    await updateMediaLinks(jsdom, baseMediaNameToPath, artifactId, importInfo);
+    await updateMediaLinks(jsdom, artifactId, importInfo, args.tempWorkingDir);
     html = jsdom.window.document.documentElement.outerHTML;
 
     const extensions = getTiptapServerExtensions({});
@@ -175,10 +147,9 @@ export const docxToStandardizedImport = async (args: {
     });
     args.progressTracker.onProgress({
       progress: Math.floor((i / args.filePaths.length) * 100),
-      step: 1,
+      step: 2,
     });
   }
 
-  await rm(outputDir, { recursive: true });
   return importInfo;
 };

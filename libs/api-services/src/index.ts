@@ -7,7 +7,7 @@ export * from './lib/user/triggerResetPassword';
 
 export * from './lib/error';
 
-export * from './lib/files/convertFile';
+export * from './lib/files/convertFileWithPandoc';
 
 export * from './lib/openai/openai';
 export * from './lib/openai/retrieveMessageContext';

@@ -27,8 +27,7 @@ const Subtext = styled(IonText)`
 `;
 
 const HelpText = styled.div`
-  opacity: 0.6;
-  font-size: 12px;
+  font-size: 14px;
   font-style: italics;
   padding-top: 8px;
 `;
@@ -191,7 +190,9 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
             onChange={handleFileChange}
           />
           <HelpText>
-            <a href={help.docsLink}>{help.text}</a>
+            <a rel="noreferrer" target="_blank" href={help.docsLink}>
+              {help.text}
+            </a>
           </HelpText>
         </div>
       </IonContent>

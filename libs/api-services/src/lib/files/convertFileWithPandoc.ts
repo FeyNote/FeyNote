@@ -15,21 +15,21 @@ const FormatToExtensionMap = {
   [FileFormat.Markdown]: '.md',
 };
 
-export async function convertFile(args: {
+export async function convertFileWithPandoc(args: {
   inputFilePath: string;
   outputDir: string;
   inputFormat: FileFormat;
   outputFormat: FileFormat;
 }): Promise<string> {
   const normalizedFilePath = normalize(args.inputFilePath);
-  const title = parse(basename(args.inputFilePath)).name;
+  const title = parse(basename(normalizedFilePath)).name;
   const outputUrl = join(
     args.outputDir,
     title + FormatToExtensionMap[args.outputFormat],
   );
   return new Promise<string>((res, rej) => {
     exec(
-      `pandoc --preserve-tabs -f "${args.inputFormat}" -t "${args.outputFormat}" -o "${outputUrl}" "${normalizedFilePath}"`,
+      `pandoc --sandbox=true --extract-media "${join(args.outputDir, title)}" --preserve-tabs -f "${args.inputFormat}" -t "${args.outputFormat}" -o "${outputUrl}" "${normalizedFilePath}"`,
       (e) => {
         if (e) {
           rej(e);
