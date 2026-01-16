@@ -8,7 +8,8 @@ COMPOSE_FILE="./docker-compose-development.yaml"
 
 case "${1:-}" in
   logs)
-    docker compose -f "$COMPOSE_FILE" logs -f frontend docs www backend queue-worker websocket hocuspocus
+    shift
+    docker compose -f "$COMPOSE_FILE" logs "$@"
     ;;
 
   logs-ui)
@@ -50,7 +51,7 @@ case "${1:-}" in
     echo "Usage: $0 {logs|logs-ui|logs-server|logs-supporting|up|down|stop|ps|exec}"
     echo ""
     echo "Commands:"
-    echo "  logs              - Follow logs for main services"
+    echo "  logs <args>       - Follow logs for a service or services"
     echo "  logs-ui           - Follow logs for UI services"
     echo "  logs-server       - Follow logs for server services"
     echo "  logs-supporting   - Follow logs for supporting services"
