@@ -2,8 +2,4 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-echo $SCRIPT_DIR
-
-source $SCRIPT_DIR/../../.env
-
-npx tsx --tsconfig $SCRIPT_DIR/../../apps/cli/tsconfig.json $SCRIPT_DIR/../../apps/cli/src/main.ts "$@"
+$SCRIPT_DIR/../dev.sh exec backend npx tsx --tsconfig /app/apps/cli/tsconfig.json /app/apps/cli/src/main.ts "$@"
