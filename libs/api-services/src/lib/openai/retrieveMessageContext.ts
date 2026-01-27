@@ -1,9 +1,9 @@
 import { prisma } from '@feynote/prisma/client';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 
 export async function retrieveMessageContext(
   threadId: string,
-): Promise<CoreMessage[]> {
+): Promise<ModelMessage[]> {
   //TODO: Retrieve Context Size from User Subscription https://github.com/FeyNote/FeyNote/issues/84
   const contextHistorySize = 10;
 
@@ -16,7 +16,7 @@ export async function retrieveMessageContext(
   });
 
   const context = messages.map(
-    (message) => message.json as unknown as CoreMessage,
+    (message) => message.json as unknown as ModelMessage,
   );
   return context;
 }
