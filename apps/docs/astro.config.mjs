@@ -1,6 +1,5 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import astroExpressiveCode from 'astro-expressive-code';
 
 import starlight from '@astrojs/starlight';
 
@@ -63,7 +62,6 @@ export default defineConfig({
           label: 'Settings',
           items: [
             'settings/general',
-            'settings/export',
             {
               label: 'Import',
               items: [

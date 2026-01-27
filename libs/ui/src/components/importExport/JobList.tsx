@@ -42,6 +42,7 @@ export const JobList: React.FC<Props> = (props) => {
     markdown: t('jobList.format.markdown'),
     text: t('jobList.format.text'),
     docx: t('jobList.format.docx'),
+    gDocs: t('jobList.format.gDocs'),
   };
 
   const ErrorCodeToTranslationString: Record<
