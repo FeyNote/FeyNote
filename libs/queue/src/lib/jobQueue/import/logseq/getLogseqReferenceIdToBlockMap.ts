@@ -19,7 +19,7 @@ export const getLogseqReferenceIdToBlockMap = (args: {
 }): Map<string, ArtifactBlockInfo> => {
   const referenceIdToReferenceTextMap = new Map<string, string>();
   for (const page of args.pages) {
-    // TODO: Implement Logseq Whiteboards https://github.com/RedChickenCo/FeyNote/issues/845
+    // TODO: Implement Logseq Whiteboards https://github.com/FeyNote/FeyNote/issues/845
     if (page.properties?.['ls-type'] === 'whiteboard-page') continue;
     executeOnBlock(page.children, (block) => {
       // Returns four elements i.e.[Reference Text]((Block Id))
@@ -44,7 +44,7 @@ export const getLogseqReferenceIdToBlockMap = (args: {
         referenceText =
           block.format === 'markdown'
             ? removeMarkdown(referenceText)
-            : referenceText; // TODO: Implement org mode support https://github.com/RedChickenCo/FeyNote/issues/846
+            : referenceText; // TODO: Implement org mode support https://github.com/FeyNote/FeyNote/issues/846
         referenceIdToBlockMap.set(block.id, {
           id: randomUUID(),
           artifactId:

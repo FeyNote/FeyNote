@@ -2,6 +2,14 @@ import { program } from 'commander';
 import { reindexArtifacts } from './reindexArtifacts';
 import { convertMessagesV4ToV5 } from './convertMessagesV4ToV5';
 import { decryptDebugDump } from './decryptDebugDump';
+import { searchProvider } from '@feynote/search';
+
+program
+  .command('migrateSearchProvider')
+  .description('Performs search provider migrations')
+  .action(async () => {
+    await searchProvider.migrate();
+  });
 
 program
   .command('reindex')
