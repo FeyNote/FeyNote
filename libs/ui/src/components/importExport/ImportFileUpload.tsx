@@ -63,8 +63,8 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
         return t('importFileUpload.instructions.obsidian');
       case 'logseq':
         return t('importFileUpload.instructions.logseq');
-      case 'gDocs':
-        return t('importFileUpload.instructions.gDocs');
+      case 'gDrive':
+        return t('importFileUpload.instructions.gDrive');
       default:
         return t('importFileUpload.instructions.default');
     }
@@ -82,10 +82,10 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
           text: t('importFileUpload.help.logseq'),
           docsLink: 'https://docs.feynote.com/import/logseq',
         };
-      case 'gDocs':
+      case 'gDrive':
         return {
-          text: t('importFileUpload.help.gDocs'),
-          docsLink: 'https://docs.feynote.com/import/gDocs',
+          text: t('importFileUpload.help.gDrive'),
+          docsLink: 'https://docs.feynote.com/import/googledrive',
         };
       default:
         return {

@@ -67,7 +67,7 @@ export default defineConfig({
               items: [
                 'settings/import/logseq',
                 'settings/import/obsidian',
-                'settings/import/googledocs',
+                'settings/import/googledrive',
                 'settings/import/generic',
               ],
             },

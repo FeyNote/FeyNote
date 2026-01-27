@@ -13,7 +13,7 @@ import {
   SiLogseq,
   SiObsidian,
   TbFileTypeDocx,
-  SiGoogledocs,
+  FaGoogleDrive,
   TfiText,
 } from '../AppIcons';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
@@ -58,9 +58,9 @@ const IMPORT_OPTIONS: {
     format: 'docx',
   },
   {
-    component: <SiGoogledocs />,
-    title: 'import.options.gDocs',
-    format: 'gDocs',
+    component: <FaGoogleDrive />,
+    title: 'import.options.gDrive',
+    format: 'gDrive',
   },
   {
     component: <SiObsidian />,
