@@ -13,15 +13,18 @@ export const jobSummary = Prisma.validator<Prisma.JobFindFirstArgs>()({
   },
 });
 
-export enum ExportFormat {
-  Markdown = 'markdown',
-  Json = 'json',
-}
+export const zExportFormat = z.enum(['markdown', 'json']);
+export type ExportFormat = z.infer<typeof zExportFormat>;
 
-export enum ImportFormat {
-  Obsidian = 'obsidian',
-  Logseq = 'logseq',
-}
+export const zImportFormat = z.enum([
+  'obsidian',
+  'logseq',
+  'text',
+  'markdown',
+  'docx',
+  'gDrive',
+]);
+export type ImportFormat = z.infer<typeof zImportFormat>;
 
 export enum JobErrorCode {
   UnknownError = 'unknown_error',
@@ -35,8 +38,8 @@ const jobSummarySchema = z.object({
   type: z.nativeEnum(JobType),
   progress: z.number(),
   meta: z.object({
-    importFormat: z.nativeEnum(ImportFormat).optional(),
-    exportFormat: z.nativeEnum(ExportFormat).optional(),
+    importFormat: zImportFormat.optional(),
+    exportFormat: zExportFormat.optional(),
     error: z.nativeEnum(JobErrorCode).optional(),
   }),
 });

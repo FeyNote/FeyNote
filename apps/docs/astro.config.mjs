@@ -1,4 +1,5 @@
 import { defineConfig } from 'astro/config';
+import mdx from '@astrojs/mdx';
 
 import starlight from '@astrojs/starlight';
 
@@ -59,10 +60,22 @@ export default defineConfig({
         },
         {
           label: 'Settings',
-          items: ['settings/general', 'settings/import', 'settings/export'],
+          items: [
+            'settings/general',
+            {
+              label: 'Import',
+              items: [
+                'settings/import/logseq',
+                'settings/import/obsidian',
+                'settings/import/googledrive',
+                'settings/import/generic',
+              ],
+            },
+          ],
         },
       ],
     }),
+    mdx(),
   ],
   vite: {
     server: {

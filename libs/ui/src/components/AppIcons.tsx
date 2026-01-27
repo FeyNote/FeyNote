@@ -8,12 +8,21 @@
  * ALL ICONS IN THE APP MUST GO THROUGH THIS FILE
  */
 
+export { TfiText } from 'react-icons/tfi';
+
 export { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
 
 export { CgNotes, CgExtensionRemove } from 'react-icons/cg';
 
+export { SiLogseq, SiObsidian, SiGoogledocs } from 'react-icons/si';
+
+export { BsFiletypeJson } from 'react-icons/bs';
+
+export { AiFillFileMarkdown, AiFillFileText } from 'react-icons/ai';
+
 export {
   FaAnchor,
+  FaGoogleDrive,
   FaCircle,
   FaFlag,
   FaFortAwesome,
@@ -113,6 +122,7 @@ export {
 export { RxMagicWand } from 'react-icons/rx';
 
 export {
+  TbFileTypeDocx,
   TbLabel,
   TbCirclesRelation,
   TbCloudQuestion,
