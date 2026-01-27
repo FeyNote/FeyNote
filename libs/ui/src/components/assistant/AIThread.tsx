@@ -358,6 +358,7 @@ export const AIThread: React.FC<Props> = (props) => {
           )}
           <ChatTextContainer>
             <IonTextarea
+              autoGrow={true}
               ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
