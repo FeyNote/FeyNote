@@ -74,20 +74,18 @@ export const docxToStandardizedImport = async (args: {
     convertedFilePaths.push(convertedFilePath);
   }
 
-  const titleToArtifactIdMap = new Map<string, string>();
+  const filePathToArtifactIdMap = new Map<string, string>();
   const idToBlockInfo = new Map<string, ArtifactBlockInfo>();
 
   // Must preprocess references to get the correct reference text for artifact block replacements
-  for (const docxPath of convertedFilePaths) {
-    if (path.extname(docxPath) !== '.html') continue;
-    const basename = path.basename(docxPath);
+  for (const htmlPath of convertedFilePaths) {
+    if (path.extname(htmlPath) !== '.html') continue;
     // Populate ArtifactId Map
-    const title = path.parse(basename).name;
     const artifactId = (await getSafeArtifactId()).id;
-    titleToArtifactIdMap.set(title, artifactId);
+    filePathToArtifactIdMap.set(htmlPath, artifactId);
 
     // Populate BlockId Map
-    const html = await readFile(docxPath, 'utf-8');
+    const html = await readFile(htmlPath, 'utf-8');
     const jsdom = new JSDOM(html);
     populateHeadersToBlockInfoMap(jsdom, idToBlockInfo, artifactId);
     populateBookmarksToBlockInfoMap(jsdom, idToBlockInfo, artifactId);
@@ -100,7 +98,7 @@ export const docxToStandardizedImport = async (args: {
     }
     const basename = path.basename(docxPath);
     const title = path.parse(basename).name;
-    const artifactId = titleToArtifactIdMap.get(title);
+    const artifactId = filePathToArtifactIdMap.get(docxPath);
     if (!artifactId) continue;
     let html = await readFile(docxPath, 'utf-8');
 
