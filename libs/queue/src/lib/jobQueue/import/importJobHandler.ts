@@ -56,6 +56,7 @@ export const importJobHandler = async (job: JobSummary) => {
       });
       break;
     case 'docx':
+    case 'gDocs':
       await importFromZip({
         storageKey: importFile.storageKey,
         job,

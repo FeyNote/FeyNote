@@ -10,10 +10,11 @@ import styled from 'styled-components';
 import { Button, Card } from '@radix-ui/themes';
 import {
   AiFillFileMarkdown,
-  AiFillFileText,
   SiLogseq,
   SiObsidian,
   TbFileTypeDocx,
+  SiGoogledocs,
+  TfiText,
 } from '../AppIcons';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -57,6 +58,11 @@ const IMPORT_OPTIONS: {
     format: 'docx',
   },
   {
+    component: <SiGoogledocs />,
+    title: 'import.options.gDocs',
+    format: 'gDocs',
+  },
+  {
     component: <SiObsidian />,
     title: 'import.options.obsidian',
     format: 'obsidian',
@@ -72,7 +78,7 @@ const IMPORT_OPTIONS: {
     format: 'markdown',
   },
   {
-    component: <AiFillFileText />,
+    component: <TfiText />,
     title: 'import.options.text',
     format: 'text',
   },

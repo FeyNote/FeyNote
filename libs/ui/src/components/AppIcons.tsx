@@ -8,11 +8,13 @@
  * ALL ICONS IN THE APP MUST GO THROUGH THIS FILE
  */
 
+export { TfiText } from 'react-icons/tfi';
+
 export { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
 
 export { CgNotes, CgExtensionRemove } from 'react-icons/cg';
 
-export { SiLogseq, SiObsidian } from 'react-icons/si';
+export { SiLogseq, SiObsidian, SiGoogledocs } from 'react-icons/si';
 
 export { BsFiletypeJson } from 'react-icons/bs';
 
