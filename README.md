@@ -109,7 +109,7 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
 4. **Start**
 
    ```bash
-   ./dev.sh start
+   ./dev.sh up
    ```
 
 5. **Access the application**
@@ -117,7 +117,7 @@ Visit [feynote.com](https://feynote.com) to start using FeyNote immediately. No 
    - Website: http://localhost:8080
    - Docs: http://localhost:8081
 
-You can see all commands for local dev via `make
+You can see all commands for local dev via `./dev.sh`.
 
 #### Working with Stripe (Payment Testing)
 
@@ -204,10 +204,6 @@ This license section is not a complete overview of the licensing terms. See [LIC
 ### Contributor License Agreement
 
 All contributors must sign our [CLA](CLA.md), which assigns copyright to the project maintainers (Julian Poyourow and Chris Meyer) to enable dual licensing.
-
-## Selfhost
-
-To selfhost FeyNote in your personal homelab, there's a dedicated [README here](./selfhosting-toolkit/README.md)
 
 ## Roadmap
 

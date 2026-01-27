@@ -47,6 +47,11 @@ case "${1:-}" in
     docker compose -f "$COMPOSE_FILE" exec "$@"
     ;;
 
+  exec-cli)
+    shift
+    docker compose -f "$COMPOSE_FILE" exec backend npx tsx --tsconfig /app/apps/cli/tsconfig.json /app/apps/cli/src/main.ts "$@"
+    ;;
+
   *)
     echo "Usage: $0 {logs|logs-ui|logs-server|logs-supporting|up|down|stop|ps|exec}"
     echo ""
