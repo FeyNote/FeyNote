@@ -22,37 +22,37 @@ const apiUrlsByEnv = {
   'feynote.com': {
     rest: 'https://feynote.com/api',
     trpc: 'https://feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.feynote.com',
+    hocuspocus: 'wss://hocuspocus.feynote.com',
     websocket: 'wss://websocket.feynote.com',
   },
   'app.feynote.com': {
     rest: 'https://app.feynote.com/api',
     trpc: 'https://app.feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.feynote.com',
+    hocuspocus: 'wss://hocuspocus.feynote.com',
     websocket: 'wss://websocket.feynote.com',
   },
   'beta.feynote.com': {
     rest: 'https://beta.feynote.com/api',
     trpc: 'https://beta.feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.beta.feynote.com',
+    hocuspocus: 'wss://hocuspocus.beta.feynote.com',
     websocket: 'wss://websocket.beta.feynote.com',
   },
   'app.beta.feynote.com': {
     rest: 'https://app.beta.feynote.com/api',
     trpc: 'https://app.beta.feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.beta.feynote.com',
+    hocuspocus: 'wss://hocuspocus.beta.feynote.com',
     websocket: 'wss://websocket.beta.feynote.com',
   },
   'staging.feynote.com': {
     rest: 'https://staging.feynote.com/api',
     trpc: 'https://staging.feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.staging.feynote.com',
+    hocuspocus: 'wss://hocuspocus.staging.feynote.com',
     websocket: 'wss://websocket.staging.feynote.com',
   },
   'app.staging.feynote.com': {
     rest: 'https://app.staging.feynote.com/api',
     trpc: 'https://app.staging.feynote.com/api/trpc',
-    hocuspocus: 'hocuspocus.staging.feynote.com',
+    hocuspocus: 'wss://hocuspocus.staging.feynote.com',
     websocket: 'wss://websocket.staging.feynote.com',
   },
 };
