@@ -32,7 +32,7 @@
     "@hocuspocus/transformer": "3.4.4",
     "@ionic/react": "^8.7.17",
     "@prisma/client": "^6.19.0",
-    "@radix-ui/themes": "^3.2.1",
+    "@radix-ui/themes": "^3.3.0",
     "@sentry/esbuild-plugin": "^4.8.0",
     "@sentry/node": "^10.36.0",
     "@sentry/profiling-node": "^10.36.0",
