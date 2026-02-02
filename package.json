@@ -20,7 +20,7 @@
     "@aws-sdk/lib-storage": "^3.975.0",
     "@aws-sdk/s3-request-presigner": "^3.975.0",
     "@dice-roller/rpg-dice-roller": "^6.0.0-alpha.6",
-    "@floating-ui/react-dom": "^2.1.6",
+    "@floating-ui/react-dom": "^2.1.7",
     "@headless-tree/core": "^1.6.3",
     "@headless-tree/react": "^1.6.3",
     "@hocuspocus/extension-database": "3.4.4",
