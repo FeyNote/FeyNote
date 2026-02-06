@@ -1,5 +1,19 @@
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 
+const getIsElectron = (): boolean => {
+  try {
+    return (
+      typeof window !== 'undefined' &&
+      'electronAPI' in window &&
+      typeof (
+        window as Window & { electronAPI?: { getApiUrlsSync?: () => unknown } }
+      ).electronAPI?.getApiUrlsSync === 'function'
+    );
+  } catch {
+    return false;
+  }
+};
+
 let wsHost = '';
 try {
   // We reference self here so that we're service-worker compatible
@@ -58,6 +72,19 @@ const apiUrlsByEnv = {
 };
 
 export const getApiUrls = () => {
+  if (getIsElectron()) {
+    const electronWindow = window as Window & {
+      electronAPI?: {
+        getApiUrlsSync?: () => (typeof apiUrlsByEnv)['app.feynote.com'];
+      };
+    };
+    const urls = electronWindow.electronAPI?.getApiUrlsSync?.();
+    if (urls) {
+      return urls;
+    }
+    return apiUrlsByEnv['app.feynote.com'];
+  }
+
   if (getIsViteDevelopment()) {
     return apiUrlsByEnv.development;
   }
