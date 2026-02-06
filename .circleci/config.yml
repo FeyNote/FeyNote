@@ -114,6 +114,7 @@ jobs:
           command: |
             VERSION="${CIRCLE_TAG#v}"
             sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" apps/desktop/package.json
+            sed -i 's/"name": "@feynote\/desktop"/"name": "feynote-desktop"/' apps/desktop/package.json
       - persist_to_workspace:
           root: .
           paths:
