@@ -103,6 +103,7 @@ jobs:
           command: |
             export VITE_APP_VERSION=$CIRCLE_TAG
             export NODE_OPTIONS=--max-old-space-size=8192
+            export VITE_BASE=./
             npx nx build frontend --skip-nx-cache
       - run:
           name: copy-frontend-to-desktop-renderer
