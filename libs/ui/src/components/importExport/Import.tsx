@@ -126,8 +126,17 @@ export const Import: React.FC = () => {
     setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
   };
 
-  const jobClickHandler = async (_: string) => {
-    // TODO: Navigate user to page of all imported artifacts from job
+  const jobClickHandler = async (jobId: string) => {
+    // TODO: Make this nice as part of this PR
+    const job = jobs.find((job) => job.id === jobId);
+    if (!job) return;
+    if (job.status === 'success') {
+      navigate(
+        PaneableComponent.AllArtifacts,
+        { importJobId: jobId },
+        PaneTransition.Push,
+      );
+    }
   };
 
   return (

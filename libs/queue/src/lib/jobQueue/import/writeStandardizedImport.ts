@@ -16,7 +16,7 @@ export const writeStandardizedImport = async (args: {
     args.importInfo,
     args.progressTracker,
   );
-  const { createdArtifacts } = await prisma.$transaction(async (tx) => {
+  const createdArtifacts = await prisma.$transaction(async (tx) => {
     const createdArtifacts = await tx.artifact.createManyAndReturn({
       data: args.importInfo.artifactsToCreate,
       select: {
@@ -27,8 +27,20 @@ export const writeStandardizedImport = async (args: {
     await tx.file.createMany({
       data: images,
     });
-
-    return { createdArtifacts };
+    await tx.job.update({
+      where: {
+        id: args.job.id,
+      },
+      data: {
+        meta: {
+          ...args.job.meta,
+          importedArtifactIds: createdArtifacts.map(
+            (createdArtifact) => createdArtifact.id,
+          ),
+        },
+      },
+    });
+    return createdArtifacts;
   });
 
   for (const artifact of createdArtifacts) {

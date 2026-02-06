@@ -24,6 +24,7 @@ import {
   PaneContent,
   PaneContentContainer,
 } from '../../pane/PaneContentContainer';
+import { capitalize } from '@feynote/shared-utils';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -59,7 +60,11 @@ const dateCompareWithFallback = (
   return dateCompared;
 };
 
-export const AllArtifacts: React.FC = () => {
+interface Props {
+  importJobId?: string;
+}
+
+export const AllArtifacts: React.FC = (props: Props) => {
   const { isPaneFocused, pane } = usePaneContext();
   const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
@@ -72,13 +77,29 @@ export const AllArtifacts: React.FC = () => {
   const [order, setOrder] = useState<AllArtifactsSortOrder>(
     AllArtifactsSortOrder.AlphabeticalAsc,
   );
-
   const [knownUsers, setKnownUsers] = useState<
     {
       id: string;
       email: string;
     }[]
   >([]);
+  const [filterableImportJobs, setFilterableImportJobs] = useState<
+    {
+      id: string;
+      title: string;
+      artifactIds: Set<string>;
+    }[]
+  >([]);
+  // Allows user to filter by several different properties
+  const [filters, setFilters] = useState<FilterOptions>(() => ({
+    havingTitleText: '',
+    byUser: new Set(),
+    orphans: AllArtifactsOrphansDisplaySetting.Include,
+    onlyRelatedTo: new Set(),
+    onlyIncludeTypes: new Set(),
+    byImportJobs: new Set(),
+  }));
+
   const knownUsersById = useMemo(() => {
     return new Map(knownUsers.map((el) => [el.id, el]));
   }, [knownUsers]);
@@ -94,8 +115,39 @@ export const AllArtifacts: React.FC = () => {
       });
   };
 
+  const selectedImportArtifactIds = useMemo(() => {
+    const artifactsOfJobs = filterableImportJobs
+      .filter((filterableJobs) => filters.byImportJobs.has(filterableJobs.id))
+      .reduce((acc, val) => new Set([...acc, ...val.artifactIds]), new Set());
+    return artifactsOfJobs;
+  }, [filters, filterableImportJobs]);
+
+  const getFilterableImportJobs = async () => {
+    const jobs = await trpc.job.getJobs.query({ type: 'import', limit: 10 });
+    const filterableImportJobs = jobs.jobs.map((jobSummary) => {
+      let title = jobSummary.createdAt.toLocaleString();
+      const format = jobSummary.meta.importFormat;
+      if (format) {
+        title = `${capitalize(format)} - ${jobSummary.createdAt.toLocaleString()}`;
+      }
+      return {
+        id: jobSummary.id,
+        title,
+        artifactIds: new Set(jobSummary.meta.importedArtifactIds),
+      };
+    });
+    setFilterableImportJobs(filterableImportJobs);
+  };
+
   useEffect(() => {
     getKnownUsers();
+    if (props.importJobId) {
+      getFilterableImportJobs();
+      setFilters({
+        ...filters,
+        byImportJobs: new Set([props.importJobId]),
+      });
+    }
   }, []);
 
   const filterableUsers = useMemo(() => {
@@ -117,17 +169,9 @@ export const AllArtifacts: React.FC = () => {
     });
   }, [artifactSnapshots, knownUsersById]);
 
-  // Allows user to filter by several different properties
-  const [filters, setFilters] = useState<FilterOptions>(() => ({
-    havingTitleText: '',
-    byUser: new Set(),
-    orphans: AllArtifactsOrphansDisplaySetting.Include,
-    onlyRelatedTo: new Set(),
-    onlyIncludeTypes: new Set(),
-  }));
-
   const activeFilterCount =
     Number(!!filters.havingTitleText.length) +
+    Number(!!filters.byImportJobs.size) +
     Number(!!filters.byUser.size) +
     Number(filters.orphans !== AllArtifactsOrphansDisplaySetting.Include) +
     Number(!!filters.onlyRelatedTo.size) +
@@ -148,6 +192,13 @@ export const AllArtifacts: React.FC = () => {
         }
 
         if (filters.byUser.size && !filters.byUser.has(artifact.meta.userId)) {
+          return false;
+        }
+
+        if (
+          filters.byImportJobs.size &&
+          !selectedImportArtifactIds.has(artifact.id)
+        ) {
           return false;
         }
 
@@ -231,7 +282,13 @@ export const AllArtifacts: React.FC = () => {
           }
         }
       });
-  }, [artifactSnapshots, getEdgesForArtifactId, order, filters]);
+  }, [
+    artifactSnapshots,
+    getEdgesForArtifactId,
+    order,
+    filters,
+    selectedImportArtifactIds,
+  ]);
 
   useEffect(() => {
     const verificationSet = new Set(selectedArtifactIds);
@@ -279,6 +336,7 @@ export const AllArtifacts: React.FC = () => {
               />
               <AllArtifactsFilters
                 filterableUsers={filterableUsers}
+                filterableImportJobs={filterableImportJobs}
                 currentFilters={filters}
                 onCurrentFiltersChange={(newFilters) => setFilters(newFilters)}
               />

@@ -374,6 +374,8 @@
   "allArtifacts.filter.orphans.include": "Include Documents with No References",
   "allArtifacts.filter.orphans.exclude": "Exclude Documents with No References",
   "allArtifacts.filter.orphans.only": "Only Show Documents with No References",
+  "allArtifacts.filter.importJobs.title": "Import Jobs ({{count}})",
+  "allArtifacts.filter.importJobs.modalTitle": "Only Show Documents of Import Jobs",
   "allArtifacts.moveInTree.title": "Move Within Your Tree",
   "allArtifacts.moveInTree.subtitle": "You are currently moving {{count}} documents. Click a new parent for all of these documents, and they will be moved to that location.",
   "allArtifacts.moveInTree.moving.title": "Moving Documents",

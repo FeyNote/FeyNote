@@ -71,7 +71,7 @@ export const JobList: React.FC<Props> = (props) => {
               <IonIcon icon={documentIcon} slot="start" />
               <IonLabel>
                 <h3>{formatTranslation}</h3>
-                <p>{job.createdAt.toString()}</p>
+                <p>{job.createdAt.toLocaleString()}</p>
                 {job.status === 'failed' && (
                   <IonNote color="danger">
                     {(job.meta.error &&
