@@ -1,0 +1,36 @@
+{
+  "name": "desktop",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/desktop/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cd apps/desktop && NODE_ENV=development npx electron-forge start"
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["frontend:build"],
+      "options": {
+        "commands": [
+          "rm -rf apps/desktop/renderer && cp -r dist/apps/frontend apps/desktop/renderer",
+          "cd apps/desktop && npx electron-forge package"
+        ],
+        "parallel": false
+      }
+    },
+    "make": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["package"],
+      "options": {
+        "command": "cd apps/desktop && npx electron-forge make"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

@@ -91,6 +91,179 @@ jobs:
       - run:
           name: push
           command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
+  build_desktop_frontend:
+    resource_class: large
+    docker:
+      - image: cimg/node:24.7
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: build-frontend-for-desktop
+          command: ./scripts/prepare-for-electron-build.sh
+      - persist_to_workspace:
+          root: .
+          paths:
+            - apps/desktop/renderer
+            - apps/desktop/package.json
+  desktop_macos:
+    macos:
+      xcode: '15.4.0'
+    resource_class: macos.m1.medium.gen1
+    steps:
+      - checkout
+      - node/install:
+          node-version: '24'
+      - run:
+          name: install-packages
+          command: npm install
+      - attach_workspace:
+          at: .
+      - run:
+          name: setup-keychain
+          command: |
+            echo "$APPLE_CERT_BASE64" | base64 -d > /tmp/cert.p12
+            security create-keychain -p "" build.keychain
+            security default-keychain -s build.keychain
+            security set-keychain-settings -lut 7200 build.keychain
+            security unlock-keychain -p "" build.keychain
+            security list-keychains -d user -s build.keychain $(security list-keychains -d user | tr -d '"')
+            curl -sfo /tmp/DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+            security import /tmp/DeveloperIDG2CA.cer -k build.keychain -T /usr/bin/codesign
+            rm /tmp/DeveloperIDG2CA.cer
+            security import /tmp/cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+            rm /tmp/cert.p12
+      - run:
+          name: setup-notarization
+          command: |
+            mkdir -p ~/private_keys
+            echo "$APPLE_API_KEY_BASE64" | base64 -d > ~/private_keys/AuthKey.p8
+            echo 'export APPLE_API_KEY_PATH=~/private_keys/AuthKey.p8' >> "$BASH_ENV"
+      - run:
+          name: verify-signing-setup
+          command: |
+            IDENTITY_COUNT=$(security find-identity -v build.keychain | grep -c "Developer ID Application" || true)
+            if [ "$IDENTITY_COUNT" -gt 0 ]; then
+              echo "OK: Found $IDENTITY_COUNT Developer ID Application identity(s) in build.keychain"
+            else
+              echo "FATAL: No Developer ID Application identity found in build.keychain"
+              echo "Valid identities in keychain:"
+              security find-identity -v build.keychain | grep -c "valid identities found" || true
+              exit 1
+            fi
+      - run:
+          name: arm64
+          command: |
+            cd apps/desktop
+            npx electron-forge make --arch=arm64
+      - run:
+          name: collect-arm64-artifacts
+          command: |
+            mkdir -p desktop-artifacts
+            cp apps/desktop/out/make/*.dmg desktop-artifacts/FeyNote-arm64.dmg
+            cp apps/desktop/out/make/zip/darwin/arm64/*.zip desktop-artifacts/
+      - run:
+          name: clean-out
+          command: rm -rf apps/desktop/out
+      - run:
+          name: x64
+          command: |
+            cd apps/desktop
+            npx electron-forge make --arch=x64
+      - run:
+          name: collect-x64-artifacts
+          command: |
+            cp apps/desktop/out/make/*.dmg desktop-artifacts/FeyNote-x64.dmg
+            cp apps/desktop/out/make/zip/darwin/x64/*.zip desktop-artifacts/
+      - aws-cli/setup
+      - run:
+          name: push-to-s3
+          command: |
+            aws s3 sync desktop-artifacts/ s3://feynote-public/desktop/$CIRCLE_TAG/ \
+              --cache-control "public, max-age=3600"
+      - store_artifacts:
+          path: desktop-artifacts
+          destination: desktop-macos
+  desktop_linux:
+    resource_class: medium+
+    docker:
+      - image: cimg/node:24.7
+    steps:
+      - checkout
+      - node/install-packages
+      - attach_workspace:
+          at: .
+      - run:
+          name: install-rpm
+          command: sudo apt-get update && sudo apt-get install -y dpkg fakeroot rpm
+      - run:
+          name: make
+          command: |
+            cd apps/desktop
+            npx electron-forge make
+      - run:
+          name: collect-artifacts
+          command: |
+            mkdir -p desktop-artifacts
+            cp apps/desktop/out/make/deb/x64/*.deb desktop-artifacts/
+            cp apps/desktop/out/make/rpm/x64/*.rpm desktop-artifacts/
+            cp apps/desktop/out/make/zip/linux/x64/*.zip desktop-artifacts/
+      - aws-cli/setup
+      - run:
+          name: push-to-s3
+          command: |
+            aws s3 sync desktop-artifacts/ s3://feynote-public/desktop/$CIRCLE_TAG/ \
+              --cache-control "public, max-age=3600"
+      - store_artifacts:
+          path: desktop-artifacts
+          destination: desktop-linux
+  desktop_windows:
+    machine:
+      image: windows-server-2022-gui:current
+    resource_class: windows.medium
+    shell: bash.exe
+    steps:
+      - checkout
+      - run:
+          name: install-node
+          command: |
+            nvm install 24
+            nvm use 24
+      - restore_cache:
+          keys:
+            - npm-windows-v1-{{ checksum "package-lock.json" }}
+            - npm-windows-v1-
+      - run:
+          name: install-packages
+          command: npm install
+      - save_cache:
+          key: npm-windows-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/AppData/Local/npm-cache
+      - attach_workspace:
+          at: .
+      - run:
+          name: make
+          command: |
+            cd apps/desktop
+            npx electron-forge make
+      - run:
+          name: collect-artifacts
+          command: |
+            mkdir -p desktop-artifacts
+            cp apps/desktop/out/make/squirrel.windows/x64/*.exe desktop-artifacts/
+      - run:
+          name: install-awscli
+          command: choco install awscli -y
+      - run:
+          name: push-to-s3
+          command: |
+            aws s3 sync desktop-artifacts/ s3://feynote-public/desktop/$CIRCLE_TAG/ \
+              --cache-control "public, max-age=3600"
+      - store_artifacts:
+          path: desktop-artifacts
+          destination: desktop-windows
 
 workflows:
   version: 2
@@ -121,6 +294,38 @@ workflows:
       - push_docs:
           requires:
             - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - build_desktop_frontend:
+          requires:
+            - build_and_test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - desktop_macos:
+          requires:
+            - build_desktop_frontend
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - desktop_linux:
+          requires:
+            - build_desktop_frontend
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*.*/
+            branches:
+              ignore: /.*/
+      - desktop_windows:
+          requires:
+            - build_desktop_frontend
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
