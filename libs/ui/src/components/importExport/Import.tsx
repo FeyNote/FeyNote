@@ -127,10 +127,8 @@ export const Import: React.FC = () => {
   };
 
   const jobClickHandler = async (jobId: string) => {
-    // TODO: Make this nice as part of this PR
     const job = jobs.find((job) => job.id === jobId);
-    if (!job) return;
-    if (job.status === 'success') {
+    if (job?.status === 'success') {
       navigate(
         PaneableComponent.AllArtifacts,
         { importJobId: jobId },

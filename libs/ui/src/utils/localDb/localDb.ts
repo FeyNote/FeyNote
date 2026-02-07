@@ -15,6 +15,7 @@ import { localdbMigration_3 } from './migrations/localdbMigration_3';
 import { localdbMigration_4 } from './migrations/localdbMigration_4';
 import { localdbMigration_5 } from './migrations/localdbMigration_5';
 import { localdbMigration_6 } from './migrations/localdbMigration_6';
+import type { JobSummary } from '@feynote/prisma/types';
 
 export type MigrationArgs = Parameters<
   NonNullable<OpenDBCallbacks<FeynoteLocalDB>['upgrade']>
@@ -53,6 +54,7 @@ export enum ObjectStoreName {
   KnownUsers = 'knownUsers',
   KV = 'kvStore',
   Threads = 'threads',
+  Jobs = 'jobs',
 }
 
 export enum KVStoreKeys {
@@ -133,6 +135,10 @@ export interface FeynoteLocalDB extends DBSchema {
   [ObjectStoreName.Threads]: {
     key: string;
     value: ThreadDTO;
+  };
+  [ObjectStoreName.Jobs]: {
+    key: string;
+    value: JobSummary;
   };
   [ObjectStoreName.KV]: {
     key: string;

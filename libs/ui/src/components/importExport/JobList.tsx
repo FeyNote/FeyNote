@@ -61,11 +61,12 @@ export const JobList: React.FC<Props> = (props) => {
           const formatTranslation = format
             ? formatToTranslationString[format]
             : t('jobList.format.unknown');
+          const succeeded = job.status === 'success';
 
           return (
             <IonItem
               key={idx}
-              button
+              button={succeeded}
               onClick={() => props.jobClickHandler(job.id)}
             >
               <IonIcon icon={documentIcon} slot="start" />
