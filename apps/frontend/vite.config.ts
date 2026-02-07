@@ -7,7 +7,6 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 export default defineConfig({
   root: __dirname,
-  base: process.env.VITE_BASE || '/',
   build: {
     outDir: '../../dist/apps/frontend',
     reportCompressedSize: true,

@@ -11,7 +11,7 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     name: 'FeyNote',
-    executableName: 'feynote',
+    executableName: 'feynote-desktop',
     appBundleId: 'com.feynote.desktop',
     extraResource: ['./renderer'],
   },

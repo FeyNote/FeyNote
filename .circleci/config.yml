@@ -99,23 +99,8 @@ jobs:
       - checkout
       - node/install-packages
       - run:
-          name: build-frontend
-          command: |
-            export VITE_APP_VERSION=$CIRCLE_TAG
-            export NODE_OPTIONS=--max-old-space-size=8192
-            export VITE_BASE=./
-            npx nx build frontend --skip-nx-cache
-      - run:
-          name: copy-frontend-to-desktop-renderer
-          command: |
-            mkdir -p apps/desktop/renderer
-            cp -r dist/apps/frontend/* apps/desktop/renderer/
-      - run:
-          name: stamp-version
-          command: |
-            VERSION="${CIRCLE_TAG#v}"
-            sed -i "s/\"version\": \".*\"/\"version\": \"${VERSION}\"/" apps/desktop/package.json
-            sed -i 's/"name": "@feynote\/desktop"/"name": "feynote-desktop"/' apps/desktop/package.json
+          name: build-frontend-for-desktop
+          command: ./scripts/prepare-for-electron-build.sh
       - persist_to_workspace:
           root: .
           paths:

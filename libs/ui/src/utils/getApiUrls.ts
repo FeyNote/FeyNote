@@ -45,6 +45,12 @@ const apiUrlsByEnv = {
     hocuspocus: 'wss://hocuspocus.feynote.com',
     websocket: 'wss://websocket.feynote.com',
   },
+  'desktop.feynote.localhost': {
+    rest: 'https://app.feynote.com/api',
+    trpc: 'https://app.feynote.com/api/trpc',
+    hocuspocus: 'wss://hocuspocus.feynote.com',
+    websocket: 'wss://websocket.feynote.com',
+  },
   'beta.feynote.com': {
     rest: 'https://beta.feynote.com/api',
     trpc: 'https://beta.feynote.com/api/trpc',

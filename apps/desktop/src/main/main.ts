@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 declare const process: NodeJS.Process & { resourcesPath: string };
 
@@ -7,11 +8,13 @@ const isDev = process.env.NODE_ENV === 'development';
 const WEBUI_URL = process.env.WEBUI_URL;
 if (isDev && !WEBUI_URL) throw new Error('WEBUI_URL must be provided');
 
-function getRendererPath(): string {
+const RENDERER_HOST = 'desktop.feynote.localhost';
+
+function getRendererDir(): string {
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, 'renderer', 'index.html');
+    return path.join(process.resourcesPath, 'renderer');
   }
-  return path.join(app.getAppPath(), 'renderer', 'index.html');
+  return path.join(app.getAppPath(), 'renderer');
 }
 
 let mainWindow: BrowserWindow | null = null;
@@ -45,7 +48,7 @@ function createWindow(): void {
     mainWindow.loadURL(WEBUI_URL);
     mainWindow.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(getRendererPath());
+    mainWindow.loadURL(`https://${RENDERER_HOST}/`);
   }
 
   mainWindow.on('closed', () => {
@@ -65,6 +68,27 @@ ipcMain.on('get-api-urls', (event) => {
 });
 
 app.whenReady().then(() => {
+  const rendererDir = getRendererDir();
+
+  protocol.handle('https', (req) => {
+    const url = new URL(req.url);
+
+    if (url.host !== RENDERER_HOST) {
+      return net.fetch(req, { bypassCustomProtocolHandlers: true });
+    }
+
+    const filePath =
+      url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
+    const resolved = path.resolve(rendererDir, filePath);
+    const relative = path.relative(rendererDir, resolved);
+
+    if (relative.startsWith('..') || path.isAbsolute(relative)) {
+      return new Response('Not Found', { status: 404 });
+    }
+
+    return net.fetch(pathToFileURL(resolved).toString());
+  });
+
   createWindow();
 
   app.on('activate', () => {
