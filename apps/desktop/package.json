@@ -1,6 +1,7 @@
 {
   "name": "@feynote/desktop",
   "version": "1.0.0",
+  "license": "UNLICENSED",
   "description": "FeyNote Desktop Application",
   "main": ".vite/build/main.js",
   "private": true,
