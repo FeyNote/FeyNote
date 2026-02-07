@@ -124,19 +124,27 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   const getFilterableImportJobs = async () => {
     const jobs = await trpc.job.getJobs.query({ type: 'import', limit: 10 });
-    const filterableImportJobs = jobs.jobs.map((jobSummary) => {
-      let title = jobSummary.createdAt.toLocaleString();
-      const format = jobSummary.meta.importFormat;
-      if (format) {
-        title = `${capitalize(format)} - ${jobSummary.createdAt.toLocaleString()}`;
-      }
-      return {
-        id: jobSummary.id,
-        title,
-        artifactIds: new Set(jobSummary.meta.importedArtifactIds),
-      };
-    });
-    setFilterableImportJobs(filterableImportJobs);
+    const showableImportJobs = jobs.jobs
+      .filter((jobSummary) => {
+        // Only allow selecting of import jobs that have succeeded and have artifacts associated with them
+        return (
+          !!jobSummary.meta.importedArtifactIds?.length &&
+          jobSummary.status === 'success'
+        );
+      })
+      .map((jobSummary) => {
+        let title = jobSummary.createdAt.toLocaleString();
+        const format = jobSummary.meta.importFormat;
+        if (format) {
+          title = `${capitalize(format)} - ${jobSummary.createdAt.toLocaleString()}`;
+        }
+        return {
+          id: jobSummary.id,
+          title,
+          artifactIds: new Set(jobSummary.meta.importedArtifactIds),
+        };
+      });
+    setFilterableImportJobs(showableImportJobs);
   };
 
   useEffect(() => {

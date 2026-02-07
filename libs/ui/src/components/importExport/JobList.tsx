@@ -61,12 +61,18 @@ export const JobList: React.FC<Props> = (props) => {
           const formatTranslation = format
             ? formatToTranslationString[format]
             : t('jobList.format.unknown');
-          const succeeded = job.status === 'success';
+
+          // Only show as btn for completed export jobs or completed import jobs with associated artifacts
+          const showAsBtn =
+            job.status === 'success' &&
+            (job.type === 'export' ||
+              (job.type === 'import' &&
+                !!job.meta.importedArtifactIds?.length));
 
           return (
             <IonItem
               key={idx}
-              button={succeeded}
+              button={showAsBtn}
               onClick={() => props.jobClickHandler(job.id)}
             >
               <IonIcon icon={documentIcon} slot="start" />
