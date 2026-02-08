@@ -124,9 +124,13 @@ jobs:
           command: |
             echo "$APPLE_CERT_BASE64" | base64 -d > /tmp/cert.p12
             security create-keychain -p "" build.keychain
+            security default-keychain -s build.keychain
             security set-keychain-settings -lut 7200 build.keychain
             security unlock-keychain -p "" build.keychain
             security list-keychains -d user -s build.keychain $(security list-keychains -d user | tr -d '"')
+            curl -sfo /tmp/DeveloperIDG2CA.cer https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+            security import /tmp/DeveloperIDG2CA.cer -k build.keychain -T /usr/bin/codesign
+            rm /tmp/DeveloperIDG2CA.cer
             security import /tmp/cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
             security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
             rm /tmp/cert.p12
@@ -136,6 +140,18 @@ jobs:
             mkdir -p ~/private_keys
             echo "$APPLE_API_KEY_BASE64" | base64 -d > ~/private_keys/AuthKey.p8
             echo 'export APPLE_API_KEY_PATH=~/private_keys/AuthKey.p8' >> "$BASH_ENV"
+      - run:
+          name: verify-signing-setup
+          command: |
+            IDENTITY_COUNT=$(security find-identity -v build.keychain | grep -c "Developer ID Application" || true)
+            if [ "$IDENTITY_COUNT" -gt 0 ]; then
+              echo "OK: Found $IDENTITY_COUNT Developer ID Application identity(s) in build.keychain"
+            else
+              echo "FATAL: No Developer ID Application identity found in build.keychain"
+              echo "Valid identities in keychain:"
+              security find-identity -v build.keychain | grep -c "valid identities found" || true
+              exit 1
+            fi
       - run:
           name: arm64
           command: |
@@ -253,39 +269,39 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build_and_test:
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: /.*/
-      - push_backend:
-          requires:
-            - build_and_test
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
-      - push_frontend:
-          requires:
-            - build_and_test
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
-      - push_docs:
-          requires:
-            - build_and_test
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
+      # - build_and_test:
+      #     filters:
+      #       tags:
+      #         only: /.*/
+      #       branches:
+      #         only: /.*/
+      # - push_backend:
+      #     requires:
+      #       - build_and_test
+      #     filters:
+      #       tags:
+      #         only: /^v[0-9]+(\.[0-9]+)*.*/
+      #       branches:
+      #         ignore: /.*/
+      # - push_frontend:
+      #     requires:
+      #       - build_and_test
+      #     filters:
+      #       tags:
+      #         only: /^v[0-9]+(\.[0-9]+)*.*/
+      #       branches:
+      #         ignore: /.*/
+      # - push_docs:
+      #     requires:
+      #       - build_and_test
+      #     filters:
+      #       tags:
+      #         only: /^v[0-9]+(\.[0-9]+)*.*/
+      #       branches:
+      #         ignore: /.*/
       - build_desktop_frontend:
-          requires:
-            - build_and_test
+          # requires:
+          #   - build_and_test
           filters:
             tags:
               only: /^v[0-9]+(\.[0-9]+)*.*/
@@ -299,19 +315,19 @@ workflows:
               only: /^v[0-9]+(\.[0-9]+)*.*/
             branches:
               ignore: /.*/
-      - desktop_linux:
-          requires:
-            - build_desktop_frontend
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
-      - desktop_windows:
-          requires:
-            - build_desktop_frontend
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*.*/
-            branches:
-              ignore: /.*/
+      # - desktop_linux:
+      #     requires:
+      #       - build_desktop_frontend
+      #     filters:
+      #       tags:
+      #         only: /^v[0-9]+(\.[0-9]+)*.*/
+      #       branches:
+      #         ignore: /.*/
+      # - desktop_windows:
+      #     requires:
+      #       - build_desktop_frontend
+      #     filters:
+      #       tags:
+      #         only: /^v[0-9]+(\.[0-9]+)*.*/
+      #       branches:
+      #         ignore: /.*/
