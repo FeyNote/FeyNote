@@ -3,7 +3,12 @@ import { SelectDialog } from '../../sharedComponents/SelectDialog';
 import type { ArtifactType } from '@prisma/client';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { Button } from '@radix-ui/themes';
-import { CiUser, IoDocument, TbCirclesRelation } from '../../AppIcons';
+import {
+  CiUser,
+  IoDocument,
+  TbCirclesRelation,
+  CiImport,
+} from '../../AppIcons';
 import { AllArtifactsFilterTitleText } from './AllArtifactsFilterTitleText';
 
 export enum AllArtifactsOrphansDisplaySetting {
@@ -35,12 +40,18 @@ export interface FilterOptions {
   orphans: AllArtifactsOrphansDisplaySetting;
   onlyRelatedTo: ReadonlySet<string>;
   onlyIncludeTypes: ReadonlySet<ArtifactType>;
+  onlyRelatedToImportJobs: ReadonlySet<string>;
 }
 
 interface Props {
   filterableUsers: {
     id: string;
     email: string | undefined;
+  }[];
+  filterableImportJobs: {
+    id: string;
+    title: string;
+    artifactIds: Set<string>;
   }[];
   currentFilters: FilterOptions;
   onCurrentFiltersChange: (newFilters: FilterOptions) => void;
@@ -151,6 +162,33 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
             : t('allArtifacts.filter.onlyIncludeTypes.title')}
         </Button>
       </SelectDialog>
+
+      {!!props.currentFilters.onlyRelatedToImportJobs.size && (
+        <SelectDialog
+          onChange={(values) => {
+            props.onCurrentFiltersChange({
+              ...props.currentFilters,
+              onlyRelatedToImportJobs: new Set(values),
+            });
+          }}
+          title={t('allArtifacts.filter.importJobs.modalTitle')}
+          allowMultiple={true}
+          selectedValues={Array.from(
+            props.currentFilters.onlyRelatedToImportJobs,
+          )}
+          options={props.filterableImportJobs.map((importJob) => ({
+            value: importJob.id,
+            title: importJob.title,
+          }))}
+        >
+          <Button variant="soft" size="2">
+            <CiImport width="16" height="16" />
+            {t('allArtifacts.filter.importJobs.title', {
+              count: props.currentFilters.onlyRelatedToImportJobs.size,
+            })}
+          </Button>
+        </SelectDialog>
+      )}
     </>
   );
 };

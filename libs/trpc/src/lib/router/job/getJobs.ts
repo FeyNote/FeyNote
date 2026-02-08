@@ -14,7 +14,7 @@ export const getJobs = authenticatedProcedure
   .input(
     z.object({
       offset: z.number().default(0),
-      limit: z.number().default(DEFAULT_JOB_LIMIT),
+      limit: z.number().max(100).default(DEFAULT_JOB_LIMIT),
       type: z.nativeEnum(JobType).optional(),
     }),
   )

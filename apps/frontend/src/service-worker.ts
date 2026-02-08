@@ -38,6 +38,7 @@ import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/regist
 import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
 import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
 import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
+import { registerGetJobsRoute } from './serviceWorkerLib/routes/jobs/registerGetJobsRoute';
 
 initDebugStoreMonkeypatch();
 
@@ -229,3 +230,4 @@ registerGetSafeFileIdRoute();
 
 registerGetThreadsRoute();
 registerGetThreadRoute();
+registerGetJobsRoute();
