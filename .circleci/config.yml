@@ -124,10 +124,9 @@ jobs:
           command: |
             echo "$APPLE_CERT_BASE64" | base64 -d > /tmp/cert.p12
             security create-keychain -p "" build.keychain
-            security default-keychain -s build.keychain
-            security list-keychains -d user -s build.keychain login.keychain
-            security unlock-keychain -p "" build.keychain
             security set-keychain-settings -lut 7200 build.keychain
+            security unlock-keychain -p "" build.keychain
+            security list-keychains -d user -s build.keychain $(security list-keychains -d user | tr -d '"')
             security import /tmp/cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
             security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
             rm /tmp/cert.p12
@@ -170,12 +169,6 @@ jobs:
       - store_artifacts:
           path: desktop-artifacts
           destination: desktop-macos
-      - run:
-          name: cleanup-signing
-          command: |
-            security delete-keychain build.keychain
-            rm -rf ~/private_keys
-          when: always
   desktop_linux:
     resource_class: medium+
     docker:
@@ -221,9 +214,17 @@ jobs:
           command: |
             nvm install 24
             nvm use 24
+      - restore_cache:
+          keys:
+            - npm-windows-v1-{{ checksum "package-lock.json" }}
+            - npm-windows-v1-
       - run:
           name: install-packages
           command: npm install
+      - save_cache:
+          key: npm-windows-v1-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/AppData/Local/npm-cache
       - attach_workspace:
           at: .
       - run:

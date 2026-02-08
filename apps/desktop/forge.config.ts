@@ -16,12 +16,7 @@ const config: ForgeConfig = {
     executableName: 'feynote-desktop',
     appBundleId: 'com.feynote.desktop',
     extraResource: ['./renderer'],
-    osxSign: {
-      optionsForFile: () => ({
-        entitlements: './entitlements.plist',
-        entitlementsInherit: './entitlements.plist',
-      }),
-    },
+    osxSign: {},
     ...(APPLE_API_KEY_PATH && APPLE_API_KEY_ID && APPLE_API_ISSUER
       ? {
           osxNotarize: {
