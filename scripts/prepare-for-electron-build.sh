@@ -2,7 +2,7 @@
 
 export VITE_APP_VERSION=$CIRCLE_TAG
 export NODE_OPTIONS=--max-old-space-size=8192
-npx nx build frontend --skip-nx-cache
+npx nx build frontend # --skip-nx-cache
 mkdir -p apps/desktop/renderer
 cp -r dist/apps/frontend/* apps/desktop/renderer/
 VERSION="${CIRCLE_TAG#v}"
