@@ -120,6 +120,23 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: setup-keychain
+          command: |
+            echo "$APPLE_CERT_BASE64" | base64 -d > /tmp/cert.p12
+            security create-keychain -p "" build.keychain
+            security default-keychain -s build.keychain
+            security unlock-keychain -p "" build.keychain
+            security set-keychain-settings -lut 7200 build.keychain
+            security import /tmp/cert.p12 -k build.keychain -P "$APPLE_CERT_PASSWORD" -T /usr/bin/codesign
+            security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+            rm /tmp/cert.p12
+      - run:
+          name: setup-notarization
+          command: |
+            mkdir -p ~/private_keys
+            echo "$APPLE_API_KEY_BASE64" | base64 -d > ~/private_keys/AuthKey.p8
+            echo 'export APPLE_API_KEY_PATH=~/private_keys/AuthKey.p8' >> "$BASH_ENV"
+      - run:
           name: arm64
           command: |
             cd apps/desktop
@@ -152,6 +169,12 @@ jobs:
       - store_artifacts:
           path: desktop-artifacts
           destination: desktop-macos
+      - run:
+          name: cleanup-signing
+          command: |
+            security delete-keychain build.keychain
+            rm -rf ~/private_keys
+          when: always
   desktop_linux:
     resource_class: medium+
     docker:

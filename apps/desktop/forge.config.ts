@@ -7,6 +7,8 @@ import { MakerDMG } from '@electron-forge/maker-dmg';
 import { VitePlugin } from '@electron-forge/plugin-vite';
 import { AutoUnpackNativesPlugin } from '@electron-forge/plugin-auto-unpack-natives';
 
+const { APPLE_API_KEY_PATH, APPLE_API_KEY_ID, APPLE_API_ISSUER } = process.env;
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
@@ -14,6 +16,21 @@ const config: ForgeConfig = {
     executableName: 'feynote-desktop',
     appBundleId: 'com.feynote.desktop',
     extraResource: ['./renderer'],
+    osxSign: {
+      optionsForFile: () => ({
+        entitlements: './entitlements.plist',
+        entitlementsInherit: './entitlements.plist',
+      }),
+    },
+    ...(APPLE_API_KEY_PATH && APPLE_API_KEY_ID && APPLE_API_ISSUER
+      ? {
+          osxNotarize: {
+            appleApiKey: APPLE_API_KEY_PATH,
+            appleApiKeyId: APPLE_API_KEY_ID,
+            appleApiIssuer: APPLE_API_ISSUER,
+          },
+        }
+      : {}),
   },
   rebuildConfig: {},
   makers: [
