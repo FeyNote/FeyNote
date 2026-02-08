@@ -40,7 +40,7 @@ export interface FilterOptions {
   orphans: AllArtifactsOrphansDisplaySetting;
   onlyRelatedTo: ReadonlySet<string>;
   onlyIncludeTypes: ReadonlySet<ArtifactType>;
-  byImportJobs: ReadonlySet<string>;
+  onlyRelatedToImportJobs: ReadonlySet<string>;
 }
 
 interface Props {
@@ -163,18 +163,19 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
         </Button>
       </SelectDialog>
 
-      {!!props.currentFilters.byImportJobs.size && (
+      {!!props.currentFilters.onlyRelatedToImportJobs.size && (
         <SelectDialog
           onChange={(values) => {
-            console.log(values);
             props.onCurrentFiltersChange({
               ...props.currentFilters,
-              byImportJobs: new Set(values),
+              onlyRelatedToImportJobs: new Set(values),
             });
           }}
           title={t('allArtifacts.filter.importJobs.modalTitle')}
           allowMultiple={true}
-          selectedValues={Array.from(props.currentFilters.byImportJobs)}
+          selectedValues={Array.from(
+            props.currentFilters.onlyRelatedToImportJobs,
+          )}
           options={props.filterableImportJobs.map((importJob) => ({
             value: importJob.id,
             title: importJob.title,
@@ -183,7 +184,7 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
           <Button variant="soft" size="2">
             <CiImport width="16" height="16" />
             {t('allArtifacts.filter.importJobs.title', {
-              count: props.currentFilters.byImportJobs.size,
+              count: props.currentFilters.onlyRelatedToImportJobs.size,
             })}
           </Button>
         </SelectDialog>

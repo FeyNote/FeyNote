@@ -1,32 +1,46 @@
 import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
 import { registerRoute } from 'workbox-routing';
-import { updateListCache } from '../../util/updateListCache';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
 import { getTrpcInputForEvent } from '../../util/getTrpcInputForEvent';
+import { customTrpcTransformer } from '@feynote/shared-utils';
 
 export function registerGetJobsRoute() {
   registerRoute(
     /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/job\.getJobs/,
     async (event) => {
       const objectStoreName = ObjectStoreName.Jobs;
+      const manifestDb = await getManifestDb();
+      const input = getTrpcInputForEvent<typeof trpc.job.getJobs.query>(event);
 
       try {
         const response = await fetch(event.request);
-        if (response.status >= 200 && response.status < 300) {
-          updateListCache(objectStoreName, response.clone());
+        const isFirstPageOfJobs = !input?.offset;
+        if (
+          response.status >= 200 &&
+          response.status < 300 &&
+          isFirstPageOfJobs
+        ) {
+          const json = await response.clone().json();
+          const deserialized = customTrpcTransformer.deserialize(
+            json.result.data,
+          ) as Awaited<ReturnType<typeof trpc.job.getJobs.query>>;
+
+          const tx = manifestDb.transaction(objectStoreName, 'readwrite');
+          const store = tx.objectStore(objectStoreName);
+          store.clear();
+          for (const item of deserialized.jobs) {
+            await store.put(item);
+          }
+          await tx.done;
         }
         return response;
       } catch (e) {
         console.log(`Request failed`, e);
 
-        const manifestDb = await getManifestDb();
         const cachedItems = await manifestDb.getAll(objectStoreName);
 
-        const input =
-          getTrpcInputForEvent<typeof trpc.job.getJobs.query>(event);
         const type = input?.type;
-
-        const sortedItems = cachedItems
+        const sortedJobs = cachedItems
           .filter((jobSummary) => {
             return type ? jobSummary.type === type : true;
           })
@@ -34,13 +48,10 @@ export function registerGetJobsRoute() {
             return b.createdAt.getTime() - a.createdAt.getTime();
           });
 
-        const start = input?.offset || 0;
-        const end = input?.limit || 10; // Default limit of jobs returned is 10
-
-        if (end) {
-          return encodeCacheResultForTrpc(sortedItems.slice(start, end));
-        }
-        return encodeCacheResultForTrpc(sortedItems.slice(start));
+        return encodeCacheResultForTrpc({
+          jobs: sortedJobs,
+          count: sortedJobs.length,
+        });
       }
     },
     'GET',

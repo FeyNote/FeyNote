@@ -15,6 +15,7 @@ import { localdbMigration_3 } from './migrations/localdbMigration_3';
 import { localdbMigration_4 } from './migrations/localdbMigration_4';
 import { localdbMigration_5 } from './migrations/localdbMigration_5';
 import { localdbMigration_6 } from './migrations/localdbMigration_6';
+import { localdbMigration_7 } from './migrations/localdbMigration_7';
 import type { JobSummary } from '@feynote/prisma/types';
 
 export type MigrationArgs = Parameters<
@@ -162,6 +163,7 @@ const MIGRATIONS = [
   localdbMigration_4,
   localdbMigration_5,
   localdbMigration_6,
+  localdbMigration_7,
 ];
 
 let errorShown = false;

@@ -25,6 +25,7 @@ import {
   PaneContentContainer,
 } from '../../pane/PaneContentContainer';
 import { capitalize } from '@feynote/shared-utils';
+import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -61,11 +62,12 @@ const dateCompareWithFallback = (
 };
 
 interface Props {
-  importJobId?: string;
+  initialImportJobId?: string;
 }
 
 export const AllArtifacts: React.FC = (props: Props) => {
   const { isPaneFocused, pane } = usePaneContext();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
   const { session } = useSessionContext();
@@ -77,12 +79,6 @@ export const AllArtifacts: React.FC = (props: Props) => {
   const [order, setOrder] = useState<AllArtifactsSortOrder>(
     AllArtifactsSortOrder.AlphabeticalAsc,
   );
-  const [knownUsers, setKnownUsers] = useState<
-    {
-      id: string;
-      email: string;
-    }[]
-  >([]);
   const [filterableImportJobs, setFilterableImportJobs] = useState<
     {
       id: string;
@@ -97,8 +93,14 @@ export const AllArtifacts: React.FC = (props: Props) => {
     orphans: AllArtifactsOrphansDisplaySetting.Include,
     onlyRelatedTo: new Set(),
     onlyIncludeTypes: new Set(),
-    byImportJobs: new Set(),
+    onlyRelatedToImportJobs: new Set(),
   }));
+  const [knownUsers, setKnownUsers] = useState<
+    {
+      id: string;
+      email: string;
+    }[]
+  >([]);
 
   const knownUsersById = useMemo(() => {
     return new Map(knownUsers.map((el) => [el.id, el]));
@@ -117,43 +119,49 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   const selectedImportArtifactIds = useMemo(() => {
     const artifactsOfJobs = filterableImportJobs
-      .filter((filterableJobs) => filters.byImportJobs.has(filterableJobs.id))
+      .filter((filterableJobs) =>
+        filters.onlyRelatedToImportJobs.has(filterableJobs.id),
+      )
       .reduce((acc, val) => new Set([...acc, ...val.artifactIds]), new Set());
     return artifactsOfJobs;
   }, [filters, filterableImportJobs]);
 
   const getFilterableImportJobs = async () => {
-    const jobs = await trpc.job.getJobs.query({ type: 'import', limit: 10 });
-    const showableImportJobs = jobs.jobs
-      .filter((jobSummary) => {
-        // Only allow selecting of import jobs that have succeeded and have artifacts associated with them
-        return (
-          !!jobSummary.meta.importedArtifactIds?.length &&
-          jobSummary.status === 'success'
-        );
-      })
-      .map((jobSummary) => {
-        let title = jobSummary.createdAt.toLocaleString();
-        const format = jobSummary.meta.importFormat;
-        if (format) {
-          title = `${capitalize(format)} - ${jobSummary.createdAt.toLocaleString()}`;
-        }
-        return {
-          id: jobSummary.id,
-          title,
-          artifactIds: new Set(jobSummary.meta.importedArtifactIds),
-        };
-      });
-    setFilterableImportJobs(showableImportJobs);
+    try {
+      const jobs = await trpc.job.getJobs.query({ type: 'import', limit: 10 });
+      const showableImportJobs = jobs.jobs
+        .filter((jobSummary) => {
+          // Only allow selecting of import jobs that have succeeded and have artifacts associated with them
+          return (
+            !!jobSummary.meta.importedArtifactIds?.length &&
+            jobSummary.status === 'success'
+          );
+        })
+        .map((jobSummary) => {
+          let title = jobSummary.createdAt.toLocaleString();
+          const format = jobSummary.meta.importFormat;
+          if (format) {
+            title = `${capitalize(format)} - ${jobSummary.createdAt.toLocaleString()}`;
+          }
+          return {
+            id: jobSummary.id,
+            title,
+            artifactIds: new Set(jobSummary.meta.importedArtifactIds),
+          };
+        });
+      setFilterableImportJobs(showableImportJobs);
+    } catch (e) {
+      handleTRPCErrors(e);
+    }
   };
 
   useEffect(() => {
     getKnownUsers();
-    if (props.importJobId) {
+    if (props.initialImportJobId) {
       getFilterableImportJobs();
       setFilters({
         ...filters,
-        byImportJobs: new Set([props.importJobId]),
+        onlyRelatedToImportJobs: new Set([props.initialImportJobId]),
       });
     }
   }, []);
@@ -179,7 +187,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   const activeFilterCount =
     Number(!!filters.havingTitleText.length) +
-    Number(!!filters.byImportJobs.size) +
+    Number(!!filters.onlyRelatedToImportJobs.size) +
     Number(!!filters.byUser.size) +
     Number(filters.orphans !== AllArtifactsOrphansDisplaySetting.Include) +
     Number(!!filters.onlyRelatedTo.size) +
@@ -204,7 +212,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
         }
 
         if (
-          filters.byImportJobs.size &&
+          filters.onlyRelatedToImportJobs.size &&
           !selectedImportArtifactIds.has(artifact.id)
         ) {
           return false;
