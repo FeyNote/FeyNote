@@ -27,7 +27,7 @@ export function registerGetJobsRoute() {
 
           const tx = manifestDb.transaction(objectStoreName, 'readwrite');
           const store = tx.objectStore(objectStoreName);
-          store.clear();
+          await store.clear();
           for (const item of deserialized.jobs) {
             await store.put(item);
           }

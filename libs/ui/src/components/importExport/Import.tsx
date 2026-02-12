@@ -117,8 +117,7 @@ export const Import: React.FC = () => {
       });
       setJobs(importDto.jobs);
     } catch (e) {
-      console.log(e);
-      handleTRPCErrors(e);
+      console.error(e);
     }
   };
 
