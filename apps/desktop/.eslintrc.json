@@ -1,0 +1,21 @@
+{
+  "extends": ["../../.eslintrc.json"],
+  "ignorePatterns": [
+    "!**/*",
+    "out/**",
+    "dist/**",
+    ".vite/**",
+    "renderer/**",
+    "*.config.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["*.ts"],
+      "excludedFiles": ["*.config.ts"],
+      "parserOptions": {
+        "project": ["apps/desktop/tsconfig.json"]
+      },
+      "rules": {}
+    }
+  ]
+}

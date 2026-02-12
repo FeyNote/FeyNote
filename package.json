@@ -1,7 +1,7 @@
 {
   "name": "@feynote/source",
   "version": "0.0.0",
-  "license": "MIT",
+  "license": "UNLICENSED",
   "scripts": {
     "postinstall": "[ -f 'prisma/schema.prisma' ] && prisma generate || echo 'Prisma schema does not exist'",
     "prepare": "husky"
@@ -194,7 +194,16 @@
     "vite": "7.3.1",
     "vite-plugin-dts": "4.5.4",
     "vite-plugin-pwa": "^1.2.0",
-    "yjs-types": "^0.0.1"
+    "yjs-types": "^0.0.1",
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-dmg": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
+    "@electron-forge/plugin-vite": "^7.11.1",
+    "electron": "^40.2.1"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"
