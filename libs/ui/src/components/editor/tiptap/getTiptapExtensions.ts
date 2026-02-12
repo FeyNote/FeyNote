@@ -48,7 +48,6 @@ import {
 import { CollaborationCaret as CollaborationCaretExtension } from '@tiptap/extension-collaboration-caret';
 import { IndentationExtension } from './extensions/indentation/IndentationExtension';
 import { buildArtifactReferencesExtension } from './extensions/artifactReferences/ArtifactReferencesExtension';
-import { CommandsExtension } from './extensions/commands/CommandsExtension';
 import { HeadingExtension } from './extensions/heading/HeadingExtension';
 import { MonsterStatblockExtension } from './extensions/statsheet/monsterStatblock/MonsterStatblockExtension';
 import { SpellSheetExtension } from './extensions/statsheet/spellSheet/SpellSheetExtension';
@@ -167,7 +166,6 @@ export const getTiptapExtensions = (args: {
           }),
         ]
       : []),
-    CommandsExtension,
     buildArtifactReferencesExtension({
       artifactId: args.artifactId,
       yDoc: args.y.yDoc || args.y.yjsProvider.document,
