@@ -41,6 +41,7 @@ const jobSummarySchema = z.object({
     importFormat: zImportFormat.optional(),
     exportFormat: zExportFormat.optional(),
     error: z.nativeEnum(JobErrorCode).optional(),
+    importedArtifactIds: z.array(z.string()).optional(),
   }),
 });
 
@@ -52,6 +53,7 @@ export type JobSummary = Omit<
     importFormat?: ImportFormat;
     exportFormat?: ExportFormat;
     error?: JobErrorCode;
+    importedArtifactIds?: string[];
   };
 };
 

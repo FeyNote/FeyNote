@@ -19,6 +19,7 @@ import {
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePaneContext } from '../../context/pane/PaneContext';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 const ImportOptionsContainer = styled.div`
   display: flex;
@@ -88,6 +89,7 @@ const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
@@ -107,27 +109,42 @@ export const Import: React.FC = () => {
   }, []);
 
   const refreshJobs = async () => {
-    const importDto = await trpc.job.getJobs.query({
-      // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
-      limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
-      type: 'import',
-    });
-    setJobs(importDto.jobs);
+    try {
+      const importDto = await trpc.job.getJobs.query({
+        // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
+        limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
+        type: 'import',
+      });
+      setJobs(importDto.jobs);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const getMoreJobs = async () => {
-    const importjobsDTO = await trpc.job.getJobs.query({
-      offset: jobs.length,
-      limit: NUM_OF_INITAL_JOBS_SHOWN,
-      type: 'import',
-    });
-    const totalJobs = [...jobs, ...importjobsDTO.jobs];
-    setJobs(totalJobs);
-    setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
+    try {
+      const importjobsDTO = await trpc.job.getJobs.query({
+        offset: jobs.length,
+        limit: NUM_OF_INITAL_JOBS_SHOWN,
+        type: 'import',
+      });
+      const totalJobs = [...jobs, ...importjobsDTO.jobs];
+      setJobs(totalJobs);
+      setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
+    } catch (e) {
+      handleTRPCErrors(e);
+    }
   };
 
-  const jobClickHandler = async (_: string) => {
-    // TODO: Navigate user to page of all imported artifacts from job
+  const jobClickHandler = async (jobId: string) => {
+    const job = jobs.find((job) => job.id === jobId);
+    if (job?.status === 'success' && job.meta.importedArtifactIds?.length) {
+      navigate(
+        PaneableComponent.AllArtifacts,
+        { initialImportJobId: jobId },
+        PaneTransition.Push,
+      );
+    }
   };
 
   return (

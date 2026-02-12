@@ -10,7 +10,7 @@
 
 export { TfiText } from 'react-icons/tfi';
 
-export { CiInboxIn, CiInboxOut, CiUser } from 'react-icons/ci';
+export { CiInboxIn, CiInboxOut, CiUser, CiImport } from 'react-icons/ci';
 
 export { CgNotes, CgExtensionRemove } from 'react-icons/cg';
 
@@ -76,6 +76,7 @@ export {
   MdDraw,
   MdHorizontalRule,
   MdOutlineShortText,
+  MdCancel,
 } from 'react-icons/md';
 
 export {
