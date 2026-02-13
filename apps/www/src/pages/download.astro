@@ -1,0 +1,186 @@
+---
+import RootLayout from '../components/RootLayout.astro'
+import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
+
+export const prerender = false;
+
+const BASE_URL = 'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/v1.0.0-beta19/';
+
+const downloads = {
+  windows: [
+    { label: 'Windows Installer (.exe)', file: 'FeyNote-1.0.0-beta19%20Setup.exe', size: '129.4 MB' },
+  ],
+  macos: [
+    { label: 'macOS Apple Silicon (.dmg)', file: 'FeyNote-arm64.dmg', size: '109.2 MB' },
+    { label: 'macOS Intel (.dmg)', file: 'FeyNote-x64.dmg', size: '115.2 MB' },
+  ],
+  linux: [
+    { label: 'Linux (.deb)', file: 'feynote-desktop_1.0.0~beta19_amd64.deb', size: '85.3 MB' },
+    { label: 'Linux (.rpm)', file: 'feynote-desktop-1.0.0.beta19-1.x86_64.rpm', size: '89.4 MB' },
+    { label: 'Linux (.zip)', file: 'FeyNote-linux-x64-1.0.0-beta19.zip', size: '111.3 MB' },
+  ],
+};
+
+const recommended = {
+  windows: { ...downloads.windows[0], buttonLabel: 'Download for Windows' },
+  macos: { ...downloads.macos[0], buttonLabel: 'Download for macOS (Apple Silicon)' },
+  linux: { ...downloads.linux[0], buttonLabel: 'Download for Linux' },
+};
+
+const ua = Astro.request.headers.get('user-agent') ?? '';
+let platform: 'windows' | 'macos' | 'linux' | 'unknown' = 'unknown';
+if (ua.includes('Win')) platform = 'windows';
+else if (ua.includes('Mac')) platform = 'macos';
+else if (ua.includes('Linux') && !ua.includes('Android')) platform = 'linux';
+
+const rec = platform !== 'unknown' ? recommended[platform] : null;
+---
+<style>
+  .page-content {
+    max-width: min(1500px, 90%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .rec-section {
+    margin-bottom: 50px;
+  }
+
+  .rec-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background-color: #256be7;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+    font-size: 1.1rem;
+  }
+
+  .rec-button .size {
+    opacity: 0.7;
+    font-size: 0.9rem;
+  }
+
+  .platform-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  .platform-card {
+    flex: 1 1 280px;
+    background: var(--card-bg);
+    border-radius: 4px;
+    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+    padding: 20px;
+  }
+
+  .platform-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .platform-card h3 svg {
+    flex-shrink: 0;
+  }
+
+  .download-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .download-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background-color: #256be7;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+  }
+
+  .download-link .size {
+    opacity: 0.7;
+    font-size: 0.85rem;
+    margin-left: 12px;
+    flex-shrink: 0;
+  }
+</style>
+<RootLayout
+  title="Download - FeyNote"
+  description="Download FeyNote for Windows, macOS, and Linux. A free desktop note-taking app for world-builders and tabletop RPG players."
+>
+  <div class="page-content">
+    <h1>Download</h1>
+
+    {rec && (
+      <div class="rec-section">
+        <a href={BASE_URL + rec.file} class="rec-button">
+          {platform === 'windows' && <FaWindows />}
+          {platform === 'macos' && <FaApple />}
+          {platform === 'linux' && <FaLinux />}
+          <span>{rec.buttonLabel}</span>
+          <span class="size">({rec.size})</span>
+        </a>
+      </div>
+    )}
+
+    <h2>All Downloads</h2>
+
+    <div class="platform-cards">
+      <div class="platform-card">
+        <h3>
+          <FaWindows size={20} />
+          Windows
+        </h3>
+        <div class="download-links">
+          {downloads.windows.map(dl => (
+            <a href={BASE_URL + dl.file} class="download-link">
+              <span>{dl.label}</span>
+              <span class="size">{dl.size}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <h3>
+          <FaApple size={20} />
+          macOS
+        </h3>
+        <div class="download-links">
+          {downloads.macos.map(dl => (
+            <a href={BASE_URL + dl.file} class="download-link">
+              <span>{dl.label}</span>
+              <span class="size">{dl.size}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <h3>
+          <FaLinux size={20} />
+          Linux
+        </h3>
+        <div class="download-links">
+          {downloads.linux.map(dl => (
+            <a href={BASE_URL + dl.file} class="download-link">
+              <span>{dl.label}</span>
+              <span class="size">{dl.size}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+</RootLayout>
