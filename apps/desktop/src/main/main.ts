@@ -28,7 +28,9 @@ function createWindow(): void {
     title: 'FeyNote',
     autoHideMenuBar: true,
     titleBarStyle: 'default',
-    icon: path.join(__dirname, '../../icons/feynote.png'),
+    icon: app.isPackaged
+      ? path.join(process.resourcesPath, 'icons', 'feynote.png')
+      : path.join(__dirname, '../../icons/feynote.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
