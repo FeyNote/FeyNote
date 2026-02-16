@@ -37,6 +37,8 @@ export class PreferencesService {
 
     [PreferenceNames.GraphShowOrphans]: true,
     [PreferenceNames.GraphLockNodeOnDrag]: true,
+    [PreferenceNames.GraphShowReferenceRelations]: true,
+    [PreferenceNames.GraphShowTreeRelations]: true,
 
     [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]:
       ArtifactReferenceNewArtifactSharingMode.Prompt,

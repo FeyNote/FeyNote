@@ -16,7 +16,6 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import styled from 'styled-components';
 import { useWidthObserver } from '../../utils/useWidthObserver';
-import type { Edge } from '@feynote/shared-utils';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 
 function drawRoundedRect(
@@ -48,9 +47,10 @@ const GraphContainer = styled.div<{
   ${(props) => (props.$nodeHovered ? 'cursor: pointer;' : '')}
 `;
 
-interface FeynoteGraphLink {
+export interface FeynoteGraphLink {
   source: string;
   target: string;
+  type: 'reference' | 'tree';
 }
 
 interface FeynoteGraphNode {
@@ -76,7 +76,7 @@ interface Props {
     id: string;
     title: string;
   }[];
-  edges: Edge[];
+  edges: FeynoteGraphLink[];
   artifactPositions?: Map<string, { x: number; y: number }>;
   onNodeDragEnd?: (node: FeynoteGraphNode, x: number, y: number) => void;
   enableInitialZoom?: boolean;
@@ -127,13 +127,14 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
     }
 
     for (const edge of props.edges) {
-      if (!nodesById[edge.artifactId] || !nodesById[edge.targetArtifactId]) {
+      if (!nodesById[edge.source] || !nodesById[edge.target]) {
         continue;
       }
 
       graphData.links.push({
-        source: edge.artifactId,
-        target: edge.targetArtifactId,
+        source: edge.source,
+        target: edge.target,
+        type: edge.type,
       });
     }
 
@@ -153,7 +154,7 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
       graphData,
       nodesById,
     };
-  }, [props.artifacts]);
+  }, [props.artifacts, props.edges]);
 
   useEffect(() => {
     for (const artifact of props.artifacts) {
@@ -302,19 +303,25 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
           linkColor={(link) => {
             const opacity =
               highlightLinks.has(link) || !highlightLinks.size ? '0.8' : '0.4';
+            if (link.type === 'tree') {
+              return _isDarkMode
+                ? `rgba(90,110,140,${opacity})`
+                : `rgba(120,140,170,${opacity})`;
+            }
             return _isDarkMode
               ? `rgba(100,100,100,${opacity})`
               : `rgba(150,150,150,${opacity})`;
           }}
+          linkLineDash={(link) => (link.type === 'tree' ? [4, 2] : null)}
           linkDirectionalParticleColor={(_) =>
             _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'
           }
           linkWidth={(link) => (highlightLinks.has(link) ? 5 : 1)}
-          linkDirectionalParticles={4}
+          linkDirectionalParticles={(link) => (link.type === 'tree' ? 0 : 4)}
           linkDirectionalParticleWidth={(link) =>
             highlightLinks.has(link) ? 4 : 0
           }
-          linkDirectionalArrowLength={7}
+          linkDirectionalArrowLength={(link) => (link.type === 'tree' ? 0 : 7)}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() =>
             _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'

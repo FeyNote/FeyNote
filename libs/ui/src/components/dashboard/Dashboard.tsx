@@ -25,7 +25,7 @@ import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeybo
 import { GraphRenderer } from '../graph/GraphRenderer';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
-import { type Edge } from '@feynote/shared-utils';
+import type { FeynoteGraphLink } from '../graph/GraphRenderer';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 
@@ -92,22 +92,26 @@ export const Dashboard: React.FC = () => {
   const edges = useMemo(() => {
     if (!artifactSnapshots) return [];
 
-    const map = artifactSnapshots.reduce<Map<string, Edge>>((acc, artifact) => {
+    const seen = new Set<string>();
+    const links: FeynoteGraphLink[] = [];
+
+    for (const artifact of artifactSnapshots) {
       const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
         artifact.id,
       );
 
-      for (const edge of incomingEdges) {
-        acc.set(edge.id, edge);
+      for (const edge of [...incomingEdges, ...outgoingEdges]) {
+        if (seen.has(edge.id)) continue;
+        seen.add(edge.id);
+        links.push({
+          source: edge.artifactId,
+          target: edge.targetArtifactId,
+          type: 'reference',
+        });
       }
-      for (const edge of outgoingEdges) {
-        acc.set(edge.id, edge);
-      }
+    }
 
-      return acc;
-    }, new Map());
-
-    return Array.from(map.values());
+    return links;
   }, [artifactSnapshots, getEdgesForArtifactId]);
 
   const getUserThreads = async () => {

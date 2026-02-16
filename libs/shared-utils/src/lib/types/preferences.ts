@@ -64,6 +64,8 @@ export enum PreferenceNames {
 
   GraphShowOrphans = 'graph.showOrphans',
   GraphLockNodeOnDrag = 'graph.lockNodeOnDrag',
+  GraphShowReferenceRelations = 'graph.showReferenceRelations',
+  GraphShowTreeRelations = 'graph.showTreeRelations',
 
   ArtifactReferenceNewArtifactSharingMode = 'artifact.referenceNewArtifactSharingMode',
   ArtifactReferenceExistingArtifactSharingMode = 'artifact.referenceExistingArtifactSharingMode',
@@ -88,6 +90,8 @@ export interface AppPreferences {
 
   [PreferenceNames.GraphShowOrphans]: boolean;
   [PreferenceNames.GraphLockNodeOnDrag]: boolean;
+  [PreferenceNames.GraphShowReferenceRelations]: boolean;
+  [PreferenceNames.GraphShowTreeRelations]: boolean;
 
   [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: ArtifactReferenceNewArtifactSharingMode;
   [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: ArtifactReferenceExistingArtifactSharingMode;

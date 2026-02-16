@@ -45,6 +45,34 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
           ></IonToggle>
         </CompactIonItem>
         <CompactIonItem>
+          {t('graph.settings.showReferenceRelations')}
+
+          <IonToggle
+            slot="end"
+            onIonChange={(e) => {
+              setPreference(
+                PreferenceNames.GraphShowReferenceRelations,
+                e.detail.checked,
+              );
+            }}
+            checked={getPreference(PreferenceNames.GraphShowReferenceRelations)}
+          ></IonToggle>
+        </CompactIonItem>
+        <CompactIonItem>
+          {t('graph.settings.showTreeRelations')}
+
+          <IonToggle
+            slot="end"
+            onIonChange={(e) => {
+              setPreference(
+                PreferenceNames.GraphShowTreeRelations,
+                e.detail.checked,
+              );
+            }}
+            checked={getPreference(PreferenceNames.GraphShowTreeRelations)}
+          ></IonToggle>
+        </CompactIonItem>
+        <CompactIonItem>
           {t('graph.settings.lockNodeOnDrag')}
 
           <IonToggle
