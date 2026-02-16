@@ -51,6 +51,7 @@ export default defineConfig({
           items: [
             'general/dashboard',
             'general/search',
+            'general/keyboard-shortcuts',
             'general/offline',
             {
               label: 'Layout & UI',

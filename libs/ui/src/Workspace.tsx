@@ -2,7 +2,10 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Actions, Layout, TabNode } from 'flexlayout-react';
 import 'flexlayout-react/style/light.css';
-import { useGlobalPaneContext } from './context/globalPane/GlobalPaneContext';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
 import { IonButton } from '@ionic/react';
 import { usePreferencesContext } from './context/preferences/PreferencesContext';
@@ -12,7 +15,10 @@ import { PreferenceNames } from '@feynote/shared-utils';
 import { RightSideMenu } from './components/pane/RightSideMenu';
 import { NewPaneButton } from './components/pane/NewPaneButton';
 import { t } from 'i18next';
-import { paneableComponentNameToDefaultI18nTitle } from './context/globalPane/PaneableComponent';
+import {
+  PaneableComponent,
+  paneableComponentNameToDefaultI18nTitle,
+} from './context/globalPane/PaneableComponent';
 import {
   clearCustomDragData,
   getCustomDragData,
@@ -20,6 +26,10 @@ import {
 } from './utils/artifactTree/customDrag';
 import { PaneTabContextMenu } from './components/pane/PaneTabContextMenu';
 import { WelcomeDialog } from './components/dashboard/WelcomeDialog';
+import { useRegisterKeyboardShortcutHandler } from './context/keyboardShortcut/useKeyboardShortcut';
+import { openArtifactPrint } from './utils/openArtifactPrint';
+import { APP_KEYBOARD_SHORTCUTS } from './utils/keyboardShortcuts';
+import { createNewTab } from './utils/createNewTab';
 
 const MENU_SIZE_PX = 300;
 /**
@@ -216,8 +226,14 @@ const MainGrid = styled.div<{
 
 const LAST_PANE_STATE_LOCALSTORAGE_KEY = 'lastPaneState';
 export const Workspace: React.FC = () => {
-  const { _model, _onActionListener, _onModelChangeListener } =
-    useGlobalPaneContext();
+  const {
+    _model,
+    _onActionListener,
+    _onModelChangeListener,
+    navigate,
+    getPaneById,
+    focusedPaneId,
+  } = useGlobalPaneContext();
   const { getPreference } = usePreferencesContext();
 
   const [lastPaneState] = useState(() => {
@@ -274,6 +290,115 @@ export const Workspace: React.FC = () => {
     }
     setRightMenuOpen(!rightMenuOpen);
   };
+
+  useRegisterKeyboardShortcutHandler(
+    'app.newDocument',
+    [
+      APP_KEYBOARD_SHORTCUTS.newDocument.native,
+      APP_KEYBOARD_SHORTCUTS.newDocument.browser,
+    ],
+    () => {
+      navigate(
+        undefined,
+        PaneableComponent.NewArtifact,
+        {},
+        PaneTransition.Push,
+      );
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.newTab',
+    [
+      APP_KEYBOARD_SHORTCUTS.newTab.native,
+      APP_KEYBOARD_SHORTCUTS.newTab.browser,
+    ],
+    () => {
+      const activeTabset = _model.getActiveTabset() || _model.getFirstTabSet();
+      createNewTab(_model, activeTabset.getId());
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.closeTab',
+    [
+      APP_KEYBOARD_SHORTCUTS.closeTab.native,
+      APP_KEYBOARD_SHORTCUTS.closeTab.browser,
+    ],
+    () => {
+      const activeTabset = _model.getActiveTabset();
+      const selectedNode = activeTabset?.getSelectedNode();
+      if (selectedNode) {
+        _model.doAction(Actions.deleteTab(selectedNode.getId()));
+      }
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.toggleLeftMenu',
+    APP_KEYBOARD_SHORTCUTS.toggleLeftMenu,
+    () => {
+      toggleLeftSideMenu();
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.toggleRightMenu',
+    APP_KEYBOARD_SHORTCUTS.toggleRightMenu,
+    () => {
+      toggleRightSideMenu();
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.print',
+    APP_KEYBOARD_SHORTCUTS.print,
+    () => {
+      const pane = getPaneById(focusedPaneId);
+      if (pane.currentView.component === PaneableComponent.Artifact) {
+        const artifactId = pane.currentView.props.id;
+        if (artifactId) {
+          openArtifactPrint(artifactId);
+        }
+      } else {
+        window.print();
+      }
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.splitRight',
+    [
+      APP_KEYBOARD_SHORTCUTS.splitRight.native,
+      APP_KEYBOARD_SHORTCUTS.splitRight.browser,
+    ],
+    () => {
+      const pane = getPaneById(focusedPaneId);
+      navigate(
+        focusedPaneId,
+        pane.currentView.component,
+        pane.currentView.props,
+        PaneTransition.HSplit,
+      );
+    },
+  );
+
+  useRegisterKeyboardShortcutHandler(
+    'app.splitDown',
+    [
+      APP_KEYBOARD_SHORTCUTS.splitDown.native,
+      APP_KEYBOARD_SHORTCUTS.splitDown.browser,
+    ],
+    () => {
+      const pane = getPaneById(focusedPaneId);
+      navigate(
+        focusedPaneId,
+        pane.currentView.component,
+        pane.currentView.props,
+        PaneTransition.VSplit,
+      );
+    },
+  );
 
   useEffect(() => {
     const listener = (event: DragEvent) => {

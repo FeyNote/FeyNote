@@ -10,6 +10,10 @@ import { ArtifactLinkDropdownMenu } from './ArtifactLinkContextMenu';
 import { DropdownMenu } from '@radix-ui/themes';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { duplicateArtifact } from '../../utils/localDb/duplicateArtifact';
+import {
+  APP_KEYBOARD_SHORTCUTS,
+  getShortcutDisplayString,
+} from '../../utils/keyboardShortcuts';
 
 interface Props {
   artifactId: string;
@@ -42,7 +46,10 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
 
   const extraBefore = (
     <DropdownMenu.Group>
-      <DropdownMenu.Item onClick={() => openArtifactPrint(props.artifactId)}>
+      <DropdownMenu.Item
+        onClick={() => openArtifactPrint(props.artifactId)}
+        shortcut={getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.print)}
+      >
         {t('contextMenu.printArtifact')}
       </DropdownMenu.Item>
       <DropdownMenu.Item onClick={onDuplicateArtifactClicked}>

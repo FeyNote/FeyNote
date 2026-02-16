@@ -1,12 +1,7 @@
 import { IonButton, IonIcon } from '@ionic/react';
 import { add } from 'ionicons/icons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
-import {
-  PaneableComponent,
-  paneableComponentNameToDefaultI18nTitle,
-} from '../../context/globalPane/PaneableComponent';
-import { Actions, DockLocation } from 'flexlayout-react';
-import { useTranslation } from 'react-i18next';
+import { createNewTab } from '../../utils/createNewTab';
 
 interface Props {
   tabsetId: string;
@@ -14,33 +9,9 @@ interface Props {
 
 export const NewPaneButton: React.FC<Props> = (props) => {
   const { _model } = useGlobalPaneContext();
-  const { t } = useTranslation();
 
   const newTab = () => {
-    const id = crypto.randomUUID();
-    _model.doAction(
-      Actions.addNode(
-        {
-          id,
-          type: 'tab',
-          component: id,
-          name: t(
-            paneableComponentNameToDefaultI18nTitle[
-              PaneableComponent.NewArtifact
-            ],
-          ),
-          config: {
-            component: PaneableComponent.NewArtifact,
-            props: {},
-            navigationEventId: crypto.randomUUID(),
-          },
-        },
-        props.tabsetId,
-        DockLocation.CENTER,
-        -1,
-        true,
-      ),
-    );
+    createNewTab(_model, props.tabsetId);
   };
 
   return (

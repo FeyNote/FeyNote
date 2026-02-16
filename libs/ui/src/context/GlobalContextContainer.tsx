@@ -11,6 +11,7 @@ import { GlobalSearchContextProviderWrapper } from './globalSearch/GlobalSearchC
 import { LocaldbStoreErrorHandlers } from '../utils/localDb/LocaldbStoreErrorHandlers';
 import { SessionContextProviderWrapper } from './session/SessionContextProviderWrapper';
 import { AlertContextProvider } from './alert/AlertContextProvider';
+import { KeyboardShortcutContextProviderWrapper } from './keyboardShortcut/KeyboardShortcutContextProviderWrapper';
 
 interface Props {
   children: React.ReactNode;
@@ -35,14 +36,18 @@ export const GlobalContextContainer: React.FC<Props> = (props) => {
           navigationEventId={props.singlePaneMode.navigationEventId}
           onNavigate={props.singlePaneMode.onNavigate}
         >
-          {props.children}
+          <KeyboardShortcutContextProviderWrapper>
+            {props.children}
+          </KeyboardShortcutContextProviderWrapper>
         </SinglePaneGlobalPaneContextProviderWrapper>
       );
     }
 
     return (
       <GlobalPaneContextProviderWrapper>
-        {children}
+        <KeyboardShortcutContextProviderWrapper>
+          {children}
+        </KeyboardShortcutContextProviderWrapper>
       </GlobalPaneContextProviderWrapper>
     );
   };

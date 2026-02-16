@@ -1,6 +1,10 @@
 import type { Editor, Range } from '@tiptap/core';
 import type { IconType } from 'react-icons/lib';
 import {
+  APP_KEYBOARD_SHORTCUTS,
+  getShortcutDisplayString,
+} from '../../utils/keyboardShortcuts';
+import {
   GiMonsterGrasp,
   CgNotes,
   LuHeading1,
@@ -52,6 +56,7 @@ export type GlobalTiptapCommandHelperEntry = {
   title: string;
   keywords: string[];
   subtitle?: string;
+  shortcutHint?: string;
   enabled: (editor: Editor) => boolean;
   active?: (editor: Editor) => boolean;
   style?: { fontFamily: string };
@@ -155,6 +160,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.link',
       keywords: [],
       subtitle: 'editor.commandMenu.link.subtitle',
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.link),
       enabled: () => true,
       active: (editor) => editor.isActive('link'),
       icon: RiLink,
@@ -169,6 +175,7 @@ export const globalTiptapCommandHelpers = {
       toggleBold: {
         title: 'editor.commandMenu.bold',
         keywords: ['bold'],
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.bold),
         enabled: (editor) => editor.can().toggleBold(),
         icon: RiBold,
         command: (args) => {
@@ -178,6 +185,7 @@ export const globalTiptapCommandHelpers = {
       toggleItalic: {
         title: 'editor.commandMenu.italic',
         keywords: ['italic'],
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.italic),
         enabled: (editor) => editor.can().toggleItalic(),
         icon: RiItalic,
         command: (args) => {
@@ -187,6 +195,9 @@ export const globalTiptapCommandHelpers = {
       toggleUnderline: {
         title: 'editor.commandMenu.underline',
         keywords: ['italic'],
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.underline,
+        ),
         enabled: (editor) => editor.can().toggleUnderline(),
         icon: RiUnderline,
         command: (args) => {
@@ -196,6 +207,9 @@ export const globalTiptapCommandHelpers = {
       toggleStrike: {
         title: 'editor.commandMenu.strike',
         keywords: ['italic'],
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.strikethrough,
+        ),
         enabled: (editor) => editor.can().toggleStrike(),
         icon: RiStrikethrough,
         command: (args) => {
@@ -409,6 +423,9 @@ export const globalTiptapCommandHelpers = {
       left: {
         title: 'editor.commandMenu.align.left',
         keywords: ['align', 'left'],
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.alignLeft,
+        ),
         enabled: (editor) => editor.can().setTextAlign('left'),
         active: (editor) => editor.isActive({ textAlign: 'left' }),
         icon: RiAlignLeft,
@@ -419,6 +436,9 @@ export const globalTiptapCommandHelpers = {
       center: {
         title: 'editor.commandMenu.align.center',
         keywords: ['align', 'center'],
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.alignCenter,
+        ),
         enabled: (editor) => editor.can().setTextAlign('center'),
         active: (editor) => editor.isActive({ textAlign: 'center' }),
         icon: RiAlignCenter,
@@ -429,6 +449,9 @@ export const globalTiptapCommandHelpers = {
       right: {
         title: 'editor.commandMenu.align.right',
         keywords: ['align', 'right'],
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.alignRight,
+        ),
         enabled: (editor) => editor.can().setTextAlign('right'),
         active: (editor) => editor.isActive({ textAlign: 'right' }),
         icon: RiAlignRight,
@@ -462,6 +485,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h1',
         keywords: ['h1', 'header'],
         subtitle: 'editor.commandMenu.h1.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h1),
         enabled: () => true,
         icon: LuHeading1,
         command: (args) => {
@@ -472,6 +496,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h2',
         keywords: ['h2', 'header'],
         subtitle: 'editor.commandMenu.h2.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h2),
         enabled: () => true,
         icon: LuHeading2,
         command: (args) => {
@@ -482,6 +507,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h3',
         keywords: ['h3', 'header'],
         subtitle: 'editor.commandMenu.h3.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h3),
         enabled: () => true,
         icon: LuHeading3,
         command: (args) => {
@@ -492,6 +518,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h4',
         keywords: ['h4', 'header'],
         subtitle: 'editor.commandMenu.h4.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h4),
         enabled: () => true,
         icon: LuHeading4,
         command: (args) => {
@@ -502,6 +529,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h5',
         keywords: ['h5', 'header'],
         subtitle: 'editor.commandMenu.h5.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h5),
         enabled: () => true,
         icon: LuHeading5,
         command: (args) => {
@@ -512,6 +540,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.h6',
         keywords: ['h6', 'header'],
         subtitle: 'editor.commandMenu.h6.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.h6),
         enabled: () => true,
         icon: LuHeading6,
         command: (args) => {
@@ -524,6 +553,9 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.bulletList',
         keywords: ['list', 'bullet', 'unordered', 'ul', '-', '*'],
         subtitle: 'editor.commandMenu.bulletList.subtitle',
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.bulletList,
+        ),
         enabled: (editor) => editor.can().toggleBulletList(),
         active: (editor) => editor.isActive('bulletList'),
         icon: LuList,
@@ -535,6 +567,9 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.orderedList',
         keywords: ['list', 'numbered', 'ordered', 'ol', '-', '*', '1'],
         subtitle: 'editor.commandMenu.orderedList.subtitle',
+        shortcutHint: getShortcutDisplayString(
+          APP_KEYBOARD_SHORTCUTS.orderedList,
+        ),
         enabled: (editor) => editor.can().toggleOrderedList(),
         active: (editor) => editor.isActive('orderedList'),
         icon: LuListOrdered,
@@ -546,6 +581,7 @@ export const globalTiptapCommandHelpers = {
         title: 'editor.commandMenu.taskList',
         keywords: ['list', 'task', '-', '*', '['],
         subtitle: 'editor.commandMenu.taskList.subtitle',
+        shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.taskList),
         enabled: (editor) => editor.can().toggleTaskList(),
         active: (editor) => editor.isActive('taskList'),
         icon: RiListCheck2,
@@ -558,6 +594,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.sinkBlock',
       keywords: ['indent'],
       subtitle: 'editor.commandMenu.sinkBlock.subtitle',
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.indent),
       enabled: () => true,
       icon: LuIndentIncrease,
       command: (args) => {
@@ -568,6 +605,7 @@ export const globalTiptapCommandHelpers = {
       title: 'editor.commandMenu.liftBlock',
       keywords: ['outdent'],
       subtitle: 'editor.commandMenu.liftBlock.subtitle',
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.outdent),
       enabled: () => true,
       icon: LuIndentDecrease,
       command: (args) => {
@@ -579,6 +617,7 @@ export const globalTiptapCommandHelpers = {
     undo: {
       title: 'editor.commandMenu.undo',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.undo),
       enabled: () => true,
       icon: LuUndo,
       command: (args) => {
@@ -588,6 +627,7 @@ export const globalTiptapCommandHelpers = {
     redo: {
       title: 'editor.commandMenu.redo',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.redo),
       enabled: () => true,
       icon: LuRedo,
       command: (args) => {
@@ -597,6 +637,7 @@ export const globalTiptapCommandHelpers = {
     cut: {
       title: 'editor.commandMenu.cut',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.cut),
       enabled: () => true,
       icon: RiScissorsCutLine,
       command: (args) => {
@@ -606,6 +647,7 @@ export const globalTiptapCommandHelpers = {
     copy: {
       title: 'editor.commandMenu.copy',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.copy),
       enabled: () => true,
       icon: RiFileCopyLine,
       command: (args) => {
@@ -615,6 +657,7 @@ export const globalTiptapCommandHelpers = {
     selectAll: {
       title: 'editor.commandMenu.selectAll',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.selectAll),
       enabled: () => true,
       icon: RiBox1Line,
       command: (args) => {
@@ -624,6 +667,7 @@ export const globalTiptapCommandHelpers = {
     delete: {
       title: 'editor.commandMenu.delete',
       keywords: [],
+      shortcutHint: getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.delete),
       enabled: () => true,
       icon: RiDeleteBackLine,
       command: (args) => {
