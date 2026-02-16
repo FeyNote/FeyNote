@@ -22,11 +22,11 @@ Your pane layout will be preserved across sessions, so you can come back to your
 ## Left Side Menu
 
 The left side menu serves as a navigation menu.
-You'll see shortcuts for [search](artifacts/search), the [dashboard](layout/dashboard), your [artifact graph](artifacts/graph), your [artifact tree](artifacts/tree), your [ai threads](ai), and your [settings](settings/general).
+You'll see shortcuts for [search](documents/search), the [dashboard](layout/dashboard), your [document graph](documents/graph), your [document tree](documents/tree), your [ai threads](ai), and your [settings](settings/general).
 The left side menu can be collapsed by clicking the icon in the top corner of the menu.
 
 ## Right Side Menu
 
 The right side menu serves as a contextually-aware options menu.
-You'll see options for the current page, such as [sharing](artifacts/sharing) or [references](artifacts/references) for artifacts.
+You'll see options for the current page, such as [sharing](documents/sharing) or [references](documents/references) for documents.
 The right side menu can be collapsed by clicking the icon in the top corner of the menu.

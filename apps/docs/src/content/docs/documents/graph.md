@@ -1,9 +1,9 @@
 ---
-title: Artifact Graph
+title: Document Graph
 description: A visual representation of the relationships between your documents.
 ---
 
-The artifact graph is a visual representation of the relationships between your documents.
+The document graph is a visual representation of the relationships between your documents.
 It is a powerful tool for understanding the structure of your project and for identifying clusters of knowledge.
 
 ## Relation Types
@@ -14,7 +14,7 @@ The graph displays two types of relationships between documents.
 
 Reference relations are created when you reference one document from another using `@`. These are shown as solid lines with directional arrows indicating which document references which. You can show and hide this behavior using the [show reference relations](#show-reference-relations) option.
 
-See [Artifact References](/docs/artifacts/references) for more on creating and managing references.
+See [Document References](/docs/documents/references) for more on creating and managing references.
 
 ### Tree Relations
 
@@ -37,7 +37,7 @@ Orphaned documents are documents that have no connections to other documents. Di
 
 ### Show Reference Relations
 
-Toggles the visibility of [reference-based](#reference-relations) links in the graph. When enabled, you'll see relationship lines drawn between documents that point to one another using an [`@` reference](/docs/artifacts/references).
+Toggles the visibility of [reference-based](#reference-relations) links in the graph. When enabled, you'll see relationship lines drawn between documents that point to one another using an [`@` reference](/docs/documents/references).
 
 ### Show Tree Relations
 

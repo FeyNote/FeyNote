@@ -36,14 +36,14 @@ export default defineConfig({
       sidebar: [
         'index',
         {
-          label: 'Artifacts',
+          label: 'Documents',
           items: [
-            'artifacts/text',
-            'artifacts/draw',
-            'artifacts/calendar',
-            'artifacts/references',
-            'artifacts/graph',
-            'artifacts/sharing',
+            'documents/text',
+            'documents/draw',
+            'documents/calendar',
+            'documents/references',
+            'documents/graph',
+            'documents/sharing',
           ],
         },
         {
