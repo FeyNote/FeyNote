@@ -25,7 +25,8 @@ case "${1:-}" in
     ;;
 
   up)
-    docker compose -f "$COMPOSE_FILE" up -d --build
+    docker compose -f "$COMPOSE_FILE" build backend
+    docker compose -f "$COMPOSE_FILE" up -d
     docker compose -f "$COMPOSE_FILE" exec backend npx prisma migrate dev
     docker compose -f "$COMPOSE_FILE" exec backend npx nx run search:migrate
     ;;
