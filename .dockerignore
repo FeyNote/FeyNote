@@ -1,0 +1,13 @@
+node_modules
+dist
+tmp
+.git
+apps/desktop/out
+apps/desktop/renderer
+apps/www/node_modules
+apps/www/dist
+apps/docs/node_modules
+apps/docs/dist
+*.md
+.env*
+.nx

@@ -38,9 +38,8 @@ services:
       - www
     stop_grace_period: 1s
   frontend:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -51,9 +50,8 @@ services:
       - backend
     stop_grace_period: 1s
   www:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -64,9 +62,8 @@ services:
       - backend
     stop_grace_period: 1s
   docs:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -75,9 +72,8 @@ services:
       <<: *common-env-vars
     stop_grace_period: 1s
   hocuspocus:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     ports:
       - '9001:9229'
     volumes:
@@ -96,6 +92,7 @@ services:
       - valkey
     stop_grace_period: 1s
   backend:
+    image: feynote-dev
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -117,9 +114,8 @@ services:
       - valkey
     stop_grace_period: 1s
   queue-worker:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     ports:
       - '9002:9229'
     volumes:
@@ -138,9 +134,8 @@ services:
       - valkey
     stop_grace_period: 1s
   websocket:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     ports:
       - '9003:9229'
     volumes:
@@ -159,9 +154,8 @@ services:
       - valkey
     stop_grace_period: 1s
   nxgraph:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: feynote-dev
+    pull_policy: never
     ports:
       - '4211:4211'
     environment:
