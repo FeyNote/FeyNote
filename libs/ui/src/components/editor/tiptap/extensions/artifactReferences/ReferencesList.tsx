@@ -194,6 +194,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
 
   const submitCreateItem = () => {
     if (creatingItem) return;
+
     setCreatingItem(true);
 
     const artifactMeta = getMetaFromYArtifact(props.yDoc);
@@ -642,7 +643,6 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
 
     selectedItemInfoRef.current = item;
     if (item.artifact.type === 'calendar') {
-      setCreatingItem(true);
       setShowCalendarInput(true);
 
       return;
