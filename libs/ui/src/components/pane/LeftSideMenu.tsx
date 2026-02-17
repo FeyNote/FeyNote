@@ -26,6 +26,7 @@ import {
   search,
   settings,
   add,
+  expand,
   heart,
   list,
 } from 'ionicons/icons';
@@ -241,6 +242,19 @@ export const LeftSideMenu: React.FC = () => {
               &nbsp;&nbsp;
               <IonLabel>{t('menu.tree')}</IonLabel>
               <InfoButton message={t('menu.tree.help')} />
+              <IonButton
+                onClick={(event) =>
+                  navigateWithKeyboardHandler(
+                    event,
+                    PaneableComponent.ArtifactTreeFullpage,
+                    {},
+                  )
+                }
+                size="small"
+                fill="clear"
+              >
+                <IonIcon icon={expand} size="small" />
+              </IonButton>
             </IonListHeader>
           </IonList>
           <ArtifactTree

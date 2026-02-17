@@ -13,6 +13,7 @@ import { PersistentSearch } from '../../components/search/PersistentSearch';
 import { Export } from '../../components/importExport/Export';
 import { Import } from '../../components/importExport/Import';
 import { AllArtifacts } from '../../components/artifact/allArtifacts/AllArtifacts';
+import { ArtifactTreeFullpage } from '../../components/artifact/ArtifactTreeFullpage';
 import { ImportFileUpload } from '../../components/importExport/ImportFileUpload';
 
 export enum PaneableComponent {
@@ -22,6 +23,7 @@ export enum PaneableComponent {
   NewArtifact = 'NewArtifact',
   Artifact = 'Artifact',
   AllArtifacts = 'AllArtifacts',
+  ArtifactTreeFullpage = 'ArtifactTreeFullpage',
   AIThread = 'AIThread',
   AIThreadsList = 'AIThreadsList',
   Graph = 'Graph',
@@ -46,6 +48,9 @@ export type PaneableComponentProps = {
   [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
   [PaneableComponent.AllArtifacts]: ComponentProps<typeof AllArtifacts>;
+  [PaneableComponent.ArtifactTreeFullpage]: ComponentProps<
+    typeof ArtifactTreeFullpage
+  >;
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
   [PaneableComponent.AIThreadsList]: ComponentProps<typeof AIThreadsList>;
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
@@ -68,6 +73,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.NewArtifact]: NewArtifact,
     [PaneableComponent.Artifact]: Artifact,
     [PaneableComponent.AllArtifacts]: AllArtifacts,
+    [PaneableComponent.ArtifactTreeFullpage]: ArtifactTreeFullpage,
     [PaneableComponent.AIThread]: AIThread,
     [PaneableComponent.AIThreadsList]: AIThreadsList,
     [PaneableComponent.Graph]: Graph,
@@ -97,6 +103,7 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.NewArtifact]: 'newArtifact.title',
   [PaneableComponent.Artifact]: 'artifact.title',
   [PaneableComponent.AllArtifacts]: 'allArtifacts.title',
+  [PaneableComponent.ArtifactTreeFullpage]: 'artifactTreeFullpage.title',
   [PaneableComponent.AIThread]: 'assistant.title',
   [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
   [PaneableComponent.Graph]: 'graph.title',
