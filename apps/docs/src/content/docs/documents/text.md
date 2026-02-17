@@ -3,8 +3,6 @@ title: Text Documents
 description: Create rich text documents with formatting, tables, media, dice rolling, and TTRPG statblocks.
 ---
 
-## Overview
-
 The text editor is the main interface for creating and editing documents in FeyNote.
 It's a rich text editor that supports many of the features you'd expect from a modern writing tool, along with some unique and powerful features built specifically for tabletop games.
 

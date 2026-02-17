@@ -3,8 +3,6 @@ title: Settings
 description: Customize FeyNote's interface, editor behavior, and account options.
 ---
 
-## Overview
-
 The settings page is where you make FeyNote feel like yours. You can tweak how the app looks, how the editor behaves, and manage your account.
 
 To get to the settings page, click the settings button at the bottom of the [left side menu](/docs/general/layout/desktop-panes#left-side-menu).
