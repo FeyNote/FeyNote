@@ -135,6 +135,16 @@
   "devDependencies": {
     "@babel/core": "^7.28.6",
     "@babel/preset-react": "^7.28.5",
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-dmg": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
+    "@electron-forge/plugin-vite": "^7.11.1",
     "@nx/esbuild": "22.4.2",
     "@nx/eslint": "22.4.2",
     "@nx/eslint-plugin": "22.4.2",
@@ -170,6 +180,7 @@
     "@vitejs/plugin-react": "5.1.4",
     "babel-jest": "30.2.0",
     "babel-plugin-styled-components": "2.1.4",
+    "electron": "^40.4.1",
     "esbuild": "^0.27.3",
     "eslint": "9.36.0",
     "eslint-config-prettier": "10.1.1",
@@ -194,16 +205,7 @@
     "vite": "7.3.1",
     "vite-plugin-dts": "4.5.4",
     "vite-plugin-pwa": "^1.2.0",
-    "yjs-types": "^0.0.1",
-    "@electron-forge/cli": "^7.11.1",
-    "@electron-forge/maker-deb": "^7.11.1",
-    "@electron-forge/maker-dmg": "^7.11.1",
-    "@electron-forge/maker-rpm": "^7.11.1",
-    "@electron-forge/maker-squirrel": "^7.11.1",
-    "@electron-forge/maker-zip": "^7.11.1",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
-    "@electron-forge/plugin-vite": "^7.11.1",
-    "electron": "^40.4.1"
+    "yjs-types": "^0.0.1"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"
