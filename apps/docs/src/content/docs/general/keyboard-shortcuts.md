@@ -9,17 +9,18 @@ FeyNote supports keyboard shortcuts for common actions. On macOS, "Mod" refers t
 
 These shortcuts work anywhere in the application. Some shortcuts differ between the desktop app and the browser because certain key combinations are reserved by the browser.
 
-| Action            | Desktop App   | Browser             |
-| ----------------- | ------------- | ------------------- |
-| Search            | Mod+K         | Mod+K               |
-| New Document      | Mod+N         | Mod+Alt+N           |
-| New Tab           | Mod+T         | Mod+Alt+T           |
-| Close Current Tab | Mod+W         | Mod+Alt+W           |
-| Toggle Left Menu  | Mod+\\        | Mod+\\              |
-| Toggle Right Menu | Mod+Shift+\\  | Mod+Shift+\\        |
-| Print             | Mod+P         | Mod+P               |
-| Split Right       | Mod+Alt+Right | Mod+Shift+Alt+Right |
-| Split Down        | Mod+Alt+Down  | Mod+Shift+Alt+Down  |
+| Action               | Desktop App   | Browser             |
+| -------------------- | ------------- | ------------------- |
+| Search               | Mod+K         | Mod+K               |
+| New Document         | Mod+N         | Mod+Alt+N           |
+| New Tab              | Mod+T         | Mod+Alt+T           |
+| Close Current Tab    | Mod+W         | Mod+Alt+W           |
+| Toggle Left Menu     | Mod+\\        | Mod+\\              |
+| Toggle Right Menu    | Mod+Shift+\\  | Mod+Shift+\\        |
+| Print                | Mod+P         | Mod+P               |
+| Split Right          | Mod+Alt+Right | Mod+Shift+Alt+Right |
+| Split Down           | Mod+Alt+Down  | Mod+Shift+Alt+Down  |
+| Open Item In New Tab | Mod+Click     | Mod+Click           |
 
 ## Text Editing Shortcuts
 

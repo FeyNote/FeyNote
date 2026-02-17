@@ -41,6 +41,7 @@ export default defineConfig({
             'documents/text',
             'documents/draw',
             'documents/calendar',
+            'documents/tree',
             'documents/references',
             'documents/graph',
             'documents/sharing',
