@@ -15,12 +15,9 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
 import { createArtifact } from '../../utils/localDb/createArtifact';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { Box, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../../components/AppIcons';
 
@@ -110,7 +107,10 @@ const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
 }) => {
-  const { navigate } = useGlobalPaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(
+    false,
+    true,
+  );
   const [show, setShow] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<
@@ -148,7 +148,9 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     setShow(false);
   };
 
-  const create = async () => {
+  const create = async (
+    event: MouseEvent | KeyboardEvent | React.MouseEvent | React.KeyboardEvent,
+  ) => {
     const result = await createArtifact({
       artifact: {
         title: capitalizeEachWord(searchText).trim(),
@@ -159,25 +161,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
     if (!result) return;
 
-    navigate(
-      undefined, // Open in currently focused pane rather than in specific pane
-      PaneableComponent.Artifact,
-      {
-        id: result.id,
-      },
-      PaneTransition.Push,
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: result.id,
+    });
   };
 
-  const openPersistentSearch = () => {
-    navigate(
-      undefined, // Open in currently focused pane rather than in specific pane
-      PaneableComponent.PersistentSearch,
-      {
-        initialTerm: searchText || undefined,
-      },
-      PaneTransition.Push,
-    );
+  const openPersistentSearch = (event: MouseEvent | React.MouseEvent) => {
+    navigateWithKeyboardHandler(event, PaneableComponent.PersistentSearch, {
+      initialTerm: searchText || undefined,
+    });
     hide();
   };
 
@@ -212,18 +204,13 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       if (event.key === 'Enter' && show) {
         event.preventDefault();
         if (selectedIdx < searchResults.length) {
-          navigate(
-            undefined, // Open in currently focused pane rather than in specific pane
-            PaneableComponent.Artifact,
-            {
-              id: searchResults[selectedIdx].artifact.id,
-              focusBlockId: searchResults[selectedIdx].blockId,
-            },
-            PaneTransition.Push,
-          );
+          navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+            id: searchResults[selectedIdx].artifact.id,
+            focusBlockId: searchResults[selectedIdx].blockId,
+          });
           hide();
         } else {
-          create();
+          create(event);
           hide();
         }
       }
@@ -374,15 +361,14 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                     key={searchResult.artifact.id}
                     $selected={selectedIdx === idx}
                     onMouseOver={() => setSelectedIdx(idx)}
-                    onClick={() => {
-                      navigate(
-                        undefined, // Open in currently focused pane rather than in specific pane
+                    onClick={(event) => {
+                      navigateWithKeyboardHandler(
+                        event,
                         PaneableComponent.Artifact,
                         {
                           id: searchResult.artifact.id,
                           focusBlockId: searchResult.blockId,
                         },
-                        PaneTransition.Push,
                       );
                       hide();
                     }}
@@ -423,7 +409,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                   <SearchResult
                     lines="none"
                     $selected={selectedIdx === maxSelectedIdx}
-                    onClick={() => (create(), hide())}
+                    onClick={(event) => (create(event), hide())}
                     onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
                     button
                   >

@@ -13,7 +13,10 @@ import { useState } from 'react';
  * This helpfully wraps navigate with an event handler that detects ctrl/cmd+click
  * NOTE: It is recommended to pass usePaneContextId if your component is rendered within a pane!
  */
-export const useNavigateWithKeyboardHandler = (usePaneContextId?: boolean) => {
+export const useNavigateWithKeyboardHandler = (
+  usePaneContextId?: boolean,
+  alwaysSelect?: boolean,
+) => {
   const [_usePaneContextId] = useState(usePaneContextId);
   let paneId = undefined;
   if (_usePaneContextId) {
@@ -42,7 +45,7 @@ export const useNavigateWithKeyboardHandler = (usePaneContextId?: boolean) => {
         component,
         props,
         paneTransition,
-        !(event.metaKey || event.ctrlKey),
+        alwaysSelect || !(event.metaKey || event.ctrlKey),
       );
     },
   };
