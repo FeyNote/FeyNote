@@ -39,6 +39,10 @@ const ControlMenuList = styled.div`
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--ion-background-color);
 `;
 
 interface Props {
