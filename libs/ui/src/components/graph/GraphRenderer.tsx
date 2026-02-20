@@ -88,7 +88,7 @@ export const GraphRenderer: React.FC<Props> = memo((props) => {
     useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(null);
   const initialZoomPerformedRef = useRef(!props.enableInitialZoom);
   const { pane, isPaneFocused } = usePaneContext();
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const [highlightNodes, setHighlightNodes] = useState(
     new Set<FeynoteGraphNode>(),
   );

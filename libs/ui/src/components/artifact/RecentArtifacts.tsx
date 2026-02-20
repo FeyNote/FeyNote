@@ -43,7 +43,7 @@ export const RecentArtifacts: React.FC = () => {
     () => artifactSnapshots?.sort((a, b) => b.updatedAt - a.updatedAt),
     [artifactSnapshots],
   );
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   return (
     <IonPage>
