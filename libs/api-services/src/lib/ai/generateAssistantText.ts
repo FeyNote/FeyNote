@@ -1,14 +1,13 @@
 import { generateText, type Tool, type ModelMessage } from 'ai';
-import type { AIModel } from './utils/AIModel';
-import { openai } from '@ai-sdk/openai';
+import { aiProvider } from './ai';
 
 export async function generateAssistantText(
   messages: ModelMessage[],
-  model: AIModel,
+  model: string,
   tools?: Record<string, Tool>,
 ): ReturnType<typeof generateText> {
   const result = await generateText({
-    model: openai(model),
+    model: aiProvider(model),
     tools,
     maxOutputTokens: 16383,
     messages,

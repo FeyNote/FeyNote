@@ -1,15 +1,13 @@
 import { type Tool, streamText, type ModelMessage } from 'ai';
-import type { OpenAIProvider } from '@ai-sdk/openai';
-import type { AIModel } from './utils/AIModel';
+import { aiProvider } from './ai';
 
 export function generateAssistantStreamText(
-  openai: OpenAIProvider,
   messages: ModelMessage[],
-  model: AIModel,
+  model: string,
   tools: Record<string, Tool>,
 ): ReturnType<typeof streamText<typeof tools>> {
   const stream = streamText({
-    model: openai(model),
+    model: aiProvider(model),
     tools,
     maxOutputTokens: 16383,
     messages,
