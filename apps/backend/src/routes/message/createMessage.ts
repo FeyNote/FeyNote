@@ -5,7 +5,7 @@ import {
   BadRequestExpressError,
   TooManyRequestsExpressError,
   systemMessage,
-  limitNumOfMessagesByCapability,
+  limitChatContextByCapability,
   generateAssistantStreamText,
   generate5eMonsterTool,
   scrapeUrlTool,
@@ -77,7 +77,7 @@ export const createMessage = defineExpressHandler(
     ) {
       model = globalServerConfig.ai.model.chatHigh;
     }
-    const limitedMessages = limitNumOfMessagesByCapability(
+    const limitedMessages = limitChatContextByCapability(
       messages,
       capabilities,
     );

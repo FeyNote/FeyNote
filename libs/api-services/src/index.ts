@@ -12,7 +12,7 @@ export * from './lib/files/convertFileWithPandoc';
 export * from './lib/ai/ai';
 export * from './lib/ai/retrieveMessageContext';
 export * from './lib/ai/utils/SystemMessage';
-export * from './lib/ai/utils/limitNumOfMessagesByCapability';
+export * from './lib/ai/utils/limitChatContextByCapability';
 export * from './lib/ai/generateAssistantStreamText';
 export * from './lib/ai/generateAssistantText';
 export * from './lib/ai/tools/scrapeUrlTool';
