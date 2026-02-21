@@ -19,7 +19,12 @@ export const AIMessagePartText = (props: Props) => {
   }
 
   const messageHTML = useMemo(() => {
-    return starkdown(part.text);
+    // Sometimes the AI will generate lists (bullet or numbered) without an empty newline prior
+    const normalized = part.text.replace(
+      /(?<!\n)\n([-*+] |\d+[.)] )/g,
+      '\n\n$1',
+    );
+    return starkdown(normalized);
   }, [part.text]);
 
   return (
