@@ -1,12 +1,7 @@
 import { AIUserMessage } from './AIUserMessage';
 import { AIAssistantMessage } from './AIAssistantMessage';
-import styled from 'styled-components';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import type { ChatStatus } from 'ai';
-
-const MessageContentContainer = styled.div`
-  padding-left: 8px;
-`;
 
 interface Props {
   message: FeynoteUIMessage;
@@ -18,21 +13,22 @@ interface Props {
 export const AIMessageContent = (props: Props) => {
   const isUserMessage = props.message.role === 'user';
 
+  if (isUserMessage) {
+    return (
+      <AIUserMessage
+        message={props.message}
+        aiStatus={props.aiStatus}
+        updateMessage={props.updateMessage}
+        retryMessage={props.retryMessage}
+      />
+    );
+  }
+
   return (
-    <MessageContentContainer>
-      {isUserMessage ? (
-        <AIUserMessage
-          message={props.message}
-          aiStatus={props.aiStatus}
-          updateMessage={props.updateMessage}
-        />
-      ) : (
-        <AIAssistantMessage
-          message={props.message}
-          aiStatus={props.aiStatus}
-          retryMessage={props.retryMessage}
-        />
-      )}
-    </MessageContentContainer>
+    <AIAssistantMessage
+      message={props.message}
+      aiStatus={props.aiStatus}
+      retryMessage={props.retryMessage}
+    />
   );
 };

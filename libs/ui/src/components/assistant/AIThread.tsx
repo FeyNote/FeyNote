@@ -1,22 +1,4 @@
-import {
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonPage,
-  IonSpinner,
-  IonTextarea,
-} from '@ionic/react';
-import {
-  pencilOutline,
-  searchOutline,
-  send,
-  shirtOutline,
-  skullOutline,
-} from 'ionicons/icons';
+import { IonContent, IonPage } from '@ionic/react';
 import { useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
@@ -36,23 +18,37 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import { useAlertContext } from '../../context/alert/AlertContext';
+import { Card, IconButton, Spinner, TextArea } from '@radix-ui/themes';
+import {
+  IoSearch,
+  FaPencil,
+  GiMonsterGrasp,
+  GiBroadsword,
+  RiSendPlaneFill,
+} from '../AppIcons';
+import type { IconType } from 'react-icons';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
 `;
 
-const StyledIonCardTitle = styled(IonCardTitle)`
+const PromptCard = styled(Card)`
+  cursor: pointer;
+`;
+
+const PromptCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-
-  ion-icon {
-    margin-right: 8px;
-  }
+  font-weight: 500;
+  gap: 8px;
 `;
 
-const StyledIonCardContent = styled(IonCardContent)`
+const PromptCardContent = styled.div`
   text-align: center;
+  font-size: 0.875rem;
+  color: var(--gray-11);
+  margin-top: 4px;
 `;
 
 const OptionsList = styled.div`
@@ -61,10 +57,8 @@ const OptionsList = styled.div`
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
-
-  ion-card {
-    padding: 4px;
-  }
+  gap: 8px;
+  padding: 4px;
 `;
 
 const ChatContainer = styled.div`
@@ -80,14 +74,7 @@ const ChatTextContainer = styled.div`
   align-items: center;
   padding-left: 8px;
   margin-right: 8px;
-`;
-
-const SendButtonContainer = styled.div`
-  margin-left: 16px;
-`;
-
-const SendIcon = styled(IonIcon)`
-  font-size: 24px;
+  gap: 16px;
 `;
 
 export interface ChatMessage {
@@ -96,28 +83,33 @@ export interface ChatMessage {
   role: string;
 }
 
-const PROMPT_CARDS = [
+const PROMPT_CARDS: {
+  header: string;
+  query: string;
+  displayText?: string;
+  icon: IconType;
+}[] = [
   {
     header: 'aiThread.card.scrape.header',
     query: 'aiThread.card.scrape.query',
     displayText: 'aiThread.card.scrape.displayText',
-    icon: searchOutline,
+    icon: IoSearch,
   },
   {
     header: 'aiThread.card.format.header',
     query: 'aiThread.card.format.query',
     displayText: 'aiThread.card.format.displayText',
-    icon: pencilOutline,
+    icon: FaPencil,
   },
   {
     header: 'aiThread.card.monster.header',
     query: 'aiThread.card.monster.query',
-    icon: skullOutline,
+    icon: GiMonsterGrasp,
   },
   {
     header: 'aiThread.card.item.header',
     query: 'aiThread.card.item.query',
-    icon: shirtOutline,
+    icon: GiBroadsword,
   },
 ];
 
@@ -134,7 +126,7 @@ export const AIThread: React.FC<Props> = (props) => {
   const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { showAlert } = useAlertContext();
-  const textAreaRef = useRef<HTMLIonTextareaElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const { messages, setMessages, status, sendMessage, regenerate } =
     useChat<FeynoteUIMessage>({
@@ -240,20 +232,6 @@ export const AIThread: React.FC<Props> = (props) => {
     setInput('');
   };
 
-  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (
-      e.key === 'Enter' &&
-      !e.shiftKey &&
-      status === 'ready' &&
-      !isLoadingInitialState
-    ) {
-      e.preventDefault(); // Prevents adding a newline
-      submitMessageQuery();
-    } else {
-      setInput(e.currentTarget.value || '');
-    }
-  };
-
   const updateMessage = async (message: FeynoteUIMessage) => {
     try {
       await trpc.ai.updateMessage.mutate({
@@ -323,28 +301,23 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : !messages.length ? (
             <EmptyMessageContainer>
               <OptionsList>
-                {PROMPT_CARDS.map((card, idx) => {
-                  return (
-                    <IonCard
-                      key={idx}
-                      button
-                      onClick={() => {
-                        setInput(t(card.query));
-                        textAreaRef.current?.setFocus();
-                      }}
-                    >
-                      <IonCardHeader>
-                        <StyledIonCardTitle>
-                          <IonIcon icon={card.icon} />
-                          {t(card.header)}
-                        </StyledIonCardTitle>
-                      </IonCardHeader>
-                      <StyledIonCardContent>
-                        {t(card.displayText || card.query)}
-                      </StyledIonCardContent>
-                    </IonCard>
-                  );
-                })}
+                {PROMPT_CARDS.map((card, idx) => (
+                  <PromptCard
+                    key={idx}
+                    onClick={() => {
+                      setInput(t(card.query));
+                      textAreaRef.current?.focus();
+                    }}
+                  >
+                    <PromptCardHeader>
+                      <card.icon />
+                      {t(card.header)}
+                    </PromptCardHeader>
+                    <PromptCardContent>
+                      {t(card.displayText || card.query)}
+                    </PromptCardContent>
+                  </PromptCard>
+                ))}
               </OptionsList>
             </EmptyMessageContainer>
           ) : (
@@ -356,23 +329,32 @@ export const AIThread: React.FC<Props> = (props) => {
             />
           )}
           <ChatTextContainer>
-            <IonTextarea
-              autoGrow={true}
+            <TextArea
+              style={{ flex: 1 }}
               ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
               disabled={isLoading || isLoadingInitialState}
-              onKeyUp={keyUpHandler}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (
+                  e.key === 'Enter' &&
+                  !e.shiftKey &&
+                  status === 'ready' &&
+                  !isLoadingInitialState
+                ) {
+                  e.preventDefault();
+                  submitMessageQuery();
+                }
+              }}
             />
-            <SendButtonContainer>
-              <IonButton onClick={submitMessageQuery}>
-                {isLoading || isLoadingInitialState ? (
-                  <IonSpinner name="crescent" />
-                ) : (
-                  <SendIcon icon={send} />
-                )}
-              </IonButton>
-            </SendButtonContainer>
+            <IconButton onClick={submitMessageQuery}>
+              {isLoading || isLoadingInitialState ? (
+                <Spinner />
+              ) : (
+                <RiSendPlaneFill />
+              )}
+            </IconButton>
           </ChatTextContainer>
         </ChatContainer>
       </IonContent>

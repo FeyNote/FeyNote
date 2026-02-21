@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
+import { Button, Flex, IconButton, TextArea } from '@radix-ui/themes';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { copyOutline, pencil } from 'ionicons/icons';
+import { RiFileCopyLine, FaPencil, RiRefreshLine } from '../AppIcons';
+import { useTranslation } from 'react-i18next';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import type { ChatStatus } from 'ai';
 
@@ -9,9 +10,12 @@ interface Props {
   message: FeynoteUIMessage;
   aiStatus: ChatStatus;
   updateMessage: (message: FeynoteUIMessage) => void;
+  retryMessage: (messageId: string) => void;
 }
+
 export const AIUserMessage = (props: Props) => {
-  const inputRef = useRef<HTMLIonTextareaElement>(null);
+  const { t } = useTranslation();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const messageText = useMemo(() => {
     const messagePart = props.message.parts.find(
@@ -24,23 +28,10 @@ export const AIUserMessage = (props: Props) => {
   useEffect(() => {
     if (inputRef.current) {
       setTimeout(() => {
-        inputRef.current?.setFocus();
+        inputRef.current?.focus();
       });
     }
   }, [isEditing]);
-
-  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (
-      e.key === 'Enter' &&
-      !e.shiftKey &&
-      !(props.aiStatus === 'submitted' || props.aiStatus === 'streaming')
-    ) {
-      e.preventDefault(); // Prevents adding a newline
-      submitMessageUpdate();
-    } else {
-      setEditInput(e.currentTarget.value?.toString() || '');
-    }
-  };
 
   const submitMessageUpdate = async () => {
     setIsEditing(false);
@@ -58,30 +49,53 @@ export const AIUserMessage = (props: Props) => {
   if (isEditing) {
     return (
       <>
-        <IonTextarea ref={inputRef} value={editInput} onKeyUp={keyUpHandler} />
-        <IonButtons>
-          <IonButton size="small" onClick={() => setIsEditing(false)}>
-            Cancel
-          </IonButton>
-          <IonButton
-            size="small"
+        <TextArea
+          ref={inputRef}
+          value={editInput}
+          onChange={(e) => setEditInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (
+              e.key === 'Enter' &&
+              !e.shiftKey &&
+              !(
+                props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+              )
+            ) {
+              e.preventDefault();
+              submitMessageUpdate();
+            }
+          }}
+        />
+        <Flex gap="1" mt="2">
+          <Button
+            variant="soft"
+            size="1"
+            color="gray"
+            onClick={() => setIsEditing(false)}
+          >
+            {t('generic.cancel')}
+          </Button>
+          <Button
+            variant="soft"
+            size="1"
             disabled={
               props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
             }
             onClick={submitMessageUpdate}
           >
-            Save
-          </IonButton>
-        </IonButtons>
+            {t('generic.save')}
+          </Button>
+        </Flex>
       </>
     );
   } else {
     return (
       <>
         <div>{messageText}</div>
-        <IonButtons>
-          <IonButton
-            size="small"
+        <Flex gap="1" justify="end" mt="1">
+          <IconButton
+            variant="ghost"
+            size="1"
             onClick={() =>
               copyToClipboard({
                 html: messageText,
@@ -89,12 +103,26 @@ export const AIUserMessage = (props: Props) => {
               })
             }
           >
-            <IonIcon icon={copyOutline} />
-          </IonButton>
-          <IonButton size="small" onClick={() => setIsEditing(true)}>
-            <IonIcon icon={pencil} />
-          </IonButton>
-        </IonButtons>
+            <RiFileCopyLine />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
+            onClick={() => setIsEditing(true)}
+          >
+            <FaPencil />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
+            onClick={() => props.retryMessage(props.message.id)}
+          >
+            <RiRefreshLine />
+          </IconButton>
+        </Flex>
       </>
     );
   }

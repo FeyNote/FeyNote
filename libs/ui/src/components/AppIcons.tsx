@@ -94,6 +94,7 @@ export {
   RiBox1Line,
   RiDeleteBackLine,
   RiFileCopyLine,
+  RiRefreshLine,
   RiScissorsCutLine,
   RiAlignCenter,
   RiAlignLeft,
@@ -116,6 +117,7 @@ export {
   RiListUnordered,
   RiParagraph,
   RiStrikethrough,
+  RiSendPlaneFill,
   RiText,
   RiUnderline,
 } from 'react-icons/ri';

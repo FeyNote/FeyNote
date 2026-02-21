@@ -3,8 +3,8 @@ import { JSONContent, type Editor } from '@tiptap/react';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { useEffect, useMemo, useRef } from 'react';
-import { copyOutline, refresh } from 'ionicons/icons';
-import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
+import { RiFileCopyLine, RiRefreshLine } from '../AppIcons';
+import { Flex, IconButton, Spinner } from '@radix-ui/themes';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
 import {
@@ -58,28 +58,30 @@ export const AIEditor: React.FC<Props> = (props) => {
             editorRef={editorRef}
           />
         </ArtifactEditorContainer>
-        <IonButtons>
-          <IonButton
-            size="small"
+        <Flex gap="1">
+          <IconButton
+            variant="ghost"
+            size="1"
             onClick={() =>
               copyToClipboard({ html: editorRef.current?.getHTML() })
             }
           >
-            <IonIcon icon={copyOutline} />
-          </IonButton>
-          <IonButton
+            <RiFileCopyLine />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
             disabled={
               props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
             }
-            size="small"
             onClick={() => props.retryMessage(props.messageId)}
           >
-            <IonIcon icon={refresh} />
-          </IonButton>
-        </IonButtons>
+            <RiRefreshLine />
+          </IconButton>
+        </Flex>
       </AIFCEditorContainer>
     );
   }
 
-  return <IonSpinner name="dots"></IonSpinner>;
+  return <Spinner />;
 };

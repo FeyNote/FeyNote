@@ -1,8 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
+import { usePaneContext } from '../../context/pane/PaneContext';
 import type { PaneContextData } from '../../context/pane/PaneContext';
 import { DropdownMenu, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
@@ -19,6 +23,8 @@ interface Props {
 export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigate } = props;
+  const { pane } = usePaneContext();
+  const { navigate: globalNavigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newTitle, setNewTitle] = useState(props.title);
   const [showRenameThreadAlert, setShowRenameThreadAlert] = useState(false);
@@ -115,17 +121,52 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
     <DropdownMenu.Root>
       <DropdownMenu.Trigger>{props.children}</DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        <DropdownMenu.Root>
-          <DropdownMenu.Item onClick={triggerRenameThreadAlert}>
-            {t('assistant.thread.rename')}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            color="red"
-            onClick={() => setShowDeleteThreadActionDialog(true)}
-          >
-            {t('assistant.thread.delete')}
-          </DropdownMenu.Item>
-        </DropdownMenu.Root>
+        <DropdownMenu.Item
+          onClick={() =>
+            globalNavigate(
+              pane.id,
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.HSplit,
+            )
+          }
+        >
+          {t('contextMenu.splitRight')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() =>
+            globalNavigate(
+              pane.id,
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.VSplit,
+            )
+          }
+        >
+          {t('contextMenu.splitDown')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() =>
+            globalNavigate(
+              pane.id,
+              pane.currentView.component,
+              pane.currentView.props,
+              PaneTransition.NewTab,
+            )
+          }
+        >
+          {t('contextMenu.duplicateTab')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Separator />
+        <DropdownMenu.Item onClick={triggerRenameThreadAlert}>
+          {t('assistant.thread.rename')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          color="red"
+          onClick={() => setShowDeleteThreadActionDialog(true)}
+        >
+          {t('assistant.thread.delete')}
+        </DropdownMenu.Item>
       </DropdownMenu.Content>
       {deleteThreadActionDialog}
       {renameThreadActionDialog}

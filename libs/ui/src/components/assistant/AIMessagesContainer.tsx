@@ -1,8 +1,5 @@
-import { IonIcon, IonLabel } from '@ionic/react';
 import styled from 'styled-components';
-import { personCircle } from 'ionicons/icons';
 import { AIMessageContent } from './AIMessageContent';
-import { useTranslation } from 'react-i18next';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import type { ChatStatus } from 'ai';
 
@@ -17,34 +14,28 @@ const Scroller = styled.div`
   flex-direction: column-reverse;
   overflow: auto;
   overflow-anchor: auto !important;
-  border-bottom: 2px solid #222222;
+  border-bottom: 2px solid var(--ion-border-color);
 `;
 
-const MessageContainer = styled.div`
+const UserMessageContainer = styled.div`
+  margin-left: auto;
+  max-width: 80%;
+  background: var(--ion-background-color-step-100);
+  border-radius: 1rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  margin-right: 1.5rem;
+  line-height: 1.5rem;
+`;
+
+const AssistantMessageContainer = styled.div`
   width: 100%;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   padding-bottom: 0.5rem;
   padding-top: 0.5rem;
   line-height: 1.5rem;
-`;
-
-const UserIcon = styled(IonIcon)`
-  font-size: 30px;
-  min-width: 30px;
-  padding-right: 0.75rem;
-  vertical-align: middle;
-`;
-
-const AILogo = styled.img`
-  height: 30px;
-  padding-right: 0.75rem;
-  vertical-align: middle;
-`;
-
-const MessageHeader = styled(IonLabel)`
-  font-weight: 500;
-  vertical-align: middle;
 `;
 
 interface Props {
@@ -55,8 +46,6 @@ interface Props {
 }
 
 export const AIMessagesContainer = (props: Props) => {
-  const { t } = useTranslation();
-
   return (
     <Scroller>
       <ScrollerContent>
@@ -64,26 +53,18 @@ export const AIMessagesContainer = (props: Props) => {
           .filter((message) => !!message)
           .map((message) => {
             const isUser = message.role === 'user';
-            const name = isUser
-              ? t('assistant.thread.user.name')
-              : t('assistant.thread.assistant.name');
+            const Container = isUser
+              ? UserMessageContainer
+              : AssistantMessageContainer;
             return (
-              <MessageContainer key={message.id}>
-                <div>
-                  {isUser ? (
-                    <UserIcon icon={personCircle} />
-                  ) : (
-                    <AILogo src="https://static.feynote.com/assets/feynote-icon-20240925.png" />
-                  )}
-                  <MessageHeader>{name}</MessageHeader>
-                </div>
+              <Container key={message.id}>
                 <AIMessageContent
                   message={message}
                   aiStatus={props.aiStatus}
                   retryMessage={props.retryMessage}
                   updateMessage={props.updateMessage}
                 />
-              </MessageContainer>
+              </Container>
             );
           })}
       </ScrollerContent>

@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { starkdown } from 'starkdown';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { IonButton, IonButtons, IonIcon } from '@ionic/react';
-import { copyOutline, refresh } from 'ionicons/icons';
+import { Flex, IconButton } from '@radix-ui/themes';
+import { RiFileCopyLine, RiRefreshLine } from '../AppIcons';
 import type { TextUIPart, ChatStatus } from 'ai';
 
 interface Props {
@@ -34,9 +34,10 @@ export const AIMessagePartText = (props: Props) => {
           __html: messageHTML,
         }}
       ></div>
-      <IonButtons>
-        <IonButton
-          size="small"
+      <Flex gap="1">
+        <IconButton
+          variant="ghost"
+          size="1"
           onClick={() =>
             copyToClipboard({
               html: messageHTML,
@@ -44,18 +45,19 @@ export const AIMessagePartText = (props: Props) => {
             })
           }
         >
-          <IonIcon icon={copyOutline} />
-        </IonButton>
-        <IonButton
+          <RiFileCopyLine />
+        </IconButton>
+        <IconButton
+          variant="ghost"
+          size="1"
           disabled={
             props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
           }
-          size="small"
           onClick={() => props.retryMessage(props.messageId)}
         >
-          <IonIcon icon={refresh} />
-        </IonButton>
-      </IonButtons>
+          <RiRefreshLine />
+        </IconButton>
+      </Flex>
     </React.Fragment>
   );
 };
