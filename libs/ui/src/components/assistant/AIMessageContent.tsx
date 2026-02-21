@@ -2,6 +2,7 @@ import { AIUserMessage } from './AIUserMessage';
 import { AIAssistantMessage } from './AIAssistantMessage';
 import styled from 'styled-components';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
+import type { ChatStatus } from 'ai';
 
 const MessageContentContainer = styled.div`
   padding-left: 8px;
@@ -9,7 +10,7 @@ const MessageContentContainer = styled.div`
 
 interface Props {
   message: FeynoteUIMessage;
-  ongoingCommunication: boolean;
+  aiStatus: ChatStatus;
   updateMessage: (message: FeynoteUIMessage) => void;
   retryMessage: (messageId: string) => void;
 }
@@ -22,13 +23,13 @@ export const AIMessageContent = (props: Props) => {
       {isUserMessage ? (
         <AIUserMessage
           message={props.message}
-          disableUpdate={props.ongoingCommunication}
+          aiStatus={props.aiStatus}
           updateMessage={props.updateMessage}
         />
       ) : (
         <AIAssistantMessage
           message={props.message}
-          disableRetry={props.ongoingCommunication}
+          aiStatus={props.aiStatus}
           retryMessage={props.retryMessage}
         />
       )}

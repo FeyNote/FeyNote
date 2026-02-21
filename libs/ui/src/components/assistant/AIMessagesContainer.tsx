@@ -4,6 +4,7 @@ import { personCircle } from 'ionicons/icons';
 import { AIMessageContent } from './AIMessageContent';
 import { useTranslation } from 'react-i18next';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
+import type { ChatStatus } from 'ai';
 
 const ScrollerContent = styled.div`
   margin-bottom: auto;
@@ -48,7 +49,7 @@ const MessageHeader = styled(IonLabel)`
 
 interface Props {
   messages: FeynoteUIMessage[];
-  ongoingCommunication: boolean;
+  aiStatus: ChatStatus;
   updateMessage: (message: FeynoteUIMessage) => void;
   retryMessage: (messageId: string) => void;
 }
@@ -78,7 +79,7 @@ export const AIMessagesContainer = (props: Props) => {
                 </div>
                 <AIMessageContent
                   message={message}
-                  ongoingCommunication={props.ongoingCommunication}
+                  aiStatus={props.aiStatus}
                   retryMessage={props.retryMessage}
                   updateMessage={props.updateMessage}
                 />

@@ -17,7 +17,7 @@ import {
   shirtOutline,
   skullOutline,
 } from 'ionicons/icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -183,10 +183,9 @@ export const AIThread: React.FC<Props> = (props) => {
         handleTRPCErrors(new Error());
       },
     });
-  const isLoading = useMemo(
-    () => status === 'submitted' || status === 'streaming',
-    [status],
-  );
+
+  const isLoading = status === 'submitted' || status === 'streaming';
+
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
@@ -353,7 +352,7 @@ export const AIThread: React.FC<Props> = (props) => {
               updateMessage={updateMessage}
               retryMessage={retryMessage}
               messages={messages}
-              ongoingCommunication={isLoading}
+              aiStatus={status}
             />
           )}
           <ChatTextContainer>

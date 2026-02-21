@@ -3,10 +3,11 @@ import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { copyOutline, pencil } from 'ionicons/icons';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
+import type { ChatStatus } from 'ai';
 
 interface Props {
   message: FeynoteUIMessage;
-  disableUpdate: boolean;
+  aiStatus: ChatStatus;
   updateMessage: (message: FeynoteUIMessage) => void;
 }
 export const AIUserMessage = (props: Props) => {
@@ -29,7 +30,11 @@ export const AIUserMessage = (props: Props) => {
   }, [isEditing]);
 
   const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !props.disableUpdate) {
+    if (
+      e.key === 'Enter' &&
+      !e.shiftKey &&
+      !(props.aiStatus === 'submitted' || props.aiStatus === 'streaming')
+    ) {
       e.preventDefault(); // Prevents adding a newline
       submitMessageUpdate();
     } else {
@@ -60,7 +65,9 @@ export const AIUserMessage = (props: Props) => {
           </IonButton>
           <IonButton
             size="small"
-            disabled={props.disableUpdate}
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
             onClick={submitMessageUpdate}
           >
             Save

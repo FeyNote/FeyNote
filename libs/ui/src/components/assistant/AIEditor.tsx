@@ -1,3 +1,4 @@
+import type { ChatStatus } from 'ai';
 import { JSONContent, type Editor } from '@tiptap/react';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
@@ -20,7 +21,7 @@ interface Props {
   editorContent: string | JSONContent;
   messageId: string;
   retryMessage: (messageId: string) => void;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
 }
 
 export const AIEditor: React.FC<Props> = (props) => {
@@ -67,7 +68,9 @@ export const AIEditor: React.FC<Props> = (props) => {
             <IonIcon icon={copyOutline} />
           </IonButton>
           <IonButton
-            disabled={props.disableRetry}
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
             size="small"
             onClick={() => props.retryMessage(props.messageId)}
           >

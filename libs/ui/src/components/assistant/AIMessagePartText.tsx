@@ -3,12 +3,12 @@ import { starkdown } from 'starkdown';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { IonButton, IonButtons, IonIcon } from '@ionic/react';
 import { copyOutline, refresh } from 'ionicons/icons';
-import type { TextUIPart } from 'ai';
+import type { TextUIPart, ChatStatus } from 'ai';
 
 interface Props {
   part: TextUIPart;
   messageId: string;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
   retryMessage: (messageId: string) => void;
 }
 
@@ -42,7 +42,9 @@ export const AIMessagePartText = (props: Props) => {
           <IonIcon icon={copyOutline} />
         </IonButton>
         <IonButton
-          disabled={props.disableRetry}
+          disabled={
+            props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+          }
           size="small"
           onClick={() => props.retryMessage(props.messageId)}
         >

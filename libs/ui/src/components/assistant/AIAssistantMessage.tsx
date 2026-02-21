@@ -3,17 +3,27 @@ import { AIToolPart } from './AIToolInvocation';
 import { AIMessagePartText } from './AIMessagePartText';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
+import styled from 'styled-components';
+import type { ChatStatus } from 'ai';
+
+const ErrorText = styled.span`
+  color: var(--ion-color-danger);
+`;
 
 interface Props {
   message: FeynoteUIMessage;
   retryMessage: (messageId: string) => void;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
 }
 
 export const AIAssistantMessage = (props: Props) => {
   const { t } = useTranslation();
+
   if (!props.message.parts || props.message.parts.length === 0) {
-    return <IonSpinner name="dots" />;
+    if (props.aiStatus === 'submitted' || props.aiStatus === 'streaming') {
+      return <IonSpinner name="dots" />;
+    }
+    return <ErrorText>{t('aiAssistantMessage.error')}</ErrorText>;
   }
 
   return (
@@ -31,7 +41,7 @@ export const AIAssistantMessage = (props: Props) => {
           <AIToolPart
             key={i}
             messageId={props.message.id}
-            disableRetry={props.disableRetry}
+            aiStatus={props.aiStatus}
             retryMessage={props.retryMessage}
             part={part}
           />
@@ -42,7 +52,7 @@ export const AIAssistantMessage = (props: Props) => {
             key={i}
             part={part}
             retryMessage={props.retryMessage}
-            disableRetry={props.disableRetry}
+            aiStatus={props.aiStatus}
             messageId={props.message.id}
           />
         );
