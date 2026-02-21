@@ -220,11 +220,11 @@
   "dashboard.tags.title": "Tags",
   "dashboard.sharedContent.title": "Shared With You",
   "dashboard.noRecentArtifacts.title": "No Documents",
-  "dashboard.noRecentArtifacts.message": "Click the plus button in the bottom right corner to create one!",
+  "dashboard.noRecentArtifacts.message": "Click the create new button in the left side menu to create one!",
   "dashboard.noGraph.title": "Graph Empty",
   "dashboard.noGraph.message": "Create an document to see it in the graph!",
   "dashboard.noRecentThreads.title": "No Threads",
-  "dashboard.noRecentThreads.message": "Click the plus button in the bottom right corner to create one!",
+  "dashboard.noRecentThreads.message": "Click the create new button in the left side menu to create one!",
   "dashboard.noSharedContent.title": "No Content Shared With You",
   "dashboard.noSharedContent.message": "Documents will show up here if another user shares their content with you",
   "dashboard.reload": "Refresh Dashboard",
@@ -734,7 +734,7 @@
 
   "assistant.title": "Assistant",
   "assistant.threads.nullState.title": "No Message Threads",
-  "assistant.threads.nullState.message": "Click on the plus button to create a new thread!",
+  "assistant.threads.nullState.message": "Click the create new button in the left sidebar to create a new thread!",
 
   "assistant.thread.rename": "Rename Thread",
   "assistant.thread.delete": "Delete Thread",
