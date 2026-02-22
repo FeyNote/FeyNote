@@ -42,6 +42,7 @@ export { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 export {
   IoAdd,
   IoCalendar,
+  IoChatbubbles,
   IoChevronDown,
   IoChevronForward,
   IoDocument,
