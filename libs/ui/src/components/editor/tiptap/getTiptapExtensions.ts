@@ -117,7 +117,7 @@ export const getTiptapExtensions = (args: {
       onIncomingReferenceCounterMouseOut:
         args.onIncomingReferenceCounterMouseOut,
     }),
-    TrailingNodeExtension,
+    ...(args.editable ? [TrailingNodeExtension] : []),
     BlockGroup,
     TextExtension,
     HorizontalRuleExtension,
