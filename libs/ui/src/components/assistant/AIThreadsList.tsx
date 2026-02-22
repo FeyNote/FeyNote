@@ -16,11 +16,11 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { AIThreadContextMenu } from './AIThreadContextMenu';
 import { IoChatbubbles } from '../AppIcons';
 import styled from 'styled-components';
-import type { ThreadDTO } from '@feynote/shared-utils';
+import type { ThreadDTO, ThreadDTOMesssage } from '@feynote/shared-utils';
 
 const ThreadItemRow = styled.div`
   display: grid;
-  grid-template-columns: min-content auto;
+  grid-template-columns: min-content auto min-content;
   align-items: center;
   gap: 8px;
   user-select: none;
@@ -36,9 +36,28 @@ const ThreadItemRow = styled.div`
   }
 `;
 
+const ThreadContent = styled.div`
+  min-width: 0;
+`;
+
 const ThreadTitle = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const ThreadPreview = styled.div`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: var(--gray-11);
+  margin-top: 2px;
+`;
+
+const ThreadDate = styled.div`
+  font-size: 0.75rem;
+  color: var(--gray-11);
   white-space: nowrap;
 `;
 
@@ -46,6 +65,23 @@ const ThreadIcon = styled(IoChatbubbles)`
   font-size: 20px;
   flex-shrink: 0;
 `;
+
+const getLastMessagePreview = (
+  messages: ThreadDTOMesssage[],
+): string | undefined => {
+  const lastMessage = messages.at(-1);
+  if (!lastMessage) return undefined;
+  const textPart = lastMessage.parts.find((part) => part.type === 'text');
+  if (!textPart || textPart.type !== 'text')
+    return getLastMessagePreview(messages.slice(0, messages.length - 1));
+  return textPart.text;
+};
+
+const getLastMessageDate = (thread: ThreadDTO): string | undefined => {
+  const lastMessage = thread.messages.at(-1);
+  if (!lastMessage) return undefined;
+  return lastMessage.updatedAt.toLocaleDateString();
+};
 
 export const AIThreadsList: React.FC = () => {
   const { t } = useTranslation();
@@ -94,27 +130,40 @@ export const AIThreadsList: React.FC = () => {
         />
       );
 
-    return threads.map((thread) => (
-      <AIThreadContextMenu
-        key={thread.id}
-        id={thread.id}
-        title={thread.title || t('generic.untitled')}
-        paneId={pane.id}
-        onDelete={getUserThreads}
-        onTitleChange={() => getUserThreads()}
-      >
-        <ThreadItemRow
-          onClick={(event) =>
-            navigateWithKeyboardHandler(event, PaneableComponent.AIThread, {
-              id: thread.id,
-            })
-          }
+    return threads
+      .map((thread) => ({
+        thread,
+        lastMessagePreview: getLastMessagePreview(thread.messages),
+      }))
+      .map(({ thread, lastMessagePreview }) => (
+        <AIThreadContextMenu
+          key={thread.id}
+          id={thread.id}
+          title={thread.title || t('generic.untitled')}
+          paneId={pane.id}
+          onDelete={getUserThreads}
+          onTitleChange={() => getUserThreads()}
         >
-          <ThreadIcon />
-          <ThreadTitle>{thread.title || t('generic.untitled')}</ThreadTitle>
-        </ThreadItemRow>
-      </AIThreadContextMenu>
-    ));
+          <ThreadItemRow
+            onClick={(event) =>
+              navigateWithKeyboardHandler(event, PaneableComponent.AIThread, {
+                id: thread.id,
+              })
+            }
+          >
+            <ThreadIcon />
+            <ThreadContent>
+              <ThreadTitle>{thread.title || t('generic.untitled')}</ThreadTitle>
+              {lastMessagePreview && (
+                <ThreadPreview>{lastMessagePreview}</ThreadPreview>
+              )}
+            </ThreadContent>
+            {getLastMessageDate(thread) && (
+              <ThreadDate>{getLastMessageDate(thread)}</ThreadDate>
+            )}
+          </ThreadItemRow>
+        </AIThreadContextMenu>
+      ));
   };
 
   return (
