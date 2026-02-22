@@ -276,6 +276,19 @@ export const LeftSideMenu: React.FC = () => {
               <IonIcon icon={chatboxEllipses} />
               &nbsp;&nbsp;
               <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
+              <IonButton
+                onClick={(event) =>
+                  navigateWithKeyboardHandler(
+                    event,
+                    PaneableComponent.AIThreadsList,
+                    {},
+                  )
+                }
+                size="small"
+                fill="clear"
+              >
+                <IonIcon icon={expand} size="small" />
+              </IonButton>
             </IonListHeader>
             {recentlyUpdatedThreads
               .slice(0, recentlyUpdatedThreadsLimit)
