@@ -1,5 +1,5 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -29,6 +29,7 @@ import {
   RiSendPlaneFill,
 } from '../AppIcons';
 import type { IconType } from 'react-icons';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -123,11 +124,14 @@ export const AIThread: React.FC<Props> = (props) => {
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const sessionContext = useSessionContext(true);
+  const sessionContext = useSessionContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { showAlert } = useAlertContext();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
+  const [retryConfirmMessageId, setRetryConfirmMessageId] = useState<
+    string | null
+  >(null);
 
   const resizeTextArea = useCallback(() => {
     const el = textAreaRef.current;
@@ -139,34 +143,42 @@ export const AIThread: React.FC<Props> = (props) => {
     resizeTextArea();
   }, [input, resizeTextArea]);
 
-  const { messages, setMessages, status, sendMessage, regenerate } =
-    useChat<FeynoteUIMessage>({
-      transport: new DefaultChatTransport({
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
         api: `${getApiUrls().rest}/message/`,
         headers: {
-          Authorization: sessionContext?.session.token
-            ? `Bearer ${sessionContext.session.token}`
-            : '',
+          Authorization: `Bearer ${sessionContext.session.token}`,
           'Content-Type': 'application/json',
         },
         body: {
           threadId: props.id,
         },
       }),
+    [sessionContext.session.token, props.id],
+  );
+
+  const { messages, setMessages, status, sendMessage, regenerate } =
+    useChat<FeynoteUIMessage>({
+      transport,
       generateId: () => {
         return crypto.randomUUID();
       },
       onFinish: async (data) => {
-        //TODO: https://github.com/FeyNote/FeyNote/issues/1201
-        await trpc.ai.saveMessage.mutate({
-          threadId: props.id,
-          message: data.message,
-        });
-        if (!title) {
-          await trpc.ai.createThreadTitle.mutate({
-            id: props.id,
+        try {
+          //TODO: https://github.com/FeyNote/FeyNote/issues/1201
+          await trpc.ai.saveMessage.mutate({
+            threadId: props.id,
+            message: data.message,
           });
-          await getThreadInfo();
+          if (!title) {
+            await trpc.ai.createThreadTitle.mutate({
+              id: props.id,
+            });
+            await getThreadInfo();
+          }
+        } catch (e) {
+          handleTRPCErrors(e);
         }
       },
       onError: (error) => {
@@ -183,11 +195,13 @@ export const AIThread: React.FC<Props> = (props) => {
           }
           // eslint-disable-next-line no-empty
         } catch (_) {}
-        handleTRPCErrors(new Error());
+        handleTRPCErrors(error);
       },
     });
 
   const isLoading = status === 'submitted' || status === 'streaming';
+  const statusRef = useRef(status);
+  statusRef.current = status;
 
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
@@ -212,6 +226,11 @@ export const AIThread: React.FC<Props> = (props) => {
       data: EventData[EventName.ThreadUpdated],
     ) => {
       if (data.threadId !== props.id) return;
+      if (
+        statusRef.current === 'submitted' ||
+        statusRef.current === 'streaming'
+      )
+        return;
       await getThreadInfo();
     };
 
@@ -265,7 +284,7 @@ export const AIThread: React.FC<Props> = (props) => {
     regenerate();
   };
 
-  const retryMessage = async (messageId: string) => {
+  const executeRetry = async (messageId: string) => {
     let retriedUserMsg,
       retriedUserMsgIdx = null;
     for (const [idx, message] of messages.entries()) {
@@ -291,6 +310,10 @@ export const AIThread: React.FC<Props> = (props) => {
     const remainingMessages = messages.slice(0, retriedUserMsgIdx + 1);
     setMessages(remainingMessages);
     regenerate();
+  };
+
+  const retryMessage = (messageId: string) => {
+    setRetryConfirmMessageId(messageId);
   };
 
   return (
@@ -382,6 +405,34 @@ export const AIThread: React.FC<Props> = (props) => {
           </ChatTextContainer>
         </ChatContainer>
       </IonContent>
+      <ActionDialog
+        title={t('aiThread.retry.confirmation')}
+        open={!!retryConfirmMessageId}
+        onOpenChange={(open) => {
+          if (!open) setRetryConfirmMessageId(null);
+        }}
+        actionButtons={[
+          {
+            title: t('generic.cancel'),
+            props: {
+              color: 'gray',
+              onClick: () => setRetryConfirmMessageId(null),
+            },
+          },
+          {
+            title: t('generic.confirm'),
+            props: {
+              color: 'red',
+              onClick: () => {
+                if (retryConfirmMessageId) {
+                  executeRetry(retryConfirmMessageId);
+                }
+                setRetryConfirmMessageId(null);
+              },
+            },
+          },
+        ]}
+      />
     </IonPage>
   );
 };

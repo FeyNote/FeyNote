@@ -26,7 +26,7 @@ export const getThread = authenticatedProcedure
       .map((message) => ({
         ...(message.vercelJsonV5 as unknown as FeynoteUIMessage),
         id: message.id,
-        updatedAt: message.createdAt,
+        updatedAt: message.updatedAt,
       }));
     const threadDTO = {
       id: thread.id,

@@ -7,6 +7,7 @@ import {
   wsRoomNameForUserId,
 } from '@feynote/queue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
+import { TRPCError } from '@trpc/server';
 
 export const saveMessage = authenticatedProcedure
   .input(
@@ -26,6 +27,14 @@ export const saveMessage = authenticatedProcedure
       createdAt: Date;
       updatedAt: Date;
     }> => {
+      const thread = await prisma.thread.findFirst({
+        where: { id: input.threadId, userId: ctx.session.userId },
+      });
+      if (!thread) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+        });
+      }
       const message = await prisma.message.create({
         data: {
           id: input.message.id,

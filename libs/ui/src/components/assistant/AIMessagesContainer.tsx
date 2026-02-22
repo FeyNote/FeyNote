@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { AIMessageContent } from './AIMessageContent';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import type { ChatStatus } from 'ai';
+import { Spinner } from '@radix-ui/themes';
 
 const Scroller = styled.div<{
   $visible: boolean;
@@ -31,6 +32,15 @@ const UserMessageContainer = styled.div`
 `;
 
 const AssistantMessageContainer = styled.div`
+  width: 100%;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
+  line-height: 1.5rem;
+`;
+
+const ThinkingContainer = styled.div`
   width: 100%;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -165,9 +175,21 @@ export const AIMessagesContainer = (props: Props) => {
     );
   };
 
+  const showThinking =
+    props.aiStatus === 'submitted' &&
+    props.messages.length > 0 &&
+    props.messages[props.messages.length - 1].role === 'user';
+
   return (
     <Scroller ref={scrollerRef} $visible={initialScrollOccurred}>
-      <div ref={contentRef}>{props.messages.map(renderMessage)}</div>
+      <div ref={contentRef}>
+        {props.messages.map(renderMessage)}
+        {showThinking && (
+          <ThinkingContainer>
+            <Spinner />
+          </ThinkingContainer>
+        )}
+      </div>
       <div ref={spacerRef} />
     </Scroller>
   );

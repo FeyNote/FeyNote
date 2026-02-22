@@ -17,6 +17,8 @@ import { AIThreadContextMenu } from './AIThreadContextMenu';
 import { IoChatbubbles } from '../AppIcons';
 import styled from 'styled-components';
 import type { ThreadDTO, ThreadDTOMessage } from '@feynote/shared-utils';
+import { EventName } from '../../context/events/EventName';
+import { eventManager } from '../../context/events/EventManager';
 
 const ThreadItemRow = styled.div`
   display: grid;
@@ -116,6 +118,16 @@ export const AIThreadsList: React.FC = () => {
 
   useEffect(() => {
     getUserThreads();
+    const threadUpdateHandler = () => {
+      getUserThreads();
+    };
+    eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
+    return () => {
+      eventManager.removeEventListener(
+        EventName.ThreadUpdated,
+        threadUpdateHandler,
+      );
+    };
   }, []);
 
   const render = () => {

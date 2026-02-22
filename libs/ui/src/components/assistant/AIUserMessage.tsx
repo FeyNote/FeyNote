@@ -5,6 +5,7 @@ import { RiFileCopyLine, FaPencil, RiRefreshLine } from '../AppIcons';
 import { useTranslation } from 'react-i18next';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import type { ChatStatus } from 'ai';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 interface Props {
   message: FeynoteUIMessage;
@@ -17,6 +18,7 @@ export const AIUserMessage = (props: Props) => {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showEditConfirmation, setShowEditConfirmation] = useState(false);
   const messageText = useMemo(() => {
     const messagePart = props.message.parts.find(
       (part) => part.type === 'text',
@@ -33,8 +35,9 @@ export const AIUserMessage = (props: Props) => {
     }
   }, [isEditing]);
 
-  const submitMessageUpdate = async () => {
+  const executeEditSubmit = () => {
     setIsEditing(false);
+    setShowEditConfirmation(false);
     props.updateMessage({
       ...props.message,
       parts: [
@@ -44,6 +47,10 @@ export const AIUserMessage = (props: Props) => {
         },
       ],
     });
+  };
+
+  const submitMessageUpdate = () => {
+    setShowEditConfirmation(true);
   };
 
   if (isEditing) {
@@ -87,6 +94,29 @@ export const AIUserMessage = (props: Props) => {
             {t('generic.submit')}
           </Button>
         </Flex>
+        <ActionDialog
+          title={t('aiThread.editSubmit.confirmation')}
+          open={showEditConfirmation}
+          onOpenChange={(open) => {
+            if (!open) setShowEditConfirmation(false);
+          }}
+          actionButtons={[
+            {
+              title: t('generic.cancel'),
+              props: {
+                color: 'gray',
+                onClick: () => setShowEditConfirmation(false),
+              },
+            },
+            {
+              title: t('generic.confirm'),
+              props: {
+                color: 'red',
+                onClick: executeEditSubmit,
+              },
+            },
+          ]}
+        />
       </>
     );
   } else {
