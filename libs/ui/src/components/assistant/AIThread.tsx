@@ -1,5 +1,5 @@
 import { IonContent, IonPage } from '@ionic/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -75,6 +75,10 @@ const ChatTextContainer = styled.div`
   padding-left: 8px;
   margin-right: 8px;
   gap: 16px;
+
+  .rt-TextAreaInput {
+    overflow: hidden;
+  }
 `;
 
 export interface ChatMessage {
@@ -128,6 +132,12 @@ export const AIThread: React.FC<Props> = (props) => {
   const { showAlert } = useAlertContext();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
+  const resizeTextArea = useCallback(() => {
+    const el = textAreaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
   const { messages, setMessages, status, sendMessage, regenerate } =
     useChat<FeynoteUIMessage>({
       transport: new DefaultChatTransport({
@@ -230,6 +240,7 @@ export const AIThread: React.FC<Props> = (props) => {
       return;
     }
     setInput('');
+    if (textAreaRef.current) textAreaRef.current.style.height = 'auto';
   };
 
   const updateMessage = async (message: FeynoteUIMessage) => {
@@ -335,7 +346,10 @@ export const AIThread: React.FC<Props> = (props) => {
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
               disabled={isLoading || isLoadingInitialState}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                resizeTextArea();
+              }}
               onKeyDown={(e) => {
                 if (
                   e.key === 'Enter' &&
