@@ -66,7 +66,7 @@ export const AIUserMessage = (props: Props) => {
             }
           }}
         />
-        <Flex gap="1" mt="2">
+        <Flex gap="1" mt="2" justify="end">
           <Button
             variant="soft"
             size="1"
@@ -83,7 +83,7 @@ export const AIUserMessage = (props: Props) => {
             }
             onClick={submitMessageUpdate}
           >
-            {t('generic.save')}
+            {t('generic.submit')}
           </Button>
         </Flex>
       </>
