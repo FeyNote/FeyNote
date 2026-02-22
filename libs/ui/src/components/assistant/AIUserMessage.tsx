@@ -92,7 +92,7 @@ export const AIUserMessage = (props: Props) => {
     return (
       <>
         <div>{messageText}</div>
-        <Flex gap="1" justify="end" mt="1">
+        <Flex gap="2" justify="end" mt="1">
           <IconButton
             variant="ghost"
             size="1"

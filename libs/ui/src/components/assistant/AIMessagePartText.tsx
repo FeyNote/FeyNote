@@ -34,7 +34,7 @@ export const AIMessagePartText = (props: Props) => {
           __html: messageHTML,
         }}
       ></div>
-      <Flex gap="1">
+      <Flex gap="2">
         <IconButton
           variant="ghost"
           size="1"
