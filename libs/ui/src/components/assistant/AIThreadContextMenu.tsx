@@ -6,32 +6,35 @@ import {
   useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { usePaneContext } from '../../context/pane/PaneContext';
-import type { PaneContextData } from '../../context/pane/PaneContext';
-import { DropdownMenu, TextField } from '@radix-ui/themes';
+import { ContextMenu, DropdownMenu, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 
-interface Props {
+export interface AIThreadMenuProps {
   id: string;
   title: string;
-  setTitle: (title: string) => void;
-  navigate: PaneContextData['navigate'];
+  paneId: string | undefined;
+  onTitleChange: (title: string) => void;
+  onDelete: () => void;
   children: React.ReactNode;
 }
 
-export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
+const AIThreadMenuInternal: React.FC<
+  AIThreadMenuProps & {
+    MenuImpl: typeof ContextMenu | typeof DropdownMenu;
+  }
+> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = props;
-  const { pane } = usePaneContext();
-  const { navigate: globalNavigate } = useGlobalPaneContext();
+  const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newTitle, setNewTitle] = useState(props.title);
   const [showRenameThreadAlert, setShowRenameThreadAlert] = useState(false);
   const [showDeleteThreadActionDialog, setShowDeleteThreadActionDialog] =
     useState(false);
 
-  const triggerRenameThreadAlert = async () => {
+  const MenuImpl = props.MenuImpl;
+
+  const triggerRenameThreadAlert = () => {
     setNewTitle(props.title);
     setShowRenameThreadAlert(true);
   };
@@ -58,11 +61,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
                   id: props.id,
                 })
                 .then(() => {
-                  navigate(
-                    PaneableComponent.AIThreadsList,
-                    {},
-                    PaneTransition.Replace,
-                  );
+                  props.onDelete();
                 })
                 .catch((error) => {
                   handleTRPCErrors(error);
@@ -97,7 +96,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
                   id: props.id,
                   title: newTitle.trim(),
                 });
-                props.setTitle(newTitle.trim());
+                props.onTitleChange(newTitle.trim());
               } catch (error) {
                 handleTRPCErrors(error);
               }
@@ -118,58 +117,68 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   );
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>{props.children}</DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Item
-          onClick={() =>
-            globalNavigate(
-              pane.id,
-              pane.currentView.component,
-              pane.currentView.props,
-              PaneTransition.HSplit,
-            )
-          }
-        >
-          {t('contextMenu.splitRight')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() =>
-            globalNavigate(
-              pane.id,
-              pane.currentView.component,
-              pane.currentView.props,
-              PaneTransition.VSplit,
-            )
-          }
-        >
-          {t('contextMenu.splitDown')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          onClick={() =>
-            globalNavigate(
-              pane.id,
-              pane.currentView.component,
-              pane.currentView.props,
-              PaneTransition.NewTab,
-            )
-          }
-        >
-          {t('contextMenu.duplicateTab')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Separator />
-        <DropdownMenu.Item onClick={triggerRenameThreadAlert}>
-          {t('assistant.thread.rename')}
-        </DropdownMenu.Item>
-        <DropdownMenu.Item
-          color="red"
-          onClick={() => setShowDeleteThreadActionDialog(true)}
-        >
-          {t('assistant.thread.delete')}
-        </DropdownMenu.Item>
-      </DropdownMenu.Content>
+    <>
+      <MenuImpl.Root>
+        <MenuImpl.Trigger>{props.children}</MenuImpl.Trigger>
+        <MenuImpl.Content>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.HSplit,
+              )
+            }
+          >
+            {t('contextMenu.splitRight')}
+          </MenuImpl.Item>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.VSplit,
+              )
+            }
+          >
+            {t('contextMenu.splitDown')}
+          </MenuImpl.Item>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.NewTab,
+              )
+            }
+          >
+            {t('contextMenu.newTab')}
+          </MenuImpl.Item>
+          <MenuImpl.Separator />
+          <MenuImpl.Item onClick={triggerRenameThreadAlert}>
+            {t('assistant.thread.rename')}
+          </MenuImpl.Item>
+          <MenuImpl.Item
+            color="red"
+            onClick={() => setShowDeleteThreadActionDialog(true)}
+          >
+            {t('assistant.thread.delete')}
+          </MenuImpl.Item>
+        </MenuImpl.Content>
+      </MenuImpl.Root>
       {deleteThreadActionDialog}
       {renameThreadActionDialog}
-    </DropdownMenu.Root>
+    </>
   );
 };
+
+export const AIThreadContextMenu: React.FC<AIThreadMenuProps> = (props) => (
+  <AIThreadMenuInternal {...props} MenuImpl={ContextMenu} />
+);
+
+export const AIThreadDropdownMenu: React.FC<AIThreadMenuProps> = (props) => (
+  <AIThreadMenuInternal {...props} MenuImpl={DropdownMenu} />
+);

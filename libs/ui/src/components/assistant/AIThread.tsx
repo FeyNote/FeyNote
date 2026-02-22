@@ -6,11 +6,13 @@ import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
-import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
+import { AIThreadDropdownMenu } from './AIThreadContextMenu';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
 import { usePaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
@@ -123,7 +125,7 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigate, pane } = usePaneContext();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
@@ -294,14 +296,21 @@ export const AIThread: React.FC<Props> = (props) => {
       <PaneNav
         title={title || t('assistant.thread.emptyTitle')}
         renderDropdownMenu={(children) => (
-          <AIThreadOptionsPopover
+          <AIThreadDropdownMenu
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
-            setTitle={setTitle}
-            navigate={navigate}
+            paneId={pane.id}
+            onTitleChange={setTitle}
+            onDelete={() =>
+              navigate(
+                PaneableComponent.AIThreadsList,
+                {},
+                PaneTransition.Replace,
+              )
+            }
           >
             {children}
-          </AIThreadOptionsPopover>
+          </AIThreadDropdownMenu>
         )}
       />
       <IonContent>

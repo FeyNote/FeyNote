@@ -41,6 +41,7 @@ import { InfoButton } from '../info/InfoButton';
 import { AppConnectionStatus } from './AppConnectionStatus';
 import { LuFolderTree } from '../AppIcons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { AIThreadContextMenu } from '../assistant/AIThreadContextMenu';
 
 const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
@@ -279,22 +280,30 @@ export const LeftSideMenu: React.FC = () => {
             {recentlyUpdatedThreads
               .slice(0, recentlyUpdatedThreadsLimit)
               .map((recentlyUpdatedThread) => (
-                <CompactIonItem
-                  lines="none"
+                <AIThreadContextMenu
                   key={recentlyUpdatedThread.id}
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.AIThread,
-                      { id: recentlyUpdatedThread.id },
-                    )
-                  }
-                  button
+                  id={recentlyUpdatedThread.id}
+                  title={recentlyUpdatedThread.title || t('generic.untitled')}
+                  paneId={currentPane.id}
+                  onDelete={load}
+                  onTitleChange={() => load()}
                 >
-                  <NowrapIonLabel>
-                    {recentlyUpdatedThread.title || t('generic.untitled')}
-                  </NowrapIonLabel>
-                </CompactIonItem>
+                  <CompactIonItem
+                    lines="none"
+                    onClick={(event) =>
+                      navigateWithKeyboardHandler(
+                        event,
+                        PaneableComponent.AIThread,
+                        { id: recentlyUpdatedThread.id },
+                      )
+                    }
+                    button
+                  >
+                    <NowrapIonLabel>
+                      {recentlyUpdatedThread.title || t('generic.untitled')}
+                    </NowrapIonLabel>
+                  </CompactIonItem>
+                </AIThreadContextMenu>
               ))}
             {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
               <IonButton

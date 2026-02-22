@@ -418,7 +418,7 @@
   "contextMenu.splitRight": "Split right",
   "contextMenu.splitDown": "Split down",
   "contextMenu.duplicateTab": "Duplicate tab",
-  "contextMenu.newTab": "New tab",
+  "contextMenu.newTab": "Open in new tab",
   "contextMenu.expandAll": "Expand all",
   "contextMenu.collapseAll": "Collapse all",
   "contextMenu.duplicateArtifact": "Duplicate Document",
