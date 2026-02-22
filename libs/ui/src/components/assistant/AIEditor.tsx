@@ -15,6 +15,11 @@ import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboratio
 
 const AIFCEditorContainer = styled.div`
   margin: 8px 0;
+
+  ion-card {
+    background: none;
+    box-shadow: none;
+  }
 `;
 
 interface Props {
