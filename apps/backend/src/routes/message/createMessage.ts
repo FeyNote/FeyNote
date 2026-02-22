@@ -97,6 +97,7 @@ export const createMessage = defineExpressHandler(
         } else if (InvalidToolInputError.isInstance(err)) {
           issue = 'ERROR: The model called a tool with invalid inputs.';
         }
+        console.error(err);
         Sentry.captureException(err, {
           extra: {
             issue,

@@ -27,7 +27,11 @@ export const saveMessage = authenticatedProcedure
       updatedAt: Date;
     }> => {
       const message = await prisma.message.create({
-        data: { threadId: input.threadId, vercelJsonV5: input.message },
+        data: {
+          id: input.message.id,
+          threadId: input.threadId,
+          vercelJsonV5: input.message,
+        },
       });
       enqueueOutgoingWebsocketMessage({
         room: wsRoomNameForUserId(ctx.session.userId),
