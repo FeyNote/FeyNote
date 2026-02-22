@@ -83,12 +83,6 @@ const ChatTextContainer = styled.div`
   }
 `;
 
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: string;
-}
-
 const PROMPT_CARDS: {
   header: string;
   query: string;
@@ -134,12 +128,17 @@ export const AIThread: React.FC<Props> = (props) => {
   const { showAlert } = useAlertContext();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
+
   const resizeTextArea = useCallback(() => {
     const el = textAreaRef.current;
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
   }, []);
+  useEffect(() => {
+    resizeTextArea();
+  }, [input, resizeTextArea]);
+
   const { messages, setMessages, status, sendMessage, regenerate } =
     useChat<FeynoteUIMessage>({
       transport: new DefaultChatTransport({
@@ -199,8 +198,10 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    const progress = startProgressBar();
     setIsLoadingInitialState(true);
+    setTitle(null);
+    setMessages([]);
+    const progress = startProgressBar();
     getThreadInfo().finally(() => {
       setIsLoadingInitialState(false);
       progress.dismiss();
@@ -221,9 +222,10 @@ export const AIThread: React.FC<Props> = (props) => {
         threadUpdateHandler,
       );
     };
-  }, []);
+  }, [props.id]);
 
   const submitMessageQuery = async () => {
+    if (!input.trim()) return;
     const message: FeynoteUIMessage = {
       id: crypto.randomUUID(),
       parts: [{ type: 'text', text: input }],
@@ -357,7 +359,6 @@ export const AIThread: React.FC<Props> = (props) => {
               disabled={isLoading || isLoadingInitialState}
               onChange={(e) => {
                 setInput(e.target.value);
-                resizeTextArea();
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
@@ -368,7 +369,10 @@ export const AIThread: React.FC<Props> = (props) => {
                 }
               }}
             />
-            <IconButton onClick={submitMessageQuery}>
+            <IconButton
+              disabled={isLoading || isLoadingInitialState}
+              onClick={submitMessageQuery}
+            >
               {isLoading || isLoadingInitialState ? (
                 <Spinner />
               ) : (

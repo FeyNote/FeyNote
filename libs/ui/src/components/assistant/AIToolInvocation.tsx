@@ -1,5 +1,5 @@
 import { type UIDataTypes, type UIMessagePart, type ChatStatus } from 'ai';
-import { IonSpinner } from '@ionic/react';
+import { Spinner } from '@radix-ui/themes';
 import { getEditorContentsFromToolPart } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
 import type { FeynoteUITool } from '@feynote/shared-utils';
@@ -17,7 +17,7 @@ export const AIToolPart = (props: Props) => {
     () => getEditorContentsFromToolPart(props.part),
     [props.part],
   );
-  if (!toolPartContents.length) return <IonSpinner name="dots" />;
+  if (!toolPartContents.length) return <Spinner />;
 
   return (
     <>

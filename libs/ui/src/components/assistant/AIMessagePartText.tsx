@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { starkdown } from 'starkdown';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import { Flex, IconButton } from '@radix-ui/themes';
@@ -31,7 +32,7 @@ export const AIMessagePartText = (props: Props) => {
     <React.Fragment>
       <div
         dangerouslySetInnerHTML={{
-          __html: messageHTML,
+          __html: DOMPurify.sanitize(messageHTML),
         }}
       ></div>
       <Flex gap="2" mt="2">

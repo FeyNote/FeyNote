@@ -16,7 +16,7 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { AIThreadContextMenu } from './AIThreadContextMenu';
 import { IoChatbubbles } from '../AppIcons';
 import styled from 'styled-components';
-import type { ThreadDTO, ThreadDTOMesssage } from '@feynote/shared-utils';
+import type { ThreadDTO, ThreadDTOMessage } from '@feynote/shared-utils';
 
 const ThreadItemRow = styled.div`
   display: grid;
@@ -67,7 +67,7 @@ const ThreadIcon = styled(IoChatbubbles)`
 `;
 
 const getLastMessagePreview = (
-  messages: ThreadDTOMesssage[],
+  messages: ThreadDTOMessage[],
 ): string | undefined => {
   const lastMessage = messages.at(-1);
   if (!lastMessage) return undefined;

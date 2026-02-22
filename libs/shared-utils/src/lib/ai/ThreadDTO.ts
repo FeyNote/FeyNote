@@ -3,9 +3,9 @@ import type { FeynoteUIMessage } from './FeynoteUIMessage';
 export type ThreadDTO = {
   id: string;
   title?: string;
-  messages: ThreadDTOMesssage[];
+  messages: ThreadDTOMessage[];
 };
 
-export type ThreadDTOMesssage = FeynoteUIMessage & {
+export type ThreadDTOMessage = FeynoteUIMessage & {
   updatedAt: Date;
 };

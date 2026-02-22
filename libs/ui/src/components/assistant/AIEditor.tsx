@@ -37,6 +37,10 @@ export const AIEditor: React.FC<Props> = (props) => {
     return new YDoc();
   }, []);
 
+  useEffect(() => {
+    return () => yDoc.destroy();
+  }, [yDoc]);
+
   const updateContent = () => {
     setContentRef.current?.(props.editorContent);
   };
@@ -63,7 +67,7 @@ export const AIEditor: React.FC<Props> = (props) => {
             editorRef={editorRef}
           />
         </ArtifactEditorContainer>
-        <Flex gap="1">
+        <Flex gap="2">
           <IconButton
             variant="ghost"
             size="1"

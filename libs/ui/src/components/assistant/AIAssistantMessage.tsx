@@ -1,4 +1,4 @@
-import { IonSpinner } from '@ionic/react';
+import { Spinner } from '@radix-ui/themes';
 import { AIToolPart } from './AIToolInvocation';
 import { AIMessagePartText } from './AIMessagePartText';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
@@ -21,7 +21,7 @@ export const AIAssistantMessage = (props: Props) => {
 
   if (!props.message.parts || props.message.parts.length === 0) {
     if (props.aiStatus === 'submitted' || props.aiStatus === 'streaming') {
-      return <IonSpinner name="dots" />;
+      return <Spinner />;
     }
     return <ErrorText>{t('aiAssistantMessage.error')}</ErrorText>;
   }
