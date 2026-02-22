@@ -351,14 +351,11 @@ export const AIThread: React.FC<Props> = (props) => {
                 resizeTextArea();
               }}
               onKeyDown={(e) => {
-                if (
-                  e.key === 'Enter' &&
-                  !e.shiftKey &&
-                  status === 'ready' &&
-                  !isLoadingInitialState
-                ) {
+                if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
                   e.preventDefault();
-                  submitMessageQuery();
+                  if (status === 'ready' && !isLoadingInitialState) {
+                    submitMessageQuery();
+                  }
                 }
               }}
             />

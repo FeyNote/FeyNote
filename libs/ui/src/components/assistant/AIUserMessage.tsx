@@ -54,15 +54,16 @@ export const AIUserMessage = (props: Props) => {
           value={editInput}
           onChange={(e) => setEditInput(e.target.value)}
           onKeyDown={(e) => {
-            if (
-              e.key === 'Enter' &&
-              !e.shiftKey &&
-              !(
-                props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
-              )
-            ) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
               e.preventDefault();
-              submitMessageUpdate();
+              if (
+                !(
+                  props.aiStatus === 'submitted' ||
+                  props.aiStatus === 'streaming'
+                )
+              ) {
+                submitMessageUpdate();
+              }
             }
           }}
         />
