@@ -15,24 +15,52 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord } from '@feynote/shared-utils';
-import {
-  PaneTransition,
-  useGlobalPaneContext,
-} from '../globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
 import { createArtifact } from '../../utils/localDb/createArtifact';
-import { Box, TextField } from '@radix-ui/themes';
+import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
+import { Box, Spinner, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../../components/AppIcons';
+import { applyUpdate, Doc as YDoc } from 'yjs';
+import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
 
-const SearchContainer = styled.div`
+const SearchContainer = styled.div<{ $isWideScreen: boolean }>`
   position: absolute;
   left: 50%;
-  top: 20%;
-  z-index: 3;
+  top: 50%;
+  z-index: 10;
 
-  width: min(500px, 97%);
+  width: ${(props) =>
+    props.$isWideScreen ? 'min(1200px, 97%)' : 'min(500px, 97%)'};
 
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-50%);
+`;
+
+const SearchWithPreviewGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  gap: 12px;
+  height: 70vh;
+`;
+
+const PreviewPanel = styled.div`
+  box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  background-color: var(--ion-card-background, #ffffff);
+  border-radius: 7px;
+  overflow-y: auto;
+
+  ion-card {
+    margin-top: 0;
+    margin-bottom: 0;
+    box-shadow: none;
+    cursor: pointer;
+  }
+`;
+
+const PreviewSpinnerContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
 `;
 
 const FloatingSearchContainer = styled.div`
@@ -40,6 +68,8 @@ const FloatingSearchContainer = styled.div`
   background-color: var(--ion-card-background, #ffffff);
   border-radius: 7px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TitleContainer = styled.div`
@@ -60,6 +90,8 @@ const Title = styled.h2`
 `;
 
 const SearchResultsContainer = styled.div`
+  flex: 1;
+  min-height: 0;
   max-height: 50vh;
   overflow-y: auto;
 `;
@@ -110,13 +142,18 @@ const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
 }) => {
-  const { navigate } = useGlobalPaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const [isWideScreen, setIsWideScreen] = useState(
+    () => window.matchMedia('(min-width: 601px)').matches,
+  );
   const [show, setShow] = useState(false);
+  const [previewYDoc, setPreviewYDoc] = useState<YDoc>();
+  const [previewLoading, setPreviewLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [searchResults, setSearchResults] = useState<
     {
       artifact: ArtifactDTO;
-      blockId?: string;
+      blockIds: Set<string>;
       highlights: string[];
       previewText: string;
     }[]
@@ -148,7 +185,9 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     setShow(false);
   };
 
-  const create = async () => {
+  const create = async (
+    event: MouseEvent | KeyboardEvent | React.MouseEvent | React.KeyboardEvent,
+  ) => {
     const result = await createArtifact({
       artifact: {
         title: capitalizeEachWord(searchText).trim(),
@@ -159,25 +198,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
     if (!result) return;
 
-    navigate(
-      undefined, // Open in currently focused pane rather than in specific pane
-      PaneableComponent.Artifact,
-      {
-        id: result.id,
-      },
-      PaneTransition.Push,
-    );
+    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+      id: result.id,
+    });
   };
 
-  const openPersistentSearch = () => {
-    navigate(
-      undefined, // Open in currently focused pane rather than in specific pane
-      PaneableComponent.PersistentSearch,
-      {
-        initialTerm: searchText || undefined,
-      },
-      PaneTransition.Push,
-    );
+  const openPersistentSearch = (event: MouseEvent | React.MouseEvent) => {
+    navigateWithKeyboardHandler(event, PaneableComponent.PersistentSearch, {
+      initialTerm: searchText || undefined,
+    });
     hide();
   };
 
@@ -212,18 +241,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       if (event.key === 'Enter' && show) {
         event.preventDefault();
         if (selectedIdx < searchResults.length) {
-          navigate(
-            undefined, // Open in currently focused pane rather than in specific pane
-            PaneableComponent.Artifact,
-            {
-              id: searchResults[selectedIdx].artifact.id,
-              focusBlockId: searchResults[selectedIdx].blockId,
-            },
-            PaneTransition.Push,
-          );
+          navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+            id: searchResults[selectedIdx].artifact.id,
+            // The browser can only "focus" one thing, so we choose the first result which is theoretically the most relevant
+            focusBlockId: searchResults[selectedIdx].blockIds.values().next()
+              .value,
+          });
           hide();
         } else {
-          create();
+          create(event);
           hide();
         }
       }
@@ -270,18 +296,20 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
           const results: {
             artifact: ArtifactDTO;
-            blockId?: string;
+            blockIds: Set<string>;
             highlights: string[];
             previewText: string;
           }[] = [];
           const resultsByArtifactId = new Map<string, (typeof results)[0]>();
 
-          // We only want to display title results if there are no block results for that artifact
           for (const titleResult of titleResults) {
+            // Title results can only be displayed once per artifact. In the strange case that we've received the same
+            // artifact back twice from the server (or service worker), we skip here
             if (!resultsByArtifactId.has(titleResult.artifact.id)) {
               const result = {
                 artifact: titleResult.artifact,
                 highlights: [],
+                blockIds: new Set<string>(),
                 previewText: titleResult.artifact.previewText,
               };
               results.push(result);
@@ -296,11 +324,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
             if (existingResult) {
               if (blockResult.highlight) {
                 existingResult.highlights.push(blockResult.highlight);
+                existingResult.blockIds.add(blockResult.blockId);
               }
             } else {
               const result = {
                 artifact: blockResult.artifact,
-                blockId: blockResult.blockId,
+                blockIds: new Set([blockResult.blockId]),
                 highlights: blockResult.highlight
                   ? [blockResult.highlight]
                   : [],
@@ -325,6 +354,63 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     };
   }, [searchText]);
 
+  const selectedArtifactId =
+    selectedIdx < searchResults.length
+      ? searchResults[selectedIdx].artifact.id
+      : undefined;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 601px)');
+    const listener = (e: MediaQueryListEvent) => setIsWideScreen(e.matches);
+    mq.addEventListener('change', listener);
+    return () => mq.removeEventListener('change', listener);
+  }, []);
+
+  useEffect(() => {
+    if (!isWideScreen || !selectedArtifactId) {
+      setPreviewYDoc(undefined);
+      setPreviewLoading(false);
+      return;
+    }
+
+    setPreviewLoading(true);
+    setPreviewYDoc(undefined);
+
+    let cancelled = false;
+
+    trpc.artifact.getArtifactYBinById
+      .query({ id: selectedArtifactId })
+      .then((result) => {
+        if (cancelled) return;
+        const yDoc = new YDoc();
+        applyUpdate(yDoc, result.yBin);
+        setPreviewYDoc(yDoc);
+        setPreviewLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPreviewLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedArtifactId, isWideScreen]);
+
+  useEffect(() => {
+    if (!show) return;
+
+    const referencePreviewContainer = document.getElementById(
+      'referencePreviewContainer',
+    );
+    if (!referencePreviewContainer) return;
+
+    const listener = () => setTimeout(hide);
+    referencePreviewContainer.addEventListener('click', listener, true);
+    return () =>
+      referencePreviewContainer.removeEventListener('click', listener, true);
+  }, [show]);
+
   const value = useMemo(
     () => ({
       trigger,
@@ -332,10 +418,137 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     [],
   );
 
+  const searchInputAndResults = (
+    <FloatingSearchContainer>
+      <Box>
+        <TextField.Root
+          ref={inputRef}
+          placeholder={t('globalSearch.placeholder')}
+          onChange={(event) => setSearchText(event.target.value)}
+          value={searchText}
+          size="3"
+          inputMode="search"
+        >
+          <TextField.Slot>
+            <IoSearch height="16" width="16" />
+          </TextField.Slot>
+        </TextField.Root>
+      </Box>
+
+      <SearchResultsContainer>
+        {searchResults.map((searchResult, idx) => (
+          <SearchResult
+            lines="none"
+            key={searchResult.artifact.id}
+            $selected={selectedIdx === idx}
+            onMouseOver={() => setSelectedIdx(idx)}
+            onClick={(event) => {
+              navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+                id: searchResult.artifact.id,
+                // The browser can only "focus" one thing, so we choose the first result which is theoretically the most relevant
+                focusBlockId: searchResult.blockIds.values().next().value,
+              });
+              hide();
+            }}
+            button
+          >
+            <IonLabel>
+              {searchResult.artifact.title}
+              {searchResult.highlights
+                .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
+                .map((highlight) => (
+                  <ResultWithHighlightsWrapper
+                    dangerouslySetInnerHTML={{
+                      __html: '…' + highlight + '…',
+                    }}
+                  ></ResultWithHighlightsWrapper>
+                ))}
+              {searchResult.highlights.length >
+                MAX_DISPLAYED_HIGHLIGHT_COUNT && (
+                <p>
+                  <i>
+                    {t('globalSearch.moreHighlights', {
+                      count:
+                        searchResult.highlights.length -
+                        MAX_DISPLAYED_HIGHLIGHT_COUNT,
+                    })}
+                  </i>
+                </p>
+              )}
+              {!searchResult.highlights.length && (
+                <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
+              )}
+            </IonLabel>
+          </SearchResult>
+        ))}
+        {!!searchText.length && !searching && (
+          <SearchResult
+            lines="none"
+            $selected={selectedIdx === maxSelectedIdx}
+            onClick={(event) => (create(event), hide())}
+            onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
+            button
+          >
+            <IonLabel>
+              {t(
+                searchResults.length
+                  ? 'editor.referenceMenu.create.title'
+                  : 'editor.referenceMenu.noItems.title',
+                { title: capitalizeEachWord(searchText).trim() },
+              )}
+              <p>
+                {t(
+                  searchResults.length
+                    ? 'editor.referenceMenu.create.subtitle'
+                    : 'editor.referenceMenu.noItems.subtitle',
+                )}
+              </p>
+            </IonLabel>
+          </SearchResult>
+        )}
+      </SearchResultsContainer>
+    </FloatingSearchContainer>
+  );
+
+  const previewPanel = (
+    <PreviewPanel
+      onClickCapture={(event) => {
+        const target = event.target as HTMLElement;
+        const handledByChild =
+          document
+            .getElementById('referencePreviewContainer')
+            ?.contains(target) || !!target.closest?.('a');
+        setTimeout(() => {
+          if (handledByChild) {
+            hide();
+            return;
+          }
+          if (selectedArtifactId) {
+            navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+              id: selectedArtifactId,
+            });
+            hide();
+          }
+        });
+      }}
+    >
+      {previewYDoc && selectedArtifactId ? (
+        <ReadonlyArtifactContent
+          artifactId={selectedArtifactId}
+          yDoc={previewYDoc}
+        />
+      ) : previewLoading ? (
+        <PreviewSpinnerContainer>
+          <Spinner />
+        </PreviewSpinnerContainer>
+      ) : null}
+    </PreviewPanel>
+  );
+
   const searchUI = (
     <>
       <Backdrop visible={true} onIonBackdropTap={hide} stopPropagation={true} />
-      <SearchContainer>
+      <SearchContainer $isWideScreen={isWideScreen}>
         {sessionContext?.session ? (
           <>
             <TitleContainer>
@@ -351,101 +564,14 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               </TitleActionContainer>
             </TitleContainer>
 
-            <FloatingSearchContainer>
-              <Box>
-                <TextField.Root
-                  ref={inputRef}
-                  placeholder={t('globalSearch.placeholder')}
-                  onChange={(event) => setSearchText(event.target.value)}
-                  value={searchText}
-                  size="3"
-                  inputMode="search"
-                >
-                  <TextField.Slot>
-                    <IoSearch height="16" width="16" />
-                  </TextField.Slot>
-                </TextField.Root>
-              </Box>
-
-              <SearchResultsContainer>
-                {searchResults.map((searchResult, idx) => (
-                  <SearchResult
-                    lines="none"
-                    key={searchResult.artifact.id}
-                    $selected={selectedIdx === idx}
-                    onMouseOver={() => setSelectedIdx(idx)}
-                    onClick={() => {
-                      navigate(
-                        undefined, // Open in currently focused pane rather than in specific pane
-                        PaneableComponent.Artifact,
-                        {
-                          id: searchResult.artifact.id,
-                          focusBlockId: searchResult.blockId,
-                        },
-                        PaneTransition.Push,
-                      );
-                      hide();
-                    }}
-                    button
-                  >
-                    <IonLabel>
-                      {searchResult.artifact.title}
-                      {searchResult.highlights
-                        .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
-                        .map((highlight) => (
-                          <ResultWithHighlightsWrapper
-                            dangerouslySetInnerHTML={{
-                              __html: '…' + highlight + '…',
-                            }}
-                          ></ResultWithHighlightsWrapper>
-                        ))}
-                      {searchResult.highlights.length >
-                        MAX_DISPLAYED_HIGHLIGHT_COUNT && (
-                        <p>
-                          <i>
-                            {t('globalSearch.moreHighlights', {
-                              count:
-                                searchResult.highlights.length -
-                                MAX_DISPLAYED_HIGHLIGHT_COUNT,
-                            })}
-                          </i>
-                        </p>
-                      )}
-                      {!searchResult.highlights.length && (
-                        <p>
-                          {truncateTextWithEllipsis(searchResult.previewText)}
-                        </p>
-                      )}
-                    </IonLabel>
-                  </SearchResult>
-                ))}
-                {!!searchText.length && !searching && (
-                  <SearchResult
-                    lines="none"
-                    $selected={selectedIdx === maxSelectedIdx}
-                    onClick={() => (create(), hide())}
-                    onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
-                    button
-                  >
-                    <IonLabel>
-                      {t(
-                        searchResults.length
-                          ? 'editor.referenceMenu.create.title'
-                          : 'editor.referenceMenu.noItems.title',
-                        { title: capitalizeEachWord(searchText).trim() },
-                      )}
-                      <p>
-                        {t(
-                          searchResults.length
-                            ? 'editor.referenceMenu.create.subtitle'
-                            : 'editor.referenceMenu.noItems.subtitle',
-                        )}
-                      </p>
-                    </IonLabel>
-                  </SearchResult>
-                )}
-              </SearchResultsContainer>
-            </FloatingSearchContainer>
+            {isWideScreen ? (
+              <SearchWithPreviewGrid>
+                {searchInputAndResults}
+                {previewPanel}
+              </SearchWithPreviewGrid>
+            ) : (
+              searchInputAndResults
+            )}
           </>
         ) : (
           <SearchResultsContainer>

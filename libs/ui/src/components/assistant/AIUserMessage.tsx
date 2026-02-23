@@ -1,17 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { IonButton, IonButtons, IonIcon, IonTextarea } from '@ionic/react';
+import { Button, Flex, IconButton, TextArea } from '@radix-ui/themes';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { copyOutline, pencil } from 'ionicons/icons';
+import { RiFileCopyLine, FaPencil, RiRefreshLine } from '../AppIcons';
+import { useTranslation } from 'react-i18next';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
+import type { ChatStatus } from 'ai';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 interface Props {
   message: FeynoteUIMessage;
-  disableUpdate: boolean;
+  aiStatus: ChatStatus;
   updateMessage: (message: FeynoteUIMessage) => void;
+  retryMessage: (messageId: string) => void;
 }
+
 export const AIUserMessage = (props: Props) => {
-  const inputRef = useRef<HTMLIonTextareaElement>(null);
+  const { t } = useTranslation();
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [showEditConfirmation, setShowEditConfirmation] = useState(false);
   const messageText = useMemo(() => {
     const messagePart = props.message.parts.find(
       (part) => part.type === 'text',
@@ -23,22 +30,14 @@ export const AIUserMessage = (props: Props) => {
   useEffect(() => {
     if (inputRef.current) {
       setTimeout(() => {
-        inputRef.current?.setFocus();
+        inputRef.current?.focus();
       });
     }
   }, [isEditing]);
 
-  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey && !props.disableUpdate) {
-      e.preventDefault(); // Prevents adding a newline
-      submitMessageUpdate();
-    } else {
-      setEditInput(e.currentTarget.value?.toString() || '');
-    }
-  };
-
-  const submitMessageUpdate = async () => {
+  const executeEditSubmit = () => {
     setIsEditing(false);
+    setShowEditConfirmation(false);
     props.updateMessage({
       ...props.message,
       parts: [
@@ -50,31 +49,84 @@ export const AIUserMessage = (props: Props) => {
     });
   };
 
+  const submitMessageUpdate = () => {
+    setShowEditConfirmation(true);
+  };
+
   if (isEditing) {
     return (
       <>
-        <IonTextarea ref={inputRef} value={editInput} onKeyUp={keyUpHandler} />
-        <IonButtons>
-          <IonButton size="small" onClick={() => setIsEditing(false)}>
-            Cancel
-          </IonButton>
-          <IonButton
-            size="small"
-            disabled={props.disableUpdate}
+        <TextArea
+          ref={inputRef}
+          value={editInput}
+          onChange={(e) => setEditInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
+              e.preventDefault();
+              if (
+                !(
+                  props.aiStatus === 'submitted' ||
+                  props.aiStatus === 'streaming'
+                )
+              ) {
+                submitMessageUpdate();
+              }
+            }
+          }}
+        />
+        <Flex gap="1" mt="2" justify="end">
+          <Button
+            variant="soft"
+            size="1"
+            color="gray"
+            onClick={() => setIsEditing(false)}
+          >
+            {t('generic.cancel')}
+          </Button>
+          <Button
+            variant="soft"
+            size="1"
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
             onClick={submitMessageUpdate}
           >
-            Save
-          </IonButton>
-        </IonButtons>
+            {t('generic.submit')}
+          </Button>
+        </Flex>
+        <ActionDialog
+          title={t('aiThread.editSubmit.confirmation')}
+          open={showEditConfirmation}
+          onOpenChange={(open) => {
+            if (!open) setShowEditConfirmation(false);
+          }}
+          actionButtons={[
+            {
+              title: t('generic.cancel'),
+              props: {
+                color: 'gray',
+                onClick: () => setShowEditConfirmation(false),
+              },
+            },
+            {
+              title: t('generic.confirm'),
+              props: {
+                color: 'red',
+                onClick: executeEditSubmit,
+              },
+            },
+          ]}
+        />
       </>
     );
   } else {
     return (
       <>
         <div>{messageText}</div>
-        <IonButtons>
-          <IonButton
-            size="small"
+        <Flex gap="2" justify="end" mt="2">
+          <IconButton
+            variant="ghost"
+            size="1"
             onClick={() =>
               copyToClipboard({
                 html: messageText,
@@ -82,12 +134,26 @@ export const AIUserMessage = (props: Props) => {
               })
             }
           >
-            <IonIcon icon={copyOutline} />
-          </IonButton>
-          <IonButton size="small" onClick={() => setIsEditing(true)}>
-            <IonIcon icon={pencil} />
-          </IonButton>
-        </IonButtons>
+            <RiFileCopyLine />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
+            onClick={() => setIsEditing(true)}
+          >
+            <FaPencil />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
+            onClick={() => props.retryMessage(props.message.id)}
+          >
+            <RiRefreshLine />
+          </IconButton>
+        </Flex>
       </>
     );
   }

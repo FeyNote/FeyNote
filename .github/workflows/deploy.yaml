@@ -1,0 +1,117 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag (including leading v)'
+        required: true
+        type: string
+      frontend:
+        description: 'Deploy Frontend'
+        required: false
+        type: boolean
+        default: false
+      docs:
+        description: 'Deploy Docs'
+        required: false
+        type: boolean
+        default: false
+      desktop:
+        description: 'Deploy Desktop'
+        required: false
+        type: boolean
+        default: false
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - prod
+          - beta
+          - stg
+
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend
+    if: ${{ inputs.frontend }}
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Validate source exists
+        run: |
+          FILE_COUNT=$(aws s3 ls "s3://feynote-public/frontend/${{ inputs.tag }}/" --recursive | wc -l)
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "::error::No files found in s3://feynote-public/frontend/${{ inputs.tag }}/"
+            exit 1
+          fi
+          echo "Found $FILE_COUNT files in s3://feynote-public/frontend/${{ inputs.tag }}/"
+
+      - name: Deploy
+        run: aws s3 cp --recursive "s3://feynote-public/frontend/${{ inputs.tag }}/" "s3://feynote-public/frontend/${{ inputs.environment }}"
+
+  deploy-docs:
+    name: Deploy Docs
+    if: ${{ inputs.docs }}
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Validate source exists
+        run: |
+          FILE_COUNT=$(aws s3 ls "s3://feynote-public/docs/${{ inputs.tag }}/" --recursive | wc -l)
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "::error::No files found in s3://feynote-public/docs/${{ inputs.tag }}/"
+            exit 1
+          fi
+          echo "Found $FILE_COUNT files in s3://feynote-public/docs/${{ inputs.tag }}/"
+
+      - name: Deploy
+        run: aws s3 cp --recursive "s3://feynote-public/docs/${{ inputs.tag }}/" "s3://feynote-public/docs/${{ inputs.environment }}"
+
+  deploy-desktop:
+    name: Deploy Desktop
+    if: ${{ inputs.desktop }}
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Validate source exists
+        run: |
+          FILE_COUNT=$(aws s3 ls "s3://feynote-public/desktop/${{ inputs.tag }}/" --recursive | wc -l)
+          if [ "$FILE_COUNT" -eq 0 ]; then
+            echo "::error::No files found in s3://feynote-public/desktop/${{ inputs.tag }}/"
+            exit 1
+          fi
+          echo "Found $FILE_COUNT files in s3://feynote-public/desktop/${{ inputs.tag }}/"
+
+      - name: Deploy
+        run: aws s3 cp --recursive "s3://feynote-public/desktop/${{ inputs.tag }}/" "s3://feynote-public/desktop/${{ inputs.environment }}"

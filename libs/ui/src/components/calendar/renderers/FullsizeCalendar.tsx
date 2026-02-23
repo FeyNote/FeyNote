@@ -90,7 +90,7 @@ interface FullsizeCalendarProps extends CalendarRenderProps {
 }
 
 export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const renderDay = (weekIdx: number, dayIdx: number) => {
     const dayInfo = props.getDayInfo(weekIdx, dayIdx);

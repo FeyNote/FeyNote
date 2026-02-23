@@ -46,12 +46,12 @@ export * from './lib/tldraw/ReferenceShapeProps';
 export * from './lib/tldraw/ReferenceShapeIconOptions';
 export * from './lib/tldraw/TLYKVRecord';
 
-export * from './lib/openai/schemas/generate5eMonsterSchema';
-export * from './lib/openai/schemas/Generate5eObjectSchema';
-export * from './lib/openai/schemas/scrapeUrlContent';
-export * from './lib/openai/ToolName';
-export * from './lib/openai/FeynoteUIMessage';
-export * from './lib/openai/ThreadDTO';
+export * from './lib/ai/schemas/generate5eMonsterSchema';
+export * from './lib/ai/schemas/Generate5eObjectSchema';
+export * from './lib/ai/schemas/scrapeUrlContent';
+export * from './lib/ai/ToolName';
+export * from './lib/ai/FeynoteUIMessage';
+export * from './lib/ai/ThreadDTO';
 
 export * from './lib/yjs/ARTIFACT_META_KEY';
 export * from './lib/yjs/ARTIFACT_USER_ACCESS_KEY';

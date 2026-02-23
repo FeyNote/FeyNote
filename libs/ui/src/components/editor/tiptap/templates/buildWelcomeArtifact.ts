@@ -66,46 +66,6 @@ export const buildWelcomeArtifact = (options: {
         content: [
           {
             type: 'text',
-            text: t('template.welcome.commands'),
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        attrs: {
-          id: crypto.randomUUID(),
-          textAlign: 'left',
-        },
-        content: [
-          {
-            type: 'text',
-            text: t('template.welcome.commands.p1'),
-          },
-        ],
-      },
-      {
-        type: 'paragraph',
-        attrs: {
-          id: crypto.randomUUID(),
-          textAlign: 'left',
-        },
-        content: [
-          {
-            type: 'text',
-            text: t('template.welcome.commands.p2'),
-          },
-        ],
-      },
-      {
-        type: 'heading',
-        attrs: {
-          id: crypto.randomUUID(),
-          textAlign: 'left',
-          level: 2,
-        },
-        content: [
-          {
-            type: 'text',
             text: t('template.welcome.references'),
           },
         ],

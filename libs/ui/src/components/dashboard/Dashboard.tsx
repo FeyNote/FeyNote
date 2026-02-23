@@ -58,7 +58,7 @@ const CardTitleButton = styled(IonButton)`
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();

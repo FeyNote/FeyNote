@@ -267,7 +267,7 @@ const ReferenceShapeComponent: React.FC<{
   shape: ReferenceShape;
   util: TLDrawReferenceUtil;
 }> = track(({ shape, util }) => {
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const artifactId = useContext(TLDrawArtifactIdContext);
   if (!artifactId) {
     throw new Error('TLDrawReferenceUtil.component: missing artifactId');

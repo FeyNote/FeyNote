@@ -9,16 +9,14 @@ export * from './lib/error';
 
 export * from './lib/files/convertFileWithPandoc';
 
-export * from './lib/openai/openai';
-export * from './lib/openai/retrieveMessageContext';
-export * from './lib/openai/utils/SystemMessage';
-export * from './lib/openai/utils/AIModel';
-export * from './lib/openai/utils/limitNumOfMessagesByCapability';
-export * from './lib/openai/generateAssistantStreamText';
-export * from './lib/openai/generateAssistantText';
-export * from './lib/openai/tools/scrapeUrlTool';
-export * from './lib/openai/tools/generate5eMonster';
-export * from './lib/openai/tools/generate5eObject';
+export * from './lib/ai/ai';
+export * from './lib/ai/utils/SystemMessage';
+export * from './lib/ai/utils/limitChatContextByCapability';
+export * from './lib/ai/generateAssistantStreamText';
+export * from './lib/ai/generateAssistantText';
+export * from './lib/ai/tools/scrapeUrlTool';
+export * from './lib/ai/tools/generate5eMonster';
+export * from './lib/ai/tools/generate5eObject';
 
 export * from './lib/artifacts/artifactJsonZodSchema';
 export * from './lib/artifacts/createArtifactRevision';

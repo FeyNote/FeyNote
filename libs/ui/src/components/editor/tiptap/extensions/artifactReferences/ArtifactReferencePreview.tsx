@@ -1,16 +1,9 @@
 import styled from 'styled-components';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { Doc as YDoc, applyUpdate } from 'yjs';
-import { TiptapPreview } from '../../../TiptapPreview';
-import { ArtifactCalendar } from '../../../../calendar/ArtifactCalendar';
-import { useScrollBlockIntoView } from '../../../useScrollBlockIntoView';
-import { useScrollDateIntoView } from '../../../../calendar/useScrollDateIntoView';
-import { ArtifactDraw } from '../../../../draw/ArtifactDraw';
-import { useSessionContext } from '../../../../../context/session/SessionContext';
-import { getFileUrlById } from '../../../../../utils/files/getFileUrlById';
-import { useObserveYArtifactMeta } from '../../../../../utils/collaboration/useObserveYArtifactMeta';
 import { useTranslation } from 'react-i18next';
 import { StyledBoundedFloatingWindow } from '../../../../StyledBoundedFloatingWindow';
+import { ReadonlyArtifactContent } from '../../../../artifact/ReadonlyArtifactContent';
 
 export interface ReferencePreviewInfo {
   artifactYBin: Uint8Array | undefined;
@@ -44,9 +37,6 @@ interface Props {
 
 export const ArtifactReferencePreview: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sessionContext = useSessionContext(true);
-  const [ready, setReady] = useState(false);
 
   const yDoc = useMemo(() => {
     const yDoc = new YDoc();
@@ -58,56 +48,13 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
     return yDoc;
   }, [props.artifactId]);
 
-  const artifactMeta = useObserveYArtifactMeta(yDoc);
-
-  useScrollBlockIntoView(
-    {
-      blockId: props.artifactBlockId,
-      containerRef,
-      highlight: true,
-    },
-    [ready],
-  );
-  useScrollDateIntoView(
-    {
-      date: props.artifactDate,
-      containerRef,
-    },
-    [ready],
-  );
-
   const previewContent = (
-    <>
-      <Header>{artifactMeta.title}</Header>
-      {artifactMeta.type === 'tiptap' && (
-        <TiptapPreview
-          artifactId={props.artifactId}
-          yDoc={yDoc}
-          onReady={() => setReady(true)}
-        />
-      )}
-      {artifactMeta.type === 'calendar' && (
-        <ArtifactCalendar
-          artifactId={props.artifactId}
-          y={yDoc}
-          centerDate={props.artifactDate}
-          editable={false}
-          viewType="fullsize"
-          onReady={() => setReady(true)}
-        />
-      )}
-      {artifactMeta.type === 'tldraw' && (
-        <ArtifactDraw
-          artifactId={props.artifactId}
-          yDoc={yDoc}
-          editable={false}
-          getFileUrl={(fileId) => {
-            return getFileUrlById(fileId, sessionContext?.session);
-          }}
-          onReady={() => setReady(true)}
-        />
-      )}
-    </>
+    <ReadonlyArtifactContent
+      artifactId={props.artifactId}
+      yDoc={yDoc}
+      focusBlockId={props.artifactBlockId}
+      focusDate={props.artifactDate}
+    />
   );
 
   const inaccessibleMessage = (
@@ -119,7 +66,6 @@ export const ArtifactReferencePreview: React.FC<Props> = (props) => {
 
   return (
     <StyledBoundedFloatingWindow
-      ref={containerRef}
       floatTarget={props.previewTarget}
       width={PREVIEW_WIDTH_PX}
       minHeight={PREVIEW_MIN_HEIGHT_PX}

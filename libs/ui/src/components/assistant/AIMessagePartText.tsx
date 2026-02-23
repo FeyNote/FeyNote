@@ -1,14 +1,15 @@
 import React, { useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { starkdown } from 'starkdown';
 import { copyToClipboard } from '../../utils/copyToClipboard';
-import { IonButton, IonButtons, IonIcon } from '@ionic/react';
-import { copyOutline, refresh } from 'ionicons/icons';
-import type { TextUIPart } from 'ai';
+import { Flex, IconButton } from '@radix-ui/themes';
+import { RiFileCopyLine, RiRefreshLine } from '../AppIcons';
+import type { TextUIPart, ChatStatus } from 'ai';
 
 interface Props {
   part: TextUIPart;
   messageId: string;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
   retryMessage: (messageId: string) => void;
 }
 
@@ -19,19 +20,25 @@ export const AIMessagePartText = (props: Props) => {
   }
 
   const messageHTML = useMemo(() => {
-    return starkdown(part.text);
+    // Sometimes the AI will generate lists (bullet or numbered) without an empty newline prior
+    const normalized = part.text.replace(
+      /(?<!\n)\n([-*+] |\d+[.)] )/g,
+      '\n\n$1',
+    );
+    return starkdown(normalized);
   }, [part.text]);
 
   return (
     <React.Fragment>
       <div
         dangerouslySetInnerHTML={{
-          __html: messageHTML,
+          __html: DOMPurify.sanitize(messageHTML),
         }}
       ></div>
-      <IonButtons>
-        <IonButton
-          size="small"
+      <Flex gap="2" mt="2">
+        <IconButton
+          variant="ghost"
+          size="1"
           onClick={() =>
             copyToClipboard({
               html: messageHTML,
@@ -39,16 +46,19 @@ export const AIMessagePartText = (props: Props) => {
             })
           }
         >
-          <IonIcon icon={copyOutline} />
-        </IonButton>
-        <IonButton
-          disabled={props.disableRetry}
-          size="small"
+          <RiFileCopyLine />
+        </IconButton>
+        <IconButton
+          variant="ghost"
+          size="1"
+          disabled={
+            props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+          }
           onClick={() => props.retryMessage(props.messageId)}
         >
-          <IonIcon icon={refresh} />
-        </IonButton>
-      </IonButtons>
+          <RiRefreshLine />
+        </IconButton>
+      </Flex>
     </React.Fragment>
   );
 };
