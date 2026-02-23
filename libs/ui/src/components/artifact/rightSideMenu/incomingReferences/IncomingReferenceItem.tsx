@@ -18,7 +18,7 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
   const { pane } = usePaneContext();
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
     useArtifactPreviewTimer(props.edge.artifactId);

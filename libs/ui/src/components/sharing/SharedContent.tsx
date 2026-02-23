@@ -36,7 +36,7 @@ const StyledNullState = styled(NullState)`
 
 export const SharedContent: React.FC = () => {
   const { t } = useTranslation();
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const { session } = useSessionContext();
   const { artifactSnapshots } = useArtifactSnapshots();
   const { getKnownUserById } = useKnownUsers();
