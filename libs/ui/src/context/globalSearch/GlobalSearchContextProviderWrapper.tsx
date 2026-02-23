@@ -20,6 +20,8 @@ import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { Box, Spinner, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../../components/AppIcons';
+import { useRegisterKeyboardShortcutHandler } from '../keyboardShortcut/useKeyboardShortcut';
+import { APP_KEYBOARD_SHORTCUTS } from '../../utils/keyboardShortcuts';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
 
@@ -181,6 +183,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     setShow(true);
   };
 
+  useRegisterKeyboardShortcutHandler(
+    'globalSearch.trigger',
+    APP_KEYBOARD_SHORTCUTS.search,
+    trigger,
+  );
+
   const hide = () => {
     setShow(false);
   };
@@ -221,24 +229,22 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   }, [show]);
 
   useEffect(() => {
+    if (!show) return;
+
     const listener = (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
-        event.preventDefault();
-        trigger();
-      }
-      if (event.key === 'Escape' && show) {
+      if (event.key === 'Escape') {
         event.stopPropagation();
         hide();
       }
-      if (event.key === 'ArrowUp' && show) {
+      if (event.key === 'ArrowUp') {
         event.preventDefault();
         setSelectedIdx((prev) => Math.max(prev - 1, 0));
       }
-      if (event.key === 'ArrowDown' && show) {
+      if (event.key === 'ArrowDown') {
         event.preventDefault();
         setSelectedIdx((prev) => Math.min(prev + 1, maxSelectedIdx));
       }
-      if (event.key === 'Enter' && show) {
+      if (event.key === 'Enter') {
         event.preventDefault();
         if (selectedIdx < searchResults.length) {
           navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {

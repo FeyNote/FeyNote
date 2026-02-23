@@ -8,6 +8,10 @@ import {
 import { ContextMenu, DropdownMenu } from '@radix-ui/themes';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { NewArtifactDialog } from './NewArtifactDialog';
+import {
+  APP_KEYBOARD_SHORTCUTS,
+  getDesktopBrowserShortcutDisplayString,
+} from '../../utils/keyboardShortcuts';
 
 export interface ArtifactLinkContextMenuProps {
   artifactId: string;
@@ -55,6 +59,10 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.HSplit,
                 )
               }
+              shortcut={getDesktopBrowserShortcutDisplayString(
+                APP_KEYBOARD_SHORTCUTS.splitRight.native,
+                APP_KEYBOARD_SHORTCUTS.splitRight.browser,
+              )}
             >
               {t('contextMenu.splitRight')}
             </MenuImpl.Item>
@@ -71,6 +79,10 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.VSplit,
                 )
               }
+              shortcut={getDesktopBrowserShortcutDisplayString(
+                APP_KEYBOARD_SHORTCUTS.splitDown.native,
+                APP_KEYBOARD_SHORTCUTS.splitDown.browser,
+              )}
             >
               {t('contextMenu.splitDown')}
             </MenuImpl.Item>
@@ -87,6 +99,10 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.NewTab,
                 )
               }
+              shortcut={getDesktopBrowserShortcutDisplayString(
+                APP_KEYBOARD_SHORTCUTS.newTab.native,
+                APP_KEYBOARD_SHORTCUTS.newTab.browser,
+              )}
             >
               {t('contextMenu.newTab')}
             </MenuImpl.Item>

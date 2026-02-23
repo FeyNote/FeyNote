@@ -25,13 +25,18 @@ import {
   globalTiptapCommandHelpers,
   type GlobalTiptapCommandHelperEntry,
 } from './globalTiptapCommandHelpers';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
 import { useEditorState } from '@tiptap/react';
 import {
   CreateLinkDialog,
   createLinkDialogDefaultOnSubmit,
 } from './tiptap/extensions/artifactBubbleMenu/CreateLinkDialog';
+import {
+  APP_KEYBOARD_SHORTCUTS,
+  getDesktopBrowserShortcutDisplayString,
+  getShortcutDisplayString,
+} from '../../utils/keyboardShortcuts';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -59,6 +64,15 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
   const [insertLinkDialogOpen, setInsertLinkDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      if (!('detail' in event) || event.detail !== props.editor) return;
+      setInsertLinkDialogOpen(true);
+    };
+    window.addEventListener('feynote:openLinkDialog', handler);
+    return () => window.removeEventListener('feynote:openLinkDialog', handler);
+  }, [props.editor]);
 
   useEditorState({
     editor: props.editor,
@@ -195,6 +209,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         });
       }}
       disabled={!commandEntry.enabled(props.editor)}
+      shortcut={commandEntry.shortcutHint}
     >
       {commandEntry.icon && <commandEntry.icon />}
       <span style={commandEntry.style}>{t(commandEntry.title)}</span>
@@ -220,6 +235,10 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
             setNewArtifactDialogOpen(true);
             setNewArtifactAsChild(false);
           }}
+          shortcut={getDesktopBrowserShortcutDisplayString(
+            APP_KEYBOARD_SHORTCUTS.newDocument.native,
+            APP_KEYBOARD_SHORTCUTS.newDocument.browser,
+          )}
         >
           <IoAdd />
           {t('tiptapControlMenu.file.new')}
@@ -237,7 +256,10 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
           <RiFileCopyLine />
           {t('tiptapControlMenu.file.duplicate')}
         </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => openArtifactPrint(props.artifactId)}>
+        <DropdownMenu.Item
+          onClick={() => openArtifactPrint(props.artifactId)}
+          shortcut={getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.print)}
+        >
           <RiPrinterLine />
           {t('tiptapControlMenu.file.print')}
         </DropdownMenu.Item>

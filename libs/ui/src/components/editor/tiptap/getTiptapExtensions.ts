@@ -66,6 +66,7 @@ import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExt
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 import { FocusExtension } from './extensions/focus/FocusExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
+import { LinkKeyboardShortcutExtension } from './extensions/linkKeyboardShortcutExtension';
 import { FeynoteGenericFileExtension } from './extensions/feynoteGenericFile/FeynoteGenericFileExtension';
 import { FeynoteAudioExtension } from './extensions/feynoteAudio/FeynoteAudioExtension';
 import { getEdgeStore } from '../../../utils/localDb/edges/edgeStore';
@@ -243,5 +244,6 @@ export const getTiptapExtensions = (args: {
     DiceDecorationExtension.configure({
       onRollDice: args.onRollDice,
     }),
+    LinkKeyboardShortcutExtension,
   ];
 };
