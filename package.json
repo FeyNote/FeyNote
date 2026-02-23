@@ -8,6 +8,7 @@
   },
   "private": true,
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.46",
     "@ai-sdk/openai": "^3.0.29",
     "@ai-sdk/react": "^3.0.88",
     "@astrojs/node": "^9.5.3",
@@ -31,6 +32,7 @@
     "@hocuspocus/server": "3.4.4",
     "@hocuspocus/transformer": "3.4.4",
     "@ionic/react": "^8.7.17",
+    "@openrouter/ai-sdk-provider": "^2.2.3",
     "@prisma/client": "^6.19.0",
     "@radix-ui/themes": "^3.3.0",
     "@sentry/esbuild-plugin": "^4.9.1",

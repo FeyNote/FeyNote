@@ -23,7 +23,6 @@ import { HttpsProxyAgent } from 'https-proxy-agent';
 import axios from 'axios';
 import { systemMessage } from '../utils/SystemMessage';
 import { generateAssistantText } from '../generateAssistantText';
-import { AIModel } from '../utils/AIModel';
 import { logger } from '../../logging/logger';
 
 const newLineOnlyNodes = new Set(['br']);
@@ -100,7 +99,7 @@ const displayUrlExecutor = async (
     ];
     const { text, toolResults } = await generateAssistantText(
       messages,
-      AIModel.GPT4_MINI,
+      globalServerConfig.ai.model.scrapeUrl,
       {
         [ToolName.Generate5eMonster]: generate5eMonsterTool,
         [ToolName.Generate5eObject]: generate5eObjectTool,

@@ -19,7 +19,6 @@ import {
 } from '@feynote/shared-utils';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import {
-  chatboxEllipses,
   gitNetwork,
   home,
   logOut,
@@ -39,8 +38,9 @@ import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
 import { AppConnectionStatus } from './AppConnectionStatus';
-import { LuFolderTree } from '../AppIcons';
+import { IoChatbubbles, LuFolderTree } from '../AppIcons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { AIThreadContextMenu } from '../assistant/AIThreadContextMenu';
 
 const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
@@ -272,29 +272,50 @@ export const LeftSideMenu: React.FC = () => {
         <SidebarCard>
           <IonList class="ion-no-padding">
             <IonListHeader lines="full">
-              <IonIcon icon={chatboxEllipses} />
+              <IoChatbubbles />
               &nbsp;&nbsp;
               <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
+              <IonButton
+                onClick={(event) =>
+                  navigateWithKeyboardHandler(
+                    event,
+                    PaneableComponent.AIThreadsList,
+                    {},
+                  )
+                }
+                size="small"
+                fill="clear"
+              >
+                <IonIcon icon={expand} size="small" />
+              </IonButton>
             </IonListHeader>
             {recentlyUpdatedThreads
               .slice(0, recentlyUpdatedThreadsLimit)
               .map((recentlyUpdatedThread) => (
-                <CompactIonItem
-                  lines="none"
+                <AIThreadContextMenu
                   key={recentlyUpdatedThread.id}
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.AIThread,
-                      { id: recentlyUpdatedThread.id },
-                    )
-                  }
-                  button
+                  id={recentlyUpdatedThread.id}
+                  title={recentlyUpdatedThread.title || t('generic.untitled')}
+                  paneId={currentPane.id}
+                  onDelete={load}
+                  onTitleChange={() => load()}
                 >
-                  <NowrapIonLabel>
-                    {recentlyUpdatedThread.title || t('generic.untitled')}
-                  </NowrapIonLabel>
-                </CompactIonItem>
+                  <CompactIonItem
+                    lines="none"
+                    onClick={(event) =>
+                      navigateWithKeyboardHandler(
+                        event,
+                        PaneableComponent.AIThread,
+                        { id: recentlyUpdatedThread.id },
+                      )
+                    }
+                    button
+                  >
+                    <NowrapIonLabel>
+                      {recentlyUpdatedThread.title || t('generic.untitled')}
+                    </NowrapIonLabel>
+                  </CompactIonItem>
+                </AIThreadContextMenu>
               ))}
             {recentlyUpdatedThreads.length > recentlyUpdatedThreadsLimit && (
               <IonButton

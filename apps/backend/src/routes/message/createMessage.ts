@@ -4,10 +4,8 @@ import {
   AuthenticationEnforcement,
   BadRequestExpressError,
   TooManyRequestsExpressError,
-  openai,
   systemMessage,
-  AIModel,
-  limitNumOfMessagesByCapability,
+  limitChatContextByCapability,
   generateAssistantStreamText,
   generate5eMonsterTool,
   scrapeUrlTool,
@@ -23,6 +21,7 @@ import { Capability, ToolName } from '@feynote/shared-utils';
 import * as Sentry from '@sentry/node';
 import z from 'zod';
 import { prisma } from '@feynote/prisma/client';
+import { globalServerConfig } from '@feynote/config';
 
 const DAILY_ABUSE_LIMIT = 3000; // 120 messages per hour
 const DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL = 10;
@@ -70,20 +69,20 @@ export const createMessage = defineExpressHandler(
       );
     }
 
-    let model = AIModel.GPT4_MINI;
+    let model = globalServerConfig.ai.model.chatLow;
     if (
       (capabilities.has(Capability.AssistantLimitedEnhancedModel) &&
         numOfPreviousMessagesSent < DAILY_MESSAGING_CAP_FOR_ENHANCED_MODEL) ||
       capabilities.has(Capability.AssistantUnlimitedEnhancedModel)
     ) {
-      model = AIModel.GPT4;
+      model = globalServerConfig.ai.model.chatHigh;
     }
-    const limitedMessages = limitNumOfMessagesByCapability(
+    const limitedMessages = limitChatContextByCapability(
       messages,
       capabilities,
     );
 
-    const stream = generateAssistantStreamText(openai, limitedMessages, model, {
+    const stream = generateAssistantStreamText(limitedMessages, model, {
       [ToolName.Generate5eMonster]: generate5eMonsterTool,
       [ToolName.Generate5eObject]: generate5eObjectTool,
       [ToolName.ScrapeUrl]: scrapeUrlTool,
@@ -98,6 +97,7 @@ export const createMessage = defineExpressHandler(
         } else if (InvalidToolInputError.isInstance(err)) {
           issue = 'ERROR: The model called a tool with invalid inputs.';
         }
+        console.error(err);
         Sentry.captureException(err, {
           extra: {
             issue,

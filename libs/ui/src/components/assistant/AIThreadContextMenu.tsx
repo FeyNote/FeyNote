@@ -1,31 +1,40 @@
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
-import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import type { PaneContextData } from '../../context/pane/PaneContext';
-import { DropdownMenu, TextField } from '@radix-ui/themes';
+import { ContextMenu, DropdownMenu, TextField } from '@radix-ui/themes';
 import { useState } from 'react';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 
-interface Props {
+export interface AIThreadMenuProps {
   id: string;
   title: string;
-  setTitle: (title: string) => void;
-  navigate: PaneContextData['navigate'];
+  paneId: string | undefined;
+  onTitleChange: (title: string) => void;
+  onDelete: () => void;
   children: React.ReactNode;
 }
 
-export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
+const AIThreadMenuInternal: React.FC<
+  AIThreadMenuProps & {
+    MenuImpl: typeof ContextMenu | typeof DropdownMenu;
+  }
+> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = props;
+  const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [newTitle, setNewTitle] = useState(props.title);
   const [showRenameThreadAlert, setShowRenameThreadAlert] = useState(false);
   const [showDeleteThreadActionDialog, setShowDeleteThreadActionDialog] =
     useState(false);
 
-  const triggerRenameThreadAlert = async () => {
+  const MenuImpl = props.MenuImpl;
+
+  const triggerRenameThreadAlert = () => {
     setNewTitle(props.title);
     setShowRenameThreadAlert(true);
   };
@@ -52,11 +61,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
                   id: props.id,
                 })
                 .then(() => {
-                  navigate(
-                    PaneableComponent.AIThreadsList,
-                    {},
-                    PaneTransition.Replace,
-                  );
+                  props.onDelete();
                 })
                 .catch((error) => {
                   handleTRPCErrors(error);
@@ -91,7 +96,7 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
                   id: props.id,
                   title: newTitle.trim(),
                 });
-                props.setTitle(newTitle.trim());
+                props.onTitleChange(newTitle.trim());
               } catch (error) {
                 handleTRPCErrors(error);
               }
@@ -112,23 +117,68 @@ export const AIThreadOptionsPopover: React.FC<Props> = (props) => {
   );
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>{props.children}</DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        <DropdownMenu.Root>
-          <DropdownMenu.Item onClick={triggerRenameThreadAlert}>
+    <>
+      <MenuImpl.Root>
+        <MenuImpl.Trigger>{props.children}</MenuImpl.Trigger>
+        <MenuImpl.Content>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.HSplit,
+              )
+            }
+          >
+            {t('contextMenu.splitRight')}
+          </MenuImpl.Item>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.VSplit,
+              )
+            }
+          >
+            {t('contextMenu.splitDown')}
+          </MenuImpl.Item>
+          <MenuImpl.Item
+            onClick={() =>
+              navigate(
+                props.paneId,
+                PaneableComponent.AIThread,
+                { id: props.id },
+                PaneTransition.NewTab,
+              )
+            }
+          >
+            {t('contextMenu.newTab')}
+          </MenuImpl.Item>
+          <MenuImpl.Separator />
+          <MenuImpl.Item onClick={triggerRenameThreadAlert}>
             {t('assistant.thread.rename')}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
+          </MenuImpl.Item>
+          <MenuImpl.Item
             color="red"
             onClick={() => setShowDeleteThreadActionDialog(true)}
           >
             {t('assistant.thread.delete')}
-          </DropdownMenu.Item>
-        </DropdownMenu.Root>
-      </DropdownMenu.Content>
+          </MenuImpl.Item>
+        </MenuImpl.Content>
+      </MenuImpl.Root>
       {deleteThreadActionDialog}
       {renameThreadActionDialog}
-    </DropdownMenu.Root>
+    </>
   );
 };
+
+export const AIThreadContextMenu: React.FC<AIThreadMenuProps> = (props) => (
+  <AIThreadMenuInternal {...props} MenuImpl={ContextMenu} />
+);
+
+export const AIThreadDropdownMenu: React.FC<AIThreadMenuProps> = (props) => (
+  <AIThreadMenuInternal {...props} MenuImpl={DropdownMenu} />
+);
