@@ -41,6 +41,7 @@ export default defineConfig({
             'documents/text',
             'documents/draw',
             'documents/calendar',
+            'documents/tree',
             'documents/references',
             'documents/graph',
             'documents/sharing',
@@ -50,6 +51,7 @@ export default defineConfig({
           label: 'General',
           items: [
             'general/dashboard',
+            'general/all-documents',
             'general/search',
             'general/keyboard-shortcuts',
             'general/offline',
