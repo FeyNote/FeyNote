@@ -1,5 +1,5 @@
 ---
-title: Text Artifacts
+title: Text Documents
 description: The editor is the main interface for creating and editing documents.
 ---
 

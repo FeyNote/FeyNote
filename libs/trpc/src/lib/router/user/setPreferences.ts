@@ -31,6 +31,8 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.CollaborationColor]: z.string().length(7),
       [PreferenceNames.PreferencesSync]: z.enum(PreferencesSync),
       [PreferenceNames.GraphShowOrphans]: z.boolean(),
+      [PreferenceNames.GraphShowReferenceRelations]: z.boolean(),
+      [PreferenceNames.GraphShowTreeRelations]: z.boolean(),
       [PreferenceNames.GraphLockNodeOnDrag]: z.boolean(),
       [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: z.enum(
         ArtifactReferenceNewArtifactSharingMode,
@@ -74,6 +76,10 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.PreferencesSync],
           [PreferenceNames.GraphShowOrphans]:
             input[PreferenceNames.GraphShowOrphans],
+          [PreferenceNames.GraphShowReferenceRelations]:
+            input[PreferenceNames.GraphShowReferenceRelations],
+          [PreferenceNames.GraphShowTreeRelations]:
+            input[PreferenceNames.GraphShowTreeRelations],
           [PreferenceNames.GraphLockNodeOnDrag]:
             input[PreferenceNames.GraphLockNodeOnDrag],
           [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]:

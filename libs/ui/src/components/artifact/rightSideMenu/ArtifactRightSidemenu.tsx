@@ -79,13 +79,18 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     props.artifactId,
   );
   const edges = useMemo(
-    () => [...incomingEdges, ...outgoingEdges],
+    () =>
+      [...incomingEdges, ...outgoingEdges].map((edge) => ({
+        source: edge.artifactId,
+        target: edge.targetArtifactId,
+        type: 'reference' as const,
+      })),
     [incomingEdges, outgoingEdges],
   );
 
   const graphArtifacts = useMemo(() => {
     return Object.values(
-      edges.reduce(
+      [...incomingEdges, ...outgoingEdges].reduce(
         (acc, el) => {
           acc[el.artifactId] = {
             id: el.artifactId,
@@ -102,7 +107,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         {} as { [key: string]: { id: string; title: string } },
       ),
     );
-  }, [edges]);
+  }, [incomingEdges, outgoingEdges]);
   const graphPositionMap = useMemo(() => {
     if (!artifactMeta.id) return;
 

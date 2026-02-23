@@ -6,7 +6,8 @@ import { useEffect, useMemo, useReducer } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
-import { Edge, PreferenceNames } from '@feynote/shared-utils';
+import { PreferenceNames } from '@feynote/shared-utils';
+import type { FeynoteGraphLink } from './GraphRenderer';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { YKeyValue } from 'y-utility/y-keyvalue';
 import { usePaneContext } from '../../context/pane/PaneContext';
@@ -17,6 +18,7 @@ import { usePreferencesContext } from '../../context/preferences/PreferencesCont
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
+import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
 
 const GRAPH_ARTIFACTS_YKV_KEY = 'graphArtifacts';
 
@@ -36,6 +38,12 @@ export const Graph: React.FC = () => {
   const { getEdgesForArtifactId } = useEdges();
 
   const showOrphans = getPreference(PreferenceNames.GraphShowOrphans);
+  const showReferenceRelations = getPreference(
+    PreferenceNames.GraphShowReferenceRelations,
+  );
+  const showTreeRelations = getPreference(
+    PreferenceNames.GraphShowTreeRelations,
+  );
 
   const connection = useCollaborationConnection(`userTree:${session.userId}`);
   const yDoc = connection.yjsDoc;
@@ -60,16 +68,51 @@ export const Graph: React.FC = () => {
     return yKeyValue;
   }, [yDoc]);
 
+  const treeYKV = useMemo(() => {
+    return getArtifactTreeFromYDoc(yDoc).yKeyValue;
+  }, [yDoc]);
+
   useEffect(() => {
     const listener = () => {
       triggerRerender();
     };
     artifactsYKV.on('change', listener);
+    treeYKV.on('change', listener);
 
     return () => {
       artifactsYKV.off('change', listener);
+      treeYKV.off('change', listener);
     };
-  }, [artifactsYKV]);
+  }, [artifactsYKV, treeYKV]);
+
+  const treeLinks = useMemo(() => {
+    const links: FeynoteGraphLink[] = [];
+    const artifactIds = new Set(artifactSnapshots.map((a) => a.id));
+
+    for (const entry of treeYKV.yarray.toArray()) {
+      if (
+        entry.val.parentNodeId &&
+        artifactIds.has(entry.key) &&
+        artifactIds.has(entry.val.parentNodeId)
+      ) {
+        links.push({
+          source: entry.val.parentNodeId,
+          target: entry.key,
+          type: 'tree',
+        });
+      }
+    }
+    return links;
+  }, [_rerenderReducerValue, treeYKV, artifactSnapshots]);
+
+  const treeLinkedArtifactIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const link of treeLinks) {
+      ids.add(link.source);
+      ids.add(link.target);
+    }
+    return ids;
+  }, [treeLinks]);
 
   const graphArtifacts = useMemo(() => {
     if (artifactSnapshotsLoading) return [];
@@ -78,17 +121,31 @@ export const Graph: React.FC = () => {
       .filter((artifact) => {
         if (showOrphans) return true;
 
-        const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
-          artifact.id,
-        );
+        if (showReferenceRelations) {
+          const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+            artifact.id,
+          );
+          if (outgoingEdges.length || incomingEdges.length) return true;
+        }
 
-        return outgoingEdges.length || incomingEdges.length;
+        if (showTreeRelations && treeLinkedArtifactIds.has(artifact.id)) {
+          return true;
+        }
+
+        return false;
       })
       .map((artifact) => ({
         id: artifact.id,
         title: artifact.meta.title,
       }));
-  }, [artifactSnapshots, getEdgesForArtifactId, showOrphans]);
+  }, [
+    artifactSnapshots,
+    getEdgesForArtifactId,
+    showOrphans,
+    showReferenceRelations,
+    showTreeRelations,
+    treeLinkedArtifactIds,
+  ]);
 
   const artifactPositions = useMemo(() => {
     const positions = new Map<string, { x: number; y: number }>();
@@ -102,23 +159,39 @@ export const Graph: React.FC = () => {
   }, [_rerenderReducerValue, artifactsYKV, artifactSnapshots]);
 
   const edges = useMemo(() => {
-    const map = artifactSnapshots.reduce<Map<string, Edge>>((acc, artifact) => {
-      const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
-        artifact.id,
-      );
+    const links: FeynoteGraphLink[] = [];
 
-      for (const edge of incomingEdges) {
-        acc.set(edge.id, edge);
+    if (showReferenceRelations) {
+      const seen = new Set<string>();
+      for (const artifact of artifactSnapshots) {
+        const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+          artifact.id,
+        );
+
+        for (const edge of [...incomingEdges, ...outgoingEdges]) {
+          if (seen.has(edge.id)) continue;
+          seen.add(edge.id);
+          links.push({
+            source: edge.artifactId,
+            target: edge.targetArtifactId,
+            type: 'reference',
+          });
+        }
       }
-      for (const edge of outgoingEdges) {
-        acc.set(edge.id, edge);
-      }
+    }
 
-      return acc;
-    }, new Map());
+    if (showTreeRelations) {
+      links.push(...treeLinks);
+    }
 
-    return Array.from(map.values());
-  }, [artifactSnapshots, getEdgesForArtifactId]);
+    return links;
+  }, [
+    artifactSnapshots,
+    getEdgesForArtifactId,
+    showReferenceRelations,
+    showTreeRelations,
+    treeLinks,
+  ]);
 
   return (
     <IonPage>
