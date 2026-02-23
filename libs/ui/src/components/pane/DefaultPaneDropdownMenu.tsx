@@ -66,7 +66,7 @@ export const DefaultPaneDropdownMenu: React.FC<Props> = (props) => {
               )
             }
           >
-            {t('contextMenu.duplicateTab')}
+            {t('contextMenu.newTab')}
           </DropdownMenu.Item>
         </DropdownMenu.Group>
       </DropdownMenu.Content>

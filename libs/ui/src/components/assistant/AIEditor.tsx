@@ -1,9 +1,10 @@
+import type { ChatStatus } from 'ai';
 import { JSONContent, type Editor } from '@tiptap/react';
 import { ArtifactEditorContainer } from '../editor/ArtifactEditorContainer';
 import { Doc as YDoc } from 'yjs';
 import { useEffect, useMemo, useRef } from 'react';
-import { copyOutline, refresh } from 'ionicons/icons';
-import { IonButton, IonButtons, IonIcon, IonSpinner } from '@ionic/react';
+import { RiFileCopyLine, RiRefreshLine } from '../AppIcons';
+import { Flex, IconButton, Spinner } from '@radix-ui/themes';
 import { copyToClipboard } from '../../utils/copyToClipboard';
 import styled from 'styled-components';
 import {
@@ -14,13 +15,18 @@ import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboratio
 
 const AIFCEditorContainer = styled.div`
   margin: 8px 0;
+
+  ion-card {
+    background: none;
+    box-shadow: none;
+  }
 `;
 
 interface Props {
   editorContent: string | JSONContent;
   messageId: string;
   retryMessage: (messageId: string) => void;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
 }
 
 export const AIEditor: React.FC<Props> = (props) => {
@@ -30,6 +36,10 @@ export const AIEditor: React.FC<Props> = (props) => {
   const yDoc = useMemo(() => {
     return new YDoc();
   }, []);
+
+  useEffect(() => {
+    return () => yDoc.destroy();
+  }, [yDoc]);
 
   const updateContent = () => {
     setContentRef.current?.(props.editorContent);
@@ -57,26 +67,30 @@ export const AIEditor: React.FC<Props> = (props) => {
             editorRef={editorRef}
           />
         </ArtifactEditorContainer>
-        <IonButtons>
-          <IonButton
-            size="small"
+        <Flex gap="2">
+          <IconButton
+            variant="ghost"
+            size="1"
             onClick={() =>
               copyToClipboard({ html: editorRef.current?.getHTML() })
             }
           >
-            <IonIcon icon={copyOutline} />
-          </IonButton>
-          <IonButton
-            disabled={props.disableRetry}
-            size="small"
+            <RiFileCopyLine />
+          </IconButton>
+          <IconButton
+            variant="ghost"
+            size="1"
+            disabled={
+              props.aiStatus === 'submitted' || props.aiStatus === 'streaming'
+            }
             onClick={() => props.retryMessage(props.messageId)}
           >
-            <IonIcon icon={refresh} />
-          </IonButton>
-        </IonButtons>
+            <RiRefreshLine />
+          </IconButton>
+        </Flex>
       </AIFCEditorContainer>
     );
   }
 
-  return <IonSpinner name="dots"></IonSpinner>;
+  return <Spinner />;
 };

@@ -1,34 +1,18 @@
-import {
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonPage,
-  IonSpinner,
-  IonTextarea,
-} from '@ionic/react';
-import {
-  pencilOutline,
-  searchOutline,
-  send,
-  shirtOutline,
-  skullOutline,
-} from 'ionicons/icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { IonContent, IonPage } from '@ionic/react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
-import { AIThreadOptionsPopover } from './AIThreadOptionsPopover';
+import { AIThreadDropdownMenu } from './AIThreadContextMenu';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useTranslation } from 'react-i18next';
 import { getApiUrls } from '../../utils/getApiUrls';
 import { usePaneContext } from '../../context/pane/PaneContext';
+import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
+import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { EventName } from '../../context/events/EventName';
 import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
@@ -36,23 +20,38 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
 import type { FeynoteUIMessage } from '@feynote/shared-utils';
 import { useAlertContext } from '../../context/alert/AlertContext';
+import { Card, IconButton, Spinner, TextArea } from '@radix-ui/themes';
+import {
+  IoSearch,
+  FaPencil,
+  GiMonsterGrasp,
+  GiBroadsword,
+  RiSendPlaneFill,
+} from '../AppIcons';
+import type { IconType } from 'react-icons';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
 `;
 
-const StyledIonCardTitle = styled(IonCardTitle)`
+const PromptCard = styled(Card)`
+  cursor: pointer;
+`;
+
+const PromptCardHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-
-  ion-icon {
-    margin-right: 8px;
-  }
+  font-weight: 500;
+  gap: 8px;
 `;
 
-const StyledIonCardContent = styled(IonCardContent)`
+const PromptCardContent = styled.div`
   text-align: center;
+  font-size: 0.875rem;
+  color: var(--gray-11);
+  margin-top: 4px;
 `;
 
 const OptionsList = styled.div`
@@ -61,10 +60,8 @@ const OptionsList = styled.div`
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
-
-  ion-card {
-    padding: 4px;
-  }
+  gap: 8px;
+  padding: 4px;
 `;
 
 const ChatContainer = styled.div`
@@ -80,44 +77,40 @@ const ChatTextContainer = styled.div`
   align-items: center;
   padding-left: 8px;
   margin-right: 8px;
+  gap: 16px;
+
+  .rt-TextAreaInput {
+    overflow: hidden;
+  }
 `;
 
-const SendButtonContainer = styled.div`
-  margin-left: 16px;
-`;
-
-const SendIcon = styled(IonIcon)`
-  font-size: 24px;
-`;
-
-export interface ChatMessage {
-  id: string;
-  content: string;
-  role: string;
-}
-
-const PROMPT_CARDS = [
+const PROMPT_CARDS: {
+  header: string;
+  query: string;
+  displayText?: string;
+  icon: IconType;
+}[] = [
   {
     header: 'aiThread.card.scrape.header',
     query: 'aiThread.card.scrape.query',
     displayText: 'aiThread.card.scrape.displayText',
-    icon: searchOutline,
+    icon: IoSearch,
   },
   {
     header: 'aiThread.card.format.header',
     query: 'aiThread.card.format.query',
     displayText: 'aiThread.card.format.displayText',
-    icon: pencilOutline,
+    icon: FaPencil,
   },
   {
     header: 'aiThread.card.monster.header',
     query: 'aiThread.card.monster.query',
-    icon: skullOutline,
+    icon: GiMonsterGrasp,
   },
   {
     header: 'aiThread.card.item.header',
     query: 'aiThread.card.item.query',
-    icon: shirtOutline,
+    icon: GiBroadsword,
   },
 ];
 
@@ -127,43 +120,65 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigate, pane } = usePaneContext();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
-  const sessionContext = useSessionContext(true);
+  const sessionContext = useSessionContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { showAlert } = useAlertContext();
-  const textAreaRef = useRef<HTMLIonTextareaElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
-  const { messages, setMessages, status, sendMessage, regenerate } =
-    useChat<FeynoteUIMessage>({
-      transport: new DefaultChatTransport({
+  const [retryConfirmMessageId, setRetryConfirmMessageId] = useState<
+    string | null
+  >(null);
+
+  const resizeTextArea = useCallback(() => {
+    const el = textAreaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, []);
+  useEffect(() => {
+    resizeTextArea();
+  }, [input, resizeTextArea]);
+
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
         api: `${getApiUrls().rest}/message/`,
         headers: {
-          Authorization: sessionContext?.session.token
-            ? `Bearer ${sessionContext.session.token}`
-            : '',
+          Authorization: `Bearer ${sessionContext.session.token}`,
           'Content-Type': 'application/json',
         },
         body: {
           threadId: props.id,
         },
       }),
+    [sessionContext.session.token, props.id],
+  );
+
+  const { messages, setMessages, status, sendMessage, regenerate } =
+    useChat<FeynoteUIMessage>({
+      transport,
       generateId: () => {
         return crypto.randomUUID();
       },
       onFinish: async (data) => {
-        //TODO: https://github.com/FeyNote/FeyNote/issues/1201
-        await trpc.ai.saveMessage.mutate({
-          threadId: props.id,
-          message: data.message,
-        });
-        if (!title) {
-          await trpc.ai.createThreadTitle.mutate({
-            id: props.id,
+        try {
+          //TODO: https://github.com/FeyNote/FeyNote/issues/1201
+          await trpc.ai.saveMessage.mutate({
+            threadId: props.id,
+            message: data.message,
           });
-          await getThreadInfo();
+          if (!title) {
+            await trpc.ai.createThreadTitle.mutate({
+              id: props.id,
+            });
+            await getThreadInfo();
+          }
+        } catch (e) {
+          handleTRPCErrors(e);
         }
       },
       onError: (error) => {
@@ -180,13 +195,14 @@ export const AIThread: React.FC<Props> = (props) => {
           }
           // eslint-disable-next-line no-empty
         } catch (_) {}
-        handleTRPCErrors(new Error());
+        handleTRPCErrors(error);
       },
     });
-  const isLoading = useMemo(
-    () => status === 'submitted' || status === 'streaming',
-    [status],
-  );
+
+  const isLoading = status === 'submitted' || status === 'streaming';
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
   const getThreadInfo = async () => {
     const threadDTO = await trpc.ai.getThread.query({
       id: props.id,
@@ -196,8 +212,10 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    const progress = startProgressBar();
     setIsLoadingInitialState(true);
+    setTitle(null);
+    setMessages([]);
+    const progress = startProgressBar();
     getThreadInfo().finally(() => {
       setIsLoadingInitialState(false);
       progress.dismiss();
@@ -208,6 +226,11 @@ export const AIThread: React.FC<Props> = (props) => {
       data: EventData[EventName.ThreadUpdated],
     ) => {
       if (data.threadId !== props.id) return;
+      if (
+        statusRef.current === 'submitted' ||
+        statusRef.current === 'streaming'
+      )
+        return;
       await getThreadInfo();
     };
 
@@ -218,9 +241,10 @@ export const AIThread: React.FC<Props> = (props) => {
         threadUpdateHandler,
       );
     };
-  }, []);
+  }, [props.id]);
 
   const submitMessageQuery = async () => {
+    if (!input.trim()) return;
     const message: FeynoteUIMessage = {
       id: crypto.randomUUID(),
       parts: [{ type: 'text', text: input }],
@@ -239,20 +263,7 @@ export const AIThread: React.FC<Props> = (props) => {
       return;
     }
     setInput('');
-  };
-
-  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonTextareaElement>) => {
-    if (
-      e.key === 'Enter' &&
-      !e.shiftKey &&
-      status === 'ready' &&
-      !isLoadingInitialState
-    ) {
-      e.preventDefault(); // Prevents adding a newline
-      submitMessageQuery();
-    } else {
-      setInput(e.currentTarget.value || '');
-    }
+    if (textAreaRef.current) textAreaRef.current.style.height = 'auto';
   };
 
   const updateMessage = async (message: FeynoteUIMessage) => {
@@ -273,7 +284,7 @@ export const AIThread: React.FC<Props> = (props) => {
     regenerate();
   };
 
-  const retryMessage = async (messageId: string) => {
+  const executeRetry = async (messageId: string) => {
     let retriedUserMsg,
       retriedUserMsgIdx = null;
     for (const [idx, message] of messages.entries()) {
@@ -301,19 +312,30 @@ export const AIThread: React.FC<Props> = (props) => {
     regenerate();
   };
 
+  const retryMessage = (messageId: string) => {
+    setRetryConfirmMessageId(messageId);
+  };
+
   return (
     <IonPage>
       <PaneNav
         title={title || t('assistant.thread.emptyTitle')}
         renderDropdownMenu={(children) => (
-          <AIThreadOptionsPopover
+          <AIThreadDropdownMenu
             id={props.id}
             title={title || t('assistant.thread.emptyTitle')}
-            setTitle={setTitle}
-            navigate={navigate}
+            paneId={pane.id}
+            onTitleChange={setTitle}
+            onDelete={() =>
+              navigate(
+                PaneableComponent.AIThreadsList,
+                {},
+                PaneTransition.Replace,
+              )
+            }
           >
             {children}
-          </AIThreadOptionsPopover>
+          </AIThreadDropdownMenu>
         )}
       />
       <IonContent>
@@ -324,28 +346,23 @@ export const AIThread: React.FC<Props> = (props) => {
           ) : !messages.length ? (
             <EmptyMessageContainer>
               <OptionsList>
-                {PROMPT_CARDS.map((card, idx) => {
-                  return (
-                    <IonCard
-                      key={idx}
-                      button
-                      onClick={() => {
-                        setInput(t(card.query));
-                        textAreaRef.current?.setFocus();
-                      }}
-                    >
-                      <IonCardHeader>
-                        <StyledIonCardTitle>
-                          <IonIcon icon={card.icon} />
-                          {t(card.header)}
-                        </StyledIonCardTitle>
-                      </IonCardHeader>
-                      <StyledIonCardContent>
-                        {t(card.displayText || card.query)}
-                      </StyledIonCardContent>
-                    </IonCard>
-                  );
-                })}
+                {PROMPT_CARDS.map((card, idx) => (
+                  <PromptCard
+                    key={idx}
+                    onClick={() => {
+                      setInput(t(card.query));
+                      textAreaRef.current?.focus();
+                    }}
+                  >
+                    <PromptCardHeader>
+                      <card.icon />
+                      {t(card.header)}
+                    </PromptCardHeader>
+                    <PromptCardContent>
+                      {t(card.displayText || card.query)}
+                    </PromptCardContent>
+                  </PromptCard>
+                ))}
               </OptionsList>
             </EmptyMessageContainer>
           ) : (
@@ -353,30 +370,69 @@ export const AIThread: React.FC<Props> = (props) => {
               updateMessage={updateMessage}
               retryMessage={retryMessage}
               messages={messages}
-              ongoingCommunication={isLoading}
+              aiStatus={status}
             />
           )}
           <ChatTextContainer>
-            <IonTextarea
-              autoGrow={true}
+            <TextArea
+              style={{ flex: 1 }}
               ref={textAreaRef}
               placeholder={t('assistant.thread.input.placeholder')}
               value={input}
               disabled={isLoading || isLoadingInitialState}
-              onKeyUp={keyUpHandler}
+              onChange={(e) => {
+                setInput(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !e.altKey) {
+                  e.preventDefault();
+                  if (status === 'ready' && !isLoadingInitialState) {
+                    submitMessageQuery();
+                  }
+                }
+              }}
             />
-            <SendButtonContainer>
-              <IonButton onClick={submitMessageQuery}>
-                {isLoading || isLoadingInitialState ? (
-                  <IonSpinner name="crescent" />
-                ) : (
-                  <SendIcon icon={send} />
-                )}
-              </IonButton>
-            </SendButtonContainer>
+            <IconButton
+              disabled={isLoading || isLoadingInitialState}
+              onClick={submitMessageQuery}
+            >
+              {isLoading || isLoadingInitialState ? (
+                <Spinner />
+              ) : (
+                <RiSendPlaneFill />
+              )}
+            </IconButton>
           </ChatTextContainer>
         </ChatContainer>
       </IonContent>
+      <ActionDialog
+        title={t('aiThread.retry.confirmation')}
+        open={!!retryConfirmMessageId}
+        onOpenChange={(open) => {
+          if (!open) setRetryConfirmMessageId(null);
+        }}
+        actionButtons={[
+          {
+            title: t('generic.cancel'),
+            props: {
+              color: 'gray',
+              onClick: () => setRetryConfirmMessageId(null),
+            },
+          },
+          {
+            title: t('generic.confirm'),
+            props: {
+              color: 'red',
+              onClick: () => {
+                if (retryConfirmMessageId) {
+                  executeRetry(retryConfirmMessageId);
+                }
+                setRetryConfirmMessageId(null);
+              },
+            },
+          },
+        ]}
+      />
     </IonPage>
   );
 };

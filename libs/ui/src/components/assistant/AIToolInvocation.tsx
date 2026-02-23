@@ -1,5 +1,5 @@
-import { type UIDataTypes, type UIMessagePart } from 'ai';
-import { IonSpinner } from '@ionic/react';
+import { type UIDataTypes, type UIMessagePart, type ChatStatus } from 'ai';
+import { Spinner } from '@radix-ui/themes';
 import { getEditorContentsFromToolPart } from '../../utils/assistant/getEditorContentsFromToolInvocation';
 import { AIEditor } from './AIEditor';
 import type { FeynoteUITool } from '@feynote/shared-utils';
@@ -9,7 +9,7 @@ interface Props {
   part: UIMessagePart<UIDataTypes, FeynoteUITool>;
   messageId: string;
   retryMessage: (messageId: string) => void;
-  disableRetry: boolean;
+  aiStatus: ChatStatus;
 }
 
 export const AIToolPart = (props: Props) => {
@@ -17,7 +17,7 @@ export const AIToolPart = (props: Props) => {
     () => getEditorContentsFromToolPart(props.part),
     [props.part],
   );
-  if (!toolPartContents.length) return <IonSpinner name="dots" />;
+  if (!toolPartContents.length) return <Spinner />;
 
   return (
     <>
@@ -25,7 +25,7 @@ export const AIToolPart = (props: Props) => {
         <AIEditor
           key={i}
           messageId={props.messageId}
-          disableRetry={props.disableRetry}
+          aiStatus={props.aiStatus}
           retryMessage={props.retryMessage}
           editorContent={content}
         />

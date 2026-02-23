@@ -29,8 +29,15 @@ export const globalServerConfig = {
     apiKey: getEnvOrThrow('TYPESENSE_API_KEY'),
     nodes: getEnvOrThrow('TYPESENSE_NODES'),
   },
-  openai: {
-    apiKey: getEnvOrThrow('OPENAI_API_KEY'),
+  ai: {
+    provider: getEnvOrThrow('AI_PROVIDER'),
+    apiKey: getEnvOrThrow('AI_API_KEY'),
+    model: {
+      chatLow: getEnvOrThrow('AI_MODEL_CHAT_LOW'),
+      chatHigh: getEnvOrThrow('AI_MODEL_CHAT_HIGH'),
+      scrapeUrl: getEnvOrThrow('AI_MODEL_SCRAPE_URL'),
+      threadTitle: getEnvOrThrow('AI_MODEL_THREAD_TITLE'),
+    },
   },
   proxy: {
     enabled: coerceBoolean(getEnvOrThrow('PROXY_ENABLED')),

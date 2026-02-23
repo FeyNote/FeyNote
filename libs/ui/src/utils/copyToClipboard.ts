@@ -2,12 +2,16 @@ export const copyToClipboard = (content: {
   html?: string;
   plaintext?: string;
 }) => {
-  if (content.plaintext) navigator.clipboard.writeText(content.plaintext);
+  const blobs: Record<string, Blob> = {};
+  if (content.plaintext) {
+    blobs['text/plain'] = new Blob([content.plaintext], {
+      type: 'text/plain',
+    });
+  }
   if (content.html) {
-    navigator.clipboard.write([
-      new ClipboardItem({
-        'text/html': content.html,
-      }),
-    ]);
+    blobs['text/html'] = new Blob([content.html], { type: 'text/html' });
+  }
+  if (Object.keys(blobs).length) {
+    navigator.clipboard.write([new ClipboardItem(blobs)]);
   }
 };

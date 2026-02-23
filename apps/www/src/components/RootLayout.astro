@@ -1,8 +1,6 @@
 ---
 import { Picture } from 'astro:assets';
 import GlobalStyles from './GlobalStyles.astro';
-import GoToAppButton from '../components/GoToAppButton.astro';
-
 const {
   title,
   description,
@@ -163,10 +161,6 @@ const finalStructuredData = structuredData || defaultStructuredData;
         text-decoration: none;
       }
 
-      .go-to-app {
-        margin-left: auto;
-      }
-
       .content {
         max-width: min(1500px, 85%);
         margin-top: 60px;
@@ -211,6 +205,7 @@ const finalStructuredData = structuredData || defaultStructuredData;
       </a>
 
       <div class="nav-links">
+        <a class="nav-item" href="/download">Download</a>
         <a class="nav-item" href="/pricing">Pricing</a>
         <a class="nav-item" href="/blog">Blog</a>
         <a class="nav-item" href="/about">About</a>

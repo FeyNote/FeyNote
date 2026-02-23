@@ -16,7 +16,7 @@ const config: ForgeConfig = {
     icon: './icons/feynote',
     executableName: 'feynote-desktop',
     appBundleId: 'com.feynote.desktop',
-    extraResource: ['./renderer'],
+    extraResource: ['./renderer', './icons'],
     osxSign: {
       ...(process.env.CI ? { keychain: 'build.keychain' } : {}),
     },

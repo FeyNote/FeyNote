@@ -42,6 +42,7 @@ export { GiBroadsword, GiMonsterGrasp } from 'react-icons/gi';
 export {
   IoAdd,
   IoCalendar,
+  IoChatbubbles,
   IoChevronDown,
   IoChevronForward,
   IoDocument,
@@ -94,6 +95,7 @@ export {
   RiBox1Line,
   RiDeleteBackLine,
   RiFileCopyLine,
+  RiRefreshLine,
   RiScissorsCutLine,
   RiAlignCenter,
   RiAlignLeft,
@@ -116,6 +118,7 @@ export {
   RiListUnordered,
   RiParagraph,
   RiStrikethrough,
+  RiSendPlaneFill,
   RiText,
   RiUnderline,
 } from 'react-icons/ri';

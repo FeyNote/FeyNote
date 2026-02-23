@@ -85,6 +85,9 @@ updates:
         patterns:
           - 'sanitize-html'
           - '@types/sanitize-html'
+      commitlint:
+        patterns:
+          - '@commitlint/*'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI

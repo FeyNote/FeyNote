@@ -39,7 +39,7 @@ export const IncomingBlockReferencesInlinePreview = (props: Props) => {
   const [target, setTarget] = useState<HTMLElement | null>(null);
   const { onMouseOut, onMouseOver, show, close } = useHoverTimer();
   const [edges, setEdges] = useState<Edge[]>([]);
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   useEffect(() => {
     // We listen for edges so that we register that they are 'listened to' and not GC'd

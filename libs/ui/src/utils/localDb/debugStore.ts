@@ -147,9 +147,9 @@ function dumpIndexedDBTable(name: string) {
         const store = tx.objectStore(storeName);
         const getAllReq = store.getAll();
 
+        // eslint-disable-next-line no-loop-func
         getAllReq.onsuccess = () => {
           result[storeName] = getAllReq.result;
-          // eslint-disable-next-line no-loop-func
           if (--pending === 0) {
             db.close();
             resolve(result);
