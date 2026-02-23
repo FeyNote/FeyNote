@@ -25,6 +25,16 @@ jobs:
       - checkout
       - node/install-packages
       - run:
+          name: commitlint
+          command: |
+            if [ -n "$CIRCLE_PULL_REQUEST" ]; then
+              # For PRs: validate all commits in the PR
+              npx commitlint --from origin/main --to HEAD --verbose
+            else
+              # For direct pushes: validate the last commit
+              npx commitlint --from HEAD~1 --to HEAD --verbose
+            fi
+      - run:
           name: prettier
           command: npx prettier --check .
       - run:

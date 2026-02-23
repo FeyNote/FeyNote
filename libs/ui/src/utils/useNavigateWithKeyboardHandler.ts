@@ -7,23 +7,10 @@ import {
   useGlobalPaneContext,
 } from '../context/globalPane/GlobalPaneContext';
 import { usePaneContext } from '../context/pane/PaneContext';
-import { useState } from 'react';
 
-/**
- * This helpfully wraps navigate with an event handler that detects ctrl/cmd+click
- * NOTE: It is recommended to pass usePaneContextId if your component is rendered within a pane!
- */
-export const useNavigateWithKeyboardHandler = (
-  usePaneContextId?: boolean,
-  alwaysSelect?: boolean,
-) => {
-  const [_usePaneContextId] = useState(usePaneContextId);
-  let paneId = undefined;
-  if (_usePaneContextId) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const paneContextData = usePaneContext();
-    paneId = paneContextData.pane.id;
-  }
+export const useNavigateWithKeyboardHandler = (alwaysSelect?: boolean) => {
+  const paneContextData = usePaneContext(true);
+  const paneId = paneContextData?.pane.id;
   const { navigate } = useGlobalPaneContext();
 
   return {

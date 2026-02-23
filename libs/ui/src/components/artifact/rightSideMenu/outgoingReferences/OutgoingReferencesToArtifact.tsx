@@ -24,7 +24,7 @@ interface Props {
 
 export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
   const { pane } = usePaneContext();
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const { t } = useTranslation();
   const ref = useRef<HTMLIonItemElement>(null);
   const [expanded, setExpanded] = useState(false);

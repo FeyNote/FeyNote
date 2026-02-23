@@ -24,14 +24,16 @@ export interface PaneContextData {
 
 export const PaneContext = createContext<PaneContextData | null>(null);
 
-export const usePaneContext = (): PaneContextData => {
+export function usePaneContext(): PaneContextData;
+export function usePaneContext(optional: true): PaneContextData | null;
+export function usePaneContext(optional?: true): PaneContextData | null {
   const val = useContext(PaneContext);
 
-  if (!val) {
+  if (!val && !optional) {
     throw new Error(
       'PaneContext used within component that does not inherit from PaneContextProvider',
     );
   }
 
   return val;
-};
+}

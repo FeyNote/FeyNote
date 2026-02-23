@@ -1,18 +1,13 @@
 import { memo, useEffect, useState } from 'react';
-import { ArtifactEditor } from '../editor/ArtifactEditor';
-import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { useAlertContext } from '../../context/alert/AlertContext';
-import { getFileUrlById } from '../../utils/files/getFileUrlById';
-import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { Edge, type SessionDTO } from '@feynote/shared-utils';
-import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
 import { getEdgeStore } from '../../utils/localDb/edges/edgeStore';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { ReadonlyArtifactContent } from './ReadonlyArtifactContent';
 
 interface Props {
   artifactId: string;
@@ -35,8 +30,6 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       setSession(session);
     });
   }, []);
-
-  const { type } = useObserveYArtifactMeta(yDoc || new YDoc());
 
   const loadArtifactEdges = () => {
     trpc.artifact.getArtifactEdgesById
@@ -123,45 +116,11 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
 
   if (!edges || !yDoc || session === undefined) return;
 
-  if (type === 'tiptap') {
-    return (
-      <ArtifactEditor
-        artifactId={props.artifactId}
-        editable={false}
-        authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
-        onReady={props.onReady}
-        yjsProvider={undefined}
-        yDoc={yDoc}
-        getFileUrl={(fileId) => {
-          return getFileUrlById(fileId, session || undefined);
-        }}
-      />
-    );
-  }
-
-  if (type === 'calendar') {
-    return (
-      <ArtifactCalendar
-        artifactId={props.artifactId}
-        editable={false}
-        onReady={props.onReady}
-        y={yDoc}
-        viewType="fullsize"
-      />
-    );
-  }
-
-  if (type === 'tldraw') {
-    return (
-      <ArtifactDraw
-        artifactId={props.artifactId}
-        editable={false}
-        onReady={props.onReady}
-        yDoc={yDoc}
-        getFileUrl={(fileId) => {
-          return getFileUrlById(fileId, session || undefined);
-        }}
-      />
-    );
-  }
+  return (
+    <ReadonlyArtifactContent
+      artifactId={props.artifactId}
+      yDoc={yDoc}
+      onReady={props.onReady}
+    />
+  );
 });

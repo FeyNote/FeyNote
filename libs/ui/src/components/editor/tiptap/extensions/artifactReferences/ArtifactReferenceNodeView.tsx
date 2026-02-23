@@ -35,7 +35,7 @@ export const ArtifactReferenceNodeView = (props: NodeViewProps) => {
   }
 
   const { getEdge } = useEdgesForArtifactId(artifactId);
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const edge = useMemo(
     () =>
       getEdge({
