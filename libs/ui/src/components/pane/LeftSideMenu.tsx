@@ -241,7 +241,10 @@ export const LeftSideMenu: React.FC = () => {
               <LuFolderTree color="rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54)" />
               &nbsp;&nbsp;
               <IonLabel>{t('menu.tree')}</IonLabel>
-              <InfoButton message={t('menu.tree.help')} />
+              <InfoButton
+                message={t('menu.tree.help')}
+                docsLink="https://docs.feynote.com/documents/tree/#organizing-documents"
+              />
               <IonButton
                 onClick={(event) =>
                   navigateWithKeyboardHandler(

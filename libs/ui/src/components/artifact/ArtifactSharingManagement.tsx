@@ -166,7 +166,10 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
             {t('artifactSharing.existing')}
           </Heading>
         </Reset>
-        <InfoButton message={t('artifactSharing.existing.help')} />
+        <InfoButton
+          message={t('artifactSharing.existing.help')}
+          docsLink="https://docs.feynote.com/documents/sharing/#sharing-with-specific-users"
+        />
       </Flex>
       {userAccessYKV.yarray.map(({ key, val }) => (
         <ArtifactSharingAccessLevel
@@ -192,7 +195,10 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
                 {t('artifactSharing.knownUsers')}
               </Heading>
             </Reset>
-            <InfoButton message={t('artifactSharing.knownUsers.help')} />
+            <InfoButton
+              message={t('artifactSharing.knownUsers.help')}
+              docsLink="https://docs.feynote.com/documents/sharing/#sharing-with-specific-users"
+            />
           </Flex>
           {knownUsersNotSharedTo.map((knownUser) => (
             <ArtifactSharingAccessLevel
@@ -214,7 +220,10 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
             {t('artifactSharing.search')}
           </Heading>
         </Reset>
-        <InfoButton message={t('artifactSharing.search.help')} />
+        <InfoButton
+          message={t('artifactSharing.search.help')}
+          docsLink="https://docs.feynote.com/documents/sharing/#sharing-with-specific-users"
+        />
       </Flex>
       <TextField.Root
         placeholder={t('artifactSharing.search.placeholder')}
@@ -250,7 +259,10 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
             {t('artifactSharing.link')}
           </Heading>
         </Reset>
-        <InfoButton message={t('artifactSharing.link.help')} />
+        <InfoButton
+          message={t('artifactSharing.link.help')}
+          docsLink="https://docs.feynote.com/documents/sharing/#sharing-via-link"
+        />
       </Flex>
       <ArtifactLinkAccessLevelSelect
         artifactAccessLevel={linkAccessLevel || 'noaccess'}
