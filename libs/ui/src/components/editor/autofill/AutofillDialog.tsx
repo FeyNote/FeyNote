@@ -142,6 +142,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
             placeholder={t('autofillDialog.text.placeholder')}
             value={inputValue}
             onChange={(e) => handleInputChange(e.target.value)}
+            maxLength={10000}
             rows={14}
           />
         ) : (
