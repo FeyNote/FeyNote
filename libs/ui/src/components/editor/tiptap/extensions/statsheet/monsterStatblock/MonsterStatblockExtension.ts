@@ -50,7 +50,7 @@ export const MonsterStatblockExtension = Node.create({
               attrs: {
                 wide,
               },
-              content: monsterStatblockDefaultContent,
+              content: monsterStatblockDefaultContent(),
             },
             {
               type: 'paragraph', // We want a followup paragraph so the user isn't left stuck with the statsheet at the end of the doc

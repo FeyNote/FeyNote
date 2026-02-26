@@ -45,7 +45,7 @@ export const SpellSheetExtension = Node.create({
             {
               type: this.name,
               attrs: {},
-              content: spellSheetDefaultContent,
+              content: spellSheetDefaultContent(),
             },
             {
               type: 'paragraph', // We want a followup paragraph so the user isn't left stuck with the statsheet at the end of the doc

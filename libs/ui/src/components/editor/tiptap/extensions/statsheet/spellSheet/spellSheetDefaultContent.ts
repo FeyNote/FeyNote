@@ -1,8 +1,10 @@
-export const spellSheetDefaultContent = [
+import { t } from 'i18next';
+
+export const spellSheetDefaultContent = () => [
   {
     type: 'heading',
     attrs: { level: 4 },
-    content: [{ type: 'text', text: 'Dominate Ramen Giant' }],
+    content: [{ type: 'text', text: t('spellSheet.default.name') }],
   },
   {
     type: 'paragraph',
@@ -10,24 +12,40 @@ export const spellSheetDefaultContent = [
       {
         type: 'text',
         marks: [{ type: 'italic' }],
-        text: '7th-level abjuration',
+        text: t('spellSheet.default.subheader'),
       },
     ],
   },
   {
     type: 'paragraph',
     content: [
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Casting Time: ' },
-      { type: 'text', text: '1 action' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('spellSheet.default.castingTime'),
+      },
+      { type: 'text', text: t('spellSheet.default.castingTimeValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Range: ' },
-      { type: 'text', text: '60 feet' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('spellSheet.default.range'),
+      },
+      { type: 'text', text: t('spellSheet.default.rangeValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Components: ' },
-      { type: 'text', text: 'S' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('spellSheet.default.components'),
+      },
+      { type: 'text', text: t('spellSheet.default.componentsValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Duration: ' },
-      { type: 'text', text: '1 hour' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('spellSheet.default.duration'),
+      },
+      { type: 'text', text: t('spellSheet.default.durationValue') },
     ],
   },
   {
@@ -35,16 +53,7 @@ export const spellSheetDefaultContent = [
     content: [
       {
         type: 'text',
-        text: 'A flame, equivalent in brightness to a torch, springs from an object that you touch. The effect look like a regular flame, but it creates no heat and doesn’t use oxygen. A ',
-      },
-      {
-        type: 'text',
-        marks: [{ type: 'italic' }],
-        text: 'continual flame ',
-      },
-      {
-        type: 'text',
-        text: 'can be covered or hidden but not smothered or quenched.',
+        text: t('spellSheet.default.description'),
       },
     ],
   },
