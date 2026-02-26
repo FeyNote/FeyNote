@@ -28,6 +28,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [inputValue, setInputValue] = useState('');
+  const [instructions, setInstructions] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<
     JSONContent[] | null
@@ -39,6 +40,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
 
   const resetState = () => {
     setInputValue('');
+    setInstructions('');
     setIsLoading(false);
     setGeneratedContent(null);
     setPreviewOpen(false);
@@ -58,6 +60,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
       const result = await trpc.ai.autofill.mutate({
         source,
         outputFormat: props.format,
+        instructions: instructions.trim() || undefined,
       });
       setGeneratedContent(result);
       return result;
@@ -105,6 +108,11 @@ export const AutofillDialog: React.FC<Props> = (props) => {
     setGeneratedContent(null);
   };
 
+  const handleInstructionsChange = (value: string) => {
+    setInstructions(value);
+    setGeneratedContent(null);
+  };
+
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       resetState();
@@ -143,6 +151,13 @@ export const AutofillDialog: React.FC<Props> = (props) => {
             onChange={(e) => handleInputChange(e.target.value)}
           />
         )}
+        <TextField.Root
+          placeholder={t('autofillDialog.instructions.placeholder')}
+          value={instructions}
+          maxLength={500}
+          onChange={(e) => handleInstructionsChange(e.target.value)}
+          mt="3"
+        />
         <Flex gap="3" mt="4" justify="end">
           <Dialog.Close>
             <Button variant="soft" color="gray">

@@ -37,6 +37,7 @@ export const autofill = authenticatedProcedure
         'spellsheet',
         'table',
       ]),
+      instructions: z.string().max(500).optional(),
     }),
   )
   .mutation(async ({ input }): Promise<JSONContent[]> => {
@@ -52,6 +53,10 @@ export const autofill = authenticatedProcedure
       const res = await proxyGetRequest(input.source.url);
       content = convertHtmlToPlainText(res.data);
       model = globalServerConfig.ai.model.scrapeUrl;
+    }
+
+    if (input.instructions) {
+      content += '\n\nAdditional instructions: ' + input.instructions;
     }
 
     switch (input.outputFormat) {

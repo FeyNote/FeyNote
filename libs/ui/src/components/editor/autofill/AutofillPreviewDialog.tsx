@@ -53,7 +53,7 @@ export const AutofillPreviewDialog: React.FC<Props> = (props) => {
       size="large"
       actionButtons={[
         {
-          title: t('generic.close'),
+          title: t('generic.back'),
           props: {
             color: 'gray',
           },
