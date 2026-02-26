@@ -146,7 +146,7 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   );
 
   return (
-    <div data-print-target={`artifact:${props.artifactId}`}>
+    <div>
       <ArtifactCalendarStyles data-theme={theme}>
         {titleInput}
 
