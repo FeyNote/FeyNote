@@ -6,7 +6,7 @@ import type { JSONContent } from '@tiptap/core';
 export const convert5eObjectToTiptap = (
   generatedObject: DeepPartial<Generate5eObjectParams>,
   generateJSON: (html: string) => JSONContent[],
-) => {
+): JSONContent[] => {
   const content = [];
   if (generatedObject.name)
     content.push({

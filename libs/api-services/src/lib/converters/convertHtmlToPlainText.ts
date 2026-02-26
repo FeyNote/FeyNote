@@ -14,24 +14,24 @@ const newLineCausingNodes = new Set([
   'h7',
 ]);
 
-const window = new JSDOM('').window;
-const domPurify = DOMPurify(window);
-domPurify.addHook('beforeSanitizeElements', function (node) {
-  const element = node as HTMLElement;
-  if (!node.nodeName) {
-    return;
-  }
-
-  if (newLineOnlyNodes.has(node.nodeName.toLowerCase())) {
-    element.innerHTML = '\n';
-  }
-
-  if (newLineCausingNodes.has(node.nodeName.toLowerCase())) {
-    element.innerHTML = element.innerHTML + '\n';
-  }
-});
-
 export const convertHtmlToPlainText = (html: string): string => {
+  const window = new JSDOM('').window;
+  const domPurify = DOMPurify(window);
+  domPurify.addHook('beforeSanitizeElements', function (node) {
+    const element = node as HTMLElement;
+    if (!node.nodeName) {
+      return;
+    }
+
+    if (newLineOnlyNodes.has(node.nodeName.toLowerCase())) {
+      element.innerHTML = '\n';
+    }
+
+    if (newLineCausingNodes.has(node.nodeName.toLowerCase())) {
+      element.innerHTML = element.innerHTML + '\n';
+    }
+  });
+
   const cleanedHtml = domPurify
     .sanitize(html, {
       ALLOWED_TAGS: [],

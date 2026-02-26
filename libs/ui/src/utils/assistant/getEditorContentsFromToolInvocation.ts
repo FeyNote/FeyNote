@@ -16,15 +16,11 @@ export const getEditorContentsFromToolPart = (
   switch (part.type) {
     case `tool-${ToolName.Generate5eMonster}`: {
       if (!part.input) return [];
-      const tiptapContent = convert5eMonsterToTipTap(part.input, t);
-      if (!tiptapContent) return [];
-      return [tiptapContent];
+      return [convert5eMonsterToTipTap(part.input, t)];
     }
     case `tool-${ToolName.Generate5eObject}`: {
       if (!part.input) return [];
-      const tiptapContent = convert5eObjectToTiptap(part.input, htmlToJson);
-      if (!tiptapContent) return [];
-      return [tiptapContent];
+      return [convert5eObjectToTiptap(part.input, htmlToJson)];
     }
     case `tool-${ToolName.ScrapeUrl}`: {
       if (!part.output) return [];

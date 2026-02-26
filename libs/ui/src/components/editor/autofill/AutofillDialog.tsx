@@ -147,6 +147,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
           />
         ) : (
           <TextField.Root
+            type="url"
             placeholder={t('autofillDialog.url.placeholder')}
             value={inputValue}
             onChange={(e) => handleInputChange(e.target.value)}

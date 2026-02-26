@@ -528,7 +528,6 @@
   "autofillDialog.cancel": "Cancel",
   "autofillDialog.preview": "Preview",
   "autofillDialog.insert": "Insert",
-  "autofillDialog.error": "Failed to generate content. Please try again.",
   "autofillPreview.title": "Preview",
   "autofillPreview.insert": "Insert",
 

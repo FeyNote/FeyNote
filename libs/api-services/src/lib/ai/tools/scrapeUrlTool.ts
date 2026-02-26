@@ -15,32 +15,18 @@ import {
 import { ToolName } from '@feynote/shared-utils';
 import { generate5eMonsterTool } from './generate5eMonster';
 import { generate5eObjectTool } from './generate5eObject';
-import type { AxiosRequestConfig } from 'axios';
 import { globalServerConfig } from '@feynote/config';
-import { HttpsProxyAgent } from 'https-proxy-agent';
-import axios from 'axios';
 import { systemMessage } from '../utils/SystemMessage';
 import { generateAssistantText } from '../generateAssistantText';
 import { logger } from '../../logging/logger';
 import { convertHtmlToPlainText } from '../../converters/convertHtmlToPlainText';
+import { proxyGetRequest } from '../../axios/proxyGetRequest';
 
 const displayUrlExecutor = async (
   params: ScrapeUrlParams,
 ): Promise<UIMessagePart<UIDataTypes, FeynoteUITool>[] | null> => {
   try {
-    const requestConfig = {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0',
-      },
-    } as AxiosRequestConfig;
-    if (globalServerConfig.proxy.enabled) {
-      const proxyUrl = new URL(globalServerConfig.proxy.url);
-      proxyUrl.username = globalServerConfig.proxy.username;
-      proxyUrl.password = globalServerConfig.proxy.password;
-      requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
-    }
-    const res = await axios.get(params.url, requestConfig);
+    const res = await proxyGetRequest(params.url);
     const html = convertHtmlToPlainText(res.data);
     const messages: ModelMessage[] = [
       systemMessage.scrapeContent,

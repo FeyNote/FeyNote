@@ -6,43 +6,48 @@ export const convertTableToTiptap = (
   generatedTable: DeepPartial<GenerateTableParams>,
 ): JSONContent[] => {
   const rows: JSONContent[] = [];
+  let columnCount = 0;
 
   if (generatedTable.headers?.length) {
-    rows.push({
-      type: 'tableRow',
-      content: generatedTable.headers
-        .filter((h): h is string => !!h)
-        .map((header) => ({
-          type: 'tableHeader',
-          attrs: { colspan: 1, rowspan: 1, colwidth: null },
-          content: [
-            {
-              type: 'paragraph',
-              content: [{ type: 'text', text: header }],
-            },
-          ],
-        })),
-    });
+    const headerCells = generatedTable.headers
+      .filter((h): h is string => !!h)
+      .map((header) => ({
+        type: 'tableHeader',
+        attrs: { colspan: 1, rowspan: 1, colwidth: null },
+        content: [
+          {
+            type: 'paragraph',
+            content: [{ type: 'text', text: header }],
+          },
+        ],
+      }));
+    columnCount = headerCells.length;
+    rows.push({ type: 'tableRow', content: headerCells });
   }
 
   if (generatedTable.rows?.length) {
     for (const row of generatedTable.rows) {
       if (!row?.length) continue;
-      rows.push({
-        type: 'tableRow',
-        content: row
-          .filter((cell): cell is string => !!cell)
-          .map((cell) => ({
-            type: 'tableCell',
-            attrs: { colspan: 1, rowspan: 1, colwidth: null },
-            content: [
-              {
-                type: 'paragraph',
-                content: [{ type: 'text', text: cell }],
-              },
-            ],
-          })),
-      });
+      const cells = row
+        .filter((cell): cell is string => !!cell)
+        .map((cell) => ({
+          type: 'tableCell',
+          attrs: { colspan: 1, rowspan: 1, colwidth: null },
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: cell }],
+            },
+          ],
+        }));
+      while (cells.length < columnCount) {
+        cells.push({
+          type: 'tableCell',
+          attrs: { colspan: 1, rowspan: 1, colwidth: null },
+          content: [{ type: 'paragraph', content: [] }],
+        });
+      }
+      rows.push({ type: 'tableRow', content: cells });
     }
   }
 
