@@ -10,6 +10,7 @@ import { appRouter, createContext } from '@feynote/trpc';
 import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
+import { authRouter } from './routes/auth/index';
 import {
   logger,
   metrics,
@@ -100,6 +101,7 @@ setupMinimalMetricsServer({
   existingApp: app,
 });
 
+app.use('/auth', authRouter);
 app.use('/message', urlEncodedMiddleware, jsonMiddleware, messageRouter);
 app.use('/file', urlEncodedMiddleware, jsonMiddleware, fileRouter);
 app.use('/stripe', urlEncodedMiddleware, jsonMiddleware, stripeRouter);

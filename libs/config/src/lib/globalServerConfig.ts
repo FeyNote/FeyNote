@@ -47,6 +47,7 @@ export const globalServerConfig = {
   },
   api: {
     port: parseInt(process.env['API_PORT'] || '8080'),
+    publicUrl: getEnvOrThrow('API_PUBLIC_URL'),
   },
   hocuspocus: {
     wsPort: parseInt(process.env['HOCUSPOCUS_WS_PORT'] || '8080'),
@@ -131,5 +132,9 @@ export const globalServerConfig = {
   stripe: {
     webhookSecret: getEnvOrThrow('STRIPE_WEBHOOK_SECRET'),
     apiKey: getEnvOrThrow('STRIPE_API_KEY'),
+  },
+  google: {
+    clientId: process.env['GOOGLE_CLIENT_ID'] || '',
+    clientSecret: process.env['GOOGLE_CLIENT_SECRET'] || '',
   },
 };
