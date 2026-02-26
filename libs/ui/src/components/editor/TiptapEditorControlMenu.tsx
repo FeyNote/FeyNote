@@ -44,7 +44,10 @@ const ControlMenuList = styled.div`
   gap: 16px;
   padding-top: 8px;
   padding-bottom: 8px;
-  padding-left: 8px;
+  padding-left: 24px;
+  padding-right: 16px;
+  margin-left: -16px;
+  margin-right: -16px;
   position: sticky;
   top: 0;
   z-index: 10;
