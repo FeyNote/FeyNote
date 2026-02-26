@@ -6,14 +6,12 @@ import {
   type UIDataTypes,
   type UIMessagePart,
 } from 'ai';
-import { JSDOM } from 'jsdom';
 import {
   ScrapeUrlParams,
   getScrapeUrlSchema,
   type ScrapeUrlTool,
   type FeynoteUITool,
 } from '@feynote/shared-utils';
-import DOMPurify from 'dompurify';
 import { ToolName } from '@feynote/shared-utils';
 import { generate5eMonsterTool } from './generate5eMonster';
 import { generate5eObjectTool } from './generate5eObject';
@@ -24,53 +22,7 @@ import axios from 'axios';
 import { systemMessage } from '../utils/SystemMessage';
 import { generateAssistantText } from '../generateAssistantText';
 import { logger } from '../../logging/logger';
-
-const newLineOnlyNodes = new Set(['br']);
-const newLineCausingNodes = new Set([
-  'div',
-  'p',
-  'h1',
-  'h2',
-  'h3',
-  'h4',
-  'h5',
-  'h6',
-  'h7',
-]);
-
-// DomPurify requires a window object to work since it's browser-native ported to nodejs
-const window = new JSDOM('').window;
-const domPurify = DOMPurify(window);
-domPurify.addHook('beforeSanitizeElements', function (node) {
-  const element = node as HTMLElement;
-  if (!node.nodeName) {
-    return;
-  }
-
-  // Newline-only nodes
-  if (newLineOnlyNodes.has(node.nodeName.toLowerCase())) {
-    element.innerHTML = '\n';
-  }
-
-  // Newline-causing nodes
-  if (newLineCausingNodes.has(node.nodeName.toLowerCase())) {
-    element.innerHTML = element.innerHTML + '\n';
-  }
-});
-
-const getTextFromHtml = (html: string): string => {
-  const cleanedHtml = domPurify
-    .sanitize(html, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-      KEEP_CONTENT: true,
-    })
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line)
-    .join('\n');
-  return cleanedHtml;
-};
+import { convertHtmlToPlainText } from '../../converters/convertHtmlToPlainText';
 
 const displayUrlExecutor = async (
   params: ScrapeUrlParams,
@@ -89,7 +41,7 @@ const displayUrlExecutor = async (
       requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
     }
     const res = await axios.get(params.url, requestConfig);
-    const html = getTextFromHtml(res.data);
+    const html = convertHtmlToPlainText(res.data);
     const messages: ModelMessage[] = [
       systemMessage.scrapeContent,
       {

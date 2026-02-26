@@ -11,6 +11,7 @@ import { fileRouter } from './routes/file/index';
 import { messageRouter } from './routes/message';
 import { stripeRouter } from './routes/stripe/index.js';
 import {
+  feynoteAsyncLocalStorage,
   logger,
   metrics,
   setupMinimalMetricsServer,
@@ -86,6 +87,19 @@ app.use(function (req, res, next) {
   });
 
   next();
+});
+
+app.use((req, _res, next) => {
+  const acceptLanguage = req.headers['accept-language'] || 'en-us';
+
+  feynoteAsyncLocalStorage.run(
+    {
+      acceptLanguage,
+    },
+    () => {
+      next();
+    },
+  );
 });
 
 app.use(

@@ -2,6 +2,7 @@ import { coerceBoolean } from './coerceBoolean';
 import { getEnvOrThrow } from './getEnvOrThrow';
 
 export const globalServerConfig = {
+  i18nPath: getEnvOrThrow('I18N_PATH'),
   logger: {
     level: process.env['LOGGER_LEVEL'] || 'http',
     transports: {

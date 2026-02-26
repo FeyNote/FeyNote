@@ -1,0 +1,26 @@
+{
+  "monsterStatblock.ac": "Armor Class:",
+  "monsterStatblock.hp": "Hit Points:",
+  "monsterStatblock.speed": "Speed:",
+  "monsterStatblock.str": "STR",
+  "monsterStatblock.dex": "DEX",
+  "monsterStatblock.con": "CON",
+  "monsterStatblock.wis": "WIS",
+  "monsterStatblock.int": "INT",
+  "monsterStatblock.cha": "CHA",
+  "monsterStatblock.skills": "Skills:",
+  "monsterStatblock.savingThrows": "Saving Throws:",
+  "monsterStatblock.damageResistances": "Damage Resistances:",
+  "monsterStatblock.damageImmunities": "Damage Immunities:",
+  "monsterStatblock.conditionImmunities": "Condition Immunities:",
+  "monsterStatblock.damageVulnerabilities": "Damage Vulnerabilities:",
+  "monsterStatblock.languages": "Languages:",
+  "monsterStatblock.senses": "Senses:",
+  "monsterStatblock.challenge": "Challenge:",
+  "monsterStatblock.actions.header": "Actions",
+  "monsterStatblock.reactions.header": "Reactions",
+  "monsterStatblock.legendaryActions.header": "Legendary Actions",
+
+  "generic.error": "Error",
+  "generic.untitled": "Untitled"
+}

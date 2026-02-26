@@ -23,6 +23,8 @@ COPY prisma prisma
 
 RUN npx prisma generate
 
+ENV I18N_PATH=/app/apps/frontend/public/locales
+
 ARG APP_VERSION
 # Include version build arg within the container env
 ENV APP_VERSION=$APP_VERSION
