@@ -57,7 +57,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
           ? ({ type: 'text', text: inputValue } as const)
           : ({ type: 'url', url: inputValue } as const);
 
-      const result = await trpc.ai.autofill.mutate({
+      const result = await trpc.ai.autofillToTiptapJSON.mutate({
         source,
         outputFormat: props.format,
         instructions: instructions.trim() || undefined,

@@ -8,7 +8,7 @@ import { deleteThread } from './deleteThread';
 import { saveMessage } from './saveMessage';
 import { updateMessage } from './updateMessage';
 import { createThreadTitle } from './createThreadTitle';
-import { autofill } from './autofill';
+import { autofillToTiptapJSON } from './autofillToTiptapJSON';
 
 export const aiRouter = trpcRouter({
   deleteMessageToId,
@@ -20,5 +20,5 @@ export const aiRouter = trpcRouter({
   deleteThread,
   saveMessage,
   updateMessage,
-  autofill,
+  autofillToTiptapJSON,
 });

@@ -21,7 +21,7 @@ import {
 import { globalServerConfig } from '@feynote/config';
 import type { JSONContent } from '@tiptap/core';
 
-export const autofill = authenticatedProcedure
+export const autofillToTiptapJSON = authenticatedProcedure
   .input(
     z.object({
       source: z.discriminatedUnion('type', [
