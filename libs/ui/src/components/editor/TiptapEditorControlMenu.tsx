@@ -25,7 +25,7 @@ import {
   globalTiptapCommandHelpers,
   type GlobalTiptapCommandHelperEntry,
 } from './globalTiptapCommandHelpers';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NewArtifactDialog } from '../artifact/NewArtifactDialog';
 import { useEditorState } from '@tiptap/react';
 import {
@@ -59,6 +59,7 @@ interface Props {
   editor: Editor;
   yDoc: YDoc;
   authorizedScope: CollaborationConnectionAuthorizedScope;
+  handleFileUpload: (editor: Editor, files: File[], pos?: number) => void;
 }
 
 export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
@@ -73,6 +74,19 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const [autofillFormat, setAutofillFormat] = useState<
     'statblock' | 'widestatblock' | 'spellsheet' | 'table'
   >('statblock');
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    props.handleFileUpload(props.editor, Array.from(files));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -103,6 +117,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
           globalTiptapCommandHelpers.insert.wideMonster.enabled(editor),
         insertSpell: globalTiptapCommandHelpers.insert.spell.enabled(editor),
         insertNote: globalTiptapCommandHelpers.insert.note.enabled(editor),
+        insertFile: globalTiptapCommandHelpers.insert.file.enabled(),
         insertLink: globalTiptapCommandHelpers.insert.link.enabled(),
         formatTextToggleBold:
           globalTiptapCommandHelpers.format.text.toggleBold.enabled(editor),
@@ -377,6 +392,12 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         )}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
         {renderCommandEntryItem({
+          ...globalTiptapCommandHelpers.insert.file,
+          command: () => {
+            fileInputRef.current?.click();
+          },
+        })}
+        {renderCommandEntryItem({
           ...globalTiptapCommandHelpers.insert.link,
           command: () => {
             setInsertLinkDialogOpen(true);
@@ -598,6 +619,13 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         mode={autofillMode}
         format={autofillFormat}
         onInsert={handleAutofillInsert}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        style={{ display: 'none' }}
+        onChange={handleFileInputChange}
       />
     </>
   );

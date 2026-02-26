@@ -105,14 +105,19 @@ export const TiptapEditor = (props: Props) => {
     props.editorRef.current = editor;
   }
 
+  if (props.showMenus && props.artifactId && !props.handleFileUpload) {
+    throw new Error('handleFileUpload is required when showMenus is enabled');
+  }
+
   return (
     <>
-      {props.showMenus && props.artifactId && (
+      {props.showMenus && props.artifactId && props.handleFileUpload && (
         <TiptapEditorControlMenu
           artifactId={props.artifactId}
           authorizedScope={props.authorizedScope}
           yDoc={props.yDoc || props.yjsProvider.document}
           editor={editor}
+          handleFileUpload={props.handleFileUpload}
         />
       )}
 

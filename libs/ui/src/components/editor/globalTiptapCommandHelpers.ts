@@ -25,6 +25,7 @@ import {
   RiAlignCenter,
   RiAlignLeft,
   RiAlignRight,
+  RiAttachment2,
   RiBold,
   RiBox1Line,
   RiDeleteBackLine,
@@ -154,6 +155,17 @@ export const globalTiptapCommandHelpers = {
           .deleteRange(args.range)
           .setTTRPGNote()
           .run();
+      },
+    } satisfies GlobalTiptapCommandHelperEntry,
+    file: {
+      title: 'editor.commandMenu.file',
+      keywords: ['file', 'upload', 'image', 'video', 'audio', 'attachment'],
+      subtitle: 'editor.commandMenu.file.subtitle',
+      enabled: () => true,
+      icon: RiAttachment2,
+      command: () => {
+        // You must override this method as it requires additional interactivity.
+        // See TiptapEditorControlMenu for the file picker implementation.
       },
     } satisfies GlobalTiptapCommandHelperEntry,
     link: {
