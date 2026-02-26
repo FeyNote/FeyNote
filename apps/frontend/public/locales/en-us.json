@@ -492,6 +492,7 @@
   "editor.hyperlink.edit": "Edit link",
   "editor.hyperlink.copy": "Copy link",
   "editor.statsheet.copy": "Copy block to clipboard",
+  "editor.statsheet.print": "Print block",
   "editor.statsheet.delete": "Delete block",
 
   "createLink.title": "New Link",

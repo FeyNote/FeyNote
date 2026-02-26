@@ -99,7 +99,7 @@ Monster statblocks are special blocks designed for tabletop gaming content. To i
 
 A blank statblock comes pre-filled with an example creature including armor class, hit points, ability scores, traits, and actions, ready for you to replace with your own creation. The wide variant gives you a two-column layout for creatures with more detailed stat blocks. Every field in the statblock is editable directly in place.
 
-You can copy a statblock to your clipboard or delete it using the options that appear when you select it.
+When you click inside a statblock, a small toolbar appears above it with options to copy the block to your clipboard, print it, or delete it.
 
 ## Spell, Item, and Feat Blocks
 
@@ -107,9 +107,13 @@ Spell blocks provide a formatted block for spells, items, feats, and similar con
 
 A blank block comes with fields for key-value pairs (such as casting time, range, and components) and a description area. All fields are editable directly in place and you can add or remove key-value pairs to match whatever you're describing.
 
+When you click inside a spell block, a small toolbar appears above it with options to copy, print, or delete it.
+
 ## Note Block
 
 A note block is a visually distinct callout box, great for highlighting important information, DM tips, or flavor text. You can insert one from the **Insert** menu in the toolbar under **Note**.
+
+When you click inside a note block, a small toolbar appears above it with options to copy, print, or delete it.
 
 ## Autofill
 

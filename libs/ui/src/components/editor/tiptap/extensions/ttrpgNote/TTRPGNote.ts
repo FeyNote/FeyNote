@@ -1,5 +1,6 @@
 import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
 import { ttrpgNoteDefaultContent } from './ttrpgNoteDefaultContent';
+import { renderStatsheetNodeView } from '../statsheet/addStatsheetNodeView';
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
@@ -55,5 +56,9 @@ export const TTRPGNoteExtension = Node.create({
       'data-ttrpg-note': 'v1',
     });
     return ['div', attrs, 0];
+  },
+
+  addNodeView() {
+    return renderStatsheetNodeView;
   },
 });
