@@ -832,6 +832,9 @@
   "spellSheet.default.durationValue": " Instantaneous",
   "spellSheet.default.description": "Spell description.",
 
+  "ttrpgNote.default.title": "Note",
+  "ttrpgNote.default.body": "Write your note here.",
+
   "template.welcome.title": "Welcome to FeyNote!",
   "template.welcome.p1": "This document is intended to serve as a welcome and quickstart. For a complete guide to FeyNote, please visit ",
   "template.welcome.p1.link": "the documentation",

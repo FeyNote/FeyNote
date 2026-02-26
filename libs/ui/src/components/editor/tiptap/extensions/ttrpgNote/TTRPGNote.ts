@@ -28,7 +28,7 @@ export const TTRPGNoteExtension = Node.create({
             {
               type: this.name,
               attrs: {},
-              content: ttrpgNoteDefaultContent,
+              content: ttrpgNoteDefaultContent(),
             },
             {
               type: 'paragraph',
