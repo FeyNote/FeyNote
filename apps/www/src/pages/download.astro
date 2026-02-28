@@ -1,25 +1,37 @@
 ---
 import RootLayout from '../components/RootLayout.astro'
 import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
+import { getFileSize } from '../getFileSize';
 
 export const prerender = false;
 
-const BASE_URL = 'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/v1.0.0-beta19/';
+const BASE_URL = 'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/prod/';
 
 const downloads = {
   windows: [
-    { label: 'Windows Installer (.exe)', file: 'FeyNote-1.0.0-beta19%20Setup.exe', size: '129.4 MB' },
+    { label: 'Windows Installer (.exe)', file: 'FeyNote-Setup.exe' },
   ],
   macos: [
-    { label: 'macOS Apple Silicon (.dmg)', file: 'FeyNote-arm64.dmg', size: '109.2 MB' },
-    { label: 'macOS Intel (.dmg)', file: 'FeyNote-x64.dmg', size: '115.2 MB' },
+    { label: 'macOS Apple Silicon (.dmg)', file: 'FeyNote-arm64.dmg' },
+    { label: 'macOS Intel (.dmg)', file: 'FeyNote-x64.dmg' },
   ],
   linux: [
-    { label: 'Linux (.deb)', file: 'feynote-desktop_1.0.0~beta19_amd64.deb', size: '85.3 MB' },
-    { label: 'Linux (.rpm)', file: 'feynote-desktop-1.0.0.beta19-1.x86_64.rpm', size: '89.4 MB' },
-    { label: 'Linux (.zip)', file: 'FeyNote-linux-x64-1.0.0-beta19.zip', size: '111.3 MB' },
+    { label: 'Linux (.deb)', file: 'FeyNote-linux-amd64.deb' },
+    { label: 'Linux (.rpm)', file: 'FeyNote-linux-x86_64.rpm' },
+    { label: 'Linux (.zip)', file: 'FeyNote-linux-x64.zip' },
   ],
 };
+
+function formatBytes(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(1)} MB`;
+}
+
+const allEntries = [...downloads.windows, ...downloads.macos, ...downloads.linux];
+const sizes = await Promise.all(allEntries.map(dl => getFileSize(BASE_URL + dl.file)));
+const sizeByFile = new Map(
+  allEntries.map((dl, i) => [dl.file, sizes[i] !== null ? formatBytes(sizes[i]) : ''])
+);
 
 const recommended = {
   windows: { ...downloads.windows[0], buttonLabel: 'Download for Windows' },
@@ -129,7 +141,7 @@ const rec = platform !== 'unknown' ? recommended[platform] : null;
           {platform === 'macos' && <FaApple />}
           {platform === 'linux' && <FaLinux />}
           <span>{rec.buttonLabel}</span>
-          <span class="size">({rec.size})</span>
+          {sizeByFile.get(rec.file) && <span class="size">({sizeByFile.get(rec.file)})</span>}
         </a>
       </div>
     )}
@@ -146,7 +158,7 @@ const rec = platform !== 'unknown' ? recommended[platform] : null;
           {downloads.windows.map(dl => (
             <a href={BASE_URL + dl.file} class="download-link">
               <span>{dl.label}</span>
-              <span class="size">{dl.size}</span>
+              {sizeByFile.get(dl.file) && <span class="size">{sizeByFile.get(dl.file)}</span>}
             </a>
           ))}
         </div>
@@ -161,7 +173,7 @@ const rec = platform !== 'unknown' ? recommended[platform] : null;
           {downloads.macos.map(dl => (
             <a href={BASE_URL + dl.file} class="download-link">
               <span>{dl.label}</span>
-              <span class="size">{dl.size}</span>
+              {sizeByFile.get(dl.file) && <span class="size">{sizeByFile.get(dl.file)}</span>}
             </a>
           ))}
         </div>
@@ -176,7 +188,7 @@ const rec = platform !== 'unknown' ? recommended[platform] : null;
           {downloads.linux.map(dl => (
             <a href={BASE_URL + dl.file} class="download-link">
               <span>{dl.label}</span>
-              <span class="size">{dl.size}</span>
+              {sizeByFile.get(dl.file) && <span class="size">{sizeByFile.get(dl.file)}</span>}
             </a>
           ))}
         </div>
