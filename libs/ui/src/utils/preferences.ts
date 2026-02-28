@@ -44,6 +44,8 @@ export class PreferencesService {
       ArtifactReferenceNewArtifactSharingMode.Prompt,
     [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
       ArtifactReferenceExistingArtifactSharingMode.Prompt,
+
+    [PreferenceNames.LiveExportStoragePath]: null,
   };
   initialLoading: Promise<void> | undefined;
 
@@ -113,6 +115,8 @@ export class PreferencesService {
     // cause issues on smaller devices
     delete mutatedPreferences[PreferenceNames.LeftPaneStartOpen];
     delete mutatedPreferences[PreferenceNames.RightPaneStartOpen];
+
+    delete mutatedPreferences[PreferenceNames.LiveExportStoragePath];
 
     return mutatedPreferences;
   }

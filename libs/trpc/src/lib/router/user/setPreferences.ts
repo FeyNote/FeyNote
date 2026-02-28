@@ -40,6 +40,7 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: z.enum(
         ArtifactReferenceExistingArtifactSharingMode,
       ),
+      [PreferenceNames.LiveExportStoragePath]: z.string().nullable(),
     } satisfies ZodShape<AppPreferences>),
   )
   .mutation(async ({ ctx, input }): Promise<string> => {
@@ -86,6 +87,8 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.ArtifactReferenceNewArtifactSharingMode],
           [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
             input[PreferenceNames.ArtifactReferenceExistingArtifactSharingMode],
+          [PreferenceNames.LiveExportStoragePath]:
+            input[PreferenceNames.LiveExportStoragePath],
         } satisfies AppPreferences,
       },
     });
