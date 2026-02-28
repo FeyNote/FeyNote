@@ -50,6 +50,7 @@ export default defineConfig({
         {
           label: 'General',
           items: [
+            'general/ai',
             'general/dashboard',
             'general/all-documents',
             'general/search',
