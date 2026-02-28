@@ -1,9 +1,9 @@
 ---
-title: AI
+title: Threads
 description: Features and functionalities of our AI assistant
 ---
 
-# Disclaimer
+## Disclaimer
 
 At Feynote the use of AI is a fully optional feature and has been developed to assist the user in a non-intrusive manner. There are no popup chatbots, we do not pass the content of your notes to AI, and we do not support AI taking over the creative space. We view LLMs as a useful tool and have leveraged them to create functionality to assist our users in the campaign management process.
 
@@ -13,16 +13,16 @@ With our Threads, users can create chat sessions with our ttrpg assistant. These
 
 ### AI Tooling
 
-At Feynote we've created four main tooling functionalities. Each of these functions can be accessed through the Threads page or directly on your notes itself. The tooling functions are:
+At Feynote we've created four main tooling functionalities:
 
-- Format Statsheet
-- Scrape Content
-- Generate Monster Statblock
-- Generate Item Statblock
+- [Format Statsheet](#format-statsheet)
+- [URL Scraping](#url-scraping)
+- [Generate Monster Statblock](#generate-monsteritem-statblock)
+- [Generate Item Statblock](#generate-monsteritem-statblock)
 
 ### Format Statsheet
 
-The formatting of statsheets allows our users to take in an arbitary text string and parse that string to render in an item, spell or monster in the 5e style. This render statblock can then be copied from the Threads page into a document or prompted with a follow-up query for further modification.
+The formatting of statsheets allows our users to take in an arbitary text string and parse that string to render in an item, spell or monster in the 5e style. This rendered statblock can then be copied from the Threads page into a document or prompted with a follow-up query for further modification.
 
 ### URL Scraping
 
