@@ -7,6 +7,7 @@ import {
   type trpc,
 } from '@feynote/ui-sw';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
+import { swAssertStatusCacheDivert } from '../../util/swAssertStatusCacheDivert';
 
 export function registerSearchArtifactTitlesRoute(
   searchManager: SearchManager,
@@ -16,6 +17,8 @@ export function registerSearchArtifactTitlesRoute(
     async (event) => {
       try {
         const response = await fetch(event.request);
+
+        swAssertStatusCacheDivert(response);
 
         return response;
       } catch (_e) {

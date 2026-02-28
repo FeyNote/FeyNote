@@ -10,6 +10,7 @@ import { updateSingleCache } from './updateSingleCache';
 import { getTrpcInputForEvent } from './getTrpcInputForEvent';
 import { encodeCacheResultForTrpc } from './encodeCacheResultForTrpc';
 import type { Resolver } from '@trpc/client';
+import { swAssertStatusCacheDivert } from './swAssertStatusCacheDivert';
 
 export async function cacheSingleResponse<
   T extends ObjectStoreName,
@@ -28,6 +29,8 @@ export async function cacheSingleResponse<
     if (response.status >= 200 && response.status < 300) {
       updateSingleCache(dbName, response.clone());
     }
+
+    swAssertStatusCacheDivert(response);
 
     return response;
   } catch (e) {

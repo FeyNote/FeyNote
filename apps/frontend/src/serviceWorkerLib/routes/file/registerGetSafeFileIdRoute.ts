@@ -1,6 +1,7 @@
 import { registerRoute } from 'workbox-routing';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
 import type { trpc } from '@feynote/ui-sw';
+import { swAssertStatusCacheDivert } from '../../util/swAssertStatusCacheDivert';
 
 export function registerGetSafeFileIdRoute() {
   registerRoute(
@@ -8,6 +9,8 @@ export function registerGetSafeFileIdRoute() {
     async (event) => {
       try {
         const response = await fetch(event.request);
+
+        swAssertStatusCacheDivert(response);
 
         return response;
       } catch (_e) {
