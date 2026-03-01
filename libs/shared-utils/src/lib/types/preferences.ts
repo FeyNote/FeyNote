@@ -69,6 +69,8 @@ export enum PreferenceNames {
 
   ArtifactReferenceNewArtifactSharingMode = 'artifact.referenceNewArtifactSharingMode',
   ArtifactReferenceExistingArtifactSharingMode = 'artifact.referenceExistingArtifactSharingMode',
+
+  LiveExportStoragePath = 'liveExport.storagePath',
 }
 
 export interface AppPreferences {
@@ -95,4 +97,6 @@ export interface AppPreferences {
 
   [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: ArtifactReferenceNewArtifactSharingMode;
   [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: ArtifactReferenceExistingArtifactSharingMode;
+
+  [PreferenceNames.LiveExportStoragePath]: string | null;
 }
