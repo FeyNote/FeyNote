@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import path from 'path';
 import { pathToFileURL } from 'url';
 
+if (require('electron-squirrel-startup')) app.quit();
+
 declare const process: NodeJS.Process & { resourcesPath: string };
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -162,3 +164,6 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+app.setAppUserModelId("com.feynote.desktop");
+

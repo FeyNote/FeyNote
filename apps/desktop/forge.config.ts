@@ -36,6 +36,7 @@ const config: ForgeConfig = {
       name: 'FeyNote',
       setupIcon: './icons/feynote.ico',
       iconUrl: 'https://static.feynote.com/assets/favicon-20240925.ico',
+      loadingGif: './icons/feynote-installing.gif'
     }),
     new MakerZIP({}, ['darwin', 'linux']),
     new MakerDMG({
