@@ -9,6 +9,7 @@ import { RouteHandlerCallbackOptions } from 'workbox-core';
 import { updateListCache } from './updateListCache';
 import { encodeCacheResultForTrpc } from './encodeCacheResultForTrpc';
 import type { Resolver } from '@trpc/client';
+import { swAssertStatusCacheDivert } from './swAssertStatusCacheDivert';
 
 export async function cacheListResponse<
   T extends ObjectStoreName,
@@ -25,6 +26,8 @@ export async function cacheListResponse<
     if (response.status >= 200 && response.status < 300) {
       updateListCache(objectStoreName, response.clone());
     }
+
+    swAssertStatusCacheDivert(response);
 
     return response;
   } catch (e) {

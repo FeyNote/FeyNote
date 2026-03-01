@@ -6,6 +6,7 @@ import { registerRoute } from 'workbox-routing';
 import { Queue } from 'workbox-background-sync';
 import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
+import { swAssertStatusCacheDivert } from '../../util/swAssertStatusCacheDivert';
 
 export function registerCreateFileRoute(bgSyncQueue: Queue) {
   registerRoute(
@@ -14,6 +15,8 @@ export function registerCreateFileRoute(bgSyncQueue: Queue) {
       const clonedRequest = event.request.clone();
       try {
         const response = await fetch(event.request);
+
+        swAssertStatusCacheDivert(response);
 
         return response;
       } catch (_e) {
