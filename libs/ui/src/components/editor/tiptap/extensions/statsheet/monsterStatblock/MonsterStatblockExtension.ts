@@ -1,4 +1,9 @@
-import { CommandProps, Node, mergeAttributes } from '@tiptap/core';
+import {
+  CommandProps,
+  Node,
+  mergeAttributes,
+  type JSONContent,
+} from '@tiptap/core';
 import { monsterStatblockDefaultContent } from './monsterStatblockDefaultContent';
 import { renderStatsheetNodeView } from '../addStatsheetNodeView';
 
@@ -10,6 +15,10 @@ declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     customMonsterStatblock: {
       setMonsterStatblock: (wide?: boolean) => ReturnType;
+      setMonsterStatblockWithContent: (
+        wide: boolean,
+        content: JSONContent[],
+      ) => ReturnType;
     };
   }
 }
@@ -34,14 +43,33 @@ export const MonsterStatblockExtension = Node.create({
         ({ commands }: CommandProps) => {
           return commands.insertContent([
             {
-              type: 'paragraph', // We want to prepend a paragraph
+              type: 'paragraph',
             },
             {
               type: this.name,
               attrs: {
                 wide,
               },
-              content: monsterStatblockDefaultContent,
+              content: monsterStatblockDefaultContent(),
+            },
+            {
+              type: 'paragraph', // We want a followup paragraph so the user isn't left stuck with the statsheet at the end of the doc
+            },
+          ]);
+        },
+      setMonsterStatblockWithContent:
+        (wide: boolean, content: JSONContent[]) =>
+        ({ commands }: CommandProps) => {
+          return commands.insertContent([
+            {
+              type: 'paragraph',
+            },
+            {
+              type: this.name,
+              attrs: {
+                wide,
+              },
+              content,
             },
             {
               type: 'paragraph', // We want a followup paragraph so the user isn't left stuck with the statsheet at the end of the doc

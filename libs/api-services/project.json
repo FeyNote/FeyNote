@@ -12,7 +12,10 @@
         "outputPath": "dist/libs/api-services",
         "main": "libs/api-services/src/index.ts",
         "tsConfig": "libs/api-services/tsconfig.lib.json",
-        "assets": ["libs/api-services/*.md"]
+        "assets": [
+          "libs/api-services/*.md",
+          "libs/api-services/src/lib/i18n/locales"
+        ]
       }
     },
     "lint": {

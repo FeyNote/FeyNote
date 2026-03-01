@@ -48,7 +48,11 @@ export * from './lib/tldraw/TLYKVRecord';
 
 export * from './lib/ai/schemas/generate5eMonsterSchema';
 export * from './lib/ai/schemas/Generate5eObjectSchema';
+export * from './lib/ai/schemas/generateTableSchema';
 export * from './lib/ai/schemas/scrapeUrlContent';
+export * from './lib/ai/converters/convert5eMonsterToTipTap';
+export * from './lib/ai/converters/convert5eObjectToTiptap';
+export * from './lib/ai/converters/convertTableToTiptap';
 export * from './lib/ai/ToolName';
 export * from './lib/ai/FeynoteUIMessage';
 export * from './lib/ai/ThreadDTO';

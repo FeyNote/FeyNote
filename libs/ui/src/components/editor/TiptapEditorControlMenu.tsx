@@ -1,5 +1,5 @@
 import { Button, DropdownMenu } from '@radix-ui/themes';
-import type { Editor } from '@tiptap/core';
+import type { Editor, JSONContent } from '@tiptap/core';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import {
@@ -37,13 +37,17 @@ import {
   getDesktopBrowserShortcutDisplayString,
   getShortcutDisplayString,
 } from '../../utils/keyboardShortcuts';
+import { AutofillDialog } from './autofill/AutofillDialog';
 
 const ControlMenuList = styled.div`
   display: flex;
   gap: 16px;
   padding-top: 8px;
   padding-bottom: 8px;
-  padding-left: 8px;
+  padding-left: 24px;
+  padding-right: 16px;
+  margin-left: -16px;
+  margin-right: -16px;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -64,6 +68,11 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
   const [insertLinkDialogOpen, setInsertLinkDialogOpen] = useState(false);
+  const [autofillDialogOpen, setAutofillDialogOpen] = useState(false);
+  const [autofillMode, setAutofillMode] = useState<'text' | 'url'>('text');
+  const [autofillFormat, setAutofillFormat] = useState<
+    'statblock' | 'widestatblock' | 'spellsheet' | 'table'
+  >('statblock');
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -286,6 +295,63 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
     </DropdownMenu.Root>
   );
 
+  const openAutofillDialog = (
+    mode: 'text' | 'url',
+    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table',
+  ) => {
+    setAutofillMode(mode);
+    setAutofillFormat(format);
+    setAutofillDialogOpen(true);
+  };
+
+  const handleAutofillInsert = (content: JSONContent[]) => {
+    const range = props.editor.state.selection;
+    props.editor
+      .chain()
+      .focus()
+      .deleteRange(range)
+      .insertContent([{ type: 'paragraph' }, ...content, { type: 'paragraph' }])
+      .run();
+  };
+
+  const renderInsertSubMenu = (
+    commandEntry: GlobalTiptapCommandHelperEntry,
+    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table',
+  ) => (
+    <DropdownMenu.Sub>
+      <DropdownMenu.SubTrigger disabled={!commandEntry.enabled(props.editor)}>
+        {commandEntry.icon && <commandEntry.icon />}
+        {t(commandEntry.title)}
+      </DropdownMenu.SubTrigger>
+      <DropdownMenu.SubContent>
+        <DropdownMenu.Item
+          onClick={() => {
+            if (!commandEntry.enabled(props.editor)) return;
+            commandEntry.command({
+              editor: props.editor,
+              range: props.editor.state.selection,
+            });
+          }}
+          disabled={!commandEntry.enabled(props.editor)}
+        >
+          {t('tiptapControlMenu.insert.blankStarter')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => openAutofillDialog('text', format)}
+          disabled={!commandEntry.enabled(props.editor)}
+        >
+          {t('tiptapControlMenu.insert.autofillFromText')}
+        </DropdownMenu.Item>
+        <DropdownMenu.Item
+          onClick={() => openAutofillDialog('url', format)}
+          disabled={!commandEntry.enabled(props.editor)}
+        >
+          {t('tiptapControlMenu.insert.autofillFromUrl')}
+        </DropdownMenu.Item>
+      </DropdownMenu.SubContent>
+    </DropdownMenu.Sub>
+  );
+
   const insert = (
     <DropdownMenu.Root modal={false}>
       <DropdownMenu.Trigger>
@@ -296,10 +362,19 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.hr)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.table)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.monster)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.wideMonster)}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.spell)}
+        {renderInsertSubMenu(globalTiptapCommandHelpers.insert.table, 'table')}
+        {renderInsertSubMenu(
+          globalTiptapCommandHelpers.insert.monster,
+          'statblock',
+        )}
+        {renderInsertSubMenu(
+          globalTiptapCommandHelpers.insert.wideMonster,
+          'widestatblock',
+        )}
+        {renderInsertSubMenu(
+          globalTiptapCommandHelpers.insert.spell,
+          'spellsheet',
+        )}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
         {renderCommandEntryItem({
           ...globalTiptapCommandHelpers.insert.link,
@@ -516,6 +591,13 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         onSubmit={(args) => {
           createLinkDialogDefaultOnSubmit(props.editor, args);
         }}
+      />
+      <AutofillDialog
+        open={autofillDialogOpen}
+        onOpenChange={setAutofillDialogOpen}
+        mode={autofillMode}
+        format={autofillFormat}
+        onInsert={handleAutofillInsert}
       />
     </>
   );

@@ -75,7 +75,7 @@ You can insert one from the Insert menu in the toolbar, or by typing `---` on a 
 ## Tables
 
 Tables let you organize information into rows and columns.
-Insert a table using the Insert menu in the toolbar. It will start with a default set of rows and columns.
+To insert a table, open the **Insert** menu in the toolbar and hover over **Table**. You can choose **Blank Starter** to insert an empty table, or use [Autofill](#autofill) to generate a pre-filled table from text or a URL.
 
 Once you click inside a table, a table menu will appear with options to:
 
@@ -93,21 +93,58 @@ The easiest way is to drag and drop a file directly into the editor, or paste it
 
 Images and videos can be resized by dragging their edges after they've been inserted.
 
-## Statblocks
+## Monster Statblocks
 
-FeyNote includes several special block types designed for tabletop gaming content. Each one can be inserted from the Insert menu in the toolbar and comes with a pre-formatted template that you can edit to fit your needs.
+Monster statblocks are special blocks designed for tabletop gaming content. To insert one, open the **Insert** menu in the toolbar and hover over **Monster Statblock** or **Wide Monster Statblock**. You can choose **Blank Starter** to insert a pre-formatted template, or use [Autofill](#autofill) to generate a statblock from text or a URL.
 
-### Monster Statblock
+A blank statblock comes pre-filled with an example creature including armor class, hit points, ability scores, traits, and actions, ready for you to replace with your own creation. The wide variant gives you a two-column layout for creatures with more detailed stat blocks. Every field in the statblock is editable directly in place.
 
-A monster statblock comes pre-filled with an example creature including armor class, hit points, ability scores, traits, and actions, ready for you to replace with your own creation. A wide variant is also available for creatures with more detailed stat blocks if you prefer that style.
+When you click inside a statblock, a small toolbar appears above it with options to copy the block to your clipboard, print it, or delete it.
 
-### Spell Block
+## Spell, Item, and Feat Blocks
 
-A spell block provides a template with fields for casting time, range, components, duration, and the spell description.
+Spell blocks provide a formatted block for spells, items, feats, and similar content. To insert one, open the **Insert** menu in the toolbar and hover over **Spell, Item, Feat, etc.** You can choose **Blank Starter** to insert a template, or use [Autofill](#autofill) to generate a block from text or a URL.
 
-### Note Block
+A blank block comes with fields for key-value pairs (such as casting time, range, and components) and a description area. All fields are editable directly in place and you can add or remove key-value pairs to match whatever you're describing.
 
-A stylized note is a visually distinct callout box, great for highlighting important information, DM tips, or flavor text.
+When you click inside a spell block, a small toolbar appears above it with options to copy, print, or delete it.
+
+## Note Block
+
+A note block is a visually distinct callout box, great for highlighting important information, DM tips, or flavor text. You can insert one from the **Insert** menu in the toolbar under **Note**.
+
+When you click inside a note block, a small toolbar appears above it with options to copy, print, or delete it.
+
+## Autofill
+
+Autofill lets you turn unformatted text or web content into ready-to-use statblocks, spell blocks, and tables without having to fill in every field by hand. Paste a wall of monster stats, drop in a URL from your favorite homebrew site, and FeyNote will parse and format it for you.
+
+Autofill is available from the **Insert** menu in the toolbar. When you hover over **Monster Statblock**, **Wide Monster Statblock**, **Spell, Item, Feat, etc.**, or **Table**, a submenu appears with three options:
+
+- **Blank Starter** inserts an empty template for you to fill in manually.
+- **Autofill from Text** opens a dialog where you can paste or type content to be formatted.
+- **Autofill from URL** opens a dialog where you can provide a link to a page containing the content you want to import.
+
+### Autofill from Text
+
+When you choose **Autofill from Text**, a dialog opens with a large text area. Paste or type the content you want to convert. This works well for content you've copied from a PDF, another app, or a chat message.
+
+For example, you might paste a block of text like "Shadow Wraith, Neutral Evil, AC 15, HP 84, Speed 0 ft fly 60 ft..." and FeyNote will produce a properly formatted statblock.
+
+### Autofill from URL
+
+When you choose **Autofill from URL**, a dialog opens with a URL input field. Enter the address of a page that contains the content you want to import and FeyNote will fetch the page, extract the relevant information, and format it into the chosen block type. This is useful for pulling in content from wikis, homebrew sharing sites, or online references.
+
+### Additional Instructions
+
+Both modes include an optional instructions field below the main input. You can use this to give formatting hints or special requests, such as "convert hit points to average only" or "use metric units for distances".
+
+### Previewing and Inserting
+
+After entering your content, you have two options:
+
+- **Preview** generates the formatted result and shows it in a preview dialog so you can check the output before committing. From the preview you can either go back to adjust your input or click **Insert** to add the content to your document.
+- **Insert** skips the preview and places the formatted content directly into your document at the cursor position.
 
 ## Dice Notation
 
