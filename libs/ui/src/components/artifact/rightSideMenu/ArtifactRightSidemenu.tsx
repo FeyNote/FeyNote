@@ -282,7 +282,10 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           <IonIcon icon={person} size="small" />
           &nbsp;&nbsp;
           {t('artifactRenderer.artifactShares')}
-          <InfoButton message={t('artifactRenderer.artifactShares.help')} />
+          <InfoButton
+            message={t('artifactRenderer.artifactShares.help')}
+            docsLink="https://docs.feynote.com/documents/sharing/#sharing-with-specific-users"
+          />
         </IonListHeader>
         {activeUserShares.map(({ key }) => (
           <CompactIonItem
@@ -336,7 +339,10 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
         <IonIcon icon={person} size="small" />
         &nbsp;&nbsp;
         {t('artifactRenderer.artifactSharedToYou')}
-        <InfoButton message={t('artifactRenderer.artifactSharedToYou.help')} />
+        <InfoButton
+          message={t('artifactRenderer.artifactSharedToYou.help')}
+          docsLink="https://docs.feynote.com/documents/sharing/#removing-yourself-from-a-shared-document"
+        />
       </IonListHeader>
       <CompactIonItem lines="none">
         <IonLabel>
@@ -377,6 +383,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             {t('artifactRenderer.incomingArtifactReferences')}
             <InfoButton
               message={t('artifactRenderer.incomingArtifactReferences.help')}
+              docsLink="https://docs.feynote.com/documents/references/#incoming-references"
             />
           </IonListHeader>
           {incomingEdgesByArtifactId.map(([artifactId, edges]) => (
@@ -392,6 +399,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             {t('artifactRenderer.artifactReferences')}
             <InfoButton
               message={t('artifactRenderer.artifactReferences.help')}
+              docsLink="https://docs.feynote.com/documents/references/#creating-references"
             />
           </IonListHeader>
           {outgoingEdgesByArtifactId.map(([artifactId, edges]) => (
@@ -407,6 +415,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
             {t('artifactRenderer.artifactLocalGraph')}
             <InfoButton
               message={t('artifactRenderer.artifactLocalGraph.help')}
+              docsLink="https://docs.feynote.com/documents/graph/"
             />
           </IonListHeader>
           <GraphContainer>

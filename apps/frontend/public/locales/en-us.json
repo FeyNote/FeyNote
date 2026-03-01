@@ -878,5 +878,6 @@
   "generic.delete": "Delete",
   "generic.warning": "Warning",
   "generic.upload": "Upload",
-  "generic.submit": "Submit"
+  "generic.submit": "Submit",
+  "generic.readMore": "Read more"
 }

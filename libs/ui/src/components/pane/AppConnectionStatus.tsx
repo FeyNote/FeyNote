@@ -42,6 +42,8 @@ export const AppConnectionStatus = () => {
           lastSync: lastSyncedAt ? lastSyncMessage : neverSyncedMessage,
           lastSyncColor: 'var(--ion-text-color)',
           help: t('connectionStatus.online.help'),
+          docsLink:
+            'https://docs.feynote.com/general/offline/#connection-status',
         };
       }
 
@@ -53,6 +55,7 @@ export const AppConnectionStatus = () => {
         lastSync: syncUnavailableMessage,
         lastSyncColor: 'var(--ion-color-warning)',
         help: t('connectionStatus.online.syncUnavailable.help'),
+        docsLink: 'https://docs.feynote.com/general/offline/#connection-status',
       };
     } else {
       if (serviceWorkerIsAvailable) {
@@ -64,6 +67,8 @@ export const AppConnectionStatus = () => {
           lastSync: lastSyncedAt ? lastSyncMessage : neverSyncedMessage,
           lastSyncColor: 'var(--ion-color-warning)',
           help: t('connectionStatus.offline.help'),
+          docsLink:
+            'https://docs.feynote.com/general/offline/#connection-status',
         };
       }
 
@@ -75,6 +80,7 @@ export const AppConnectionStatus = () => {
         lastSync: syncUnavailableMessage,
         lastSyncColor: 'var(--ion-color-danger)',
         help: t('connectionStatus.offline.syncUnavailable.help'),
+        docsLink: 'https://docs.feynote.com/general/offline/#connection-status',
       };
     }
   };
@@ -93,7 +99,7 @@ export const AppConnectionStatus = () => {
           </span>
         )}
       </div>
-      <InfoButton message={message.help} />
+      <InfoButton message={message.help} docsLink={message.docsLink} />
     </Container>
   );
 };
