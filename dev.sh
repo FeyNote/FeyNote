@@ -25,10 +25,12 @@ case "${1:-}" in
     ;;
 
   up)
+    docker compose -f "$COMPOSE_FILE" stop
     docker compose -f "$COMPOSE_FILE" build backend
     docker compose -f "$COMPOSE_FILE" up -d
     docker compose -f "$COMPOSE_FILE" exec backend npx prisma migrate dev
     docker compose -f "$COMPOSE_FILE" exec backend npx nx run search:migrate
+    docker compose -f "$COMPOSE_FILE" restart proxy
     ;;
 
   down)
@@ -37,6 +39,12 @@ case "${1:-}" in
 
   stop)
     docker compose -f "$COMPOSE_FILE" stop
+    ;;
+
+  restart)
+    docker compose -f "$COMPOSE_FILE" restart
+    sleep 1
+    docker compose -f "$COMPOSE_FILE" restart proxy
     ;;
 
   ps)
