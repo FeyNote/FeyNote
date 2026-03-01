@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import { startUpdateChecker } from './updateChecker';
 
 if (require('electron-squirrel-startup')) app.quit();
 
@@ -145,6 +146,10 @@ app.whenReady().then(() => {
 
   createWindow();
 
+  if (app.isPackaged) {
+    startUpdateChecker(() => mainWindow);
+  }
+
   const protocolArg = process.argv.find((arg) =>
     arg.startsWith(`${PROTOCOL_SCHEME}://`),
   );
@@ -165,5 +170,4 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.setAppUserModelId("com.feynote.desktop");
-
+app.setAppUserModelId('com.feynote.desktop');
