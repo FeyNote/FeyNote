@@ -82,6 +82,18 @@ export default defineConfig({
         categories: ['games', 'role-playing', 'note-taking'],
         icons: [
           {
+            src: 'https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-192-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: 'https://static.feynote.com/icons/feynote-icon-maskable-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+          {
             src: 'https://static.feynote.com/icons/feynote-icon-padded-512x512-20241220.png',
             sizes: '512x512',
             type: 'image/png',
