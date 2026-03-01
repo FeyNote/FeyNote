@@ -707,6 +707,8 @@
   "editor.commandMenu.sinkBlock.subtitle": "Increase the block indentation level",
   "editor.commandMenu.liftBlock": "Outdent Out of Block",
   "editor.commandMenu.liftBlock.subtitle": "Decrease the block indentation level",
+  "editor.commandMenu.file": "File",
+  "editor.commandMenu.file.subtitle": "Upload and insert a file from your device",
   "editor.commandMenu.link": "Link",
   "editor.artifactTypeSelector.title": "Choose Your Document Type",
   "editor.artifactTypeSelector.tiptap": "Rich Text Document",

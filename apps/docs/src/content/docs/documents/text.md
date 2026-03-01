@@ -89,7 +89,7 @@ You can also resize columns by dragging the column borders.
 ## Media
 
 You can add images, videos, audio files, and other files to your documents.
-The easiest way is to drag and drop a file directly into the editor, or paste it from your clipboard.
+To insert a file, open the **Insert** menu in the toolbar and choose **File**, then pick a file from your device. You can also drag and drop a file directly into the editor, or paste it from your clipboard.
 
 Images and videos can be resized by dragging their edges after they've been inserted.
 
