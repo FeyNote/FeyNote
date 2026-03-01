@@ -34,16 +34,24 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       name: 'FeyNote',
+      setupIcon: './icons/feynote.ico',
+      iconUrl: 'https://static.feynote.com/assets/favicon-20240925.ico',
     }),
     new MakerZIP({}, ['darwin', 'linux']),
     new MakerDMG({
       name: 'FeyNote',
+      icon: './icons/feynote.icns',
     }),
-    new MakerRpm({}),
+    new MakerRpm({
+      options: {
+        icon: './icons/feynote.png',
+      },
+    }),
     new MakerDeb({
       options: {
         maintainer: 'FeyNote',
         homepage: 'https://feynote.com',
+        icon: './icons/feynote.png',
       },
     }),
   ],
