@@ -1,3 +1,4 @@
+import { getElectronAPI } from './electronAPI';
 import { getIsElectron } from './getIsElectron';
 import { getIsViteDevelopment } from './getIsViteDevelopment';
 
@@ -66,12 +67,7 @@ const apiUrlsByEnv = {
 
 export const getApiUrls = () => {
   if (getIsElectron()) {
-    const electronWindow = window as Window & {
-      electronAPI?: {
-        getApiUrlsSync?: () => (typeof apiUrlsByEnv)['app.feynote.com'];
-      };
-    };
-    const urls = electronWindow.electronAPI?.getApiUrlsSync?.();
+    const urls = getElectronAPI()?.getApiUrlsSync();
     if (urls) {
       return urls;
     }

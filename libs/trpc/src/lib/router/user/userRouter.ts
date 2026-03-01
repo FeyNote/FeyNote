@@ -12,8 +12,10 @@ import { validateSession } from './validateSession';
 import { triggerResetEmail } from './triggerResetEmail';
 import { triggerResetPassword } from './triggerResetPassword';
 import { resetEmail } from './resetEmail';
+import { signInWithDesktopGoogle } from './signInWithDesktopGoogle';
 
 export const userRouter = trpcRouter({
+  signInWithDesktopGoogle,
   getByEmail,
   getKnownUsers,
   getManifest,
