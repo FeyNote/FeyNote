@@ -36,6 +36,7 @@ export function registerGetArtifactYBinByIdRoute() {
 
         const yBin = encodeStateAsUpdate(idbPersistence.doc);
 
+        idbPersistence.doc.destroy();
         await idbPersistence.destroy();
 
         return encodeCacheResultForTrpc<

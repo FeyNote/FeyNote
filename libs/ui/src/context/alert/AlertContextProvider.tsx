@@ -8,6 +8,11 @@ interface Props {
   children: React.ReactNode;
 }
 
+/**
+ * Please consider using the ActionDialog component rather than this context.
+ * You should very likely be rendering your dialog local to your component and not globally.
+ * This exists primarily for places that are not part of the render tree.
+ */
 export const AlertContextProvider: React.FC<Props> = (props) => {
   const alertRef = useRef<AlertRefValue>({
     publish: () => {

@@ -6,6 +6,8 @@ import {
   PreferencesSync,
   SupportedFontSize,
   SupportedLanguages,
+  WorkspaceArtifactSharingMode,
+  WorkspaceNewItemMode,
 } from '@feynote/shared-utils';
 import {
   IonCard,
@@ -77,6 +79,21 @@ const artifactReferenceExistingArtifactSharingModeToI18n = {
     'settings.artifact.referenceExistingArtifactSharingMode.prompt',
 } satisfies Record<ArtifactReferenceExistingArtifactSharingMode, string>;
 
+const workspaceNewItemModeToI18n = {
+  [WorkspaceNewItemMode.Always]: 'settings.workspace.newItemMode.always',
+  [WorkspaceNewItemMode.Never]: 'settings.workspace.newItemMode.never',
+  [WorkspaceNewItemMode.Prompt]: 'settings.workspace.newItemMode.prompt',
+} satisfies Record<WorkspaceNewItemMode, string>;
+
+const workspaceArtifactSharingModeToI18n = {
+  [WorkspaceArtifactSharingMode.Always]:
+    'settings.workspace.artifactSharingMode.always',
+  [WorkspaceArtifactSharingMode.Never]:
+    'settings.workspace.artifactSharingMode.never',
+  [WorkspaceArtifactSharingMode.Prompt]:
+    'settings.workspace.artifactSharingMode.prompt',
+} satisfies Record<WorkspaceArtifactSharingMode, string>;
+
 const colorOptions = {
   '#1abc9c': 'settings.collaborationColor.turquoise',
   '#2ecc71': 'settings.collaborationColor.emerald',
@@ -93,7 +110,7 @@ export const Settings: React.FC = () => {
   const { showAlert } = useAlertContext();
   const { setPreference, getPreference, _preferencesService } =
     usePreferencesContext();
-  const { session } = useSessionContext();
+  const { session, setSession } = useSessionContext();
   const { navigate } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
@@ -330,6 +347,14 @@ export const Settings: React.FC = () => {
             >
               <IonLabel>{t('settings.resetPassword')}</IonLabel>
             </IonItem>
+            <IonItem
+              lines="none"
+              onClick={() => setSession(null)}
+              detail={true}
+              button
+            >
+              <IonLabel>{t('menu.signOut')}</IonLabel>
+            </IonItem>
           </IonList>
         </IonCard>
         <IonCard>
@@ -449,6 +474,23 @@ export const Settings: React.FC = () => {
               >
                 <IonLabel class="ion-text-wrap">
                   {t('settings.leftSideMenuShowRecentThreads')}
+                </IonLabel>
+              </IonToggle>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.workspace.globalSearchAcrossAll')}
                 </IonLabel>
               </IonToggle>
             </IonItem>
@@ -573,6 +615,63 @@ export const Settings: React.FC = () => {
                   </IonSelectOption>
                 ))}
               </IonSelect>
+            </IonItem>
+            <IonItem lines="none">
+              <IonSelect
+                label={t('settings.workspace.newItemMode')}
+                labelPlacement="stacked"
+                value={getPreference(PreferenceNames.WorkspaceNewItemMode)}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.WorkspaceNewItemMode,
+                    event.detail.value,
+                  )
+                }
+              >
+                {Object.values(WorkspaceNewItemMode).map((value) => (
+                  <IonSelectOption value={value} key={value}>
+                    {t(workspaceNewItemModeToI18n[value])}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonItem lines="none">
+              <IonSelect
+                label={t('settings.workspace.artifactSharingMode')}
+                labelPlacement="stacked"
+                value={getPreference(
+                  PreferenceNames.WorkspaceArtifactSharingMode,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.WorkspaceArtifactSharingMode,
+                    event.detail.value,
+                  )
+                }
+              >
+                {Object.values(WorkspaceArtifactSharingMode).map((value) => (
+                  <IonSelectOption value={value} key={value}>
+                    {t(workspaceArtifactSharingModeToI18n[value])}
+                  </IonSelectOption>
+                ))}
+              </IonSelect>
+            </IonItem>
+            <IonItem lines="none" button>
+              <IonToggle
+                checked={getPreference(
+                  PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
+                )}
+                onIonChange={(event) =>
+                  setPreference(
+                    PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
+                    event.detail.checked,
+                  )
+                }
+              >
+                <IonLabel class="ion-text-wrap">
+                  {t('settings.workspace.referenceSearchAcrossAll')}
+                </IonLabel>
+              </IonToggle>
             </IonItem>
             <IonItem lines="none">
               <IonSelect

@@ -11,7 +11,7 @@ export const getKnownUsers = authenticatedProcedure.query(
       email: string;
     }[]
   > => {
-    const artifactShares = await prisma.artifactShare.findMany({
+    const artifactSharesPromise = prisma.artifactShare.findMany({
       where: {
         artifact: {
           userId: ctx.session.userId,
@@ -28,7 +28,7 @@ export const getKnownUsers = authenticatedProcedure.query(
       },
     });
 
-    const sharingWithMe = await prisma.artifactShare.findMany({
+    const sharingArtifactsWithMePromise = prisma.artifactShare.findMany({
       where: {
         userId: ctx.session.userId,
       },
@@ -47,9 +47,63 @@ export const getKnownUsers = authenticatedProcedure.query(
       },
     });
 
+    const workspaceSharesPromise = prisma.workspaceShare.findMany({
+      where: {
+        workspace: {
+          userId: ctx.session.userId,
+        },
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    const sharingWorkspacesWithMePromise = prisma.workspaceShare.findMany({
+      where: {
+        userId: ctx.session.userId,
+      },
+      select: {
+        workspace: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const [
+      artifactShares,
+      sharingArtifactsWithMe,
+      workspaceShares,
+      sharingWorkspacesWithMe,
+    ] = await Promise.all([
+      artifactSharesPromise,
+      sharingArtifactsWithMePromise,
+      workspaceSharesPromise,
+      sharingWorkspacesWithMePromise,
+    ]);
+
     const results = [
       ...artifactShares.map((artifactShare) => artifactShare.user),
-      ...sharingWithMe.map((artifactShare) => artifactShare.artifact.user),
+      ...sharingArtifactsWithMe.map(
+        (artifactShare) => artifactShare.artifact.user,
+      ),
+      ...workspaceShares.map((artifactShare) => artifactShare.user),
+      ...sharingWorkspacesWithMe.map(
+        (artifactShare) => artifactShare.workspace.user,
+      ),
     ];
 
     const knownUsers = new Map<

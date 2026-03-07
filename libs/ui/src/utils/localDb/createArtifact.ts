@@ -38,6 +38,10 @@ export const createArtifact = async (args: {
     parentArtifactId: string;
     /** Lexographical sorting. Must be a fully uppercase string. It is recommended to add things around "X", or "Y". This is important! */
     order: string;
+    /**
+     * To use the workspaceId option, you should probably add the artifact to the workspace artifactIds first. This only facilitates adding the artifact to the tree within the workspace itself.
+     */
+    workspaceId?: string;
   };
 }) => {
   let id: string | undefined;
@@ -77,26 +81,27 @@ export const createArtifact = async (args: {
     });
   }
 
-  if (args.tree) {
-    const session = await appIdbStorageManager.getSession();
-    if (!session) {
-      throw new Error('createArtifact called with no session');
-    }
+  const treeArgs = args.tree;
+  if (treeArgs) {
+    const docName = await (async () => {
+      if (treeArgs.workspaceId) {
+        return `workspace:${treeArgs.workspaceId}`;
+      }
+      const session = await appIdbStorageManager.getSession();
+      if (!session) {
+        throw new Error('createArtifact called with no session');
+      }
+      return `userTree:${session.userId}`;
+    })();
 
-    await withCollaborationConnection(
-      `userTree:${session.userId}`,
-      async (connection) => {
-        // TS requires the additional check here
-        if (args.tree) {
-          addArtifactToArtifactTree({
-            ref: connection.yjsDoc,
-            parentArtifactId: args.tree.parentArtifactId,
-            order: args.tree.order,
-            id,
-          });
-        }
-      },
-    );
+    await withCollaborationConnection(docName, async (connection) => {
+      addArtifactToArtifactTree({
+        ref: connection.yjsDoc,
+        parentArtifactId: treeArgs.parentArtifactId,
+        order: treeArgs.order,
+        id,
+      });
+    });
   }
 
   return {

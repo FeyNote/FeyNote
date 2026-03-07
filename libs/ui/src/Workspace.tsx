@@ -298,12 +298,7 @@ export const Workspace: React.FC = () => {
       APP_KEYBOARD_SHORTCUTS.newDocument.browser,
     ],
     () => {
-      navigate(
-        undefined,
-        PaneableComponent.NewArtifact,
-        {},
-        PaneTransition.Push,
-      );
+      navigate(undefined, PaneableComponent.CreateNew, {}, PaneTransition.Push);
     },
   );
 

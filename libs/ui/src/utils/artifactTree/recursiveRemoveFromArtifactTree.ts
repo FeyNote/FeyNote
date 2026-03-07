@@ -3,8 +3,8 @@ import { Doc as YDoc } from 'yjs';
 import { getArtifactTreeFromYDoc } from './getArtifactTreeFromYDoc';
 
 /**
- * This helper checks if you can add a node at a given parent such as
- * to avoid a circular loop in the tree hierarchy.
+ * This helper removes elements from the artifact tree
+ * as well as any of their descendants
  */
 export function recursiveRemoveFromArtifactTree(args: {
   ref:
@@ -20,7 +20,7 @@ export function recursiveRemoveFromArtifactTree(args: {
       return args.ref;
     }
 
-    return getArtifactTreeFromYDoc(args.ref).yKeyValue;
+    return getArtifactTreeFromYDoc(args.ref);
   })();
 
   const nodesByParentId = treeYKV.yarray.toArray().reduce((acc, el) => {
@@ -35,19 +35,21 @@ export function recursiveRemoveFromArtifactTree(args: {
     return acc;
   }, new Map<string | null, string[]>());
 
-  const recursiveDeleteNode = (nodeId: string) => {
-    treeYKV.delete(nodeId);
+  treeYKV.doc.transact(() => {
+    const recursiveDeleteNode = (nodeId: string) => {
+      treeYKV.delete(nodeId);
 
-    const children = nodesByParentId.get(nodeId);
-    if (children) {
-      for (const child of children) {
-        const el = treeYKV.get(child);
-        if (el) recursiveDeleteNode(nodeId);
+      const children = nodesByParentId.get(nodeId);
+      if (children) {
+        for (const child of children) {
+          const el = treeYKV.get(child);
+          if (el) recursiveDeleteNode(nodeId);
+        }
       }
-    }
-  };
+    };
 
-  for (const nodeId of args.nodeIds) {
-    recursiveDeleteNode(nodeId);
-  }
+    for (const nodeId of args.nodeIds) {
+      recursiveDeleteNode(nodeId);
+    }
+  });
 }

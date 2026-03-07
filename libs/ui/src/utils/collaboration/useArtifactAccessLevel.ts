@@ -15,11 +15,16 @@ export const useArtifactAccessLevel = (
   userId: string | undefined,
 ) => {
   const artifactMeta = useObserveYArtifactMeta(yDoc);
-  const userAccess = useObserveYArtifactUserAccess(yDoc);
+  const { rerenderReducerValue: userAccessRerenderReducerValue } =
+    useObserveYArtifactUserAccess(yDoc);
 
   const artifactAccessLevel = useMemo(() => {
     return getArtifactAccessLevel(yDoc, userId);
-  }, [artifactMeta.userId, artifactMeta.linkAccessLevel, userAccess]);
+  }, [
+    artifactMeta.userId,
+    artifactMeta.linkAccessLevel,
+    userAccessRerenderReducerValue,
+  ]);
 
   return {
     artifactAccessLevel,

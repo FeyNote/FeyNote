@@ -36,6 +36,7 @@ export class EventManager {
     EventName.LocaldbSyncArtifact,
     EventName.LocaldbSyncCompleted,
     EventName.LocaldbArtifactSnapshotUpdated,
+    EventName.LocaldbWorkspaceSnapshotUpdated,
     EventName.LocaldbKnownUsersUpdated,
   ]);
 

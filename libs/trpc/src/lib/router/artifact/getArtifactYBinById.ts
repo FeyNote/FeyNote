@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { publicProcedure } from '../../trpc';
-import { hasArtifactAccess } from '@feynote/api-services';
+import { getArtifactAccessLevel } from '@feynote/shared-utils';
 
 export const getArtifactYBinById = publicProcedure
   .input(
@@ -40,7 +40,10 @@ export const getArtifactYBinById = publicProcedure
         },
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
+      if (
+        !artifact ||
+        getArtifactAccessLevel(artifact, ctx.session?.userId) === 'noaccess'
+      ) {
         throw new TRPCError({
           message:
             'Artifact does not exist or is not visible to the current user',

@@ -1,5 +1,7 @@
 export * from './lib/artifactUpdateQueue/artifactUpdateQueueWorker';
 export * from './lib/artifactUpdateQueue/artifactUpdateQueue';
+export * from './lib/workspaceUpdateQueue/workspaceUpdateQueueWorker';
+export * from './lib/workspaceUpdateQueue/workspaceUpdateQueue';
 export * from './lib/outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueueWorker';
 export * from './lib/outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 export * from './lib/incomingWebsocketMessageQueue/incomingWebsocketMessageQueueWorker';

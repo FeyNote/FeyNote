@@ -3,10 +3,8 @@ import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
 import { artifactSnapshot } from '@feynote/prisma/types';
 import { type ArtifactSnapshot } from '@feynote/global-types';
-import {
-  hasArtifactAccess,
-  prismaArtifactSnapshotToArtifactSnapshot,
-} from '@feynote/api-services';
+import { prismaArtifactSnapshotToArtifactSnapshot } from '@feynote/api-services';
+import { getArtifactAccessLevel } from '@feynote/shared-utils';
 import { publicProcedure } from '../../trpc';
 
 export const getArtifactSnapshotById = publicProcedure
@@ -23,7 +21,10 @@ export const getArtifactSnapshotById = publicProcedure
       ...artifactSnapshot,
     });
 
-    if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
+    if (
+      !artifact ||
+      getArtifactAccessLevel(artifact, ctx.session?.userId) === 'noaccess'
+    ) {
       throw new TRPCError({
         message:
           'Artifact does not exist or is not visible to the current user',

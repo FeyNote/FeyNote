@@ -175,6 +175,7 @@ html {
 html.light {
   --text-color: #000000;
   --text-color-dim: #444444;
+  --text-color-inverted: #ffffff;
   --general-background: #ffffff;
   --general-background-hover: #efefef;
   --general-background-hint: #efefef;
@@ -194,6 +195,7 @@ html.light {
 html.dark {
   --text-color: #ffffff;
   --text-color-dim: #999999;
+  --text-color-inverted: #000000;
   --general-background: #121212;
   --general-background-hover: #1e1e1e;
   --general-background-hint: #1e1e1e;

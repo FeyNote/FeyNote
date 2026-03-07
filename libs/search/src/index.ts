@@ -1,2 +1,2 @@
 export * from './lib/search';
-export type { BlockIndexDocument } from './lib/types';
+export type { BlockIndexDocument, IndexableArtifact } from './lib/types';

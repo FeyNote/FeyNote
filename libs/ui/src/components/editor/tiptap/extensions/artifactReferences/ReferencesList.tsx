@@ -18,6 +18,7 @@ import {
 import { t } from 'i18next';
 import type { ArtifactDTO } from '@feynote/global-types';
 import {
+  ARTIFACT_ACCESS_LEVELS_RANKED,
   ArtifactReferenceExistingArtifactSharingMode,
   ArtifactReferenceNewArtifactSharingMode,
   assert,
@@ -37,7 +38,7 @@ import type { Doc as YDoc } from 'yjs';
 import { usePreferencesContext } from '../../../../../context/preferences/PreferencesContext';
 import { getSelfManagedCollaborationConnection } from '../../../../../utils/collaboration/collaborationManager';
 import { appIdbStorageManager } from '../../../../../utils/localDb/AppIdbStorageManager';
-import type { ArtifactAccessLevel } from '@prisma/client';
+
 import { useAlertContext } from '../../../../../context/alert/AlertContext';
 import type { ActionDialog } from '../../../../sharedComponents/ActionDialog';
 
@@ -358,18 +359,11 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         targetCollabConnectionInfo.connection.yjsDoc,
       );
 
-      const linkAccessLevelsRanked: ArtifactAccessLevel[] = [
-        'noaccess',
-        'readonly',
-        'readwrite',
-        'coowner',
-      ];
-
       const propagateHigherLinkAccessLevel = () => {
-        const sourceIdx = linkAccessLevelsRanked.indexOf(
+        const sourceIdx = ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(
           sourceMeta.linkAccessLevel,
         );
-        const targetIdx = linkAccessLevelsRanked.indexOf(
+        const targetIdx = ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(
           targetMeta.linkAccessLevel,
         );
 
@@ -378,7 +372,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToTarget === 'coowner'
         ) {
           updateYArtifactMeta(targetCollabConnectionInfo.connection.yjsDoc, {
-            linkAccessLevel: linkAccessLevelsRanked[sourceIdx],
+            linkAccessLevel: ARTIFACT_ACCESS_LEVELS_RANKED[sourceIdx],
           });
         }
         if (
@@ -386,7 +380,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
           currentUserAccessLevelToSource === 'coowner'
         ) {
           updateYArtifactMeta(props.yDoc, {
-            linkAccessLevel: linkAccessLevelsRanked[targetIdx],
+            linkAccessLevel: ARTIFACT_ACCESS_LEVELS_RANKED[targetIdx],
           });
         }
       };
@@ -431,11 +425,13 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
 
       try {
         assert(
-          linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) > -1,
+          ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(sourceMeta.linkAccessLevel) >
+            -1,
           'Source linkAccessLevel must be present and valid',
         );
         assert(
-          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) > -1,
+          ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(targetMeta.linkAccessLevel) >
+            -1,
           'Target linkAccessLevel must be present and valid',
         );
       } catch (e) {
@@ -448,15 +444,15 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
        */
       let linkAccessLevelDiff = false;
       if (
-        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) >
-          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) &&
+        ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(sourceMeta.linkAccessLevel) >
+          ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(targetMeta.linkAccessLevel) &&
         currentUserAccessLevelToTarget === 'coowner'
       ) {
         linkAccessLevelDiff = true;
       }
       if (
-        linkAccessLevelsRanked.indexOf(sourceMeta.linkAccessLevel) <
-          linkAccessLevelsRanked.indexOf(targetMeta.linkAccessLevel) &&
+        ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(sourceMeta.linkAccessLevel) <
+          ARTIFACT_ACCESS_LEVELS_RANKED.indexOf(targetMeta.linkAccessLevel) &&
         currentUserAccessLevelToSource === 'coowner'
       ) {
         linkAccessLevelDiff = true;

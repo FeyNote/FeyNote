@@ -7,6 +7,7 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import { Doc } from 'yjs';
 import { ARTIFACT_META_KEY, type SessionDTO } from '@feynote/shared-utils';
 import { incrementVersionForChangesOnArtifact } from '../localDb/incrementVersionForChangesOnArtifact';
+import { incrementVersionForChangesOnWorkspace } from '../localDb/incrementVersionForChangesOnWorkspace';
 import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
@@ -48,6 +49,7 @@ export class CollaborationManagerConnection {
     docName: string;
     session: SessionDTO | null;
     ws: HocuspocusProviderWebsocket;
+    onInvalidated: () => void;
   }) {
     this.docName = args.docName;
     this.session = args.session;
@@ -75,6 +77,9 @@ export class CollaborationManagerConnection {
             break;
           }
           case 'accessRemoved': {
+            console.warn(`Access to doc ${args.docName} was revoked`);
+            this.tiptapCollabProvider.destroy();
+            args.onInvalidated();
             this.tiptapCollabProvider.permissionDeniedHandler(
               'CUSTOM FEYNOTE MOCK SEARCHME',
             );
@@ -90,6 +95,13 @@ export class CollaborationManagerConnection {
 
     if (args.docName.startsWith('artifact:')) {
       incrementVersionForChangesOnArtifact(
+        args.docName.split(':')[1],
+        this.yjsDoc,
+      );
+    }
+
+    if (args.docName.startsWith('workspace:')) {
+      incrementVersionForChangesOnWorkspace(
         args.docName.split(':')[1],
         this.yjsDoc,
       );
@@ -173,7 +185,8 @@ export class CollaborationManagerConnection {
 }
 
 export enum CollaborationManagerEventName {
-  NewWSInstance = 'newWSInstance',
+  AllDestroy = 'allDestroy',
+  CollaborationConnectionInvalidated = 'collaborationConnectionInvalidated',
 }
 
 class CollaborationManager {
@@ -239,6 +252,8 @@ class CollaborationManager {
 
     // Needs to be something guaranteed unique. A memory reference should do!
     const reservationToken = {};
+    // Make sure to use this reference to reservationQueue so that if an invalidation
+    // occurs you're still in the legacy reservationQueue (will at least get you IndexedDB persistance!)
     let reservationQueue: Set<object> | undefined =
       this.reservationsByDocName.get(docName);
     if (!reservationQueue) {
@@ -247,13 +262,20 @@ class CollaborationManager {
     }
     reservationQueue.add(reservationToken);
 
+    let connection = this.connectionByDocName.get(docName);
+    let wasInvalidated = false;
     const release = (immediate?: boolean) => {
       const _release = () => {
+        // We reference the local reservationQueue to handle connection invalidations
         reservationQueue.delete(reservationToken);
-        const connection = this.connectionByDocName.get(docName);
         if (reservationQueue.size === 0 && connection) {
-          connection.destroy();
-          this.connectionByDocName.delete(docName);
+          if (!connection.isDestroyed) {
+            connection.destroy();
+          }
+          if (!wasInvalidated) {
+            // If the connection was invalidated, then a new connection has actually taken this one's place
+            this.connectionByDocName.delete(docName);
+          }
         }
       };
 
@@ -264,17 +286,25 @@ class CollaborationManager {
       }
     };
 
-    const existingConnection = this.connectionByDocName.get(docName);
-    if (existingConnection)
+    if (connection) {
       return {
         release,
-        connection: existingConnection,
+        connection,
       };
+    }
 
-    const connection = new CollaborationManagerConnection({
+    connection = new CollaborationManagerConnection({
       docName,
       session,
       ws: this.ws,
+      onInvalidated: () => {
+        wasInvalidated = true;
+        this.reservationsByDocName.delete(docName);
+        this.connectionByDocName.delete(docName);
+        this.eventListeners
+          .get(CollaborationManagerEventName.CollaborationConnectionInvalidated)
+          ?.forEach((cb) => cb());
+      },
     });
 
     this.connectionByDocName.set(docName, connection);
@@ -290,12 +320,17 @@ class CollaborationManager {
       connection.destroy();
     });
     this.connectionByDocName.clear();
+    this.reservationsByDocName.clear();
   }
 
   destroy() {
     this.disconnectAll();
     this.ws.destroy();
     this.ws = this.constructNewWSInstance();
+    this._lastSyncedAt = undefined;
+    this.eventListeners
+      .get(CollaborationManagerEventName.AllDestroy)
+      ?.forEach((cb) => cb());
   }
 }
 
@@ -305,6 +340,9 @@ export const getCollaborationManager = () => {
     return collaborationManager;
   }
   collaborationManager = new CollaborationManager();
+  // For debugging purposes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).collaborationManager = collaborationManager;
   return collaborationManager;
 };
 

@@ -1,6 +1,7 @@
 import { router, publicProcedure } from '../trpc';
 import { userRouter } from './user/userRouter';
 import { artifactRouter } from './artifact/artifactRouter';
+import { workspaceRouter } from './workspace/workspaceRouter';
 import { aiRouter } from './ai/aiRouter';
 import { jobRouter } from './job/jobRouter';
 import { fileRouter } from './file/fileRouter';
@@ -14,6 +15,7 @@ export const appRouter = router({
   }),
   user: userRouter,
   artifact: artifactRouter,
+  workspace: workspaceRouter,
   job: jobRouter,
   ai: aiRouter,
   file: fileRouter,

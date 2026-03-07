@@ -19,6 +19,8 @@ export const mentionMenuOptsRef = {
   componentRef: {
     current: null,
   },
+  currentWorkspaceId: null as string | null,
+  referenceSearchAcrossAll: false,
 };
 const keydownListener = (event: KeyboardEvent) => {
   if (event.key === '@') {
