@@ -10,13 +10,24 @@ import {
 } from './localDb';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
-import type { ArtifactSnapshot } from '@feynote/global-types';
+import type {
+  ArtifactSnapshot,
+  WorkspaceSnapshot,
+} from '@feynote/global-types';
 
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
     const manifestDb = await getManifestDb();
     await manifestDb.put(ObjectStoreName.ArtifactVersions, {
       id: artifactId,
+      version: new Date().getTime(),
+    });
+  }
+
+  async incrementLocalWorkspaceVersion(workspaceId: string): Promise<void> {
+    const manifestDb = await getManifestDb();
+    await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
+      id: workspaceId,
       version: new Date().getTime(),
     });
   }
@@ -78,6 +89,57 @@ export class AppIdbStorageManager {
     } else {
       throw new Error(
         'updateLocalArtifactSnapshot called with artifactId that did not exist',
+      );
+    }
+  }
+
+  async updateLocalWorkspaceSnapshot(
+    workspaceId: string,
+    snapshotNewAttributes: Omit<WorkspaceSnapshot, 'id' | 'createdLocally'> & {
+      createdLocally?: WorkspaceSnapshot['createdLocally'];
+    },
+    ifNotExists?:
+      | {
+          create: true;
+          ignore?: false;
+          createdLocally: boolean;
+        }
+      | {
+          create?: false;
+          ignore: true;
+        },
+  ): Promise<void> {
+    const manifestDb = await getManifestDb();
+    const record = await manifestDb.get(
+      ObjectStoreName.WorkspaceSnapshots,
+      workspaceId,
+    );
+
+    const broadcast = () => {
+      eventManager.broadcast(EventName.LocaldbWorkspaceSnapshotUpdated, {
+        workspaceId,
+      });
+    };
+
+    if (record) {
+      await manifestDb.put(ObjectStoreName.WorkspaceSnapshots, {
+        ...record,
+        ...snapshotNewAttributes,
+        id: workspaceId,
+      });
+      broadcast();
+    } else if (ifNotExists && ifNotExists.create) {
+      await manifestDb.add(ObjectStoreName.WorkspaceSnapshots, {
+        ...snapshotNewAttributes,
+        createdLocally: ifNotExists.createdLocally,
+        id: workspaceId,
+      });
+      broadcast();
+    } else if (ifNotExists && ifNotExists.ignore) {
+      // Ignored. I prefer the fall-through style, so left this block in.
+    } else {
+      throw new Error(
+        'updateLocalWorkspaceSnapshot called with workspaceId that did not exist',
       );
     }
   }
@@ -146,15 +208,13 @@ export class AppIdbStorageManager {
 
   async deleteAllData(): Promise<void> {
     const manifestDb = await getManifestDb();
-    await manifestDb.clear(ObjectStoreName.KV);
-    await manifestDb.clear(ObjectStoreName.Edges);
-    await manifestDb.clear(ObjectStoreName.Artifacts);
-    await manifestDb.clear(ObjectStoreName.ArtifactVersions);
-    await manifestDb.clear(ObjectStoreName.ArtifactSnapshots);
-    await manifestDb.clear(ObjectStoreName.PendingArtifacts);
-    await manifestDb.clear(ObjectStoreName.KnownUsers);
-    await manifestDb.clear(ObjectStoreName.AuthorizedCollaborationScopes);
-    await manifestDb.clear(ObjectStoreName.PendingFiles);
+    await Promise.all(
+      Object.values(ObjectStoreName).map(async (objectStoreName) => {
+        await manifestDb.clear(objectStoreName).catch((e) => {
+          console.error(e);
+        });
+      }),
+    );
 
     const databases = await indexedDB.databases();
 
@@ -173,7 +233,8 @@ export class AppIdbStorageManager {
         if (!database.name) return;
         if (
           database.name.startsWith('artifact:') ||
-          database.name.startsWith('userTree:')
+          database.name.startsWith('userTree:') ||
+          database.name.startsWith('workspace:')
         ) {
           try {
             await deleteDB(database.name);

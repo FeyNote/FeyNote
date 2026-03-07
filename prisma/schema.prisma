@@ -30,6 +30,8 @@ model User {
   files             File[]
   threads           Thread[]
   artifactShares    ArtifactShare[]
+  workspaces        Workspace[]
+  workspaceShares   WorkspaceShare[]
   stripePayments    StripePayment[]
   subscriptions     Subscription[]
   jobs              Job[]
@@ -85,6 +87,7 @@ model Artifact {
   artifactReferences         ArtifactReference[] @relation("artifactReferenceSourceArtifact")
   incomingArtifactReferences ArtifactReference[] @relation("artifactReferenceTargetArtifact")
   artifactShares             ArtifactShare[]
+  workspaceArtifacts         WorkspaceArtifact[]
   files                      File[]
 
   @@index([userId])
@@ -195,16 +198,18 @@ model Thread {
   messages  Message[]
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @db.Timestamptz(6)
+
+  workspaceThreads WorkspaceThread[]
 }
 
 model Message {
-  id        String   @id @default(uuid()) @db.Uuid
-  json      Json?
-  vercelJsonV5    Json?
-  threadId  String   @db.Uuid
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  createdAt DateTime @unique @default(now()) @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @db.Timestamptz(6)
+  id           String   @id @default(uuid()) @db.Uuid
+  json         Json?
+  vercelJsonV5 Json?
+  threadId     String   @db.Uuid
+  thread       Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @unique @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model StripePayment {
@@ -262,4 +267,58 @@ model Job {
   createdAt DateTime   @default(now()) @db.Timestamptz(6)
   updatedAt DateTime   @updatedAt @db.Timestamptz(6)
   Artifact  Artifact[]
+}
+
+model Workspace {
+  id              String              @id @default(uuid()) @db.Uuid
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String              @db.Uuid
+  name            String              @default("")
+  icon            String              @default("folder")
+  color           String              @default("#6366f1")
+  linkAccessLevel ArtifactAccessLevel @default(noaccess)
+  yBin            Bytes               @db.ByteA
+  deletedAt       DateTime?           @db.Timestamptz(6)
+  createdAt       DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime            @updatedAt @db.Timestamptz(6)
+
+  workspaceArtifacts WorkspaceArtifact[]
+  workspaceThreads   WorkspaceThread[]
+  workspaceShares    WorkspaceShare[]
+
+  @@index([userId])
+}
+
+model WorkspaceArtifact {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String    @db.Uuid
+  artifact    Artifact  @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+  artifactId  String    @db.Uuid
+
+  @@unique([workspaceId, artifactId])
+  @@index([artifactId])
+}
+
+model WorkspaceThread {
+  id          String    @id @default(uuid()) @db.Uuid
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String    @db.Uuid
+  thread      Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  threadId    String    @db.Uuid
+
+  @@unique([workspaceId, threadId])
+  @@index([threadId])
+}
+
+model WorkspaceShare {
+  id          String              @id @default(uuid()) @db.Uuid
+  workspace   Workspace           @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String              @db.Uuid
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String              @db.Uuid
+  accessLevel ArtifactAccessLevel
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
 }

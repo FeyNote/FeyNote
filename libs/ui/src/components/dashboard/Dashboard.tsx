@@ -28,6 +28,8 @@ import { type ThreadDTO } from '@feynote/shared-utils';
 import type { FeynoteGraphLink } from '../graph/GraphRenderer';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useCurrentWorkspaceArtifactIds } from '../../utils/workspace/useCurrentWorkspaceArtifactIds';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -61,8 +63,22 @@ export const Dashboard: React.FC = () => {
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { session } = useSessionContext();
-  const { artifactSnapshots } = useArtifactSnapshots();
+  const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const currentWorkspaceArtifactIds = useCurrentWorkspaceArtifactIds();
+
+  const artifactSnapshots = useMemo(() => {
+    if (
+      !currentWorkspaceId ||
+      !currentWorkspaceArtifactIds ||
+      !allArtifactSnapshots
+    )
+      return allArtifactSnapshots;
+    return allArtifactSnapshots.filter((a) =>
+      currentWorkspaceArtifactIds.has(a.id),
+    );
+  }, [allArtifactSnapshots, currentWorkspaceArtifactIds]);
   const recentArtifacts = useMemo(() => {
     if (!artifactSnapshots) return [];
 
@@ -139,7 +155,11 @@ export const Dashboard: React.FC = () => {
 
   return (
     <IonPage>
-      <PaneNav title={t('dashboard.title')} />
+      <PaneNav
+        title={t(
+          currentWorkspaceId ? 'dashboard.title.workspace' : 'dashboard.title',
+        )}
+      />
       <IonContent>
         {initialLoadComplete && (
           <FlexContainer>

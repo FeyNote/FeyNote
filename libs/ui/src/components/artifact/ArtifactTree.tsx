@@ -1,12 +1,4 @@
-import {
-  MouseEvent,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
-import { YKeyValue } from 'y-utility/y-keyvalue';
+import { MouseEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   dragAndDropFeature,
   hotkeysCoreFeature,
@@ -36,6 +28,12 @@ import { useCollaborationConnection } from '../../utils/collaboration/useCollabo
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useArtifactSnapshotsForCurrentWorkspace } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForCurrentWorkspace';
+import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
+import { useAcceptedIncomingSharedArtifactIds } from '../../utils/artifactTree/useAcceptedIncomingSharedArtifactIds';
+import { useTreeExpandedItems } from './useTreeExpandedItems';
+import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -56,6 +54,7 @@ export interface InternalTreeItem {
   id: string;
   title: string;
   order: string;
+  isHidden?: boolean;
   parentId: string | null;
 }
 
@@ -68,8 +67,6 @@ export const UNCATEGORIZED_TREE_NODE_ID = 'uncategorized';
  * The exact value of this doesn't really matter, it just needs to be the same for all items.
  */
 export const UNCATEGORIZED_CHILD_INDEX = 'X';
-
-const USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY = 'userTreeExpandedItemIds';
 
 interface Props {
   treeId: string; // This should be globally unique!
@@ -86,7 +83,6 @@ interface Props {
 }
 
 export const ArtifactTree: React.FC<Props> = (props) => {
-  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useSessionContext();
   const { getPreference } = usePreferencesContext();
   const leftPaneArtifactTreeShowUncategorized = getPreference(
@@ -95,28 +91,14 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const leftPaneArtifactTreeAutoExpandOnNavigate = getPreference(
     PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
   );
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
   const { artifactSnapshots } = useArtifactSnapshots();
-  const [expandedItems, setExpandedItems] = useState<string[]>(() => {
-    if (!props.enableOpenItemMemory) return [];
-    try {
-      const mem = JSON.parse(
-        localStorage.getItem(USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY) || '[]',
-      );
-      if (Array.isArray(mem)) return mem;
-      return [];
-    } catch (_e) {
-      return [];
-    }
-  });
-  useEffect(() => {
-    setTimeout(() => {
-      // We offload this outside of the render cycle so it doesn't hang UI updates
-      localStorage.setItem(
-        USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY,
-        JSON.stringify(expandedItems),
-      );
-    });
-  }, [expandedItems]);
+  const { artifactSnapshotsForWorkspace } =
+    useArtifactSnapshotsForCurrentWorkspace();
+  const { expandedItems, setExpandedItems } = useTreeExpandedItems(
+    currentWorkspaceId,
+    props.enableOpenItemMemory,
+  );
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
   const globalPaneContext = useGlobalPaneContext();
@@ -125,50 +107,47 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
-  const connection = useCollaborationConnection(`userTree:${session.userId}`);
-  const yDoc = connection.yjsDoc;
+  const userTreeConnection = useCollaborationConnection(
+    `userTree:${session.userId}`,
+  );
+  const workspaceOrUserTreeConnection = useCollaborationConnection(
+    currentWorkspaceId
+      ? `workspace:${currentWorkspaceId}`
+      : `userTree:${session.userId}`,
+  );
 
-  const yKeyValue = useMemo(() => {
-    const yArray = yDoc.getArray<{
-      key: string;
-      val: {
-        parentNodeId: string | null;
-        order: string;
-      };
-    }>('treeNodes');
-    const yKeyValue = new YKeyValue<{
-      parentNodeId: string | null;
-      order: string;
-    }>(yArray);
+  const treeYKV = useMemo(() => {
+    return getArtifactTreeFromYDoc(workspaceOrUserTreeConnection.yjsDoc);
+  }, [workspaceOrUserTreeConnection.yjsDoc]);
+  const { rerenderReducerValue } = useObserveYKVChanges(treeYKV);
 
-    return yKeyValue;
-  }, [yDoc]);
-
-  useEffect(() => {
-    const listener = () => {
-      triggerRerender();
-    };
-    yKeyValue.on('change', listener);
-
-    return () => {
-      yKeyValue.off('change', listener);
-    };
-  }, [yKeyValue]);
+  const { acceptedIncomingSharedArtifactIds } =
+    useAcceptedIncomingSharedArtifactIds(userTreeConnection.yjsDoc);
 
   const { treeItemsById, itemIdsByParentId } = useMemo(() => {
     const artifactsById = new Map(
-      artifactSnapshots?.map((artifact) => [artifact.id, artifact]),
+      (artifactSnapshotsForWorkspace || artifactSnapshots).map((artifact) => [
+        artifact.id,
+        artifact,
+      ]),
     );
 
-    const kvEntries = new Map(yKeyValue.yarray.map((el) => [el.key, el.val]));
+    const kvEntries = new Map(treeYKV.yarray.map((el) => [el.key, el.val]));
 
     const treeItemsById = new Map<string, InternalTreeItem>();
 
     for (const [key, val] of kvEntries.entries()) {
       const artifact = artifactsById.get(key);
       if (!artifact) {
-        // Artifact appears to be deleted or inaccessible, do not render but also do not remove from kvlist in case it comes back
-        // (re-shared to user)
+        if (currentWorkspaceId) {
+          treeItemsById.set(key, {
+            id: key,
+            title: t('artifactTree.hiddenDocument'),
+            order: val.order,
+            parentId: val.parentNodeId || ROOT_TREE_NODE_ID,
+            isHidden: true,
+          });
+        }
         continue;
       }
 
@@ -186,15 +165,25 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     }
 
     // Artifacts that are not explicitly added to tree should be added to uncategorized
-    for (const artifact of artifactSnapshots || []) {
-      if (!treeItemsById.has(artifact.id)) {
-        treeItemsById.set(artifact.id, {
-          id: artifact.id,
-          title: artifact.meta.title,
-          order: UNCATEGORIZED_CHILD_INDEX,
-          parentId: UNCATEGORIZED_TREE_NODE_ID,
-        });
+    for (const artifact of artifactSnapshotsForWorkspace || artifactSnapshots) {
+      if (treeItemsById.has(artifact.id)) continue;
+
+      // In non-workspaced view, filter out inbox items (shared with user but not yet accepted)
+      // We want to include inbox items in workspaces, since other users may have added them and there are some strange implications here.
+      if (
+        !currentWorkspaceId &&
+        artifact.meta.userId !== session.userId &&
+        !acceptedIncomingSharedArtifactIds.has(artifact.id)
+      ) {
+        continue;
       }
+
+      treeItemsById.set(artifact.id, {
+        id: artifact.id,
+        title: artifact.meta.title,
+        order: UNCATEGORIZED_CHILD_INDEX,
+        parentId: UNCATEGORIZED_TREE_NODE_ID,
+      });
     }
 
     let uncategorizedItemRef: InternalTreeItem | null = null;
@@ -206,7 +195,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           count: 0,
         }),
         // We allow the user to move the uncategorized item around if they desire
-        order: yKeyValue.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
+        order: treeYKV.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
         parentId: ROOT_TREE_NODE_ID,
       };
       treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItemRef);
@@ -276,10 +265,12 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     return { treeItemsById, itemIdsByParentId };
   }, [
-    yKeyValue,
-    _rerenderReducerValue,
+    treeYKV,
+    rerenderReducerValue,
     leftPaneArtifactTreeShowUncategorized,
     artifactSnapshots,
+    artifactSnapshotsForWorkspace,
+    acceptedIncomingSharedArtifactIds,
   ]);
 
   const onDrop = (
@@ -313,20 +304,20 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       }
     })();
     const order = calculateOrderForArtifactTreeNode({
-      treeYKV: yKeyValue,
+      treeYKV: treeYKV,
       parentNodeId: target.item.getId(),
       location,
     });
-    yDoc.transact(() => {
+    workspaceOrUserTreeConnection.yjsDoc.transact(() => {
       for (const itemId of itemIds) {
         let parentNodeId: string | null = target.item.getId();
         if (parentNodeId === UNCATEGORIZED_TREE_NODE_ID) {
-          yKeyValue.delete(itemId);
+          treeYKV.delete(itemId);
           continue;
         }
 
         if (parentNodeId === 'root') parentNodeId = null;
-        yKeyValue.set(itemId, {
+        treeYKV.set(itemId, {
           parentNodeId,
           order,
         });
@@ -438,7 +429,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
    */
   const _recursiveDelete = (itemsIdsToDelete: string[]) => {
     for (const id of itemsIdsToDelete) {
-      yKeyValue.delete(id);
+      treeYKV.delete(id);
 
       const children = Array.from(itemIdsByParentId.get(id) || []);
       if (children?.length) {

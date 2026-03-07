@@ -18,6 +18,8 @@ import {
 import { AllArtifactsActions } from './AllArtifactsActions';
 import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../../utils/localDb/edges/useEdges';
+import { useCurrentWorkspaceId } from '../../../utils/workspace/useCurrentWorkspaceId';
+import { useCurrentWorkspaceArtifactIds } from '../../../utils/workspace/useCurrentWorkspaceArtifactIds';
 import { CheckboxTable } from '../../sharedComponents/CheckboxTable';
 import { ArtifactLinkContextMenu } from '../ArtifactLinkContextMenu';
 import {
@@ -71,8 +73,22 @@ export const AllArtifacts: React.FC = (props: Props) => {
   const { sidemenuContentRef } = useSidemenuContext();
   const { t } = useTranslation();
   const { session } = useSessionContext();
-  const { artifactSnapshots } = useArtifactSnapshots();
+  const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const currentWorkspaceArtifactIds = useCurrentWorkspaceArtifactIds();
+
+  const artifactSnapshots = useMemo(() => {
+    if (
+      !currentWorkspaceId ||
+      !currentWorkspaceArtifactIds ||
+      !allArtifactSnapshots
+    )
+      return allArtifactSnapshots;
+    return allArtifactSnapshots.filter((a) =>
+      currentWorkspaceArtifactIds.has(a.id),
+    );
+  }, [allArtifactSnapshots, currentWorkspaceArtifactIds]);
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
   >(new Set<string>());
@@ -337,7 +353,13 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   return (
     <PaneContentContainer>
-      <PaneNav title={t('allArtifacts.title')} />
+      <PaneNav
+        title={t(
+          currentWorkspaceId
+            ? 'allArtifacts.title.workspace'
+            : 'allArtifacts.title',
+        )}
+      />
       <PaneContent style={{ overflowY: 'hidden' }}>
         <CheckboxTable
           selectedKeys={selectedArtifactIds}

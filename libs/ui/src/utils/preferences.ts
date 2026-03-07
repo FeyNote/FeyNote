@@ -6,6 +6,8 @@ import {
   PreferenceNames,
   PreferencesSync,
   SupportedFontSize,
+  WorkspaceArtifactSharingMode,
+  WorkspaceNewItemMode,
 } from '@feynote/shared-utils';
 import { trpc } from './trpc';
 import { appIdbStorageManager } from './localDb/AppIdbStorageManager';
@@ -44,6 +46,13 @@ export class PreferencesService {
       ArtifactReferenceNewArtifactSharingMode.Prompt,
     [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
       ArtifactReferenceExistingArtifactSharingMode.Prompt,
+
+    [PreferenceNames.LastActiveWorkspaceId]: null,
+    [PreferenceNames.WorkspaceNewItemMode]: WorkspaceNewItemMode.Prompt,
+    [PreferenceNames.WorkspaceArtifactSharingMode]:
+      WorkspaceArtifactSharingMode.Prompt,
+    [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: false,
+    [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: false,
   };
   initialLoading: Promise<void> | undefined;
 
@@ -113,6 +122,8 @@ export class PreferencesService {
     // cause issues on smaller devices
     delete mutatedPreferences[PreferenceNames.LeftPaneStartOpen];
     delete mutatedPreferences[PreferenceNames.RightPaneStartOpen];
+
+    delete mutatedPreferences[PreferenceNames.LastActiveWorkspaceId];
 
     return mutatedPreferences;
   }

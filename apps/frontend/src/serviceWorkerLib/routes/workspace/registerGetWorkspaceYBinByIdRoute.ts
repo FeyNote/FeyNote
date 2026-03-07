@@ -1,0 +1,52 @@
+import { registerRoute } from 'workbox-routing';
+import { getTrpcInputForEvent } from '../../util/getTrpcInputForEvent';
+import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
+import { IndexeddbPersistence } from 'y-indexeddb';
+import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
+import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
+import * as Sentry from '@sentry/browser';
+
+export function registerGetWorkspaceYBinByIdRoute() {
+  registerRoute(
+    /((https:\/\/api\.feynote\.com)|(\/api))\/trpc\/workspace\.getWorkspaceYBinById/,
+    async (event) => {
+      const input =
+        getTrpcInputForEvent<typeof trpc.workspace.getWorkspaceYBinById.query>(
+          event,
+        );
+      if (!input || !input.id)
+        throw new Error('No id provided in procedure input');
+
+      try {
+        const docName = `workspace:${input.id}`;
+        const manifestDb = await getManifestDb();
+        const manifestWorkspaceVersion = await manifestDb.get(
+          ObjectStoreName.WorkspaceVersions,
+          input.id,
+        );
+        if (!manifestWorkspaceVersion) {
+          return fetch(event.request);
+        }
+
+        const idbPersistence = new IndexeddbPersistence(docName, new YDoc());
+        await idbPersistence.whenSynced;
+
+        const yBin = encodeStateAsUpdate(idbPersistence.doc);
+
+        idbPersistence.doc.destroy();
+        await idbPersistence.destroy();
+
+        return encodeCacheResultForTrpc<
+          typeof trpc.workspace.getWorkspaceYBinById.query
+        >({
+          yBin,
+        });
+      } catch (e) {
+        console.error(e);
+        Sentry.captureException(e);
+        return fetch(event.request);
+      }
+    },
+    'GET',
+  );
+}

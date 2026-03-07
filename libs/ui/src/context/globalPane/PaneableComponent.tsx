@@ -7,7 +7,7 @@ import { Dashboard } from '../../components/dashboard/Dashboard';
 import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
 import { SharedContent } from '../../components/sharing/SharedContent';
-import { NewArtifact } from '../../components/artifact/NewArtifact';
+import { CreateNew } from '../../components/artifact/CreateNew';
 import { Contribute } from '../../components/payments/Contribute';
 import { PersistentSearch } from '../../components/search/PersistentSearch';
 import { Export } from '../../components/importExport/Export';
@@ -15,12 +15,13 @@ import { Import } from '../../components/importExport/Import';
 import { AllArtifacts } from '../../components/artifact/allArtifacts/AllArtifacts';
 import { ArtifactTreeFullpage } from '../../components/artifact/ArtifactTreeFullpage';
 import { ImportFileUpload } from '../../components/importExport/ImportFileUpload';
+import { Inbox } from '../../components/inbox/Inbox';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
   Settings = 'Settings',
   Contribute = 'Contribute',
-  NewArtifact = 'NewArtifact',
+  CreateNew = 'CreateNew',
   Artifact = 'Artifact',
   AllArtifacts = 'AllArtifacts',
   ArtifactTreeFullpage = 'ArtifactTreeFullpage',
@@ -33,6 +34,7 @@ export enum PaneableComponent {
   Import = 'Import',
   ImportFileUpload = 'ImportFileUpload',
   PersistentSearch = 'PersistentSearch',
+  Inbox = 'Inbox',
   /**
    * This is included to support no-pane components
    */
@@ -45,7 +47,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.Dashboard]: ComponentProps<typeof Dashboard>;
   [PaneableComponent.Settings]: ComponentProps<typeof Settings>;
   [PaneableComponent.Contribute]: ComponentProps<typeof Contribute>;
-  [PaneableComponent.NewArtifact]: ComponentProps<typeof NewArtifact>;
+  [PaneableComponent.CreateNew]: ComponentProps<typeof CreateNew>;
   [PaneableComponent.Artifact]: ComponentProps<typeof Artifact>;
   [PaneableComponent.AllArtifacts]: ComponentProps<typeof AllArtifacts>;
   [PaneableComponent.ArtifactTreeFullpage]: ComponentProps<
@@ -60,6 +62,7 @@ export type PaneableComponentProps = {
   [PaneableComponent.ImportFileUpload]: ComponentProps<typeof ImportFileUpload>;
   [PaneableComponent.Export]: ComponentProps<typeof Export>;
   [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
+  [PaneableComponent.Inbox]: ComponentProps<typeof Inbox>;
   [PaneableComponent.NonPanedComponent]: ComponentProps<typeof emptyFunc>;
 };
 
@@ -70,7 +73,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Dashboard]: Dashboard,
     [PaneableComponent.Settings]: Settings,
     [PaneableComponent.Contribute]: Contribute,
-    [PaneableComponent.NewArtifact]: NewArtifact,
+    [PaneableComponent.CreateNew]: CreateNew,
     [PaneableComponent.Artifact]: Artifact,
     [PaneableComponent.AllArtifacts]: AllArtifacts,
     [PaneableComponent.ArtifactTreeFullpage]: ArtifactTreeFullpage,
@@ -83,6 +86,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.Import]: Import,
     [PaneableComponent.ImportFileUpload]: ImportFileUpload,
     [PaneableComponent.PersistentSearch]: PersistentSearch,
+    [PaneableComponent.Inbox]: Inbox,
     [PaneableComponent.NonPanedComponent]: emptyFunc,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
@@ -100,7 +104,7 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Dashboard]: 'dashboard.title',
   [PaneableComponent.Settings]: 'settings.title',
   [PaneableComponent.Contribute]: 'contribute.title',
-  [PaneableComponent.NewArtifact]: 'newArtifact.title',
+  [PaneableComponent.CreateNew]: 'createNew.title',
   [PaneableComponent.Artifact]: 'artifact.title',
   [PaneableComponent.AllArtifacts]: 'allArtifacts.title',
   [PaneableComponent.ArtifactTreeFullpage]: 'artifactTreeFullpage.title',
@@ -113,5 +117,6 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.Import]: 'import.title',
   [PaneableComponent.ImportFileUpload]: 'importFileUpload.title',
   [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
+  [PaneableComponent.Inbox]: 'inbox.title',
   [PaneableComponent.NonPanedComponent]: 'generic.error',
 } satisfies Record<PaneableComponent, string>;

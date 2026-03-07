@@ -1,7 +1,11 @@
 /* eslint-disable no-restricted-globals */
 
 import * as Sentry from '@sentry/browser';
-import type { ArtifactDTO, ArtifactSnapshot } from '@feynote/global-types';
+import type {
+  ArtifactDTO,
+  ArtifactSnapshot,
+  WorkspaceSnapshot,
+} from '@feynote/global-types';
 import type {
   DecodedFileStream,
   Edge,
@@ -16,6 +20,7 @@ import { localdbMigration_4 } from './migrations/localdbMigration_4';
 import { localdbMigration_5 } from './migrations/localdbMigration_5';
 import { localdbMigration_6 } from './migrations/localdbMigration_6';
 import { localdbMigration_7 } from './migrations/localdbMigration_7';
+import { localdbMigration_8 } from './migrations/localdbMigration_8';
 import type { JobSummary } from '@feynote/prisma/types';
 
 export type MigrationArgs = Parameters<
@@ -28,6 +33,11 @@ export interface AuthorizedCollaborationScopeDoc {
 }
 
 export interface ArtifactVersionDoc {
+  id: string;
+  version: number;
+}
+
+export interface WorkspaceVersionDoc {
   id: string;
   version: number;
 }
@@ -56,6 +66,9 @@ export enum ObjectStoreName {
   KV = 'kvStore',
   Threads = 'threads',
   Jobs = 'jobs',
+  WorkspaceSnapshots = 'workspaceSnapshots',
+  WorkspaceVersions = 'workspaceVersions',
+  PendingWorkspaces = 'pendingWorkspaces',
 }
 
 export enum KVStoreKeys {
@@ -141,6 +154,20 @@ export interface FeynoteLocalDB extends DBSchema {
     key: string;
     value: JobSummary;
   };
+  [ObjectStoreName.WorkspaceSnapshots]: {
+    key: string;
+    value: WorkspaceSnapshot;
+  };
+  [ObjectStoreName.WorkspaceVersions]: {
+    key: string;
+    value: WorkspaceVersionDoc;
+  };
+  [ObjectStoreName.PendingWorkspaces]: {
+    key: string;
+    value: {
+      id: string;
+    };
+  };
   [ObjectStoreName.KV]: {
     key: string;
     value: KVStoreValue[keyof KVStoreValue];
@@ -164,6 +191,7 @@ const MIGRATIONS = [
   localdbMigration_5,
   localdbMigration_6,
   localdbMigration_7,
+  localdbMigration_8,
 ];
 
 let errorShown = false;

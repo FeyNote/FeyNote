@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
@@ -19,6 +19,7 @@ import styled from 'styled-components';
 import type { ThreadDTO, ThreadDTOMessage } from '@feynote/shared-utils';
 import { EventName } from '../../context/events/EventName';
 import { eventManager } from '../../context/events/EventManager';
+import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWorkspaceThreadIds';
 
 const ThreadItemRow = styled.div`
   display: grid;
@@ -93,6 +94,12 @@ export const AIThreadsList: React.FC = () => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
   const { pane } = usePaneContext();
+  const currentWorkspaceThreadIds = useCurrentWorkspaceThreadIds();
+
+  const filteredThreads = useMemo(() => {
+    if (!currentWorkspaceThreadIds) return threads;
+    return threads.filter((thread) => currentWorkspaceThreadIds.has(thread.id));
+  }, [threads, currentWorkspaceThreadIds]);
 
   const getUserThreads = () => {
     const progress = startProgressBar();
@@ -133,7 +140,7 @@ export const AIThreadsList: React.FC = () => {
   const render = () => {
     if (isLoading) return;
 
-    if (!threads.length)
+    if (!filteredThreads.length)
       return (
         <NullState
           title={t('assistant.threads.nullState.title')}
@@ -142,7 +149,7 @@ export const AIThreadsList: React.FC = () => {
         />
       );
 
-    return threads
+    return filteredThreads
       .map((thread) => ({
         thread,
         lastMessagePreview: getLastMessagePreview(thread.messages),

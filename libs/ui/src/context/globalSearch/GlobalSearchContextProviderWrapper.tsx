@@ -9,21 +9,23 @@ import {
 } from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { open } from 'ionicons/icons';
+import { ellipsisHorizontal, open } from 'ionicons/icons';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
-import { capitalizeEachWord } from '@feynote/shared-utils';
+import { capitalizeEachWord, PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
-import { Box, Spinner, TextField } from '@radix-ui/themes';
+import { Box, DropdownMenu, Spinner, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../../components/AppIcons';
 import { useRegisterKeyboardShortcutHandler } from '../keyboardShortcut/useKeyboardShortcut';
 import { APP_KEYBOARD_SHORTCUTS } from '../../utils/keyboardShortcuts';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { usePreferencesContext } from '../preferences/PreferencesContext';
 
 const SearchContainer = styled.div<{ $isWideScreen: boolean }>`
   position: absolute;
@@ -166,7 +168,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const sessionContext = useSessionContext(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { getPreference, setPreference } = usePreferencesContext();
+  const searchAcrossAll = getPreference(
+    PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+  );
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const workspaceId =
+    currentWorkspaceId && !searchAcrossAll ? currentWorkspaceId : undefined;
 
   const truncateTextWithEllipsis = (text: string) => {
     // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
@@ -290,10 +300,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
         trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
+          workspaceId,
         }),
         trpc.artifact.searchArtifactBlocks.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
+          workspaceId,
         }),
       ])
         .then(([titleResults, blockResults]) => {
@@ -358,7 +370,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [searchText]);
+  }, [searchText, currentWorkspaceId, searchAcrossAll]);
 
   const selectedArtifactId =
     selectedIdx < searchResults.length
@@ -558,8 +570,38 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
         {sessionContext?.session ? (
           <>
             <TitleContainer>
-              <Title>{t('globalSearch.title')}</Title>
+              <Title>
+                {workspaceId
+                  ? t('globalSearch.title.workspace')
+                  : t('globalSearch.title')}
+              </Title>
               <TitleActionContainer>
+                {currentWorkspaceId && (
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                      <IonButton fill="clear">
+                        <IonIcon
+                          size="small"
+                          slot="icon-only"
+                          icon={ellipsisHorizontal}
+                        />
+                      </IonButton>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content>
+                      <DropdownMenu.CheckboxItem
+                        checked={searchAcrossAll}
+                        onCheckedChange={(checked) =>
+                          setPreference(
+                            PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+                            checked,
+                          )
+                        }
+                      >
+                        {t('globalSearch.searchAllWorkspaces')}
+                      </DropdownMenu.CheckboxItem>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                )}
                 <IonButton
                   fill="clear"
                   onClick={openPersistentSearch}

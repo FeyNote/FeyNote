@@ -76,6 +76,7 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
       edge={props.edge}
     >
       <CompactIonItem
+        data-edge-targetArtifactId={props.edge.targetArtifactId}
         lines="none"
         ref={ref}
         onMouseOver={onMouseOver}

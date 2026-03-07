@@ -16,8 +16,5 @@ export const getArtifactTreeFromYDoc = (yDoc: YDoc) => {
     order: string;
   }>(yArray);
 
-  return {
-    yArray,
-    yKeyValue,
-  };
+  return yKeyValue;
 };

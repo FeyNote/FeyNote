@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { PaneNav } from '../pane/PaneNav';
 import { LuFolderTree } from '../AppIcons';
 import { ArtifactTree } from './ArtifactTree';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 
 const TREE_ID = 'artifactTreeFullpage';
 
@@ -20,15 +21,20 @@ const Title = styled(IonCardTitle)`
 
 export const ArtifactTreeFullpage: React.FC = () => {
   const { t } = useTranslation();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+
+  const titleKey = currentWorkspaceId
+    ? 'artifactTreeFullpage.title.workspace'
+    : 'artifactTreeFullpage.title';
 
   return (
     <IonPage>
-      <PaneNav title={t('artifactTreeFullpage.title')} />
+      <PaneNav title={t(titleKey)} />
       <IonContent>
         <Card>
           <Title>
             <LuFolderTree />
-            &nbsp;{t('artifactTreeFullpage.title')}
+            &nbsp;{t(titleKey)}
           </Title>
           <ArtifactTree
             treeId={TREE_ID}

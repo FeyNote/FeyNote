@@ -62,13 +62,13 @@ export const useOnlineStatus = () => {
   useEffect(() => {
     const collaborationManager = getCollaborationManager();
     collaborationManager.on(
-      CollaborationManagerEventName.NewWSInstance,
+      CollaborationManagerEventName.AllDestroy,
       triggerRerender,
     );
 
     return () => {
       collaborationManager.off(
-        CollaborationManagerEventName.NewWSInstance,
+        CollaborationManagerEventName.AllDestroy,
         triggerRerender,
       );
     };

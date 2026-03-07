@@ -3,11 +3,16 @@ import styled from 'styled-components';
 import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
-import { IoChevronDown, IoChevronForward } from '../AppIcons';
+import { IoChevronDown, IoChevronForward, LuFolder } from '../AppIcons';
 import { ItemInstance } from '@headless-tree/core';
 import { VirtualItem, type Virtualizer } from '@tanstack/react-virtual';
-import { MouseEvent } from 'react';
+import { MouseEvent, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSingleDoubleClick } from '../../utils/useSingleDoubleClick';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { WORKSPACE_ICON_BY_ID } from '../workspace/workspaceConstants';
+import type { WorkspaceSnapshot } from '@feynote/global-types';
 
 const TreeListItem = styled.li<{
   $isDragTarget: boolean;
@@ -98,6 +103,42 @@ const TreeItemButton = styled.button<{
   `}
 `;
 
+const WorkspaceBadge = styled.span<{ $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 50%;
+  background-color: ${(props) => props.$color};
+  opacity: 0.65;
+  color: white;
+  font-size: 9px;
+  margin-left: 2px;
+`;
+
+const BadgeContainer = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  margin-left: 4px;
+  flex-shrink: 0;
+`;
+
+const OverflowBadge = styled.span`
+  font-size: 9px;
+  color: var(--text-color-dim);
+  margin-left: 2px;
+`;
+
+const HiddenDocumentText = styled.span`
+  opacity: 0.4;
+  font-style: italic;
+`;
+
+const MAX_WORKSPACE_BADGES = 2;
+
 interface ArtifactTreeItemProps {
   itemInstance: ItemInstance<InternalTreeItem | undefined>;
   virtualizer: Virtualizer<HTMLDivElement, Element>;
@@ -114,6 +155,27 @@ interface ArtifactTreeItemProps {
 
 export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   const item = props.treeItemsById.get(props.itemInstance.getId());
+  const { t } = useTranslation();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById } =
+    useWorkspaceSnapshots();
+
+  const workspaceSnapshotsForItem = useMemo(() => {
+    if (currentWorkspaceId) return []; // We do not show badges when a workspace is active
+    if (!item || item.id === UNCATEGORIZED_TREE_NODE_ID) return [];
+    const workspaceIds = getWorkspaceIdsForArtifactId(item.id);
+    return workspaceIds
+      .map((id) => getWorkspaceSnapshotById(id))
+      .filter(
+        (workspace): workspace is NonNullable<WorkspaceSnapshot> =>
+          !!workspace && !workspace.meta.deletedAt,
+      );
+  }, [
+    currentWorkspaceId,
+    item?.id,
+    getWorkspaceIdsForArtifactId,
+    getWorkspaceSnapshotById,
+  ]);
 
   const { onClick, onDoubleClick } = useSingleDoubleClick(
     undefined,
@@ -177,6 +239,26 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   };
 
   const renderContents = () => {
+    if (item.isHidden) {
+      let hiddenContent: React.ReactNode = (
+        <TreeItemContainer
+          data-index={props.virtualItemInstance.index}
+          ref={props.virtualizer.measureElement}
+          $isUncategorized={false}
+        >
+          <TreeItemButton $isUncategorized={true} $isActive={false}>
+            <HiddenDocumentText>
+              {t('artifactTree.hiddenDocument')}
+            </HiddenDocumentText>
+          </TreeItemButton>
+        </TreeItemContainer>
+      );
+      for (let i = 0; i < props.itemInstance.getItemMeta().level; i++) {
+        hiddenContent = renderSink(hiddenContent);
+      }
+      return hiddenContent;
+    }
+
     const innerContent = (
       <ArtifactTreeItemContextMenu
         enabled={
@@ -210,6 +292,29 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
             $isActive={props.isActive}
           >
             {item.title}
+            {workspaceSnapshotsForItem.length > 0 && (
+              <BadgeContainer>
+                {workspaceSnapshotsForItem
+                  .slice(0, MAX_WORKSPACE_BADGES)
+                  .map((snapshot) => {
+                    const Icon =
+                      WORKSPACE_ICON_BY_ID.get(snapshot.meta.icon) || LuFolder;
+                    return (
+                      <WorkspaceBadge
+                        key={snapshot.id}
+                        $color={snapshot.meta.color}
+                      >
+                        <Icon />
+                      </WorkspaceBadge>
+                    );
+                  })}
+                {workspaceSnapshotsForItem.length > MAX_WORKSPACE_BADGES && (
+                  <OverflowBadge>
+                    +{workspaceSnapshotsForItem.length - MAX_WORKSPACE_BADGES}
+                  </OverflowBadge>
+                )}
+              </BadgeContainer>
+            )}
           </TreeItemButton>
         </TreeItemContainer>
       </ArtifactTreeItemContextMenu>

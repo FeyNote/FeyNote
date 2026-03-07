@@ -65,7 +65,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     actionButton?: React.ReactNode,
   ) => {
     return (
-      <IonPage>
+      <IonPage data-id={props.id}>
         <PaneNav title={title} />
         <IonContent
           className="ion-padding-start ion-padding-end"
@@ -88,7 +88,10 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     );
   };
 
-  if (authorizedScope === CollaborationConnectionAuthorizedScope.Failed) {
+  if (
+    authorizedScope === CollaborationConnectionAuthorizedScope.Failed ||
+    collaborationConnectionStatus.isDestroyed
+  ) {
     return renderBlockingMessage(
       t('artifact.loading.failed.title'),
       t('artifact.loading.failed.message'),
@@ -109,7 +112,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     // When we're loading because we're waiting on idb, we show an empty page to be less jarring
     // since this usually only occurs for a few frames
     return (
-      <IonPage>
+      <IonPage data-id={props.id}>
         <PaneNav title={''} />
       </IonPage>
     );
@@ -126,7 +129,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   }
 
   return (
-    <IonPage>
+    <IonPage data-id={props.id}>
       <PaneNav
         title={title || ''}
         renderDropdownMenu={(children) => (

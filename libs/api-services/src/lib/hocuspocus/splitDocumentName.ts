@@ -1,4 +1,4 @@
-import { logger } from '@feynote/api-services';
+import { logger } from '../logging/logger';
 import { SupportedDocumentType } from './SupportedDocumentType';
 
 export const splitDocumentName = (

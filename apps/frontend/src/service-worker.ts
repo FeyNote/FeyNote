@@ -39,6 +39,9 @@ import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/regis
 import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
 import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
 import { registerGetJobsRoute } from './serviceWorkerLib/routes/jobs/registerGetJobsRoute';
+import { registerGetWorkspaceSnapshotsRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotsRoute';
+import { registerGetWorkspaceSnapshotByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotByIdRoute';
+import { registerGetWorkspaceYBinByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceYBinByIdRoute';
 
 initDebugStoreMonkeypatch();
 
@@ -231,3 +234,7 @@ registerGetSafeFileIdRoute();
 registerGetThreadsRoute();
 registerGetThreadRoute();
 registerGetJobsRoute();
+
+registerGetWorkspaceSnapshotsRoute();
+registerGetWorkspaceSnapshotByIdRoute();
+registerGetWorkspaceYBinByIdRoute();

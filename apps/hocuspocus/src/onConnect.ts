@@ -1,6 +1,5 @@
 import { onConnectPayload } from '@hocuspocus/server';
-import { splitDocumentName } from './splitDocumentName';
-import { logger, metrics } from '@feynote/api-services';
+import { logger, metrics, splitDocumentName } from '@feynote/api-services';
 
 export async function onConnect(args: onConnectPayload) {
   try {

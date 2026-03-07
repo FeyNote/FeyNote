@@ -11,7 +11,13 @@ export const EdgeStoreErrorHandler: React.FC = () => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
-    return edgeStore.listenForFetchFailure(handleTRPCErrors);
+    return edgeStore.listenForFetchFailure((e) =>
+      handleTRPCErrors(e, {
+        404: () => {
+          // Do nothing. These edges were not visible to the user.
+        },
+      }),
+    );
   }, [handleTRPCErrors]);
 
   return null;

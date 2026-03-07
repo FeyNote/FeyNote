@@ -1,20 +1,13 @@
-import { encodeStateAsUpdate } from 'yjs';
 import { onStoreDocumentPayload } from '@hocuspocus/server';
-
-import { prisma } from '@feynote/prisma/client';
-import { enqueueArtifactUpdate } from '@feynote/queue';
 import {
-  ARTIFACT_TIPTAP_BODY_KEY,
-  getArtifactAccessLevel,
-  getMetaFromYArtifact,
-  getTextForJSONContent,
-  getTiptapContentFromYjsDoc,
-  getUserAccessFromYArtifact,
-} from '@feynote/shared-utils';
-import { SupportedDocumentType } from './SupportedDocumentType';
-import { splitDocumentName } from './splitDocumentName';
-import { logger, metrics } from '@feynote/api-services';
-import { ArtifactAccessLevel } from '@prisma/client';
+  logger,
+  metrics,
+  splitDocumentName,
+  SupportedDocumentType,
+} from '@feynote/api-services';
+import { onStoreArtifact } from './onStoreArtifact';
+import { onStoreUserTree } from './onStoreUserTree';
+import { onStoreWorkspace } from './onStoreWorkspace';
 
 export async function onStoreDocument(args: onStoreDocumentPayload) {
   try {
@@ -24,150 +17,24 @@ export async function onStoreDocument(args: onStoreDocumentPayload) {
       document_type: type,
     });
 
+    const timer = metrics.hocuspocusDocumentStoreTime.startTimer();
+
     switch (type) {
-      case SupportedDocumentType.Artifact: {
-        const artifact = await prisma.artifact.findUnique({
-          where: {
-            id: identifier,
-          },
-          select: {
-            userId: true,
-            yBin: true,
-            json: true,
-          },
-        });
-
-        if (!artifact) {
-          logger.error('Attempting to save artifact that does not exist');
-          throw new Error();
-        }
-
-        const yBin = Buffer.from(encodeStateAsUpdate(args.document));
-
-        const tiptapBody = getTiptapContentFromYjsDoc(
-          args.document,
-          ARTIFACT_TIPTAP_BODY_KEY,
-        );
-        const text = getTextForJSONContent(tiptapBody);
-        const artifactMeta = getMetaFromYArtifact(args.document);
-        const userAccess = getUserAccessFromYArtifact(args.document);
-        const userAccessPOJO = Object.fromEntries(
-          [...userAccess.map.values()].map((el) => [el.key, el.val]),
-        );
-
-        await prisma.artifact.update({
-          where: {
-            id: identifier,
-          },
-          data: {
-            title: artifactMeta.title,
-            type: artifactMeta.type,
-            theme: artifactMeta.theme,
-            text,
-            yBin,
-            deletedAt: artifactMeta.deletedAt
-              ? new Date(artifactMeta.deletedAt)
-              : null,
-            json: {
-              ...(artifact.json as unknown as Record<string, unknown>),
-              tiptapBody,
-              meta: artifactMeta,
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Thanks Prisma
-              userAccess: userAccessPOJO as any,
-            },
-          },
-        });
-
-        await enqueueArtifactUpdate({
-          artifactId: identifier,
-          userId: artifact.userId,
-          triggeredByUserId: args.context.userId,
-          oldYBinB64: Buffer.from(artifact.yBin).toString('base64'),
-          newYBinB64: yBin.toString('base64'),
-        });
-
-        for (const connection of args.document.getConnections()) {
-          const userId = connection.context.userId;
-          const userAccess = getArtifactAccessLevel(args.document, userId);
-
-          const invalidate = () => {
-            connection.sendStateless(
-              JSON.stringify({
-                event: 'accessRemoved',
-              }),
-            );
-            connection.close(); // This does not disconnect the websocket itself, just closes the pseudo "connection" to the document
-          };
-          const broadcastNewAuthorizedScope = () => {
-            connection.sendStateless(
-              JSON.stringify({
-                event: 'authorizedScopeChanged',
-                data: {
-                  authorizedScope: connection.readOnly
-                    ? 'readonly'
-                    : 'read-write',
-                },
-              }),
-            );
-          };
-
-          if (
-            userAccess === ArtifactAccessLevel.coowner &&
-            connection.readOnly === true
-          ) {
-            connection.readOnly = false;
-            broadcastNewAuthorizedScope();
-          }
-          if (
-            userAccess === ArtifactAccessLevel.readwrite &&
-            connection.readOnly === true
-          ) {
-            connection.readOnly = false;
-            broadcastNewAuthorizedScope();
-          }
-          if (
-            userAccess === ArtifactAccessLevel.readonly &&
-            connection.readOnly === false
-          ) {
-            connection.readOnly = true;
-            broadcastNewAuthorizedScope();
-          }
-          if (userAccess === ArtifactAccessLevel.noaccess) {
-            invalidate();
-          }
-        }
-
+      case SupportedDocumentType.Artifact:
+        await onStoreArtifact(args, identifier);
         break;
-      }
-      case SupportedDocumentType.UserTree: {
-        const user = await prisma.user.findUnique({
-          where: {
-            id: identifier,
-          },
-          select: {
-            treeYBin: true,
-          },
-        });
-
-        if (!user) {
-          logger.error('Attempting to save user tree that does not exist');
-          throw new Error();
-        }
-
-        const treeYBin = Buffer.from(encodeStateAsUpdate(args.document));
-
-        await prisma.user.update({
-          where: {
-            id: identifier,
-          },
-          data: {
-            treeYBin,
-          },
-        });
-
+      case SupportedDocumentType.UserTree:
+        await onStoreUserTree(args, identifier);
         break;
-      }
+      case SupportedDocumentType.Workspace:
+        await onStoreWorkspace(args, identifier);
+        break;
     }
+
+    metrics.hocuspocusDocumentStoreTime.observe(
+      { document_type: type },
+      timer(),
+    );
 
     args.document.getConnections().forEach((connection) => {
       connection.sendStateless(

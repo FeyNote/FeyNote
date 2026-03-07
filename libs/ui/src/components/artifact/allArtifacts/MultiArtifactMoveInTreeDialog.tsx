@@ -45,7 +45,7 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
     await withCollaborationConnection(
       `userTree:${session.userId}`,
       async (connection) => {
-        const treeYKV = getArtifactTreeFromYDoc(connection.yjsDoc).yKeyValue;
+        const treeYKV = getArtifactTreeFromYDoc(connection.yjsDoc);
 
         if (parentNodeId === UNCATEGORIZED_TREE_NODE_ID) {
           try {

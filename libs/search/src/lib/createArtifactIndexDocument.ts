@@ -7,6 +7,7 @@ export const createArtifactIndexDocument = (
     id: artifact.id,
     userId: artifact.userId,
     readableUserIds: artifact.newState.readableUserIds,
+    workspaceIds: artifact.newState.workspaceIds,
     title: artifact.newState.title,
     fullText: artifact.newState.text,
   };

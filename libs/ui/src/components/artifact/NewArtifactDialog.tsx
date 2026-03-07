@@ -6,7 +6,7 @@ import {
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useTranslation } from 'react-i18next';
 import type { ArtifactType } from '@prisma/client';
-import { ArtifactTypeSelector } from '../editor/ArtifactTypeSelector';
+import { CreateNewTypeSelector } from '../editor/CreateNewTypeSelector';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 
@@ -51,7 +51,7 @@ export const NewArtifactDialog: React.FC<Props> = (props) => {
       onOpenChange={props.onOpenChange}
       size="xlarge"
     >
-      <ArtifactTypeSelector
+      <CreateNewTypeSelector
         newArtifact={newArtifact}
         newAIThread={() => undefined}
         options={{

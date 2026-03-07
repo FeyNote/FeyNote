@@ -3,7 +3,7 @@ import { useEffect, useState, type MouseEvent } from 'react';
 import { trpc } from '../../utils/trpc';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { createArtifact } from '../../utils/localDb/createArtifact';
-import { capitalizeEachWord } from '@feynote/shared-utils';
+import { capitalizeEachWord, PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -14,6 +14,11 @@ import { search } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { ArtifactLinkContextMenu } from '../artifact/ArtifactLinkContextMenu';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { createPortal } from 'react-dom';
+import { PersistentSearchRightSidemenu } from './PersistentSearchRightSidemenu';
 
 const PaneContent = styled.div`
   padding: 20px;
@@ -92,6 +97,12 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
+  const { sidemenuContentRef } = useSidemenuContext();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { getPreference } = usePreferencesContext();
+  const searchAcrossAll = getPreference(
+    PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+  );
 
   const truncateTextWithEllipsis = (text: string) => {
     // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
@@ -186,6 +197,9 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
     }
   }, [searchResults]);
 
+  const workspaceId =
+    currentWorkspaceId && !searchAcrossAll ? currentWorkspaceId : undefined;
+
   useEffect(() => {
     if (!searchText.trim().length) {
       setSearchResults([]);
@@ -198,10 +212,12 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
         trpc.artifact.searchArtifactTitles.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
+          workspaceId,
         }),
         trpc.artifact.searchArtifactBlocks.query({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
+          workspaceId,
         }),
       ])
         .then(([titleResults, blockResults]) => {
@@ -261,11 +277,17 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [searchText]);
+  }, [searchText, currentWorkspaceId, searchAcrossAll]);
 
   return (
     <div>
-      <PaneNav title={t('persistentSearch.title')} />
+      <PaneNav
+        title={
+          workspaceId
+            ? t('persistentSearch.title.workspace')
+            : t('persistentSearch.title')
+        }
+      />
       <PaneContent>
         <SearchInput
           onIonInput={(event) => setSearchText(event.detail.value || '')}
@@ -352,6 +374,13 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
           )}
         </SearchResultsContainer>
       </PaneContent>
+      {isPaneFocused &&
+        sidemenuContentRef.current &&
+        currentWorkspaceId &&
+        createPortal(
+          <PersistentSearchRightSidemenu />,
+          sidemenuContentRef.current,
+        )}
     </div>
   );
 };

@@ -21,7 +21,7 @@ export const addArtifactToArtifactTree = (args: Args) => {
       return args.ref;
     }
 
-    return getArtifactTreeFromYDoc(args.ref).yKeyValue;
+    return getArtifactTreeFromYDoc(args.ref);
   })();
 
   treeYKV.set(args.id, {

@@ -13,7 +13,10 @@ import { trpc } from '../../../utils/trpc';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
-import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
+import {
+  CollaborationManagerConnection,
+  withCollaborationConnection,
+} from '../../../utils/collaboration/collaborationManager';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
@@ -41,6 +44,8 @@ import { PaneableComponent } from '../../../context/globalPane/PaneableComponent
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
 import { useAlertContext } from '../../../context/alert/AlertContext';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
+import { getAcceptedIncomingSharedArtifactIdsFromYDoc } from '../../../utils/artifactTree/getAcceptedIncomingSharedArtifactIdsFromYDoc';
+import { recursiveRemoveFromArtifactTree } from '../../../utils/artifactTree/recursiveRemoveFromArtifactTree';
 
 const LOCAL_GRAPH_ENABLED = false;
 
@@ -68,13 +73,14 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     useState(false);
   const { session } = useSessionContext();
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
-  const { userAccessYKV, _rerenderReducerValue } =
-    useObserveYArtifactUserAccess(props.connection.yjsDoc);
+  const { userAccessYKV, rerenderReducerValue } = useObserveYArtifactUserAccess(
+    props.connection.yjsDoc,
+  );
   const activeUserShares = useMemo(() => {
     return userAccessYKV.yarray
       .toArray()
       .filter((el) => el.val.accessLevel !== 'noaccess');
-  }, [_rerenderReducerValue]);
+  }, [rerenderReducerValue]);
   const { incomingEdges, outgoingEdges } = useEdgesForArtifactId(
     props.artifactId,
   );
@@ -210,18 +216,31 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
-  const _removeSelfAsCollaborator = () => {
-    trpc.artifact.removeSelfAsCollaborator
+  const _removeSelfAsCollaborator = async () => {
+    await withCollaborationConnection(
+      `userTree:${session.userId}`,
+      async (connection) => {
+        const inboxYKV = getAcceptedIncomingSharedArtifactIdsFromYDoc(
+          connection.yjsDoc,
+        );
+        inboxYKV.delete(props.artifactId);
+        recursiveRemoveFromArtifactTree({
+          ref: connection.yjsDoc,
+          nodeIds: new Set([props.artifactId]),
+        });
+      },
+    );
+
+    navigate(
+      undefined,
+      PaneableComponent.Dashboard,
+      {},
+      PaneTransition.Replace,
+    );
+
+    await trpc.artifact.removeSelfAsCollaborator
       .mutate({
         artifactId: props.artifactId,
-      })
-      .then(() => {
-        navigate(
-          undefined,
-          PaneableComponent.Dashboard,
-          {},
-          PaneTransition.Replace,
-        );
       })
       .catch((e) => {
         handleTRPCErrors(e);
