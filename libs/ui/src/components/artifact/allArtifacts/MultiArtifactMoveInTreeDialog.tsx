@@ -10,6 +10,7 @@ import { canAddArtifactToArtifactTreeAt } from '../../../utils/artifactTree/canA
 import { recursiveRemoveFromArtifactTree } from '../../../utils/artifactTree/recursiveRemoveFromArtifactTree';
 import { calculateOrderForArtifactTreeNode } from '../../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
+import { useCurrentWorkspaceId } from '../../../utils/workspace/useCurrentWorkspaceId';
 import styled from 'styled-components';
 
 const TreeContainer = styled.div`
@@ -25,6 +26,7 @@ interface Props {
 export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { session } = useSessionContext();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
   const [treeId] = useState(`moveInTree-${crypto.randomUUID()}`);
   const [resultStats, setResultStats] = useState<{
     workingSetSize: number;
@@ -43,7 +45,9 @@ export const MultiArtifactMoveInTreeDialog: React.FC<Props> = (props) => {
     });
 
     await withCollaborationConnection(
-      `userTree:${session.userId}`,
+      currentWorkspaceId
+        ? `workspace:${currentWorkspaceId}`
+        : `userTree:${session.userId}`,
       async (connection) => {
         const treeYKV = getArtifactTreeFromYDoc(connection.yjsDoc);
 
