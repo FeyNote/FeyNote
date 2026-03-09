@@ -336,7 +336,7 @@ export const LeftSideMenu: React.FC = () => {
                   navigateWithKeyboardHandler(
                     event,
                     PaneableComponent.ArtifactTreeFullpage,
-                    {},
+                    { workspaceId: currentWorkspaceId },
                   )
                 }
                 size="small"

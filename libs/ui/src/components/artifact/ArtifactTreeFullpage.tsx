@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { PaneNav } from '../pane/PaneNav';
 import { LuFolderTree } from '../AppIcons';
 import { ArtifactTree } from './ArtifactTree';
-import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 
 const TREE_ID = 'artifactTreeFullpage';
 
@@ -19,25 +19,34 @@ const Title = styled(IonCardTitle)`
   align-items: center;
 `;
 
-export const ArtifactTreeFullpage: React.FC = () => {
-  const { t } = useTranslation();
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
+interface Props {
+  workspaceId: string | null;
+}
 
-  const titleKey = currentWorkspaceId
-    ? 'artifactTreeFullpage.title.workspace'
-    : 'artifactTreeFullpage.title';
+export const ArtifactTreeFullpage: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    props.workspaceId || undefined,
+  );
+
+  const title = selectedWorkspaceSnapshot
+    ? t('artifactTreeFullpage.title.workspaceNamed', {
+        name: selectedWorkspaceSnapshot.meta.name || t('workspace.untitled'),
+      })
+    : t('artifactTreeFullpage.title');
 
   return (
     <IonPage>
-      <PaneNav title={t(titleKey)} />
+      <PaneNav title={title} />
       <IonContent>
         <Card>
           <Title>
             <LuFolderTree />
-            &nbsp;{t(titleKey)}
+            &nbsp;{title}
           </Title>
           <ArtifactTree
             treeId={TREE_ID}
+            workspaceId={props.workspaceId}
             registerAsGlobalTreeDragHandler={false}
             editable={true}
             mode="navigate"

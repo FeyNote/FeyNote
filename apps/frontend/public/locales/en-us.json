@@ -248,6 +248,7 @@
 
   "artifactTreeFullpage.title": "Tree",
   "artifactTreeFullpage.title.workspace": "Workspace Tree",
+  "artifactTreeFullpage.title.workspaceNamed": "{{name}} Tree",
 
   "artifactTree.uncategorized": "Uncategorized ({{count}})",
   "artifactTree.newArtifactWithin": "New Document as Tree Child",
