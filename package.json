@@ -76,7 +76,7 @@
     "@trpc/server": "^11.1.1",
     "@types/cors": "^2.8.19",
     "@types/dedent": "^0.7.2",
-    "@types/multer": "^2.0.0",
+    "@types/multer": "^2.1.0",
     "@types/remove-markdown": "^0.3.4",
     "accept-language": "^3.0.20",
     "ai": "^6.0.6",
