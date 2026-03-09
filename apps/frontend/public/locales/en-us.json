@@ -771,13 +771,15 @@
   "globalSearch.openPersistentSearch": "Open persistent search",
 
   "inbox.title": "Inbox",
-  "inbox.empty": "No shared documents yet",
-  "inbox.empty.message": "Documents that others share with you will appear here.",
+  "inbox.empty": "No shared items yet",
+  "inbox.empty.message": "Documents and workspaces that others share with you will appear here.",
   "inbox.owner": "Owned by {{user}}",
   "inbox.open": "Open",
   "inbox.accept": "Accept",
   "inbox.decline": "Decline",
   "inbox.acceptAndAddToWorkspace": "Accept & Add to Workspace",
+  "inbox.workspaces": "Workspaces",
+  "inbox.documents": "Documents",
 
   "workspace.everything": "Everything",
   "workspace.untitled": "Untitled Workspace",

@@ -45,6 +45,7 @@ import { WorkspaceSelector } from '../workspace/WorkspaceSelector';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWorkspaceThreadIds';
 import { useInboxArtifactSnapshots } from '../../utils/artifactTree/useInboxArtifactSnapshots';
+import { useInboxWorkspaceSnapshots } from '../../utils/workspace/useInboxWorkspaceSnapshots';
 
 const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
@@ -109,6 +110,9 @@ export const LeftSideMenu: React.FC = () => {
   const [recentlyUpdatedThreadsLimit, setRecentlyUpdatedThreadsLimit] =
     useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
   const { inboxArtifactSnapshots } = useInboxArtifactSnapshots();
+  const { inboxWorkspaceSnapshots } = useInboxWorkspaceSnapshots();
+  const inboxCount =
+    inboxArtifactSnapshots.length + inboxWorkspaceSnapshots.length;
 
   const showMoreThreads = () => {
     setRecentlyUpdatedThreadsLimit(
@@ -290,9 +294,7 @@ export const LeftSideMenu: React.FC = () => {
             <CiInboxIn size={18} />
             &nbsp;&nbsp;
             <IonLabel>{t('inbox.title')}</IonLabel>
-            {!!inboxArtifactSnapshots.length && (
-              <IonBadge slot="end">{inboxArtifactSnapshots.length}</IonBadge>
-            )}
+            {!!inboxCount && <IonBadge slot="end">{inboxCount}</IonBadge>}
           </CompactIonItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu

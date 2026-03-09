@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IonLabel } from '@ionic/react';
 import { DropdownMenu } from '@radix-ui/themes';
@@ -12,6 +12,8 @@ import { getWorkspaceAccessLevel } from '@feynote/shared-utils';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { useAcceptedIncomingSharedWorkspaceIds } from '../../utils/workspace/useAcceptedIncomingSharedWorkspaceIds';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { WorkspaceCreateModal } from './WorkspaceCreateModal';
 import { WorkspaceEditModal } from './WorkspaceEditModal';
@@ -52,8 +54,23 @@ interface Props {
 export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
   const { t } = useTranslation();
   const { session } = useSessionContext();
-  const { workspaceSnapshots } = useWorkspaceSnapshots();
+  const { workspaceSnapshots: allWorkspaceSnapshots } = useWorkspaceSnapshots();
   const { currentWorkspaceId, setCurrentWorkspaceId } = useCurrentWorkspaceId();
+  const connection = useCollaborationConnection(`userTree:${session.userId}`);
+  const { acceptedIncomingSharedWorkspaceIds } =
+    useAcceptedIncomingSharedWorkspaceIds(connection.yjsDoc);
+
+  const workspaceSnapshots = useMemo(() => {
+    return allWorkspaceSnapshots.filter(
+      (ws) =>
+        ws.meta.userId === session.userId ||
+        acceptedIncomingSharedWorkspaceIds.has(ws.id),
+    );
+  }, [
+    allWorkspaceSnapshots,
+    session.userId,
+    acceptedIncomingSharedWorkspaceIds,
+  ]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editWorkspaceId, setEditWorkspaceId] = useState<string | null>(null);
 

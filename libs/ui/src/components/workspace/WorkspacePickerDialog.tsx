@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { useAcceptedIncomingSharedWorkspaceIds } from '../../utils/workspace/useAcceptedIncomingSharedWorkspaceIds';
 
 const WorkspaceList = styled.div`
   display: flex;
@@ -45,12 +48,28 @@ interface Props {
 
 export const WorkspacePickerDialog: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { session } = useSessionContext();
   const useWorkspaceSnapshotsResult = useWorkspaceSnapshots();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const connection = useCollaborationConnection(`userTree:${session.userId}`);
+  const { acceptedIncomingSharedWorkspaceIds } =
+    useAcceptedIncomingSharedWorkspaceIds(connection.yjsDoc);
 
-  const workspaceSnapshots = props.mustBeEditable
+  const allWorkspaceSnapshots = props.mustBeEditable
     ? useWorkspaceSnapshotsResult.editableWorkspaceSnapshots
     : useWorkspaceSnapshotsResult.workspaceSnapshots;
+
+  const workspaceSnapshots = useMemo(() => {
+    return allWorkspaceSnapshots.filter(
+      (ws) =>
+        ws.meta.userId === session.userId ||
+        acceptedIncomingSharedWorkspaceIds.has(ws.id),
+    );
+  }, [
+    allWorkspaceSnapshots,
+    session.userId,
+    acceptedIncomingSharedWorkspaceIds,
+  ]);
 
   const filteredWorkspaces = props.excludeWorkspaceIds
     ? workspaceSnapshots.filter((ws) => !props.excludeWorkspaceIds?.has(ws.id))
