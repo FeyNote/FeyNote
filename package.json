@@ -32,7 +32,7 @@
     "@hocuspocus/server": "3.4.4",
     "@hocuspocus/transformer": "3.4.4",
     "@ionic/react": "^8.8.1",
-    "@openrouter/ai-sdk-provider": "^2.2.3",
+    "@openrouter/ai-sdk-provider": "^2.2.5",
     "@prisma/client": "^6.19.0",
     "@radix-ui/themes": "^3.3.0",
     "@sentry/esbuild-plugin": "^5.1.1",
