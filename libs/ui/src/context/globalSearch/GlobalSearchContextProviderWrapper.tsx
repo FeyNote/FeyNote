@@ -16,6 +16,10 @@ import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { capitalizeEachWord, PreferenceNames } from '@feynote/shared-utils';
 import { PaneableComponent } from '../globalPane/PaneableComponent';
+import {
+  PaneTransition,
+  useGlobalPaneContext,
+} from '../globalPane/GlobalPaneContext';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { Box, DropdownMenu, Spinner, TextField } from '@radix-ui/themes';
@@ -147,6 +151,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
 }) => {
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler(true);
+  const { navigate } = useGlobalPaneContext();
   const [isWideScreen, setIsWideScreen] = useState(
     () => window.matchMedia('(min-width: 601px)').matches,
   );
@@ -221,11 +226,16 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     });
   };
 
-  const openPersistentSearch = (event: MouseEvent | React.MouseEvent) => {
-    navigateWithKeyboardHandler(event, PaneableComponent.PersistentSearch, {
-      initialTerm: searchText || undefined,
-      workspaceId: currentWorkspaceId,
-    });
+  const openPersistentSearch = () => {
+    navigate(
+      undefined,
+      PaneableComponent.PersistentSearch,
+      {
+        initialTerm: searchText || undefined,
+        workspaceId: currentWorkspaceId,
+      },
+      PaneTransition.NewTab,
+    );
     hide();
   };
 
