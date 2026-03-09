@@ -42,7 +42,7 @@
     "@sentry/vite-plugin": "^5.1.1",
     "@socket.io/redis-adapter": "^8.3.0",
     "@swc/helpers": "0.5.19",
-    "@tanstack/react-virtual": "^3.13.19",
+    "@tanstack/react-virtual": "^3.13.21",
     "@tiptap/core": "3.20.1",
     "@tiptap/extension-blockquote": "3.20.1",
     "@tiptap/extension-bold": "3.20.1",
