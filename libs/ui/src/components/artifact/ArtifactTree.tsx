@@ -326,6 +326,35 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     const itemIdsByParentId = getItemIdsByParentId();
 
+    if (currentWorkspaceId) {
+      const visibilityCache = new Map<string, boolean>();
+      const hasVisibleDescendant = (itemId: string): boolean => {
+        const cached = visibilityCache.get(itemId);
+        if (cached !== undefined) return cached;
+        visibilityCache.set(itemId, false);
+        for (const childId of itemIdsByParentId.get(itemId) || []) {
+          const child = treeItemsById.get(childId);
+          if (!child) continue;
+          if (!child.isHidden || hasVisibleDescendant(childId)) {
+            visibilityCache.set(itemId, true);
+            return true;
+          }
+        }
+        return false;
+      };
+
+      for (const [id, item] of treeItemsById) {
+        if (!item.isHidden) continue;
+        if (hasVisibleDescendant(id)) continue;
+        const siblings = itemIdsByParentId.get(item.parentId);
+        if (siblings) {
+          const idx = siblings.indexOf(id);
+          if (idx !== -1) siblings.splice(idx, 1);
+        }
+        treeItemsById.delete(id);
+      }
+    }
+
     // Create root node
     treeItemsById.set(ROOT_TREE_NODE_ID, {
       id: ROOT_TREE_NODE_ID,

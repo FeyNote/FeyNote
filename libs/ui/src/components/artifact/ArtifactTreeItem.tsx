@@ -246,6 +246,17 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
           ref={props.virtualizer.measureElement}
           $isUncategorized={false}
         >
+          {!!props.itemIdsByParentId.get(item.id)?.length && (
+            <ItemArrow
+              onClick={() => setExpanded(!props.itemInstance.isExpanded())}
+            >
+              {props.itemInstance.isExpanded() ? (
+                <IoChevronDown size={16} />
+              ) : (
+                <IoChevronForward size={16} />
+              )}
+            </ItemArrow>
+          )}
           <TreeItemButton $isUncategorized={true} $isActive={false}>
             <HiddenDocumentText>
               {t('artifactTree.hiddenDocument')}
