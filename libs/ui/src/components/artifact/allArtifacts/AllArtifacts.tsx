@@ -17,9 +17,10 @@ import {
 } from './AllArtifactsFilters';
 import { AllArtifactsActions } from './AllArtifactsActions';
 import { useArtifactSnapshots } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useArtifactSnapshotsForWorkspaceId } from '../../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useEdges } from '../../../utils/localDb/edges/useEdges';
-import { useCurrentWorkspaceId } from '../../../utils/workspace/useCurrentWorkspaceId';
-import { useCurrentWorkspaceArtifactIds } from '../../../utils/workspace/useCurrentWorkspaceArtifactIds';
+import { useWorkspaceSnapshots } from '../../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { useWorkspaceSnapshot } from '../../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { CheckboxTable } from '../../sharedComponents/CheckboxTable';
 import { ArtifactLinkContextMenu } from '../ArtifactLinkContextMenu';
 import {
@@ -28,6 +29,9 @@ import {
 } from '../../pane/PaneContentContainer';
 import { capitalize } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
+import { Button, DropdownMenu } from '@radix-ui/themes';
+import { WorkspaceIconBubble } from '../../workspace/WorkspaceIconBubble';
+import { LuLayers, IoChevronDown } from '../../AppIcons';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -65,9 +69,10 @@ const dateCompareWithFallback = (
 
 interface Props {
   initialImportJobId?: string;
+  workspaceId?: string;
 }
 
-export const AllArtifacts: React.FC = (props: Props) => {
+export const AllArtifacts: React.FC<Props> = (props) => {
   const { isPaneFocused, pane } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { sidemenuContentRef } = useSidemenuContext();
@@ -75,20 +80,8 @@ export const AllArtifacts: React.FC = (props: Props) => {
   const { session } = useSessionContext();
   const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
-  const currentWorkspaceArtifactIds = useCurrentWorkspaceArtifactIds();
+  const { workspaceSnapshots } = useWorkspaceSnapshots();
 
-  const artifactSnapshots = useMemo(() => {
-    if (
-      !currentWorkspaceId ||
-      !currentWorkspaceArtifactIds ||
-      !allArtifactSnapshots
-    )
-      return allArtifactSnapshots;
-    return allArtifactSnapshots.filter((a) =>
-      currentWorkspaceArtifactIds.has(a.id),
-    );
-  }, [allArtifactSnapshots, currentWorkspaceArtifactIds]);
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
   >(new Set<string>());
@@ -104,6 +97,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
   >([]);
   // Allows user to filter by several different properties
   const [filters, setFilters] = useState<FilterOptions>(() => ({
+    workspaceId: props.workspaceId ?? null,
     havingTitleText: '',
     byUser: new Set(),
     orphans: AllArtifactsOrphansDisplaySetting.Include,
@@ -111,6 +105,17 @@ export const AllArtifacts: React.FC = (props: Props) => {
     onlyIncludeTypes: new Set(),
     onlyRelatedToImportJobs: new Set(),
   }));
+
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    filters.workspaceId || undefined,
+  );
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    filters.workspaceId || undefined,
+  );
+  const artifactSnapshots = filters.workspaceId
+    ? artifactSnapshotsForWorkspace
+    : allArtifactSnapshots;
+
   const [knownUsers, setKnownUsers] = useState<
     {
       id: string;
@@ -202,6 +207,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
   }, [artifactSnapshots, knownUsersById]);
 
   const activeFilterCount =
+    Number(!!filters.workspaceId) +
     Number(!!filters.havingTitleText.length) +
     Number(!!filters.onlyRelatedToImportJobs.size) +
     Number(!!filters.byUser.size) +
@@ -324,7 +330,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   useEffect(() => {
     const verificationSet = new Set(selectedArtifactIds);
-    for (const artifact of artifactSnapshots || []) {
+    for (const artifact of allArtifactSnapshots || []) {
       verificationSet.delete(artifact.id);
     }
     if (verificationSet.size) {
@@ -334,7 +340,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
       }
       setSelectedArtifactIds(newSelectedArtifactIds);
     }
-  }, [artifactSnapshots]);
+  }, [allArtifactSnapshots]);
 
   const selectedArtifactCountNotShown = useMemo(() => {
     const verificationSet = new Set(selectedArtifactIds);
@@ -345,7 +351,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
   }, [selectedArtifactIds, sortedFilteredArtifacts]);
 
   const checkboxTableEntries = useMemo(() => {
-    return sortedFilteredArtifacts.map((el) => ({
+    return (sortedFilteredArtifacts ?? []).map((el) => ({
       key: el.id,
       value: el,
     }));
@@ -353,13 +359,7 @@ export const AllArtifacts: React.FC = (props: Props) => {
 
   return (
     <PaneContentContainer>
-      <PaneNav
-        title={t(
-          currentWorkspaceId
-            ? 'allArtifacts.title.workspace'
-            : 'allArtifacts.title',
-        )}
-      />
+      <PaneNav title={t('allArtifacts.title')} />
       <PaneContent style={{ overflowY: 'hidden' }}>
         <CheckboxTable
           selectedKeys={selectedArtifactIds}
@@ -368,6 +368,58 @@ export const AllArtifacts: React.FC = (props: Props) => {
           items={checkboxTableEntries}
           headerItems={
             <HeaderItemsContainer>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger>
+                  <Button
+                    variant={filters.workspaceId ? 'solid' : 'soft'}
+                    size="2"
+                  >
+                    {selectedWorkspaceSnapshot ? (
+                      <>
+                        <WorkspaceIconBubble
+                          icon={selectedWorkspaceSnapshot.meta.icon}
+                          color={selectedWorkspaceSnapshot.meta.color}
+                          size={16}
+                        />
+                        {selectedWorkspaceSnapshot.meta.name ||
+                          t('workspace.untitled')}
+                      </>
+                    ) : (
+                      <>
+                        <LuLayers size={16} />
+                        {t('workspace.everything')}
+                      </>
+                    )}
+                    <IoChevronDown size={12} />
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content style={{ minWidth: 250 }}>
+                  <DropdownMenu.Item
+                    onClick={() =>
+                      setFilters({ ...filters, workspaceId: null })
+                    }
+                  >
+                    <LuLayers size={18} />
+                    {t('workspace.everything')}
+                  </DropdownMenu.Item>
+                  {workspaceSnapshots.length > 0 && <DropdownMenu.Separator />}
+                  {workspaceSnapshots.map((ws) => (
+                    <DropdownMenu.Item
+                      key={ws.id}
+                      onClick={() =>
+                        setFilters({ ...filters, workspaceId: ws.id })
+                      }
+                    >
+                      <WorkspaceIconBubble
+                        icon={ws.meta.icon}
+                        color={ws.meta.color}
+                        size={22}
+                      />
+                      {ws.meta.name || t('workspace.untitled')}
+                    </DropdownMenu.Item>
+                  ))}
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
               <AllArtifactsSort
                 currentSortOrder={order}
                 onSortOrderChange={(newOrder) => setOrder(newOrder)}
@@ -378,7 +430,10 @@ export const AllArtifacts: React.FC = (props: Props) => {
                 currentFilters={filters}
                 onCurrentFiltersChange={(newFilters) => setFilters(newFilters)}
               />
-              <AllArtifactsActions selectedArtifactIds={selectedArtifactIds} />
+              <AllArtifactsActions
+                selectedArtifactIds={selectedArtifactIds}
+                workspaceId={filters.workspaceId}
+              />
             </HeaderItemsContainer>
           }
           message={
@@ -398,11 +453,17 @@ export const AllArtifacts: React.FC = (props: Props) => {
                 </ResultsTableSelectionFilteredWarning>
               )}
               {!sortedFilteredArtifacts?.length &&
-                artifactSnapshots?.length && (
+                !!artifactSnapshots?.length && (
                   <div>{t('allArtifacts.allFiltered')}</div>
                 )}
               {artifactSnapshots && !artifactSnapshots.length && (
-                <div>{t('allArtifacts.noArtifacts')}</div>
+                <div>
+                  {t(
+                    filters.workspaceId
+                      ? 'allArtifacts.noArtifacts.workspace'
+                      : 'allArtifacts.noArtifacts',
+                  )}
+                </div>
               )}
             </>
           }

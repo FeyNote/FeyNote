@@ -45,7 +45,7 @@ import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useA
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
-import { useArtifactSnapshotsForCurrentWorkspace } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForCurrentWorkspace';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
 import { useAcceptedIncomingSharedArtifactIds } from '../../utils/artifactTree/useAcceptedIncomingSharedArtifactIds';
 import { useTreeExpandedItems } from './useTreeExpandedItems';
@@ -102,6 +102,7 @@ interface Props {
     treeId: string;
   }) => void;
   enableOpenItemMemory?: boolean;
+  workspaceId?: string | null;
 }
 
 export const ArtifactTree: React.FC<Props> = (props) => {
@@ -114,10 +115,13 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const leftPaneArtifactTreeAutoExpandOnNavigate = getPreference(
     PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
   );
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { currentWorkspaceId: globalWorkspaceId } = useCurrentWorkspaceId();
+  const currentWorkspaceId =
+    props.workspaceId !== undefined ? props.workspaceId : globalWorkspaceId;
   const { artifactSnapshots } = useArtifactSnapshots();
-  const { artifactSnapshotsForWorkspace } =
-    useArtifactSnapshotsForCurrentWorkspace();
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    currentWorkspaceId || undefined,
+  );
   const { expandedItems, setExpandedItems } = useTreeExpandedItems(
     currentWorkspaceId,
     props.enableOpenItemMemory,

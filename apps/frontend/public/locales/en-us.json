@@ -386,6 +386,7 @@
   "allArtifacts.userCount": "{{count}} users with access",
   "allArtifacts.allFiltered": "All documents have been filtered out by your filter combination.",
   "allArtifacts.noArtifacts": "You don't have any documents in your collection.",
+  "allArtifacts.noArtifacts.workspace": "This workspace has no documents.",
   "allArtifacts.outgoingReferences": "{{count}} outgoing references",
   "allArtifacts.incomingReferences": "{{count}} incoming references",
   "allArtifacts.filter.activeFilterCount": "{{count}} filters applied.",

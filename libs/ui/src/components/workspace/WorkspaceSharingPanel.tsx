@@ -88,7 +88,7 @@ export const WorkspaceSharingPanel: React.FC<Props> = (props) => {
   );
 
   const artifactSnapshotsForWorkspaceById = useMemo(
-    () => new Map(artifactSnapshotsForWorkspace.map((el) => [el.id, el])),
+    () => new Map(artifactSnapshotsForWorkspace?.map((el) => [el.id, el])),
     [artifactSnapshotsForWorkspace],
   );
   const artifactsYKV = useMemo(

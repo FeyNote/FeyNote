@@ -5,7 +5,7 @@ export const useArtifactSnapshotsForCurrentWorkspace = () => {
   const { currentWorkspaceId } = useCurrentWorkspaceId();
 
   const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
-    currentWorkspaceId || '',
+    currentWorkspaceId || undefined,
   );
 
   return {

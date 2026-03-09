@@ -7,7 +7,7 @@ export const useArtifactSnapshotsForWorkspaceId = (id: string | undefined) => {
   const { getArtifactSnapshotById } = useArtifactSnapshots();
 
   const artifactSnapshotsForWorkspace = useMemo(() => {
-    if (!workspaceSnapshot) return [];
+    if (!workspaceSnapshot) return null;
 
     return workspaceSnapshot.artifactIds
       .map((id) => getArtifactSnapshotById(id))

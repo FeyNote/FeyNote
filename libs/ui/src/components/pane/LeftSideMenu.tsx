@@ -231,7 +231,9 @@ export const LeftSideMenu: React.FC = () => {
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.AllArtifacts}
-          componentProps={{}}
+          componentProps={
+            currentWorkspaceId ? { workspaceId: currentWorkspaceId } : {}
+          }
           paneId={currentPane.id}
         >
           <CompactIonItem
@@ -240,7 +242,7 @@ export const LeftSideMenu: React.FC = () => {
               navigateWithKeyboardHandler(
                 event,
                 PaneableComponent.AllArtifacts,
-                {},
+                currentWorkspaceId ? { workspaceId: currentWorkspaceId } : {},
               )
             }
             button
