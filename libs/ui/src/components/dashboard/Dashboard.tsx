@@ -27,9 +27,9 @@ import { useSessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
 import type { FeynoteGraphLink } from '../graph/GraphRenderer';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
-import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
-import { useCurrentWorkspaceArtifactIds } from '../../utils/workspace/useCurrentWorkspaceArtifactIds';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -58,27 +58,26 @@ const CardTitleButton = styled(IonButton)`
   margin-left: auto;
 `;
 
-export const Dashboard: React.FC = () => {
+interface Props {
+  workspaceId: string | null;
+}
+
+export const Dashboard: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { session } = useSessionContext();
   const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
-  const currentWorkspaceArtifactIds = useCurrentWorkspaceArtifactIds();
-
-  const artifactSnapshots = useMemo(() => {
-    if (
-      !currentWorkspaceId ||
-      !currentWorkspaceArtifactIds ||
-      !allArtifactSnapshots
-    )
-      return allArtifactSnapshots;
-    return allArtifactSnapshots.filter((a) =>
-      currentWorkspaceArtifactIds.has(a.id),
-    );
-  }, [allArtifactSnapshots, currentWorkspaceArtifactIds]);
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    props.workspaceId || undefined,
+  );
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    props.workspaceId || undefined,
+  );
+  const artifactSnapshots = props.workspaceId
+    ? (artifactSnapshotsForWorkspace ?? [])
+    : allArtifactSnapshots;
   const recentArtifacts = useMemo(() => {
     if (!artifactSnapshots) return [];
 
@@ -156,9 +155,15 @@ export const Dashboard: React.FC = () => {
   return (
     <IonPage>
       <PaneNav
-        title={t(
-          currentWorkspaceId ? 'dashboard.title.workspace' : 'dashboard.title',
-        )}
+        title={
+          selectedWorkspaceSnapshot
+            ? t('dashboard.title.workspaceNamed', {
+                name:
+                  selectedWorkspaceSnapshot.meta.name ||
+                  t('workspace.untitled'),
+              })
+            : t('dashboard.title')
+        }
       />
       <IonContent>
         {initialLoadComplete && (
@@ -214,7 +219,7 @@ export const Dashboard: React.FC = () => {
                     navigateWithKeyboardHandler(
                       event,
                       PaneableComponent.Graph,
-                      {},
+                      { workspaceId: props.workspaceId },
                     )
                   }
                   size="small"

@@ -33,7 +33,7 @@ function getDefaultLayout() {
               name: t('dashboard.title'),
               config: {
                 component: PaneableComponent.Dashboard,
-                props: {},
+                props: { workspaceId: null },
                 navigationEventId: crypto.randomUUID(),
               },
             },

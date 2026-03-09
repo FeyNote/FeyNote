@@ -2,7 +2,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
@@ -19,7 +19,6 @@ import { useCollaborationConnection } from '../../utils/collaboration/useCollabo
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
-import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
@@ -31,7 +30,7 @@ const StyledNullState = styled(NullState)`
 `;
 
 interface Props {
-  workspaceId?: string | null;
+  workspaceId: string | null;
 }
 
 export const Graph: React.FC<Props> = (props) => {
@@ -43,17 +42,13 @@ export const Graph: React.FC<Props> = (props) => {
   const { artifactSnapshotsLoading, artifactSnapshots: allArtifactSnapshots } =
     useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { currentWorkspaceId: globalWorkspaceId } = useCurrentWorkspaceId();
-  const [selectedWorkspaceId] = useState<string | null>(
-    props.workspaceId !== undefined ? props.workspaceId : globalWorkspaceId,
-  );
   const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
-    selectedWorkspaceId || undefined,
+    props.workspaceId || undefined,
   );
   const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
-    selectedWorkspaceId || undefined,
+    props.workspaceId || undefined,
   );
-  const artifactSnapshots = selectedWorkspaceId
+  const artifactSnapshots = props.workspaceId
     ? (artifactSnapshotsForWorkspace ?? [])
     : allArtifactSnapshots;
 
@@ -65,8 +60,8 @@ export const Graph: React.FC<Props> = (props) => {
     PreferenceNames.GraphShowTreeRelations,
   );
 
-  const docName = selectedWorkspaceId
-    ? `workspace:${selectedWorkspaceId}`
+  const docName = props.workspaceId
+    ? `workspace:${props.workspaceId}`
     : `userTree:${session.userId}`;
   const connection = useCollaborationConnection(docName);
   const yDoc = connection.yjsDoc;

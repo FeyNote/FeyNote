@@ -14,8 +14,8 @@ import { search } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { ArtifactLinkContextMenu } from '../artifact/ArtifactLinkContextMenu';
-import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { createPortal } from 'react-dom';
 import { PersistentSearchRightSidemenu } from './PersistentSearchRightSidemenu';
@@ -78,12 +78,13 @@ const MAX_DISPLAYED_HIGHLIGHT_COUNT = 5;
 
 interface Props {
   initialTerm?: string;
+  workspaceId: string | null;
 }
 
-export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
+export const PersistentSearch: React.FC<Props> = (props) => {
   const { updatePaneProps } = useGlobalPaneContext();
   const { pane, isPaneFocused } = usePaneContext();
-  const [searchText, setSearchText] = useState(initialTerm || '');
+  const [searchText, setSearchText] = useState(props.initialTerm || '');
   const [searchResults, setSearchResults] = useState<
     {
       artifact: ArtifactDTO;
@@ -98,8 +99,10 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const { t } = useTranslation();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const { sidemenuContentRef } = useSidemenuContext();
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
   const { getPreference } = usePreferencesContext();
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    props.workspaceId || undefined,
+  );
   const searchAcrossAll = getPreference(
     PreferenceNames.GlobalSearchAcrossAllWorkspaces,
   );
@@ -117,6 +120,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   const persistSearchTextToPaneState = () => {
     updatePaneProps(pane.id, PaneableComponent.PersistentSearch, {
       initialTerm: searchText,
+      workspaceId: props.workspaceId,
     });
   };
 
@@ -198,7 +202,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
   }, [searchResults]);
 
   const workspaceId =
-    currentWorkspaceId && !searchAcrossAll ? currentWorkspaceId : undefined;
+    props.workspaceId && !searchAcrossAll ? props.workspaceId : undefined;
 
   useEffect(() => {
     if (!searchText.trim().length) {
@@ -277,14 +281,18 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
       cancelled = true;
       clearTimeout(timeout);
     };
-  }, [searchText, currentWorkspaceId, searchAcrossAll]);
+  }, [searchText, props.workspaceId, searchAcrossAll]);
 
   return (
     <div>
       <PaneNav
         title={
-          workspaceId
-            ? t('persistentSearch.title.workspace')
+          selectedWorkspaceSnapshot
+            ? t('persistentSearch.title.workspaceNamed', {
+                name:
+                  selectedWorkspaceSnapshot.meta.name ||
+                  t('workspace.untitled'),
+              })
             : t('persistentSearch.title')
         }
       />
@@ -376,7 +384,7 @@ export const PersistentSearch: React.FC<Props> = ({ initialTerm }) => {
       </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
-        currentWorkspaceId &&
+        props.workspaceId &&
         createPortal(
           <PersistentSearchRightSidemenu />,
           sidemenuContentRef.current,

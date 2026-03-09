@@ -230,6 +230,7 @@
 
   "dashboard.title": "Dashboard",
   "dashboard.title.workspace": "Workspace Dashboard",
+  "dashboard.title.workspaceNamed": "{{name}} Dashboard",
   "dashboard.recents.title": "Recent Documents",
   "dashboard.aiThreads.title": "Recent Threads",
   "dashboard.graph.title": "Graph",
@@ -328,6 +329,7 @@
 
   "persistentSearch.title": "Global Search",
   "persistentSearch.title.workspace": "Workspace Search",
+  "persistentSearch.title.workspaceNamed": "{{name}} Search",
   "persistentSearch.settings": "Settings",
 
   "graph.title": "Graph",

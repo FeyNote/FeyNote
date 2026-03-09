@@ -69,7 +69,7 @@ const dateCompareWithFallback = (
 
 interface Props {
   initialImportJobId?: string;
-  workspaceId?: string;
+  workspaceId: string | null;
 }
 
 export const AllArtifacts: React.FC<Props> = (props) => {
@@ -97,7 +97,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   >([]);
   // Allows user to filter by several different properties
   const [filters, setFilters] = useState<FilterOptions>(() => ({
-    workspaceId: props.workspaceId ?? null,
+    workspaceId: props.workspaceId,
     havingTitleText: '',
     byUser: new Set(),
     orphans: AllArtifactsOrphansDisplaySetting.Include,

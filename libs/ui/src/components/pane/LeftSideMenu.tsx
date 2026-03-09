@@ -187,7 +187,7 @@ export const LeftSideMenu: React.FC = () => {
       <SidebarCard>
         <SideMenuItemContextMenu
           component={PaneableComponent.PersistentSearch}
-          componentProps={{}}
+          componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
           <CompactIonItem
@@ -204,17 +204,15 @@ export const LeftSideMenu: React.FC = () => {
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Dashboard}
-          componentProps={{}}
+          componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
           <CompactIonItem
             lines="none"
             onClick={(event) =>
-              navigateWithKeyboardHandler(
-                event,
-                PaneableComponent.Dashboard,
-                {},
-              )
+              navigateWithKeyboardHandler(event, PaneableComponent.Dashboard, {
+                workspaceId: currentWorkspaceId,
+              })
             }
             button
           >
@@ -231,9 +229,7 @@ export const LeftSideMenu: React.FC = () => {
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.AllArtifacts}
-          componentProps={
-            currentWorkspaceId ? { workspaceId: currentWorkspaceId } : {}
-          }
+          componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
           <CompactIonItem
@@ -242,7 +238,7 @@ export const LeftSideMenu: React.FC = () => {
               navigateWithKeyboardHandler(
                 event,
                 PaneableComponent.AllArtifacts,
-                currentWorkspaceId ? { workspaceId: currentWorkspaceId } : {},
+                { workspaceId: currentWorkspaceId },
               )
             }
             button
@@ -260,13 +256,15 @@ export const LeftSideMenu: React.FC = () => {
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Graph}
-          componentProps={{}}
+          componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
           <CompactIonItem
             lines="none"
             onClick={(event) =>
-              navigateWithKeyboardHandler(event, PaneableComponent.Graph, {})
+              navigateWithKeyboardHandler(event, PaneableComponent.Graph, {
+                workspaceId: currentWorkspaceId,
+              })
             }
             button
           >

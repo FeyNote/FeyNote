@@ -141,7 +141,7 @@ export const Import: React.FC = () => {
     if (job?.status === 'success' && job.meta.importedArtifactIds?.length) {
       navigate(
         PaneableComponent.AllArtifacts,
-        { initialImportJobId: jobId },
+        { initialImportJobId: jobId, workspaceId: null },
         PaneTransition.Push,
       );
     }

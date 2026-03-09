@@ -42,6 +42,7 @@ import {
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
+import { useCurrentWorkspaceId } from '../../../utils/workspace/useCurrentWorkspaceId';
 import { useAlertContext } from '../../../context/alert/AlertContext';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
 import { getAcceptedIncomingSharedArtifactIdsFromYDoc } from '../../../utils/artifactTree/getAcceptedIncomingSharedArtifactIdsFromYDoc';
@@ -68,6 +69,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     props.connection,
   );
   const { navigate } = useGlobalPaneContext();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [showManagementDialog, setShowSharingManagementDialog] =
     useState(false);
@@ -234,7 +236,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     navigate(
       undefined,
       PaneableComponent.Dashboard,
-      {},
+      { workspaceId: currentWorkspaceId },
       PaneTransition.Replace,
     );
 

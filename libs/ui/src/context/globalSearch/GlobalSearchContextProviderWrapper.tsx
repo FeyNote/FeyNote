@@ -224,6 +224,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   const openPersistentSearch = (event: MouseEvent | React.MouseEvent) => {
     navigateWithKeyboardHandler(event, PaneableComponent.PersistentSearch, {
       initialTerm: searchText || undefined,
+      workspaceId: currentWorkspaceId,
     });
     hide();
   };
