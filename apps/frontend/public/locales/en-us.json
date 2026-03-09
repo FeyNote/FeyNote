@@ -332,6 +332,8 @@
 
   "graph.title": "Graph",
   "graph.title.workspace": "Workspace Graph",
+  "graph.title.workspaceNamed": "{{name}} Graph",
+  "graph.workspace": "Workspace",
   "graph.settings": "Graph Settings",
   "graph.settings.help": "These settings are persisted, and apply only to this graph view.",
   "graph.settings.showOrphans": "Show Orphaned Documents",

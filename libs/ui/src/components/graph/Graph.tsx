@@ -2,7 +2,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
@@ -20,7 +20,8 @@ import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useA
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
-import { useCurrentWorkspaceArtifactIds } from '../../utils/workspace/useCurrentWorkspaceArtifactIds';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
 
 const GRAPH_ARTIFACTS_YKV_KEY = 'graphArtifacts';
@@ -29,7 +30,11 @@ const StyledNullState = styled(NullState)`
   margin-top: 10vh;
 `;
 
-export const Graph: React.FC = () => {
+interface Props {
+  workspaceId?: string | null;
+}
+
+export const Graph: React.FC<Props> = (props) => {
   const { getPreference } = usePreferencesContext();
   const { isPaneFocused } = usePaneContext();
   const { sidemenuContentRef } = useSidemenuContext();
@@ -38,15 +43,19 @@ export const Graph: React.FC = () => {
   const { artifactSnapshotsLoading, artifactSnapshots: allArtifactSnapshots } =
     useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { currentWorkspaceId } = useCurrentWorkspaceId();
-  const currentWorkspaceArtifactIds = useCurrentWorkspaceArtifactIds();
-
-  const artifactSnapshots = useMemo(() => {
-    if (!currentWorkspaceArtifactIds) return allArtifactSnapshots;
-    return allArtifactSnapshots.filter((a) =>
-      currentWorkspaceArtifactIds.has(a.id),
-    );
-  }, [allArtifactSnapshots, currentWorkspaceArtifactIds]);
+  const { currentWorkspaceId: globalWorkspaceId } = useCurrentWorkspaceId();
+  const [selectedWorkspaceId] = useState<string | null>(
+    props.workspaceId !== undefined ? props.workspaceId : globalWorkspaceId,
+  );
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    selectedWorkspaceId || undefined,
+  );
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    selectedWorkspaceId || undefined,
+  );
+  const artifactSnapshots = selectedWorkspaceId
+    ? (artifactSnapshotsForWorkspace ?? [])
+    : allArtifactSnapshots;
 
   const showOrphans = getPreference(PreferenceNames.GraphShowOrphans);
   const showReferenceRelations = getPreference(
@@ -56,8 +65,8 @@ export const Graph: React.FC = () => {
     PreferenceNames.GraphShowTreeRelations,
   );
 
-  const docName = currentWorkspaceId
-    ? `workspace:${currentWorkspaceId}`
+  const docName = selectedWorkspaceId
+    ? `workspace:${selectedWorkspaceId}`
     : `userTree:${session.userId}`;
   const connection = useCollaborationConnection(docName);
   const yDoc = connection.yjsDoc;
@@ -202,7 +211,15 @@ export const Graph: React.FC = () => {
   return (
     <IonPage>
       <PaneNav
-        title={t(currentWorkspaceId ? 'graph.title.workspace' : 'graph.title')}
+        title={
+          selectedWorkspaceSnapshot
+            ? t('graph.title.workspaceNamed', {
+                name:
+                  selectedWorkspaceSnapshot.meta.name ||
+                  t('workspace.untitled'),
+              })
+            : t('graph.title')
+        }
       />
       <IonContent>
         {artifactSnapshots?.length ? (
