@@ -30,8 +30,11 @@ export const useWorkspaceSnapshots = () => {
       editableWorkspaceSnapshots: workspaceSnapshotStore
         .getWorkspaceSnapshots()
         .filter((el) => {
-          return getAccessLevelCanEdit(
-            getWorkspaceAccessLevel(el, sessionContext?.session.userId),
+          return (
+            !el.meta.deletedAt &&
+            getAccessLevelCanEdit(
+              getWorkspaceAccessLevel(el, sessionContext?.session.userId),
+            )
           );
         }),
       getWorkspaceIdsForArtifactId: (artifactId: string) => {

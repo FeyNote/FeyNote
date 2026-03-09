@@ -31,6 +31,7 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
   getPreference: GetPreferenceHandler;
   setPreference: SetPreferenceHandler;
   showAlert: AlertContextData['showAlert'];
+  overrideSharingMode?: WorkspaceArtifactSharingMode;
 }) => {
   let workspaceMembers: { key: string; val: YArtifactUserAccess }[] = [];
   let workspaceLinkAccessLevel = 'noaccess' as ArtifactAccessLevel;
@@ -151,7 +152,9 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
     );
   };
 
-  const mode = opts.getPreference(PreferenceNames.WorkspaceArtifactSharingMode);
+  const mode =
+    opts.overrideSharingMode ??
+    opts.getPreference(PreferenceNames.WorkspaceArtifactSharingMode);
 
   if (mode === WorkspaceArtifactSharingMode.Always) {
     await shareWithMembers();
