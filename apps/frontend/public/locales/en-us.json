@@ -805,6 +805,9 @@
   "workspace.sharingPrompt.never": "Never",
   "workspace.noEditAccess": "You do not have edit access to this workspace.",
 
+  "rightSidemenu.workspaces": "Workspaces",
+  "rightSidemenu.workspaces.none": "Not in any workspace",
+
   "workspaceInfo.title": "Workspace Info",
   "workspaceInfo.owner": "Owned by {{user}}",
   "workspaceInfo.accessLevel.readonly": "You have read-only access",

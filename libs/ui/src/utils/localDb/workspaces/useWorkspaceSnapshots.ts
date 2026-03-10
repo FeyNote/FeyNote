@@ -40,6 +40,9 @@ export const useWorkspaceSnapshots = () => {
       getWorkspaceIdsForArtifactId: (artifactId: string) => {
         return workspaceSnapshotStore.getWorkspaceIdsForArtifactId(artifactId);
       },
+      getWorkspaceIdsForThreadId: (threadId: string) => {
+        return workspaceSnapshotStore.getWorkspaceIdsForThreadId(threadId);
+      },
     }),
     [_rerenderReducerValue],
   );

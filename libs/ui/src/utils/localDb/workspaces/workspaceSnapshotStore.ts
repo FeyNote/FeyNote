@@ -82,6 +82,16 @@ class WorkspaceSnapshotStore {
     return ids;
   }
 
+  public getWorkspaceIdsForThreadId(threadId: string): string[] {
+    const ids: string[] = [];
+    for (const snapshot of this.workspaceSnapshots) {
+      if (snapshot.threadIds.includes(threadId)) {
+        ids.push(snapshot.id);
+      }
+    }
+    return ids;
+  }
+
   public listen(listener: () => void) {
     this.listenersForAnyUpdate.add(listener);
 
