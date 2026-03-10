@@ -628,7 +628,11 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           <TreeNullState
             size="xsmall"
             icon={documentOutline}
-            title={t('artifactTree.empty')}
+            title={
+              !isEditable && currentWorkspaceId
+                ? t('artifactTree.emptyReadOnly')
+                : t('artifactTree.empty')
+            }
           />
         ) : (
           <>

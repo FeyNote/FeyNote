@@ -1,4 +1,5 @@
 import { IonContent, IonPage } from '@ionic/react';
+import { useState, useMemo } from 'react';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { usePaneContext } from '../../context/pane/PaneContext';
@@ -12,9 +13,21 @@ import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { useAlertContext } from '../../context/alert/AlertContext';
-import { WorkspaceNewItemMode, PreferenceNames } from '@feynote/shared-utils';
+import {
+  WorkspaceNewItemMode,
+  PreferenceNames,
+  getWorkspaceAccessLevel,
+  getAccessLevelCanEdit,
+} from '@feynote/shared-utils';
 import { addArtifactToWorkspaceWithSharingPrompt } from '../../utils/workspace/addArtifactToWorkspaceWithSharingPrompt';
 import { addThreadToWorkspace } from '../../utils/workspace/addThreadToWorkspace';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
+
+type NewItemArgs =
+  | { kind: 'artifact'; artifactType: ArtifactType }
+  | { kind: 'thread' };
 
 export const CreateNew: React.FC = () => {
   const { navigate } = usePaneContext();
@@ -23,30 +36,77 @@ export const CreateNew: React.FC = () => {
   const { currentWorkspaceId } = useCurrentWorkspaceId();
   const { getPreference, setPreference } = usePreferencesContext();
   const { showAlert } = useAlertContext();
+  const { workspaceSnapshot } = useWorkspaceSnapshot(
+    currentWorkspaceId ?? undefined,
+  );
+  const { session } = useSessionContext();
+  const [
+    readOnlyWorkspaceItemPendingCreation,
+    setReadOnlyWorkspaceItemPendingCreation,
+  ] = useState<NewItemArgs | null>(null);
 
-  const handleWorkspaceAssociation = (
-    itemId: string,
-    type: 'artifact' | 'thread',
-    navigateToItem: () => void,
-  ) => {
+  const isCurrentWorkspaceReadOnly = useMemo(() => {
+    if (!currentWorkspaceId || !workspaceSnapshot) return false;
+    return !getAccessLevelCanEdit(
+      getWorkspaceAccessLevel(workspaceSnapshot, session.userId),
+    );
+  }, [currentWorkspaceId, workspaceSnapshot, session.userId]);
+
+  const createItem = async (spec: NewItemArgs) => {
+    if (spec.kind === 'thread') {
+      const thread = await trpc.ai.createThread.mutate({}).catch((error) => {
+        handleTRPCErrors(error);
+      });
+      if (!thread) return null;
+      return { id: thread.id, type: 'thread' as const };
+    }
+    const result = await createArtifact({
+      artifact: {
+        title: t('generic.untitled'),
+        type: spec.artifactType,
+      },
+    }).catch((error) => {
+      handleTRPCErrors(error);
+    });
+    if (!result) return null;
+    return { id: result.id, type: 'artifact' as const };
+  };
+
+  const navigateToItem = (item: {
+    id: string;
+    type: 'artifact' | 'thread';
+  }) => {
+    navigate(
+      item.type === 'thread'
+        ? PaneableComponent.AIThread
+        : PaneableComponent.Artifact,
+      { id: item.id },
+      PaneTransition.Replace,
+    );
+  };
+
+  const handleWorkspaceAssociation = (item: {
+    id: string;
+    type: 'artifact' | 'thread';
+  }) => {
     if (!currentWorkspaceId) {
-      navigateToItem();
+      navigateToItem(item);
       return;
     }
 
     const mode = getPreference(PreferenceNames.WorkspaceNewItemMode);
 
     const addToWorkspace = async () => {
-      if (type === 'thread') {
+      if (item.type === 'thread') {
         await addThreadToWorkspace({
           workspaceId: currentWorkspaceId,
-          threadId: itemId,
+          threadId: item.id,
           showAlert,
         });
       } else {
         await addArtifactToWorkspaceWithSharingPrompt({
           workspaceId: currentWorkspaceId,
-          artifactId: itemId,
+          artifactId: item.id,
           getPreference,
           setPreference,
           showAlert,
@@ -56,16 +116,16 @@ export const CreateNew: React.FC = () => {
 
     if (mode === WorkspaceNewItemMode.Always) {
       addToWorkspace()
-        .then(navigateToItem)
+        .then(() => navigateToItem(item))
         .catch((e) => {
           handleTRPCErrors(e);
-          navigateToItem();
+          navigateToItem(item);
         });
       return;
     }
 
     if (mode === WorkspaceNewItemMode.Never) {
-      navigateToItem();
+      navigateToItem(item);
       return;
     }
 
@@ -81,7 +141,7 @@ export const CreateNew: React.FC = () => {
                 PreferenceNames.WorkspaceNewItemMode,
                 WorkspaceNewItemMode.Never,
               );
-              navigateToItem();
+              navigateToItem(item);
             },
           },
         },
@@ -94,10 +154,10 @@ export const CreateNew: React.FC = () => {
                 WorkspaceNewItemMode.Always,
               );
               addToWorkspace()
-                .then(navigateToItem)
+                .then(() => navigateToItem(item))
                 .catch((e) => {
                   handleTRPCErrors(e);
-                  navigateToItem();
+                  navigateToItem(item);
                 });
             },
           },
@@ -106,7 +166,7 @@ export const CreateNew: React.FC = () => {
           title: t('createNew.addToWorkspace.no'),
           props: {
             onClick: () => {
-              navigateToItem();
+              navigateToItem(item);
             },
           },
         },
@@ -115,10 +175,10 @@ export const CreateNew: React.FC = () => {
           props: {
             onClick: () => {
               addToWorkspace()
-                .then(navigateToItem)
+                .then(() => navigateToItem(item))
                 .catch((e) => {
                   handleTRPCErrors(e);
-                  navigateToItem();
+                  navigateToItem(item);
                 });
             },
           },
@@ -127,42 +187,14 @@ export const CreateNew: React.FC = () => {
     });
   };
 
-  const newArtifact = async (type: ArtifactType) => {
-    const result = await createArtifact({
-      artifact: {
-        title: t('generic.untitled'),
-        type,
-      },
-    }).catch((error) => {
-      handleTRPCErrors(error);
-    });
-
-    if (!result) return;
-
-    handleWorkspaceAssociation(result.id, 'artifact', () => {
-      navigate(
-        PaneableComponent.Artifact,
-        { id: result.id },
-        PaneTransition.Replace,
-      );
-    });
-  };
-
-  const newAIThread = () => {
-    trpc.ai.createThread
-      .mutate({})
-      .then((thread) => {
-        handleWorkspaceAssociation(thread.id, 'thread', () => {
-          navigate(
-            PaneableComponent.AIThread,
-            { id: thread.id },
-            PaneTransition.Replace,
-          );
-        });
-      })
-      .catch((error) => {
-        handleTRPCErrors(error);
-      });
+  const handleNewItem = async (spec: NewItemArgs) => {
+    if (isCurrentWorkspaceReadOnly) {
+      setReadOnlyWorkspaceItemPendingCreation(spec);
+      return;
+    }
+    const item = await createItem(spec);
+    if (!item) return;
+    handleWorkspaceAssociation(item);
   };
 
   return (
@@ -170,10 +202,43 @@ export const CreateNew: React.FC = () => {
       <PaneNav title={t('createNew.title')} />
       <IonContent className="ion-padding">
         <CreateNewTypeSelector
-          newArtifact={newArtifact}
-          newAIThread={newAIThread}
+          newArtifact={(type) =>
+            handleNewItem({ kind: 'artifact', artifactType: type })
+          }
+          newAIThread={() => handleNewItem({ kind: 'thread' })}
         />
       </IonContent>
+      <ActionDialog
+        open={!!readOnlyWorkspaceItemPendingCreation}
+        onOpenChange={(open) => {
+          if (!open) {
+            setReadOnlyWorkspaceItemPendingCreation(null);
+          }
+        }}
+        title={t('createNew.readOnlyWorkspace.title')}
+        description={t('createNew.readOnlyWorkspace.message')}
+        actionButtons={[
+          {
+            title: t('generic.cancel'),
+            props: {
+              variant: 'soft',
+              color: 'gray',
+            },
+          },
+          {
+            title: t('generic.confirm'),
+            props: {
+              onClick: async () => {
+                if (!readOnlyWorkspaceItemPendingCreation) return;
+                const item = await createItem(
+                  readOnlyWorkspaceItemPendingCreation,
+                );
+                if (item) navigateToItem(item);
+              },
+            },
+          },
+        ]}
+      />
     </IonPage>
   );
 };

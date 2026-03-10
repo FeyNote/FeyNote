@@ -254,6 +254,7 @@
   "artifactTree.newArtifactWithin": "New Document as Tree Child",
   "artifactTree.hiddenDocument": "Hidden Document",
   "artifactTree.empty": "Empty. Create a new document to get started.",
+  "artifactTree.emptyReadOnly": "This workspace is empty. You have read-only access.",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",
@@ -356,6 +357,8 @@
   "createNew.addToWorkspace.no": "No",
   "createNew.addToWorkspace.always": "Always",
   "createNew.addToWorkspace.never": "Never",
+  "createNew.readOnlyWorkspace.title": "Read-only workspace",
+  "createNew.readOnlyWorkspace.message": "You have read-only access to this workspace. This document will be created in your personal collection.",
   "artifact.title": "Document",
   "artifact.noAccess.title": "No Access",
   "artifact.noAccess.message": "You don't have access to this document",
