@@ -39,6 +39,9 @@ const illegalCollaboratorMetaKeysByDocType = {
   [SupportedDocumentType.Workspace]: [
     'id',
     'userId',
+    'name',
+    'icon',
+    'color',
     'linkAccessLevel',
     'deletedAt',
     'createdAt',
