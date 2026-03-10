@@ -805,6 +805,13 @@
   "workspace.sharingPrompt.never": "Never",
   "workspace.noEditAccess": "You do not have edit access to this workspace.",
 
+  "workspaceInfo.title": "Workspace Info",
+  "workspaceInfo.owner": "Owned by {{user}}",
+  "workspaceInfo.accessLevel.readonly": "You have read-only access",
+  "workspaceInfo.accessLevel.readwrite": "You have read and write access",
+  "workspaceInfo.leave": "Leave Workspace",
+  "workspaceInfo.leave.confirm": "Are you sure you want to leave this workspace? You will lose access unless you are re-invited.",
+
   "workspaceSharing.title": "Sharing",
   "workspaceSharing.addMember": "Add",
   "workspaceSharing.applyToAll": "Apply to all",

@@ -17,6 +17,7 @@ import { useAcceptedIncomingSharedWorkspaceIds } from '../../utils/workspace/use
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { WorkspaceCreateModal } from './WorkspaceCreateModal';
 import { WorkspaceEditModal } from './WorkspaceEditModal';
+import { WorkspaceSharedInfoModal } from './WorkspaceSharedInfoModal';
 
 const WorkspaceRow = styled.div`
   display: flex;
@@ -73,6 +74,9 @@ export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
   ]);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editWorkspaceId, setEditWorkspaceId] = useState<string | null>(null);
+  const [sharedInfoWorkspaceId, setSharedInfoWorkspaceId] = useState<
+    string | null
+  >(null);
 
   const currentWorkspace = currentWorkspaceId
     ? workspaceSnapshots.find((ws) => ws.id === currentWorkspaceId)
@@ -131,16 +135,20 @@ export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
                   size={22}
                 />
                 {ws.meta.name || t('workspace.untitled')}
-                {getWorkspaceAccessLevel(ws, session.userId) === 'coowner' && (
-                  <EditButton
-                    onClick={(e) => {
-                      e.stopPropagation();
+                <EditButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (
+                      getWorkspaceAccessLevel(ws, session.userId) === 'coowner'
+                    ) {
                       setEditWorkspaceId(ws.id);
-                    }}
-                  >
-                    <FaPencil size={12} />
-                  </EditButton>
-                )}
+                    } else {
+                      setSharedInfoWorkspaceId(ws.id);
+                    }
+                  }}
+                >
+                  <FaPencil size={12} />
+                </EditButton>
               </WorkspaceRow>
             </DropdownMenu.Item>
           ))}
@@ -174,6 +182,22 @@ export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
               setCurrentWorkspaceId(null);
             }
             setEditWorkspaceId(null);
+          }}
+        />
+      )}
+
+      {sharedInfoWorkspaceId && (
+        <WorkspaceSharedInfoModal
+          workspaceId={sharedInfoWorkspaceId}
+          open={!!sharedInfoWorkspaceId}
+          onOpenChange={(open) => {
+            if (!open) setSharedInfoWorkspaceId(null);
+          }}
+          onLeft={() => {
+            if (currentWorkspaceId === sharedInfoWorkspaceId) {
+              setCurrentWorkspaceId(null);
+            }
+            setSharedInfoWorkspaceId(null);
           }}
         />
       )}
