@@ -106,6 +106,15 @@ const ArtifactLinkMenuInternal: React.FC<
     });
   };
 
+  const hasAnotherEditableWorkspace =
+    (!workspaceIsEditable && editableWorkspaceSnapshots.length > 0) ||
+    editableWorkspaceSnapshots.length > 1;
+
+  const currentWorkspaceIdAsSet = useMemo(
+    () => (currentWorkspaceId ? new Set([currentWorkspaceId]) : undefined),
+    [currentWorkspaceId],
+  );
+
   const MenuImpl = props.MenuImpl;
 
   return (
@@ -183,7 +192,7 @@ const ArtifactLinkMenuInternal: React.FC<
                 {t('artifactTree.newArtifactWithin')}
               </MenuImpl.Item>
             )}
-            {workspaceIsEditable && editableWorkspaceSnapshots.length > 0 && (
+            {hasAnotherEditableWorkspace && (
               <MenuImpl.Item onClick={() => setAddToWorkspaceOpen(true)}>
                 {t('workspace.addDocument')}
               </MenuImpl.Item>
@@ -228,15 +237,16 @@ const ArtifactLinkMenuInternal: React.FC<
         onOpenChange={setAddToWorkspaceOpen}
         onSelect={handleAddToWorkspace}
         title={t('workspace.addDocument')}
+        excludeWorkspaceIds={currentWorkspaceIdAsSet}
+        mustBeEditable={true}
       />
       <WorkspacePickerDialog
         open={moveToWorkspaceOpen}
         onOpenChange={setMoveToWorkspaceOpen}
         onSelect={handleMoveToWorkspace}
         title={t('workspace.moveDocument')}
-        excludeWorkspaceIds={
-          currentWorkspaceId ? new Set([currentWorkspaceId]) : undefined
-        }
+        excludeWorkspaceIds={currentWorkspaceIdAsSet}
+        mustBeEditable={true}
       />
     </>
   );

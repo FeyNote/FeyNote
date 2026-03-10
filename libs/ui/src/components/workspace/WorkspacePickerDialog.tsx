@@ -71,9 +71,13 @@ export const WorkspacePickerDialog: React.FC<Props> = (props) => {
     acceptedIncomingSharedWorkspaceIds,
   ]);
 
-  const filteredWorkspaces = props.excludeWorkspaceIds
-    ? workspaceSnapshots.filter((ws) => !props.excludeWorkspaceIds?.has(ws.id))
-    : workspaceSnapshots;
+  const filteredWorkspaces = useMemo(() => {
+    return props.excludeWorkspaceIds
+      ? workspaceSnapshots.filter(
+          (ws) => !props.excludeWorkspaceIds?.has(ws.id),
+        )
+      : workspaceSnapshots;
+  }, [props.excludeWorkspaceIds, workspaceSnapshots]);
 
   const handleConfirm = () => {
     if (selectedId) {

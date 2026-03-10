@@ -202,6 +202,11 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
     }
   };
 
+  const propsWorkspaceIdAsSet = useMemo(
+    () => (props.workspaceId ? new Set([props.workspaceId]) : undefined),
+    [props.workspaceId],
+  );
+
   return (
     <Container>
       <DropdownMenu.Root>
@@ -278,7 +283,8 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
         }}
         onSelect={(workspaceId) => handleWorkspaceSelected('add', workspaceId)}
         title={t('workspace.addDocument')}
-        mustBeEditable
+        excludeWorkspaceIds={propsWorkspaceIdAsSet}
+        mustBeEditable={true}
       />
       <WorkspacePickerDialog
         open={showPickerFor === 'move'}
@@ -287,10 +293,8 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
         }}
         onSelect={(workspaceId) => handleWorkspaceSelected('move', workspaceId)}
         title={t('workspace.moveDocument')}
-        excludeWorkspaceIds={
-          props.workspaceId ? new Set([props.workspaceId]) : undefined
-        }
-        mustBeEditable
+        excludeWorkspaceIds={propsWorkspaceIdAsSet}
+        mustBeEditable={true}
       />
       {showRemoveConfirm && (
         <ActionDialog
