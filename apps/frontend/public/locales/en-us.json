@@ -11,7 +11,7 @@
   "menu.graph": "Graph",
   "menu.graph.workspace": "Workspace Graph",
   "menu.new": "Create New",
-  "menu.tree": "Tree",
+  "menu.tree": "Your Tree",
   "menu.tree.workspace": "Workspace Tree",
   "menu.tree.help": "Drag and drop documents to organize them in a tree-like structure. You can put documents within other documents to form folders. All items go within 'Uncategorized' if they aren't placed elsewhere in the tree.",
   "menu.assistant": "Assistant",
@@ -246,7 +246,7 @@
   "dashboard.noSharedContent.message": "Documents will show up here if another user shares their content with you",
   "dashboard.reload": "Refresh Dashboard",
 
-  "artifactTreeFullpage.title": "Tree",
+  "artifactTreeFullpage.title": "Your Tree",
   "artifactTreeFullpage.title.workspace": "Workspace Tree",
   "artifactTreeFullpage.title.workspaceNamed": "{{name}} Tree",
 

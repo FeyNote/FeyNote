@@ -36,7 +36,7 @@ export const useCurrentWorkspaceId = (): {
     if (!snapshot || snapshot.meta.deletedAt) {
       setPreferenceRef.current(PreferenceNames.LastActiveWorkspaceId, null);
     }
-  }, [workspaceSnapshotsLoading]);
+  }, [workspaceSnapshotsLoading, workspaceSnapshots]);
 
   const setCurrentWorkspaceId = useCallback(
     (workspaceId: string | null) => {
