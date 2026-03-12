@@ -257,10 +257,10 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       });
     }
 
-    let uncategorizedItemRef: InternalTreeItem | null = null;
+    let uncategorizedItem: InternalTreeItem | null = null;
     if (leftPaneArtifactTreeShowUncategorized) {
       // All uncategorized items go under their own header
-      uncategorizedItemRef = {
+      uncategorizedItem = {
         id: UNCATEGORIZED_TREE_NODE_ID,
         title: t('artifactTree.uncategorized', {
           count: 0,
@@ -269,7 +269,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         order: treeYKV.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
         parentId: ROOT_TREE_NODE_ID,
       };
-      treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItemRef);
+      treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItem);
     } else {
       treeItemsById.delete(UNCATEGORIZED_TREE_NODE_ID);
     }
@@ -299,7 +299,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       return itemIdsByParentId;
     };
 
-    if (uncategorizedItemRef) {
+    if (uncategorizedItem) {
       const _itemIdsByParentId = getItemIdsByParentId();
       let uncategorizedCount = 0;
       const seenIds = new Set();
@@ -319,7 +319,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         }
       };
       countUncategorizedItems(UNCATEGORIZED_TREE_NODE_ID);
-      uncategorizedItemRef.title = t('artifactTree.uncategorized', {
+      uncategorizedItem.title = t('artifactTree.uncategorized', {
         count: uncategorizedCount,
       });
     }

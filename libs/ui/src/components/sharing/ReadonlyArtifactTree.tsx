@@ -102,14 +102,13 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
       });
     }
 
-    let uncategorizedItemRef: InternalTreeItem | null = null;
-    uncategorizedItemRef = {
+    const uncategorizedItem = {
       id: UNCATEGORIZED_TREE_NODE_ID,
       title: t('artifactTree.uncategorized', { count: 0 }),
       order: treeNodesYKV.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
       parentId: ROOT_TREE_NODE_ID,
     };
-    treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItemRef);
+    treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItem);
 
     const sortedTreeItems = Array.from(treeItemsById.values()).sort((a, b) => {
       const comparison = a.order.localeCompare(b.order);
@@ -135,29 +134,27 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
       return itemIdsByParentId;
     };
 
-    if (uncategorizedItemRef) {
-      const _itemIdsByParentId = getItemIdsByParentId();
-      let uncategorizedCount = 0;
-      const seenIds = new Set();
-      const countUncategorizedItems = (itemId: string) => {
-        if (seenIds.has(itemId)) return;
-        seenIds.add(itemId);
-        const item = treeItemsById.get(itemId);
-        if (!item) return;
-        if (item.id !== UNCATEGORIZED_TREE_NODE_ID) uncategorizedCount++;
-        for (const id of _itemIdsByParentId.get(itemId) || []) {
-          countUncategorizedItems(id);
-        }
-      };
-      countUncategorizedItems(UNCATEGORIZED_TREE_NODE_ID);
-
-      if (uncategorizedCount === 0) {
-        treeItemsById.delete(UNCATEGORIZED_TREE_NODE_ID);
-      } else {
-        uncategorizedItemRef.title = t('artifactTree.uncategorized', {
-          count: uncategorizedCount,
-        });
+    const _itemIdsByParentId = getItemIdsByParentId();
+    let uncategorizedCount = 0;
+    const seenIds = new Set();
+    const countUncategorizedItems = (itemId: string) => {
+      if (seenIds.has(itemId)) return;
+      seenIds.add(itemId);
+      const item = treeItemsById.get(itemId);
+      if (!item) return;
+      if (item.id !== UNCATEGORIZED_TREE_NODE_ID) uncategorizedCount++;
+      for (const id of _itemIdsByParentId.get(itemId) || []) {
+        countUncategorizedItems(id);
       }
+    };
+    countUncategorizedItems(UNCATEGORIZED_TREE_NODE_ID);
+
+    if (uncategorizedCount === 0) {
+      treeItemsById.delete(UNCATEGORIZED_TREE_NODE_ID);
+    } else {
+      uncategorizedItem.title = t('artifactTree.uncategorized', {
+        count: uncategorizedCount,
+      });
     }
 
     const itemIdsByParentId = getItemIdsByParentId();
