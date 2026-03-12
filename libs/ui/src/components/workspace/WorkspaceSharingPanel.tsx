@@ -11,10 +11,12 @@ import type { Doc } from 'yjs';
 import {
   getWorkspaceUserAccessFromYDoc,
   getWorkspaceArtifactsFromYDoc,
+  getWorkspaceMetaYKVFromYDoc,
   getUserAccessFromYArtifact,
   getArtifactAccessLevel,
   getAccessLevelCanShare,
   getAccessLevelCanEdit,
+  ARTIFACT_META_KEY,
 } from '@feynote/shared-utils';
 import { useDebounce } from '../../utils/useDebouncer';
 import { appIdbStorageManager } from '../../utils/localDb/AppIdbStorageManager';
@@ -26,6 +28,9 @@ import * as Sentry from '@sentry/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
 import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
+import { ArtifactLinkAccessLevelSelect } from '../artifact/ArtifactLinkAccessLevelSelect';
+import { CopyWithWebshareButton } from '../info/CopyWithWebshareButton';
+import { useObserveWorkspaceMeta } from '../../utils/collaboration/useObserveWorkspaceMeta';
 
 const SectionHeader = styled.h3`
   font-size: 0.9rem;
@@ -67,6 +72,8 @@ export const WorkspaceSharingPanel: React.FC<Props> = (props) => {
       success: number;
       failed: number;
     } | null>(null);
+  const [pendingLinkAccessChange, setPendingLinkAccessChange] =
+    useState<ArtifactAccessLevel | null>(null);
 
   const yDoc = props.yDoc;
 
@@ -95,6 +102,63 @@ export const WorkspaceSharingPanel: React.FC<Props> = (props) => {
     () => getWorkspaceArtifactsFromYDoc(yDoc),
     [yDoc],
   );
+
+  const workspaceMeta = useObserveWorkspaceMeta(yDoc);
+  const metaYKV = useMemo(() => getWorkspaceMetaYKVFromYDoc(yDoc), [yDoc]);
+
+  const onLinkAccessLevelChange = (newLevel: ArtifactAccessLevel) => {
+    metaYKV.set('linkAccessLevel', newLevel);
+    const artifactCounts = getArtifactCounts();
+    if (artifactCounts.editableCount > 0 || artifactCounts.unknownCount > 0) {
+      setPendingLinkAccessChange(newLevel);
+    }
+  };
+
+  const applyLinkAccessToAllArtifacts = async (
+    linkAccessLevel: ArtifactAccessLevel,
+  ) => {
+    setPendingLinkAccessChange(null);
+    setApplySharingChangesToAllArtifacts(true);
+    setApplySharingChangesProgress({ total: 0, success: 0, failed: 0 });
+
+    const artifactIds = artifactsYKV.yarray.toArray().map((entry) => entry.key);
+
+    let success = 0;
+    let failed = 0;
+
+    for (const artifactId of artifactIds) {
+      try {
+        await withCollaborationConnection(
+          `artifact:${artifactId}`,
+          async (conn) => {
+            if (
+              !getAccessLevelCanShare(
+                getArtifactAccessLevel(conn.yjsDoc, session.userId),
+              )
+            ) {
+              return;
+            }
+
+            conn.yjsDoc
+              .getMap(ARTIFACT_META_KEY)
+              .set('linkAccessLevel', linkAccessLevel);
+          },
+        );
+        success++;
+      } catch (e) {
+        failed++;
+        Sentry.captureException(e);
+      }
+
+      setApplySharingChangesProgress({
+        total: success + failed,
+        success,
+        failed,
+      });
+    }
+
+    setApplySharingChangesToAllArtifacts(false);
+  };
 
   useEffect(() => {
     if (searchResult) {
@@ -323,6 +387,60 @@ export const WorkspaceSharingPanel: React.FC<Props> = (props) => {
           <Text size="1">{t('artifactSharing.search.noResult')}</Text>
         )}
       </Box>
+
+      <Box mt="4">
+        <SectionHeader>{t('workspaceSharing.link.title')}</SectionHeader>
+        <Text size="1" color="gray">
+          {t('workspaceSharing.link.subtitle')}
+        </Text>
+        <Box mt="2">
+          <ArtifactLinkAccessLevelSelect
+            artifactAccessLevel={workspaceMeta.linkAccessLevel}
+            setArtifactAccessLevel={onLinkAccessLevelChange}
+          />
+        </Box>
+        {workspaceMeta.linkAccessLevel !== 'noaccess' && (
+          <Box mt="2">
+            <Flex align="center" gap="2">
+              <Text size="1" style={{ overflowWrap: 'anywhere' }}>
+                {`https://feynote.com/workspace/${props.id}`}
+              </Text>
+              <CopyWithWebshareButton
+                copyText={`https://feynote.com/workspace/${props.id}`}
+                webshareURL={`https://feynote.com/workspace/${props.id}`}
+              />
+            </Flex>
+          </Box>
+        )}
+      </Box>
+
+      <ActionDialog
+        open={pendingLinkAccessChange !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingLinkAccessChange(null);
+        }}
+        title={t('workspaceSharing.link')}
+        description={t('workspaceSharing.link.applyPrompt')}
+        actionButtons={[
+          {
+            title: t('workspaceSharing.link.goingForward'),
+            props: {
+              color: 'gray',
+              onClick: () => setPendingLinkAccessChange(null),
+            },
+          },
+          {
+            title: t('workspaceSharing.link.applyToAll'),
+            props: {
+              onClick: () => {
+                if (pendingLinkAccessChange) {
+                  applyLinkAccessToAllArtifacts(pendingLinkAccessChange);
+                }
+              },
+            },
+          },
+        ]}
+      />
 
       <ActionDialog
         open={confirmDialogPendingChange !== null}

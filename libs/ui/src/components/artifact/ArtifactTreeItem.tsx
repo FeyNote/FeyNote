@@ -14,7 +14,7 @@ import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspa
 import { WORKSPACE_ICON_BY_ID } from '../workspace/workspaceConstants';
 import type { WorkspaceSnapshot } from '@feynote/global-types';
 
-const TreeListItem = styled.li<{
+export const TreeListItem = styled.li<{
   $isDragTarget: boolean;
   $isUncategorized: boolean;
 }>`
@@ -35,7 +35,7 @@ const TreeListItem = styled.li<{
   `}
 `;
 
-const TreeItemContainer = styled.div<{
+export const TreeItemContainer = styled.div<{
   $isUncategorized: boolean;
 }>`
   display: flex;
@@ -43,7 +43,7 @@ const TreeItemContainer = styled.div<{
   padding-left: 10px;
 `;
 
-const ItemArrow = styled.div`
+export const ItemArrow = styled.div`
   width: 20px;
   height: 20px;
   flex-shrink: 0;
@@ -58,12 +58,12 @@ const ItemArrow = styled.div`
   }
 `;
 
-const TreeLevelSink = styled.div`
+export const TreeLevelSink = styled.div`
   margin-left: 20px;
   border-left: 1px solid var(--card-background-active);
 `;
 
-const TreeItemButton = styled.button<{
+export const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
   $isActive: boolean;
 }>`
@@ -132,7 +132,7 @@ const OverflowBadge = styled.span`
   margin-left: 2px;
 `;
 
-const HiddenDocumentText = styled.span`
+export const HiddenDocumentText = styled.span`
   opacity: 0.4;
   font-style: italic;
 `;

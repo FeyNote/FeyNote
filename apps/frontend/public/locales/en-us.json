@@ -828,6 +828,18 @@
   "workspaceSharing.applying.done": "Successfully updated {{count}} documents.",
   "workspaceSharing.applying.doneWithErrors": "Updated {{successCount}} documents. {{failedCount}} failed.",
 
+  "workspaceSharing.link.title": "Public Access via Link",
+  "workspaceSharing.link.subtitle": "When you enable link visibility, anyone with the link will be able to view the tree & graph of this workspace. Documents within are shared individually.",
+  "workspaceSharing.link.applyPrompt": "Would you like to apply this link sharing change to all documents currently in this workspace?",
+  "workspaceSharing.link.applyToAll": "Apply to all",
+  "workspaceSharing.link.goingForward": "Only going forward",
+
+  "workspaceShareView.unauthorized.header": "Critical Fail!",
+  "workspaceShareView.unauthorized.message": "To view this workspace you'll either need to have a share link or be logged in to an account that can view it.",
+  "workspaceShareView.notFound.header": "Nat 20 For Stealth!",
+  "workspaceShareView.notFound.message": "The workspace you're looking for either doesn't exist, or the owner of it hasn't made it publicly visible.",
+  "workspaceShareView.empty": "This workspace has no accessible documents.",
+
   "calendar.monthsInYear": "Number of months in a year",
   "calendar.nameForMonth": "Name for month {{number}}",
   "calendar.month.days": "Days",

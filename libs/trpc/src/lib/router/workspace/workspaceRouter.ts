@@ -6,6 +6,7 @@ import { getWorkspaceYBinById } from './getWorkspaceYBinById';
 import { getSafeWorkspaceId } from './getSafeWorkspaceId';
 import { getWorkspaceAccessLevel } from './getWorkspaceAccessLevel';
 import { removeSelfAsCollaborator } from './removeSelfAsCollaborator';
+import { getArtifactSnapshotsByWorkspaceId } from './getArtifactSnapshotsByWorkspaceId';
 
 export const workspaceRouter = trpcRouter({
   createWorkspace,
@@ -15,4 +16,5 @@ export const workspaceRouter = trpcRouter({
   getSafeWorkspaceId,
   getWorkspaceAccessLevel,
   removeSelfAsCollaborator,
+  getArtifactSnapshotsByWorkspaceId,
 });

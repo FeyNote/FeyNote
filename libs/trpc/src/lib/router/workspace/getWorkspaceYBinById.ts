@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 import { publicProcedure } from '../../trpc';
-import { ArtifactAccessLevel } from '@prisma/client';
+import { getWorkspaceAccessLevel } from '@feynote/shared-utils';
 
 export const getWorkspaceYBinById = publicProcedure
   .input(
@@ -24,6 +24,7 @@ export const getWorkspaceYBinById = publicProcedure
         select: {
           yBin: true,
           userId: true,
+          linkAccessLevel: true,
           workspaceShares: {
             select: {
               userId: true,
@@ -33,22 +34,10 @@ export const getWorkspaceYBinById = publicProcedure
         },
       });
 
-      if (!workspace) {
-        throw new TRPCError({
-          message:
-            'Workspace does not exist or is not visible to the current user',
-          code: 'NOT_FOUND',
-        });
-      }
-
-      const isOwner = workspace.userId === ctx.session?.userId;
-      const hasShare = workspace.workspaceShares.some(
-        (s) =>
-          s.userId === ctx.session?.userId &&
-          s.accessLevel !== ArtifactAccessLevel.noaccess,
-      );
-
-      if (!isOwner && !hasShare) {
+      if (
+        !workspace ||
+        getWorkspaceAccessLevel(workspace, ctx.session?.userId) === 'noaccess'
+      ) {
         throw new TRPCError({
           message:
             'Workspace does not exist or is not visible to the current user',
