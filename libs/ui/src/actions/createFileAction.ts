@@ -4,6 +4,8 @@ import { getSafeFileIdAction } from './getSafeFileIdAction';
 import { uploadFileToApi } from '../utils/files/uploadFileToApi';
 import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
+const MAX_OFFLINE_FILE_SIZE = 5 * 1024 * 1024;
+
 export const createFileAction = async (args: {
   file: File;
   artifactId?: string;
@@ -14,7 +16,11 @@ export const createFileAction = async (args: {
 
   try {
     return await uploadFileToApi({ id, ...args });
-  } catch {
+  } catch (e) {
+    if (args.file.size > MAX_OFFLINE_FILE_SIZE) {
+      throw e;
+    }
+
     const fileContentsUint8 = new Uint8Array(await args.file.arrayBuffer());
 
     args.onProgress?.(50);
