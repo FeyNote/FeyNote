@@ -32,4 +32,7 @@ export type EventData = {
   };
   [EventName.LocaldbKnownUsersUpdated]: void;
   [EventName.WorkspaceUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.WorkspaceUpdated];
+
+  [EventName.AppOnline]: void;
+  [EventName.AppVisible]: void;
 };

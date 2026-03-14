@@ -24,11 +24,9 @@ import {
 import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
 import { waitFor } from '../waitFor';
 import { appIdbStorageManager } from './AppIdbStorageManager';
-import { websocketClient } from '../../context/events/websocketClient';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
 import { getIsViteDevelopment } from '../getIsViteDevelopment';
-websocketClient.connect();
 
 enum SyncReason {
   VersionNotPresentInLocal = 'versionNotPresentInLocal',
@@ -128,6 +126,17 @@ export class SyncManager {
     eventManager.addEventListener(EventName.LocaldbSessionUpdated, () => {
       if (ENABLE_VERBOSE_SYNC_LOGGING)
         console.log('Session updated, queueing sync');
+      syncManifestDebouncer.call();
+    });
+
+    eventManager.addEventListener(EventName.AppOnline, () => {
+      if (ENABLE_VERBOSE_SYNC_LOGGING) console.log('App online, queueing sync');
+      syncManifestDebouncer.call();
+    });
+
+    eventManager.addEventListener(EventName.AppVisible, () => {
+      if (ENABLE_VERBOSE_SYNC_LOGGING)
+        console.log('App visible, queueing sync');
       syncManifestDebouncer.call();
     });
   }

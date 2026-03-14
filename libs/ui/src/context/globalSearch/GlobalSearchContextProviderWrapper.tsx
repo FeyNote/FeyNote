@@ -10,6 +10,8 @@ import {
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { ellipsisHorizontal, open } from 'ionicons/icons';
+import { searchArtifactTitles } from '../../actions/searchArtifactTitles';
+import { searchArtifactBlocks } from '../../actions/searchArtifactBlocks';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useSessionContext } from '../session/SessionContext';
@@ -308,12 +310,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     let cancelled = false;
     const timeout = setTimeout(() => {
       Promise.all([
-        trpc.artifact.searchArtifactTitles.query({
+        searchArtifactTitles({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,
         }),
-        trpc.artifact.searchArtifactBlocks.query({
+        searchArtifactBlocks({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,

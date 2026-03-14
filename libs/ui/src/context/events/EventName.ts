@@ -18,4 +18,7 @@ export enum EventName {
   LocaldbKnownUsersUpdated = 'localdb.knownUsersUpdated',
 
   ArtifactWelcomeCreated = 'artifact.welcomeCreated',
+
+  AppOnline = 'app.online',
+  AppVisible = 'app.visible',
 }

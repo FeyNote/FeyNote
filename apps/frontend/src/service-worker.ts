@@ -17,11 +17,11 @@ import { Queue } from 'workbox-background-sync';
 import {
   getManifestDb,
   ObjectStoreName,
-  SyncManager,
-  SearchManager,
   SWMessageType,
   createSWDebugDump,
   initDebugStoreMonkeypatch,
+  SyncManager,
+  SearchManager,
 } from '@feynote/ui-sw';
 import { registerGetKnownUsersRoute } from './serviceWorkerLib/routes/user/registerGetKnownUsersRoute';
 import { registerGetArtifactEdgesByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesByIdRoute';
@@ -30,9 +30,6 @@ import { registerGetArtifactSnapshotByIdRoute } from './serviceWorkerLib/routes/
 import { registerGetArtifactSnapshotsRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotsRoute';
 import { registerGetArtifactYBinByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactYBinByIdRoute';
 import { registerGetSafeArtifactIdRoute } from './serviceWorkerLib/routes/artifact/registerGetSafeArtifactIdRoute';
-import { registerSearchArtifactBlocksRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactBlocksRoute';
-import { registerSearchArtifactsRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactsRoute';
-import { registerSearchArtifactTitlesRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactTitlesRoute';
 import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
 import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
@@ -71,9 +68,6 @@ const staticAssets = [
   'https://static.feynote.com/fonts/monsieur-la-doulaise/monsieur-la-doulaise-latin.woff2',
 ];
 precacheAndRoute(staticAssets);
-
-const searchManager = new SearchManager();
-const syncManager = new SyncManager(searchManager);
 
 const OFFLINE_BGSYNC_RETENTION_DAYS = 30;
 const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
@@ -177,13 +171,29 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('sync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(syncManager.syncManifest());
+    event.waitUntil(
+      (async () => {
+        const searchManager = new SearchManager();
+        const syncManager = new SyncManager(searchManager);
+        await syncManager.syncManifest();
+        await searchManager.saveToLocalDB();
+        await searchManager.destroy();
+      })(),
+    );
   }
 });
 
 self.addEventListener('periodicSync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(syncManager.syncManifest());
+    event.waitUntil(
+      (async () => {
+        const searchManager = new SearchManager();
+        const syncManager = new SyncManager(searchManager);
+        await syncManager.syncManifest();
+        await searchManager.saveToLocalDB();
+        await searchManager.destroy();
+      })(),
+    );
   }
 });
 
@@ -223,9 +233,6 @@ registerGetArtifactSnapshotByIdRoute();
 registerGetArtifactSnapshotsRoute();
 registerGetArtifactYBinByIdRoute();
 registerGetSafeArtifactIdRoute();
-registerSearchArtifactsRoute(searchManager);
-registerSearchArtifactBlocksRoute(searchManager);
-registerSearchArtifactTitlesRoute(searchManager);
 
 registerCreateFileRoute(bgSyncQueue);
 registerFileRedirectRoute();
