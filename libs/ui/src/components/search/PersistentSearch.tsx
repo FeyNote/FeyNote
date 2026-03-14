@@ -1,6 +1,7 @@
 import { IonIcon, IonInput, IonItem, IonLabel } from '@ionic/react';
 import { useEffect, useState, type MouseEvent } from 'react';
-import { trpc } from '../../utils/trpc';
+import { searchArtifactTitlesAction } from '../../actions/searchArtifactTitlesAction';
+import { searchArtifactBlocksAction } from '../../actions/searchArtifactBlocksAction';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { capitalizeEachWord, PreferenceNames } from '@feynote/shared-utils';
@@ -213,12 +214,12 @@ export const PersistentSearch: React.FC<Props> = (props) => {
     let cancelled = false;
     const timeout = setTimeout(() => {
       Promise.all([
-        trpc.artifact.searchArtifactTitles.query({
+        searchArtifactTitlesAction({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,
         }),
-        trpc.artifact.searchArtifactBlocks.query({
+        searchArtifactBlocksAction({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,

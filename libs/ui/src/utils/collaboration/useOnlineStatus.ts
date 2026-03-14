@@ -79,9 +79,11 @@ export const useOnlineStatus = () => {
       setServiceWorkerIsAvailable(getIsServiceWorkerAvailable());
     };
 
+    const interval = setInterval(listener, 30_000);
     navigator.serviceWorker.addEventListener('controllerchange', listener);
 
     return () => {
+      clearInterval(interval);
       navigator.serviceWorker.removeEventListener('controllerchange', listener);
     };
   }, []);

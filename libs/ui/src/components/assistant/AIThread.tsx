@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
+import { getThreadAction } from '../../actions/getThreadAction';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
@@ -214,7 +215,7 @@ export const AIThread: React.FC<Props> = (props) => {
   statusRef.current = status;
 
   const getThreadInfo = async () => {
-    const threadDTO = await trpc.ai.getThread.query({
+    const threadDTO = await getThreadAction({
       id: props.id,
     });
     setMessages(threadDTO.messages);

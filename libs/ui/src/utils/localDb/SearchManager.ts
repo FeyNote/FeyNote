@@ -87,7 +87,7 @@ export class SearchManager {
     if (!indexRecord) return;
 
     try {
-      this.miniSearch = MiniSearch.loadJSON(
+      this.miniSearch = await MiniSearch.loadJSONAsync(
         indexRecord,
         this.miniSearchOptions,
       );
@@ -304,17 +304,10 @@ export class SearchManager {
     clearTimeout(this.maxSaveTimeout);
 
     const manifestDb = await getManifestDb();
-    if (await manifestDb.get(ObjectStoreName.KV, KVStoreKeys.SearchIndex)) {
-      await manifestDb.put(ObjectStoreName.KV, {
-        key: KVStoreKeys.SearchIndex,
-        value: JSON.stringify(this.miniSearch),
-      });
-    } else {
-      await manifestDb.add(ObjectStoreName.KV, {
-        key: KVStoreKeys.SearchIndex,
-        value: JSON.stringify(this.miniSearch),
-      });
-    }
+    await manifestDb.put(ObjectStoreName.KV, {
+      key: KVStoreKeys.SearchIndex,
+      value: JSON.stringify(this.miniSearch),
+    });
   }
 
   async destroy(): Promise<void> {

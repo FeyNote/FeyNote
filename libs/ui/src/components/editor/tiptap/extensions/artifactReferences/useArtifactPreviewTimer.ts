@@ -1,6 +1,6 @@
 import { useHandleTRPCErrors } from '../../../../../utils/useHandleTRPCErrors';
 import { useState } from 'react';
-import { trpc } from '../../../../../utils/trpc';
+import { getArtifactYBinByIdAction } from '../../../../../actions/getArtifactYBinByIdAction';
 import { ReferencePreviewInfo } from './ArtifactReferencePreview';
 import { useHoverTimer } from './useHoverTimer';
 
@@ -12,20 +12,18 @@ export const useArtifactPreviewTimer = (artifactId: string) => {
   const loadArtifactYBin = async () => {
     if (artifactYBin) return;
 
-    const _artifactYBin = await trpc.artifact.getArtifactYBinById
-      .query({
-        id: artifactId,
-      })
-      .catch((e) => {
-        handleTRPCErrors(e, {
-          401: () => {
-            setArtifactInaccessible(true);
-          },
-          404: () => {
-            setArtifactInaccessible(true);
-          },
-        });
+    const _artifactYBin = await getArtifactYBinByIdAction({
+      id: artifactId,
+    }).catch((e) => {
+      handleTRPCErrors(e, {
+        401: () => {
+          setArtifactInaccessible(true);
+        },
+        404: () => {
+          setArtifactInaccessible(true);
+        },
       });
+    });
     if (!_artifactYBin) return;
 
     setArtifactYBin(_artifactYBin.yBin);

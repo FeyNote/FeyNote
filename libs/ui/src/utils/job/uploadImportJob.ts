@@ -1,3 +1,4 @@
+import { getSafeFileIdAction } from '../../actions/getSafeFileIdAction';
 import { trpc } from '../trpc';
 import axios from 'axios';
 import { getApiUrls } from '../getApiUrls';
@@ -10,7 +11,7 @@ export const uploadImportJob = async (args: {
   format: ImportFormat;
   onProgress?: (progress: number) => void;
 }) => {
-  const { id } = await trpc.file.getSafeFileId.query();
+  const { id } = await getSafeFileIdAction();
 
   const payload = await new ImportJobStreamEncoder().encode({
     id,

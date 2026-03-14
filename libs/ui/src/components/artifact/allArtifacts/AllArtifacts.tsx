@@ -5,7 +5,8 @@ import { usePaneContext } from '../../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { AllArtifactsRightSidemenu } from './AllArtifactsRightSidemenu';
-import { trpc } from '../../../utils/trpc';
+import { getKnownUsersAction } from '../../../actions/getKnownUsersAction';
+import { getJobsAction } from '../../../actions/getJobsAction';
 import { AllArtifactsItem } from './AllArtifactsItem';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { AllArtifactsSort, AllArtifactsSortOrder } from './AllArtifactsSort';
@@ -128,8 +129,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   }, [knownUsers]);
 
   const getKnownUsers = async () => {
-    await trpc.user.getKnownUsers
-      .query()
+    await getKnownUsersAction()
       .then((result) => {
         setKnownUsers(result);
       })
@@ -149,7 +149,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
 
   const getFilterableImportJobs = async () => {
     try {
-      const jobs = await trpc.job.getJobs.query({ type: 'import', limit: 10 });
+      const jobs = await getJobsAction({ type: 'import', limit: 10 });
       const showableImportJobs = jobs.jobs
         .filter((jobSummary) => {
           // Only allow selecting of import jobs that have succeeded and have artifacts associated with them

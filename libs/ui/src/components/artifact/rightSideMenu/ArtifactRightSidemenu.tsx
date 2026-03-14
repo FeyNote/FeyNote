@@ -10,6 +10,7 @@ import {
 import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
+import { getKnownUsersAction } from '../../../actions/getKnownUsersAction';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
@@ -144,8 +145,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     return new Map(knownUsers.map((el) => [el.id, el]));
   }, [knownUsers]);
   const getKnownUsers = async () => {
-    await trpc.user.getKnownUsers
-      .query()
+    await getKnownUsersAction()
       .then((result) => {
         setKnownUsers(result);
       })

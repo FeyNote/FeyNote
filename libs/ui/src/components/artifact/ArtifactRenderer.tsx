@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
-import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
+import { createFileAction } from '../../actions/createFileAction';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
@@ -154,7 +154,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           setFileUploadProgress(0);
           for (const file of files) {
             try {
-              const response = await uploadFileToApi({
+              const response = await createFileAction({
                 file,
                 purpose: 'artifact',
                 artifactId: props.artifactId,
@@ -240,7 +240,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         handleFileUpload={async (file) => {
           setIsUploadingFile(true);
           setFileUploadProgress(0);
-          const response = await uploadFileToApi({
+          const response = await createFileAction({
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,

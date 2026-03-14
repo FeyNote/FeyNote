@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { InfoButton } from '../info/InfoButton';
 import { trpc } from '../../utils/trpc';
+import { getKnownUsersAction } from '../../actions/getKnownUsersAction';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { ArtifactSharingAccessLevel } from './ArtifactSharingAccessLevel';
 import { ArtifactLinkAccessLevelSelect } from './ArtifactLinkAccessLevelSelect';
@@ -69,8 +70,7 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
   }, [searchResult, knownUsers]);
 
   const getKnownUsers = async () => {
-    await trpc.user.getKnownUsers
-      .query()
+    await getKnownUsersAction()
       .then((result) => {
         setKnownUsers(result);
       })
