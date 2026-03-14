@@ -1,6 +1,8 @@
 import { type MutableRefObject, useEffect, useMemo, useState } from 'react';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { trpc } from '../../utils/trpc';
+import { getWorkspaceSnapshotByIdAction } from '../../actions/getWorkspaceSnapshotByIdAction';
+import { getWorkspaceYBinByIdAction } from '../../actions/getWorkspaceYBinByIdAction';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { useAlertContext } from '../../context/alert/AlertContext';
@@ -137,15 +139,13 @@ export const WorkspaceShareView: React.FC<Props> = (props) => {
   };
 
   useEffect(() => {
-    trpc.workspace.getWorkspaceSnapshotById
-      .query({ id: props.workspaceId })
+    getWorkspaceSnapshotByIdAction({ id: props.workspaceId })
       .then((result) => {
         setWorkspaceSnapshot(result);
       })
       .catch(handleError);
 
-    trpc.workspace.getWorkspaceYBinById
-      .query({ id: props.workspaceId })
+    getWorkspaceYBinByIdAction({ id: props.workspaceId })
       .then((result) => {
         const yDoc = new YDoc();
         applyUpdate(yDoc, result.yBin);

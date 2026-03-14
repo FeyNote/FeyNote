@@ -3,7 +3,8 @@ import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
 import { eventManager } from '../../../context/events/EventManager';
 import { EventName } from '../../../context/events/EventName';
-import { trpc } from '../../trpc';
+import { getArtifactSnapshotsAction } from '../../../actions/getArtifactSnapshotsAction';
+import { getArtifactSnapshotByIdAction } from '../../../actions/getArtifactSnapshotByIdAction';
 
 /**
  * Please do not interact with this class directly from React if avoidable.
@@ -119,11 +120,9 @@ class ArtifactSnapshotStore {
     const inflightRandomBefore = (this.loadAllArtifactSnapshotsRandom =
       crypto.randomUUID());
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const result = await trpc.artifact.getArtifactSnapshots
-      .query()
-      .catch((e) => {
-        this.notifyFetchError(e);
-      });
+    const result = await getArtifactSnapshotsAction().catch((e) => {
+      this.notifyFetchError(e);
+    });
     if (!result) return;
     if (inflightRandomBefore !== this.loadAllArtifactSnapshotsRandom) return;
     if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
@@ -139,31 +138,31 @@ class ArtifactSnapshotStore {
       inflightRandomBefore,
     );
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const response = await trpc.artifact.getArtifactSnapshotById
-      .query({ id: artifactId })
-      .catch((e) => {
-        if (
-          inflightRandomBefore !==
-          this.loadArtifactSnapshotRandomByArtifactId.get(artifactId)
-        )
+    const response = await getArtifactSnapshotByIdAction({
+      id: artifactId,
+    }).catch((e) => {
+      if (
+        inflightRandomBefore !==
+        this.loadArtifactSnapshotRandomByArtifactId.get(artifactId)
+      )
+        return;
+      if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
+
+      if (e instanceof TRPCClientError) {
+        const status = (e as TRPCClientError<AppRouter>).data?.httpStatus;
+
+        if (status === 404) {
+          this.artifactSnapshotsById.delete(artifactId);
+          this.artifactSnapshots = Array.from(
+            this.artifactSnapshotsById.values(),
+          );
+          this.notify([artifactId]);
+
           return;
-        if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
-
-        if (e instanceof TRPCClientError) {
-          const status = (e as TRPCClientError<AppRouter>).data?.httpStatus;
-
-          if (status === 404) {
-            this.artifactSnapshotsById.delete(artifactId);
-            this.artifactSnapshots = Array.from(
-              this.artifactSnapshotsById.values(),
-            );
-            this.notify([artifactId]);
-
-            return;
-          }
         }
-        this.notifyFetchError(e);
-      });
+      }
+      this.notifyFetchError(e);
+    });
 
     if (!response) return;
     if (

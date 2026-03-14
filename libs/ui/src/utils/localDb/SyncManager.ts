@@ -109,7 +109,6 @@ export class SyncManager {
         enableFollowupCall: true,
       },
     );
-    this.syncManifest();
 
     eventManager.addEventListener(EventName.ArtifactUpdated, () => {
       if (ENABLE_VERBOSE_SYNC_LOGGING)

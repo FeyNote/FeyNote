@@ -1,7 +1,8 @@
 import { Edge, getEdgeId, GetEdgeIdArgs } from '@feynote/shared-utils';
 import { eventManager } from '../../../context/events/EventManager';
 import { EventName } from '../../../context/events/EventName';
-import { trpc } from '../../trpc';
+import { getArtifactEdgesAction } from '../../../actions/getArtifactEdgesAction';
+import { getArtifactEdgesByIdAction } from '../../../actions/getArtifactEdgesByIdAction';
 
 /**
  * Please do not interact with this class directly from React if avoidable.
@@ -222,7 +223,7 @@ class EdgeStore {
 
   private async loadAllEdges() {
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const result = await trpc.artifact.getArtifactEdges.query().catch((e) => {
+    const result = await getArtifactEdgesAction().catch((e) => {
       this.notifyFetchError(e);
     });
     if (!result) return;
@@ -284,11 +285,11 @@ class EdgeStore {
    * Loads edges for a given artifact into our in-memory maps
    */
   private async loadArtifactEdges(artifactId: string) {
-    const response = await trpc.artifact.getArtifactEdgesById
-      .query({ id: artifactId })
-      .catch((e) => {
+    const response = await getArtifactEdgesByIdAction({ id: artifactId }).catch(
+      (e) => {
         this.notifyFetchError(e);
-      });
+      },
+    );
 
     if (!response) return;
 

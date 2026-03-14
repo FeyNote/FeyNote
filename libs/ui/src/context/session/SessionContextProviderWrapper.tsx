@@ -8,6 +8,7 @@ import { useSetAndPersistSession } from './useSetAndPersistSession';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { websocketClient } from '../events/websocketClient';
+import { getSyncManager } from '../../utils/localDb/getSyncManager';
 
 interface Props {
   children: ReactNode;
@@ -32,6 +33,8 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
       id: session.userId,
       email: session.email,
     });
+
+    getSyncManager().syncManifest();
 
     trpc.user.validateSession.query().catch((error) => {
       handleTRPCErrors(error);

@@ -4,6 +4,7 @@ import { Box, Card, TextField, Text } from '@radix-ui/themes';
 import { IoSearch } from '../../AppIcons';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { trpc } from '../../../utils/trpc';
+import { getKnownUsersAction } from '../../../actions/getKnownUsersAction';
 import { appIdbStorageManager } from '../../../utils/localDb/AppIdbStorageManager';
 import type { KnownUserDoc } from '../../../utils/localDb/localDb';
 import styled from 'styled-components';
@@ -40,8 +41,7 @@ export const MultiArtifactSharingAddUserSearch: React.FC<Props> = (props) => {
   }, [searchResult, knownUsers]);
 
   const getKnownUsers = async () => {
-    await trpc.user.getKnownUsers
-      .query()
+    await getKnownUsersAction()
       .then((result) => {
         setKnownUsers(result);
       })

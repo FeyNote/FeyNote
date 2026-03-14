@@ -10,9 +10,9 @@ import {
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { ellipsisHorizontal, open } from 'ionicons/icons';
-import { searchArtifactTitles } from '../../actions/searchArtifactTitles';
-import { searchArtifactBlocks } from '../../actions/searchArtifactBlocks';
-import { trpc } from '../../utils/trpc';
+import { searchArtifactTitlesAction } from '../../actions/searchArtifactTitlesAction';
+import { searchArtifactBlocksAction } from '../../actions/searchArtifactBlocksAction';
+import { getArtifactYBinByIdAction } from '../../actions/getArtifactYBinByIdAction';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useSessionContext } from '../session/SessionContext';
 import type { ArtifactDTO } from '@feynote/global-types';
@@ -310,12 +310,12 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     let cancelled = false;
     const timeout = setTimeout(() => {
       Promise.all([
-        searchArtifactTitles({
+        searchArtifactTitlesAction({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,
         }),
-        searchArtifactBlocks({
+        searchArtifactBlocksAction({
           query: searchText,
           limit: SEARCH_RESULT_LIMIT,
           workspaceId,
@@ -409,8 +409,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
     let cancelled = false;
 
-    trpc.artifact.getArtifactYBinById
-      .query({ id: selectedArtifactId })
+    getArtifactYBinByIdAction({ id: selectedArtifactId })
       .then((result) => {
         if (cancelled) return;
         const yDoc = new YDoc();
@@ -487,8 +486,9 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
               {searchResult.artifact.title}
               {searchResult.highlights
                 .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
-                .map((highlight) => (
+                .map((highlight, idx) => (
                   <ResultWithHighlightsWrapper
+                    key={idx}
                     dangerouslySetInnerHTML={{
                       __html: '…' + highlight + '…',
                     }}

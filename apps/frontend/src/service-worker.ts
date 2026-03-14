@@ -23,22 +23,8 @@ import {
   SyncManager,
   SearchManager,
 } from '@feynote/ui-sw';
-import { registerGetKnownUsersRoute } from './serviceWorkerLib/routes/user/registerGetKnownUsersRoute';
-import { registerGetArtifactEdgesByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesByIdRoute';
-import { registerGetArtifactEdgesRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesRoute';
-import { registerGetArtifactSnapshotByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotByIdRoute';
-import { registerGetArtifactSnapshotsRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotsRoute';
-import { registerGetArtifactYBinByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactYBinByIdRoute';
-import { registerGetSafeArtifactIdRoute } from './serviceWorkerLib/routes/artifact/registerGetSafeArtifactIdRoute';
 import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
-import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
-import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
-import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
-import { registerGetJobsRoute } from './serviceWorkerLib/routes/jobs/registerGetJobsRoute';
-import { registerGetWorkspaceSnapshotsRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotsRoute';
-import { registerGetWorkspaceSnapshotByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotByIdRoute';
-import { registerGetWorkspaceYBinByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceYBinByIdRoute';
 
 initDebugStoreMonkeypatch();
 
@@ -176,7 +162,6 @@ self.addEventListener('sync', (event: any) => {
         const searchManager = new SearchManager();
         const syncManager = new SyncManager(searchManager);
         await syncManager.syncManifest();
-        await searchManager.saveToLocalDB();
         await searchManager.destroy();
       })(),
     );
@@ -190,7 +175,6 @@ self.addEventListener('periodicSync', (event: any) => {
         const searchManager = new SearchManager();
         const syncManager = new SyncManager(searchManager);
         await syncManager.syncManifest();
-        await searchManager.saveToLocalDB();
         await searchManager.destroy();
       })(),
     );
@@ -225,23 +209,5 @@ registerRoute(
   }),
 );
 
-registerGetKnownUsersRoute();
-
-registerGetArtifactEdgesByIdRoute();
-registerGetArtifactEdgesRoute();
-registerGetArtifactSnapshotByIdRoute();
-registerGetArtifactSnapshotsRoute();
-registerGetArtifactYBinByIdRoute();
-registerGetSafeArtifactIdRoute();
-
 registerCreateFileRoute(bgSyncQueue);
 registerFileRedirectRoute();
-registerGetSafeFileIdRoute();
-
-registerGetThreadsRoute();
-registerGetThreadRoute();
-registerGetJobsRoute();
-
-registerGetWorkspaceSnapshotsRoute();
-registerGetWorkspaceSnapshotByIdRoute();
-registerGetWorkspaceYBinByIdRoute();

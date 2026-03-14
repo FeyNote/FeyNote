@@ -1,5 +1,6 @@
 import type { FilePurpose } from '@prisma/client';
 import { trpc } from '../trpc';
+import { getSafeFileIdAction } from '../../actions/getSafeFileIdAction';
 import { FileStreamEncoder } from '@feynote/shared-utils';
 import axios from 'axios';
 import { getApiUrls } from '../getApiUrls';
@@ -11,7 +12,7 @@ export const uploadFileToApi = async (args: {
   purpose: FilePurpose;
   onProgress?: (progress: number) => void;
 }) => {
-  const { id } = await trpc.file.getSafeFileId.query();
+  const { id } = await getSafeFileIdAction();
 
   const payload = await new FileStreamEncoder().encode({
     id,

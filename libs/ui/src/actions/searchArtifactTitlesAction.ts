@@ -3,7 +3,7 @@ import { trpc } from '../utils/trpc';
 import { getSearchManager } from '../utils/localDb/getSearchManager';
 import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
-export async function searchArtifactTitles(input: {
+export async function searchArtifactTitlesAction(input: {
   query: string;
   limit?: number;
   workspaceId?: string;

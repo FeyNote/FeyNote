@@ -1,7 +1,8 @@
 import { memo, useEffect, useState } from 'react';
 import { applyUpdate, Doc as YDoc } from 'yjs';
-import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { getArtifactEdgesByIdAction } from '../../actions/getArtifactEdgesByIdAction';
+import { getArtifactYBinByIdAction } from '../../actions/getArtifactYBinByIdAction';
 import { useTranslation } from 'react-i18next';
 import { useAlertContext } from '../../context/alert/AlertContext';
 import { Edge, type SessionDTO } from '@feynote/shared-utils';
@@ -32,10 +33,9 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
   }, []);
 
   const loadArtifactEdges = () => {
-    trpc.artifact.getArtifactEdgesById
-      .query({
-        id: props.artifactId,
-      })
+    getArtifactEdgesByIdAction({
+      id: props.artifactId,
+    })
       .then((result) => {
         setEdges(result);
       })
@@ -77,10 +77,9 @@ export const ReadonlyArtifactViewer: React.FC<Props> = memo((props) => {
       });
   };
   const loadArtifactYDoc = () => {
-    trpc.artifact.getArtifactYBinById
-      .query({
-        id: props.artifactId,
-      })
+    getArtifactYBinByIdAction({
+      id: props.artifactId,
+    })
       .then((result) => {
         const yDoc = new YDoc();
         applyUpdate(yDoc, result.yBin);

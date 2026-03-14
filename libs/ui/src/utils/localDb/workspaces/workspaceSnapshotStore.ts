@@ -3,7 +3,8 @@ import { TRPCClientError } from '@trpc/client';
 import type { AppRouter } from '@feynote/trpc';
 import { eventManager } from '../../../context/events/EventManager';
 import { EventName } from '../../../context/events/EventName';
-import { trpc } from '../../trpc';
+import { getWorkspaceSnapshotsAction } from '../../../actions/getWorkspaceSnapshotsAction';
+import { getWorkspaceSnapshotByIdAction } from '../../../actions/getWorkspaceSnapshotByIdAction';
 
 class WorkspaceSnapshotStore {
   private listenersForSpecificWorkspaceId: Record<string, Set<() => void>> = {};
@@ -124,11 +125,9 @@ class WorkspaceSnapshotStore {
     const inflightRandomBefore = (this.loadAllWorkspaceSnapshotsRandom =
       crypto.randomUUID());
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const result = await trpc.workspace.getWorkspaceSnapshots
-      .query()
-      .catch((e) => {
-        this.notifyFetchError(e);
-      });
+    const result = await getWorkspaceSnapshotsAction().catch((e) => {
+      this.notifyFetchError(e);
+    });
     if (!result) return;
     if (inflightRandomBefore !== this.loadAllWorkspaceSnapshotsRandom) return;
     if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
@@ -144,31 +143,31 @@ class WorkspaceSnapshotStore {
       inflightRandomBefore,
     );
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const response = await trpc.workspace.getWorkspaceSnapshotById
-      .query({ id: workspaceId })
-      .catch((e) => {
-        if (
-          inflightRandomBefore !==
-          this.loadWorkspaceSnapshotRandomByWorkspaceId.get(workspaceId)
-        )
+    const response = await getWorkspaceSnapshotByIdAction({
+      id: workspaceId,
+    }).catch((e) => {
+      if (
+        inflightRandomBefore !==
+        this.loadWorkspaceSnapshotRandomByWorkspaceId.get(workspaceId)
+      )
+        return;
+      if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
+
+      if (e instanceof TRPCClientError) {
+        const status = (e as TRPCClientError<AppRouter>).data?.httpStatus;
+
+        if (status === 404) {
+          this.workspaceSnapshotsById.delete(workspaceId);
+          this.workspaceSnapshots = Array.from(
+            this.workspaceSnapshotsById.values(),
+          );
+          this.notify([workspaceId]);
+
           return;
-        if (sessionRandomBefore !== this.sessionInvalidationRandom) return;
-
-        if (e instanceof TRPCClientError) {
-          const status = (e as TRPCClientError<AppRouter>).data?.httpStatus;
-
-          if (status === 404) {
-            this.workspaceSnapshotsById.delete(workspaceId);
-            this.workspaceSnapshots = Array.from(
-              this.workspaceSnapshotsById.values(),
-            );
-            this.notify([workspaceId]);
-
-            return;
-          }
         }
-        this.notifyFetchError(e);
-      });
+      }
+      this.notifyFetchError(e);
+    });
 
     if (!response) return;
     if (

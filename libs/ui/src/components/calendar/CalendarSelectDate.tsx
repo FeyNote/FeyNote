@@ -1,9 +1,9 @@
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import type { ArtifactDTO } from '@feynote/global-types';
 import { useEffect, useState } from 'react';
-import { trpc } from '../../utils/trpc';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { getArtifactYBinByIdAction } from '../../actions/getArtifactYBinByIdAction';
 import type { TypedMap } from 'yjs-types';
 import type { YCalendarMap } from '@feynote/shared-utils';
 import { CalendarSelectDateInput } from './CalendarSelectDateInput';
@@ -25,10 +25,9 @@ export const CalendarSelectDate: React.FC<Props> = (props) => {
   useEffect(() => {
     if (!yDoc) {
       const progress = startProgressBar();
-      trpc.artifact.getArtifactYBinById
-        .query({
-          id: props.artifactId,
-        })
+      getArtifactYBinByIdAction({
+        id: props.artifactId,
+      })
         .then((artifact) => {
           const doc = new YDoc();
           applyUpdate(doc, artifact.yBin);

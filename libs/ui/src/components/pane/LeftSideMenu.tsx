@@ -9,7 +9,7 @@ import {
 } from '@ionic/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { trpc } from '../../utils/trpc';
+import { getThreadsAction } from '../../actions/getThreadsAction';
 import styled from 'styled-components';
 import { EventName } from '../../context/events/EventName';
 import {
@@ -121,8 +121,7 @@ export const LeftSideMenu: React.FC = () => {
   };
 
   const load = () => {
-    trpc.ai.getThreads
-      .query()
+    getThreadsAction()
       .then((threads) => {
         setRecentlyUpdatedThreads(
           threads.sort(

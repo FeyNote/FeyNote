@@ -6,7 +6,7 @@ import {
   IonIcon,
   IonPage,
 } from '@ionic/react';
-import { trpc } from '../../utils/trpc';
+import { getThreadsAction } from '../../actions/getThreadsAction';
 import { useEffect, useMemo, useState } from 'react';
 import {
   chatboxEllipses,
@@ -130,8 +130,7 @@ export const Dashboard: React.FC<Props> = (props) => {
   }, [artifactSnapshots, getEdgesForArtifactId]);
 
   const getUserThreads = async () => {
-    trpc.ai.getThreads
-      .query()
+    getThreadsAction()
       .then((threads) => {
         setRecentlyUpdatedThreads(
           threads.sort(

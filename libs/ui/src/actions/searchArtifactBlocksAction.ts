@@ -3,7 +3,7 @@ import { trpc } from '../utils/trpc';
 import { getSearchManager } from '../utils/localDb/getSearchManager';
 import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
-export async function searchArtifactBlocks(input: {
+export async function searchArtifactBlocksAction(input: {
   query: string;
   limit?: number;
   workspaceId?: string;
@@ -39,6 +39,9 @@ export async function searchArtifactBlocks(input: {
           artifact,
           blockId: searchResult.blockId,
           blockText: searchResult.previewText,
+          // This isn't exact, since the search engine would normally return marked results, but we don't
+          // want to calculate that ourselves manually at the moment. Additionally, the previewText isn't that long to begin
+          // with, so not much to work with here hence the shortcut.
           highlight: searchResult.previewText.substring(0, 100),
         });
     }

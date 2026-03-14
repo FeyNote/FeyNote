@@ -12,7 +12,6 @@ import { LocaldbStoreErrorHandlers } from '../utils/localDb/LocaldbStoreErrorHan
 import { SessionContextProviderWrapper } from './session/SessionContextProviderWrapper';
 import { AlertContextProvider } from './alert/AlertContextProvider';
 import { KeyboardShortcutContextProviderWrapper } from './keyboardShortcut/KeyboardShortcutContextProviderWrapper';
-import { getSyncManager } from '../utils/localDb/getSyncManager';
 import { eventManager } from './events/EventManager';
 import { EventName } from './events/EventName';
 
@@ -67,7 +66,6 @@ export const GlobalContextContainer: React.FC<Props> = (props) => {
 
   const renderAuthenticatedProviders = (children: React.ReactNode) => {
     if (props.requireAuthentication) {
-      getSyncManager();
       return (
         <SessionContextProviderWrapper>
           <GlobalSearchContextProviderWrapper>
