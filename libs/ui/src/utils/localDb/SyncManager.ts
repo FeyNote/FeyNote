@@ -21,7 +21,13 @@ import {
   ImmediateDebouncer,
   type Manifest,
 } from '@feynote/shared-utils';
-import { getManifestDb, KVStoreKeys, ObjectStoreName } from './localDb';
+import {
+  getManifestDb,
+  KVStoreKeys,
+  ObjectStoreName,
+  type PendingFileDoc,
+} from './localDb';
+import { uploadFileToApi } from '../files/uploadFileToApi';
 import { waitFor } from '../waitFor';
 import { appIdbStorageManager } from './AppIdbStorageManager';
 import { eventManager } from '../../context/events/EventManager';
@@ -194,6 +200,8 @@ export class SyncManager {
 
     console.log(`Beginning sync for ${session.email}`);
 
+    this._syncCheckAbort(signal);
+    await this.syncPendingFiles(signal);
     this._syncCheckAbort(signal);
     await this.searchManager.onReady();
     this._syncCheckAbort(signal);
@@ -503,6 +511,42 @@ export class SyncManager {
       if (!(e instanceof AbortedSyncError)) {
         Sentry.captureException(e);
       }
+    }
+  }
+
+  private async syncPendingFiles(signal: AbortSignal): Promise<void> {
+    const manifestDb = await getManifestDb();
+    const pendingFiles: PendingFileDoc[] = await manifestDb.getAll(
+      ObjectStoreName.PendingFiles,
+    );
+    if (!pendingFiles.length) return;
+
+    let uploadedCount = 0;
+    for (const doc of pendingFiles) {
+      this._syncCheckAbort(signal);
+      try {
+        const file = new File(
+          [doc.fileContentsUint8 as BlobPart],
+          doc.fileName,
+          {
+            type: doc.mimetype,
+          },
+        );
+        await uploadFileToApi({
+          id: doc.id,
+          file,
+          artifactId: doc.artifactId,
+          purpose: doc.purpose,
+        });
+        await manifestDb.delete(ObjectStoreName.PendingFiles, doc.id);
+        uploadedCount++;
+      } catch (e) {
+        console.error(`Failed to upload pending file ${doc.id}`, e);
+      }
+    }
+
+    if (uploadedCount > 0) {
+      console.log(`Uploaded ${uploadedCount} pending files`);
     }
   }
 

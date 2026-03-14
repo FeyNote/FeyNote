@@ -13,17 +13,13 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { Queue } from 'workbox-background-sync';
 import {
-  getManifestDb,
-  ObjectStoreName,
   SWMessageType,
   createSWDebugDump,
   initDebugStoreMonkeypatch,
   SyncManager,
   SearchManager,
 } from '@feynote/ui-sw';
-import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
 
 initDebugStoreMonkeypatch();
@@ -54,51 +50,6 @@ const staticAssets = [
   'https://static.feynote.com/fonts/monsieur-la-doulaise/monsieur-la-doulaise-latin.woff2',
 ];
 precacheAndRoute(staticAssets);
-
-const OFFLINE_BGSYNC_RETENTION_DAYS = 30;
-const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
-  forceSyncFallback: true,
-  maxRetentionTime: OFFLINE_BGSYNC_RETENTION_DAYS * 24 * 60,
-  onSync: async ({ queue }) => {
-    console.log('BGSyncQueue onSync', queue.size);
-    const manifestDb = await getManifestDb();
-
-    let entry;
-    while ((entry = await queue.shiftRequest())) {
-      try {
-        const response = await fetch(entry.request);
-        if (response.status >= 200 && response.status < 300) {
-          if (
-            entry.metadata &&
-            'type' in entry.metadata &&
-            entry.metadata.type === 'trpc.file.createFile' &&
-            'storedAsId' in entry.metadata
-          ) {
-            try {
-              await manifestDb.delete(
-                ObjectStoreName.PendingFiles,
-                entry.metadata.storedAsId as string,
-              );
-            } catch (e) {
-              console.error(
-                'Failed to delete file from local db after successful upload',
-                e,
-              );
-            }
-          }
-        } else {
-          await queue.pushRequest(entry);
-
-          throw new Error('Queue sync failed due to server error');
-        }
-      } catch (error) {
-        await queue.pushRequest(entry);
-
-        console.error('Replay failed for request', entry.request, error);
-      }
-    }
-  },
-});
 
 addEventListener('message', async (event) => {
   if (!event.data?.type) {
@@ -143,6 +94,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       await self.clients.claim();
+      await caches.delete('artifact-asset-cache');
 
       await caches
         .delete(APP_SRC_CACHE_NAME)
@@ -209,5 +161,4 @@ registerRoute(
   }),
 );
 
-registerCreateFileRoute(bgSyncQueue);
 registerFileRedirectRoute();
