@@ -1,11 +1,18 @@
 import { onAuthenticatePayload } from '@hocuspocus/server';
 
-import { isSessionExpired, logger, metrics } from '@feynote/api-services';
+import {
+  isSessionExpired,
+  logger,
+  metrics,
+  splitDocumentName,
+  SupportedDocumentType,
+} from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
-import { splitDocumentName } from './splitDocumentName';
-import { SupportedDocumentType } from './SupportedDocumentType';
 import { ArtifactAccessLevel } from '@prisma/client';
-import { getArtifactAccessLevel } from '@feynote/shared-utils';
+import {
+  getArtifactAccessLevel,
+  getWorkspaceAccessLevel,
+} from '@feynote/shared-utils';
 
 export async function onAuthenticate(args: onAuthenticatePayload) {
   const [type, identifier] = splitDocumentName(args.documentName);
@@ -99,6 +106,59 @@ export async function onAuthenticate(args: onAuthenticatePayload) {
         }
 
         context.isOwner = true;
+
+        break;
+      }
+      case SupportedDocumentType.Workspace: {
+        let accessLevel: ArtifactAccessLevel = ArtifactAccessLevel.noaccess;
+
+        const inMemoryDoc = args.instance.documents.get(args.documentName);
+        if (inMemoryDoc) {
+          accessLevel = getWorkspaceAccessLevel(inMemoryDoc, context.userId);
+        } else {
+          const workspace = await prisma.workspace.findUnique({
+            where: {
+              id: identifier,
+            },
+            select: {
+              userId: true,
+              linkAccessLevel: true,
+              workspaceShares: {
+                select: {
+                  userId: true,
+                  accessLevel: true,
+                },
+              },
+            },
+          });
+
+          if (!workspace) {
+            logger.debug(
+              'User attempted to connect to workspace that does not exist',
+            );
+            throw new Error();
+          }
+
+          accessLevel = getWorkspaceAccessLevel(workspace, context.userId);
+        }
+
+        if (accessLevel === ArtifactAccessLevel.noaccess) {
+          logger.debug(
+            'User attempted to connect to workspace that they do not have access to',
+          );
+          throw new Error();
+        }
+
+        if (
+          accessLevel !== ArtifactAccessLevel.readwrite &&
+          accessLevel !== ArtifactAccessLevel.coowner
+        ) {
+          args.connectionConfig.readOnly = true;
+        }
+
+        if (accessLevel === ArtifactAccessLevel.coowner) {
+          context.isOwner = true;
+        }
 
         break;
       }

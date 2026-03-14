@@ -3,10 +3,8 @@ import { prisma } from '@feynote/prisma/client';
 import { TRPCError } from '@trpc/server';
 
 import { artifactDetail } from '@feynote/prisma/types';
-import {
-  getSignedUrlForFilePurpose,
-  hasArtifactAccess,
-} from '@feynote/api-services';
+import { getSignedUrlForFilePurpose } from '@feynote/api-services';
+import { getArtifactAccessLevel } from '@feynote/shared-utils';
 import { publicProcedure } from '../../trpc';
 
 const SIGNED_URL_EXPIRATION_SECONDS = 86400;
@@ -43,7 +41,10 @@ export const getFileUrlById = publicProcedure
         ...artifactDetail,
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
+      if (
+        !artifact ||
+        getArtifactAccessLevel(artifact, ctx.session?.userId) === 'noaccess'
+      ) {
         throw new TRPCError({
           message: 'You do not have access to this file',
           code: 'FORBIDDEN',

@@ -112,6 +112,15 @@ const dumpManifestDb = async () => {
       ObjectStoreName.ArtifactSnapshots,
     ),
     pendingArtifacts: await manifestDb.getAll(ObjectStoreName.PendingArtifacts),
+    workspaceVersions: await manifestDb.getAll(
+      ObjectStoreName.WorkspaceVersions,
+    ),
+    workspaceSnapshots: await manifestDb.getAll(
+      ObjectStoreName.WorkspaceSnapshots,
+    ),
+    pendingWorkspaces: await manifestDb.getAll(
+      ObjectStoreName.PendingWorkspaces,
+    ),
     knownUsers: await manifestDb.getAll(ObjectStoreName.KnownUsers),
     authorizedCollaborationScopes: await manifestDb.getAll(
       ObjectStoreName.AuthorizedCollaborationScopes,

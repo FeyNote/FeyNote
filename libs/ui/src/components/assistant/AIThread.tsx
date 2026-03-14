@@ -1,5 +1,6 @@
 import { IonContent, IonPage } from '@ionic/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
@@ -30,6 +31,9 @@ import {
 } from '../AppIcons';
 import type { IconType } from 'react-icons';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
+import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
+import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { WorkspaceInfoCard } from '../workspace/WorkspaceInfoCard';
 
 const EmptyMessageContainer = styled.div`
   height: 100%;
@@ -120,13 +124,19 @@ interface Props {
 
 export const AIThread: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate, pane } = usePaneContext();
+  const { navigate, pane, isPaneFocused } = usePaneContext();
   const [title, setTitle] = useState<string | null>(null);
   const [isLoadingInitialState, setIsLoadingInitialState] = useState(true);
   const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const sessionContext = useSessionContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { showAlert } = useAlertContext();
+  const { sidemenuContentRef } = useSidemenuContext();
+  const { getWorkspaceIdsForThreadId } = useWorkspaceSnapshots();
+  const workspaceIdsForThread = useMemo(
+    () => getWorkspaceIdsForThreadId(props.id),
+    [props.id, getWorkspaceIdsForThreadId],
+  );
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');
   const [retryConfirmMessageId, setRetryConfirmMessageId] = useState<
@@ -433,6 +443,12 @@ export const AIThread: React.FC<Props> = (props) => {
           },
         ]}
       />
+      {isPaneFocused &&
+        sidemenuContentRef.current &&
+        createPortal(
+          <WorkspaceInfoCard workspaceIds={workspaceIdsForThread} />,
+          sidemenuContentRef.current,
+        )}
     </IonPage>
   );
 };

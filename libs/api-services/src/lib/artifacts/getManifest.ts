@@ -34,10 +34,40 @@ export async function getManifest(userId: string) {
     },
   });
 
-  const [artifacts, artifactShares] = await Promise.all([
-    artifactsPromise,
-    artifactSharesPromise,
-  ]);
+  const ownedWorkspacesPromise = prisma.workspace.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      id: true,
+      updatedAt: true,
+    },
+  });
+
+  const sharedWorkspacesPromise = prisma.workspaceShare.findMany({
+    where: {
+      userId,
+      accessLevel: {
+        not: ArtifactAccessLevel.noaccess,
+      },
+    },
+    select: {
+      workspace: {
+        select: {
+          id: true,
+          updatedAt: true,
+        },
+      },
+    },
+  });
+
+  const [artifacts, artifactShares, ownedWorkspaces, sharedWorkspaces] =
+    await Promise.all([
+      artifactsPromise,
+      artifactSharesPromise,
+      ownedWorkspacesPromise,
+      sharedWorkspacesPromise,
+    ]);
 
   const allArtifactsMap = new Map(
     artifacts
@@ -111,6 +141,7 @@ export async function getManifest(userId: string) {
   const manifest: Manifest = {
     edges,
     artifactVersions: {},
+    workspaceVersions: {},
   };
 
   for (const artifact of artifacts) {
@@ -119,6 +150,14 @@ export async function getManifest(userId: string) {
   for (const artifactShare of artifactShares) {
     manifest.artifactVersions[artifactShare.artifact.id] =
       artifactShare.artifact.updatedAt.getTime();
+  }
+
+  for (const workspace of ownedWorkspaces) {
+    manifest.workspaceVersions[workspace.id] = workspace.updatedAt.getTime();
+  }
+  for (const workspaceShare of sharedWorkspaces) {
+    manifest.workspaceVersions[workspaceShare.workspace.id] =
+      workspaceShare.workspace.updatedAt.getTime();
   }
 
   return manifest;

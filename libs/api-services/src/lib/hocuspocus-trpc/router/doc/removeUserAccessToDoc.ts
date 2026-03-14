@@ -3,9 +3,13 @@ import { z } from 'zod';
 import {
   getMetaFromYArtifact,
   getUserAccessFromYArtifact,
+  getWorkspaceMetaFromYDoc,
+  getWorkspaceUserAccessFromYDoc,
 } from '@feynote/shared-utils';
 import { TRPCError } from '@trpc/server';
 import { logger } from '../../../logging/logger';
+import { splitDocumentName } from '../../../hocuspocus/splitDocumentName';
+import { SupportedDocumentType } from '../../../hocuspocus/SupportedDocumentType';
 
 export const removeUserAccessToDoc = authenticatedHocuspocusTrpcProcedure
   .input(
@@ -15,6 +19,15 @@ export const removeUserAccessToDoc = authenticatedHocuspocusTrpcProcedure
     }),
   )
   .mutation(async (args): Promise<string> => {
+    const [type] = splitDocumentName(args.input.documentName);
+
+    if (type === SupportedDocumentType.UserTree) {
+      throw new TRPCError({
+        message: 'Cannot remove user access from a user tree',
+        code: 'BAD_REQUEST',
+      });
+    }
+
     const connection =
       await args.ctx.hocuspocusServer.hocuspocus.openDirectConnection(
         args.input.documentName,
@@ -22,9 +35,19 @@ export const removeUserAccessToDoc = authenticatedHocuspocusTrpcProcedure
       );
 
     await connection.transact((yDoc) => {
-      const yArtifactMeta = getMetaFromYArtifact(yDoc);
+      let ownerId: string | undefined;
+      switch (type) {
+        case SupportedDocumentType.Artifact: {
+          ownerId = getMetaFromYArtifact(yDoc).userId;
+          break;
+        }
+        case SupportedDocumentType.Workspace: {
+          ownerId = getWorkspaceMetaFromYDoc(yDoc).userId;
+          break;
+        }
+      }
 
-      if (args.input.userId === yArtifactMeta.userId) {
+      if (args.input.userId === ownerId) {
         logger.warn(
           `Owner of document attempted to remove themselves: ${args.input.documentName} ${args.input.userId}`,
         );
@@ -36,8 +59,16 @@ export const removeUserAccessToDoc = authenticatedHocuspocusTrpcProcedure
         });
       }
 
-      const userAccess = getUserAccessFromYArtifact(yDoc);
-      userAccess.delete(args.input.userId);
+      switch (type) {
+        case SupportedDocumentType.Artifact: {
+          getUserAccessFromYArtifact(yDoc).delete(args.input.userId);
+          break;
+        }
+        case SupportedDocumentType.Workspace: {
+          getWorkspaceUserAccessFromYDoc(yDoc).delete(args.input.userId);
+          break;
+        }
+      }
     });
 
     await connection.disconnect();

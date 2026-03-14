@@ -11,6 +11,7 @@ export const searchArtifacts = authenticatedProcedure
     z.object({
       query: z.string(),
       limit: z.number().min(1).max(100).optional(),
+      workspaceId: z.string().uuid().optional(),
     }),
   )
   .query(
@@ -29,6 +30,7 @@ export const searchArtifacts = authenticatedProcedure
         {
           prefix: true,
           limit: input.limit || 50,
+          workspaceId: input.workspaceId,
         },
       );
       const searchResultArtifactIds = searchResults.map(

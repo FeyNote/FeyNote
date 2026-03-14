@@ -9,6 +9,8 @@ import { useSessionContext } from '../../context/session/SessionContext';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { getTiptapExtensions } from './tiptap/getTiptapExtensions';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { mentionMenuOptsRef } from './tiptap/extensions/artifactReferences/ArtifactReferencesExtension';
 
 type DocArgOptions =
   | {
@@ -39,6 +41,12 @@ export const useTiptapEditor = (args: UseArtifactEditorArgs) => {
   const { t } = useTranslation();
   const sessionContext = useSessionContext(true);
   const { getPreference } = usePreferencesContext();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+
+  mentionMenuOptsRef.currentWorkspaceId = currentWorkspaceId;
+  mentionMenuOptsRef.referenceSearchAcrossAll = getPreference(
+    PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
+  );
 
   const preferredUserColor = getPreference(PreferenceNames.CollaborationColor);
 

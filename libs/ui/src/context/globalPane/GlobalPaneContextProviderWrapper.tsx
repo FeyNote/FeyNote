@@ -65,7 +65,7 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
             ),
             config: {
               component: PaneableComponent.Dashboard,
-              props: {},
+              props: { workspaceId: null },
               navigationEventId: crypto.randomUUID(),
             },
           },
@@ -117,7 +117,7 @@ export const GlobalPaneContextProviderWrapper: React.FC<Props> = ({
 
     currentView = currentView || {
       component: PaneableComponent.Dashboard,
-      props: {},
+      props: { workspaceId: null },
       navigationEventId: crypto.randomUUID(),
     };
 

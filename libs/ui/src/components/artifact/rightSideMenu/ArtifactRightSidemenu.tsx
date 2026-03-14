@@ -13,7 +13,10 @@ import { trpc } from '../../../utils/trpc';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
-import { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
+import {
+  CollaborationManagerConnection,
+  withCollaborationConnection,
+} from '../../../utils/collaboration/collaborationManager';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
 import { cog, link, person } from 'ionicons/icons';
@@ -39,8 +42,13 @@ import {
 } from '../../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useEdgesForArtifactId } from '../../../utils/localDb/edges/useEdgesForArtifactId';
+import { useCurrentWorkspaceId } from '../../../utils/workspace/useCurrentWorkspaceId';
 import { useAlertContext } from '../../../context/alert/AlertContext';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
+import { getAcceptedIncomingSharedArtifactIdsFromYDoc } from '../../../utils/artifactTree/getAcceptedIncomingSharedArtifactIdsFromYDoc';
+import { recursiveRemoveFromArtifactTree } from '../../../utils/artifactTree/recursiveRemoveFromArtifactTree';
+import { useWorkspaceSnapshots } from '../../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { WorkspaceInfoCard } from '../../workspace/WorkspaceInfoCard';
 
 const LOCAL_GRAPH_ENABLED = false;
 
@@ -63,18 +71,25 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     props.connection,
   );
   const { navigate } = useGlobalPaneContext();
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { getWorkspaceIdsForArtifactId } = useWorkspaceSnapshots();
+  const workspaceIdsForArtifact = useMemo(
+    () => getWorkspaceIdsForArtifactId(props.artifactId),
+    [props.artifactId, getWorkspaceIdsForArtifactId],
+  );
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [showManagementDialog, setShowSharingManagementDialog] =
     useState(false);
   const { session } = useSessionContext();
   const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
-  const { userAccessYKV, _rerenderReducerValue } =
-    useObserveYArtifactUserAccess(props.connection.yjsDoc);
+  const { userAccessYKV, rerenderReducerValue } = useObserveYArtifactUserAccess(
+    props.connection.yjsDoc,
+  );
   const activeUserShares = useMemo(() => {
     return userAccessYKV.yarray
       .toArray()
       .filter((el) => el.val.accessLevel !== 'noaccess');
-  }, [_rerenderReducerValue]);
+  }, [rerenderReducerValue]);
   const { incomingEdges, outgoingEdges } = useEdgesForArtifactId(
     props.artifactId,
   );
@@ -210,18 +225,31 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
-  const _removeSelfAsCollaborator = () => {
-    trpc.artifact.removeSelfAsCollaborator
+  const _removeSelfAsCollaborator = async () => {
+    await withCollaborationConnection(
+      `userTree:${session.userId}`,
+      async (connection) => {
+        const inboxYKV = getAcceptedIncomingSharedArtifactIdsFromYDoc(
+          connection.yjsDoc,
+        );
+        inboxYKV.delete(props.artifactId);
+        recursiveRemoveFromArtifactTree({
+          ref: connection.yjsDoc,
+          nodeIds: new Set([props.artifactId]),
+        });
+      },
+    );
+
+    navigate(
+      undefined,
+      PaneableComponent.Dashboard,
+      { workspaceId: currentWorkspaceId },
+      PaneTransition.Replace,
+    );
+
+    await trpc.artifact.removeSelfAsCollaborator
       .mutate({
         artifactId: props.artifactId,
-      })
-      .then(() => {
-        navigate(
-          undefined,
-          PaneableComponent.Dashboard,
-          {},
-          PaneTransition.Replace,
-        );
       })
       .catch((e) => {
         handleTRPCErrors(e);
@@ -367,6 +395,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
+      <WorkspaceInfoCard workspaceIds={workspaceIdsForArtifact} />
       {aritfactSettings}
       <ArtifactTableOfContents
         artifactId={props.artifactId}

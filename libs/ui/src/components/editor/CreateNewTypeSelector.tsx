@@ -49,7 +49,7 @@ interface Props {
   newAIThread: () => void;
 }
 
-export const ArtifactTypeSelector = (props: Props) => {
+export const CreateNewTypeSelector = (props: Props) => {
   const { t } = useTranslation();
 
   return (

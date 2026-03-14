@@ -30,6 +30,7 @@ import {
 } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
 import type { TLRecord } from 'tldraw';
+import type { IndexableArtifact } from '@feynote/search';
 
 export const artifactUpdateQueueWorker = new Worker<
   ArtifactUpdateQueueItem,
@@ -147,6 +148,13 @@ export const artifactUpdateQueueWorker = new Worker<
           if (newYMeta.deletedAt) {
             await searchProvider.deleteArtifacts([args.data.artifactId]);
           } else {
+            const workspaceArtifacts = await tx.workspaceArtifact.findMany({
+              where: { artifactId: args.data.artifactId },
+              select: { workspaceId: true },
+            });
+
+            const workspaceIds = workspaceArtifacts.map((wa) => wa.workspaceId);
+
             const indexableArtifact = {
               id: args.data.artifactId,
               userId: args.data.userId,
@@ -155,14 +163,16 @@ export const artifactUpdateQueueWorker = new Worker<
                 readableUserIds: oldReadableUserIds,
                 text: oldText,
                 jsonContent: oldJSONContent,
+                workspaceIds,
               },
               newState: {
                 title: newTitle,
                 readableUserIds: newReadableUserIds,
                 text: newText,
                 jsonContent: newJSONContent,
+                workspaceIds,
               },
-            };
+            } satisfies IndexableArtifact;
 
             await searchProvider.indexArtifact(indexableArtifact);
           }

@@ -5,12 +5,11 @@ import {
   defineExpressHandler,
   ForbiddenExpressError,
   getSignedUrlForFilePurpose,
-  hasArtifactAccess,
   NotFoundExpressError,
 } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { artifactDetail } from '@feynote/prisma/types';
-import { hmacSha256Hex } from '@feynote/shared-utils';
+import { getArtifactAccessLevel, hmacSha256Hex } from '@feynote/shared-utils';
 
 const SIGNED_URL_EXPIRATION_SECONDS = 86400;
 
@@ -89,7 +88,10 @@ export const goToFileUrlByIdHandler = defineExpressHandler(
         ...artifactDetail,
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, session?.userId)) {
+      if (
+        !artifact ||
+        getArtifactAccessLevel(artifact, session?.userId) === 'noaccess'
+      ) {
         throw new ForbiddenExpressError('You do not have access to this file');
       }
     } else {

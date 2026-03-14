@@ -35,6 +35,7 @@ const allArtifactsOrphansDisplaySettingToI18n: Record<
 };
 
 export interface FilterOptions {
+  workspaceId: string | null;
   havingTitleText: string;
   byUser: ReadonlySet<string>;
   orphans: AllArtifactsOrphansDisplaySetting;

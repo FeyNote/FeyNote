@@ -22,7 +22,9 @@ export const useCollaborationConnectionStatus = (
   hocuspocusSynced: boolean;
   isDestroyed: boolean;
 } => {
-  const [isDestroyed, setIsDestroyed] = useState(false);
+  const [isDestroyed, setIsDestroyed] = useState(
+    connection.isDestroyed || connection.yjsDoc.isDestroyed,
+  );
   const [connectionStatus, setConnectionStatus] = useState(
     connection.ws.status,
   );
@@ -40,7 +42,7 @@ export const useCollaborationConnectionStatus = (
   );
 
   const listener = () => {
-    setIsDestroyed(connection.isDestroyed);
+    setIsDestroyed(connection.isDestroyed || connection.yjsDoc.isDestroyed);
     setConnectionStatus(connection.ws.status);
     setAuthenticationStatus(connection.authenticationStatus);
     setAuthorizedScope(connection.authorizedScope);
