@@ -129,7 +129,6 @@
     "workbox-routing": "^7.4.0",
     "workbox-strategies": "^7.4.0",
     "workbox-sw": "^7.4.0",
-    "y-indexeddb": "^9.0.12",
     "y-utility": "^0.1.4",
     "yjs": "^13.6.29",
     "zip-stream": "^7.0.2",
