@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 import {
-  HocuspocusAuthorizedScope,
+  CollaborationConnectionAuthorizationState,
   withCollaborationConnection,
 } from '../collaboration/collaborationManager';
 import {
@@ -9,8 +9,6 @@ import {
   getUserAccessFromYArtifact,
   PreferenceNames,
   WorkspaceArtifactSharingMode,
-  getWorkspaceAccessLevel,
-  getArtifactAccessLevel,
   ARTIFACT_ACCESS_LEVELS_RANKED,
   getMetaFromYArtifact,
   ARTIFACT_META_KEY,
@@ -22,7 +20,6 @@ import type {
   SetPreferenceHandler,
 } from '../../context/preferences/PreferencesContext';
 import type { YArtifactUserAccess } from '@feynote/global-types';
-import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 import type { ArtifactAccessLevel } from '@prisma/client';
 
 export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
@@ -35,7 +32,6 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
 }) => {
   let workspaceMembers: { key: string; val: YArtifactUserAccess }[] = [];
   let workspaceLinkAccessLevel = 'noaccess' as ArtifactAccessLevel;
-  const session = await appIdbStorageManager.getSession();
   let canEditWorkspace = false;
 
   await withCollaborationConnection(
@@ -51,13 +47,11 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
 
       const artifacts = getWorkspaceArtifactsFromYDoc(connection.yjsDoc);
 
-      const accessLevel = getWorkspaceAccessLevel(
-        connection.yjsDoc,
-        session?.userId,
-      );
       canEditWorkspace =
-        connection.authorizedScope === HocuspocusAuthorizedScope.ReadWrite &&
-        (accessLevel === 'coowner' || accessLevel === 'readwrite');
+        connection.authorizationState ===
+          CollaborationConnectionAuthorizationState.CoOwner ||
+        connection.authorizationState ===
+          CollaborationConnectionAuthorizationState.ReadWrite;
 
       if (canEditWorkspace) {
         connection.yjsDoc.transact(() => {
@@ -92,13 +86,9 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
           .map((el) => [el.key, el.val]),
       );
 
-      const accessLevel = getArtifactAccessLevel(
-        connection.yjsDoc,
-        session?.userId,
-      );
       canEditArtifactSharing =
-        connection.authorizedScope === HocuspocusAuthorizedScope.ReadWrite &&
-        accessLevel === 'coowner';
+        connection.authorizationState ===
+        CollaborationConnectionAuthorizationState.CoOwner;
     },
   );
 

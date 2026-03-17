@@ -19,6 +19,7 @@ export async function getKnownUsersAction(): Promise<KnownUserDoc[]> {
       for (const item of result) {
         await store.put(item);
       }
+      tx.commit();
       await tx.done;
     } catch {
       // Cache update failed, that's okay

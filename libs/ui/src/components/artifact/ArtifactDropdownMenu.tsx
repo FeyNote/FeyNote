@@ -2,10 +2,12 @@ import { useTranslation } from 'react-i18next';
 import { PaneContextData } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
-import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
+import {
+  CollaborationConnectionAuthorizationState,
+  CollaborationManagerConnection,
+} from '../../utils/collaboration/collaborationManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { ArtifactLinkDropdownMenu } from './ArtifactLinkContextMenu';
 import { DropdownMenu } from '@radix-ui/themes';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
@@ -21,7 +23,7 @@ interface Props {
   connection: CollaborationManagerConnection;
   pane: PaneContextData['pane'];
   navigate: PaneContextData['navigate'];
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   children: React.ReactNode;
 }
 
@@ -57,8 +59,8 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
       </DropdownMenu.Item>
     </DropdownMenu.Group>
   );
-  const extraAfter = props.authorizedScope ===
-    CollaborationConnectionAuthorizedScope.CoOwner &&
+  const extraAfter = props.authorizationState ===
+    CollaborationConnectionAuthorizationState.CoOwner &&
     deletedAt && (
       <DropdownMenu.Group>
         <DropdownMenu.Item onClick={props.triggerUndelete}>

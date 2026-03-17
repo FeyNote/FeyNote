@@ -1,14 +1,7 @@
 import { deleteDB } from 'idb';
 import * as Sentry from '@sentry/browser';
 import type { SearchManager } from './SearchManager';
-import {
-  HocuspocusProvider,
-  HocuspocusProviderWebsocket,
-} from '@hocuspocus/provider';
-import { getApiUrls } from '../getApiUrls';
-import { Doc, encodeStateAsUpdate } from 'yjs';
 import { trpc } from '../trpc';
-import { IndexeddbPersistence } from 'y-indexeddb';
 import {
   Edge,
   getEdgeId,
@@ -33,6 +26,8 @@ import { appIdbStorageManager } from './AppIdbStorageManager';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
 import { getIsViteDevelopment } from '../getIsViteDevelopment';
+import { withCollaborationConnection } from '../collaboration/collaborationManager';
+import { YIndexedDBProvider } from '../collaboration/YIndexedDBProvider';
 
 enum SyncReason {
   VersionNotPresentInLocal = 'versionNotPresentInLocal',
@@ -264,6 +259,7 @@ export class SyncManager {
           }
         }
 
+        edgesTx.commit();
         await edgesTx.done;
 
         if (modifiedEdgeArtifactIds.size) {
@@ -367,16 +363,8 @@ export class SyncManager {
       }
 
       this._syncCheckAbort(signal);
-      if (artifactIdsNeedsSync.size) {
-        // We instantiate a fresh websocket every time, since websockets get killed/closed
-        // when left hanging without presence/awareness enabled
-        const ws = new HocuspocusProviderWebsocket({
-          url: getApiUrls().hocuspocus,
-          delay: 50,
-          minDelay: 50,
-          maxDelay: 1000,
-        });
 
+      if (artifactIdsNeedsSync.size) {
         // We must operate in batches, because loading every single document in existence at the same time is dumb.
         const batches = [...artifactIdsNeedsSync].reduce((batches, id) => {
           const previousBatch = batches.at(-1);
@@ -394,13 +382,11 @@ export class SyncManager {
           await Promise.all(
             batch.map((artifactId) => {
               this._syncCheckAbort(signal);
-              return this.syncArtifact(artifactId, latestManifest, ws);
+              return this.syncArtifact(artifactId, latestManifest);
             }),
           );
           await waitFor(SYNC_BATCH_RATE_LIMIT_WAIT);
         }
-
-        ws.destroy();
       }
 
       // ==== Update Workspaces ====
@@ -481,19 +467,10 @@ export class SyncManager {
 
       this._syncCheckAbort(signal);
       if (workspaceIdsNeedsSync.size) {
-        const workspaceWs = new HocuspocusProviderWebsocket({
-          url: getApiUrls().hocuspocus,
-          delay: 50,
-          minDelay: 50,
-          maxDelay: 1000,
-        });
-
         for (const workspaceId of workspaceIdsNeedsSync) {
           this._syncCheckAbort(signal);
-          await this.syncWorkspace(workspaceId, latestManifest, workspaceWs);
+          await this.syncWorkspace(workspaceId, latestManifest);
         }
-
-        workspaceWs.destroy();
       }
 
       await manifestDb.put(ObjectStoreName.KV, {
@@ -553,12 +530,9 @@ export class SyncManager {
   private async syncArtifact(
     artifactId: string,
     manifest: Manifest,
-    ws: HocuspocusProviderWebsocket,
   ): Promise<void> {
     const docName = this.getDocName(artifactId);
     console.log('Syncing', docName);
-    const session = await appIdbStorageManager.getSession();
-    if (!session) throw new Error('ERROR: Sync initiated without a token');
 
     const manifestDb = await getManifestDb();
     const snapshot = await manifestDb.get(
@@ -592,94 +566,59 @@ export class SyncManager {
       return;
     }
 
-    const doc = new Doc();
-    const indexeddbProvider = new IndexeddbPersistence(docName, doc);
-    await indexeddbProvider.whenSynced;
-
     if (snapshot?.createdLocally) {
+      const yBin = await YIndexedDBProvider.getDocAsUpdate(docName);
       await trpc.artifact.createArtifact.mutate({
-        yBin: encodeStateAsUpdate(doc),
+        yBin,
       });
     }
 
-    const tiptapCollabProvider = new HocuspocusProvider({
-      name: docName,
-      document: doc,
-      token: session.token,
-      websocketProvider: ws,
-      awareness: null,
-    });
+    await withCollaborationConnection(
+      docName,
+      async (connection, abortController) => {
+        if (abortController.signal.aborted) return;
 
-    const ttpSyncP = new Promise<void>((resolve) => {
-      tiptapCollabProvider.on('synced', () => {
-        resolve();
-      });
-    });
-    const timeout = new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        resolve(false);
-      }, ARTIFACT_SYNC_TIMEOUT_MS);
-    });
+        await this.searchManager.indexPartialArtifact(
+          artifactId,
+          connection.yjsDoc,
+          'all',
+        );
 
-    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
-    // It wires up all of the internal event listeners.
-    tiptapCollabProvider.attach();
+        if (abortController.signal.aborted) return;
 
-    const cleanup = async () => {
-      tiptapCollabProvider.destroy();
-      await indexeddbProvider.destroy();
-    };
-    const result = await Promise.race([timeout, ttpSyncP]);
+        await appIdbStorageManager.updateLocalArtifactSnapshot(
+          artifactId,
+          {
+            meta: getMetaFromYArtifact(connection.yjsDoc),
+            userAccess: Array.from(
+              getUserAccessFromYArtifact(connection.yjsDoc).map.values(),
+            ),
+            updatedAt: manifest.artifactVersions[artifactId],
+            createdLocally: false, // We set this to false now that the server has this artifact, which means it's synced and no longer needs to be preserved.
+          },
+          {
+            create: true,
+            createdLocally: false,
+          },
+        );
 
-    if (result === false) {
-      console.error(
-        `Sync attempt for artifact ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
-      );
-      await cleanup();
-      return;
-    }
-
-    await this.searchManager.indexPartialArtifact(artifactId, doc, 'all');
-
-    if (tiptapCollabProvider.authorizedScope) {
-      await appIdbStorageManager.setAuthorizedCollaborationScope(
-        docName,
-        tiptapCollabProvider.authorizedScope,
-      );
-    }
-
-    await appIdbStorageManager.updateLocalArtifactSnapshot(
-      artifactId,
-      {
-        meta: getMetaFromYArtifact(doc),
-        userAccess: Array.from(getUserAccessFromYArtifact(doc).map.values()),
-        updatedAt: manifest.artifactVersions[artifactId],
-        createdLocally: false, // We set this to false now that the server has this artifact, which means it's synced and no longer needs to be preserved.
+        // We do this as one of the very last steps, since we're effectively saying "we're up to date now"
+        await manifestDb.put(ObjectStoreName.ArtifactVersions, {
+          id: artifactId,
+          version: manifest.artifactVersions[artifactId],
+        });
       },
-      {
-        create: true,
-        createdLocally: false,
-      },
+      ARTIFACT_SYNC_TIMEOUT_MS,
+      'fullsync',
     );
-
-    // We do this as one of the very last steps, since we're effectively saying "we're up to date now"
-    await manifestDb.put(ObjectStoreName.ArtifactVersions, {
-      id: artifactId,
-      version: manifest.artifactVersions[artifactId],
-    });
-
-    await cleanup();
   }
 
   private async syncWorkspace(
     workspaceId: string,
     manifest: Manifest,
-    ws: HocuspocusProviderWebsocket,
   ): Promise<void> {
     const docName = `workspace:${workspaceId}`;
     console.log('Syncing', docName);
-    const session = await appIdbStorageManager.getSession();
-    if (!session) throw new Error('ERROR: Sync initiated without a token');
 
     const manifestDb = await getManifestDb();
     const snapshot = await manifestDb.get(
@@ -710,97 +649,57 @@ export class SyncManager {
       return;
     }
 
-    const doc = new Doc();
-    const indexeddbProvider = new IndexeddbPersistence(docName, doc);
-    await indexeddbProvider.whenSynced;
-
     if (snapshot?.createdLocally) {
+      const yBin = await YIndexedDBProvider.getDocAsUpdate(docName);
       await trpc.workspace.createWorkspace.mutate({
-        yBin: encodeStateAsUpdate(doc),
+        yBin,
       });
     }
 
-    const tiptapCollabProvider = new HocuspocusProvider({
-      name: docName,
-      document: doc,
-      token: session.token,
-      websocketProvider: ws,
-      awareness: null,
-    });
+    await withCollaborationConnection(
+      docName,
+      async (connection, abortController) => {
+        if (abortController.signal.aborted) return;
 
-    const ttpSyncP = new Promise<void>((resolve) => {
-      tiptapCollabProvider.on('synced', () => {
-        resolve();
-      });
-    });
-    const timeout = new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        resolve(false);
-      }, WORKSPACE_SYNC_TIMEOUT_MS);
-    });
+        const doc = connection.yjsDoc;
+        const meta = getWorkspaceMetaFromYDoc(doc);
+        const userAccessKV = getWorkspaceUserAccessFromYDoc(doc);
+        const artifactsKV = getWorkspaceArtifactsFromYDoc(doc);
+        const threadsKV = getWorkspaceThreadsFromYDoc(doc);
 
-    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
-    // It wires up all of the internal event listeners.
-    tiptapCollabProvider.attach();
+        if (!meta.id || !meta.userId) {
+          console.error('Synced document is missing required fields');
+          return;
+        }
 
-    const cleanup = async () => {
-      tiptapCollabProvider.destroy();
-      await indexeddbProvider.destroy();
-    };
-    const result = await Promise.race([timeout, ttpSyncP]);
+        await appIdbStorageManager.updateLocalWorkspaceSnapshot(
+          workspaceId,
+          {
+            meta: {
+              ...meta,
+              id: meta.id, // This syntax is used to satisfy Typescript type narrowing from the check above
+              userId: meta.userId,
+            },
+            userAccess: [...userAccessKV.yarray.toArray()],
+            updatedAt: manifest.workspaceVersions[workspaceId] ?? Date.now(),
+            artifactIds: [...artifactsKV.yarray.toArray()].map((el) => el.key),
+            threadIds: [...threadsKV.yarray.toArray()].map((el) => el.key),
+            createdLocally: false,
+          },
+          {
+            create: true,
+            createdLocally: false,
+          },
+        );
 
-    if (result === false) {
-      console.error(
-        `Sync attempt for workspace ${workspaceId} timed out after ${WORKSPACE_SYNC_TIMEOUT_MS / 1000} seconds!`,
-      );
-      await cleanup();
-      return;
-    }
-
-    if (tiptapCollabProvider.authorizedScope) {
-      await appIdbStorageManager.setAuthorizedCollaborationScope(
-        docName,
-        tiptapCollabProvider.authorizedScope,
-      );
-    }
-
-    const meta = getWorkspaceMetaFromYDoc(doc);
-    const userAccessKV = getWorkspaceUserAccessFromYDoc(doc);
-    const artifactsKV = getWorkspaceArtifactsFromYDoc(doc);
-    const threadsKV = getWorkspaceThreadsFromYDoc(doc);
-
-    if (!meta.id || !meta.userId) {
-      console.error('Synced document is missing required fields');
-      await cleanup();
-      return;
-    }
-
-    await appIdbStorageManager.updateLocalWorkspaceSnapshot(
-      workspaceId,
-      {
-        meta: {
-          ...meta,
-          id: meta.id, // This syntax is used to satisfy Typescript type narrowing from the check above
-          userId: meta.userId,
-        },
-        userAccess: [...userAccessKV.yarray.toArray()],
-        updatedAt: manifest.workspaceVersions[workspaceId] ?? Date.now(),
-        artifactIds: [...artifactsKV.yarray.toArray()].map((el) => el.key),
-        threadIds: [...threadsKV.yarray.toArray()].map((el) => el.key),
-        createdLocally: false,
+        await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
+          id: workspaceId,
+          version: manifest.workspaceVersions[workspaceId],
+        });
       },
-      {
-        create: true,
-        createdLocally: false,
-      },
+      WORKSPACE_SYNC_TIMEOUT_MS,
+      'fullsync',
     );
-
-    await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
-      id: workspaceId,
-      version: manifest.workspaceVersions[workspaceId],
-    });
-
-    await cleanup();
   }
 
   async syncKnownUsers() {
@@ -816,10 +715,10 @@ export class SyncManager {
       'readwrite',
     );
     const knownUsersStore = knownUsersTx.store;
-    await knownUsersStore.clear();
     for (const knownUser of knownUsers) {
-      await knownUsersStore.add(knownUser);
+      await knownUsersStore.put(knownUser);
     }
+    knownUsersTx.commit();
     await knownUsersTx.done;
 
     eventManager.broadcast(EventName.LocaldbKnownUsersUpdated);

@@ -22,6 +22,23 @@ import { localdbMigration_6 } from './migrations/localdbMigration_6';
 import { localdbMigration_7 } from './migrations/localdbMigration_7';
 import { localdbMigration_8 } from './migrations/localdbMigration_8';
 import type { JobSummary } from '@feynote/prisma/types';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
+import type { AuthorizedScope } from '../collaboration/collaborationManager';
+
+export class LocalDBTerminatedError extends Error {
+  constructor() {
+    super();
+    this.name = 'LocalDBTerminatedError';
+  }
+}
+
+export class LocalDBBlockedError extends Error {
+  constructor() {
+    super();
+    this.name = 'LocalDBBlockedError';
+  }
+}
 
 export type MigrationArgs = Parameters<
   NonNullable<OpenDBCallbacks<FeynoteLocalDB>['upgrade']>
@@ -29,7 +46,7 @@ export type MigrationArgs = Parameters<
 
 export interface AuthorizedCollaborationScopeDoc {
   docName: string;
-  accessLevel: string;
+  accessLevel: AuthorizedScope;
 }
 
 export interface ArtifactVersionDoc {
@@ -69,6 +86,7 @@ export enum ObjectStoreName {
   WorkspaceSnapshots = 'workspaceSnapshots',
   WorkspaceVersions = 'workspaceVersions',
   PendingWorkspaces = 'pendingWorkspaces',
+  YUpdates = 'yUpdates',
 }
 
 export enum KVStoreKeys {
@@ -168,6 +186,15 @@ export interface FeynoteLocalDB extends DBSchema {
       id: string;
     };
   };
+  [ObjectStoreName.YUpdates]: {
+    key: [string, number, string];
+    value: {
+      docName: string;
+      ts: number; // Timestamp is used for ordering updates
+      id: string; // This ID is used to dedupe per-tab
+      bin: Uint8Array;
+    };
+  };
   [ObjectStoreName.KV]: {
     key: string;
     value: KVStoreValue[keyof KVStoreValue];
@@ -194,8 +221,13 @@ const MIGRATIONS = [
   localdbMigration_8,
 ];
 
+let lastFailureDueToBlocking = false;
 let errorShown = false;
-const onDbError = () => {
+const onDbError = (error: unknown) => {
+  eventManager.broadcast(EventName.LocaldbIDBError, {
+    error,
+  });
+
   if (
     'registration' in self &&
     self.registration instanceof ServiceWorkerRegistration
@@ -222,33 +254,42 @@ const onDbError = () => {
 const connect = async (healthRef: { healthy: boolean }) => {
   console.info('Connecting to localdb');
   healthRef.healthy = true;
+  let db: IDBPDatabase<FeynoteLocalDB> | undefined;
   const dbP = openDB<FeynoteLocalDB>(`manifest`, MIGRATIONS.length, {
+    blocked: () => {
+      // Our db connections should respect the blocking event and immediately close, so this event should not occur in normal circumstances. If it does, something is wrong.
+      console.warn(
+        'Current database connection is blocked by another connection',
+      );
+      const error = new LocalDBBlockedError();
+      onDbError(error);
+      Sentry.captureException(error);
+    },
     blocking: async () => {
+      healthRef.healthy = false;
       console.warn(
         'Current database connection is blocking another connection',
       );
 
-      dbP.then((db) => {
-        console.warn('Closing and unblocking database connection');
+      lastFailureDueToBlocking = true;
+      console.warn('Closing and unblocking database connection');
+      db?.close();
 
-        db.close();
-
-        if (
-          'registration' in self &&
-          self.registration instanceof ServiceWorkerRegistration
-        ) {
-          console.info('Attempting to update service worker');
-          self.registration.update();
-        } else {
-          // We're in a window
-          const confirmed = prompt(
-            'A new version of the app is available. The app will refresh to load the new version',
-            'Click ok to reload',
-          );
-          if (confirmed) self.location.reload();
-          else alert('The app will not work correctly until it is refreshed');
-        }
-      });
+      if (
+        'registration' in self &&
+        self.registration instanceof ServiceWorkerRegistration
+      ) {
+        console.info('Unregistering self (old db version)');
+        self.registration.unregister();
+      } else {
+        // We're in a window
+        const confirmed = prompt(
+          'A new version of the app is available. The app will refresh to load the new version',
+          'Click ok to reload',
+        );
+        if (confirmed) self.location.reload();
+        else alert('The app will not work correctly until it is refreshed');
+      }
     },
     upgrade: async (db, previousVersion, newVersion, transaction, event) => {
       console.log(
@@ -263,15 +304,17 @@ const connect = async (healthRef: { healthy: boolean }) => {
       console.error('Manifest DB was terminated unexpectedly!');
       healthRef.healthy = false;
 
-      onDbError();
+      onDbError(new LocalDBTerminatedError());
     },
   });
+
+  dbP.then((val) => (db = val));
 
   return dbP.catch((e) => {
     healthRef.healthy = false;
     Sentry.captureException(e);
 
-    onDbError();
+    onDbError(e);
     throw e;
   });
 };
@@ -281,7 +324,7 @@ let dbHealthRef = {
 };
 let manifestDbP: Promise<IDBPDatabase<FeynoteLocalDB>> | undefined = undefined;
 export async function getManifestDb() {
-  if (!manifestDbP || !dbHealthRef.healthy) {
+  if (!manifestDbP || (!dbHealthRef.healthy && !lastFailureDueToBlocking)) {
     dbHealthRef = {
       healthy: true,
     };

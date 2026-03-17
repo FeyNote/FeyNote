@@ -1,71 +1,109 @@
 import {
   HocuspocusProviderWebsocket,
   HocuspocusProvider,
+  WebSocketStatus,
 } from '@hocuspocus/provider';
 import { getApiUrls } from '../getApiUrls';
-import { IndexeddbPersistence } from 'y-indexeddb';
-import { Doc } from 'yjs';
-import { ARTIFACT_META_KEY, type SessionDTO } from '@feynote/shared-utils';
+import { Doc as YDoc, encodeStateAsUpdate } from 'yjs';
+import {
+  getArtifactAccessLevel,
+  getUserAccessFromYArtifact,
+  getWorkspaceAccessLevel,
+  getWorkspaceUserAccessFromYDoc,
+  type SessionDTO,
+} from '@feynote/shared-utils';
 import { incrementVersionForChangesOnArtifact } from '../localDb/incrementVersionForChangesOnArtifact';
 import { incrementVersionForChangesOnWorkspace } from '../localDb/incrementVersionForChangesOnWorkspace';
 import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
-import type { TypedMap } from 'yjs-types';
-import type { YArtifactMeta } from '@feynote/global-types';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
+import { applyLegacyIDBProviderChanges } from './applyLegacyIDBProviderChanges';
+import { YIndexedDBProvider } from './YIndexedDBProvider';
 
-const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 15000;
+const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 22000;
 const TIPTAP_COLLAB_AUTORELEASE_WAIT_MS = 2000;
 
-export enum CollaborationManagerConnectionAuthenticationStatus {
-  Authenticated = 'authenticated',
-  AuthenticationFailed = 'authenticationFailed',
-  Unauthenticated = 'unauthenticated',
+/**
+ * A helpful enum that converts tiptap/hocuspocus authorizedScope into more meaningful states
+ * based on their current authentication status.
+ */
+export enum CollaborationConnectionAuthorizationState {
+  Failed = 'failed',
+  Loading = 'loading',
+  NoAccess = 'noAccess',
+  CoOwner = 'coOwner',
+  ReadWrite = 'readWrite',
+  ReadOnly = 'readOnly',
 }
-export enum HocuspocusAuthorizedScope {
+
+/**
+ * An internal enum to enhance Hocuspocus's native enum (which is poor)
+ */
+export enum AuthorizedScope {
   Uninitialized = 'uninitialized',
   ReadWrite = 'readwrite',
   ReadOnly = 'readonly',
+  AuthenticationFailed = 'authenticationFailed',
 }
+
+export enum CollaborationManagerConnectionEventName {
+  AuthorizationStateChange = 'authorizationStateChange',
+  Destroy = 'destroy',
+}
+
 export class CollaborationManagerConnection {
-  /**
-   * The connection should never destroy itself, since it would remain in the connection manager. Always destroy a connection via the connection manager.
-   * Once set, the destroyed state is irreversable. This is intentional.
-   */
   isDestroyed = false;
-  docName: string;
-  session: SessionDTO | null;
-  yjsDoc: Doc;
+  yjsDoc: YDoc;
   tiptapCollabProvider: HocuspocusProvider;
-  indexeddbProvider: IndexeddbPersistence;
-  ws: HocuspocusProviderWebsocket;
+  indexeddbProvider: YIndexedDBProvider;
+  /**
+   * This is an optimistic view of what comprises a "synced" state.
+   * Will resolve early if IndexedDB is able to sync with non-empty doc
+   */
   syncedPromise: Promise<void>;
-  authorizedScope: HocuspocusAuthorizedScope =
-    HocuspocusAuthorizedScope.Uninitialized;
-  authenticationStatus =
-    CollaborationManagerConnectionAuthenticationStatus.Unauthenticated;
+  /**
+   * Resolves when the doc is fully and entirely synced (local and cloud)
+   */
+  fullSyncedPromise: Promise<void>;
+  private authorizedScope: AuthorizedScope = AuthorizedScope.Uninitialized;
 
-  constructor(args: {
-    docName: string;
-    session: SessionDTO | null;
-    ws: HocuspocusProviderWebsocket;
-    onInvalidated: () => void;
-  }) {
-    this.docName = args.docName;
-    this.session = args.session;
-    this.ws = args.ws;
+  private _authorizationState: CollaborationConnectionAuthorizationState =
+    CollaborationConnectionAuthorizationState.Loading;
+  get authorizationState() {
+    return this._authorizationState;
+  }
+  private set authorizationState(
+    state: CollaborationConnectionAuthorizationState,
+  ) {
+    this._authorizationState = state;
+  }
 
-    this.yjsDoc = new Doc();
-    this.indexeddbProvider = new IndexeddbPersistence(
-      args.docName,
-      this.yjsDoc,
-    );
+  private eventListeners: Record<
+    CollaborationManagerConnectionEventName,
+    Set<() => void>
+  > = {
+    [CollaborationManagerConnectionEventName.AuthorizationStateChange]:
+      new Set(),
+    [CollaborationManagerConnectionEventName.Destroy]: new Set(),
+  };
+
+  constructor(
+    public readonly docName: string,
+    public readonly session: SessionDTO | null,
+    public readonly ws: HocuspocusProviderWebsocket,
+  ) {
+    this.yjsDoc = new YDoc();
+
+    // Migrate legacy content over. Remove after a couple of updates/months
+    applyLegacyIDBProviderChanges(docName, this.yjsDoc);
+
+    this.indexeddbProvider = new YIndexedDBProvider(docName, this.yjsDoc);
     const indexeddbProvider = this.indexeddbProvider;
     this.tiptapCollabProvider = new HocuspocusProvider({
-      name: args.docName,
+      name: docName,
       document: this.yjsDoc,
-      token: args.session?.token || 'anonymous',
-      websocketProvider: args.ws,
+      token: session?.token || 'anonymous',
+      websocketProvider: ws,
       onStateless: (data) => {
         const payload = JSON.parse(data.payload);
 
@@ -77,35 +115,37 @@ export class CollaborationManagerConnection {
             break;
           }
           case 'accessRemoved': {
-            console.warn(`Access to doc ${args.docName} was revoked`);
-            this.tiptapCollabProvider.destroy();
-            args.onInvalidated();
+            console.warn(`Access to doc ${docName} was revoked`);
             this.tiptapCollabProvider.permissionDeniedHandler(
               'CUSTOM FEYNOTE MOCK SEARCHME',
             );
+            this.destroy();
             break;
           }
         }
       },
     });
     const tiptapCollabProvider = this.tiptapCollabProvider;
-    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
-    // It wires up all of the internal event listeners.
-    this.tiptapCollabProvider.attach();
 
-    if (args.docName.startsWith('artifact:')) {
-      incrementVersionForChangesOnArtifact(
-        args.docName.split(':')[1],
-        this.yjsDoc,
-      );
+    if (docName.startsWith('artifact:')) {
+      incrementVersionForChangesOnArtifact(docName.split(':')[1], this.yjsDoc);
     }
 
-    if (args.docName.startsWith('workspace:')) {
-      incrementVersionForChangesOnWorkspace(
-        args.docName.split(':')[1],
-        this.yjsDoc,
-      );
+    if (docName.startsWith('workspace:')) {
+      incrementVersionForChangesOnWorkspace(docName.split(':')[1], this.yjsDoc);
     }
+
+    let authorizedScopeLoadedFromCloud = false;
+    appIdbStorageManager
+      .getAuthorizedCollaborationScope(docName)
+      .then((value) => {
+        // We always prefer cloud authorized scope over our local
+        if (authorizedScopeLoadedFromCloud) return;
+        if (!value) return;
+
+        this.authorizedScope = value;
+        this.updateAuthorizationState();
+      });
 
     this.syncedPromise = Promise.resolve(
       (async () => {
@@ -120,54 +160,95 @@ export class CollaborationManagerConnection {
           }, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
         });
 
-        await Promise.race([
-          indexeddbProvider.whenSynced,
-          tiptapSyncP,
-          timeoutAllP,
-        ]);
+        // We always want the local database to sync because network can be unreliable and
+        // lose user changes
+        await Promise.race([indexeddbProvider.whenSynced, timeoutAllP]);
 
-        const artifactMetaYMap = tiptapCollabProvider.document.getMap(
-          ARTIFACT_META_KEY,
-        ) as TypedMap<Partial<YArtifactMeta>>;
-        if (!artifactMetaYMap.get('id')) {
-          // Local meta is not present reflecting an empty doc, we'll need to attempt a cloud connection.
+        const docSize = encodeStateAsUpdate(indexeddbProvider.doc).byteLength;
+        if (docSize <= 2) {
+          // Local db has an empty doc, we need to wait on cloud sync
           await Promise.race([tiptapSyncP, timeoutAllP]);
         }
       })(),
     );
 
+    this.fullSyncedPromise = Promise.resolve(
+      (async () => {
+        const tiptapSyncP = new Promise<void>((resolve) => {
+          this.tiptapCollabProvider.on('synced', () => {
+            resolve();
+          });
+        });
+        const timeoutAllP = new Promise((_, reject) => {
+          setTimeout(() => {
+            reject();
+          }, TIPTAP_COLLAB_SYNC_TIMEOUT_MS);
+        });
+
+        await Promise.race([
+          Promise.all([indexeddbProvider.whenSynced, tiptapSyncP]),
+          timeoutAllP,
+        ]);
+      })(),
+    );
+
     tiptapCollabProvider.on('authenticated', () => {
-      this.authenticationStatus =
-        CollaborationManagerConnectionAuthenticationStatus.Authenticated;
       switch (tiptapCollabProvider.authorizedScope) {
         case 'read-write': {
-          this.authorizedScope = HocuspocusAuthorizedScope.ReadWrite;
+          this.authorizedScope = AuthorizedScope.ReadWrite;
           break;
         }
         case 'readonly': {
-          this.authorizedScope = HocuspocusAuthorizedScope.ReadOnly;
+          this.authorizedScope = AuthorizedScope.ReadOnly;
           break;
         }
         case undefined: {
-          this.authorizedScope = HocuspocusAuthorizedScope.Uninitialized;
+          this.authorizedScope = AuthorizedScope.Uninitialized;
           break;
         }
         default: {
           throw new Error('Unknown tiptap collab provider authorizedScope');
         }
       }
+      authorizedScopeLoadedFromCloud = true;
+      appIdbStorageManager.setAuthorizedCollaborationScope(
+        docName,
+        this.authorizedScope,
+      );
+      this.updateAuthorizationState();
     });
     tiptapCollabProvider.on('authenticationFailed', () => {
-      this.authenticationStatus =
-        CollaborationManagerConnectionAuthenticationStatus.AuthenticationFailed;
-      this.authorizedScope = HocuspocusAuthorizedScope.Uninitialized;
+      this.authorizedScope = AuthorizedScope.AuthenticationFailed;
+      authorizedScopeLoadedFromCloud = true;
+      appIdbStorageManager.setAuthorizedCollaborationScope(
+        docName,
+        this.authorizedScope,
+      );
+      this.updateAuthorizationState();
     });
     tiptapCollabProvider.on('destroy', () => {
-      this.isDestroyed = true;
+      this.destroy();
+    });
+    this.indexeddbProvider.on('destroy', () => {
+      this.destroy();
     });
     this.yjsDoc.on('destroy', () => {
-      this.isDestroyed = true;
+      this.destroy();
     });
+    this.indexeddbProvider.on('error', (error) => {
+      // It is entirely unsafe for us to continue allowing the user to edit
+      // if our local persistence hits an error, since it can easily mean they will experience dataloss
+      this.destroy();
+
+      eventManager.broadcast(EventName.LocaldbIDBError, {
+        docName,
+        error,
+      });
+    });
+
+    this.listenForAuthorizationStateProviderEvents();
+    this.indexeddbProvider.attach();
+    this.tiptapCollabProvider.attach();
   }
 
   reauthenticate() {
@@ -176,17 +257,158 @@ export class CollaborationManagerConnection {
     this.ws.attach(this.tiptapCollabProvider);
   }
 
+  emit(eventName: CollaborationManagerConnectionEventName) {
+    for (const listener of this.eventListeners[eventName]) {
+      listener();
+    }
+  }
+  on(eventName: CollaborationManagerConnectionEventName, listener: () => void) {
+    this.eventListeners[eventName].add(listener);
+  }
+  off(
+    eventName: CollaborationManagerConnectionEventName,
+    listener: () => void,
+  ) {
+    this.eventListeners[eventName].delete(listener);
+  }
+
   destroy() {
+    if (this.isDestroyed) return;
+    this.isDestroyed = true;
+
     this.indexeddbProvider.destroy();
     this.tiptapCollabProvider.destroy();
     this.yjsDoc.destroy();
-    this.isDestroyed = true;
+    this.updateAuthorizationState();
+  }
+
+  private listenForAuthorizationStateProviderEvents() {
+    const wsEvents = ['status', 'open', 'connect', 'disconnect'] as const;
+    for (const eventName of wsEvents) {
+      this.ws.on(eventName, this.updateAuthorizationState);
+    }
+    const localProviderEvents = ['synced', 'error', 'destroy'] as const;
+    for (const eventName of localProviderEvents) {
+      this.indexeddbProvider.on(eventName, this.updateAuthorizationState);
+    }
+    const serverProviderEvents = [
+      'status',
+      'open',
+      'connect',
+      'synced',
+      'close',
+      'disconnect',
+      'destroy',
+    ];
+    for (const eventName of serverProviderEvents) {
+      this.tiptapCollabProvider.on(eventName, this.updateAuthorizationState);
+    }
+    const ydocEvents = ['destroy'] as const;
+    for (const eventName of ydocEvents) {
+      this.yjsDoc.on(eventName, this.updateAuthorizationState);
+    }
+
+    const [docType] = this.docName.split(':');
+
+    switch (docType) {
+      case 'workspace': {
+        const userAccessYKV = getWorkspaceUserAccessFromYDoc(this.yjsDoc);
+        userAccessYKV.on('change', this.updateAuthorizationState);
+        break;
+      }
+      case 'artifact': {
+        const userAccessYKV = getUserAccessFromYArtifact(this.yjsDoc);
+        userAccessYKV.on('change', this.updateAuthorizationState);
+        break;
+      }
+    }
+  }
+
+  private updateAuthorizationState = () => {
+    const result = this.calculateAuthorizationState();
+
+    if (result !== this.authorizationState) {
+      this.authorizationState = result;
+      this.emit(
+        CollaborationManagerConnectionEventName.AuthorizationStateChange,
+      );
+    }
+  };
+
+  private calculateAuthorizationState() {
+    if (this.isDestroyed) {
+      return CollaborationConnectionAuthorizationState.Failed;
+    }
+
+    const [docType, identifier] = this.docName.split(':');
+
+    const accessLevel = (() => {
+      switch (docType) {
+        case 'workspace': {
+          return getWorkspaceAccessLevel(this.yjsDoc, this.session?.userId);
+        }
+        case 'artifact': {
+          return getArtifactAccessLevel(this.yjsDoc, this.session?.userId);
+        }
+        case 'userTree': {
+          if (identifier === this.session?.userId) {
+            return 'coowner';
+          } else {
+            return 'noaccess';
+          }
+        }
+        default: {
+          throw new Error('Unsupported ydoc type');
+        }
+      }
+    })();
+
+    if (
+      this.authorizedScope === AuthorizedScope.AuthenticationFailed ||
+      (accessLevel === 'noaccess' &&
+        // It's important to check if idb is synced here, since before idb is synced we'll see noaccess
+        this.indexeddbProvider.synced)
+    ) {
+      return CollaborationConnectionAuthorizationState.NoAccess;
+    }
+
+    if (
+      (this.authorizedScope === AuthorizedScope.ReadWrite ||
+        this.ws.status !== WebSocketStatus.Connected ||
+        !this.tiptapCollabProvider.synced) &&
+      this.indexeddbProvider.synced &&
+      accessLevel === 'coowner'
+    ) {
+      return CollaborationConnectionAuthorizationState.CoOwner;
+    }
+
+    if (
+      (this.authorizedScope === AuthorizedScope.ReadWrite ||
+        this.ws.status !== WebSocketStatus.Connected ||
+        !this.tiptapCollabProvider.synced) &&
+      this.indexeddbProvider.synced &&
+      accessLevel === 'readwrite'
+    ) {
+      return CollaborationConnectionAuthorizationState.ReadWrite;
+    }
+
+    if (
+      (this.authorizedScope === AuthorizedScope.ReadOnly ||
+        this.ws.status !== WebSocketStatus.Connected ||
+        !this.tiptapCollabProvider.synced) &&
+      this.indexeddbProvider.synced &&
+      accessLevel === 'readonly'
+    ) {
+      return CollaborationConnectionAuthorizationState.ReadOnly;
+    }
+
+    return CollaborationConnectionAuthorizationState.Loading;
   }
 }
 
 export enum CollaborationManagerEventName {
   AllDestroy = 'allDestroy',
-  CollaborationConnectionInvalidated = 'collaborationConnectionInvalidated',
+  CollaborationConnectionDestroyed = 'collaborationConnectionDestroyed',
 }
 
 class CollaborationManager {
@@ -263,17 +485,15 @@ class CollaborationManager {
     reservationQueue.add(reservationToken);
 
     let connection = this.connectionByDocName.get(docName);
-    let wasInvalidated = false;
+    let wasDestroyed = false;
     const release = (immediate?: boolean) => {
       const _release = () => {
         // We reference the local reservationQueue to handle connection invalidations
         reservationQueue.delete(reservationToken);
         if (reservationQueue.size === 0 && connection) {
-          if (!connection.isDestroyed) {
-            connection.destroy();
-          }
-          if (!wasInvalidated) {
-            // If the connection was invalidated, then a new connection has actually taken this one's place
+          connection.destroy();
+          // If the connection was externally already destroyed, then a new connection has actually taken this one's place already and we should not remove it.
+          if (!wasDestroyed) {
             this.connectionByDocName.delete(docName);
           }
         }
@@ -293,18 +513,15 @@ class CollaborationManager {
       };
     }
 
-    connection = new CollaborationManagerConnection({
-      docName,
-      session,
-      ws: this.ws,
-      onInvalidated: () => {
-        wasInvalidated = true;
-        this.reservationsByDocName.delete(docName);
-        this.connectionByDocName.delete(docName);
-        this.eventListeners
-          .get(CollaborationManagerEventName.CollaborationConnectionInvalidated)
-          ?.forEach((cb) => cb());
-      },
+    connection = new CollaborationManagerConnection(docName, session, this.ws);
+
+    connection.on(CollaborationManagerConnectionEventName.Destroy, () => {
+      wasDestroyed = true;
+      this.reservationsByDocName.delete(docName);
+      this.connectionByDocName.delete(docName);
+      this.eventListeners
+        .get(CollaborationManagerEventName.CollaborationConnectionDestroyed)
+        ?.forEach((cb) => cb());
     });
 
     this.connectionByDocName.set(docName, connection);
@@ -341,8 +558,9 @@ export const getCollaborationManager = () => {
   }
   collaborationManager = new CollaborationManager();
   // For debugging purposes
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).collaborationManager = collaborationManager;
+  if (typeof window !== 'undefined')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).collaborationManager = collaborationManager;
   return collaborationManager;
 };
 
@@ -351,15 +569,22 @@ export const getCollaborationManager = () => {
  * The intent is if you need to make a non-React-based modification to a docName, for instance after
  * user interaction with a button or dialogue.
  * This method will automatically release the document connection so that it can be freed from RAM.
- * It's important to consider the `timeout` parameter, which ensures that no unhandled behavior can cause
+ * It's important to consider the `yourWorkTimeout` parameter, which ensures that no unhandled behavior can cause
  * the document to be left open and cause a leak.
  * Once the timeout occurs and the document is free, the yDoc and associated providers will be _destroyed_.
- * This means any writes after such a time will _not be persisted_.
+ * This means any writes after such a time will _not be persisted_. For this reason, your withHandler is provided an abortController which you should use after any async work to check if you still hold the connection
  */
 export const withCollaborationConnection = async <T>(
   docName: string,
-  withHandler: (connection: CollaborationManagerConnection) => Promise<T>,
-  timeout = 15000,
+  withHandler: (
+    connection: CollaborationManagerConnection,
+    abortController: AbortController,
+  ) => Promise<T>,
+  yourWorkTimeout = 15000,
+  /**
+   * Using fullSync will result in a cloud requirement and no offline functionality
+   */
+  syncLevel: 'sync' | 'fullsync' = 'sync',
 ): Promise<T> => {
   const session = await appIdbStorageManager.getSession();
   const { connection, release } = getCollaborationManager().get(
@@ -367,23 +592,42 @@ export const withCollaborationConnection = async <T>(
     session,
   );
 
-  await connection.syncedPromise.catch((e) => {
+  const abortController = new AbortController();
+  const onDestroy = () => {
+    abortController.abort();
+  };
+  connection.yjsDoc.on('destroy', onDestroy);
+
+  const connectionSyncP =
+    syncLevel === 'sync'
+      ? connection.syncedPromise
+      : connection.fullSyncedPromise;
+  await connectionSyncP.catch((e) => {
+    abortController.abort();
     release();
     throw e;
   });
 
   const timeoutP = new Promise((_, reject) => {
     setTimeout(() => {
-      reject();
-    }, timeout);
+      abortController.abort();
+      reject(new Error('withCollaborationConnection timed out'));
+    }, yourWorkTimeout);
   });
 
-  const resultP = withHandler(connection);
+  if (connection.yjsDoc.isDestroyed)
+    throw new Error('Yjs doc is destroyed, aborting managed connection');
+  const resultP = withHandler(connection, abortController);
 
   await Promise.race([resultP, timeoutP]).catch((e) => {
+    abortController.abort();
     release();
     throw e;
   });
+
+  if (!connection.yjsDoc.isDestroyed) {
+    connection.yjsDoc.off('destroy', onDestroy);
+  }
 
   release();
 

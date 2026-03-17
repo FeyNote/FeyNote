@@ -13,7 +13,6 @@ import {
   IoAdd,
   LuTable,
 } from '../AppIcons';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { Doc as YDoc } from 'yjs';
 import { usePaneContext } from '../../context/pane/PaneContext';
@@ -38,6 +37,7 @@ import {
   getShortcutDisplayString,
 } from '../../utils/keyboardShortcuts';
 import { AutofillDialog } from './autofill/AutofillDialog';
+import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 const ControlMenuList = styled.div`
   display: flex;
@@ -58,7 +58,7 @@ interface Props {
   artifactId: string;
   editor: Editor;
   yDoc: YDoc;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   handleFileUpload: (editor: Editor, files: File[], pos?: number) => void;
 }
 
@@ -241,9 +241,9 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   );
 
   const isEditable = [
-    CollaborationConnectionAuthorizedScope.CoOwner,
-    CollaborationConnectionAuthorizedScope.ReadWrite,
-  ].includes(props.authorizedScope);
+    CollaborationConnectionAuthorizationState.CoOwner,
+    CollaborationConnectionAuthorizationState.ReadWrite,
+  ].includes(props.authorizationState);
 
   const file = (
     <DropdownMenu.Root modal={false}>

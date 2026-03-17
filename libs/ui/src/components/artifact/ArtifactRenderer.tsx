@@ -1,7 +1,10 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
+import {
+  CollaborationConnectionAuthorizationState,
+  CollaborationManagerConnection,
+} from '../../utils/collaboration/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
@@ -15,7 +18,6 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { useAlertContext } from '../../context/alert/AlertContext';
 
 const ArtifactRendererContainer = styled.div`
@@ -52,7 +54,7 @@ const FileUploadOverlayContent = styled.div`
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
@@ -114,7 +116,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           <ArtifactDeletedBanner
             undelete={props.undelete}
             deletedAt={deletedAt}
-            authorizedScope={props.authorizedScope}
+            authorizationState={props.authorizationState}
           />
         )}
         {renderer}
@@ -133,9 +135,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   const isEditable =
     !deletedAt &&
-    (props.authorizedScope === CollaborationConnectionAuthorizedScope.CoOwner ||
-      props.authorizedScope ===
-        CollaborationConnectionAuthorizedScope.ReadWrite);
+    (props.authorizationState ===
+      CollaborationConnectionAuthorizationState.CoOwner ||
+      props.authorizationState ===
+        CollaborationConnectionAuthorizationState.ReadWrite);
 
   if (type === 'tiptap') {
     return render(
@@ -143,7 +146,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         showMenus={true}
         artifactId={props.artifactId}
         editable={isEditable}
-        authorizedScope={props.authorizedScope}
+        authorizationState={props.authorizationState}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}

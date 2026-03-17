@@ -14,6 +14,7 @@ import type {
   ArtifactSnapshot,
   WorkspaceSnapshot,
 } from '@feynote/global-types';
+import type { AuthorizedScope } from '../collaboration/collaborationManager';
 
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
@@ -144,9 +145,12 @@ export class AppIdbStorageManager {
     }
   }
 
+  /**
+   * Do not write to this directly
+   */
   async setAuthorizedCollaborationScope(
     docName: string,
-    accessLevel: string,
+    accessLevel: AuthorizedScope,
   ): Promise<void> {
     const manifestDb = await getManifestDb();
     await manifestDb.put(ObjectStoreName.AuthorizedCollaborationScopes, {
@@ -155,9 +159,12 @@ export class AppIdbStorageManager {
     });
   }
 
+  /**
+   * Do not consume this directly
+   */
   async getAuthorizedCollaborationScope(
     docName: string,
-  ): Promise<string | null> {
+  ): Promise<AuthorizedScope | null> {
     const manifestDb = await getManifestDb();
     const record = await manifestDb.get(
       ObjectStoreName.AuthorizedCollaborationScopes,
@@ -184,6 +191,7 @@ export class AppIdbStorageManager {
       key: KVStoreKeys.LastSessionUserId,
       value: session.userId,
     });
+    tx.commit();
     await tx.done;
 
     eventManager.broadcast(EventName.LocaldbSessionUpdated);
@@ -194,6 +202,7 @@ export class AppIdbStorageManager {
     const tx = manifestDb.transaction(ObjectStoreName.KV, 'readwrite');
     const store = tx.objectStore(ObjectStoreName.KV);
     await store.delete(KVStoreKeys.Session);
+    tx.commit();
     await tx.done;
 
     eventManager.broadcast(EventName.LocaldbSessionUpdated);

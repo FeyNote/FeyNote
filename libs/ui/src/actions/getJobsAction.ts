@@ -19,6 +19,7 @@ export async function getJobsAction(input: {
         for (const item of result.jobs) {
           await store.put(item);
         }
+        tx.commit();
         await tx.done;
       } catch {
         // Cache update failed, that's okay

@@ -1,7 +1,6 @@
 import { trpc } from '../utils/trpc';
 import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
-import { IndexeddbPersistence } from 'y-indexeddb';
-import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
+import { YIndexedDBProvider } from '../utils/collaboration/YIndexedDBProvider';
 
 export async function getWorkspaceYBinByIdAction(input: {
   id: string;
@@ -17,13 +16,7 @@ export async function getWorkspaceYBinByIdAction(input: {
     }
 
     const docName = `workspace:${input.id}`;
-    const idbPersistence = new IndexeddbPersistence(docName, new YDoc());
-    await idbPersistence.whenSynced;
-
-    const yBin = encodeStateAsUpdate(idbPersistence.doc);
-
-    idbPersistence.doc.destroy();
-    await idbPersistence.destroy();
+    const yBin = await YIndexedDBProvider.getDocAsUpdate(docName);
 
     return { yBin };
   } catch {

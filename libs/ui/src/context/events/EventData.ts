@@ -6,11 +6,8 @@ import { EventName } from './EventName';
 
 export type EventData = {
   [EventName.ArtifactUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ArtifactUpdated];
-  [EventName.ArtifactWelcomeCreated]: {
-    welcomeId: string;
-    introducingReferencesId: string;
-  };
   [EventName.ThreadUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ThreadUpdated];
+  [EventName.WorkspaceUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.WorkspaceUpdated];
 
   [EventName.WebsocketError]: void;
   [EventName.WebsocketReconnect]: void;
@@ -31,7 +28,15 @@ export type EventData = {
     workspaceId: string;
   };
   [EventName.LocaldbKnownUsersUpdated]: void;
-  [EventName.WorkspaceUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.WorkspaceUpdated];
+  [EventName.LocaldbIDBError]: {
+    docName?: string;
+    error: unknown;
+  };
+
+  [EventName.ArtifactWelcomeCreated]: {
+    welcomeId: string;
+    introducingReferencesId: string;
+  };
 
   [EventName.AppOnline]: void;
   [EventName.AppVisible]: void;
