@@ -1,5 +1,6 @@
 import {
   applyUpdate,
+  Doc,
   encodeStateAsUpdate,
   mergeUpdates,
   transact,
@@ -7,7 +8,7 @@ import {
 } from 'yjs';
 import { getManifestDb, ObjectStoreName } from '../localDb/localDb';
 import * as Sentry from '@sentry/browser';
-import { loadLegacyIDBProviderChanges } from './applyLegacyIDBProviderChanges';
+import { loadLegacyIDBProviderChanges } from './loadLegacyIDBProviderChanges';
 
 type EventHandlers = {
   synced: () => void;
@@ -38,7 +39,7 @@ export class YIndexedDBProvider {
   /**
    * After how many updates should updates be auto compacted
    */
-  private AUTO_COMPACT_THRESHOLD = 500;
+  private AUTO_COMPACT_THRESHOLD = 250;
 
   /**
    * This is an approximation, since this DB could be open across multiple tabs.
@@ -68,10 +69,20 @@ export class YIndexedDBProvider {
     return this.#whenSynced;
   }
 
+  private persistedOrigins = new Set<unknown>();
+
   constructor(
     public readonly docName: string,
     public readonly doc: YDoc,
   ) {}
+
+  public addPersistedOrigin(origin: unknown) {
+    this.persistedOrigins.add(origin);
+  }
+
+  public removePersistedOrigin(origin: unknown) {
+    this.persistedOrigins.delete(origin);
+  }
 
   public attach() {
     this.doc.on('update', this.handleUpdate);
@@ -137,7 +148,12 @@ export class YIndexedDBProvider {
     origin: unknown,
   ) => {
     try {
-      if (origin === this || this.destroyed) return;
+      if (
+        origin === this ||
+        this.destroyed ||
+        this.persistedOrigins.has(origin)
+      )
+        return;
 
       const localdb = await getManifestDb();
 
@@ -182,13 +198,18 @@ export class YIndexedDBProvider {
       const localDB = await getManifestDb();
 
       const tx = localDB.transaction(ObjectStoreName.YUpdates, 'readwrite');
+      const tempDoc = new Doc();
       const updatesStore = tx.objectStore(ObjectStoreName.YUpdates);
-      const update = encodeStateAsUpdate(this.doc);
       const docRange = YIndexedDBProvider.getDocRange(this.docName);
+      const dbChanges = await updatesStore.getAll(docRange);
+      applyUpdate(tempDoc, mergeUpdates(dbChanges.map((el) => el.bin)));
+      const docChanges = encodeStateAsUpdate(this.doc);
+      applyUpdate(tempDoc, docChanges);
+      const gcBin = encodeStateAsUpdate(tempDoc);
       await updatesStore.delete(docRange);
       await updatesStore.add({
         docName: this.docName,
-        bin: update,
+        bin: gcBin,
         ts: Date.now(),
         id: crypto.randomUUID(),
       });

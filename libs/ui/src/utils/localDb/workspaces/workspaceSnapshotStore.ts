@@ -37,18 +37,15 @@ class WorkspaceSnapshotStore {
     });
     eventManager.addEventListener(
       EventName.LocaldbWorkspaceSnapshotUpdated,
-      async (_, data) => {
+      async (data) => {
         await this.loadWorkspaceSnapshot(data.workspaceId);
         this.notify([data.workspaceId]);
       },
     );
-    eventManager.addEventListener(
-      EventName.WorkspaceUpdated,
-      async (_, data) => {
-        await this.loadWorkspaceSnapshot(data.workspaceId);
-        this.notify([data.workspaceId]);
-      },
-    );
+    eventManager.addEventListener(EventName.WorkspaceUpdated, async (data) => {
+      await this.loadWorkspaceSnapshot(data.workspaceId);
+      this.notify([data.workspaceId]);
+    });
 
     this.loadAllWorkspaceSnapshots().then(() => {
       this._isLoading = false;
@@ -213,6 +210,10 @@ let workspaceSnapshotStore: WorkspaceSnapshotStore | null = null;
 export const getWorkspaceSnapshotStore = () => {
   if (!workspaceSnapshotStore) {
     workspaceSnapshotStore = new WorkspaceSnapshotStore();
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).workspaceSnapshotStore = workspaceSnapshotStore;
   }
 
   return workspaceSnapshotStore;

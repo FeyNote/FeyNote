@@ -124,16 +124,9 @@ export const AIThreadsList: React.FC = () => {
 
   useEffect(() => {
     getUserThreads();
-    const threadUpdateHandler = () => {
+    return eventManager.addEventListener(EventName.ThreadUpdated, () => {
       getUserThreads();
-    };
-    eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
-    return () => {
-      eventManager.removeEventListener(
-        EventName.ThreadUpdated,
-        threadUpdateHandler,
-      );
-    };
+    });
   }, []);
 
   const render = () => {

@@ -89,17 +89,12 @@ export const useOnlineStatus = () => {
   }, []);
 
   useEffect(() => {
-    const listener = () => {
-      setWebsocketIsConnected(websocketClient.connected);
-    };
-
-    eventManager.addEventListener([EventName.WebsocketStatusChanged], listener);
-    return () => {
-      eventManager.removeEventListener(
-        [EventName.WebsocketStatusChanged],
-        listener,
-      );
-    };
+    return eventManager.addEventListener(
+      EventName.WebsocketStatusChanged,
+      () => {
+        setWebsocketIsConnected(websocketClient.connected);
+      },
+    );
   }, []);
 
   return {

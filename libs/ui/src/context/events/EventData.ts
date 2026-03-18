@@ -38,6 +38,8 @@ export type EventData = {
     introducingReferencesId: string;
   };
 
-  [EventName.AppOnline]: void;
-  [EventName.AppVisible]: void;
+  [EventName.NavigatorOnline]: void;
+  [EventName.NavigatorOffline]: void;
+  [EventName.NavigatorVisible]: void;
+  [EventName.NavigatorHidden]: void;
 };

@@ -153,15 +153,9 @@ export const LeftSideMenu: React.FC = () => {
   }, [currentPane.currentView.navigationEventId]);
 
   useEffect(() => {
-    const handler = () => {
+    return eventManager.addEventListener(EventName.ArtifactUpdated, () => {
       loadDebouncerRef.current.call();
-    };
-
-    eventManager.addEventListener([EventName.ArtifactUpdated], handler);
-
-    return () => {
-      eventManager.removeEventListener([EventName.ArtifactUpdated], handler);
-    };
+    });
   }, []);
 
   const currentWorkspaceThreadIds = useCurrentWorkspaceThreadIds();

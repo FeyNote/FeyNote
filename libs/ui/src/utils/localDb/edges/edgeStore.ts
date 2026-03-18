@@ -65,14 +65,14 @@ class EdgeStore {
     });
     eventManager.addEventListener(
       EventName.LocaldbEdgesUpdated,
-      async (_, data) => {
+      async (data) => {
         for (const artifactId of data.modifiedEdgeArtifactIds) {
           await this.loadArtifactEdges(artifactId);
         }
         this.notify(data.modifiedEdgeArtifactIds);
       },
     );
-    eventManager.addEventListener(EventName.ArtifactUpdated, (_, data) => {
+    eventManager.addEventListener(EventName.ArtifactUpdated, (data) => {
       this.loadArtifactEdges(data.artifactId);
       this.notify([data.artifactId]);
     });
@@ -355,6 +355,10 @@ let edgeStore: EdgeStore | null = null;
 export const getEdgeStore = () => {
   if (!edgeStore) {
     edgeStore = new EdgeStore();
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).edgeStore = edgeStore;
   }
 
   return edgeStore;

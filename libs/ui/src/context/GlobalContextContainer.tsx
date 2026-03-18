@@ -17,11 +17,17 @@ import { EventName } from './events/EventName';
 
 if (typeof window !== 'undefined') {
   window.addEventListener('online', () =>
-    eventManager.broadcast(EventName.AppOnline),
+    eventManager.broadcast(EventName.NavigatorOnline),
+  );
+  window.addEventListener('offline', () =>
+    eventManager.broadcast(EventName.NavigatorOffline),
   );
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible')
-      eventManager.broadcast(EventName.AppVisible);
+    if (document.visibilityState === 'visible') {
+      eventManager.broadcast(EventName.NavigatorVisible);
+    } else {
+      eventManager.broadcast(EventName.NavigatorHidden);
+    }
   });
 }
 

@@ -1,3 +1,4 @@
+import { AppGlobalIDBErrorHandler } from './AppGlobalIDBErrorHandler';
 import { ArtifactSnapshotStoreErrorHandler } from './artifactSnapshots/ArtifactSnapshotStoreErrorHandler';
 import { EdgeStoreErrorHandler } from './edges/EdgeStoreErrorHandler';
 import { KnownUserStoreErrorHandler } from './knownUsers/KnownUserStoreErrorHandler';
@@ -6,6 +7,7 @@ import { WorkspaceSnapshotStoreErrorHandler } from './workspaces/WorkspaceSnapsh
 export const LocaldbStoreErrorHandlers = () => {
   return (
     <>
+      <AppGlobalIDBErrorHandler />
       <ArtifactSnapshotStoreErrorHandler />
       <EdgeStoreErrorHandler />
       <KnownUserStoreErrorHandler />

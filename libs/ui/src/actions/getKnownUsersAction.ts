@@ -15,7 +15,6 @@ export async function getKnownUsersAction(): Promise<KnownUserDoc[]> {
         'readwrite',
       );
       const store = tx.objectStore(ObjectStoreName.KnownUsers);
-      await store.clear();
       for (const item of result) {
         await store.put(item);
       }

@@ -17,8 +17,8 @@ import { incrementVersionForChangesOnWorkspace } from '../localDb/incrementVersi
 import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
-import { applyLegacyIDBProviderChanges } from './applyLegacyIDBProviderChanges';
 import { YIndexedDBProvider } from './YIndexedDBProvider';
+import { YBroadcastChannelProvider } from './YBroadcastChannelProvider';
 
 const TIPTAP_COLLAB_SYNC_TIMEOUT_MS = 22000;
 const TIPTAP_COLLAB_AUTORELEASE_WAIT_MS = 2000;
@@ -56,6 +56,7 @@ export class CollaborationManagerConnection {
   yjsDoc: YDoc;
   tiptapCollabProvider: HocuspocusProvider;
   indexeddbProvider: YIndexedDBProvider;
+  broadcastChannelProvider: YBroadcastChannelProvider;
   /**
    * This is an optimistic view of what comprises a "synced" state.
    * Will resolve early if IndexedDB is able to sync with non-empty doc
@@ -94,11 +95,13 @@ export class CollaborationManagerConnection {
   ) {
     this.yjsDoc = new YDoc();
 
-    // Migrate legacy content over. Remove after a couple of updates/months
-    applyLegacyIDBProviderChanges(docName, this.yjsDoc);
-
     this.indexeddbProvider = new YIndexedDBProvider(docName, this.yjsDoc);
     const indexeddbProvider = this.indexeddbProvider;
+    this.broadcastChannelProvider = new YBroadcastChannelProvider(
+      docName,
+      this.yjsDoc,
+    );
+    this.indexeddbProvider.addPersistedOrigin(this.broadcastChannelProvider);
     this.tiptapCollabProvider = new HocuspocusProvider({
       name: docName,
       document: this.yjsDoc,
@@ -248,6 +251,7 @@ export class CollaborationManagerConnection {
 
     this.listenForAuthorizationStateProviderEvents();
     this.indexeddbProvider.attach();
+    this.broadcastChannelProvider.attach();
     this.tiptapCollabProvider.attach();
   }
 
@@ -277,6 +281,7 @@ export class CollaborationManagerConnection {
     this.isDestroyed = true;
 
     this.indexeddbProvider.destroy();
+    this.broadcastChannelProvider.destroy();
     this.tiptapCollabProvider.destroy();
     this.yjsDoc.destroy();
     this.updateAuthorizationState();

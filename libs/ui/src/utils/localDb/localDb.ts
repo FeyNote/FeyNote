@@ -329,9 +329,19 @@ export async function getManifestDb() {
       healthy: true,
     };
     manifestDbP = connect(dbHealthRef);
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).manifestDbP = manifestDbP;
   }
 
   const manifestDb = await manifestDbP;
+
+  // For debugging purposes
+  if (typeof window !== 'undefined')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).manifestDb = manifestDb;
+
   return manifestDb;
 }
 

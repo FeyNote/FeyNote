@@ -25,6 +25,8 @@ export enum EventName {
 
   ArtifactWelcomeCreated = 'artifact.welcomeCreated',
 
-  AppOnline = 'app.online',
-  AppVisible = 'app.visible',
+  NavigatorOnline = 'navigator.online',
+  NavigatorOffline = 'navigator.offline',
+  NavigatorVisible = 'navigator.visible',
+  NavigatorHidden = 'navigator.hidden',
 }

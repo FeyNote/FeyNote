@@ -12,13 +12,10 @@ export const useLastSyncedAt = () => {
     };
 
     listener();
-    eventManager.addEventListener(EventName.LocaldbSyncCompleted, listener);
-    return () => {
-      eventManager.removeEventListener(
-        EventName.LocaldbSyncCompleted,
-        listener,
-      );
-    };
+    return eventManager.addEventListener(
+      EventName.LocaldbSyncCompleted,
+      listener,
+    );
   }, []);
 
   return {

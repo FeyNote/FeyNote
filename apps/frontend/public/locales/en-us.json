@@ -1023,6 +1023,7 @@
   "connectionStatus.syncUnavailable": "Sync & offline functionality not available!",
 
   "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
+  "error.appIDB": "There was a problem while accessing your local data store. Please contact us if this problem continues. We do not recommend continuing to use the app, as any changes may not be saved.",
 
   "generic.error": "Error",
   "generic.artifact": "Document",
@@ -1043,6 +1044,8 @@
   "generic.done": "Done",
   "generic.delete": "Delete",
   "generic.warning": "Warning",
+  "generic.reload": "Reload",
+  "generic.ignore": "Ignore",
   "generic.upload": "Upload",
   "generic.submit": "Submit",
   "generic.yes": "Yes",

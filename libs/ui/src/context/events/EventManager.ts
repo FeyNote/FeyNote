@@ -5,25 +5,19 @@ type BroadcastDataArgs<T extends EventName> = [EventData[T]] extends [void]
   ? []
   : [eventData: EventData[T]];
 
-type EventListener = <T extends EventName>(
-  eventName: T,
-  data: EventData[T],
-) => void;
-type NarrowedEventListener<T extends EventName> = (
-  eventName: T,
-  data: EventData[T],
-) => void;
+type EventListener<T extends EventName> = (data: EventData[T]) => void;
+
+type EventListenersRecord = {
+  [key in EventName]: Set<EventListener<key>>;
+};
 
 export class EventManager {
-  private eventListeners: Record<EventName, Set<EventListener>> = Object.values(
+  private eventListeners: EventListenersRecord = Object.values(
     EventName,
-  ).reduce(
-    (acc, eventName) => {
-      acc[eventName] = new Set();
-      return acc;
-    },
-    {} as Record<EventName, Set<EventListener>>,
-  );
+  ).reduce((acc, eventName) => {
+    acc[eventName] = new Set<EventListener<typeof eventName>>();
+    return acc;
+  }, {} as EventListenersRecord);
   private broadcastChannel: BroadcastChannel;
   /**
    * These are events that should cross the window boundary to other tabs/workers, facilitated by a BroadcastChannel.
@@ -51,48 +45,22 @@ export class EventManager {
   }
 
   addEventListener<T extends EventName>(
-    eventNames: T,
-    listener: NarrowedEventListener<T>,
-  ): void;
-  addEventListener<T extends EventName>(
-    eventNames: T[],
-    listener: EventListener,
-  ): void;
-  addEventListener<T extends EventName>(
-    eventNames: T | T[],
-    listener: EventListener,
-  ): void {
-    if (Array.isArray(eventNames)) {
-      for (const eventName of eventNames) {
-        this.eventListeners[eventName].add(listener);
-      }
-    } else {
-      this.eventListeners[eventNames].add(listener);
-    }
+    eventName: T,
+    listener: EventListener<T>,
+  ): () => void {
+    console.log('hi', eventName.substring(0, 10));
+    this.eventListeners[eventName].add(listener);
+
+    return () => {
+      this.removeEventListener(eventName, listener);
+    };
   }
 
   removeEventListener<T extends EventName>(
-    eventNames: T,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: NarrowedEventListener<any>,
-  ): void;
-  removeEventListener<T extends EventName>(
-    eventNames: T[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: NarrowedEventListener<any>,
-  ): void;
-  removeEventListener<T extends EventName>(
-    eventNames: T | T[],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    listener: NarrowedEventListener<any>,
+    eventName: T,
+    listener: EventListener<T>,
   ): void {
-    if (Array.isArray(eventNames)) {
-      for (const eventName of eventNames) {
-        this.eventListeners[eventName].delete(listener);
-      }
-    } else {
-      this.eventListeners[eventNames].delete(listener);
-    }
+    this.eventListeners[eventName].delete(listener);
   }
 
   broadcast<T extends EventName>(eventName: T, ...args: BroadcastDataArgs<T>) {
@@ -111,9 +79,7 @@ export class EventManager {
     eventName: T,
     eventData: EventData[T],
   ) {
-    this.eventListeners[eventName].forEach((listener) =>
-      listener(eventName, eventData),
-    );
+    this.eventListeners[eventName].forEach((listener) => listener(eventData));
   }
 }
 

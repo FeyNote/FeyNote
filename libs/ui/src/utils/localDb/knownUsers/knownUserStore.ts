@@ -148,6 +148,10 @@ let knownUserStore: KnownUserStore | null = null;
 export const getKnownUserStore = () => {
   if (!knownUserStore) {
     knownUserStore = new KnownUserStore();
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).knownUserStore = knownUserStore;
   }
 
   return knownUserStore;

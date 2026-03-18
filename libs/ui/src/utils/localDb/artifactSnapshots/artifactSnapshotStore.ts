@@ -51,18 +51,15 @@ class ArtifactSnapshotStore {
     });
     eventManager.addEventListener(
       EventName.LocaldbArtifactSnapshotUpdated,
-      async (_, data) => {
+      async (data) => {
         await this.loadArtifactSnapshot(data.artifactId);
         this.notify([data.artifactId]);
       },
     );
-    eventManager.addEventListener(
-      EventName.ArtifactUpdated,
-      async (_, data) => {
-        await this.loadArtifactSnapshot(data.artifactId);
-        this.notify([data.artifactId]);
-      },
-    );
+    eventManager.addEventListener(EventName.ArtifactUpdated, async (data) => {
+      await this.loadArtifactSnapshot(data.artifactId);
+      this.notify([data.artifactId]);
+    });
 
     this.loadAllArtifactSnapshots().then(() => {
       this._isLoading = false;
@@ -212,6 +209,10 @@ let artifactSnapshotStore: ArtifactSnapshotStore | null = null;
 export const getArtifactSnapshotStore = () => {
   if (!artifactSnapshotStore) {
     artifactSnapshotStore = new ArtifactSnapshotStore();
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).artifactSnapshotStore = artifactSnapshotStore;
   }
 
   return artifactSnapshotStore;

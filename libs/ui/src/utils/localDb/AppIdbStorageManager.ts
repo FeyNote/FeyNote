@@ -18,19 +18,35 @@ import type { AuthorizedScope } from '../collaboration/collaborationManager';
 
 export class AppIdbStorageManager {
   async incrementLocalArtifactVersion(artifactId: string): Promise<void> {
-    const manifestDb = await getManifestDb();
-    await manifestDb.put(ObjectStoreName.ArtifactVersions, {
-      id: artifactId,
-      version: new Date().getTime(),
-    });
+    try {
+      const manifestDb = await getManifestDb();
+      await manifestDb.put(ObjectStoreName.ArtifactVersions, {
+        id: artifactId,
+        version: new Date().getTime(),
+      });
+    } catch (e) {
+      eventManager.broadcast(EventName.LocaldbIDBError, {
+        error: e,
+      });
+      Sentry.captureException(e);
+      throw e;
+    }
   }
 
   async incrementLocalWorkspaceVersion(workspaceId: string): Promise<void> {
-    const manifestDb = await getManifestDb();
-    await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
-      id: workspaceId,
-      version: new Date().getTime(),
-    });
+    try {
+      const manifestDb = await getManifestDb();
+      await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
+        id: workspaceId,
+        version: new Date().getTime(),
+      });
+    } catch (e) {
+      eventManager.broadcast(EventName.LocaldbIDBError, {
+        error: e,
+      });
+      Sentry.captureException(e);
+      throw e;
+    }
   }
 
   async getLastSyncedAt() {

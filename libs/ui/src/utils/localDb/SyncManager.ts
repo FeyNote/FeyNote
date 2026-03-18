@@ -28,6 +28,7 @@ import { EventName } from '../../context/events/EventName';
 import { getIsViteDevelopment } from '../getIsViteDevelopment';
 import { withCollaborationConnection } from '../collaboration/collaborationManager';
 import { YIndexedDBProvider } from '../collaboration/YIndexedDBProvider';
+import { abortSignalToPromise } from '../abortSignalToPromise';
 
 enum SyncReason {
   VersionNotPresentInLocal = 'versionNotPresentInLocal',
@@ -129,14 +130,8 @@ export class SyncManager {
       syncManifestDebouncer.call();
     });
 
-    eventManager.addEventListener(EventName.AppOnline, () => {
+    eventManager.addEventListener(EventName.NavigatorOnline, () => {
       if (ENABLE_VERBOSE_SYNC_LOGGING) console.log('App online, queueing sync');
-      syncManifestDebouncer.call();
-    });
-
-    eventManager.addEventListener(EventName.AppVisible, () => {
-      if (ENABLE_VERBOSE_SYNC_LOGGING)
-        console.log('App visible, queueing sync');
       syncManifestDebouncer.call();
     });
   }
@@ -162,7 +157,15 @@ export class SyncManager {
             console.warn('Sync already in progress in another tab/worker');
             return;
           }
-          return this._syncManifest(abortSignal);
+          return Promise.race([
+            this._syncManifest(abortSignal).catch((e) => {
+              console.error(e);
+              Sentry.captureException(e);
+            }),
+            abortSignalToPromise(abortSignal).catch(() => {
+              // Do nothing
+            }),
+          ]);
         },
       );
     } else {
@@ -172,9 +175,14 @@ export class SyncManager {
         return this.currentSyncPromise;
       }
 
-      this.currentSyncPromise = this._syncManifest(abortSignal).finally(() => {
-        this.currentSyncPromise = null;
-      });
+      this.currentSyncPromise = this._syncManifest(abortSignal)
+        .catch((e) => {
+          console.error(e);
+          Sentry.captureException(e);
+        })
+        .finally(() => {
+          this.currentSyncPromise = null;
+        });
 
       return this.currentSyncPromise;
     }
@@ -196,13 +204,14 @@ export class SyncManager {
     console.log(`Beginning sync for ${session.email}`);
 
     this._syncCheckAbort(signal);
-    await this.syncPendingFiles(signal);
-    this._syncCheckAbort(signal);
     await this.searchManager.onReady();
     this._syncCheckAbort(signal);
     const manifestDb = await getManifestDb();
 
     try {
+      this._syncCheckAbort(signal);
+      await this.syncPendingFiles(signal);
+
       // We do not need to wait on the known user sync
       this.syncKnownUsers().catch((e) => {
         console.error('Known user sync failed', e);
