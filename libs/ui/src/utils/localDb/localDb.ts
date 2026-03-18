@@ -63,6 +63,7 @@ export type PendingFileDoc = Omit<DecodedFileStream, 'fileContents'> & {
   id: string;
   fileContents: null; // This is normally a stream, but we can't store a stream in IndexedDB
   fileContentsUint8: Uint8Array<ArrayBufferLike>;
+  retryCount?: number;
 };
 
 export interface KnownUserDoc {

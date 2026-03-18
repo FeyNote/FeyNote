@@ -135,11 +135,11 @@ export class YIndexedDBProvider {
       this.emit('synced', []);
     } catch (e) {
       this.synced = false;
+      console.error(e);
       this.rejectSynced(e);
       this.emit('error', [e]);
       this.destroy();
       Sentry.captureException(e);
-      throw e;
     }
   }
 
@@ -171,9 +171,10 @@ export class YIndexedDBProvider {
 
       this.maybeAutoCompact();
     } catch (e) {
+      console.error(e);
       this.emit('error', [e]);
       Sentry.captureException(e);
-      throw e;
+      this.destroy();
     }
   };
 
@@ -206,6 +207,7 @@ export class YIndexedDBProvider {
       const docChanges = encodeStateAsUpdate(this.doc);
       applyUpdate(tempDoc, docChanges);
       const gcBin = encodeStateAsUpdate(tempDoc);
+      tempDoc.destroy();
       await updatesStore.delete(docRange);
       await updatesStore.add({
         docName: this.docName,
@@ -238,6 +240,10 @@ export class YIndexedDBProvider {
     this.doc.off('destroy', this.destroy);
     this.destroyed = true;
     this.emit('destroy', []);
+
+    for (const listenerSet of Object.values(this.eventListeners)) {
+      listenerSet.clear();
+    }
   };
 
   private emit<T extends keyof EventHandlers>(

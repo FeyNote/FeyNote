@@ -309,10 +309,4 @@ export class SearchManager {
       value: JSON.stringify(this.miniSearch),
     });
   }
-
-  async destroy(): Promise<void> {
-    await this.saveToLocalDB();
-    clearTimeout(this.saveTimeout);
-    clearTimeout(this.maxSaveTimeout);
-  }
 }

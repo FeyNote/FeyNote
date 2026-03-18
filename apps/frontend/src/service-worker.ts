@@ -17,10 +17,10 @@ import {
   SWMessageType,
   createSWDebugDump,
   initDebugStoreMonkeypatch,
-  SyncManager,
-  SearchManager,
+  getSyncManager,
 } from '@feynote/ui-sw';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
+import { getSearchManager } from 'libs/ui/src/utils/localDb/getSearchManager';
 
 initDebugStoreMonkeypatch();
 
@@ -111,10 +111,10 @@ self.addEventListener('sync', (event: any) => {
   if (event.tag === 'manifest') {
     event.waitUntil(
       (async () => {
-        const searchManager = new SearchManager();
-        const syncManager = new SyncManager(searchManager);
+        const searchManager = getSearchManager();
+        const syncManager = getSyncManager();
         await syncManager.syncManifest();
-        await searchManager.destroy();
+        await searchManager.saveToLocalDB();
       })(),
     );
   }
@@ -124,10 +124,10 @@ self.addEventListener('periodicSync', (event: any) => {
   if (event.tag === 'manifest') {
     event.waitUntil(
       (async () => {
-        const searchManager = new SearchManager();
-        const syncManager = new SyncManager(searchManager);
+        const searchManager = getSearchManager();
+        const syncManager = getSyncManager();
         await syncManager.syncManifest();
-        await searchManager.destroy();
+        await searchManager.saveToLocalDB();
       })(),
     );
   }

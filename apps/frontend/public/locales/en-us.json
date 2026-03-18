@@ -1024,6 +1024,10 @@
 
   "error.500": "An unexpected error occurred. Please try again, and contact us if the issue persists.",
   "error.appIDB": "There was a problem while accessing your local data store. Please contact us if this problem continues. We do not recommend continuing to use the app, as any changes may not be saved.",
+  "error.pendingFileUpload.title": "File upload failed",
+  "error.pendingFileUpload.description": "The file \"{{fileName}}\" could not be uploaded after multiple attempts. You can retry the upload or discard the file.",
+  "error.pendingFileUpload.retry": "Retry",
+  "error.pendingFileUpload.discard": "Discard",
 
   "generic.error": "Error",
   "generic.artifact": "Document",

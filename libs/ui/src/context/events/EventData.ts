@@ -32,6 +32,10 @@ export type EventData = {
     docName?: string;
     error: unknown;
   };
+  [EventName.LocaldbPendingFileUploadFailed]: {
+    id: string;
+    fileName: string;
+  };
 
   [EventName.ArtifactWelcomeCreated]: {
     welcomeId: string;

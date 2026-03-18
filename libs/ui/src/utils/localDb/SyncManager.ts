@@ -500,6 +500,8 @@ export class SyncManager {
     }
   }
 
+  private static MAX_PENDING_FILE_RETRIES = 5;
+
   private async syncPendingFiles(signal: AbortSignal): Promise<void> {
     const manifestDb = await getManifestDb();
     const pendingFiles: PendingFileDoc[] = await manifestDb.getAll(
@@ -510,6 +512,13 @@ export class SyncManager {
     let uploadedCount = 0;
     for (const doc of pendingFiles) {
       this._syncCheckAbort(signal);
+      if ((doc.retryCount ?? 0) >= SyncManager.MAX_PENDING_FILE_RETRIES) {
+        eventManager.broadcast(EventName.LocaldbPendingFileUploadFailed, {
+          id: doc.id,
+          fileName: doc.fileName,
+        });
+        continue;
+      }
       try {
         const file = new File(
           [doc.fileContentsUint8 as BlobPart],
@@ -528,6 +537,11 @@ export class SyncManager {
         uploadedCount++;
       } catch (e) {
         console.error(`Failed to upload pending file ${doc.id}`, e);
+        Sentry.captureException(e);
+        await manifestDb.put(ObjectStoreName.PendingFiles, {
+          ...doc,
+          retryCount: (doc.retryCount ?? 0) + 1,
+        });
       }
     }
 

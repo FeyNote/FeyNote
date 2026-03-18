@@ -6,12 +6,12 @@ import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
 const MAX_OFFLINE_FILE_SIZE = 5 * 1024 * 1024;
 
-export const createFileAction = async (args: {
+export async function createFileAction(args: {
   file: File;
   artifactId?: string;
   purpose: FilePurpose;
   onProgress?: (progress: number) => void;
-}) => {
+}) {
   const { id } = await getSafeFileIdAction();
 
   try {
@@ -46,4 +46,4 @@ export const createFileAction = async (args: {
       storageKey: 'UPLOADED_OFFLINE',
     } satisfies Awaited<ReturnType<typeof trpc.file.createFile.mutate>>;
   }
-};
+}

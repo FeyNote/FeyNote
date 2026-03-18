@@ -22,6 +22,7 @@ export enum EventName {
   LocaldbWorkspaceSnapshotUpdated = 'localdb.workspaceSnapshotUpdated',
   LocaldbKnownUsersUpdated = 'localdb.knownUsersUpdated',
   LocaldbIDBError = 'localdb.idbError',
+  LocaldbPendingFileUploadFailed = 'localdb.pendingFileUploadFailed',
 
   ArtifactWelcomeCreated = 'artifact.welcomeCreated',
 
