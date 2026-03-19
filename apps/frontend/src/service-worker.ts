@@ -18,9 +18,9 @@ import {
   createSWDebugDump,
   initDebugStoreMonkeypatch,
   getSyncManager,
+  getSearchManager,
 } from '@feynote/ui-sw';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
-import { getSearchManager } from 'libs/ui/src/utils/localDb/getSearchManager';
 
 initDebugStoreMonkeypatch();
 
