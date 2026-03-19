@@ -46,3 +46,9 @@ Toggles the visibility of [tree hierarchy](#tree-relations) links in the graph. 
 ### Lock In Place on Drag
 
 When enabled, dragging a node locks it in that position. This lets you organize your graph into sections manually. Locked documents appear in a list below the settings, where they can be individually unlocked.
+
+## Using the Graph with Workspaces
+
+When you have a [workspace](/docs/general/workspaces) active, the graph shows only documents and relationships within that workspace. Switch to **Everything** to see the graph for your full collection.
+
+Pinning items in place, or other in-graph settings only apply to that particular workspace graph. This allows you to customize each workspace's layout and visualization as you desire.

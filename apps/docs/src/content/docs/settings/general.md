@@ -43,7 +43,7 @@ This is where you control how FeyNote looks and feels day to day.
 
 FeyNote has a left menu for navigation and a right menu for context-specific options. You can decide how these behave when you open the app:
 
-- **Remember left & right menu open between restarts** will restore whichever menus you had open last time, so your workspace picks up right where you left off.
+- **Remember left & right menu open between restarts** will restore whichever menus you had open last time, so FeyNote picks up right where you left off.
 - **Start with left menu open** and **Start with right menu open** let you choose to always start with a specific menu open (or closed). They're ignored when "remember" is turned on, since that takes priority.
 
 ### Document Tree
@@ -82,6 +82,15 @@ Two settings control this:
 
 - **Default sharing behavior when creating a new document via reference** controls what happens when you create a brand new document through the reference menu. You can choose to always copy the current document's sharing settings to the new one, never copy them, or be asked each time. "Always Ask Me" is the default and recommended setting here.
 - **Default sharing behavior when creating a reference to an existing document** controls what happens when you reference a document that already exists and has different sharing settings. You can choose to be prompted about the mismatch or skip the prompt entirely.
+
+### Workspace Behavior
+
+These settings control how FeyNote handles common workspace interactions. For a full overview of workspaces, see [Workspaces](/docs/general/workspaces).
+
+- **Add new items to active workspace** controls whether new documents and threads are automatically added to the active workspace when you create them. Choose **Always**, **Never**, or **Ask Me** (the default).
+- **Share documents with workspace members when adding** controls whether documents are automatically shared with workspace members when you add them to a shared workspace. Choose **Always**, **Never**, or **Ask Me** (the default).
+- **Search all workspaces for references** controls whether the [reference](/docs/documents/references) search looks across all of your workspaces or only the active one.
+- **Search all workspaces in global search** controls whether [search](/docs/general/search) looks across all of your workspaces or only the active one.
 
 ### Collaboration Cursor Color
 

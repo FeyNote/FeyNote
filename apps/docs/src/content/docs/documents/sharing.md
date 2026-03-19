@@ -29,12 +29,22 @@ From the [sharing dialog](#sharing-with-specific-users), you can also enable a p
 
 A share URL will appear that you can copy and send through whatever platform you prefer. To turn off link sharing, set the link access level back to No Access.
 
-## Finding Shared Content
+## Sharing via Workspaces
 
-Documents that others have shared with you show up in two places:
+If you frequently share documents with the same group of people for the same purpose, [workspaces](/docs/general/workspaces) can help you stay organized. You can group related documents into a workspace and share the workspace itself, which gives your collaborators a shared tree and a central place to find everything. Keep in mind that workspace sharing and document sharing are separate: sharing a workspace does not automatically share its documents. For full details, see [How Workspace Sharing Interacts with Documents](/docs/general/workspaces#how-workspace-sharing-interacts-with-documents).
+
+## Finding Shared Content
 
 - The **Shared With You** card on the dashboard shows your most recently updated shared documents.
 - The **Shared Content** page (accessible by expanding the dashboard card) gives you a full list of every document that's been shared with you, along with who shared it.
+
+### Inbox
+
+If someone has shared a document or a workspace with you it'll show up in the inbox before appearing in your collection.
+
+You can accept/decline content from the inbox page before it enters your collection, as well as assign it to a workspace as desired.
+
+Content will skip your inbox if it's being shared to you via a shared workspace. This design decision is intended so that you don't have a page full of invite requests if a workspace has been shared with you.
 
 ## Removing Yourself from a Shared Document
 

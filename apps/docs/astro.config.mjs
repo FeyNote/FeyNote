@@ -51,6 +51,7 @@ export default defineConfig({
           label: 'General',
           items: [
             'general/dashboard',
+            'general/workspaces',
             'general/all-documents',
             'general/search',
             'general/keyboard-shortcuts',
