@@ -210,11 +210,12 @@ From this view you can also choose to [leave the workspace](#leaving-a-shared-wo
 
 ## Leaving a Shared Workspace
 
-If you no longer want to be part of a shared workspace, you can leave it. Open the [workspace info view](#viewing-shared-workspace-info) and click **Leave Workspace**. A confirmation dialog will let you know that you'll lose access unless you're re-invited.
+If you no longer want to be part of a shared workspace, you can leave it. Open the [workspace info view](#viewing-shared-workspace-info) and click **Leave Workspace**. A confirmation dialog will appear with two options:
 
-After leaving, the workspace is removed from your workspace picker. The workspace owner can always re-add you later if needed.
+- **Leave Workspace** removes you from the workspace but keeps your access to any documents inside it that were shared with you individually. Those documents will remain in your **Everything** collection.
+- **Leave & Remove from Documents** removes you from the workspace and also removes your access to all documents in the workspace that you don't own. This is a convenient way to clean up everything at once.
 
-This does not revoke your access to individual documents within the workspace. They will remain in your **Everything** collection. You can revoke your access to each document within the workspace if desired.
+In both cases, the workspace is removed from your workspace picker. The workspace owner can always re-add you later if needed.
 
 ## Workspaces in the Right Sidebar
 
