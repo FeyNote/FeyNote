@@ -1,8 +1,9 @@
+import type { TypedYKV } from '@feynote/shared-utils';
 import { useEffect, useReducer } from 'react';
 import type { YKeyValue } from 'y-utility/y-keyvalue';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const useObserveYKVChanges = (ykv: YKeyValue<any>) => {
+export const useObserveYKVChanges = (ykv: YKeyValue<any> | TypedYKV<any>) => {
   const [rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
 
   useEffect(() => {

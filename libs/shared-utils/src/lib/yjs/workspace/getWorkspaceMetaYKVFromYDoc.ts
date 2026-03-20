@@ -7,7 +7,7 @@ import type { YWorkspaceMeta } from './YWorkspaceMeta';
 export const getWorkspaceMetaYKVFromYDoc = (yDoc: YDoc) => {
   const yArray = yDoc.getArray<{
     key: string;
-    val: YWorkspaceMeta;
+    val: YWorkspaceMeta[keyof YWorkspaceMeta];
   }>(WORKSPACE_META_KEY);
   return new YKeyValue(yArray) as TypedYKV<YWorkspaceMeta>;
 };

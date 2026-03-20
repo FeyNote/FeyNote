@@ -1,3 +1,4 @@
+import type { YKeyValue } from "y-utility/y-keyvalue";
 import type { TypedArray } from "yjs-types";
 
 type StringKeyOf<T> = Extract<keyof T, string>;
@@ -10,9 +11,13 @@ export interface TypedYKV<Data> {
 
   has<Key extends StringKeyOf<Data>>(key: Key): boolean;
 
+  on: YKeyValue<Data>["on"];
+
+  off: YKeyValue<Data>["off"];
+
   yarray: TypedArray<{
     key: string,
-    val: Data
+    val: Data[keyof Data]
   }>;
 }
 
