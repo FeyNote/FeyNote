@@ -20,7 +20,7 @@ export const WorkspaceEditModal: React.FC<{
     `workspace:${props.workspaceId}`,
   );
 
-  const meta = useObserveWorkspaceMeta(connection.yjsDoc);
+  const { meta } = useObserveWorkspaceMeta(connection.yjsDoc);
 
   const close = () => props.onOpenChange(false);
 

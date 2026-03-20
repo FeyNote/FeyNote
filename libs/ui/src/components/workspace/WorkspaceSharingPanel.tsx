@@ -11,7 +11,6 @@ import type { Doc } from 'yjs';
 import {
   getWorkspaceUserAccessFromYDoc,
   getWorkspaceArtifactsFromYDoc,
-  getWorkspaceMetaYKVFromYDoc,
   getUserAccessFromYArtifact,
   getArtifactAccessLevel,
   getAccessLevelCanShare,
@@ -103,8 +102,7 @@ export const WorkspaceSharingPanel: React.FC<Props> = (props) => {
     [yDoc],
   );
 
-  const workspaceMeta = useObserveWorkspaceMeta(yDoc);
-  const metaYKV = useMemo(() => getWorkspaceMetaYKVFromYDoc(yDoc), [yDoc]);
+  const { meta: workspaceMeta, metaYKV } = useObserveWorkspaceMeta(yDoc);
 
   const onLinkAccessLevelChange = (newLevel: ArtifactAccessLevel) => {
     metaYKV.set('linkAccessLevel', newLevel);
