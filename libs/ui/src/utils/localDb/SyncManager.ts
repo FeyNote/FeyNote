@@ -609,10 +609,24 @@ export class SyncManager {
 
         if (abortController.signal.aborted) return;
 
+        const meta = getMetaFromYArtifact(connection.yjsDoc);
+        if (!meta.id || !meta.userId) {
+          const warning = new Error(
+            'Sync initiated with document that has no id or userId',
+          );
+          console.warn(warning);
+          Sentry.captureException(warning);
+          return;
+        }
+
         await appIdbStorageManager.updateLocalArtifactSnapshot(
           artifactId,
           {
-            meta: getMetaFromYArtifact(connection.yjsDoc),
+            meta: {
+              ...meta,
+              id: meta.id,
+              userId: meta.userId,
+            },
             userAccess: Array.from(
               getUserAccessFromYArtifact(connection.yjsDoc).map.values(),
             ),

@@ -32,7 +32,7 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
   const { pane, navigate } = props;
 
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const { deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc).meta;
 
   const onDuplicateArtifactClicked = async () => {
     const id = await duplicateArtifact(props.connection.yjsDoc).catch((e) => {

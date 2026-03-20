@@ -54,7 +54,7 @@ type Props = {
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
   const yDoc = props.yDoc || props.yjsProvider.document;
-  const yMeta = useObserveYArtifactMeta(yDoc);
+  const yMeta = useObserveYArtifactMeta(yDoc).meta;
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
 

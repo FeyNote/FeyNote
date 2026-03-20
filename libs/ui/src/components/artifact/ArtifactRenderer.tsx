@@ -89,7 +89,9 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     [editorReady],
   );
 
-  const { type, deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { type, deletedAt } = useObserveYArtifactMeta(
+    props.connection.yjsDoc,
+  ).meta;
 
   useEffect(() => {
     props.connection.syncedPromise

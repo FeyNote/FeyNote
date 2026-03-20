@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const ReadonlyArtifactContent: React.FC<Props> = (props) => {
-  const { type } = useObserveYArtifactMeta(props.yDoc);
+  const { type } = useObserveYArtifactMeta(props.yDoc).meta;
   const sessionContext = useSessionContext(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const [editorReady, setEditorReady] = useState(false);

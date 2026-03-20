@@ -54,7 +54,7 @@ export const ArtifactSharingManagement: React.FC<Props> = (props) => {
   );
   const { title, linkAccessLevel } = useObserveYArtifactMeta(
     props.connection.yjsDoc,
-  );
+  ).meta;
 
   useEffect(() => {
     if (searchResult) {

@@ -63,8 +63,9 @@ export const createArtifact = authenticatedProcedure
           applyUpdate(yDoc, input.yBin);
 
           // Even though we are overriding the meta here, we still want to validate it
-          const artifactMeta = getMetaFromYArtifact(yDoc);
-          yArtifactMetaZodSchema.parse(artifactMeta);
+          const artifactMeta = yArtifactMetaZodSchema.parse(
+            getMetaFromYArtifact(yDoc),
+          );
 
           if (artifactMeta.userId !== ctx.session.userId) {
             throw new TRPCError({

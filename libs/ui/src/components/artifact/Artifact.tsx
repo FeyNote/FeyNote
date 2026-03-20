@@ -42,7 +42,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
   const connection = useCollaborationConnection(`artifact:${props.id}`);
 
-  const { title } = useObserveYArtifactMeta(connection.yjsDoc);
+  const { title } = useObserveYArtifactMeta(connection.yjsDoc).meta;
   const { authorizationState, idbSynced } =
     useCollaborationConnectionAuthorizationState(connection);
 

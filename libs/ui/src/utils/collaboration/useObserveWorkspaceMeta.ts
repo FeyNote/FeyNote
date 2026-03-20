@@ -11,11 +11,11 @@ export const useObserveWorkspaceMeta = (yDoc: YDoc) => {
     return getWorkspaceMetaYKVFromYDoc(yDoc);
   }, [yDoc]);
 
-  useObserveYKVChanges(metaYKV);
+  const { rerenderReducerValue } = useObserveYKVChanges(metaYKV);
 
   const meta = useMemo(() => {
     return getWorkspaceMetaFromYDoc(yDoc);
-  }, [yDoc, metaYKV]);
+  }, [yDoc, rerenderReducerValue]);
 
   return {
     meta,

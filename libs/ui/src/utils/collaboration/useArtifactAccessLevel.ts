@@ -14,7 +14,7 @@ export const useArtifactAccessLevel = (
   yDoc: YDoc,
   userId: string | undefined,
 ) => {
-  const artifactMeta = useObserveYArtifactMeta(yDoc);
+  const artifactMeta = useObserveYArtifactMeta(yDoc).meta;
   const { rerenderReducerValue: userAccessRerenderReducerValue } =
     useObserveYArtifactUserAccess(yDoc);
 

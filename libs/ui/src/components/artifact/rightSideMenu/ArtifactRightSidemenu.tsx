@@ -80,7 +80,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [showManagementDialog, setShowSharingManagementDialog] =
     useState(false);
   const { session } = useSessionContext();
-  const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc).meta;
   const { userAccessYKV, rerenderReducerValue } = useObserveYArtifactUserAccess(
     props.connection.yjsDoc,
   );
