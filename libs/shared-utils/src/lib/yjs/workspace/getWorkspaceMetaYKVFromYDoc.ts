@@ -11,4 +11,3 @@ export const getWorkspaceMetaYKVFromYDoc = (yDoc: YDoc) => {
   }>(WORKSPACE_META_KEY);
   return new YKeyValue(yArray) as TypedYKV<YWorkspaceMeta>;
 };
-
