@@ -19,6 +19,10 @@
       "cache": true,
       "inputs": ["default"]
     },
+    "typecheck": {
+      "cache": true,
+      "inputs": ["default", "^default"]
+    },
     "e2e": {
       "cache": true
     },
