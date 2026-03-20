@@ -201,6 +201,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   };
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'globalSearch.trigger',
     APP_KEYBOARD_SHORTCUTS.search,
     trigger,

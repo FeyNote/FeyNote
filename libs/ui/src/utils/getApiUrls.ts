@@ -11,6 +11,7 @@ try {
   // Do nothing, window is not available in all environments
 }
 
+// lint-locales-disable
 const apiUrlsByEnv = {
   development: {
     // eslint-disable-next-line no-restricted-globals
@@ -64,6 +65,7 @@ const apiUrlsByEnv = {
     websocket: 'wss://websocket.staging.feynote.com',
   },
 };
+// lint-locales-enable
 
 export const getApiUrls = () => {
   if (getIsElectron()) {
@@ -71,6 +73,7 @@ export const getApiUrls = () => {
     if (urls) {
       return urls;
     }
+    // lint-locales-disable-next-line
     return apiUrlsByEnv['app.feynote.com'];
   }
 

@@ -301,6 +301,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
           <EditSubmenu />
           <ViewSubmenu />
           <ExportFileContentSubMenu />
+          {/* lint-locales-disable-next-line */}
           <TldrawUiMenuSubmenu id="preferences" label="menu.preferences">
             <ToggleSnapModeItem />
             <ToggleGridItem />
