@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import { startUpdateChecker } from './updateChecker';
+
+if (require('electron-squirrel-startup')) app.quit();
 
 declare const process: NodeJS.Process & { resourcesPath: string };
 
@@ -143,6 +146,10 @@ app.whenReady().then(() => {
 
   createWindow();
 
+  if (app.isPackaged) {
+    startUpdateChecker(() => mainWindow);
+  }
+
   const protocolArg = process.argv.find((arg) =>
     arg.startsWith(`${PROTOCOL_SCHEME}://`),
   );
@@ -162,3 +169,5 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+app.setAppUserModelId('com.feynote.desktop');
