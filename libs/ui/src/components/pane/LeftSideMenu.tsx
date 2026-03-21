@@ -41,6 +41,7 @@ import { AppConnectionStatus } from './AppConnectionStatus';
 import { IoChatbubbles, LuFolderTree } from '../AppIcons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { AIThreadContextMenu } from '../assistant/AIThreadContextMenu';
+import { SideMenuItemContextMenu } from './SideMenuItemContextMenu';
 
 const SidebarCard = styled(IonCard)`
   margin-bottom: 0;
@@ -171,67 +172,101 @@ export const LeftSideMenu: React.FC = () => {
       $isThreadsShowing={showThreadsCard}
     >
       <SidebarCard>
-        <CompactIonItem
-          lines="none"
-          onClick={() => triggerGlobalSearch()}
-          button
+        <SideMenuItemContextMenu
+          component={PaneableComponent.PersistentSearch}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={search} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.search')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(event, PaneableComponent.Dashboard, {})
-          }
-          button
+          <CompactIonItem
+            lines="none"
+            onClick={() => triggerGlobalSearch()}
+            button
+          >
+            <IonIcon icon={search} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.search')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
+        <SideMenuItemContextMenu
+          component={PaneableComponent.Dashboard}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={home} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.dashboard')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(
-              event,
-              PaneableComponent.AllArtifacts,
-              {},
-            )
-          }
-          button
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(
+                event,
+                PaneableComponent.Dashboard,
+                {},
+              )
+            }
+            button
+          >
+            <IonIcon icon={home} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.dashboard')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
+        <SideMenuItemContextMenu
+          component={PaneableComponent.AllArtifacts}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={list} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.allArtifacts')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(event, PaneableComponent.Graph, {})
-          }
-          button
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(
+                event,
+                PaneableComponent.AllArtifacts,
+                {},
+              )
+            }
+            button
+          >
+            <IonIcon icon={list} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.allArtifacts')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
+        <SideMenuItemContextMenu
+          component={PaneableComponent.Graph}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={gitNetwork} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.graph')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(
-              event,
-              PaneableComponent.NewArtifact,
-              {},
-            )
-          }
-          button
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(event, PaneableComponent.Graph, {})
+            }
+            button
+          >
+            <IonIcon icon={gitNetwork} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.graph')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
+        <SideMenuItemContextMenu
+          component={PaneableComponent.NewArtifact}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={add} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.new')}</IonLabel>
-        </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(
+                event,
+                PaneableComponent.NewArtifact,
+                {},
+              )
+            }
+            button
+          >
+            <IonIcon icon={add} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.new')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
       </SidebarCard>
 
       {showTreeCard && (
@@ -241,7 +276,10 @@ export const LeftSideMenu: React.FC = () => {
               <LuFolderTree color="rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54)" />
               &nbsp;&nbsp;
               <IonLabel>{t('menu.tree')}</IonLabel>
-              <InfoButton message={t('menu.tree.help')} />
+              <InfoButton
+                message={t('menu.tree.help')}
+                docsLink="https://docs.feynote.com/documents/tree/#organizing-documents"
+              />
               <IonButton
                 onClick={(event) =>
                   navigateWithKeyboardHandler(
@@ -332,28 +370,44 @@ export const LeftSideMenu: React.FC = () => {
       )}
 
       <SidebarCard>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(event, PaneableComponent.Contribute, {})
-          }
-          button
+        <SideMenuItemContextMenu
+          component={PaneableComponent.Contribute}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={heart} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.contribute')}</IonLabel>
-        </CompactIonItem>
-        <CompactIonItem
-          lines="none"
-          onClick={(event) =>
-            navigateWithKeyboardHandler(event, PaneableComponent.Settings, {})
-          }
-          button
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(
+                event,
+                PaneableComponent.Contribute,
+                {},
+              )
+            }
+            button
+          >
+            <IonIcon icon={heart} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.contribute')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
+        <SideMenuItemContextMenu
+          component={PaneableComponent.Settings}
+          componentProps={{}}
+          paneId={currentPane.id}
         >
-          <IonIcon icon={settings} size="small" />
-          &nbsp;&nbsp;
-          <IonLabel>{t('menu.settings')}</IonLabel>
-        </CompactIonItem>
+          <CompactIonItem
+            lines="none"
+            onClick={(event) =>
+              navigateWithKeyboardHandler(event, PaneableComponent.Settings, {})
+            }
+            button
+          >
+            <IonIcon icon={settings} size="small" />
+            &nbsp;&nbsp;
+            <IonLabel>{t('menu.settings')}</IonLabel>
+          </CompactIonItem>
+        </SideMenuItemContextMenu>
         <CompactIonItem lines="none" onClick={signOut} button>
           <IonIcon icon={logOut} size="small" />
           &nbsp;&nbsp;

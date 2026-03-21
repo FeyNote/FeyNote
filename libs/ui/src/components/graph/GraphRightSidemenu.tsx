@@ -31,7 +31,10 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
           <IonIcon icon={settings} size="small" />
           &nbsp;&nbsp;
           {t('graph.settings')}
-          <InfoButton message={t('graph.settings.help')} />
+          <InfoButton
+            message={t('graph.settings.help')}
+            docsLink="https://docs.feynote.com/documents/graph/#graph-settings"
+          />
         </IonListHeader>
         <CompactIonItem>
           {t('graph.settings.showOrphans')}

@@ -11,6 +11,7 @@ interface ElectronAPI {
   writeFile: (filePath: string, content: string) => Promise<void>;
   renameFile: (oldPath: string, newPath: string) => Promise<void>;
   readFile: (filePath: string) => Promise<string | null>;
+  onAuthCode: (callback: (code: string) => void) => () => void;
 }
 
 declare global {

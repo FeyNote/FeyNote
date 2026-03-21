@@ -34,16 +34,36 @@ const config: ForgeConfig = {
   makers: [
     new MakerSquirrel({
       name: 'FeyNote',
+      setupIcon: './icons/feynote.ico',
+      iconUrl: 'https://static.feynote.com/assets/favicon-20240925.ico',
+      loadingGif: './icons/feynote-installing.gif',
+      description: 'A fantasy themed note taking app oriented towards TTRPGs',
+      remoteReleases:
+        'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/prod/win32/x64',
     }),
-    new MakerZIP({}, ['darwin', 'linux']),
+    new MakerZIP(
+      {
+        macUpdateManifestBaseUrl:
+          'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/prod/darwin',
+      },
+      ['darwin', 'linux'],
+    ),
     new MakerDMG({
       name: 'FeyNote',
+      icon: './icons/feynote.icns',
     }),
-    new MakerRpm({}),
+    new MakerRpm({
+      options: {
+        icon: './icons/feynote.png',
+        description: 'A fantasy themed note taking app oriented towards TTRPGs',
+      },
+    }),
     new MakerDeb({
       options: {
         maintainer: 'FeyNote',
         homepage: 'https://feynote.com',
+        icon: './icons/feynote.png',
+        description: 'A fantasy themed note taking app oriented towards TTRPGs',
       },
     }),
   ],

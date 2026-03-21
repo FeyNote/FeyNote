@@ -23,9 +23,9 @@ export const getGenerate5eObjectSchema = () => {
         'Some 5e objects come with required key value properties, this is the list that will contain those',
       )
       .nullable(),
-    descriptions: z
-      .array(z.string())
-      .describe('The descriptive text of the object')
+    description: z
+      .string()
+      .describe('The descriptive text of the object. You may use markdown')
       .nullable(),
   });
 };

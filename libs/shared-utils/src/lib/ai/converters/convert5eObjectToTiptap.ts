@@ -1,9 +1,12 @@
-import type { Generate5eObjectParams } from '@feynote/shared-utils';
+import type { Generate5eObjectParams } from '../schemas/Generate5eObjectSchema';
 import type { DeepPartial } from 'ai';
+import { starkdown } from 'starkdown';
+import type { JSONContent } from '@tiptap/core';
 
 export const convert5eObjectToTiptap = (
   generatedObject: DeepPartial<Generate5eObjectParams>,
-) => {
+  generateJSON: (html: string) => JSONContent[],
+): JSONContent[] => {
   const content = [];
   if (generatedObject.name)
     content.push({
@@ -51,17 +54,15 @@ export const convert5eObjectToTiptap = (
       content: keyPairContent,
     });
   }
-  if (generatedObject.descriptions?.length) {
-    const paragraphs = generatedObject.descriptions.map((description) => ({
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: description,
-        },
-      ],
-    }));
-    content.push(...paragraphs);
+  if (generatedObject.description?.length) {
+    // Sometimes the AI will generate lists (bullet or numbered) without an empty newline prior
+    const normalized = generatedObject.description.replace(
+      /(?<!\n)\n([-*+] |\d+[.)] )/g,
+      '\n\n$1',
+    );
+    const html = starkdown(normalized);
+    const json = generateJSON(html);
+    content.push(...json);
   }
 
   const tiptapContent = [

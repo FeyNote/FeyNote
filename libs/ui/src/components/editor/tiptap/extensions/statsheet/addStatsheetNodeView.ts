@@ -1,6 +1,89 @@
 import type { NodeViewRenderer } from '@tiptap/core';
 import { t } from 'i18next';
 
+const nodeTypeDataAttributes: Record<string, string> = {
+  customMonsterStatblock: 'data-monster-statblock',
+  customSpellSheet: 'data-spellsheet',
+  customTTRPGNote: 'data-ttrpg-note',
+};
+
+const collectStyleSheets = (): string => {
+  return Array.from(document.styleSheets)
+    .map((sheet) => {
+      try {
+        const rules = Array.from(sheet.cssRules)
+          .map((rule) => rule.cssText)
+          .join('\n');
+        return `<style>${rules}</style>`;
+      } catch {
+        if (sheet.href) {
+          return `<link rel="stylesheet" href="${sheet.href}">`;
+        }
+        return '';
+      }
+    })
+    .join('\n');
+};
+
+const findStyledComponentAncestor = (el: HTMLElement): string => {
+  let ancestor = el.parentElement;
+  while (ancestor && ancestor !== document.body) {
+    const classes = ancestor.className;
+    if (
+      typeof classes === 'string' &&
+      classes.split(' ').some((c) => c.startsWith('sc-'))
+    ) {
+      return classes;
+    }
+    ancestor = ancestor.parentElement;
+  }
+  return '';
+};
+
+const printBlock = (dom: HTMLElement) => {
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+
+  const clonedDom = dom.cloneNode(true) as HTMLElement;
+
+  const actionButtons = clonedDom.querySelector('.statsheet-action-buttons');
+  if (actionButtons) {
+    actionButtons.remove();
+  }
+
+  const styleSheets = collectStyleSheets();
+  const wrapperClass = findStyledComponentAncestor(dom);
+
+  printWindow.document.write(
+    [
+      '<!DOCTYPE html>',
+      '<html>',
+      '<head>',
+      styleSheets,
+      '<style>',
+      'body { margin: 0; padding: 16px; background: white; }',
+      '@media print { body { padding: 0; } }',
+      '</style>',
+      '</head>',
+      `<body><div class="${wrapperClass}">`,
+      clonedDom.outerHTML,
+      '</div></body>',
+      '</html>',
+    ].join('\n'),
+  );
+
+  printWindow.document.close();
+
+  printWindow.onafterprint = () => {
+    printWindow.close();
+  };
+
+  printWindow.document.fonts.ready.then(() => {
+    printWindow.focus();
+    printWindow.print();
+  });
+};
+
 export const renderStatsheetNodeView: NodeViewRenderer = ({
   editor,
   node,
@@ -11,7 +94,10 @@ export const renderStatsheetNodeView: NodeViewRenderer = ({
   for (const key in HTMLAttributes) {
     dom.setAttribute(key, HTMLAttributes[key]);
   }
-  dom.setAttribute('data-monster-statblock', 'v1');
+  const dataAttr = nodeTypeDataAttributes[node.type.name];
+  if (dataAttr) {
+    dom.setAttribute(dataAttr, 'v1');
+  }
 
   const actionButtonContainer = document.createElement('div');
   actionButtonContainer.setAttribute('class', 'statsheet-action-buttons');
@@ -40,6 +126,22 @@ export const renderStatsheetNodeView: NodeViewRenderer = ({
   });
   copyButton.contentEditable = 'false';
   actionButtonContainer.appendChild(copyButton);
+
+  const printButton = document.createElement('button');
+  printButton.setAttribute('class', 'statsheet-action-button');
+  printButton.setAttribute('title', t('editor.statsheet.print'));
+  const printButtonIcon = document.createElement('i');
+  printButtonIcon.innerHTML = `
+    <svg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'><path d='M408 112H106a58 58 0 0 0-58 58v158a56 56 0 0 0 56 56h8v39.68A40.32 40.32 0 0 0 152.32 464h207.36A40.32 40.32 0 0 0 400 423.68V384h8a56 56 0 0 0 56-56V168a56 56 0 0 0-56-56m-40 311.68a8.35 8.35 0 0 1-8.32 8.32H152.32a8.35 8.35 0 0 1-8.32-8.32V264.32a8.35 8.35 0 0 1 8.32-8.32h207.36a8.35 8.35 0 0 1 8.32 8.32Zm26-215.76a24 24 0 1 1 22-22 24 24 0 0 1-22 22M344 48H168a56.09 56.09 0 0 0-55.42 48h286.84A56.09 56.09 0 0 0 344 48'/></svg>
+  `;
+  printButton.appendChild(printButtonIcon);
+  printButton.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    printBlock(dom);
+  });
+  printButton.contentEditable = 'false';
+  actionButtonContainer.appendChild(printButton);
 
   const deleteButton = document.createElement('button');
   deleteButton.setAttribute('class', 'statsheet-action-button');

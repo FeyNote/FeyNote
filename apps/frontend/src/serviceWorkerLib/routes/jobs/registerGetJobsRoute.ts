@@ -3,6 +3,7 @@ import { registerRoute } from 'workbox-routing';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
 import { getTrpcInputForEvent } from '../../util/getTrpcInputForEvent';
 import { customTrpcTransformer } from '@feynote/shared-utils';
+import { swAssertStatusCacheDivert } from '../../util/swAssertStatusCacheDivert';
 
 export function registerGetJobsRoute() {
   registerRoute(
@@ -14,6 +15,9 @@ export function registerGetJobsRoute() {
 
       try {
         const response = await fetch(event.request);
+
+        swAssertStatusCacheDivert(response);
+
         const isFirstPageOfJobs = !input?.offset;
         if (
           response.status >= 200 &&

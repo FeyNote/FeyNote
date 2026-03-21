@@ -1,10 +1,12 @@
 import { css } from 'styled-components';
 import { themeVariables } from '../../../themeVariables';
+import { statsheetActionButtonStyles } from '../statsheet/statsheetActionButtonStyles';
 
 export const ttrpgNoteExtensionStyles = css`
   [data-ttrpg-note] {
     ${themeVariables.classic}
 
+    position: relative;
     width: min(350px, 100%);
     padding: 4.913px 6.047px;
     margin-top: 22px;
@@ -30,5 +32,7 @@ export const ttrpgNoteExtensionStyles = css`
     > h6:first-child {
       margin-top: 4px;
     }
+
+    ${statsheetActionButtonStyles}
   }
 `;

@@ -10,6 +10,9 @@ import {
 import path from 'path';
 import fs from 'fs/promises';
 import { pathToFileURL } from 'url';
+import { startUpdateChecker } from './updateChecker';
+
+if (require('electron-squirrel-startup')) app.quit();
 
 declare const process: NodeJS.Process & { resourcesPath: string };
 
@@ -18,6 +21,24 @@ const WEBUI_URL = process.env.WEBUI_URL;
 if (isDev && !WEBUI_URL) throw new Error('WEBUI_URL must be provided');
 
 const RENDERER_HOST = 'desktop-vhost.feynote.com';
+const PROTOCOL_SCHEME = 'feynote';
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(PROTOCOL_SCHEME, process.execPath, [
+      path.resolve(process.argv[1]),
+    ]);
+  }
+} else {
+  app.setAsDefaultProtocolClient(PROTOCOL_SCHEME);
+}
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+}
+
+let mainWindow: BrowserWindow | null = null;
 
 function getRendererDir(): string {
   if (app.isPackaged) {
@@ -26,7 +47,21 @@ function getRendererDir(): string {
   return path.join(app.getAppPath(), 'renderer');
 }
 
-let mainWindow: BrowserWindow | null = null;
+function handleProtocolUrl(url: string): void {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== `${PROTOCOL_SCHEME}:`) return;
+    if (parsed.hostname !== 'auth') return;
+
+    const code = parsed.searchParams.get('code');
+    if (!code) return;
+
+    mainWindow?.webContents.send('auth-code', code);
+    mainWindow?.focus();
+  } catch {
+    // Ignore malformed URLs
+  }
+}
 
 function createWindow(): void {
   mainWindow = new BrowserWindow({
@@ -115,6 +150,24 @@ ipcMain.handle('fs-read-file', async (_event, filePath: string) => {
   }
 });
 
+app.on('second-instance', (_event, argv) => {
+  const protocolUrl = argv.find((arg) =>
+    arg.startsWith(`${PROTOCOL_SCHEME}://`),
+  );
+  if (protocolUrl) {
+    handleProtocolUrl(protocolUrl);
+  }
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+  }
+});
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  handleProtocolUrl(url);
+});
+
 app.whenReady().then(() => {
   const rendererDir = getRendererDir();
 
@@ -139,6 +192,17 @@ app.whenReady().then(() => {
 
   createWindow();
 
+  if (app.isPackaged) {
+    startUpdateChecker(() => mainWindow);
+  }
+
+  const protocolArg = process.argv.find((arg) =>
+    arg.startsWith(`${PROTOCOL_SCHEME}://`),
+  );
+  if (protocolArg) {
+    handleProtocolUrl(protocolArg);
+  }
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -151,3 +215,5 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+app.setAppUserModelId('com.feynote.desktop');

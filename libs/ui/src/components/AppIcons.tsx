@@ -100,6 +100,7 @@ export {
   RiAlignCenter,
   RiAlignLeft,
   RiAlignRight,
+  RiAttachment2,
   RiBold,
   RiFontSansSerif,
   RiH1,

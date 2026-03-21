@@ -1,8 +1,10 @@
-export const monsterStatblockDefaultContent = [
+import { t } from 'i18next';
+
+export const monsterStatblockDefaultContent = () => [
   {
     type: 'heading',
     attrs: { level: 2 },
-    content: [{ type: 'text', text: 'Mad Koala of the West' }],
+    content: [{ type: 'text', text: t('monsterStatblock.default.name') }],
   },
   {
     type: 'paragraph',
@@ -10,7 +12,7 @@ export const monsterStatblockDefaultContent = [
       {
         type: 'text',
         marks: [{ type: 'italic' }],
-        text: 'Small cutie, chaotic gossipy',
+        text: t('monsterStatblock.default.alignment'),
       },
     ],
   },
@@ -18,14 +20,26 @@ export const monsterStatblockDefaultContent = [
   {
     type: 'paragraph',
     content: [
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Armor Class ' },
-      { type: 'text', text: '16 (chain mail, shield)' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('monsterStatblock.ac') + ' ',
+      },
+      { type: 'text', text: t('monsterStatblock.default.acValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Hit Points ' },
-      { type: 'text', text: '41(1d4 + 5)' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('monsterStatblock.hp') + ' ',
+      },
+      { type: 'text', text: t('monsterStatblock.default.hpValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Speed ' },
-      { type: 'text', text: '13ft.' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('monsterStatblock.speed') + ' ',
+      },
+      { type: 'text', text: t('monsterStatblock.default.speedValue') },
     ],
   },
   { type: 'horizontalRule' },
@@ -41,7 +55,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'STR' }],
+                content: [{ type: 'text', text: t('monsterStatblock.str') }],
               },
             ],
           },
@@ -51,7 +65,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'DEX' }],
+                content: [{ type: 'text', text: t('monsterStatblock.dex') }],
               },
             ],
           },
@@ -61,7 +75,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'CON' }],
+                content: [{ type: 'text', text: t('monsterStatblock.con') }],
               },
             ],
           },
@@ -71,7 +85,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'INT' }],
+                content: [{ type: 'text', text: t('monsterStatblock.int') }],
               },
             ],
           },
@@ -81,7 +95,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'WIS' }],
+                content: [{ type: 'text', text: t('monsterStatblock.wis') }],
               },
             ],
           },
@@ -91,7 +105,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: 'CHA' }],
+                content: [{ type: 'text', text: t('monsterStatblock.cha') }],
               },
             ],
           },
@@ -106,7 +120,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '7 (-1)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -116,7 +130,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '12 (+1)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -126,7 +140,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '13 (+2)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -136,7 +150,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '6 (-2)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -146,7 +160,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '15 (+3)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -156,7 +170,7 @@ export const monsterStatblockDefaultContent = [
             content: [
               {
                 type: 'paragraph',
-                content: [{ type: 'text', text: '5 (-2)' }],
+                content: [{ type: 'text', text: '10 (+0)' }],
               },
             ],
           },
@@ -171,18 +185,23 @@ export const monsterStatblockDefaultContent = [
       {
         type: 'text',
         marks: [{ type: 'bold' }],
-        text: 'Condition Immunities ',
+        text: t('monsterStatblock.senses') + ' ',
       },
-      { type: 'text', text: 'groovy, buzzed, melancholy' },
+      { type: 'text', text: t('monsterStatblock.default.sensesValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Senses ' },
-      { type: 'text', text: 'darkvision 60 ft., passive Perception 14' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('monsterStatblock.languages') + ' ',
+      },
+      { type: 'text', text: t('monsterStatblock.default.languagesValue') },
       { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Languages ' },
-      { type: 'text', text: 'Latin, Pottymouth' },
-      { type: 'hardBreak' },
-      { type: 'text', marks: [{ type: 'bold' }], text: 'Challenge ' },
-      { type: 'text', text: '2 (4603 XP)' },
+      {
+        type: 'text',
+        marks: [{ type: 'bold' }],
+        text: t('monsterStatblock.challenge') + ' ',
+      },
+      { type: 'text', text: t('monsterStatblock.default.challengeValue') },
     ],
   },
   { type: 'horizontalRule' },
@@ -192,55 +211,18 @@ export const monsterStatblockDefaultContent = [
       {
         type: 'text',
         marks: [{ type: 'bold' }, { type: 'italic' }],
-        text: 'Big Jerk.',
+        text: t('monsterStatblock.default.traitName'),
       },
       {
         type: 'text',
-        text: ' Whenever this creature makes an attack, it starts telling you how much cooler it is than you.',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
-      {
-        type: 'text',
-        marks: [{ type: 'bold' }, { type: 'italic' }],
-        text: 'Enormous Nose.',
-      },
-      {
-        type: 'text',
-        text: ' This creature gains advantage on any check involving putting things in its nose.',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
-      {
-        type: 'text',
-        marks: [{ type: 'bold' }, { type: 'italic' }],
-        text: 'Full of Detergent.',
-      },
-      {
-        type: 'text',
-        text: ' This creature has swallowed an entire bottle of dish detergent and is actually having a pretty good time.',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
-      {
-        type: 'text',
-        text: 'While walking near this creature, you must make a dexterity check or become “a soapy mess” for three hours, after which your skin will get all dry and itchy.',
+        text: t('monsterStatblock.default.traitDescription'),
       },
     ],
   },
   {
     type: 'heading',
     attrs: { level: 3 },
-    content: [{ type: 'text', text: 'Actions' }],
+    content: [{ type: 'text', text: t('monsterStatblock.actions.header') }],
   },
   {
     type: 'paragraph',
@@ -248,53 +230,25 @@ export const monsterStatblockDefaultContent = [
       {
         type: 'text',
         marks: [{ type: 'bold' }, { type: 'italic' }],
-        text: 'Corkscrew Strike.',
+        text: t('monsterStatblock.default.actionName'),
       },
       {
         type: 'text',
         marks: [{ type: 'italic' }],
-        text: ' Melee Weapon Attack:',
+        text: t('monsterStatblock.default.actionType'),
       },
       {
         type: 'text',
-        text: ' +4 to hit, reach 5ft., one target.',
-      },
-      {
-        type: 'text',
-        marks: [{ type: 'italic' }],
-        text: ' Hit',
-      },
-      {
-        type: 'text',
-        text: ' 5 (1d6 + 2)',
-      },
-    ],
-  },
-  {
-    type: 'paragraph',
-    content: [
-      {
-        type: 'text',
-        marks: [{ type: 'bold' }, { type: 'italic' }],
-        text: 'Airplane Hammer.',
+        text: t('monsterStatblock.default.actionDetails'),
       },
       {
         type: 'text',
         marks: [{ type: 'italic' }],
-        text: ' Melee Weapon Attack:',
+        text: t('monsterStatblock.default.actionHit'),
       },
       {
         type: 'text',
-        text: ' +4 to hit, reach 5ft., one target.',
-      },
-      {
-        type: 'text',
-        marks: [{ type: 'italic' }],
-        text: ' Hit',
-      },
-      {
-        type: 'text',
-        text: ' 5 (1d6 + 2)',
+        text: t('monsterStatblock.default.actionDamage'),
       },
     ],
   },

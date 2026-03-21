@@ -170,9 +170,11 @@ jobs:
       - run:
           name: collect-arm64-artifacts
           command: |
-            mkdir -p desktop-artifacts
+            mkdir -p desktop-artifacts/darwin/arm64
             cp apps/desktop/out/make/*.dmg desktop-artifacts/FeyNote-arm64.dmg
-            cp apps/desktop/out/make/zip/darwin/arm64/*.zip desktop-artifacts/
+            cp apps/desktop/out/make/zip/darwin/arm64/*.zip desktop-artifacts/FeyNote-darwin-arm64.zip
+            cp apps/desktop/out/make/zip/darwin/arm64/RELEASES.json desktop-artifacts/darwin/arm64/
+            cp apps/desktop/out/make/zip/darwin/arm64/*.zip desktop-artifacts/darwin/
       - run:
           name: clean-out
           command: rm -rf apps/desktop/out
@@ -184,8 +186,11 @@ jobs:
       - run:
           name: collect-x64-artifacts
           command: |
+            mkdir -p desktop-artifacts/darwin/x64
             cp apps/desktop/out/make/*.dmg desktop-artifacts/FeyNote-x64.dmg
-            cp apps/desktop/out/make/zip/darwin/x64/*.zip desktop-artifacts/
+            cp apps/desktop/out/make/zip/darwin/x64/*.zip desktop-artifacts/FeyNote-darwin-x64.zip
+            cp apps/desktop/out/make/zip/darwin/x64/RELEASES.json desktop-artifacts/darwin/x64/
+            cp apps/desktop/out/make/zip/darwin/x64/*.zip desktop-artifacts/darwin/
       - aws-cli/setup
       - run:
           name: push-to-s3
@@ -216,9 +221,9 @@ jobs:
           name: collect-artifacts
           command: |
             mkdir -p desktop-artifacts
-            cp apps/desktop/out/make/deb/x64/*.deb desktop-artifacts/
-            cp apps/desktop/out/make/rpm/x64/*.rpm desktop-artifacts/
-            cp apps/desktop/out/make/zip/linux/x64/*.zip desktop-artifacts/
+            cp apps/desktop/out/make/deb/x64/*.deb desktop-artifacts/FeyNote-linux-amd64.deb
+            cp apps/desktop/out/make/rpm/x64/*.rpm desktop-artifacts/FeyNote-linux-x86_64.rpm
+            cp apps/desktop/out/make/zip/linux/x64/*.zip desktop-artifacts/FeyNote-linux-x64.zip
       - aws-cli/setup
       - run:
           name: push-to-s3
@@ -261,8 +266,11 @@ jobs:
       - run:
           name: collect-artifacts
           command: |
-            mkdir -p desktop-artifacts
-            cp apps/desktop/out/make/squirrel.windows/x64/*.exe desktop-artifacts/
+            mkdir -p desktop-artifacts/win32/x64
+            cp apps/desktop/out/make/squirrel.windows/x64/*.exe desktop-artifacts/FeyNote-Setup.exe
+            cp apps/desktop/out/make/squirrel.windows/x64/RELEASES desktop-artifacts/win32/x64/
+            cp apps/desktop/out/make/squirrel.windows/x64/*.nupkg desktop-artifacts/win32/x64/
+            cp apps/desktop/out/make/squirrel.windows/x64/*.exe desktop-artifacts/win32/x64/
       - run:
           name: install-awscli
           command: choco install awscli -y

@@ -315,7 +315,7 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   };
 
   return (
-    <ArtifactDrawContainer data-print-target={`artifact:${props.artifactId}`}>
+    <ArtifactDrawContainer>
       <StyledArtifactDrawStyles data-theme={theme}>
         {titleInput}
 

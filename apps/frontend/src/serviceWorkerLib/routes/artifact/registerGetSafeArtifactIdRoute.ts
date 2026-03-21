@@ -1,6 +1,7 @@
 import { getManifestDb, ObjectStoreName, type trpc } from '@feynote/ui-sw';
 import { registerRoute } from 'workbox-routing';
 import { encodeCacheResultForTrpc } from '../../util/encodeCacheResultForTrpc';
+import { swAssertStatusCacheDivert } from '../../util/swAssertStatusCacheDivert';
 
 export function registerGetSafeArtifactIdRoute() {
   registerRoute(
@@ -8,6 +9,8 @@ export function registerGetSafeArtifactIdRoute() {
     async (event) => {
       try {
         const response = await fetch(event.request);
+
+        swAssertStatusCacheDivert(response);
 
         return response;
       } catch (_e) {

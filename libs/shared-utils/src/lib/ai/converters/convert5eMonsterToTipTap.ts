@@ -1,12 +1,11 @@
-import type { Generate5eMonsterParams } from '@feynote/shared-utils';
+import type { Generate5eMonsterParams } from '../schemas/generate5eMonsterSchema';
 import type { JSONContent } from '@tiptap/core';
 import type { DeepPartial } from 'ai';
-import { t } from 'i18next';
 
 const getTiptapTableObj = (
   value: string,
   type: 'tableCell' | 'tableHeader',
-) => {
+): JSONContent => {
   const text = type === 'tableHeader' ? value.toUpperCase() : value;
   return {
     type,
@@ -31,7 +30,7 @@ const getTiptapParagraphFromObj = (
     description: string;
     frequency: string | null;
   }>,
-) => {
+): JSONContent => {
   const content = [];
   if (item.name)
     content.push({
@@ -58,9 +57,10 @@ const getTiptapParagraphFromObj = (
 
 export const convert5eMonsterToTipTap = (
   generatedMonster: DeepPartial<Generate5eMonsterParams>,
-) => {
+  t: (key: string) => string,
+  wide = false,
+): JSONContent[] => {
   const tiptapContent = [];
-  if (!generatedMonster) return;
 
   // Monster Heading
   if (generatedMonster.name) {
@@ -375,7 +375,7 @@ export const convert5eMonsterToTipTap = (
     {
       type: 'customMonsterStatblock',
       attrs: {
-        wide: false,
+        wide,
       },
       content: tiptapContent,
     },

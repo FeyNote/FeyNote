@@ -9,9 +9,11 @@ export * from './lib/error';
 
 export * from './lib/files/convertFileWithPandoc';
 
+export * from './lib/i18n/translate';
 export * from './lib/ai/ai';
 export * from './lib/ai/utils/SystemMessage';
 export * from './lib/ai/utils/limitChatContextByCapability';
+export * from './lib/converters/convertHtmlToPlainText';
 export * from './lib/ai/generateAssistantStreamText';
 export * from './lib/ai/generateAssistantText';
 export * from './lib/ai/tools/scrapeUrlTool';
@@ -25,6 +27,7 @@ export * from './lib/artifacts/updateArtifactContentReferenceText';
 export * from './lib/artifacts/updateArtifactTitleReferenceText';
 export * from './lib/artifacts/updateArtifactOutgoingReferences';
 
+export * from './lib/express/feynoteAsyncLocalStorage';
 export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
 
