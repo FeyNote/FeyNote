@@ -1,5 +1,14 @@
-import { app, BrowserWindow, ipcMain, net, protocol, shell } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  net,
+  protocol,
+  shell,
+} from 'electron';
 import path from 'path';
+import fs from 'fs/promises';
 import { pathToFileURL } from 'url';
 import { startUpdateChecker } from './updateChecker';
 
@@ -102,6 +111,43 @@ ipcMain.on('get-api-urls', (event) => {
     websocket:
       process.env.FEYNOTE_WEBSOCKET_URL || 'wss://websocket.feynote.com',
   };
+});
+
+ipcMain.handle('select-directory', async () => {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory', 'createDirectory'],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle(
+  'fs-write-file',
+  async (_event, filePath: string, content: string) => {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, content, 'utf-8');
+  },
+);
+
+ipcMain.handle(
+  'fs-rename-file',
+  async (_event, oldPath: string, newPath: string) => {
+    try {
+      await fs.rename(oldPath, newPath);
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT') throw e;
+    }
+  },
+);
+
+ipcMain.handle('fs-read-file', async (_event, filePath: string) => {
+  try {
+    return await fs.readFile(filePath, 'utf-8');
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw e;
+  }
 });
 
 app.on('second-instance', (_event, argv) => {

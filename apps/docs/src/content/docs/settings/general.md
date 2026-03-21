@@ -35,6 +35,12 @@ The **Change account email** and **Change account password** buttons each send a
 
 One thing to note: if you signed up using Google and haven't set a password yet, you'll need to set one before you can change your email address.
 
+## Storage
+
+### Live Export to Local Folder
+
+If you use the desktop app, you can have FeyNote continuously export your documents to a folder on your computer as Markdown and JSON files. This is great for local backups or integrating with other tools. See [Live Export](/docs/settings/live-export) for full details.
+
 ## Interface Settings
 
 This is where you control how FeyNote looks and feels day to day.
