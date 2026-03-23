@@ -1,13 +1,15 @@
-import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
+import {
+  PaneContent,
+  PaneContentContainer,
+} from '../pane/PaneContentContainer';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getJobsAction } from '../../actions/getJobsAction';
 import type { ImportFormat, JobSummary } from '@feynote/prisma/types';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
-import { Button, Card } from '@radix-ui/themes';
+import { Heading, Text } from '@radix-ui/themes';
 import {
   AiFillFileMarkdown,
   SiLogseq,
@@ -21,66 +23,73 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
-const ImportOptionsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px 16px;
+const OptionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
 `;
 
-const StyledImportCard = styled(Card)`
+const FormatLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const FormatRow = styled.button`
+  all: unset;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 32px;
-  font-size: 32px;
-  width: 200px;
-`;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms;
+  font-size: 20px;
 
-const ImportOptionsHeader = styled.h2`
-  text-align: center;
-  width: 100%;
-  padding-bottom: 16px;
-`;
-
-const ImportOptionTitle = styled.div`
-  weight: bold;
-  font-size: 16px;
+  &:hover {
+    background: var(--general-background-hover);
+  }
 `;
 
 const IMPORT_OPTIONS: {
-  component: ReactNode;
+  component: React.FC;
   title: string;
+  description: string;
   format: ImportFormat;
 }[] = [
   {
-    component: <TbFileTypeDocx />,
+    component: TbFileTypeDocx,
     title: 'import.options.docx',
+    description: 'import.options.docx.description',
     format: 'docx',
   },
   {
-    component: <FaGoogleDrive />,
+    component: FaGoogleDrive,
     title: 'import.options.gDrive',
+    description: 'import.options.gDrive.description',
     format: 'gDrive',
   },
   {
-    component: <SiObsidian />,
+    component: SiObsidian,
     title: 'import.options.obsidian',
+    description: 'import.options.obsidian.description',
     format: 'obsidian',
   },
   {
-    component: <SiLogseq />,
+    component: SiLogseq,
     title: 'import.options.logseq',
+    description: 'import.options.logseq.description',
     format: 'logseq',
   },
   {
-    component: <AiFillFileMarkdown />,
+    component: AiFillFileMarkdown,
     title: 'import.options.markdown',
+    description: 'import.options.markdown.description',
     format: 'markdown',
   },
   {
-    component: <TfiText />,
+    component: TfiText,
     title: 'import.options.text',
+    description: 'import.options.text.description',
     format: 'text',
   },
 ];
@@ -92,27 +101,26 @@ export const Import: React.FC = () => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
   const { navigate } = usePaneContext();
 
   useEffect(() => {
-    const progress = startProgressBar();
     getMoreJobs();
     const refreshInterval = setInterval(() => {
       refreshJobs();
     }, REFRESH_JOBS_INTERVAL_SECONDS);
-    progress.dismiss();
 
     return () => {
       clearInterval(refreshInterval);
     };
   }, []);
 
+  const jobsRef = useRef(jobs);
+  jobsRef.current = jobs;
+
   const refreshJobs = async () => {
     try {
       const importDto = await getJobsAction({
-        // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
-        limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
+        limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
         type: 'import',
       });
       setJobs(importDto.jobs);
@@ -124,11 +132,11 @@ export const Import: React.FC = () => {
   const getMoreJobs = async () => {
     try {
       const importjobsDTO = await getJobsAction({
-        offset: jobs.length,
+        offset: jobsRef.current.length,
         limit: NUM_OF_INITAL_JOBS_SHOWN,
         type: 'import',
       });
-      const totalJobs = [...jobs, ...importjobsDTO.jobs];
+      const totalJobs = [...jobsRef.current, ...importjobsDTO.jobs];
       setJobs(totalJobs);
       setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
     } catch (e) {
@@ -148,10 +156,37 @@ export const Import: React.FC = () => {
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('import.title')} />
-      <IonContent className="ion-padding">
-        {ProgressBar}
+      <PaneContent>
+        <Heading as="h2" size="3" mt="2">
+          {t('import.options.title')}
+        </Heading>
+        <OptionsGrid>
+          {IMPORT_OPTIONS.map((option, i) => (
+            <FormatRow
+              key={`option-${i}`}
+              onClick={() => {
+                navigate(
+                  PaneableComponent.ImportFileUpload,
+                  { format: option.format },
+                  PaneTransition.Push,
+                );
+              }}
+            >
+              <option.component />
+              <FormatLabel>
+                <Text size="2" weight="medium">
+                  {t(option.title)}
+                </Text>
+                <Text size="1" color="gray">
+                  {t(option.description)}
+                </Text>
+              </FormatLabel>
+            </FormatRow>
+          ))}
+        </OptionsGrid>
+
         {!!jobs.length && (
           <JobList
             title={t('import.jobList')}
@@ -161,32 +196,7 @@ export const Import: React.FC = () => {
             jobClickHandler={jobClickHandler}
           />
         )}
-        <br />
-        <ImportOptionsHeader>{t('import.options.title')}</ImportOptionsHeader>
-        <ImportOptionsContainer>
-          {IMPORT_OPTIONS.map((option, i) => {
-            return (
-              <StyledImportCard key={`option-${i}`} asChild>
-                <Button
-                  onClick={() => {
-                    navigate(
-                      PaneableComponent.ImportFileUpload,
-                      {
-                        format: option.format,
-                      },
-                      PaneTransition.Push,
-                    );
-                    return;
-                  }}
-                >
-                  {option.component}
-                  <ImportOptionTitle>{t(option.title)}</ImportOptionTitle>
-                </Button>
-              </StyledImportCard>
-            );
-          })}
-        </ImportOptionsContainer>
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

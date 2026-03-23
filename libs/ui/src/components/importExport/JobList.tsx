@@ -1,14 +1,6 @@
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import {
-  IonButton,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
-} from '@ionic/react';
-import { arrowDown, document as documentIcon } from 'ionicons/icons';
+import { Badge, Button, Flex, Text } from '@radix-ui/themes';
 import {
   type ExportFormat,
   type ImportFormat,
@@ -16,9 +8,28 @@ import {
 } from '@feynote/prisma/types';
 import { ProgressBar } from '../info/ProgressBar';
 
-const JobsContainer = styled.div`
-  max-height: 50vh;
-  overflow-y: auto;
+const JobRow = styled.div<{ $clickable: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--general-background-hover);
+  cursor: ${(props) => (props.$clickable ? 'pointer' : 'default')};
+
+  &:hover {
+    background: ${(props) =>
+      props.$clickable ? 'var(--general-background-hover)' : 'transparent'};
+  }
+`;
+
+const SectionHeader = styled.div`
+  padding: 12px 16px 4px;
+  margin-top: 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-color-secondary);
+  letter-spacing: 0.5px;
 `;
 
 interface Props {
@@ -53,61 +64,67 @@ export const JobList: React.FC<Props> = (props) => {
   };
 
   return (
-    <JobsContainer>
-      <h2>{props.title}</h2>
-      <IonList>
-        {props.jobs.map((job, idx) => {
-          const format = job.meta.importFormat ?? job.meta.exportFormat;
-          const formatTranslation = format
-            ? formatToTranslationString[format]
-            : t('jobList.format.unknown');
+    <div>
+      <SectionHeader>{props.title}</SectionHeader>
+      {props.jobs.map((job, idx) => {
+        const format = job.meta.importFormat ?? job.meta.exportFormat;
+        const formatTranslation = format
+          ? formatToTranslationString[format]
+          : t('jobList.format.unknown');
 
-          // Only show as btn for completed export jobs or completed import jobs with associated artifacts
-          const showAsBtn =
-            job.status === 'success' &&
-            (job.type === 'export' ||
-              (job.type === 'import' &&
-                !!job.meta.importedArtifactIds?.length));
+        const showAsBtn =
+          job.status === 'success' &&
+          (job.type === 'export' ||
+            (job.type === 'import' && !!job.meta.importedArtifactIds?.length));
 
-          return (
-            <IonItem
-              key={idx}
-              button={showAsBtn}
-              onClick={() => props.jobClickHandler(job.id)}
-            >
-              <IonIcon icon={documentIcon} slot="start" />
-              <IonLabel>
-                <h3>{formatTranslation}</h3>
-                <p>{job.createdAt.toLocaleString()}</p>
-                {job.status === 'failed' && (
-                  <IonNote color="danger">
-                    {(job.meta.error &&
-                      ErrorCodeToTranslationString[job.meta.error]) ||
-                      t('jobList.error.unknown')}
-                  </IonNote>
-                )}
-                {job.status === 'success' && (
-                  <IonNote color="success">{t('jobList.success')}</IonNote>
-                )}
-                {job.status === 'inprogress' && (
-                  <>
-                    <IonNote color="primary">{t('jobList.inProgress')}</IonNote>
-                    <ProgressBar
-                      progress={Math.max(job.progress / 100, 0.01)}
-                    />
-                  </>
-                )}
-              </IonLabel>
-            </IonItem>
-          );
-        })}
-      </IonList>
+        return (
+          <JobRow
+            key={idx}
+            $clickable={showAsBtn}
+            onClick={() => showAsBtn && props.jobClickHandler(job.id)}
+          >
+            <Flex direction="column" gap="1" style={{ flex: 1 }}>
+              <Text size="2" weight="medium">
+                {formatTranslation}
+              </Text>
+              <Text size="1" color="gray">
+                {job.createdAt.toLocaleString()}
+              </Text>
+              {job.status === 'inprogress' && (
+                <div style={{ maxWidth: 200, paddingTop: 4 }}>
+                  <ProgressBar progress={Math.max(job.progress / 100, 0.01)} />
+                </div>
+              )}
+            </Flex>
+            <Flex align="center">
+              {job.status === 'failed' && (
+                <Badge color="red" variant="soft">
+                  {(job.meta.error &&
+                    ErrorCodeToTranslationString[job.meta.error]) ||
+                    t('jobList.error.unknown')}
+                </Badge>
+              )}
+              {job.status === 'success' && (
+                <Badge color="green" variant="soft">
+                  {t('jobList.success')}
+                </Badge>
+              )}
+              {job.status === 'inprogress' && (
+                <Badge color="blue" variant="soft">
+                  {t('jobList.inProgress')}
+                </Badge>
+              )}
+            </Flex>
+          </JobRow>
+        );
+      })}
       {props.hasMoreJobs && (
-        <IonButton fill="clear" onClick={() => props.getMoreJobs()}>
-          {t('jobList.showMore')}
-          <IonIcon icon={arrowDown} />
-        </IonButton>
+        <Flex justify="center" py="3">
+          <Button variant="ghost" size="1" onClick={() => props.getMoreJobs()}>
+            {t('jobList.showMore')}
+          </Button>
+        </Flex>
       )}
-    </JobsContainer>
+    </div>
   );
 };
