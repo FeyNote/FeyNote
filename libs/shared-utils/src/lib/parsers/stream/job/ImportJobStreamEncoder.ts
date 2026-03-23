@@ -13,6 +13,7 @@ export class ImportJobStreamEncoder {
     format: ImportFormat;
     fileSize: number;
     file: File;
+    workspaceId?: string | null;
   }) {
     const writer = new FeynoteStreamWriter();
 
@@ -27,6 +28,7 @@ export class ImportJobStreamEncoder {
       mimetype: data.mimetype,
       format: data.format,
       fileSize: data.fileSize,
+      workspaceId: data.workspaceId ?? null,
     });
     writer.writeRawUint8Array(new Uint8Array(await data.file.arrayBuffer()));
 

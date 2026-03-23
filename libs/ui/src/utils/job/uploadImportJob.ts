@@ -10,6 +10,7 @@ export const uploadImportJob = async (args: {
   file: File;
   format: ImportFormat;
   onProgress?: (progress: number) => void;
+  workspaceId?: string | null;
 }) => {
   const { id } = await getSafeFileIdAction();
 
@@ -20,6 +21,7 @@ export const uploadImportJob = async (args: {
     fileSize: args.file.size,
     mimetype: args.file.type,
     file: args.file,
+    workspaceId: args.workspaceId,
   });
 
   const session = await appIdbStorageManager.getSession();

@@ -11,6 +11,9 @@ import { uploadImportJob } from '../../utils/job/uploadImportJob';
 import { ProgressBar } from '../info/ProgressBar';
 import type { ImportFormat } from '@feynote/prisma/types';
 import { PaneNav } from '../pane/PaneNav';
+import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { WorkspaceIconBubble } from '../workspace/WorkspaceIconBubble';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 
 const ActionErrorText = styled.p`
   font-size: 0.8rem;
@@ -37,6 +40,15 @@ const Container = styled.div`
   align-items: center;
 `;
 
+const WorkspaceInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 16px;
+  font-size: 14px;
+  opacity: 0.8;
+`;
+
 interface Props {
   format: ImportFormat;
 }
@@ -56,6 +68,11 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
   const [fileUploadProgress, setFileUploadProgress] = useState<null | number>(
     null,
   );
+  const { currentWorkspaceId } = useCurrentWorkspaceId();
+  const { getWorkspaceSnapshotById } = useWorkspaceSnapshots();
+  const workspaceSnapshot = currentWorkspaceId
+    ? getWorkspaceSnapshotById(currentWorkspaceId)
+    : null;
 
   const instructions = useMemo(() => {
     switch (props.format) {
@@ -132,6 +149,7 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
         file: file,
         format: props.format,
         onProgress: uploadProgressListener,
+        workspaceId: currentWorkspaceId,
       });
       navigate(PaneableComponent.Import, {}, PaneTransition.Push);
     } catch (e) {
@@ -150,6 +168,18 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
         <div>
           <Header>{t('import.file.header')}</Header>
           <Subtext>{instructions}</Subtext>
+          {workspaceSnapshot && (
+            <WorkspaceInfo>
+              <WorkspaceIconBubble
+                icon={workspaceSnapshot.meta.icon}
+                color={workspaceSnapshot.meta.color}
+                size={20}
+              />
+              {t('import.workspace', {
+                workspaceName: workspaceSnapshot.meta.name,
+              })}
+            </WorkspaceInfo>
+          )}
           {file ? (
             <>
               <Container>

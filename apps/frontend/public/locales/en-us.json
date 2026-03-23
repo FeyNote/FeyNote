@@ -270,6 +270,7 @@
   "import.file.error.size": "File size limit exceeded. File must have a size of under;",
 
   "import.fileTooLarge": "File is too large",
+  "import.workspace": "Importing to workspace: {{workspaceName}}",
   "export.title": "Export Documents",
   "export.jobList": "Export Jobs",
   "export.options.title": "Export Options",
