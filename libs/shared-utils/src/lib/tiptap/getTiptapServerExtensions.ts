@@ -357,7 +357,7 @@ export const getTiptapServerExtensions = (props: Props) => {
       },
     }),
     Node.create({
-      name: 'feynoteGeneric',
+      name: 'feynoteGenericFile',
       group() {
         return this.options.inline ? 'inline' : 'block';
       },

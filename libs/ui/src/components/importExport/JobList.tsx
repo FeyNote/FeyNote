@@ -74,7 +74,7 @@ export const JobList: React.FC<Props> = (props) => {
 
         const showAsBtn =
           job.status === 'success' &&
-          (job.type === 'export' ||
+          ((job.type === 'export' && !job.meta.error) ||
             (job.type === 'import' && !!job.meta.importedArtifactIds?.length));
 
         return (
