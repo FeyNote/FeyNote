@@ -49,6 +49,7 @@ export const setPreferences = authenticatedProcedure
       ),
       [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: z.boolean(),
       [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: z.boolean(),
+      [PreferenceNames.LiveExportStoragePath]: z.string().nullable(),
     } satisfies ZodShape<AppPreferences>),
   )
   .mutation(async ({ ctx, input }): Promise<string> => {
@@ -95,6 +96,7 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.ArtifactReferenceNewArtifactSharingMode],
           [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
             input[PreferenceNames.ArtifactReferenceExistingArtifactSharingMode],
+
           [PreferenceNames.LastActiveWorkspaceId]:
             input[PreferenceNames.LastActiveWorkspaceId],
           [PreferenceNames.WorkspaceNewItemMode]:
@@ -105,6 +107,8 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.ReferenceSearchAcrossAllWorkspaces],
           [PreferenceNames.GlobalSearchAcrossAllWorkspaces]:
             input[PreferenceNames.GlobalSearchAcrossAllWorkspaces],
+          [PreferenceNames.LiveExportStoragePath]:
+            input[PreferenceNames.LiveExportStoragePath],
         } satisfies AppPreferences,
       },
     });

@@ -48,3 +48,11 @@ When you rename a document or update a referenced block, all references pointing
 ## Sharing
 
 When you reference a document that has different sharing settings than the one you're editing, FeyNote will let you know and offer options to bring them in sync. When creating a new document through the reference menu, you can also choose whether the new document should inherit the current document's sharing settings. See [Sharing Documents](/docs/documents/sharing) for full details on how sharing works with references.
+
+An important note is that references don't inherently give access. If you create a reference from a shared document A to a shared document B, all participants on document A will see the reference to document B, but only those who have been granted access directly to document B will be able to click the reference and navigate to document B.
+
+## Workspaces
+
+By default, the reference search is scoped to your active [workspace](/docs/general/workspaces). To search across all workspaces when creating references, turn on **Search all workspaces for references** in [settings](/docs/settings/general#workspace-behavior).
+
+References can be created cross-workspace, and workspaces do nothing to prevent referencing content other than your search preference.

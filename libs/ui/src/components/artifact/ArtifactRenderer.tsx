@@ -19,6 +19,10 @@ import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
 import { useAlertContext } from '../../context/alert/AlertContext';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { PreferenceNames } from '@feynote/shared-utils';
+import { getIsElectron } from '../../utils/getIsElectron';
+import { getLiveExportManager } from '../../utils/liveExport/LiveExportManager';
 
 const ArtifactRendererContainer = styled.div`
   height: 100%;
@@ -92,6 +96,8 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
   const { type, deletedAt } = useObserveYArtifactMeta(
     props.connection.yjsDoc,
   ).meta;
+  const { getPreference } = usePreferencesContext();
+  const liveExportPath = getPreference(PreferenceNames.LiveExportStoragePath);
 
   useEffect(() => {
     props.connection.syncedPromise
@@ -106,6 +112,22 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         });
       });
   }, [props.connection]);
+
+  useEffect(() => {
+    if (!liveExportPath || !getIsElectron() || !collabReady || !type) {
+      return;
+    }
+
+    getLiveExportManager().observeArtifact(
+      props.artifactId,
+      props.connection.yjsDoc,
+      type,
+    );
+
+    return () => {
+      getLiveExportManager().unobserveArtifact(props.artifactId);
+    };
+  }, [props.artifactId, props.connection, type, liveExportPath, collabReady]);
 
   if (!collabReady || !type) {
     return null;
