@@ -36,12 +36,8 @@ export class LiveExportManager {
   private manifest: LiveExportManifest = { version: 1, entries: {} };
   private activeObservers = new Map<string, () => void>();
   private debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
-  private syncEventListener:
-    | ((
-        eventName: EventName.LocaldbArtifactSnapshotUpdated,
-        data: { artifactId: string },
-      ) => void)
-    | null = null;
+  private syncEventListener: ((data: { artifactId: string }) => void) | null =
+    null;
 
   async setExportPath(path: string | null) {
     this.stopListening();
@@ -262,7 +258,7 @@ export class LiveExportManager {
   }
 
   private startListening() {
-    this.syncEventListener = (_, data) => {
+    this.syncEventListener = (data) => {
       if (this.activeObservers.has(data.artifactId)) return;
 
       const existing = this.debounceTimers.get(data.artifactId);
