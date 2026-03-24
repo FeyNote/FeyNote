@@ -8,6 +8,9 @@ import { PreferencesService } from '../../utils/preferences';
 import { useAppThemeWatcher } from '../../utils/useAppThemeWatcher';
 import { useAppFontSizeWatcher } from '../../utils/useAppFontSizeWatcher';
 import { useAppLanguageWatcher } from '../../utils/useAppLanguageWatcher';
+import { PreferenceNames } from '@feynote/shared-utils';
+import { getIsElectron } from '../../utils/getIsElectron';
+import { getLiveExportManager } from '../../utils/liveExport/LiveExportManager';
 
 interface Props {
   children: ReactNode;
@@ -29,6 +32,14 @@ export const PreferencesContextProviderWrapper: React.FC<Props> = ({
         if (!gotInitialLoadEvent.current && isMounted) {
           triggerRerender();
           gotInitialLoadEvent.current = true;
+
+          const liveExportPath =
+            preferencesService.preferences[
+              PreferenceNames.LiveExportStoragePath
+            ];
+          if (liveExportPath && getIsElectron()) {
+            getLiveExportManager().setExportPath(liveExportPath);
+          }
         }
       });
     }
