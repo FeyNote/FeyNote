@@ -1,4 +1,5 @@
 import { trpc } from '../../../utils/trpc';
+import { getSafeArtifactIdAction } from '../../../actions/getSafeArtifactIdAction';
 import { buildWelcomeArtifact } from './templates/buildWelcomeArtifact';
 import { buildIntroducingReferencesArtifact } from './templates/buildIntroducingReferencesArtifact';
 import { withCollaborationConnection } from '../../../utils/collaboration/collaborationManager';
@@ -15,10 +16,7 @@ export const createWelcomeArtifacts = async () => {
     );
 
   const [{ id: welcomeId }, { id: introducingReferencesId }] =
-    await Promise.all([
-      trpc.artifact.getSafeArtifactId.query(),
-      trpc.artifact.getSafeArtifactId.query(),
-    ]);
+    await Promise.all([getSafeArtifactIdAction(), getSafeArtifactIdAction()]);
 
   const introducingReferencesTemplate = buildIntroducingReferencesArtifact({
     id: introducingReferencesId,

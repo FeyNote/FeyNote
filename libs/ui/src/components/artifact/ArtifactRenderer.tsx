@@ -1,7 +1,10 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { CollaborationManagerConnection } from '../../utils/collaboration/collaborationManager';
+import {
+  CollaborationConnectionAuthorizationState,
+  CollaborationManagerConnection,
+} from '../../utils/collaboration/collaborationManager';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
@@ -9,13 +12,12 @@ import { useTranslation } from 'react-i18next';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
-import { uploadFileToApi } from '../../utils/files/uploadFileToApi';
+import { createFileAction } from '../../actions/createFileAction';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { ArtifactDeletedBanner } from './ArtifactDeletedBanner';
 import { ProgressBar } from '../info/ProgressBar';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { useAlertContext } from '../../context/alert/AlertContext';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { PreferenceNames } from '@feynote/shared-utils';
@@ -56,7 +58,7 @@ const FileUploadOverlayContent = styled.div`
 interface Props {
   artifactId: string;
   connection: CollaborationManagerConnection;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   scrollToBlockId?: string;
   scrollToDate?: string;
   onTitleChange?: (title: string) => void;
@@ -91,7 +93,9 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
     [editorReady],
   );
 
-  const { type, deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const { type, deletedAt } = useObserveYArtifactMeta(
+    props.connection.yjsDoc,
+  ).meta;
   const { getPreference } = usePreferencesContext();
   const liveExportPath = getPreference(PreferenceNames.LiveExportStoragePath);
 
@@ -136,7 +140,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           <ArtifactDeletedBanner
             undelete={props.undelete}
             deletedAt={deletedAt}
-            authorizedScope={props.authorizedScope}
+            authorizationState={props.authorizationState}
           />
         )}
         {renderer}
@@ -155,9 +159,10 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
 
   const isEditable =
     !deletedAt &&
-    (props.authorizedScope === CollaborationConnectionAuthorizedScope.CoOwner ||
-      props.authorizedScope ===
-        CollaborationConnectionAuthorizedScope.ReadWrite);
+    (props.authorizationState ===
+      CollaborationConnectionAuthorizationState.CoOwner ||
+      props.authorizationState ===
+        CollaborationConnectionAuthorizationState.ReadWrite);
 
   if (type === 'tiptap') {
     return render(
@@ -165,7 +170,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         showMenus={true}
         artifactId={props.artifactId}
         editable={isEditable}
-        authorizedScope={props.authorizedScope}
+        authorizationState={props.authorizationState}
         onReady={() => setEditorReady(true)}
         yjsProvider={props.connection.tiptapCollabProvider}
         yDoc={undefined}
@@ -176,7 +181,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
           setFileUploadProgress(0);
           for (const file of files) {
             try {
-              const response = await uploadFileToApi({
+              const response = await createFileAction({
                 file,
                 purpose: 'artifact',
                 artifactId: props.artifactId,
@@ -262,7 +267,7 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
         handleFileUpload={async (file) => {
           setIsUploadingFile(true);
           setFileUploadProgress(0);
-          const response = await uploadFileToApi({
+          const response = await createFileAction({
             file,
             purpose: 'artifact',
             artifactId: props.artifactId,

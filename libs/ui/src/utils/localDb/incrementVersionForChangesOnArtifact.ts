@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import type {
   Doc,
   Transaction,
@@ -35,11 +36,25 @@ export const incrementVersionForChangesOnArtifact = (
       key: string;
       val: YArtifactUserAccess;
     }>;
+    const meta = getMetaFromYArtifact(doc);
+    if (!meta.id || !meta.userId) {
+      const warning = new Error(
+        'Snapshot updated with document that has no id or userId',
+      );
+      console.warn(warning);
+      Sentry.captureException(warning);
+      return;
+    }
+
     return appIdbStorageManager.updateLocalArtifactSnapshot(
       artifactId,
       {
         userAccess: artifactAccessArray.map((el) => el),
-        meta: getMetaFromYArtifact(doc),
+        meta: {
+          ...meta,
+          id: meta.id,
+          userId: meta.userId,
+        },
         updatedAt: new Date().getTime(),
       },
       {

@@ -138,7 +138,7 @@ type Props = {
 
 export const ArtifactDraw: React.FC<Props> = memo((props) => {
   const yDoc = props.yDoc || props.collaborationConnection.yjsDoc;
-  const yMeta = useObserveYArtifactMeta(yDoc);
+  const yMeta = useObserveYArtifactMeta(yDoc).meta;
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
   const sessionContext = useSessionContext(true);

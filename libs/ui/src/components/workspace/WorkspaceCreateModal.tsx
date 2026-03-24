@@ -40,7 +40,7 @@ export const WorkspaceCreateModal: React.FC<{
     };
   }, [yDoc]);
 
-  const meta = useObserveWorkspaceMeta(yDoc);
+  const { meta } = useObserveWorkspaceMeta(yDoc);
 
   const close = () => props.onOpenChange(false);
 

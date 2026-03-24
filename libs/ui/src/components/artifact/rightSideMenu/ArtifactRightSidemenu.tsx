@@ -10,10 +10,12 @@ import {
 import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
+import { getKnownUsersAction } from '../../../actions/getKnownUsersAction';
 import { useEffect, useMemo, useState, type RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ARTIFACT_META_KEY, type Edge } from '@feynote/shared-utils';
 import {
+  CollaborationConnectionAuthorizationState,
   CollaborationManagerConnection,
   withCollaborationConnection,
 } from '../../../utils/collaboration/collaborationManager';
@@ -24,10 +26,7 @@ import { CompactIonItem } from '../../CompactIonItem';
 import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagement } from '../ArtifactSharingManagement';
 import { useObserveYArtifactMeta } from '../../../utils/collaboration/useObserveYArtifactMeta';
-import {
-  CollaborationConnectionAuthorizedScope,
-  useCollaborationConnectionAuthorizedScope,
-} from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { useCollaborationConnectionAuthorizationState } from '../../../utils/collaboration/useCollaborationConnectionAuthorizationState';
 import { useObserveYArtifactUserAccess } from '../../../utils/collaboration/useObserveYArtifactUserAccess';
 import { IncomingReferencesFromArtifact } from './incomingReferences/IncomingReferencesFromArtifact';
 import { OutgoingReferencesToArtifact } from './outgoingReferences/OutgoingReferencesToArtifact';
@@ -67,7 +66,7 @@ interface Props {
 export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { showAlert } = useAlertContext();
-  const { authorizedScope } = useCollaborationConnectionAuthorizedScope(
+  const { authorizationState } = useCollaborationConnectionAuthorizationState(
     props.connection,
   );
   const { navigate } = useGlobalPaneContext();
@@ -81,7 +80,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const [showManagementDialog, setShowSharingManagementDialog] =
     useState(false);
   const { session } = useSessionContext();
-  const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc);
+  const artifactMeta = useObserveYArtifactMeta(props.connection.yjsDoc).meta;
   const { userAccessYKV, rerenderReducerValue } = useObserveYArtifactUserAccess(
     props.connection.yjsDoc,
   );
@@ -144,8 +143,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
     return new Map(knownUsers.map((el) => [el.id, el]));
   }, [knownUsers]);
   const getKnownUsers = async () => {
-    await trpc.user.getKnownUsers
-      .query()
+    await getKnownUsersAction()
       .then((result) => {
         setKnownUsers(result);
       })
@@ -302,8 +300,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
 
   const isDeleted = !!artifactMeta.deletedAt;
-  const artifactSharingSettings = authorizedScope ===
-    CollaborationConnectionAuthorizedScope.CoOwner &&
+  const artifactSharingSettings = authorizationState ===
+    CollaborationConnectionAuthorizationState.CoOwner &&
     !isDeleted && (
       <IonCard>
         <IonListHeader>
@@ -360,8 +358,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       </IonCard>
     );
 
-  const artifactSharingStatus = authorizedScope !==
-    CollaborationConnectionAuthorizedScope.CoOwner && (
+  const artifactSharingStatus = authorizationState !==
+    CollaborationConnectionAuthorizationState.CoOwner && (
     <IonCard>
       <IonListHeader>
         <IonIcon icon={person} size="small" />
@@ -381,7 +379,8 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
           })}
           <br />
           {t(
-            authorizedScope === CollaborationConnectionAuthorizedScope.ReadWrite
+            authorizationState ===
+              CollaborationConnectionAuthorizationState.ReadWrite
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}

@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-globals */
 
 import { websocketClient } from '../../context/events/websocketClient';
+import { getCollaborationManager } from '../collaboration/collaborationManager';
 import { getIsViteDevelopment } from '../getIsViteDevelopment';
 import { getManifestDb, ObjectStoreName } from './localDb';
 import { sendMessageToSW, SWMessageType } from './sendMessageToSW';
@@ -207,6 +208,7 @@ export const createDebugDump = async (opts: {
     artifacts,
     tree,
     version: import.meta.env.VITE_APP_VERSION,
+    navigatorLocks: 'locks' in navigator,
     sw: {
       isPresent: !!navigator.serviceWorker.controller,
       state: navigator.serviceWorker.controller?.state,
@@ -225,6 +227,9 @@ export const createDebugDump = async (opts: {
     },
     websocket: {
       connected: websocketClient.connected,
+    },
+    hocuspocus: {
+      wsStatus: getCollaborationManager().getWSInstance().status,
     },
   };
 };

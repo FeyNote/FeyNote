@@ -35,7 +35,7 @@ export const WorkspaceSharedInfoModal: React.FC<{
   const workspaceConnection = useCollaborationConnection(
     `workspace:${props.workspaceId}`,
   );
-  const meta = useObserveWorkspaceMeta(workspaceConnection.yjsDoc);
+  const { meta } = useObserveWorkspaceMeta(workspaceConnection.yjsDoc);
 
   const userTreeConnection = useCollaborationConnection(
     `userTree:${session.userId}`,

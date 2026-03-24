@@ -11,7 +11,7 @@ import {
   TiptapEditor,
   type ArtifactEditorSetContent,
 } from '../editor/TiptapEditor';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 const AIFCEditorContainer = styled.div`
   margin: 8px 0;
@@ -56,7 +56,9 @@ export const AIEditor: React.FC<Props> = (props) => {
           <TiptapEditor
             artifactId={'00000000-0000-0000-0000-000000000000'}
             editable={false}
-            authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
+            authorizationState={
+              CollaborationConnectionAuthorizationState.ReadOnly
+            }
             yDoc={yDoc}
             theme="default"
             getFileUrl={() => ''} // We don't currently support embedded images within the AI Editor

@@ -12,6 +12,24 @@ import { LocaldbStoreErrorHandlers } from '../utils/localDb/LocaldbStoreErrorHan
 import { SessionContextProviderWrapper } from './session/SessionContextProviderWrapper';
 import { AlertContextProvider } from './alert/AlertContextProvider';
 import { KeyboardShortcutContextProviderWrapper } from './keyboardShortcut/KeyboardShortcutContextProviderWrapper';
+import { eventManager } from './events/EventManager';
+import { EventName } from './events/EventName';
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () =>
+    eventManager.broadcast(EventName.NavigatorOnline),
+  );
+  window.addEventListener('offline', () =>
+    eventManager.broadcast(EventName.NavigatorOffline),
+  );
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      eventManager.broadcast(EventName.NavigatorVisible);
+    } else {
+      eventManager.broadcast(EventName.NavigatorHidden);
+    }
+  });
+}
 
 interface Props {
   children: React.ReactNode;

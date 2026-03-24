@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
-import { trpc } from '../../utils/trpc';
+import { getThreadsAction } from '../../actions/getThreadsAction';
 import { chatbubbles } from 'ionicons/icons';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
@@ -103,8 +103,7 @@ export const AIThreadsList: React.FC = () => {
 
   const getUserThreads = () => {
     const progress = startProgressBar();
-    trpc.ai.getThreads
-      .query()
+    getThreadsAction()
       .then((_threads) => {
         setThreads(
           _threads.sort(
@@ -125,16 +124,9 @@ export const AIThreadsList: React.FC = () => {
 
   useEffect(() => {
     getUserThreads();
-    const threadUpdateHandler = () => {
+    return eventManager.addEventListener(EventName.ThreadUpdated, () => {
       getUserThreads();
-    };
-    eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
-    return () => {
-      eventManager.removeEventListener(
-        EventName.ThreadUpdated,
-        threadUpdateHandler,
-      );
-    };
+    });
   }, []);
 
   const render = () => {

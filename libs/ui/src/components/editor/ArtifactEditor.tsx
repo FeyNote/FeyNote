@@ -11,7 +11,7 @@ import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
-import type { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import type { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -38,7 +38,7 @@ type Props = {
   artifactId: string;
   setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
   editable: boolean;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   onReady?: () => void;
   onTitleChange?: (title: string) => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
@@ -54,7 +54,7 @@ type Props = {
 export const ArtifactEditor: React.FC<Props> = memo((props) => {
   const { t } = useTranslation();
   const yDoc = props.yDoc || props.yjsProvider.document;
-  const yMeta = useObserveYArtifactMeta(yDoc);
+  const yMeta = useObserveYArtifactMeta(yDoc).meta;
   const title = yMeta.title ?? '';
   const theme = yMeta.theme ?? 'default';
 

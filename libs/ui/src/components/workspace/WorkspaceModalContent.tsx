@@ -1,10 +1,8 @@
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flex, TextField } from '@radix-ui/themes';
 import styled from 'styled-components';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { WORKSPACE_COLORS, WORKSPACE_ICONS } from './workspaceConstants';
-import { getWorkspaceMetaYKVFromYDoc } from '@feynote/shared-utils';
 import type { Doc } from 'yjs';
 import { WorkspaceSharingPanel } from './WorkspaceSharingPanel';
 import { useObserveWorkspaceMeta } from '../../utils/collaboration/useObserveWorkspaceMeta';
@@ -67,11 +65,7 @@ const ColorButton = styled.button<{ $color: string; $selected: boolean }>`
 
 export const WorkspaceModalContent: React.FC<{ yDoc: Doc }> = (props) => {
   const { t } = useTranslation();
-  const meta = useObserveWorkspaceMeta(props.yDoc);
-  const metaYKV = useMemo(
-    () => getWorkspaceMetaYKVFromYDoc(props.yDoc),
-    [props.yDoc],
-  );
+  const { meta, metaYKV } = useObserveWorkspaceMeta(props.yDoc);
 
   if (!meta.id) return null;
 

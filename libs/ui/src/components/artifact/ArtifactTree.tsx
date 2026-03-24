@@ -151,7 +151,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const { acceptedIncomingSharedArtifactIds } =
     useAcceptedIncomingSharedArtifactIds(userTreeConnection.yjsDoc);
 
-  const workspaceMeta = useObserveWorkspaceMeta(
+  const { meta: workspaceMeta } = useObserveWorkspaceMeta(
     workspaceOrUserTreeConnection.yjsDoc,
   );
   const { rerenderReducerValue: userAccessRerenderValue } =

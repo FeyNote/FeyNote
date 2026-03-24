@@ -4,6 +4,7 @@ import type {
   ArtifactType,
 } from '@prisma/client';
 import { trpc } from '../trpc';
+import { getSafeArtifactIdAction } from '../../actions/getSafeArtifactIdAction';
 import { addArtifactToArtifactTree } from '../artifactTree/addArtifactToArtifactTree';
 import { withCollaborationConnection } from '../collaboration/collaborationManager';
 import { appIdbStorageManager } from './AppIdbStorageManager';
@@ -57,7 +58,7 @@ export const createArtifact = async (args: {
     });
   } else {
     // In preparation for local-first artifact creation
-    id = (await trpc.artifact.getSafeArtifactId.query()).id;
+    id = (await getSafeArtifactIdAction()).id;
 
     let userAccess: {
       key: string;

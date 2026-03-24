@@ -16,8 +16,8 @@ import { useTranslation } from 'react-i18next';
 import { IncomingBlockReferencesInlinePreview } from './incomingBlockReferencesInlinePreview/IncomingBlockReferencesInlinePreview';
 import { TiptapEditorControlMenu } from './TiptapEditorControlMenu';
 import { ArtifactEditorContainer } from './ArtifactEditorContainer';
-import { type CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { LinkPopover } from './tiptap/LinkPopover';
+import type { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 export type ArtifactEditorSetContent = (template: string | JSONContent) => void;
 
@@ -37,7 +37,7 @@ type Props = {
   setContentRef?: MutableRefObject<ArtifactEditorSetContent | undefined>;
   theme: ArtifactTheme;
   editable: boolean;
-  authorizedScope: CollaborationConnectionAuthorizedScope;
+  authorizationState: CollaborationConnectionAuthorizationState;
   onReady?: () => void;
   handleFileUpload?: (editor: Editor, files: File[], pos?: number) => void;
   getFileUrl: (fileId: string) => Promise<string> | string;
@@ -114,7 +114,7 @@ export const TiptapEditor = (props: Props) => {
       {props.showMenus && props.artifactId && props.handleFileUpload && (
         <TiptapEditorControlMenu
           artifactId={props.artifactId}
-          authorizedScope={props.authorizedScope}
+          authorizationState={props.authorizationState}
           yDoc={props.yDoc || props.yjsProvider.document}
           editor={editor}
           handleFileUpload={props.handleFileUpload}

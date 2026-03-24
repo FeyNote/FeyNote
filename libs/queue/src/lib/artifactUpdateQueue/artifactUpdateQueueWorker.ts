@@ -72,14 +72,14 @@ export const artifactUpdateQueueWorker = new Worker<
         .filter((el) => readableUserAccessLevels.has(el[1].val.accessLevel))
         .map((el) => el[0])
         .sort((a, b) => a.localeCompare(b));
-      oldReadableUserIds.push(oldYMeta.userId);
+      if (oldYMeta.userId) oldReadableUserIds.push(oldYMeta.userId);
 
       const newYUserAccess = getUserAccessFromYArtifact(newYjsDoc);
       const newReadableUserIds = [...newYUserAccess.map.entries()]
         .filter((el) => readableUserAccessLevels.has(el[1].val.accessLevel))
         .map((el) => el[0])
         .sort((a, b) => a.localeCompare(b));
-      newReadableUserIds.push(newYMeta.userId);
+      if (newYMeta.userId) newReadableUserIds.push(newYMeta.userId);
 
       const newTLDrawData = newYjsDoc.getArray<{
         key: string;

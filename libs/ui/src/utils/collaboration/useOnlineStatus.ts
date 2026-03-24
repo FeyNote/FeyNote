@@ -79,25 +79,22 @@ export const useOnlineStatus = () => {
       setServiceWorkerIsAvailable(getIsServiceWorkerAvailable());
     };
 
+    const interval = setInterval(listener, 30_000);
     navigator.serviceWorker.addEventListener('controllerchange', listener);
 
     return () => {
+      clearInterval(interval);
       navigator.serviceWorker.removeEventListener('controllerchange', listener);
     };
   }, []);
 
   useEffect(() => {
-    const listener = () => {
-      setWebsocketIsConnected(websocketClient.connected);
-    };
-
-    eventManager.addEventListener([EventName.WebsocketStatusChanged], listener);
-    return () => {
-      eventManager.removeEventListener(
-        [EventName.WebsocketStatusChanged],
-        listener,
-      );
-    };
+    return eventManager.addEventListener(
+      EventName.WebsocketStatusChanged,
+      () => {
+        setWebsocketIsConnected(websocketClient.connected);
+      },
+    );
   }, []);
 
   return {

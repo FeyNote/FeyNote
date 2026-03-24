@@ -8,6 +8,9 @@ import { useSetAndPersistSession } from './useSetAndPersistSession';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { websocketClient } from '../events/websocketClient';
+import { getSyncManager } from '../../utils/localDb/getSyncManager';
+import { eventManager } from '../events/EventManager';
+import { EventName } from '../events/EventName';
 
 interface Props {
   children: ReactNode;
@@ -33,16 +36,31 @@ export const SessionContextProviderWrapper: React.FC<Props> = ({
       email: session.email,
     });
 
+    getSyncManager().syncManifest();
+
     trpc.user.validateSession.query().catch((error) => {
       handleTRPCErrors(error);
     });
   }, [session?.token]);
 
-  useEffect(() => {
+  const fetchSessionFromStorage = () => {
     appIdbStorageManager.getSession().then((session) => {
       setSession(session);
       setLoading(false);
     });
+  };
+
+  useEffect(() => {
+    fetchSessionFromStorage();
+  }, []);
+
+  useEffect(() => {
+    return eventManager.addEventListener(
+      EventName.LocaldbSessionUpdated,
+      () => {
+        fetchSessionFromStorage();
+      },
+    );
   }, []);
 
   const setAndPersistSession = async (newSession: SessionDTO | null) => {

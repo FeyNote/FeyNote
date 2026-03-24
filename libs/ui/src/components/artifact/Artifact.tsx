@@ -9,16 +9,14 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { createPortal } from 'react-dom';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
-import {
-  CollaborationConnectionAuthorizedScope,
-  useCollaborationConnectionAuthorizedScope,
-} from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
+import { useCollaborationConnectionAuthorizationState } from '../../utils/collaboration/useCollaborationConnectionAuthorizationState';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 const StatusMessage = styled.div`
   text-align: center;
@@ -44,12 +42,14 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
 
   const connection = useCollaborationConnection(`artifact:${props.id}`);
 
-  const { title } = useObserveYArtifactMeta(connection.yjsDoc);
-  const { authorizedScope, collaborationConnectionStatus } =
-    useCollaborationConnectionAuthorizedScope(connection);
+  const { title } = useObserveYArtifactMeta(connection.yjsDoc).meta;
+  const { authorizationState, idbSynced } =
+    useCollaborationConnectionAuthorizationState(connection);
 
   const undelete = () => {
-    if (authorizedScope === CollaborationConnectionAuthorizedScope.CoOwner) {
+    if (
+      authorizationState === CollaborationConnectionAuthorizationState.CoOwner
+    ) {
       const yDoc = connection.yjsDoc;
       yDoc.transact(() => {
         (
@@ -88,10 +88,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     );
   };
 
-  if (
-    authorizedScope === CollaborationConnectionAuthorizedScope.Failed ||
-    collaborationConnectionStatus.isDestroyed
-  ) {
+  if (authorizationState === CollaborationConnectionAuthorizationState.Failed) {
     return renderBlockingMessage(
       t('artifact.loading.failed.title'),
       t('artifact.loading.failed.message'),
@@ -99,8 +96,8 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   }
 
   if (
-    authorizedScope === CollaborationConnectionAuthorizedScope.Loading &&
-    collaborationConnectionStatus.idbSynced // We only want to show this loading dialogue when we're truly waiting on network
+    authorizationState === CollaborationConnectionAuthorizationState.Loading &&
+    idbSynced // We only want to show this loading dialogue when we're truly waiting on network
   ) {
     return renderBlockingMessage(
       t('artifact.loading.title'),
@@ -108,7 +105,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     );
   }
 
-  if (authorizedScope === CollaborationConnectionAuthorizedScope.Loading) {
+  if (
+    authorizationState === CollaborationConnectionAuthorizationState.Loading
+  ) {
     // When we're loading because we're waiting on idb, we show an empty page to be less jarring
     // since this usually only occurs for a few frames
     return (
@@ -118,7 +117,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     );
   }
 
-  if (authorizedScope === CollaborationConnectionAuthorizedScope.NoAccess) {
+  if (
+    authorizationState === CollaborationConnectionAuthorizationState.NoAccess
+  ) {
     return renderBlockingMessage(
       t('artifact.noAccess.title'),
       t('artifact.noAccess.message'),
@@ -135,7 +136,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         renderDropdownMenu={(children) => (
           <ArtifactDropdownMenu
             artifactId={props.id}
-            authorizedScope={authorizedScope}
+            authorizationState={authorizationState}
             triggerUndelete={undelete}
             connection={connection}
             pane={pane}
@@ -152,7 +153,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         <ArtifactRenderer
           artifactId={props.id}
           connection={connection}
-          authorizedScope={authorizedScope}
+          authorizationState={authorizationState}
           scrollToBlockId={props.focusBlockId}
           scrollToDate={props.focusDate}
           onTocUpdate={(content) => {

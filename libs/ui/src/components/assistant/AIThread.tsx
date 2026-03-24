@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useChat } from '@ai-sdk/react';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { trpc } from '../../utils/trpc';
+import { getThreadAction } from '../../actions/getThreadAction';
 import styled from 'styled-components';
 import { AIMessagesContainer } from './AIMessagesContainer';
 import { PaneNav } from '../pane/PaneNav';
@@ -15,7 +16,6 @@ import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { EventName } from '../../context/events/EventName';
-import type { EventData } from '../../context/events/EventData';
 import { eventManager } from '../../context/events/EventManager';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DefaultChatTransport } from 'ai';
@@ -214,7 +214,7 @@ export const AIThread: React.FC<Props> = (props) => {
   statusRef.current = status;
 
   const getThreadInfo = async () => {
-    const threadDTO = await trpc.ai.getThread.query({
+    const threadDTO = await getThreadAction({
       id: props.id,
     });
     setMessages(threadDTO.messages);
@@ -231,26 +231,18 @@ export const AIThread: React.FC<Props> = (props) => {
       progress.dismiss();
     });
 
-    const threadUpdateHandler = async (
-      _: EventName,
-      data: EventData[EventName.ThreadUpdated],
-    ) => {
-      if (data.threadId !== props.id) return;
-      if (
-        statusRef.current === 'submitted' ||
-        statusRef.current === 'streaming'
-      )
-        return;
-      await getThreadInfo();
-    };
-
-    eventManager.addEventListener(EventName.ThreadUpdated, threadUpdateHandler);
-    return () => {
-      eventManager.removeEventListener(
-        EventName.ThreadUpdated,
-        threadUpdateHandler,
-      );
-    };
+    return eventManager.addEventListener(
+      EventName.ThreadUpdated,
+      async (data) => {
+        if (data.threadId !== props.id) return;
+        if (
+          statusRef.current === 'submitted' ||
+          statusRef.current === 'streaming'
+        )
+          return;
+        await getThreadInfo();
+      },
+    );
   }, [props.id]);
 
   const submitMessageQuery = async () => {

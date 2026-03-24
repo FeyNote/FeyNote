@@ -18,7 +18,7 @@ const transformInfo = (
 ): SimplePermissionsRepresentation => {
   if (info instanceof YDoc) {
     return {
-      userId: getMetaFromYArtifact(info).userId,
+      userId: getMetaFromYArtifact(info).userId || 'no-user-id-on-artifact',
       linkAccessLevel: getMetaFromYArtifact(info).linkAccessLevel,
       artifactShares: [...getUserAccessFromYArtifact(info).map.values()].map(
         (el) => ({

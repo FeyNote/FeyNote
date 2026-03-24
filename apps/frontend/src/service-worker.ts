@@ -13,35 +13,14 @@ import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
 import { clientsClaim } from 'workbox-core';
 import { NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
-import { Queue } from 'workbox-background-sync';
 import {
-  getManifestDb,
-  ObjectStoreName,
-  SyncManager,
-  SearchManager,
   SWMessageType,
   createSWDebugDump,
   initDebugStoreMonkeypatch,
+  getSyncManager,
+  getSearchManager,
 } from '@feynote/ui-sw';
-import { registerGetKnownUsersRoute } from './serviceWorkerLib/routes/user/registerGetKnownUsersRoute';
-import { registerGetArtifactEdgesByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesByIdRoute';
-import { registerGetArtifactEdgesRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactEdgesRoute';
-import { registerGetArtifactSnapshotByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotByIdRoute';
-import { registerGetArtifactSnapshotsRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactSnapshotsRoute';
-import { registerGetArtifactYBinByIdRoute } from './serviceWorkerLib/routes/artifact/registerGetArtifactYBinByIdRoute';
-import { registerGetSafeArtifactIdRoute } from './serviceWorkerLib/routes/artifact/registerGetSafeArtifactIdRoute';
-import { registerSearchArtifactBlocksRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactBlocksRoute';
-import { registerSearchArtifactsRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactsRoute';
-import { registerSearchArtifactTitlesRoute } from './serviceWorkerLib/routes/artifact/registerSearchArtifactTitlesRoute';
-import { registerCreateFileRoute } from './serviceWorkerLib/routes/file/registerCreateFileRoute';
 import { registerFileRedirectRoute } from './serviceWorkerLib/routes/file/registerFileRedirectRoute';
-import { registerGetSafeFileIdRoute } from './serviceWorkerLib/routes/file/registerGetSafeFileIdRoute';
-import { registerGetThreadsRoute } from './serviceWorkerLib/routes/ai/registerGetThreadsRoute';
-import { registerGetThreadRoute } from './serviceWorkerLib/routes/ai/registerGetThreadRoute';
-import { registerGetJobsRoute } from './serviceWorkerLib/routes/jobs/registerGetJobsRoute';
-import { registerGetWorkspaceSnapshotsRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotsRoute';
-import { registerGetWorkspaceSnapshotByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceSnapshotByIdRoute';
-import { registerGetWorkspaceYBinByIdRoute } from './serviceWorkerLib/routes/workspace/registerGetWorkspaceYBinByIdRoute';
 
 initDebugStoreMonkeypatch();
 
@@ -71,54 +50,6 @@ const staticAssets = [
   'https://static.feynote.com/fonts/monsieur-la-doulaise/monsieur-la-doulaise-latin.woff2',
 ];
 precacheAndRoute(staticAssets);
-
-const searchManager = new SearchManager();
-const syncManager = new SyncManager(searchManager);
-
-const OFFLINE_BGSYNC_RETENTION_DAYS = 30;
-const bgSyncQueue = new Queue('swWorkboxBgSyncQueue', {
-  forceSyncFallback: true,
-  maxRetentionTime: OFFLINE_BGSYNC_RETENTION_DAYS * 24 * 60,
-  onSync: async ({ queue }) => {
-    console.log('BGSyncQueue onSync', queue.size);
-    const manifestDb = await getManifestDb();
-
-    let entry;
-    while ((entry = await queue.shiftRequest())) {
-      try {
-        const response = await fetch(entry.request);
-        if (response.status >= 200 && response.status < 300) {
-          if (
-            entry.metadata &&
-            'type' in entry.metadata &&
-            entry.metadata.type === 'trpc.file.createFile' &&
-            'storedAsId' in entry.metadata
-          ) {
-            try {
-              await manifestDb.delete(
-                ObjectStoreName.PendingFiles,
-                entry.metadata.storedAsId as string,
-              );
-            } catch (e) {
-              console.error(
-                'Failed to delete file from local db after successful upload',
-                e,
-              );
-            }
-          }
-        } else {
-          await queue.pushRequest(entry);
-
-          throw new Error('Queue sync failed due to server error');
-        }
-      } catch (error) {
-        await queue.pushRequest(entry);
-
-        console.error('Replay failed for request', entry.request, error);
-      }
-    }
-  },
-});
 
 addEventListener('message', async (event) => {
   if (!event.data?.type) {
@@ -163,6 +94,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       await self.clients.claim();
+      await caches.delete('artifact-asset-cache');
 
       await caches
         .delete(APP_SRC_CACHE_NAME)
@@ -177,13 +109,27 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('sync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(syncManager.syncManifest());
+    event.waitUntil(
+      (async () => {
+        const searchManager = getSearchManager();
+        const syncManager = getSyncManager();
+        await syncManager.syncManifest();
+        await searchManager.saveToLocalDB();
+      })(),
+    );
   }
 });
 
 self.addEventListener('periodicSync', (event: any) => {
   if (event.tag === 'manifest') {
-    event.waitUntil(syncManager.syncManifest());
+    event.waitUntil(
+      (async () => {
+        const searchManager = getSearchManager();
+        const syncManager = getSyncManager();
+        await syncManager.syncManifest();
+        await searchManager.saveToLocalDB();
+      })(),
+    );
   }
 });
 
@@ -215,26 +161,4 @@ registerRoute(
   }),
 );
 
-registerGetKnownUsersRoute();
-
-registerGetArtifactEdgesByIdRoute();
-registerGetArtifactEdgesRoute();
-registerGetArtifactSnapshotByIdRoute();
-registerGetArtifactSnapshotsRoute();
-registerGetArtifactYBinByIdRoute();
-registerGetSafeArtifactIdRoute();
-registerSearchArtifactsRoute(searchManager);
-registerSearchArtifactBlocksRoute(searchManager);
-registerSearchArtifactTitlesRoute(searchManager);
-
-registerCreateFileRoute(bgSyncQueue);
 registerFileRedirectRoute();
-registerGetSafeFileIdRoute();
-
-registerGetThreadsRoute();
-registerGetThreadRoute();
-registerGetJobsRoute();
-
-registerGetWorkspaceSnapshotsRoute();
-registerGetWorkspaceSnapshotByIdRoute();
-registerGetWorkspaceYBinByIdRoute();

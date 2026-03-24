@@ -70,6 +70,7 @@ export * from './lib/yjs/TLDRAW_YDOC_META_SCHEMA_KEY';
 export * from './lib/yjs/TLDRAW_YDOC_META_KEY';
 export * from './lib/yjs/TLDRAW_YDOC_STORE_KEY';
 export * from './lib/yjs/updateYArtifactMeta';
+export * from './lib/yjs/TypedYKV';
 export * from './lib/yjs/workspace/workspaceYDocKeys';
 export * from './lib/yjs/workspace/getWorkspaceMetaFromYDoc';
 export * from './lib/yjs/workspace/getWorkspaceMetaYKVFromYDoc';
@@ -78,6 +79,7 @@ export * from './lib/yjs/workspace/getWorkspaceTreeNodesFromYDoc';
 export * from './lib/yjs/workspace/getWorkspaceUserAccessFromYDoc';
 export * from './lib/yjs/workspace/getWorkspaceThreadsFromYDoc';
 export * from './lib/yjs/workspace/constructWorkspaceYDoc';
+
 export * from './lib/types/i18n';
 export * from './lib/types/FeynoteEditorMediaType';
 export * from './lib/types/preferences';

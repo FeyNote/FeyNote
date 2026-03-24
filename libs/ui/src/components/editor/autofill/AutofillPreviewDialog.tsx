@@ -5,8 +5,8 @@ import type { JSONContent } from '@tiptap/core';
 import { ActionDialog } from '../../sharedComponents/ActionDialog';
 import { TiptapEditor, type ArtifactEditorSetContent } from '../TiptapEditor';
 import { ArtifactEditorContainer } from '../ArtifactEditorContainer';
-import { CollaborationConnectionAuthorizedScope } from '../../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import styled from 'styled-components';
+import { CollaborationConnectionAuthorizationState } from '../../../utils/collaboration/collaborationManager';
 
 interface Props {
   open: boolean;
@@ -71,7 +71,9 @@ export const AutofillPreviewDialog: React.FC<Props> = (props) => {
           <TiptapEditor
             artifactId={'00000000-0000-0000-0000-000000000000'}
             editable={false}
-            authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
+            authorizationState={
+              CollaborationConnectionAuthorizationState.ReadOnly
+            }
             yDoc={yDoc}
             theme="default"
             getFileUrl={() => ''}

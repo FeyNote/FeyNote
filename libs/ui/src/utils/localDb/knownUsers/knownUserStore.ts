@@ -1,6 +1,6 @@
 import { eventManager } from '../../../context/events/EventManager';
 import { EventName } from '../../../context/events/EventName';
-import { trpc } from '../../trpc';
+import { getKnownUsersAction } from '../../../actions/getKnownUsersAction';
 import type { KnownUserDoc } from '../localDb';
 
 /**
@@ -103,7 +103,7 @@ class KnownUserStore {
    */
   private async loadAllKnownUsers() {
     const sessionRandomBefore = this.sessionInvalidationRandom;
-    const result = await trpc.user.getKnownUsers.query().catch((e) => {
+    const result = await getKnownUsersAction().catch((e) => {
       this.notifyFetchError(e);
     });
     if (!result) return;
@@ -148,6 +148,10 @@ let knownUserStore: KnownUserStore | null = null;
 export const getKnownUserStore = () => {
   if (!knownUserStore) {
     knownUserStore = new KnownUserStore();
+    // For debugging purposes
+    if (typeof window !== 'undefined')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).knownUserStore = knownUserStore;
   }
 
   return knownUserStore;

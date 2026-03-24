@@ -3,7 +3,8 @@
 
 export { SyncManager } from './utils/localDb/SyncManager';
 export { SearchManager } from './utils/localDb/SearchManager';
-export { trpc } from './utils/trpc';
+export { getSearchManager } from './utils/localDb/getSearchManager';
+export { getSyncManager } from './utils/localDb/getSyncManager';
 export {
   getManifestDb,
   ObjectStoreName,

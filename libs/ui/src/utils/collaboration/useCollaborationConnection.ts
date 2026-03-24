@@ -43,7 +43,7 @@ export const useCollaborationConnection = (docName: string) => {
       triggerRerender,
     );
     collaborationManager.on(
-      CollaborationManagerEventName.CollaborationConnectionInvalidated,
+      CollaborationManagerEventName.CollaborationConnectionDestroyed,
       triggerRerender,
     );
 
@@ -53,7 +53,7 @@ export const useCollaborationConnection = (docName: string) => {
         triggerRerender,
       );
       collaborationManager.off(
-        CollaborationManagerEventName.CollaborationConnectionInvalidated,
+        CollaborationManagerEventName.CollaborationConnectionDestroyed,
         triggerRerender,
       );
     };

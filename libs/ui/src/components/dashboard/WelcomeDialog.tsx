@@ -19,41 +19,29 @@ export const WelcomeDialog: React.FC = memo(() => {
   );
 
   useEffect(() => {
-    const listener = (
-      _: EventName,
-      data: {
-        welcomeId: string;
-        introducingReferencesId: string;
+    return eventManager.addEventListener(
+      EventName.ArtifactWelcomeCreated,
+      (data) => {
+        navigate(
+          undefined,
+          PaneableComponent.Artifact,
+          {
+            id: data.welcomeId,
+          },
+          PaneTransition.Push,
+          true,
+        );
+        navigate(
+          undefined,
+          PaneableComponent.Artifact,
+          {
+            id: data.introducingReferencesId,
+          },
+          PaneTransition.NewTab,
+          false,
+        );
       },
-    ) => {
-      navigate(
-        undefined,
-        PaneableComponent.Artifact,
-        {
-          id: data.welcomeId,
-        },
-        PaneTransition.Push,
-        true,
-      );
-      navigate(
-        undefined,
-        PaneableComponent.Artifact,
-        {
-          id: data.introducingReferencesId,
-        },
-        PaneTransition.NewTab,
-        false,
-      );
-    };
-
-    eventManager.addEventListener(EventName.ArtifactWelcomeCreated, listener);
-
-    return () => {
-      eventManager.removeEventListener(
-        EventName.ArtifactWelcomeCreated,
-        listener,
-      );
-    };
+    );
   }, []);
 
   return (

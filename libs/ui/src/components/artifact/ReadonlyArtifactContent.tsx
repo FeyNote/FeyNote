@@ -2,13 +2,13 @@ import { Doc as YDoc } from 'yjs';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { getFileUrlById } from '../../utils/files/getFileUrlById';
-import { CollaborationConnectionAuthorizedScope } from '../../utils/collaboration/useCollaborationConnectionAuthorizedScope';
 import { ArtifactEditor } from '../editor/ArtifactEditor';
 import { ArtifactCalendar } from '../calendar/ArtifactCalendar';
 import { ArtifactDraw } from '../draw/ArtifactDraw';
 import { useScrollBlockIntoView } from '../editor/useScrollBlockIntoView';
 import { useScrollDateIntoView } from '../calendar/useScrollDateIntoView';
 import { useRef, useState } from 'react';
+import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 interface Props {
   artifactId: string;
@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const ReadonlyArtifactContent: React.FC<Props> = (props) => {
-  const { type } = useObserveYArtifactMeta(props.yDoc);
+  const { type } = useObserveYArtifactMeta(props.yDoc).meta;
   const sessionContext = useSessionContext(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const [editorReady, setEditorReady] = useState(false);
@@ -50,7 +50,9 @@ export const ReadonlyArtifactContent: React.FC<Props> = (props) => {
         <ArtifactEditor
           artifactId={props.artifactId}
           editable={false}
-          authorizedScope={CollaborationConnectionAuthorizedScope.ReadOnly}
+          authorizationState={
+            CollaborationConnectionAuthorizationState.ReadOnly
+          }
           yDoc={props.yDoc}
           getFileUrl={getFileUrl}
           onReady={() => {

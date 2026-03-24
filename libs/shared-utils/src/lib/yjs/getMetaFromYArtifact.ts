@@ -1,17 +1,12 @@
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from './ARTIFACT_META_KEY';
 import type { YArtifactMeta } from '@feynote/global-types';
-import type {
-  ArtifactAccessLevel,
-  ArtifactTheme,
-  ArtifactType,
-} from '@prisma/client';
-import type { TypedMap } from 'yjs-types';
+import type { TypedMap } from './TypedMap';
 
 export const getMetaFromYArtifact = (yArtifact: YDoc) => {
-  const artifactMetaYMap = yArtifact.getMap(ARTIFACT_META_KEY) as TypedMap<
-    Partial<YArtifactMeta>
-  >;
+  const artifactMetaYMap = yArtifact.getMap(
+    ARTIFACT_META_KEY,
+  ) as TypedMap<YArtifactMeta>;
 
   let deletedAt = artifactMetaYMap.get('deletedAt');
   if (typeof deletedAt === 'string') {
@@ -20,17 +15,12 @@ export const getMetaFromYArtifact = (yArtifact: YDoc) => {
   }
 
   const artifactMeta = {
-    id: (artifactMetaYMap.get('id') as string) ?? undefined,
-    userId: (artifactMetaYMap.get('userId') as string) ?? undefined,
-    title: (artifactMetaYMap.get('title') as string) ?? '',
-    theme: (artifactMetaYMap.get('theme') as ArtifactTheme) ?? 'default',
-    type:
-      (artifactMetaYMap.get('type') as ArtifactType | undefined) ?? 'tiptap',
-    linkAccessLevel:
-      (artifactMetaYMap.get('linkAccessLevel') as ArtifactAccessLevel) ??
-      'noaccess',
-    // We do NOT include updatedAt in the meta -- yjs specifically recommends against
-    // this for document size.
+    id: artifactMetaYMap.get('id') ?? undefined,
+    userId: artifactMetaYMap.get('userId') ?? undefined,
+    title: artifactMetaYMap.get('title') ?? '',
+    theme: artifactMetaYMap.get('theme') ?? 'default',
+    type: artifactMetaYMap.get('type') ?? 'tiptap',
+    linkAccessLevel: artifactMetaYMap.get('linkAccessLevel') ?? 'noaccess',
     createdAt: artifactMetaYMap.get('createdAt') ?? new Date().getTime(),
     deletedAt: deletedAt ?? null,
   } satisfies Partial<YArtifactMeta>;

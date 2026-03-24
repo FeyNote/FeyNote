@@ -5,16 +5,18 @@ import axios from 'axios';
 import { getApiUrls } from '../getApiUrls';
 import { appIdbStorageManager } from '../localDb/AppIdbStorageManager';
 
+/**
+ * Do not use this directly! Instead use createFileAction
+ */
 export const uploadFileToApi = async (args: {
+  id: string;
   file: File;
   artifactId?: string;
   purpose: FilePurpose;
   onProgress?: (progress: number) => void;
 }) => {
-  const { id } = await trpc.file.getSafeFileId.query();
-
   const payload = await new FileStreamEncoder().encode({
-    id,
+    id: args.id,
     fileName: args.file.name,
     fileSize: args.file.size,
     mimetype: args.file.type,
@@ -39,7 +41,6 @@ export const uploadFileToApi = async (args: {
     },
   );
 
-  // We're dealing with tRPC's custom response format here
   return response.data.result.data as Awaited<
     ReturnType<typeof trpc.file.createFile.mutate>
   >;

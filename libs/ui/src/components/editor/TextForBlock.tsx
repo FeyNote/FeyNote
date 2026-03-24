@@ -6,8 +6,8 @@ import {
   getTiptapContentFromYjsDoc,
 } from '@feynote/shared-utils';
 import { getTextForJSONContentWithEdges } from './tiptap/extensions/artifactReferences/getTextForJSONContentWithEdges';
-import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { getArtifactYBinByIdAction } from '../../actions/getArtifactYBinByIdAction';
 
 interface Props {
   artifactId: string;
@@ -24,13 +24,11 @@ export const TextForBlock = (props: Props) => {
   const [blockText, setBlockText] = useState<string | undefined>(undefined);
 
   const updateBlockText = async () => {
-    const response = await trpc.artifact.getArtifactYBinById
-      .query({
-        id: props.artifactId,
-      })
-      .catch((e) => {
-        handleTRPCErrors(e);
-      });
+    const response = await getArtifactYBinByIdAction({
+      id: props.artifactId,
+    }).catch((e) => {
+      handleTRPCErrors(e);
+    });
     if (!response) return;
 
     const yDoc = new YDoc();

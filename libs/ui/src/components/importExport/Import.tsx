@@ -3,7 +3,7 @@ import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
 import { useEffect, useState, type ReactNode } from 'react';
-import { trpc } from '../../utils/trpc';
+import { getJobsAction } from '../../actions/getJobsAction';
 import type { ImportFormat, JobSummary } from '@feynote/prisma/types';
 import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
@@ -110,7 +110,7 @@ export const Import: React.FC = () => {
 
   const refreshJobs = async () => {
     try {
-      const importDto = await trpc.job.getJobs.query({
+      const importDto = await getJobsAction({
         // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
         limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
         type: 'import',
@@ -123,7 +123,7 @@ export const Import: React.FC = () => {
 
   const getMoreJobs = async () => {
     try {
-      const importjobsDTO = await trpc.job.getJobs.query({
+      const importjobsDTO = await getJobsAction({
         offset: jobs.length,
         limit: NUM_OF_INITAL_JOBS_SHOWN,
         type: 'import',
