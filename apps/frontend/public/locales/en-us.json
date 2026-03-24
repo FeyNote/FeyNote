@@ -186,7 +186,6 @@
   "settings.workspace.globalSearchAcrossAll": "Search all workspaces in global search",
   "settings.version": "Application Version: {{version}}",
 
-  "settings.liveExport": "Storage",
   "settings.liveExport.title": "Live Export to Local Folder",
   "settings.liveExport.description": "Continuously export your documents to a folder on your computer as Markdown and JSON files. Files update automatically as you edit.",
   "settings.liveExport.desktopOnly": "Available in the desktop app",
