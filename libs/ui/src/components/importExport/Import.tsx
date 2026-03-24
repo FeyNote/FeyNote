@@ -118,30 +118,30 @@ export const Import: React.FC = () => {
   jobsRef.current = jobs;
 
   const refreshJobs = async () => {
-    try {
-      const importDto = await getJobsAction({
-        limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
-        type: 'import',
-      });
-      setJobs(importDto.jobs);
-    } catch (e) {
+    const importDto = await getJobsAction({
+      limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
+      type: 'import',
+    }).catch((e) => {
       console.error(e);
-    }
+    });
+    if (!importDto) return;
+
+    setJobs(importDto.jobs);
   };
 
   const getMoreJobs = async () => {
-    try {
-      const importjobsDTO = await getJobsAction({
-        offset: jobsRef.current.length,
-        limit: NUM_OF_INITAL_JOBS_SHOWN,
-        type: 'import',
-      });
-      const totalJobs = [...jobsRef.current, ...importjobsDTO.jobs];
-      setJobs(totalJobs);
-      setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
-    } catch (e) {
+    const importjobsDTO = await getJobsAction({
+      offset: jobsRef.current.length,
+      limit: NUM_OF_INITAL_JOBS_SHOWN,
+      type: 'import',
+    }).catch((e) => {
       handleTRPCErrors(e);
-    }
+    });
+    if (!importjobsDTO) return;
+
+    const totalJobs = [...jobsRef.current, ...importjobsDTO.jobs];
+    setJobs(totalJobs);
+    setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
   };
 
   const jobClickHandler = async (jobId: string) => {

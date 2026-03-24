@@ -12,6 +12,7 @@ import type { ExportFormat, JobSummary } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { Heading, Text } from '@radix-ui/themes';
 import { AiFillFileMarkdown, BsFiletypeJson } from '../AppIcons';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
 const OptionsGrid = styled.div`
   display: grid;
@@ -66,6 +67,7 @@ export const Export: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
     getMoreJobs();
@@ -79,10 +81,15 @@ export const Export: React.FC = () => {
   }, []);
 
   const openJobUrls = async (jobId: string) => {
-    const urls = await trpc.file.getFileUrlsByJobId.query({
-      jobId: jobId,
-    });
-    if (!urls.length) return;
+    const urls = await trpc.file.getFileUrlsByJobId
+      .query({
+        jobId: jobId,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+
+    if (!urls?.length) return;
     urls.forEach((url) => window.open(url, '_blank'));
   };
 
@@ -93,7 +100,10 @@ export const Export: React.FC = () => {
     const exportDto = await getJobsAction({
       limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
       type: 'export',
+    }).catch((e) => {
+      console.error(e);
     });
+    if (!exportDto) return;
     setJobs(exportDto.jobs);
   };
 
@@ -102,16 +112,24 @@ export const Export: React.FC = () => {
       offset: jobsRef.current.length,
       limit: NUM_OF_INITAL_JOBS_SHOWN,
       type: 'export',
+    }).catch((e) => {
+      handleTRPCErrors(e);
     });
+    if (!exportjobsDTO) return;
+
     const totalJobs = [...jobsRef.current, ...exportjobsDTO.jobs];
     setJobs(totalJobs);
     setHasMoreJobs(exportjobsDTO.totalCount > totalJobs.length);
   };
 
   const _export = async (format: ExportFormat) => {
-    await trpc.job.createExportJob.mutate({
-      format: format,
-    });
+    await trpc.job.createExportJob
+      .mutate({
+        format: format,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
     await refreshJobs();
   };
 
