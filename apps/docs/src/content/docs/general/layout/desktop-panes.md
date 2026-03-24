@@ -21,7 +21,7 @@ Your pane layout will be preserved across sessions, so you can come back to your
 
 ## Left Side Menu
 
-The left side menu serves as a navigation menu.
+The left side menu serves as a navigation menu. At the top of the menu you'll find the [workspace picker](/docs/general/workspaces#the-workspace-picker), which lets you switch between your workspaces or view everything at once.
 You'll see shortcuts for [search](documents/search), the [dashboard](layout/dashboard), your [document graph](documents/graph), your [document tree](documents/tree), your [ai threads](ai), and your [settings](settings/general).
 The left side menu can be collapsed by clicking the icon in the top corner of the menu.
 

@@ -23,12 +23,12 @@ import {
   IonToggle,
 } from '@ionic/react';
 import { t } from 'i18next';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
-import { help, person, tv } from 'ionicons/icons';
+import { folderOpen, help, person, tv } from 'ionicons/icons';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -37,6 +37,11 @@ import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DebugDump } from './DebugDump';
 import { useAlertContext } from '../../context/alert/AlertContext';
+import { getIsElectron } from '../../utils/getIsElectron';
+import { getElectronAPI } from '../../utils/electronAPI';
+import { getLiveExportManager } from '../../utils/liveExport/LiveExportManager';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
+import { ProgressBarDialog } from '../info/ProgressBarDialog';
 
 // Generally not a great idea to override Ionic styles, but this is the only option I could find
 const FontSizeSelectOption = styled(IonSelectOption)<{
@@ -227,6 +232,56 @@ export const Settings: React.FC = () => {
     });
   };
 
+  const liveExportPath = getPreference(PreferenceNames.LiveExportStoragePath);
+
+  const [liveExportPendingPath, setLiveExportPendingPath] = useState<
+    string | null
+  >(null);
+  const [liveExportProgress, setLiveExportProgress] = useState<{
+    current: number;
+    total: number;
+  } | null>(null);
+  const [liveExportComplete, setLiveExportComplete] = useState(false);
+
+  const enableLiveExport = async () => {
+    const electronAPI = getElectronAPI();
+    if (!electronAPI) return;
+
+    const selectedPath = await electronAPI.selectDirectory();
+    if (!selectedPath) return;
+
+    setLiveExportPendingPath(selectedPath);
+  };
+
+  const confirmBulkExport = async () => {
+    if (!liveExportPendingPath) return;
+    const selectedPath = liveExportPendingPath;
+    setLiveExportPendingPath(null);
+
+    setPreference(PreferenceNames.LiveExportStoragePath, selectedPath);
+    const manager = getLiveExportManager();
+    await manager.setExportPath(selectedPath);
+
+    try {
+      await manager.runBulkExport((current, total) => {
+        setLiveExportProgress({ current, total });
+      });
+
+      setLiveExportComplete(true);
+    } catch (e) {
+      console.error('[LiveExport] Bulk export failed:', e);
+      setPreference(PreferenceNames.LiveExportStoragePath, null);
+      await manager.setExportPath(null);
+    } finally {
+      setLiveExportProgress(null);
+    }
+  };
+
+  const disableLiveExport = () => {
+    setPreference(PreferenceNames.LiveExportStoragePath, null);
+    getLiveExportManager().setExportPath(null);
+  };
+
   const triggerResetPassword = async () => {
     const result = await trpc.user.triggerResetPassword
       .mutate({
@@ -355,6 +410,58 @@ export const Settings: React.FC = () => {
             >
               <IonLabel>{t('menu.signOut')}</IonLabel>
             </IonItem>
+          </IonList>
+        </IonCard>
+        <IonCard>
+          <IonList>
+            <IonListHeader>
+              <IonIcon icon={folderOpen} size="small" />
+              &nbsp;&nbsp;
+              <IonLabel>
+                {t('settings.liveExport.title')}
+                <p>{t('settings.liveExport.description')}</p>
+              </IonLabel>
+            </IonListHeader>
+            {getIsElectron() ? (
+              liveExportPath ? (
+                <>
+                  <IonItem lines="none">
+                    <IonLabel class="ion-text-wrap">
+                      <p>
+                        {t('settings.liveExport.currentPath', {
+                          path: liveExportPath,
+                        })}
+                      </p>
+                    </IonLabel>
+                  </IonItem>
+                  <IonItem
+                    lines="none"
+                    button
+                    onClick={disableLiveExport}
+                    detail={true}
+                  >
+                    <IonLabel color="danger">
+                      {t('settings.liveExport.disable')}
+                    </IonLabel>
+                  </IonItem>
+                </>
+              ) : (
+                <IonItem
+                  lines="none"
+                  button
+                  onClick={enableLiveExport}
+                  detail={true}
+                >
+                  <IonLabel>{t('settings.liveExport.selectFolder')}</IonLabel>
+                </IonItem>
+              )
+            ) : (
+              <IonItem lines="none">
+                <IonLabel>
+                  <p>{t('settings.liveExport.desktopOnly')}</p>
+                </IonLabel>
+              </IonItem>
+            )}
           </IonList>
         </IonCard>
         <IonCard>
@@ -712,6 +819,58 @@ export const Settings: React.FC = () => {
           </IonLabel>
         </IonItem>
       </IonContent>
+      <ActionDialog
+        title={t('settings.liveExport.bulkExport.confirmTitle')}
+        description={
+          <>
+            {t('settings.liveExport.bulkExport.confirm')}{' '}
+            <a
+              href="https://docs.feynote.com/docs/settings/live-export"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('settings.liveExport.readMore')}
+            </a>
+          </>
+        }
+        open={!!liveExportPendingPath}
+        onOpenChange={(open) => {
+          if (!open) setLiveExportPendingPath(null);
+        }}
+        actionButtons={[
+          {
+            title: t('generic.cancel'),
+            props: { color: 'gray' },
+          },
+          {
+            title: t('generic.confirm'),
+            props: { onClick: confirmBulkExport },
+          },
+        ]}
+      />
+      {liveExportProgress && (
+        <ProgressBarDialog
+          title={t('settings.liveExport.bulkExport.confirmTitle')}
+          message={t('settings.liveExport.bulkExport.progress', {
+            current: liveExportProgress.current,
+            total: liveExportProgress.total,
+          })}
+          progress={
+            liveExportProgress.total > 0
+              ? liveExportProgress.current / liveExportProgress.total
+              : 0
+          }
+        />
+      )}
+      <ActionDialog
+        title={t('settings.liveExport.bulkExport.confirmTitle')}
+        description={t('settings.liveExport.bulkExport.complete')}
+        open={liveExportComplete}
+        onOpenChange={(open) => {
+          if (!open) setLiveExportComplete(false);
+        }}
+        actionButtons="okay"
+      />
     </IonPage>
   );
 };

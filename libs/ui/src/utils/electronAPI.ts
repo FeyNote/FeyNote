@@ -7,6 +7,10 @@ interface ApiUrls {
 
 interface ElectronAPI {
   getApiUrlsSync: () => ApiUrls;
+  selectDirectory: () => Promise<string | null>;
+  writeFile: (filePath: string, content: string) => Promise<void>;
+  renameFile: (oldPath: string, newPath: string) => Promise<void>;
+  readFile: (filePath: string) => Promise<string | null>;
   onAuthCode: (callback: (code: string) => void) => () => void;
 }
 
