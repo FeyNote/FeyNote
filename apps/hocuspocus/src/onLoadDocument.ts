@@ -2,12 +2,15 @@ import { onLoadDocumentPayload } from '@hocuspocus/server';
 import { applyUpdate } from 'yjs';
 
 import { prisma } from '@feynote/prisma/client';
-import { splitDocumentName } from './splitDocumentName';
-import { SupportedDocumentType } from './SupportedDocumentType';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
-import { logger, metrics } from '@feynote/api-services';
+import {
+  logger,
+  metrics,
+  splitDocumentName,
+  SupportedDocumentType,
+} from '@feynote/api-services';
 
 export async function onLoadDocument(args: onLoadDocumentPayload) {
   try {
@@ -78,10 +81,32 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
           throw new Error();
         }
 
-        // If the user does not have a tree, the default ydoc created by hocuspocus will be used
         if (user.treeYBin) {
           applyUpdate(args.document, user.treeYBin);
         }
+
+        return;
+      }
+      case SupportedDocumentType.Workspace: {
+        const workspace = await prisma.workspace.findUnique({
+          where: {
+            id: identifier,
+          },
+          select: {
+            id: true,
+            userId: true,
+            name: true,
+            linkAccessLevel: true,
+            yBin: true,
+          },
+        });
+
+        if (!workspace) {
+          logger.debug('Attempted to load workspace that does not exist!');
+          throw new Error();
+        }
+
+        applyUpdate(args.document, workspace.yBin);
 
         return;
       }

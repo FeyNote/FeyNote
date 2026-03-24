@@ -14,4 +14,7 @@ export type WebsocketMessageJSON = {
   [WebsocketMessageEvent.ThreadUpdated]: {
     threadId: string;
   };
+  [WebsocketMessageEvent.WorkspaceUpdated]: {
+    workspaceId: string;
+  };
 };

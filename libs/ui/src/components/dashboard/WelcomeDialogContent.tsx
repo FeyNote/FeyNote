@@ -52,7 +52,7 @@ export const WelcomeModal: React.FC<Props> = (props) => {
     props.dismiss();
     navigate(
       undefined, // Navigate within current focused pane rather than specific pane
-      PaneableComponent.NewArtifact,
+      PaneableComponent.CreateNew,
       {},
       PaneTransition.NewTab,
     );

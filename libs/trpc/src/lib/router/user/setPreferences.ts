@@ -7,6 +7,8 @@ import {
   PreferencesSync,
   SupportedFontSize,
   SupportedLanguages,
+  WorkspaceArtifactSharingMode,
+  WorkspaceNewItemMode,
 } from '@feynote/shared-utils';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import { prisma } from '@feynote/prisma/client';
@@ -40,6 +42,13 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: z.enum(
         ArtifactReferenceExistingArtifactSharingMode,
       ),
+      [PreferenceNames.LastActiveWorkspaceId]: z.string().uuid().nullable(),
+      [PreferenceNames.WorkspaceNewItemMode]: z.enum(WorkspaceNewItemMode),
+      [PreferenceNames.WorkspaceArtifactSharingMode]: z.enum(
+        WorkspaceArtifactSharingMode,
+      ),
+      [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: z.boolean(),
+      [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: z.boolean(),
       [PreferenceNames.LiveExportStoragePath]: z.string().nullable(),
     } satisfies ZodShape<AppPreferences>),
   )
@@ -87,6 +96,17 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.ArtifactReferenceNewArtifactSharingMode],
           [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]:
             input[PreferenceNames.ArtifactReferenceExistingArtifactSharingMode],
+
+          [PreferenceNames.LastActiveWorkspaceId]:
+            input[PreferenceNames.LastActiveWorkspaceId],
+          [PreferenceNames.WorkspaceNewItemMode]:
+            input[PreferenceNames.WorkspaceNewItemMode],
+          [PreferenceNames.WorkspaceArtifactSharingMode]:
+            input[PreferenceNames.WorkspaceArtifactSharingMode],
+          [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]:
+            input[PreferenceNames.ReferenceSearchAcrossAllWorkspaces],
+          [PreferenceNames.GlobalSearchAcrossAllWorkspaces]:
+            input[PreferenceNames.GlobalSearchAcrossAllWorkspaces],
           [PreferenceNames.LiveExportStoragePath]:
             input[PreferenceNames.LiveExportStoragePath],
         } satisfies AppPreferences,

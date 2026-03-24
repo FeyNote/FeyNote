@@ -3,6 +3,7 @@ import { WebsocketMessageEvent } from '@feynote/global-types';
 export enum EventName {
   ArtifactUpdated = WebsocketMessageEvent.ArtifactUpdated,
   ThreadUpdated = WebsocketMessageEvent.ThreadUpdated,
+  WorkspaceUpdated = WebsocketMessageEvent.WorkspaceUpdated,
 
   WebsocketError = 'websocket.error',
   WebsocketReconnect = 'websocket.reconnect',
@@ -13,6 +14,7 @@ export enum EventName {
   LocaldbSyncArtifact = 'localdb.syncArtifact',
   LocaldbSyncCompleted = 'localdb.syncCompleted',
   LocaldbArtifactSnapshotUpdated = 'localdb.artifactSnapshotUpdated',
+  LocaldbWorkspaceSnapshotUpdated = 'localdb.workspaceSnapshotUpdated',
   LocaldbKnownUsersUpdated = 'localdb.knownUsersUpdated',
 
   ArtifactWelcomeCreated = 'artifact.welcomeCreated',

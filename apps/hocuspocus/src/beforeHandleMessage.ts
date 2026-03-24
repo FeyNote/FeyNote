@@ -8,14 +8,46 @@ import { applyUpdate, encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import {
   getMetaFromYArtifact,
   getUserAccessFromYArtifact,
+  getWorkspaceMetaFromYDoc,
+  getWorkspaceUserAccessFromYDoc,
 } from '@feynote/shared-utils';
 import * as Sentry from '@sentry/node';
 
-import { splitDocumentName } from './splitDocumentName';
-import { SupportedDocumentType } from './SupportedDocumentType';
 import { memoizedShadowDocsByDocName } from './memoizedShadowDocsByDocName';
 import assert from 'assert';
-import { logger, metrics } from '@feynote/api-services';
+import {
+  logger,
+  metrics,
+  splitDocumentName,
+  SupportedDocumentType,
+} from '@feynote/api-services';
+
+/**
+ * These are keys that should not be modifiable by any collaborator.
+ * At the moment we don't have a way to "roll back" a client if they change these.
+ * They'll just be left in a broken state. That said, it's "impossible" without
+ * malicious behavior to change these keys as a collaborator.
+ */
+const illegalCollaboratorMetaKeysByDocType = {
+  [SupportedDocumentType.Artifact]: [
+    'id',
+    'userId',
+    'linkAccessLevel',
+    'deletedAt',
+    'createdAt',
+  ],
+  [SupportedDocumentType.Workspace]: [
+    'id',
+    'userId',
+    'name',
+    'icon',
+    'color',
+    'linkAccessLevel',
+    'deletedAt',
+    'createdAt',
+  ],
+  [SupportedDocumentType.UserTree]: [],
+} as const satisfies Record<SupportedDocumentType, string[]>;
 
 /**
  * Deconstruct the IncomingMessage.
@@ -72,6 +104,7 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
     };
 
     switch (type) {
+      case SupportedDocumentType.Workspace:
       case SupportedDocumentType.Artifact: {
         try {
           // Ensure received message is a document update, otherwise there is no need to validate meta/permissions
@@ -107,53 +140,76 @@ export async function beforeHandleMessage(args: beforeHandleMessagePayload) {
 
           const shadowDoc = getShadowDoc(args.documentName, args.document);
 
-          const illegalChanged: string[] = [];
-          const illegalMetaKeys = [
-            'id',
-            'userId',
-            'linkAccessLevel',
-            'deletedAt',
-          ];
+          const getDocValues = () => {
+            let meta;
+            let userAccessYKV;
+            switch (type) {
+              case SupportedDocumentType.Artifact: {
+                userAccessYKV = getUserAccessFromYArtifact(shadowDoc);
+                meta = getMetaFromYArtifact(shadowDoc);
+                break;
+              }
+              case SupportedDocumentType.Workspace: {
+                userAccessYKV = getWorkspaceUserAccessFromYDoc(shadowDoc);
+                meta = getWorkspaceMetaFromYDoc(shadowDoc);
+                break;
+              }
+              default: {
+                throw new Error(
+                  `${type} is not supported for message validation`,
+                );
+              }
+            }
 
-          const userAccessYKV = getUserAccessFromYArtifact(shadowDoc);
-          const userAccessToString = () => {
-            let str = '';
+            let stringifiedUserAccess = '';
 
             const keys = [...userAccessYKV.map.keys()].sort();
             for (const key of keys) {
-              str += `${key}:${userAccessYKV.get(key)?.accessLevel}`;
+              stringifiedUserAccess += `${key}:${userAccessYKV.get(key)?.accessLevel}`;
             }
 
-            return str;
+            return {
+              meta,
+              stringifiedUserAccess,
+            };
           };
 
-          const metaPre = getMetaFromYArtifact(shadowDoc);
-          const userAccessPre = userAccessToString();
+          const illegalMetaKeys = illegalCollaboratorMetaKeysByDocType[type];
+          const illegalMetaKeysChanged: string[] = [];
+
+          const {
+            meta: metaPre,
+            stringifiedUserAccess: stringifiedUserAccessPre,
+          } = getDocValues();
+
           applyUpdate(shadowDoc, yjsBinary);
-          const metaPost = getMetaFromYArtifact(shadowDoc);
-          const userAccessPost = userAccessToString();
+
+          const {
+            meta: metaPost,
+            stringifiedUserAccess: stringifiedUserAccessPost,
+          } = getDocValues();
 
           for (const illegalKey of illegalMetaKeys) {
             if (
               metaPre[illegalKey as keyof typeof metaPre] !==
               metaPost[illegalKey as keyof typeof metaPost]
             ) {
-              illegalChanged.push(illegalKey);
+              illegalMetaKeysChanged.push(illegalKey);
             }
           }
-          if (userAccessPre !== userAccessPost) {
-            illegalChanged.push('userAccess');
+          if (stringifiedUserAccessPre !== stringifiedUserAccessPost) {
+            illegalMetaKeysChanged.push('userAccess');
           }
 
-          if (illegalChanged.length) {
+          if (illegalMetaKeysChanged.length) {
             // We've corrupted the document state, so we need to reset it
             memoizedShadowDocsByDocName.delete(args.documentName);
 
             const e = new Error(
-              `Illegal update performed modifying keys: ${illegalChanged}`,
+              `Illegal update performed modifying keys: ${illegalMetaKeysChanged}`,
             );
             logger.warn(
-              `Illegal update performed modifying keys: ${illegalChanged}`,
+              `Illegal update performed modifying keys: ${illegalMetaKeysChanged}`,
             );
             Sentry.captureException(e, {
               extra: {

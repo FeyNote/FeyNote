@@ -72,13 +72,31 @@ export class TypeSense implements SearchProvider {
     const newReadableUserIds = artifact.newState.readableUserIds.sort((a, b) =>
       a.localeCompare(b),
     );
-    const sharedUserIdsIdentical = oldReadableUserIds.every(
-      (value, index) => value === newReadableUserIds[index],
+    const sharedUserIdsIdentical =
+      oldReadableUserIds.every(
+        (value, index) => value === newReadableUserIds[index],
+      ) && oldReadableUserIds.length === newReadableUserIds.length;
+
+    const oldWorkspaceIds = artifact.oldState.workspaceIds.sort((a, b) =>
+      a.localeCompare(b),
     );
-    if (!artifact.oldState.jsonContent || !sharedUserIdsIdentical) {
+    const newWorkspaceIds = artifact.newState.workspaceIds.sort((a, b) =>
+      a.localeCompare(b),
+    );
+    const workspaceIdsIdentical =
+      oldWorkspaceIds.every(
+        (value, index) => value === newWorkspaceIds[index],
+      ) && oldWorkspaceIds.length === newWorkspaceIds.length;
+
+    if (
+      !artifact.oldState.jsonContent ||
+      !sharedUserIdsIdentical ||
+      !workspaceIdsIdentical
+    ) {
       // Either:
       // 1. Artifact never had block content before, so full reindex
       // 2. Sharing changed for the artifact, so full reindex
+      // 3. Workspace IDs changed for the artifact, so full reindex
       return this.reindexBlocks(artifact);
     }
 
@@ -97,6 +115,7 @@ export class TypeSense implements SearchProvider {
           text: diffItem.oldText,
           userId: artifact.userId,
           readableUserIds: artifact.oldState.readableUserIds,
+          workspaceIds: artifact.oldState.workspaceIds,
           artifactId: artifact.id,
         });
         continue;
@@ -107,6 +126,7 @@ export class TypeSense implements SearchProvider {
         text: diffItem.newText,
         userId: artifact.userId,
         readableUserIds: artifact.newState.readableUserIds,
+        workspaceIds: artifact.newState.workspaceIds,
         artifactId: artifact.id,
       });
     }
@@ -123,6 +143,52 @@ export class TypeSense implements SearchProvider {
           action: 'upsert',
         });
     }
+  }
+
+  async updateArtifacts(
+    artifactPartials: (Partial<ArtifactIndexDocument> & {
+      id: string;
+    })[],
+  ) {
+    await this.client
+      .collections<ArtifactIndexDocument>(Indexes.Artifact)
+      .documents()
+      .import(
+        // Typesense allows partials used in updates, but doesn't update their typing here
+        // when action is set to update :/
+        artifactPartials as ArtifactIndexDocument[],
+        { action: 'update' },
+      );
+  }
+
+  async updateBlocks(
+    blockPartials: (Partial<BlockIndexDocument> & {
+      id: string;
+    })[],
+  ) {
+    await this.client
+      .collections<BlockIndexDocument>(Indexes.Block)
+      .documents()
+      .import(
+        // Typesense allows partials used in updates, but doesn't update their typing here
+        // when action is set to update :/
+        blockPartials as BlockIndexDocument[],
+        { action: 'update' },
+      );
+  }
+
+  async updateWorkspaceIds(artifactId: string, workspaceIds: string[]) {
+    await this.updateArtifacts([{ id: artifactId, workspaceIds }]);
+
+    await this.client
+      .collections<BlockIndexDocument>(Indexes.Block)
+      .documents()
+      .update(
+        // Typesense allows partials used in updates, but doesn't update their typing here
+        // when action is set to update :/
+        { workspaceIds } as BlockIndexDocument,
+        { filter_by: `artifactId:=${artifactId}` },
+      );
   }
 
   /**
@@ -145,6 +211,7 @@ export class TypeSense implements SearchProvider {
         text,
         userId: artifact.userId,
         readableUserIds: artifact.newState.readableUserIds,
+        workspaceIds: artifact.newState.workspaceIds,
         artifactId: artifact.id,
       } satisfies BlockIndexDocument;
 
@@ -179,9 +246,14 @@ export class TypeSense implements SearchProvider {
     options?: {
       prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
       limit?: number;
+      workspaceId?: string;
     },
   ) {
     const query_by = 'title,fullText';
+    let filter_by = `readableUserIds:=[${userId}]`;
+    if (options?.workspaceId) {
+      filter_by += ` && workspaceIds:=[${options.workspaceId}]`;
+    }
 
     const results = await this.client
       .collections<ArtifactIndexDocument>(Indexes.Artifact)
@@ -190,7 +262,7 @@ export class TypeSense implements SearchProvider {
         q: query,
         query_by,
         prefix: options?.prefix ?? false,
-        filter_by: `readableUserIds:=[${userId}]`,
+        filter_by,
         per_page: options?.limit ?? 50,
         highlight_affix_num_tokens: 20,
       });
@@ -219,9 +291,14 @@ export class TypeSense implements SearchProvider {
     options?: {
       prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
       limit?: number;
+      workspaceId?: string;
     },
   ) {
     const query_by = 'title';
+    let filter_by = `readableUserIds:=[${userId}]`;
+    if (options?.workspaceId) {
+      filter_by += ` && workspaceIds:=[${options.workspaceId}]`;
+    }
 
     const results = await this.client
       .collections<ArtifactIndexDocument>(Indexes.Artifact)
@@ -230,7 +307,7 @@ export class TypeSense implements SearchProvider {
         q: query,
         query_by,
         prefix: options?.prefix ?? false,
-        filter_by: `readableUserIds:=[${userId}]`,
+        filter_by,
         per_page: options?.limit ?? 50,
       });
 
@@ -258,8 +335,14 @@ export class TypeSense implements SearchProvider {
     options?: {
       prefix?: boolean; // Matches parts of words, so typing "hipp" will match "hippopotamus"
       limit?: number;
+      workspaceId?: string;
     },
   ) {
+    let filter_by = `readableUserIds:=[${userId}]`;
+    if (options?.workspaceId) {
+      filter_by += ` && workspaceIds:=[${options.workspaceId}]`;
+    }
+
     const results = await this.client
       .collections<BlockIndexDocument>(Indexes.Block)
       .documents()
@@ -267,7 +350,7 @@ export class TypeSense implements SearchProvider {
         q: query,
         query_by: 'text',
         prefix: options?.prefix ?? false,
-        filter_by: `readableUserIds:=[${userId}]`,
+        filter_by,
         per_page: options?.limit ?? 50,
         highlight_affix_num_tokens: 20,
       });
@@ -314,6 +397,12 @@ export class TypeSense implements SearchProvider {
           optional: false,
         },
         {
+          name: 'workspaceIds',
+          type: 'string[]',
+          facet: true,
+          optional: false,
+        },
+        {
           name: 'text',
           type: 'string',
           optional: false,
@@ -345,6 +434,12 @@ export class TypeSense implements SearchProvider {
         },
         {
           name: 'readableUserIds',
+          type: 'string[]',
+          facet: true,
+          optional: false,
+        },
+        {
+          name: 'workspaceIds',
           type: 'string[]',
           facet: true,
           optional: false,

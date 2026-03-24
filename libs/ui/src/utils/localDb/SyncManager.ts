@@ -14,6 +14,10 @@ import {
   getEdgeId,
   getMetaFromYArtifact,
   getUserAccessFromYArtifact,
+  getWorkspaceMetaFromYDoc,
+  getWorkspaceUserAccessFromYDoc,
+  getWorkspaceArtifactsFromYDoc,
+  getWorkspaceThreadsFromYDoc,
   ImmediateDebouncer,
   type Manifest,
 } from '@feynote/shared-utils';
@@ -66,6 +70,11 @@ const ENABLE_VERBOSE_SYNC_LOGGING = getIsViteDevelopment();
 const ARTIFACT_SYNC_TIMEOUT_MS = 10 * 1000;
 
 /**
+ * How long an workspace can take to sync before we consider it timed out and kill it.
+ */
+const WORKSPACE_SYNC_TIMEOUT_MS = 10 * 1000;
+
+/**
  * The shortest time between attempted syncs.
  * This is for the sanity of our server, since constant editing would re-trigger sync
  * constantly.
@@ -107,6 +116,12 @@ export class SyncManager {
     eventManager.addEventListener(EventName.ArtifactUpdated, () => {
       if (ENABLE_VERBOSE_SYNC_LOGGING)
         console.log('Artifact updated, queueing sync');
+      syncManifestDebouncer.call();
+    });
+
+    eventManager.addEventListener(EventName.WorkspaceUpdated, () => {
+      if (ENABLE_VERBOSE_SYNC_LOGGING)
+        console.log('Workspace updated, queueing sync');
       syncManifestDebouncer.call();
     });
 
@@ -243,16 +258,13 @@ export class SyncManager {
       }
 
       // ==== Update Artifacts ====
-      const needsSync = new Set<string>();
+      const artifactIdsNeedsSync = new Set<string>();
 
       {
         // Wrapped in a lexical context for memory optimization
         this._syncCheckAbort(signal);
-        const localArtifactSnapshotKeyRecords = await manifestDb.getAllKeys(
-          ObjectStoreName.ArtifactSnapshots,
-        );
         const localArtifactSnapshotKeys = new Set(
-          localArtifactSnapshotKeyRecords,
+          await manifestDb.getAllKeys(ObjectStoreName.ArtifactSnapshots),
         );
         const localArtifactVersionsRecords = await manifestDb.getAll(
           ObjectStoreName.ArtifactVersions,
@@ -269,7 +281,7 @@ export class SyncManager {
         ) => {
           const syncedReasons = (artifactSyncReasons[artifactId] ||= []);
           syncedReasons.push(syncReason);
-          needsSync.add(artifactId);
+          artifactIdsNeedsSync.add(artifactId);
         };
 
         // Check for artifact records present on manifest, but not on client
@@ -339,7 +351,7 @@ export class SyncManager {
       }
 
       this._syncCheckAbort(signal);
-      if (needsSync.size) {
+      if (artifactIdsNeedsSync.size) {
         // We instantiate a fresh websocket every time, since websockets get killed/closed
         // when left hanging without presence/awareness enabled
         const ws = new HocuspocusProviderWebsocket({
@@ -350,7 +362,7 @@ export class SyncManager {
         });
 
         // We must operate in batches, because loading every single document in existence at the same time is dumb.
-        const batches = [...needsSync].reduce((batches, id) => {
+        const batches = [...artifactIdsNeedsSync].reduce((batches, id) => {
           const previousBatch = batches.at(-1);
           if (previousBatch && previousBatch.length < SYNC_BATCH_SIZE) {
             previousBatch.push(id);
@@ -366,13 +378,106 @@ export class SyncManager {
           await Promise.all(
             batch.map((artifactId) => {
               this._syncCheckAbort(signal);
-              return this.sync(artifactId, latestManifest, ws);
+              return this.syncArtifact(artifactId, latestManifest, ws);
             }),
           );
           await waitFor(SYNC_BATCH_RATE_LIMIT_WAIT);
         }
 
         ws.destroy();
+      }
+
+      // ==== Update Workspaces ====
+      const workspaceIdsNeedsSync = new Set<string>();
+
+      {
+        this._syncCheckAbort(signal);
+        const localWorkspaceSnapshotKeys = new Set(
+          await manifestDb.getAllKeys(ObjectStoreName.WorkspaceSnapshots),
+        );
+        const localWorkspaceVersionsRecords = await manifestDb.getAll(
+          ObjectStoreName.WorkspaceVersions,
+        );
+        const localWorkspaceVersions: Record<string, number> = {};
+        for (const record of localWorkspaceVersionsRecords) {
+          localWorkspaceVersions[record.id] = record.version;
+        }
+
+        const workspaceSyncReasons: Record<string, SyncReason[]> = {};
+        const addWorkspaceSyncReason = (
+          workspaceId: string,
+          syncReason: SyncReason,
+        ) => {
+          const syncedReasons = (workspaceSyncReasons[workspaceId] ||= []);
+          syncedReasons.push(syncReason);
+          workspaceIdsNeedsSync.add(workspaceId);
+        };
+
+        this._syncCheckAbort(signal);
+        for (const workspaceId of Object.keys(
+          latestManifest.workspaceVersions,
+        )) {
+          if (!localWorkspaceVersions[workspaceId]) {
+            addWorkspaceSyncReason(
+              workspaceId,
+              SyncReason.VersionNotPresentInLocal,
+            );
+          } else if (
+            localWorkspaceVersions[workspaceId] !==
+            latestManifest.workspaceVersions[workspaceId]
+          ) {
+            addWorkspaceSyncReason(workspaceId, SyncReason.VersionNotMatch);
+          }
+          if (!localWorkspaceSnapshotKeys.has(workspaceId)) {
+            addWorkspaceSyncReason(
+              workspaceId,
+              SyncReason.SnapshotNotPresentInLocal,
+            );
+          }
+        }
+
+        for (const workspaceId of Object.keys(localWorkspaceVersions)) {
+          if (!latestManifest.workspaceVersions[workspaceId]) {
+            addWorkspaceSyncReason(
+              workspaceId,
+              SyncReason.VersionNotPresentInRemote,
+            );
+          }
+        }
+        for (const workspaceId of localWorkspaceSnapshotKeys) {
+          if (!latestManifest.workspaceVersions[workspaceId]) {
+            addWorkspaceSyncReason(
+              workspaceId,
+              SyncReason.SnapshotNotPresentInRemote,
+            );
+          }
+        }
+
+        if (ENABLE_VERBOSE_SYNC_LOGGING) {
+          for (const [id, reasons] of Object.entries(workspaceSyncReasons)) {
+            const humanReasons = reasons
+              .map((reason) => syncReasonHuman[reason])
+              .join(',');
+            console.log(`Syncing workspace ${id} because: ${humanReasons}`);
+          }
+        }
+      }
+
+      this._syncCheckAbort(signal);
+      if (workspaceIdsNeedsSync.size) {
+        const workspaceWs = new HocuspocusProviderWebsocket({
+          url: getApiUrls().hocuspocus,
+          delay: 50,
+          minDelay: 50,
+          maxDelay: 1000,
+        });
+
+        for (const workspaceId of workspaceIdsNeedsSync) {
+          this._syncCheckAbort(signal);
+          await this.syncWorkspace(workspaceId, latestManifest, workspaceWs);
+        }
+
+        workspaceWs.destroy();
       }
 
       await manifestDb.put(ObjectStoreName.KV, {
@@ -383,7 +488,7 @@ export class SyncManager {
       performance.mark('endSync');
       const measure = performance.measure('syncTime', 'startSync', 'endSync');
       console.log(
-        `Syncing completed in ${measure.duration}ms. ${needsSync.size} items attempted.`,
+        `Syncing completed in ${measure.duration}ms. ${artifactIdsNeedsSync.size} artifacts, ${workspaceIdsNeedsSync.size} workspaces attempted.`,
       );
     } catch (e) {
       console.error('Sync failed', e);
@@ -393,7 +498,7 @@ export class SyncManager {
     }
   }
 
-  private async sync(
+  private async syncArtifact(
     artifactId: string,
     manifest: Manifest,
     ws: HocuspocusProviderWebsocket,
@@ -424,7 +529,9 @@ export class SyncManager {
         // Do nothing
       }
       if (ENABLE_VERBOSE_SYNC_LOGGING)
-        console.log(`Deleting ${artifactId} because it's not on the manifest`);
+        console.log(
+          `Deleting artifact ${artifactId} from IDB because it's not on the manifest`,
+        );
 
       eventManager.broadcast(EventName.LocaldbArtifactSnapshotUpdated, {
         artifactId,
@@ -474,7 +581,7 @@ export class SyncManager {
 
     if (result === false) {
       console.error(
-        `Sync attempt for ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
+        `Sync attempt for artifact ${artifactId} timed out after ${ARTIFACT_SYNC_TIMEOUT_MS / 1000} seconds!`,
       );
       await cleanup();
       return;
@@ -507,6 +614,138 @@ export class SyncManager {
     await manifestDb.put(ObjectStoreName.ArtifactVersions, {
       id: artifactId,
       version: manifest.artifactVersions[artifactId],
+    });
+
+    await cleanup();
+  }
+
+  private async syncWorkspace(
+    workspaceId: string,
+    manifest: Manifest,
+    ws: HocuspocusProviderWebsocket,
+  ): Promise<void> {
+    const docName = `workspace:${workspaceId}`;
+    console.log('Syncing', docName);
+    const session = await appIdbStorageManager.getSession();
+    if (!session) throw new Error('ERROR: Sync initiated without a token');
+
+    const manifestDb = await getManifestDb();
+    const snapshot = await manifestDb.get(
+      ObjectStoreName.WorkspaceSnapshots,
+      workspaceId,
+    );
+
+    if (
+      !manifest.workspaceVersions[workspaceId] && // The manifest is the source of truth, since we require creations/deletions to happen synchronously without hocuspocus write-delay
+      !snapshot?.createdLocally // Workspaces created locally will not exist on the manifest
+    ) {
+      await manifestDb.delete(ObjectStoreName.WorkspaceVersions, workspaceId);
+      await manifestDb.delete(ObjectStoreName.WorkspaceSnapshots, workspaceId);
+      try {
+        await deleteDB(`workspace:${workspaceId}`);
+      } catch (_e) {
+        // Do nothing
+      }
+      if (ENABLE_VERBOSE_SYNC_LOGGING)
+        console.log(
+          `Deleting workspace ${workspaceId} from IDB because it's not on the manifest`,
+        );
+
+      eventManager.broadcast(EventName.LocaldbWorkspaceSnapshotUpdated, {
+        workspaceId,
+      });
+
+      return;
+    }
+
+    const doc = new Doc();
+    const indexeddbProvider = new IndexeddbPersistence(docName, doc);
+    await indexeddbProvider.whenSynced;
+
+    if (snapshot?.createdLocally) {
+      await trpc.workspace.createWorkspace.mutate({
+        yBin: encodeStateAsUpdate(doc),
+      });
+    }
+
+    const tiptapCollabProvider = new HocuspocusProvider({
+      name: docName,
+      document: doc,
+      token: session.token,
+      websocketProvider: ws,
+      awareness: null,
+    });
+
+    const ttpSyncP = new Promise<void>((resolve) => {
+      tiptapCollabProvider.on('synced', () => {
+        resolve();
+      });
+    });
+    const timeout = new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        resolve(false);
+      }, WORKSPACE_SYNC_TIMEOUT_MS);
+    });
+
+    // This is required in Hocuspocus v3 when using a manually-managed websocket instance.
+    // It wires up all of the internal event listeners.
+    tiptapCollabProvider.attach();
+
+    const cleanup = async () => {
+      tiptapCollabProvider.destroy();
+      await indexeddbProvider.destroy();
+    };
+    const result = await Promise.race([timeout, ttpSyncP]);
+
+    if (result === false) {
+      console.error(
+        `Sync attempt for workspace ${workspaceId} timed out after ${WORKSPACE_SYNC_TIMEOUT_MS / 1000} seconds!`,
+      );
+      await cleanup();
+      return;
+    }
+
+    if (tiptapCollabProvider.authorizedScope) {
+      await appIdbStorageManager.setAuthorizedCollaborationScope(
+        docName,
+        tiptapCollabProvider.authorizedScope,
+      );
+    }
+
+    const meta = getWorkspaceMetaFromYDoc(doc);
+    const userAccessKV = getWorkspaceUserAccessFromYDoc(doc);
+    const artifactsKV = getWorkspaceArtifactsFromYDoc(doc);
+    const threadsKV = getWorkspaceThreadsFromYDoc(doc);
+
+    if (!meta.id || !meta.userId) {
+      console.error('Synced document is missing required fields');
+      await cleanup();
+      return;
+    }
+
+    await appIdbStorageManager.updateLocalWorkspaceSnapshot(
+      workspaceId,
+      {
+        meta: {
+          ...meta,
+          id: meta.id, // This syntax is used to satisfy Typescript type narrowing from the check above
+          userId: meta.userId,
+        },
+        userAccess: [...userAccessKV.yarray.toArray()],
+        updatedAt: manifest.workspaceVersions[workspaceId] ?? Date.now(),
+        artifactIds: [...artifactsKV.yarray.toArray()].map((el) => el.key),
+        threadIds: [...threadsKV.yarray.toArray()].map((el) => el.key),
+        createdLocally: false,
+      },
+      {
+        create: true,
+        createdLocally: false,
+      },
+    );
+
+    await manifestDb.put(ObjectStoreName.WorkspaceVersions, {
+      id: workspaceId,
+      version: manifest.workspaceVersions[workspaceId],
     });
 
     await cleanup();

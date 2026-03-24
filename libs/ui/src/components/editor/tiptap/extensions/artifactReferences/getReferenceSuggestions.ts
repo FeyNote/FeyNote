@@ -13,6 +13,8 @@ export const getReferenceSuggestions = (mentionMenuOptsRef: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- kill me, for I do not want to live anymore.
     current: any;
   };
+  currentWorkspaceId: string | null;
+  referenceSearchAcrossAll: boolean;
 }) => {
   return async ({ query }: { query: string }): Promise<ReferenceListItem[]> => {
     const myLock = crypto.randomUUID();
@@ -26,13 +28,21 @@ export const getReferenceSuggestions = (mentionMenuOptsRef: {
       setTimeout(resolve, debounceMs),
     );
 
+    const workspaceId =
+      mentionMenuOptsRef.currentWorkspaceId &&
+      !mentionMenuOptsRef.referenceSearchAcrossAll
+        ? mentionMenuOptsRef.currentWorkspaceId
+        : undefined;
+
     const artifactsPromise = trpc.artifact.searchArtifactTitles.query({
       query,
       limit: 10,
+      workspaceId,
     });
     const blocksPromise = trpc.artifact.searchArtifactBlocks.query({
       query,
       limit: 15,
+      workspaceId,
     });
 
     const [artifactResults, blockResults] = await Promise.all([

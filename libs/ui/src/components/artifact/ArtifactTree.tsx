@@ -1,12 +1,11 @@
 import {
   MouseEvent,
+  useCallback,
   useEffect,
   useMemo,
-  useReducer,
   useRef,
   useState,
 } from 'react';
-import { YKeyValue } from 'y-utility/y-keyvalue';
 import {
   dragAndDropFeature,
   hotkeysCoreFeature,
@@ -20,10 +19,19 @@ import styled from 'styled-components';
 import { t } from 'i18next';
 
 import { useSessionContext } from '../../context/session/SessionContext';
-import { PreferenceNames } from '@feynote/shared-utils';
+import {
+  PreferenceNames,
+  getAccessLevelCanEdit,
+  getWorkspaceAccessLevel,
+  getWorkspaceArtifactsFromYDoc,
+} from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { useAlertContext } from '../../context/alert/AlertContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
+import { addArtifactToWorkspaceWithSharingPrompt } from '../../utils/workspace/addArtifactToWorkspaceWithSharingPrompt';
+import { NullState } from '../info/NullState';
+import { documentOutline } from 'ionicons/icons';
 import {
   getCustomDragData,
   setCustomDragData,
@@ -36,6 +44,14 @@ import { useCollaborationConnection } from '../../utils/collaboration/useCollabo
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
+import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
+import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
+import { useAcceptedIncomingSharedArtifactIds } from '../../utils/artifactTree/useAcceptedIncomingSharedArtifactIds';
+import { useTreeExpandedItems } from './useTreeExpandedItems';
+import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
+import { useObserveWorkspaceUserAccess } from '../../utils/collaboration/useObserveWorkspaceUserAccess';
+import { useObserveWorkspaceMeta } from '../../utils/collaboration/useObserveWorkspaceMeta';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -52,10 +68,15 @@ const DragLine = styled.div`
   background-color: var(--ion-color-primary-shade);
 `;
 
+const TreeNullState = styled(NullState)`
+  padding-top: 48px;
+`;
+
 export interface InternalTreeItem {
   id: string;
   title: string;
   order: string;
+  isHidden?: boolean;
   parentId: string | null;
 }
 
@@ -69,8 +90,6 @@ export const UNCATEGORIZED_TREE_NODE_ID = 'uncategorized';
  */
 export const UNCATEGORIZED_CHILD_INDEX = 'X';
 
-const USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY = 'userTreeExpandedItemIds';
-
 interface Props {
   treeId: string; // This should be globally unique!
   registerAsGlobalTreeDragHandler: boolean; // This should only be enabled for the sidemenu tree
@@ -83,40 +102,30 @@ interface Props {
     treeId: string;
   }) => void;
   enableOpenItemMemory?: boolean;
+  workspaceId?: string | null;
 }
 
 export const ArtifactTree: React.FC<Props> = (props) => {
-  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useSessionContext();
-  const { getPreference } = usePreferencesContext();
+  const { getPreference, setPreference } = usePreferencesContext();
+  const { showAlert } = useAlertContext();
   const leftPaneArtifactTreeShowUncategorized = getPreference(
     PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
   );
   const leftPaneArtifactTreeAutoExpandOnNavigate = getPreference(
     PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
   );
+  const { currentWorkspaceId: globalWorkspaceId } = useCurrentWorkspaceId();
+  const currentWorkspaceId =
+    props.workspaceId !== undefined ? props.workspaceId : globalWorkspaceId;
   const { artifactSnapshots } = useArtifactSnapshots();
-  const [expandedItems, setExpandedItems] = useState<string[]>(() => {
-    if (!props.enableOpenItemMemory) return [];
-    try {
-      const mem = JSON.parse(
-        localStorage.getItem(USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY) || '[]',
-      );
-      if (Array.isArray(mem)) return mem;
-      return [];
-    } catch (_e) {
-      return [];
-    }
-  });
-  useEffect(() => {
-    setTimeout(() => {
-      // We offload this outside of the render cycle so it doesn't hang UI updates
-      localStorage.setItem(
-        USER_TREE_EXPANDED_ITEMS_LOCALSTORAGE_KEY,
-        JSON.stringify(expandedItems),
-      );
-    });
-  }, [expandedItems]);
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    currentWorkspaceId || undefined,
+  );
+  const { expandedItems, setExpandedItems } = useTreeExpandedItems(
+    currentWorkspaceId,
+    props.enableOpenItemMemory,
+  );
   const expandedItemsRef = useRef(expandedItems);
   expandedItemsRef.current = expandedItems;
   const globalPaneContext = useGlobalPaneContext();
@@ -125,50 +134,74 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
-  const connection = useCollaborationConnection(`userTree:${session.userId}`);
-  const yDoc = connection.yjsDoc;
+  const userTreeConnection = useCollaborationConnection(
+    `userTree:${session.userId}`,
+  );
+  const workspaceOrUserTreeConnection = useCollaborationConnection(
+    currentWorkspaceId
+      ? `workspace:${currentWorkspaceId}`
+      : `userTree:${session.userId}`,
+  );
 
-  const yKeyValue = useMemo(() => {
-    const yArray = yDoc.getArray<{
-      key: string;
-      val: {
-        parentNodeId: string | null;
-        order: string;
-      };
-    }>('treeNodes');
-    const yKeyValue = new YKeyValue<{
-      parentNodeId: string | null;
-      order: string;
-    }>(yArray);
+  const treeYKV = useMemo(() => {
+    return getArtifactTreeFromYDoc(workspaceOrUserTreeConnection.yjsDoc);
+  }, [workspaceOrUserTreeConnection.yjsDoc]);
+  const { rerenderReducerValue } = useObserveYKVChanges(treeYKV);
 
-    return yKeyValue;
-  }, [yDoc]);
+  const { acceptedIncomingSharedArtifactIds } =
+    useAcceptedIncomingSharedArtifactIds(userTreeConnection.yjsDoc);
 
-  useEffect(() => {
-    const listener = () => {
-      triggerRerender();
-    };
-    yKeyValue.on('change', listener);
-
-    return () => {
-      yKeyValue.off('change', listener);
-    };
-  }, [yKeyValue]);
+  const workspaceMeta = useObserveWorkspaceMeta(
+    workspaceOrUserTreeConnection.yjsDoc,
+  );
+  const { rerenderReducerValue: userAccessRerenderValue } =
+    useObserveWorkspaceUserAccess(workspaceOrUserTreeConnection.yjsDoc);
+  const isEditable = useMemo(() => {
+    if (!props.editable) return false;
+    if (!currentWorkspaceId) return true;
+    return getAccessLevelCanEdit(
+      getWorkspaceAccessLevel(
+        workspaceOrUserTreeConnection.yjsDoc,
+        session.userId,
+      ),
+    );
+  }, [
+    props.editable,
+    currentWorkspaceId,
+    workspaceOrUserTreeConnection.yjsDoc,
+    session.userId,
+    workspaceMeta,
+    userAccessRerenderValue,
+  ]);
 
   const { treeItemsById, itemIdsByParentId } = useMemo(() => {
-    const artifactsById = new Map(
-      artifactSnapshots?.map((artifact) => [artifact.id, artifact]),
+    const artifactSnapshotsById = new Map(
+      (artifactSnapshotsForWorkspace || artifactSnapshots).map((artifact) => [
+        artifact.id,
+        artifact,
+      ]),
     );
 
-    const kvEntries = new Map(yKeyValue.yarray.map((el) => [el.key, el.val]));
+    const workspaceArtifactIds = currentWorkspaceId
+      ? new Set(
+          getWorkspaceArtifactsFromYDoc(
+            workspaceOrUserTreeConnection.yjsDoc,
+          ).yarray.map((el) => el.key),
+        )
+      : null;
+
+    const kvEntries = new Map(treeYKV.yarray.map((el) => [el.key, el.val]));
 
     const treeItemsById = new Map<string, InternalTreeItem>();
 
     for (const [key, val] of kvEntries.entries()) {
-      const artifact = artifactsById.get(key);
-      if (!artifact) {
-        // Artifact appears to be deleted or inaccessible, do not render but also do not remove from kvlist in case it comes back
-        // (re-shared to user)
+      // It's possible that the treeYKV for a workspace might contain items
+      // that are no longer part of the workspace artifact IDs list
+      if (
+        currentWorkspaceId &&
+        workspaceArtifactIds &&
+        !workspaceArtifactIds.has(key)
+      ) {
         continue;
       }
 
@@ -177,39 +210,66 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         order = UNCATEGORIZED_CHILD_INDEX;
       }
 
+      const artifactSnapshot = artifactSnapshotsById.get(key);
+      if (!artifactSnapshot) {
+        if (currentWorkspaceId) {
+          // When in a workspace, things that are in the tree but inaccessible should be shown within the tree
+          // unlike a user's personal non-workspaced collection
+          treeItemsById.set(key, {
+            id: key,
+            title: t('artifactTree.hiddenDocument'),
+            order,
+            parentId: val.parentNodeId || ROOT_TREE_NODE_ID,
+            isHidden: true,
+          });
+        }
+        // Artifact appears to be deleted or inaccessible, do not render but also do not remove from kvlist in case it comes back (re-shared to user)
+        continue;
+      }
+
       treeItemsById.set(key, {
         id: key,
-        title: artifact.meta.title,
+        title: artifactSnapshot.meta.title,
         order,
         parentId: val.parentNodeId || ROOT_TREE_NODE_ID,
       });
     }
 
     // Artifacts that are not explicitly added to tree should be added to uncategorized
-    for (const artifact of artifactSnapshots || []) {
-      if (!treeItemsById.has(artifact.id)) {
-        treeItemsById.set(artifact.id, {
-          id: artifact.id,
-          title: artifact.meta.title,
-          order: UNCATEGORIZED_CHILD_INDEX,
-          parentId: UNCATEGORIZED_TREE_NODE_ID,
-        });
+    for (const artifact of artifactSnapshotsForWorkspace || artifactSnapshots) {
+      if (treeItemsById.has(artifact.id)) continue;
+
+      // In non-workspaced view, filter out inbox items (shared with user but not yet accepted)
+      // We want to include inbox items in workspaces, since other users may have added them and there are some strange implications here.
+      if (
+        !currentWorkspaceId &&
+        artifact.meta.userId !== session.userId &&
+        !acceptedIncomingSharedArtifactIds.has(artifact.id)
+      ) {
+        continue;
       }
+
+      treeItemsById.set(artifact.id, {
+        id: artifact.id,
+        title: artifact.meta.title,
+        order: UNCATEGORIZED_CHILD_INDEX,
+        parentId: UNCATEGORIZED_TREE_NODE_ID,
+      });
     }
 
-    let uncategorizedItemRef: InternalTreeItem | null = null;
+    let uncategorizedItem: InternalTreeItem | null = null;
     if (leftPaneArtifactTreeShowUncategorized) {
       // All uncategorized items go under their own header
-      uncategorizedItemRef = {
+      uncategorizedItem = {
         id: UNCATEGORIZED_TREE_NODE_ID,
         title: t('artifactTree.uncategorized', {
           count: 0,
         }),
         // We allow the user to move the uncategorized item around if they desire
-        order: yKeyValue.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
+        order: treeYKV.get(UNCATEGORIZED_TREE_NODE_ID)?.order || 'XY',
         parentId: ROOT_TREE_NODE_ID,
       };
-      treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItemRef);
+      treeItemsById.set(UNCATEGORIZED_TREE_NODE_ID, uncategorizedItem);
     } else {
       treeItemsById.delete(UNCATEGORIZED_TREE_NODE_ID);
     }
@@ -239,7 +299,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       return itemIdsByParentId;
     };
 
-    if (uncategorizedItemRef) {
+    if (uncategorizedItem) {
       const _itemIdsByParentId = getItemIdsByParentId();
       let uncategorizedCount = 0;
       const seenIds = new Set();
@@ -259,12 +319,41 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         }
       };
       countUncategorizedItems(UNCATEGORIZED_TREE_NODE_ID);
-      uncategorizedItemRef.title = t('artifactTree.uncategorized', {
+      uncategorizedItem.title = t('artifactTree.uncategorized', {
         count: uncategorizedCount,
       });
     }
 
     const itemIdsByParentId = getItemIdsByParentId();
+
+    if (currentWorkspaceId) {
+      const visibilityCache = new Map<string, boolean>();
+      const hasVisibleDescendant = (itemId: string): boolean => {
+        const cached = visibilityCache.get(itemId);
+        if (cached !== undefined) return cached;
+        visibilityCache.set(itemId, false);
+        for (const childId of itemIdsByParentId.get(itemId) || []) {
+          const child = treeItemsById.get(childId);
+          if (!child) continue;
+          if (!child.isHidden || hasVisibleDescendant(childId)) {
+            visibilityCache.set(itemId, true);
+            return true;
+          }
+        }
+        return false;
+      };
+
+      for (const [id, item] of treeItemsById) {
+        if (!item.isHidden) continue;
+        if (hasVisibleDescendant(id)) continue;
+        const siblings = itemIdsByParentId.get(item.parentId);
+        if (siblings) {
+          const idx = siblings.indexOf(id);
+          if (idx !== -1) siblings.splice(idx, 1);
+        }
+        treeItemsById.delete(id);
+      }
+    }
 
     // Create root node
     treeItemsById.set(ROOT_TREE_NODE_ID, {
@@ -276,63 +365,76 @@ export const ArtifactTree: React.FC<Props> = (props) => {
 
     return { treeItemsById, itemIdsByParentId };
   }, [
-    yKeyValue,
-    _rerenderReducerValue,
+    treeYKV,
+    rerenderReducerValue,
     leftPaneArtifactTreeShowUncategorized,
     artifactSnapshots,
+    artifactSnapshotsForWorkspace,
+    acceptedIncomingSharedArtifactIds,
   ]);
 
-  const onDrop = (
-    itemIds: string[],
-    target: DragTarget<InternalTreeItem | undefined>,
-  ) => {
-    const location = ((): TreeOrderCalculationLocation => {
-      if (!('insertionIndex' in target)) {
-        return {
-          position: 'beginning',
-        };
+  const treeIsEmpty = useMemo(() => {
+    for (const key of treeItemsById.keys()) {
+      if (key !== ROOT_TREE_NODE_ID && key !== UNCATEGORIZED_TREE_NODE_ID) {
+        return false;
       }
+    }
+    return true;
+  }, [treeItemsById]);
 
-      const targetChildren = target.item.getChildren();
-      const beforeItem = targetChildren.at(target.childIndex);
-      const afterItem = targetChildren.at(target.childIndex - 1);
-      if (beforeItem && afterItem && target.childIndex !== 0) {
-        return {
-          position: 'between',
-          beforeNodeId: beforeItem.getId(),
-          afterNodeId: afterItem.getId(),
-        };
-      } else if (beforeItem) {
-        return {
-          position: 'beginning',
-        };
-      } else {
-        return {
-          position: 'end',
-        };
-      }
-    })();
-    const order = calculateOrderForArtifactTreeNode({
-      treeYKV: yKeyValue,
-      parentNodeId: target.item.getId(),
-      location,
-    });
-    yDoc.transact(() => {
-      for (const itemId of itemIds) {
-        let parentNodeId: string | null = target.item.getId();
-        if (parentNodeId === UNCATEGORIZED_TREE_NODE_ID) {
-          yKeyValue.delete(itemId);
-          continue;
+  const onDrop = useCallback(
+    (itemIds: string[], target: DragTarget<InternalTreeItem | undefined>) => {
+      if (!isEditable) return;
+
+      const location = ((): TreeOrderCalculationLocation => {
+        if (!('insertionIndex' in target)) {
+          return {
+            position: 'beginning',
+          };
         }
 
-        if (parentNodeId === 'root') parentNodeId = null;
-        yKeyValue.set(itemId, {
-          parentNodeId,
-          order,
-        });
-      }
-    });
-  };
+        const targetChildren = target.item.getChildren();
+        const beforeItem = targetChildren.at(target.childIndex);
+        const afterItem = targetChildren.at(target.childIndex - 1);
+        if (beforeItem && afterItem && target.childIndex !== 0) {
+          return {
+            position: 'between',
+            beforeNodeId: beforeItem.getId(),
+            afterNodeId: afterItem.getId(),
+          };
+        } else if (beforeItem) {
+          return {
+            position: 'beginning',
+          };
+        } else {
+          return {
+            position: 'end',
+          };
+        }
+      })();
+      const order = calculateOrderForArtifactTreeNode({
+        treeYKV: treeYKV,
+        parentNodeId: target.item.getId(),
+        location,
+      });
+      workspaceOrUserTreeConnection.yjsDoc.transact(() => {
+        for (const itemId of itemIds) {
+          let parentNodeId: string | null = target.item.getId();
+          if (parentNodeId === UNCATEGORIZED_TREE_NODE_ID) {
+            treeYKV.delete(itemId);
+            continue;
+          }
+
+          if (parentNodeId === 'root') parentNodeId = null;
+          treeYKV.set(itemId, {
+            parentNodeId,
+            order,
+          });
+        }
+      });
+    },
+    [isEditable, treeYKV, workspaceOrUserTreeConnection.yjsDoc],
+  );
 
   const getAllParentsOf = (itemId: string): string[] => {
     const treeItem = treeItemsById.get(itemId);
@@ -384,7 +486,8 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     },
     rootItemId: ROOT_TREE_NODE_ID,
     features: [syncDataLoaderFeature, dragAndDropFeature, hotkeysCoreFeature],
-    canReorder: true,
+    canReorder: isEditable,
+    canDrop: () => isEditable,
     onDrop: (items, target) => {
       onDrop(
         items.map((el) => el.getId()),
@@ -392,10 +495,10 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       );
     },
     canDropForeignDragObject: () => {
-      return !!getCustomDragData();
+      return isEditable && !!getCustomDragData();
     },
     onDropForeignDragObject: (_, target) => {
-      // This is to support receiving drags from flexlayout-react
+      if (!isEditable) return;
       const customDragData = getCustomDragData();
       if (!customDragData) return;
 
@@ -406,6 +509,16 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         return;
 
       onDrop([customDragData.props.id], target);
+
+      if (currentWorkspaceId) {
+        addArtifactToWorkspaceWithSharingPrompt({
+          workspaceId: currentWorkspaceId,
+          artifactId: customDragData.props.id,
+          getPreference,
+          setPreference,
+          showAlert,
+        });
+      }
     },
     createForeignDragObject: (items) => {
       // This is to support dragging into flexlayout-react
@@ -438,7 +551,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
    */
   const _recursiveDelete = (itemsIdsToDelete: string[]) => {
     for (const id of itemsIdsToDelete) {
-      yKeyValue.delete(id);
+      treeYKV.delete(id);
 
       const children = Array.from(itemIdsByParentId.get(id) || []);
       if (children?.length) {
@@ -511,30 +624,44 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           height: `${virtualizer.getTotalSize()}px`,
         }}
       >
-        {virtualizer.getVirtualItems().map((virtualItem) => {
-          const itemInstance = tree.getItems()[virtualItem.index];
-          return (
-            <ArtifactTreeItem
-              key={itemInstance.getId()}
-              itemInstance={itemInstance}
-              virtualizer={virtualizer}
-              virtualItemInstance={virtualItem}
-              treeItemsById={treeItemsById}
-              itemIdsByParentId={itemIdsByParentId}
-              expandedItems={expandedItems}
-              setExpandedItems={setExpandedItems}
-              enableContextMenu={props.enableItemContextMenu}
-              onBodyFirstClick={(event) =>
-                onItemBodyFirstClick(event, itemInstance)
-              }
-              onBodyDoubleClick={(event) =>
-                onItemBodyDoubleClick(event, itemInstance)
-              }
-              isActive={focusedArtifactId === itemInstance.getId()}
-            />
-          );
-        })}
-        <DragLine style={tree.getDragLineStyle()} />
+        {treeIsEmpty ? (
+          <TreeNullState
+            size="xsmall"
+            icon={documentOutline}
+            title={
+              !isEditable && currentWorkspaceId
+                ? t('artifactTree.emptyReadOnly')
+                : t('artifactTree.empty')
+            }
+          />
+        ) : (
+          <>
+            {virtualizer.getVirtualItems().map((virtualItem) => {
+              const itemInstance = tree.getItems()[virtualItem.index];
+              return (
+                <ArtifactTreeItem
+                  key={itemInstance.getId()}
+                  itemInstance={itemInstance}
+                  virtualizer={virtualizer}
+                  virtualItemInstance={virtualItem}
+                  treeItemsById={treeItemsById}
+                  itemIdsByParentId={itemIdsByParentId}
+                  expandedItems={expandedItems}
+                  setExpandedItems={setExpandedItems}
+                  enableContextMenu={props.enableItemContextMenu}
+                  onBodyFirstClick={(event) =>
+                    onItemBodyFirstClick(event, itemInstance)
+                  }
+                  onBodyDoubleClick={(event) =>
+                    onItemBodyDoubleClick(event, itemInstance)
+                  }
+                  isActive={focusedArtifactId === itemInstance.getId()}
+                />
+              );
+            })}
+            <DragLine style={tree.getDragLineStyle()} />
+          </>
+        )}
       </TreeVirtualizer>
     </TreeContainer>
   );

@@ -14,12 +14,10 @@ export const createNewTab = (model: Model, tabsetId: string) => {
         type: 'tab',
         component: id,
         name: t(
-          paneableComponentNameToDefaultI18nTitle[
-            PaneableComponent.NewArtifact
-          ],
+          paneableComponentNameToDefaultI18nTitle[PaneableComponent.CreateNew],
         ),
         config: {
-          component: PaneableComponent.NewArtifact,
+          component: PaneableComponent.CreateNew,
           props: {},
           navigationEventId: crypto.randomUUID(),
         },

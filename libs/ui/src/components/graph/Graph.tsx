@@ -2,7 +2,7 @@ import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
-import { useEffect, useMemo, useReducer } from 'react';
+import { useMemo } from 'react';
 import { NullState } from '../info/NullState';
 import { gitNetwork } from 'ionicons/icons';
 import styled from 'styled-components';
@@ -19,6 +19,9 @@ import { useCollaborationConnection } from '../../utils/collaboration/useCollabo
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
+import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
+import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
 
 const GRAPH_ARTIFACTS_YKV_KEY = 'graphArtifacts';
 
@@ -26,16 +29,28 @@ const StyledNullState = styled(NullState)`
   margin-top: 10vh;
 `;
 
-export const Graph: React.FC = () => {
+interface Props {
+  workspaceId: string | null;
+}
+
+export const Graph: React.FC<Props> = (props) => {
   const { getPreference } = usePreferencesContext();
-  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { isPaneFocused } = usePaneContext();
   const { sidemenuContentRef } = useSidemenuContext();
   const { session } = useSessionContext();
   const { t } = useTranslation();
-  const { artifactSnapshotsLoading, artifactSnapshots } =
+  const { artifactSnapshotsLoading, artifactSnapshots: allArtifactSnapshots } =
     useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
+    props.workspaceId || undefined,
+  );
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    props.workspaceId || undefined,
+  );
+  const artifactSnapshots = props.workspaceId
+    ? (artifactSnapshotsForWorkspace ?? [])
+    : allArtifactSnapshots;
 
   const showOrphans = getPreference(PreferenceNames.GraphShowOrphans);
   const showReferenceRelations = getPreference(
@@ -45,7 +60,10 @@ export const Graph: React.FC = () => {
     PreferenceNames.GraphShowTreeRelations,
   );
 
-  const connection = useCollaborationConnection(`userTree:${session.userId}`);
+  const docName = props.workspaceId
+    ? `workspace:${props.workspaceId}`
+    : `userTree:${session.userId}`;
+  const connection = useCollaborationConnection(docName);
   const yDoc = connection.yjsDoc;
 
   const artifactsYKV = useMemo(() => {
@@ -69,21 +87,13 @@ export const Graph: React.FC = () => {
   }, [yDoc]);
 
   const treeYKV = useMemo(() => {
-    return getArtifactTreeFromYDoc(yDoc).yKeyValue;
+    return getArtifactTreeFromYDoc(yDoc);
   }, [yDoc]);
 
-  useEffect(() => {
-    const listener = () => {
-      triggerRerender();
-    };
-    artifactsYKV.on('change', listener);
-    treeYKV.on('change', listener);
-
-    return () => {
-      artifactsYKV.off('change', listener);
-      treeYKV.off('change', listener);
-    };
-  }, [artifactsYKV, treeYKV]);
+  const { rerenderReducerValue: artifactsYKVRerenderValue } =
+    useObserveYKVChanges(artifactsYKV);
+  const { rerenderReducerValue: treeYKVRerenderValue } =
+    useObserveYKVChanges(treeYKV);
 
   const treeLinks = useMemo(() => {
     const links: FeynoteGraphLink[] = [];
@@ -103,7 +113,7 @@ export const Graph: React.FC = () => {
       }
     }
     return links;
-  }, [_rerenderReducerValue, treeYKV, artifactSnapshots]);
+  }, [treeYKVRerenderValue, treeYKV, artifactSnapshots]);
 
   const treeLinkedArtifactIds = useMemo(() => {
     const ids = new Set<string>();
@@ -156,7 +166,7 @@ export const Graph: React.FC = () => {
       }
     }
     return positions;
-  }, [_rerenderReducerValue, artifactsYKV, artifactSnapshots]);
+  }, [artifactsYKVRerenderValue, artifactsYKV, artifactSnapshots]);
 
   const edges = useMemo(() => {
     const links: FeynoteGraphLink[] = [];
@@ -195,7 +205,17 @@ export const Graph: React.FC = () => {
 
   return (
     <IonPage>
-      <PaneNav title={t('graph.title')} />
+      <PaneNav
+        title={
+          selectedWorkspaceSnapshot
+            ? t('graph.title.workspaceNamed', {
+                name:
+                  selectedWorkspaceSnapshot.meta.name ||
+                  t('workspace.untitled'),
+              })
+            : t('graph.title')
+        }
+      />
       <IonContent>
         {artifactSnapshots?.length ? (
           <GraphRenderer

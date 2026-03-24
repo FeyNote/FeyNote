@@ -5,10 +5,10 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { artifactDetail, fileSummary } from '@feynote/prisma/types';
 import {
   FileSizeLimitError,
-  hasArtifactAccess,
   transformAndUploadFileToS3ForUser,
 } from '@feynote/api-services';
 import { FileDTO } from '@feynote/global-types';
+import { getArtifactAccessLevel } from '@feynote/shared-utils';
 import { octetInputParser } from '@trpc/server/http';
 import type { ParserZodEsque } from '@trpc/server/unstable-core-do-not-import';
 import { Readable } from 'stream';
@@ -34,7 +34,10 @@ export const createFile = authenticatedProcedure
         ...artifactDetail,
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, ctx.session.userId)) {
+      if (
+        !artifact ||
+        getArtifactAccessLevel(artifact, ctx.session.userId) === 'noaccess'
+      ) {
         throw new TRPCError({
           message:
             'Artifact does not exist or is not visible to the current user',

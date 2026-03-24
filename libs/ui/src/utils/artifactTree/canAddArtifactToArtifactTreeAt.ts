@@ -21,7 +21,7 @@ export function canAddArtifactToArtifactTreeAt(args: {
       return args.ref;
     }
 
-    return getArtifactTreeFromYDoc(args.ref).yKeyValue;
+    return getArtifactTreeFromYDoc(args.ref);
   })();
 
   if (args.parentNodeId === null) return true;

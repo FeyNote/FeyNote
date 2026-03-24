@@ -15,4 +15,5 @@ export interface Edge {
 export interface Manifest {
   edges: Edge[];
   artifactVersions: Record<string, number>;
+  workspaceVersions: Record<string, number>;
 }

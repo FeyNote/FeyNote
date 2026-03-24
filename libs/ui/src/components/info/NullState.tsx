@@ -5,16 +5,23 @@ const Container = styled.div`
   text-align: center;
 `;
 
+const HEADER_FONT_SIZE = {
+  xsmall: '0.85rem',
+  small: '1.1rem',
+  large: '1.5rem',
+} as const;
+
 const Header = styled.h2<{
-  $size: 'small' | 'large';
+  $size: 'xsmall' | 'small' | 'large';
 }>`
-  font-size: ${(props) => (props.$size === 'large' ? '1.5rem' : '1.1rem')};
+  font-size: ${(props) => HEADER_FONT_SIZE[props.$size]};
+  font-weight: ${(props) => (props.$size === 'xsmall' ? 'normal' : undefined)};
   margin-top: 8px;
   margin-bottom: 8px;
 `;
 
 interface Props {
-  size?: 'small' | 'large';
+  size?: 'xsmall' | 'small' | 'large';
   icon?: string;
   title: string;
   message?: string;

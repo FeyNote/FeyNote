@@ -85,6 +85,12 @@ export const metrics = {
     labelNames: ['document_type'],
     buckets: [0.001, 0.005, 0.01, 0.03, 0.05, 0.1, 0.5, 1, 2], // Each of these is tracked in seconds
   }),
+  hocuspocusDocumentStoreTime: new client.Histogram({
+    name: 'hocuspocus_document_store_time',
+    help: 'Time to store a document',
+    labelNames: ['document_type'],
+    buckets: [0.001, 0.005, 0.01, 0.03, 0.05, 0.1, 0.5, 1, 2],
+  }),
   hocuspocusDocumentLoad: new client.Counter({
     name: 'hocuspocus_document_load',
     help: 'A document was loaded',

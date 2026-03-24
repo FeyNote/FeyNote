@@ -1,9 +1,8 @@
 import { z } from 'zod';
 import { TRPCError } from '@trpc/server';
 import { prisma } from '@feynote/prisma/client';
-import { hasArtifactAccess } from '@feynote/api-services';
 import { publicProcedure } from '../../trpc';
-import { Edge, getEdgeId } from '@feynote/shared-utils';
+import { Edge, getArtifactAccessLevel, getEdgeId } from '@feynote/shared-utils';
 
 export const getArtifactEdgesById = publicProcedure
   .input(
@@ -37,7 +36,10 @@ export const getArtifactEdgesById = publicProcedure
         },
       });
 
-      if (!artifact || !hasArtifactAccess(artifact, ctx.session?.userId)) {
+      if (
+        !artifact ||
+        getArtifactAccessLevel(artifact, ctx.session?.userId) === 'noaccess'
+      ) {
         throw new TRPCError({
           message:
             'Artifact does not exist or is not visible to the current user',
@@ -107,7 +109,10 @@ export const getArtifactEdgesById = publicProcedure
         incomingEdges: incomingEdges
           .filter((edge) => {
             // We do not want to show incoming references from artifacts you do not have access to
-            return hasArtifactAccess(edge.artifact, ctx.session?.userId);
+            return (
+              getArtifactAccessLevel(edge.artifact, ctx.session?.userId) !==
+              'noaccess'
+            );
           })
           .map((edge) => {
             return {

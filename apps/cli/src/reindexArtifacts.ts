@@ -9,6 +9,7 @@ import {
 } from '@feynote/shared-utils';
 import { setTimeout } from 'timers/promises';
 import { logger } from '@feynote/api-services';
+import type { IndexableArtifact } from '@feynote/search';
 
 export const reindexArtifacts = async (
   userId: string | undefined,
@@ -31,6 +32,11 @@ export const reindexArtifacts = async (
         artifactShares: {
           select: {
             userId: true,
+          },
+        },
+        workspaceArtifacts: {
+          select: {
+            workspaceId: true,
           },
         },
         yBin: true,
@@ -65,6 +71,7 @@ export const reindexArtifacts = async (
             readableUserIds: [],
             text: '',
             jsonContent: oldJSONContent,
+            workspaceIds: [],
           },
           newState: {
             title: newTitle,
@@ -74,8 +81,11 @@ export const reindexArtifacts = async (
             ],
             text: getTextForJSONContent(newJSONContent),
             jsonContent: newJSONContent,
+            workspaceIds: artifact.workspaceArtifacts.map(
+              (wa) => wa.workspaceId,
+            ),
           },
-        };
+        } satisfies IndexableArtifact;
 
         await searchProvider.indexArtifact(indexableArtifact);
       } catch (e) {

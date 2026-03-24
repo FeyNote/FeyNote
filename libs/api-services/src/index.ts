@@ -31,6 +31,9 @@ export * from './lib/express/feynoteAsyncLocalStorage';
 export * from './lib/express/defineExpressHandler';
 export * from './lib/express/expressErrors';
 
+export * from './lib/hocuspocus/SupportedDocumentType';
+export * from './lib/hocuspocus/splitDocumentName';
+
 export * from './lib/hocuspocus-trpc';
 
 export * from './lib/logging/logger';
@@ -57,12 +60,12 @@ export * from './lib/session/isSessionExpired';
 export * from './lib/session/isAuthResetTokenExpired';
 
 export * from './lib/artifacts/yArtifactMetaZodSchema';
-export * from './lib/artifacts/hasArtifactAccess';
 export * from './lib/artifacts/getSafeArtifactId';
 export * from './lib/artifacts/getManifest';
 
 export * from './lib/dto/artifactDetailToArtifactDTO';
 export * from './lib/dto/prismaArtifactSnapshotToArtifactSnapshot';
+export * from './lib/dto/prismaWorkspaceSnapshotToWorkspaceSnapshot';
 
 export * from './lib/payments/getSubscriptionsForUser';
 export * from './lib/payments/getCapabilitiesForSubscription';
@@ -71,6 +74,9 @@ export * from './lib/payments/extendSubscription';
 export * from './lib/payments/getCheckoutUserId';
 export * from './lib/payments/stripe';
 export * from './lib/axios/proxyGetRequest';
+
+export * from './lib/workspace/getSafeWorkspaceId';
+export * from './lib/workspace/syncWorkspaceRelations';
 
 export * from './lib/converters/htmlToMarkdown';
 

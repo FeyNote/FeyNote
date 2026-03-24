@@ -49,7 +49,7 @@ export const ActionDialog: React.FC<Props> = (props) => {
     }
     if (Array.isArray(props.actionButtons)) {
       return (
-        <Flex gap="3" mt="4" justify="end">
+        <Flex gap="3" mt="4" justify="end" wrap="wrap">
           {props.actionButtons.map((el, idx) => (
             <Dialog.Close key={idx}>
               <Button {...el.props}>{el.title}</Button>

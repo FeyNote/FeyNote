@@ -61,6 +61,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
         edge={edge0}
       >
         <CompactIonItem
+          data-edge-artifactId={edge0.artifactId}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
           lines="none"

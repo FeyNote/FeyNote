@@ -47,6 +47,18 @@ export enum ArtifactReferenceExistingArtifactSharingMode {
   Prompt = 'prompt',
 }
 
+export enum WorkspaceNewItemMode {
+  Always = 'always',
+  Never = 'never',
+  Prompt = 'prompt',
+}
+
+export enum WorkspaceArtifactSharingMode {
+  Always = 'always',
+  Never = 'never',
+  Prompt = 'prompt',
+}
+
 export enum PreferenceNames {
   PanesRememberOpenState = 'panes.rememberOpenState',
   LeftPaneStartOpen = 'leftPane.startOpen',
@@ -69,6 +81,12 @@ export enum PreferenceNames {
 
   ArtifactReferenceNewArtifactSharingMode = 'artifact.referenceNewArtifactSharingMode',
   ArtifactReferenceExistingArtifactSharingMode = 'artifact.referenceExistingArtifactSharingMode',
+
+  LastActiveWorkspaceId = 'workspace.lastActiveWorkspaceId',
+  WorkspaceNewItemMode = 'workspace.newItemMode',
+  WorkspaceArtifactSharingMode = 'workspace.artifactSharingMode',
+  ReferenceSearchAcrossAllWorkspaces = 'workspace.referenceSearchAcrossAll',
+  GlobalSearchAcrossAllWorkspaces = 'workspace.globalSearchAcrossAll',
 
   LiveExportStoragePath = 'liveExport.storagePath',
 }
@@ -98,5 +116,10 @@ export interface AppPreferences {
   [PreferenceNames.ArtifactReferenceNewArtifactSharingMode]: ArtifactReferenceNewArtifactSharingMode;
   [PreferenceNames.ArtifactReferenceExistingArtifactSharingMode]: ArtifactReferenceExistingArtifactSharingMode;
 
+  [PreferenceNames.LastActiveWorkspaceId]: string | null;
+  [PreferenceNames.WorkspaceNewItemMode]: WorkspaceNewItemMode;
+  [PreferenceNames.WorkspaceArtifactSharingMode]: WorkspaceArtifactSharingMode;
+  [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: boolean;
+  [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: boolean;
   [PreferenceNames.LiveExportStoragePath]: string | null;
 }

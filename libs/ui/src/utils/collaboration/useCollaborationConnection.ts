@@ -1,5 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { getCollaborationManager } from './collaborationManager';
+import { useEffect, useReducer, useRef } from 'react';
+import {
+  CollaborationManagerEventName,
+  getCollaborationManager,
+} from './collaborationManager';
 import { useSessionContext } from '../../context/session/SessionContext';
 
 /**
@@ -9,6 +12,7 @@ import { useSessionContext } from '../../context/session/SessionContext';
  * MODIFY WITH GREAT CARE
  */
 export const useCollaborationConnection = (docName: string) => {
+  const [_rerenderReducerValue, triggerRerender] = useReducer((x) => x + 1, 0);
   const { session } = useSessionContext();
   const currentConnection =
     useRef<ReturnType<ReturnType<typeof getCollaborationManager>['get']>>(
@@ -30,7 +34,30 @@ export const useCollaborationConnection = (docName: string) => {
       // WARN: Cleanup the existing connection on unmount of the component. This is critical.
       connection.release();
     };
-  }, [session, docName]);
+  }, [session, docName, _rerenderReducerValue]);
+
+  useEffect(() => {
+    const collaborationManager = getCollaborationManager();
+    collaborationManager.on(
+      CollaborationManagerEventName.AllDestroy,
+      triggerRerender,
+    );
+    collaborationManager.on(
+      CollaborationManagerEventName.CollaborationConnectionInvalidated,
+      triggerRerender,
+    );
+
+    return () => {
+      collaborationManager.off(
+        CollaborationManagerEventName.AllDestroy,
+        triggerRerender,
+      );
+      collaborationManager.off(
+        CollaborationManagerEventName.CollaborationConnectionInvalidated,
+        triggerRerender,
+      );
+    };
+  }, []);
 
   return currentConnection.current.connection;
 };

@@ -5,6 +5,8 @@ description: Organize your documents into a hierarchical folder structure using 
 
 The document tree is a hierarchical sidebar for organizing your documents into a folder-like structure. You'll find it in the [left side menu](/docs/general/layout/desktop-panes#left-side-menu) under "Your Tree". Any document can act as a folder containing other documents, so you can build nested structures that mirror how you think about your world, campaign, or project.
 
+Each [workspace](/docs/general/workspaces) also has its own independent tree. When you switch workspaces, the tree in the sidebar updates to show that workspace's hierarchy. Unlike your personal tree in **Everything**, workspace trees are shared with all workspace members. For more details, see [Organizing the Workspace Tree](/docs/general/workspaces#organizing-the-workspace-tree).
+
 ## Organizing Documents
 
 Drag and drop documents within the tree to rearrange them. You can nest a document inside another document by dropping it on top, turning the target into a folder. Where you drop a document among its siblings determines its position in the list.
@@ -30,8 +32,9 @@ Right-clicking a document in the tree opens a context menu with the following op
 - **Expand all** and **Collapse all** to open or close all descendants at once
 - **Split right** and **Split down** to open the document in a new [pane](/docs/general/layout/desktop-panes)
 - **New tab** to open the document in a new tab
-- **New Document as Tree Child** to create a new document nested inside the one you clicked
-- **Delete Document** to delete the document
+- **New Document as Tree Child** to create a new document nested inside the one you clicked (permission dependent if in a workspace)
+- **Add to Workspace**, **Move to Workspace**, and **Remove from Workspace** to manage which [workspace](/docs/general/workspaces) the document belongs to (permission dependent if in a workspace)
+- **Delete Document** to delete the document (permission dependent if you do not own the artifact)
 
 ## Creating Documents in the Tree
 

@@ -27,5 +27,9 @@ export type EventData = {
   [EventName.LocaldbArtifactSnapshotUpdated]: {
     artifactId: string;
   };
+  [EventName.LocaldbWorkspaceSnapshotUpdated]: {
+    workspaceId: string;
+  };
   [EventName.LocaldbKnownUsersUpdated]: void;
+  [EventName.WorkspaceUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.WorkspaceUpdated];
 };

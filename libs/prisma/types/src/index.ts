@@ -1,5 +1,6 @@
 export * from './lib/types/artifactDetail';
 export * from './lib/types/artifactSnapshot';
+export * from './lib/types/workspaceSnapshot';
 export * from './lib/types/fileSummary';
 export * from './lib/types/threadSummary';
 export * from './lib/types/jobSummary';
