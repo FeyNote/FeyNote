@@ -87,6 +87,8 @@ export enum PreferenceNames {
   WorkspaceArtifactSharingMode = 'workspace.artifactSharingMode',
   ReferenceSearchAcrossAllWorkspaces = 'workspace.referenceSearchAcrossAll',
   GlobalSearchAcrossAllWorkspaces = 'workspace.globalSearchAcrossAll',
+
+  LiveExportStoragePath = 'liveExport.storagePath',
 }
 
 export interface AppPreferences {
@@ -119,4 +121,5 @@ export interface AppPreferences {
   [PreferenceNames.WorkspaceArtifactSharingMode]: WorkspaceArtifactSharingMode;
   [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: boolean;
   [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: boolean;
+  [PreferenceNames.LiveExportStoragePath]: string | null;
 }

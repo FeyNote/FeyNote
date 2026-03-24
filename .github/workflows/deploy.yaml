@@ -114,4 +114,4 @@ jobs:
           echo "Found $FILE_COUNT files in s3://feynote-public/desktop/${{ inputs.tag }}/"
 
       - name: Deploy
-        run: aws s3 cp --recursive "s3://feynote-public/desktop/${{ inputs.tag }}/" "s3://feynote-public/desktop/${{ inputs.environment }}"
+        run: aws s3 sync --delete "s3://feynote-public/desktop/${{ inputs.tag }}/" "s3://feynote-public/desktop/${{ inputs.environment }}/"

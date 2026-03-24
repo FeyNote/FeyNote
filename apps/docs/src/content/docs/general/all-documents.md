@@ -3,7 +3,7 @@ title: All Documents
 description: Browse, sort, filter, and manage every document in your collection from a single list.
 ---
 
-The All Documents page shows every document in your collection in a single list. It's useful for getting a bird's-eye view of everything you have, finding specific documents, or managing several documents at once. You can get to it by clicking **All Documents** in the left sidebar.
+The All Documents page shows every document in your collection in a single list. It's useful for getting a bird's-eye view of everything you have, finding specific documents, or managing several documents at once. You can get to it by clicking **All Documents** in the left sidebar. When you have a [workspace](/docs/general/workspaces) active, this page shows only documents in that workspace. Switch to **Everything** to see your full collection.
 
 ## Sorting
 
@@ -42,6 +42,7 @@ Each row has a checkbox on the left. Click to select individual documents, or sh
 
 - **Move Within Your Tree** moves the selected documents to a new position in your [document tree](/docs/documents/tree).
 - **Manage Sharing** lets you adjust [sharing](/docs/documents/sharing) settings for all selected documents at once.
+- **Add to Workspace**, **Move to Workspace**, and **Remove from Workspace** for managing which [workspace](/docs/general/workspaces) documents belong to.
 - **Delete All** deletes the selected documents.
 
 If some of your selected documents are hidden by your current filters, a warning appears letting you know how many selected documents are not visible. This way you won't accidentally act on documents you can't see in the list.
@@ -54,4 +55,5 @@ Right-clicking a document opens a context menu with additional options:
 
 - **Split right**, **Split down**, or **New tab** to open the document in different [pane layouts](/docs/general/layout/desktop-panes).
 - **New Document as Tree Child** to create a new document nested under the one you clicked in the tree.
+- **Add to Workspace**, **Move to Workspace**, and **Remove from Workspace** to manage [workspace](/docs/general/workspaces) membership.
 - **Delete Document** to delete it.
