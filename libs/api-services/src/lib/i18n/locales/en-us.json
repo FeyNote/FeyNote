@@ -19,8 +19,5 @@
   "monsterStatblock.challenge": "Challenge:",
   "monsterStatblock.actions.header": "Actions",
   "monsterStatblock.reactions.header": "Reactions",
-  "monsterStatblock.legendaryActions.header": "Legendary Actions",
-
-  "generic.error": "Error",
-  "generic.untitled": "Untitled"
+  "monsterStatblock.legendaryActions.header": "Legendary Actions"
 }

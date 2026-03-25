@@ -10,6 +10,7 @@ export enum EventName {
   ThreadUpdated = WebsocketMessageEvent.ThreadUpdated,
   WorkspaceUpdated = WebsocketMessageEvent.WorkspaceUpdated,
 
+  // lint-locales-disable
   WebsocketError = 'websocket.error',
   WebsocketReconnect = 'websocket.reconnect',
   WebsocketStatusChanged = 'websocket.statusChanged',
@@ -30,4 +31,5 @@ export enum EventName {
   NavigatorOffline = 'navigator.offline',
   NavigatorVisible = 'navigator.visible',
   NavigatorHidden = 'navigator.hidden',
+  // lint-locales-enable
 }

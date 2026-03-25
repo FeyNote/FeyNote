@@ -292,6 +292,7 @@ export const Workspace: React.FC = () => {
   };
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.newDocument',
     [
       APP_KEYBOARD_SHORTCUTS.newDocument.native,
@@ -303,6 +304,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.newTab',
     [
       APP_KEYBOARD_SHORTCUTS.newTab.native,
@@ -315,6 +317,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.closeTab',
     [
       APP_KEYBOARD_SHORTCUTS.closeTab.native,
@@ -330,6 +333,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.toggleLeftMenu',
     APP_KEYBOARD_SHORTCUTS.toggleLeftMenu,
     () => {
@@ -338,6 +342,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.toggleRightMenu',
     APP_KEYBOARD_SHORTCUTS.toggleRightMenu,
     () => {
@@ -346,6 +351,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.print',
     APP_KEYBOARD_SHORTCUTS.print,
     () => {
@@ -362,6 +368,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.splitRight',
     [
       APP_KEYBOARD_SHORTCUTS.splitRight.native,
@@ -379,6 +386,7 @@ export const Workspace: React.FC = () => {
   );
 
   useRegisterKeyboardShortcutHandler(
+    // lint-locales-disable-next-line
     'app.splitDown',
     [
       APP_KEYBOARD_SHORTCUTS.splitDown.native,

@@ -59,6 +59,7 @@ export enum WorkspaceArtifactSharingMode {
   Prompt = 'prompt',
 }
 
+// lint-locales-disable
 export enum PreferenceNames {
   PanesRememberOpenState = 'panes.rememberOpenState',
   LeftPaneStartOpen = 'leftPane.startOpen',
@@ -90,6 +91,7 @@ export enum PreferenceNames {
 
   LiveExportStoragePath = 'liveExport.storagePath',
 }
+// lint-locales-enable
 
 export interface AppPreferences {
   preferencesVersion: number;
