@@ -70,6 +70,7 @@
     "@tiptap/extension-unique-id": "^3.20.4",
     "@tiptap/extensions": "^3.20.4",
     "@tiptap/html": "^3.20.4",
+    "@tiptap/markdown": "^3.20.4",
     "@tiptap/react": "3.20.4",
     "@tiptap/suggestion": "3.20.4",
     "@trpc/client": "^11.15.0",
