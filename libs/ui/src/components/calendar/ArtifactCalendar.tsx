@@ -21,9 +21,9 @@ import { ymdToDatestamp } from './ymdToDatestamp';
 import { CalendarConfig } from './CalendarConfig';
 import { getYMDFromSpecifier } from './getYMDFromSpecifier';
 import { useTranslation } from 'react-i18next';
-import { IonItem } from '@ionic/react';
 import { ArtifactCalendarStyles } from './ArtifactCalendarStyles';
-import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
+import { ArtifactTitleField } from '../editor/ArtifactTitleField';
+import { ArtifactTitleContainer } from '../editor/ArtifactTitleContainer';
 import styled from 'styled-components';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import { useEdgesForArtifactId } from '../../utils/localDb/edges/useEdgesForArtifactId';
@@ -131,18 +131,18 @@ export const ArtifactCalendar: React.FC<Props> = memo((props) => {
   if (!configMap) return;
 
   const titleInput = (
-    <IonItem lines="none" className="artifactTitle">
-      <ArtifactTitleInput
+    <ArtifactTitleContainer>
+      <ArtifactTitleField
         disabled={!props.editable}
         placeholder={t('artifactRenderer.title.placeholder')}
         value={title}
-        onIonInput={(event) => {
-          setMetaProp('title', event.target.value?.toString() || '');
-          props.onTitleChange?.(event.target.value?.toString() || '');
+        onChange={(event) => {
+          setMetaProp('title', event.target.value);
+          props.onTitleChange?.(event.target.value);
         }}
         type="text"
-      ></ArtifactTitleInput>
-    </IonItem>
+      />
+    </ArtifactTitleContainer>
   );
 
   return (

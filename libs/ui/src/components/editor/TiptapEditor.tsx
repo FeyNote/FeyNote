@@ -111,6 +111,8 @@ export const TiptapEditor = (props: Props) => {
 
   return (
     <>
+      {props.prepend}
+
       {props.showMenus && props.artifactId && props.handleFileUpload && (
         <TiptapEditorControlMenu
           artifactId={props.artifactId}
@@ -123,8 +125,6 @@ export const TiptapEditor = (props: Props) => {
 
       <ArtifactEditorContainer>
         <ArtifactEditorStyles data-theme={props.theme}>
-          {props.prepend}
-
           <EditorContent editor={editor}></EditorContent>
           {editor && props.editable && (
             <BubbleMenu
