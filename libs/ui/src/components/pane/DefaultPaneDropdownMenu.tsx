@@ -4,10 +4,7 @@ import {
   useGlobalPaneContext,
 } from '../../context/globalPane/GlobalPaneContext';
 import { DropdownMenu } from '@radix-ui/themes';
-import {
-  APP_KEYBOARD_SHORTCUTS,
-  getDesktopBrowserShortcutDisplayString,
-} from '../../utils/keyboardShortcuts';
+import { useKeyboardShortcutDisplay } from '../../utils/keyboardShortcuts';
 
 interface Props {
   paneId: string;
@@ -18,6 +15,10 @@ export const DefaultPaneDropdownMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { getPaneById, navigate } = useGlobalPaneContext();
   const pane = getPaneById(props.paneId);
+  const splitRightKeyboardShortcutDisplay =
+    useKeyboardShortcutDisplay('splitRight');
+  const splitDownKeyboardShortcutDisplay =
+    useKeyboardShortcutDisplay('splitDown');
 
   return (
     <DropdownMenu.Root>
@@ -33,10 +34,7 @@ export const DefaultPaneDropdownMenu: React.FC<Props> = (props) => {
                 PaneTransition.HSplit,
               )
             }
-            shortcut={getDesktopBrowserShortcutDisplayString(
-              APP_KEYBOARD_SHORTCUTS.splitRight.native,
-              APP_KEYBOARD_SHORTCUTS.splitRight.browser,
-            )}
+            shortcut={splitRightKeyboardShortcutDisplay || undefined}
           >
             {t('contextMenu.splitRight')}
           </DropdownMenu.Item>
@@ -49,10 +47,7 @@ export const DefaultPaneDropdownMenu: React.FC<Props> = (props) => {
                 PaneTransition.VSplit,
               )
             }
-            shortcut={getDesktopBrowserShortcutDisplayString(
-              APP_KEYBOARD_SHORTCUTS.splitDown.native,
-              APP_KEYBOARD_SHORTCUTS.splitDown.browser,
-            )}
+            shortcut={splitDownKeyboardShortcutDisplay || undefined}
           >
             {t('contextMenu.splitDown')}
           </DropdownMenu.Item>

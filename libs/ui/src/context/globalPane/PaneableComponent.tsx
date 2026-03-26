@@ -16,6 +16,7 @@ import { AllArtifacts } from '../../components/artifact/allArtifacts/AllArtifact
 import { ArtifactTreeFullpage } from '../../components/artifact/ArtifactTreeFullpage';
 import { ImportFileUpload } from '../../components/importExport/ImportFileUpload';
 import { Inbox } from '../../components/inbox/Inbox';
+import { KeyboardShortcuts } from '../../components/settings/KeyboardShortcuts';
 
 export enum PaneableComponent {
   Dashboard = 'Dashboard',
@@ -35,6 +36,7 @@ export enum PaneableComponent {
   ImportFileUpload = 'ImportFileUpload',
   PersistentSearch = 'PersistentSearch',
   Inbox = 'Inbox',
+  KeyboardShortcuts = 'KeyboardShortcuts',
   /**
    * This is included to support no-pane components
    */
@@ -63,6 +65,9 @@ export type PaneableComponentProps = {
   [PaneableComponent.Export]: ComponentProps<typeof Export>;
   [PaneableComponent.PersistentSearch]: ComponentProps<typeof PersistentSearch>;
   [PaneableComponent.Inbox]: ComponentProps<typeof Inbox>;
+  [PaneableComponent.KeyboardShortcuts]: ComponentProps<
+    typeof KeyboardShortcuts
+  >;
   [PaneableComponent.NonPanedComponent]: ComponentProps<typeof emptyFunc>;
 };
 
@@ -87,6 +92,7 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.ImportFileUpload]: ImportFileUpload,
     [PaneableComponent.PersistentSearch]: PersistentSearch,
     [PaneableComponent.Inbox]: Inbox,
+    [PaneableComponent.KeyboardShortcuts]: KeyboardShortcuts,
     [PaneableComponent.NonPanedComponent]: emptyFunc,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
@@ -118,5 +124,6 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.ImportFileUpload]: 'importFileUpload.title',
   [PaneableComponent.PersistentSearch]: 'persistentSearch.title',
   [PaneableComponent.Inbox]: 'inbox.title',
+  [PaneableComponent.KeyboardShortcuts]: 'settings.keyboardShortcuts.title',
   [PaneableComponent.NonPanedComponent]: 'generic.error',
 } satisfies Record<PaneableComponent, string>;

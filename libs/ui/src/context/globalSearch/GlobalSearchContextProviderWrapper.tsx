@@ -26,8 +26,7 @@ import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { Box, DropdownMenu, Spinner, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../../components/AppIcons';
-import { useRegisterKeyboardShortcutHandler } from '../keyboardShortcut/useKeyboardShortcut';
-import { APP_KEYBOARD_SHORTCUTS } from '../../utils/keyboardShortcuts';
+import { useProvideKeyboardShortcutHandler } from '../../utils/keyboardShortcuts';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
@@ -200,11 +199,10 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
     setShow(true);
   };
 
-  useRegisterKeyboardShortcutHandler(
-    'globalSearch.trigger',
-    APP_KEYBOARD_SHORTCUTS.search,
-    trigger,
-  );
+  useProvideKeyboardShortcutHandler('search', () => {
+    trigger();
+    return true;
+  });
 
   const hide = () => {
     setShow(false);

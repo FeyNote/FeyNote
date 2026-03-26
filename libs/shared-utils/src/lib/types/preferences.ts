@@ -73,6 +73,7 @@ export enum PreferenceNames {
   Theme = 'global.theme',
   CollaborationColor = 'global.collaborationColor',
   PreferencesSync = 'global.preferencesSync',
+  KeyboardShortcutOverrides = 'global.keyboardShortcutOverrides',
 
   GraphShowOrphans = 'graph.showOrphans',
   GraphLockNodeOnDrag = 'graph.lockNodeOnDrag',
@@ -90,6 +91,13 @@ export enum PreferenceNames {
 
   LiveExportStoragePath = 'liveExport.storagePath',
 }
+
+export type KeyboardShortcutOverride = {
+  mod?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+  key: string;
+};
 
 export interface AppPreferences {
   preferencesVersion: number;
@@ -122,4 +130,8 @@ export interface AppPreferences {
   [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: boolean;
   [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: boolean;
   [PreferenceNames.LiveExportStoragePath]: string | null;
+  [PreferenceNames.KeyboardShortcutOverrides]: Record<
+    string,
+    KeyboardShortcutOverride
+  >;
 }

@@ -3,11 +3,9 @@ import type { ShortcutDefinition } from '../../utils/keyboardShortcuts';
 
 export interface KeyboardShortcutContextData {
   registerShortcut: (
-    id: string,
     shortcut: ShortcutDefinition,
-    handler: () => void,
-  ) => void;
-  unregisterShortcut: (id: string) => void;
+    handler: () => boolean,
+  ) => () => void;
 }
 
 export const KeyboardShortcutContext =

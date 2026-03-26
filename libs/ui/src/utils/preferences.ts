@@ -54,6 +54,7 @@ export class PreferencesService {
     [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: false,
     [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: false,
     [PreferenceNames.LiveExportStoragePath]: null,
+    [PreferenceNames.KeyboardShortcutOverrides]: {},
   };
   initialLoading: Promise<void> | undefined;
 

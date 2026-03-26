@@ -5,9 +5,11 @@ description: All keyboard shortcuts available in FeyNote
 
 FeyNote supports keyboard shortcuts for common actions. On macOS, "Mod" refers to the Command key. On Windows and Linux, "Mod" refers to the Ctrl key.
 
+You can customize app-level keyboard shortcuts in **Settings > Keyboard Shortcuts**.
+
 ## App-Level Shortcuts
 
-These shortcuts work anywhere in the application. Some shortcuts differ between the desktop app and the browser because certain key combinations are reserved by the browser.
+These shortcuts work anywhere in the application and can be customized in Settings. Some shortcuts differ between the desktop app and the browser because certain key combinations are reserved by the browser.
 
 | Action               | Desktop App   | Browser             |
 | -------------------- | ------------- | ------------------- |

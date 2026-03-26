@@ -33,9 +33,8 @@ import {
   createLinkDialogDefaultOnSubmit,
 } from './tiptap/extensions/artifactBubbleMenu/CreateLinkDialog';
 import {
-  APP_KEYBOARD_SHORTCUTS,
-  getDesktopBrowserShortcutDisplayString,
-  getShortcutDisplayString,
+  useKeyboardShortcutDisplay,
+  useProvideKeyboardShortcutHandler,
 } from '../../utils/keyboardShortcuts';
 import { AutofillDialog } from './autofill/AutofillDialog';
 import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
@@ -65,8 +64,11 @@ interface Props {
 
 export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { navigate } = usePaneContext();
+  const { navigate, isPaneFocused } = usePaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
+  const newDocumentKeyboardShortcutDisplay =
+    useKeyboardShortcutDisplay('newDocument');
+  const printKeyboardShortcutDisplay = useKeyboardShortcutDisplay('print');
   const [newArtifactAsChild, setNewArtifactAsChild] = useState(false);
   const [newArtifactDialogOpen, setNewArtifactDialogOpen] = useState(false);
   const [insertLinkDialogOpen, setInsertLinkDialogOpen] = useState(false);
@@ -209,6 +211,15 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
     },
   });
 
+  const openAutofillDialog = (
+    mode: 'text' | 'url',
+    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table' | 'richText',
+  ) => {
+    setAutofillMode(mode);
+    setAutofillFormat(format);
+    setAutofillDialogOpen(true);
+  };
+
   const onDuplicateArtifactClicked = async () => {
     const id = await duplicateArtifact(props.yDoc).catch((e) => {
       handleTRPCErrors(e);
@@ -221,8 +232,94 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
     navigate(PaneableComponent.Artifact, { id: id }, PaneTransition.NewTab);
   };
 
+  const { displayString: newDocumentWithinKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('newDocumentWithin', () => {
+      if (!isPaneFocused) return false;
+      setNewArtifactAsChild(true);
+      setNewArtifactDialogOpen(true);
+      return true;
+    });
+
+  const { displayString: duplicateKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('duplicate', () => {
+      if (!isPaneFocused) return false;
+      onDuplicateArtifactClicked();
+      return true;
+    });
+
+  const { displayString: insertHorizontalRuleKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('insertHorizontalRule', () => {
+      if (!isPaneFocused) return false;
+      globalTiptapCommandHelpers.insert.hr.command({
+        editor: props.editor,
+        range: props.editor.state.selection,
+      });
+      return true;
+    });
+
+  useProvideKeyboardShortcutHandler('insertTable', () => {
+    if (!isPaneFocused) return false;
+    globalTiptapCommandHelpers.insert.table.command({
+      editor: props.editor,
+      range: props.editor.state.selection,
+    });
+    return true;
+  });
+
+  useProvideKeyboardShortcutHandler('insertMonsterStatblock', () => {
+    if (!isPaneFocused) return false;
+    globalTiptapCommandHelpers.insert.monster.command({
+      editor: props.editor,
+      range: props.editor.state.selection,
+    });
+    return true;
+  });
+
+  useProvideKeyboardShortcutHandler('insertWideMonsterStatblock', () => {
+    if (!isPaneFocused) return false;
+    globalTiptapCommandHelpers.insert.wideMonster.command({
+      editor: props.editor,
+      range: props.editor.state.selection,
+    });
+    return true;
+  });
+
+  useProvideKeyboardShortcutHandler('insertSpellSheet', () => {
+    if (!isPaneFocused) return false;
+    globalTiptapCommandHelpers.insert.spell.command({
+      editor: props.editor,
+      range: props.editor.state.selection,
+    });
+    return true;
+  });
+
+  const { displayString: insertNoteKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('insertNote', () => {
+      if (!isPaneFocused) return false;
+      globalTiptapCommandHelpers.insert.note.command({
+        editor: props.editor,
+        range: props.editor.state.selection,
+      });
+      return true;
+    });
+
+  const { displayString: insertAutoFormatTextKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('insertAutoFormatText', () => {
+      if (!isPaneFocused) return false;
+      openAutofillDialog('text', 'richText');
+      return true;
+    });
+
+  const { displayString: insertFileKeyboardShortcutDisplay } =
+    useProvideKeyboardShortcutHandler('insertFile', () => {
+      if (!isPaneFocused) return false;
+      fileInputRef.current?.click();
+      return true;
+    });
+
   const renderCommandEntryItem = (
     commandEntry: GlobalTiptapCommandHelperEntry,
+    shortcut?: string,
   ) => (
     <DropdownMenu.Item
       onClick={() => {
@@ -234,7 +331,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         });
       }}
       disabled={!commandEntry.enabled(props.editor)}
-      shortcut={commandEntry.shortcutHint}
+      shortcut={shortcut}
     >
       {commandEntry.icon && <commandEntry.icon />}
       <span style={commandEntry.style}>{t(commandEntry.title)}</span>
@@ -260,10 +357,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
             setNewArtifactDialogOpen(true);
             setNewArtifactAsChild(false);
           }}
-          shortcut={getDesktopBrowserShortcutDisplayString(
-            APP_KEYBOARD_SHORTCUTS.newDocument.native,
-            APP_KEYBOARD_SHORTCUTS.newDocument.browser,
-          )}
+          shortcut={newDocumentKeyboardShortcutDisplay || undefined}
         >
           <IoAdd />
           {t('tiptapControlMenu.file.new')}
@@ -273,17 +367,21 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
             setNewArtifactDialogOpen(true);
             setNewArtifactAsChild(true);
           }}
+          shortcut={newDocumentWithinKeyboardShortcutDisplay || undefined}
         >
           <IoAdd />
           {t('artifactTree.newArtifactWithin')}
         </DropdownMenu.Item>
-        <DropdownMenu.Item onClick={() => onDuplicateArtifactClicked()}>
+        <DropdownMenu.Item
+          onClick={() => onDuplicateArtifactClicked()}
+          shortcut={duplicateKeyboardShortcutDisplay || undefined}
+        >
           <RiFileCopyLine />
           {t('tiptapControlMenu.file.duplicate')}
         </DropdownMenu.Item>
         <DropdownMenu.Item
           onClick={() => openArtifactPrint(props.artifactId)}
-          shortcut={getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.print)}
+          shortcut={printKeyboardShortcutDisplay || undefined}
         >
           <RiPrinterLine />
           {t('tiptapControlMenu.file.print')}
@@ -310,15 +408,6 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   );
-
-  const openAutofillDialog = (
-    mode: 'text' | 'url',
-    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table' | 'richText',
-  ) => {
-    setAutofillMode(mode);
-    setAutofillFormat(format);
-    setAutofillDialogOpen(true);
-  };
 
   const handleAutofillInsert = (content: JSONContent[]) => {
     const range = props.editor.state.selection;
@@ -377,7 +466,10 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
         </Button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Content>
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.hr)}
+        {renderCommandEntryItem(
+          globalTiptapCommandHelpers.insert.hr,
+          insertHorizontalRuleKeyboardShortcutDisplay || undefined,
+        )}
         {renderInsertSubMenu(globalTiptapCommandHelpers.insert.table, 'table')}
         {renderInsertSubMenu(
           globalTiptapCommandHelpers.insert.monster,
@@ -391,19 +483,26 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
           globalTiptapCommandHelpers.insert.spell,
           'spellsheet',
         )}
-        {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
+        {renderCommandEntryItem(
+          globalTiptapCommandHelpers.insert.note,
+          insertNoteKeyboardShortcutDisplay || undefined,
+        )}
         <DropdownMenu.Item
           onClick={() => openAutofillDialog('text', 'richText')}
+          shortcut={insertAutoFormatTextKeyboardShortcutDisplay || undefined}
         >
           <TfiText />
           {t('tiptapControlMenu.insert.autoFormatText')}
         </DropdownMenu.Item>
-        {renderCommandEntryItem({
-          ...globalTiptapCommandHelpers.insert.file,
-          command: () => {
-            fileInputRef.current?.click();
+        {renderCommandEntryItem(
+          {
+            ...globalTiptapCommandHelpers.insert.file,
+            command: () => {
+              fileInputRef.current?.click();
+            },
           },
-        })}
+          insertFileKeyboardShortcutDisplay || undefined,
+        )}
         {renderCommandEntryItem({
           ...globalTiptapCommandHelpers.insert.link,
           command: () => {
