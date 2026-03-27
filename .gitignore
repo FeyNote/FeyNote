@@ -57,3 +57,4 @@ vitest.config.*.timestamp*
 .github/instructions/nx.instructions.md
 
 .claude/worktrees
+.claude/settings.local.json
