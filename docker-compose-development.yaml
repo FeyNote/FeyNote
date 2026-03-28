@@ -40,6 +40,7 @@ services:
   frontend:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -52,6 +53,7 @@ services:
   www:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -64,6 +66,7 @@ services:
   docs:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
@@ -74,6 +77,7 @@ services:
   hocuspocus:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     ports:
       - '9001:9229'
     volumes:
@@ -96,6 +100,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
+    user: '${UID:-1000}:${GID:-1000}'
     ports:
       - '9000:9229'
     volumes:
@@ -116,6 +121,7 @@ services:
   queue-worker:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     ports:
       - '9002:9229'
     volumes:
@@ -136,6 +142,7 @@ services:
   websocket:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     ports:
       - '9003:9229'
     volumes:
@@ -156,6 +163,7 @@ services:
   nxgraph:
     image: feynote-dev
     pull_policy: never
+    user: '${UID:-1000}:${GID:-1000}'
     ports:
       - '4211:4211'
     environment:
