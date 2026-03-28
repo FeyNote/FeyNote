@@ -3,8 +3,8 @@ import { memo, useEffect } from 'react';
 import type { FileDTO } from '@feynote/global-types';
 import { ARTIFACT_META_KEY, PreferenceNames } from '@feynote/shared-utils';
 import { useTranslation } from 'react-i18next';
-import { IonItem } from '@ionic/react';
-import { ArtifactTitleInput } from '../editor/ArtifactTitleInput';
+import { ArtifactTitleField } from '../editor/ArtifactTitleField';
+import { ArtifactTitleContainer } from '../editor/ArtifactTitleContainer';
 import { ArtifactDrawStyles } from './ArtifactDrawStyles';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { useSessionContext } from '../../context/session/SessionContext';
@@ -184,18 +184,18 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
   };
 
   const titleInput = (
-    <IonItem lines="none" className="artifactTitle">
-      <ArtifactTitleInput
+    <ArtifactTitleContainer>
+      <ArtifactTitleField
         disabled={!props.editable}
         placeholder={t('artifactRenderer.title.placeholder')}
         value={title}
-        onIonInput={(event) => {
-          setMetaProp('title', event.target.value?.toString() || '');
-          props.onTitleChange?.(event.target.value?.toString() || '');
+        onChange={(event) => {
+          setMetaProp('title', event.target.value);
+          props.onTitleChange?.(event.target.value);
         }}
         type="text"
-      ></ArtifactTitleInput>
-    </IonItem>
+      />
+    </ArtifactTitleContainer>
   );
 
   const onMount = (editor: Editor) => {

@@ -9,14 +9,6 @@ export const ArtifactDrawStyles = styled.div`
   --ion-font-family: var(--sheet-font-family);
   color: var(--sheet-text-color);
 
-  .artifactTitle {
-    --background: transparent;
-    --color: var(--sheet-h1-color);
-    --ion-font-family: var(--sheet-h1-font-family);
-    font-size: 2.1rem;
-    padding-top: 10px;
-  }
-
   .tl-grid {
     z-index: 400;
   }
