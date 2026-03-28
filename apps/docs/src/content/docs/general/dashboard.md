@@ -3,7 +3,7 @@ title: Dashboard
 description: Your home screen in FeyNote, with quick access to recent documents, the document graph, AI threads, and shared content.
 ---
 
-The dashboard is the first thing you see when you open FeyNote for the first time. It gives you a quick overview of your workspace through a set of cards, each highlighting a different slice of your content. You can get to the dashboard at any time by clicking **Dashboard** in the left sidebar.
+The dashboard is the first thing you see when you open FeyNote for the first time. It gives you a quick overview of your collection through a set of cards, each highlighting a different slice of your content. You can get to the dashboard at any time by clicking **Dashboard** in the left sidebar. If you have a [workspace](/docs/general/workspaces) active, the dashboard shows content from that workspace only. Switch to **Everything** in the workspace picker to see content across all workspaces.
 
 ## Recent Documents
 

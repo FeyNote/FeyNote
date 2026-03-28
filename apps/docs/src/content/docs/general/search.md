@@ -7,6 +7,8 @@ Search lets you quickly find documents and text across your entire collection. I
 
 You can open search with [`Mod+K`](/docs/general/keyboard-shortcuts) or by clicking the **Search** button in the left sidebar.
 
+By default, search is scoped to your active [workspace](/docs/general/workspaces). If you'd like to search across all workspaces at once, you can change this in [settings](/docs/settings/general#workspace-behavior).
+
 ## Using Search
 
 When you open search, a dialog appears with a text field. Start typing and results will appear as you go. Search matches against both document titles and text content, so a query like "goblin" will surface any document with "goblin" in its title as well as any document that mentions "goblin" in its body text. Any mildly mistyped result, such as gooblin will also appear.

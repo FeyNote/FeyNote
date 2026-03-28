@@ -11,6 +11,8 @@ import { useAcceptedIncomingSharedWorkspaceIds } from '../../utils/workspace/use
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { trpc } from '../../utils/trpc';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
+import * as Sentry from '@sentry/react';
 
 export const WorkspaceSharedInfoModal: React.FC<{
   workspaceId: string;
@@ -23,6 +25,12 @@ export const WorkspaceSharedInfoModal: React.FC<{
   const { getKnownUserById } = useKnownUsers();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [confirmingLeave, setConfirmingLeave] = useState(false);
+  const [removingFromDocuments, setRemovingFromDocuments] = useState(false);
+  const [removeDocsProgress, setRemoveDocsProgress] = useState<{
+    total: number;
+    success: number;
+    failed: number;
+  } | null>(null);
 
   const workspaceConnection = useCollaborationConnection(
     `workspace:${props.workspaceId}`,
@@ -34,6 +42,10 @@ export const WorkspaceSharedInfoModal: React.FC<{
   );
   const { acceptedIncomingSharedWorkspaceIdsYKV } =
     useAcceptedIncomingSharedWorkspaceIds(userTreeConnection.yjsDoc);
+
+  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
+    props.workspaceId,
+  );
 
   const accessLevel = getWorkspaceAccessLevel(
     workspaceConnection.yjsDoc,
@@ -48,6 +60,7 @@ export const WorkspaceSharedInfoModal: React.FC<{
         workspaceId: props.workspaceId,
       });
       acceptedIncomingSharedWorkspaceIdsYKV.delete(props.workspaceId);
+
       setConfirmingLeave(false);
       close();
       props.onLeft?.();
@@ -56,9 +69,69 @@ export const WorkspaceSharedInfoModal: React.FC<{
     }
   };
 
+  const handleLeaveAndRemoveFromDocuments = async () => {
+    try {
+      await trpc.workspace.removeSelfAsCollaborator.mutate({
+        workspaceId: props.workspaceId,
+      });
+      acceptedIncomingSharedWorkspaceIdsYKV.delete(props.workspaceId);
+    } catch (e) {
+      handleTRPCErrors(e);
+      return;
+    }
+
+    setConfirmingLeave(false);
+    setRemovingFromDocuments(true);
+    setRemoveDocsProgress({ total: 0, success: 0, failed: 0 });
+
+    const nonOwnedArtifacts = (artifactSnapshotsForWorkspace ?? []).filter(
+      (snapshot) => snapshot.meta.userId !== session.userId,
+    );
+
+    let success = 0;
+    let failed = 0;
+
+    for (const snapshot of nonOwnedArtifacts) {
+      try {
+        await trpc.artifact.removeSelfAsCollaborator.mutate({
+          artifactId: snapshot.id,
+        });
+        success++;
+      } catch (e) {
+        failed++;
+        Sentry.captureException(e);
+      }
+
+      setRemoveDocsProgress({
+        total: success + failed,
+        success,
+        failed,
+      });
+    }
+
+    setRemovingFromDocuments(false);
+  };
+
   const ownerName = meta.userId
     ? getKnownUserById(meta.userId)?.name
     : undefined;
+
+  const getRemoveDocsDescription = () => {
+    if (removingFromDocuments) {
+      return t('workspaceInfo.leave.removeDocuments.progress', {
+        count: removeDocsProgress?.total ?? 0,
+      });
+    }
+    if (removeDocsProgress?.failed) {
+      return t('workspaceInfo.leave.removeDocuments.doneWithErrors', {
+        successCount: removeDocsProgress.success,
+        failedCount: removeDocsProgress.failed,
+      });
+    }
+    return t('workspaceInfo.leave.removeDocuments.done', {
+      count: removeDocsProgress?.success ?? 0,
+    });
+  };
 
   const accessLevelKey =
     accessLevel === 'readonly'
@@ -114,10 +187,43 @@ export const WorkspaceSharedInfoModal: React.FC<{
             },
           },
           {
-            title: t('generic.confirm'),
+            title: t('workspaceInfo.leave.keepDocuments'),
             props: {
               color: 'red',
               onClick: handleLeave,
+            },
+          },
+          {
+            title: t('workspaceInfo.leave.removeDocuments'),
+            props: {
+              color: 'red',
+              onClick: handleLeaveAndRemoveFromDocuments,
+            },
+          },
+        ]}
+      />
+
+      <ActionDialog
+        open={removeDocsProgress !== null}
+        onOpenChange={(open) => {
+          if (!open && !removingFromDocuments) {
+            setRemoveDocsProgress(null);
+            close();
+            props.onLeft?.();
+          }
+        }}
+        title={t('workspaceInfo.leave.removeDocuments.title')}
+        description={getRemoveDocsDescription()}
+        actionButtons={[
+          {
+            title: t('generic.close'),
+            props: {
+              disabled: removingFromDocuments,
+              onClick: () => {
+                setRemoveDocsProgress(null);
+                close();
+                props.onLeft?.();
+              },
             },
           },
         ]}
