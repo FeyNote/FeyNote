@@ -88,6 +88,8 @@ export enum PreferenceNames {
   WorkspaceArtifactSharingMode = 'workspace.artifactSharingMode',
   ReferenceSearchAcrossAllWorkspaces = 'workspace.referenceSearchAcrossAll',
   GlobalSearchAcrossAllWorkspaces = 'workspace.globalSearchAcrossAll',
+
+  LiveExportStoragePath = 'liveExport.storagePath',
 }
 // lint-locales-enable
 
@@ -121,4 +123,5 @@ export interface AppPreferences {
   [PreferenceNames.WorkspaceArtifactSharingMode]: WorkspaceArtifactSharingMode;
   [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: boolean;
   [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: boolean;
+  [PreferenceNames.LiveExportStoragePath]: string | null;
 }

@@ -53,6 +53,7 @@ export class PreferencesService {
       WorkspaceArtifactSharingMode.Prompt,
     [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: false,
     [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: false,
+    [PreferenceNames.LiveExportStoragePath]: null,
   };
   initialLoading: Promise<void> | undefined;
 
@@ -124,6 +125,7 @@ export class PreferencesService {
     delete mutatedPreferences[PreferenceNames.RightPaneStartOpen];
 
     delete mutatedPreferences[PreferenceNames.LastActiveWorkspaceId];
+    delete mutatedPreferences[PreferenceNames.LiveExportStoragePath];
 
     return mutatedPreferences;
   }

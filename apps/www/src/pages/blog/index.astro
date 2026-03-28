@@ -95,7 +95,7 @@ const sortedPosts = posts.sort((a, b) =>
     <ul class="posts-container">
       {sortedPosts.map(post => (
         <li class="post">
-          <a href={`/blog/${post.slug}`}>
+          <a href={`/blog/${post.id}`}>
             <Picture
               src={post.data.featuredImageUrl}
               alt={`Featured image for ${post.data.title}`}

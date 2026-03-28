@@ -8,6 +8,7 @@ import {
   RiFontFamily,
   RiPrinterLine,
   RiText,
+  TfiText,
   LuHeading,
   LuList,
   IoAdd,
@@ -72,7 +73,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
   const [autofillDialogOpen, setAutofillDialogOpen] = useState(false);
   const [autofillMode, setAutofillMode] = useState<'text' | 'url'>('text');
   const [autofillFormat, setAutofillFormat] = useState<
-    'statblock' | 'widestatblock' | 'spellsheet' | 'table'
+    'statblock' | 'widestatblock' | 'spellsheet' | 'table' | 'richText'
   >('statblock');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -312,7 +313,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
 
   const openAutofillDialog = (
     mode: 'text' | 'url',
-    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table',
+    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table' | 'richText',
   ) => {
     setAutofillMode(mode);
     setAutofillFormat(format);
@@ -331,7 +332,7 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
 
   const renderInsertSubMenu = (
     commandEntry: GlobalTiptapCommandHelperEntry,
-    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table',
+    format: 'statblock' | 'widestatblock' | 'spellsheet' | 'table' | 'richText',
   ) => (
     <DropdownMenu.Sub>
       <DropdownMenu.SubTrigger disabled={!commandEntry.enabled(props.editor)}>
@@ -391,6 +392,12 @@ export const TiptapEditorControlMenu: React.FC<Props> = (props) => {
           'spellsheet',
         )}
         {renderCommandEntryItem(globalTiptapCommandHelpers.insert.note)}
+        <DropdownMenu.Item
+          onClick={() => openAutofillDialog('text', 'richText')}
+        >
+          <TfiText />
+          {t('tiptapControlMenu.insert.autoFormatText')}
+        </DropdownMenu.Item>
         {renderCommandEntryItem({
           ...globalTiptapCommandHelpers.insert.file,
           command: () => {

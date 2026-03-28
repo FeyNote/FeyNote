@@ -51,6 +51,7 @@ export default defineConfig({
           label: 'General',
           items: [
             'general/dashboard',
+            'general/workspaces',
             'general/all-documents',
             'general/search',
             'general/keyboard-shortcuts',
@@ -80,6 +81,9 @@ export default defineConfig({
     }),
     mdx(),
   ],
+  image: {
+    domains: ['static.feynote.com'],
+  },
   vite: {
     server: {
       // Currently hardcoded since allowedHosts: true is broken (GH issue here: https://github.com/withastro/astro/issues/13060)

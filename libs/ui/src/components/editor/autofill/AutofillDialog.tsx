@@ -14,7 +14,12 @@ import { AutofillPreviewDialog } from './AutofillPreviewDialog';
 import { trpc } from '../../../utils/trpc';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 
-type AutofillFormat = 'statblock' | 'widestatblock' | 'spellsheet' | 'table';
+type AutofillFormat =
+  | 'statblock'
+  | 'widestatblock'
+  | 'spellsheet'
+  | 'table'
+  | 'richText';
 
 interface Props {
   open: boolean;
@@ -59,7 +64,7 @@ export const AutofillDialog: React.FC<Props> = (props) => {
 
       const result = await trpc.ai.autofillToTiptapJSON.mutate({
         source,
-        outputFormat: props.format,
+        mode: props.format,
         instructions: instructions.trim() || undefined,
       });
       setGeneratedContent(result);
