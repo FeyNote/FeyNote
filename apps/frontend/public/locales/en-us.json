@@ -737,6 +737,7 @@
   "globalSearch.moreHighlights": "{{count}} more results found in this document",
   "globalSearch.searchAllWorkspaces": "Search all workspaces",
   "globalSearch.openPersistentSearch": "Open persistent search",
+  "globalSearch.everythingPathTitle": "Everything",
 
   "inbox.title": "Inbox",
   "inbox.empty": "No shared items yet",
