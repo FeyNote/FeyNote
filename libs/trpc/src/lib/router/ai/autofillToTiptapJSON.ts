@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { generateObject } from 'ai';
+import { generateObject, generateText } from 'ai';
 import { generateJSON } from '@tiptap/html';
+import { Markdown, MarkdownManager } from '@tiptap/markdown';
 import { authenticatedProcedure } from '../../middleware/authenticatedProcedure';
 import {
   aiProvider,
@@ -17,6 +18,7 @@ import {
   getGenerateTableSchema,
   convertTableToTiptap,
   getTiptapServerExtensions,
+  addMissingBlockIds,
 } from '@feynote/shared-utils';
 import { globalServerConfig } from '@feynote/config';
 import type { JSONContent } from '@tiptap/core';
@@ -31,11 +33,12 @@ export const autofillToTiptapJSON = authenticatedProcedure
         }),
         z.object({ type: z.literal('url'), url: z.url() }),
       ]),
-      outputFormat: z.enum([
+      mode: z.enum([
         'statblock',
         'widestatblock',
         'spellsheet',
         'table',
+        'richText',
       ]),
       instructions: z.string().max(500).optional(),
     }),
@@ -48,7 +51,7 @@ export const autofillToTiptapJSON = authenticatedProcedure
 
     if (input.source.type === 'text') {
       content = input.source.text;
-      model = globalServerConfig.ai.model.chatLow;
+      model = globalServerConfig.ai.model.autoformat;
     } else {
       const res = await proxyGetRequest(input.source.url);
       content = convertHtmlToPlainText(res.data).slice(0, 50000);
@@ -59,12 +62,11 @@ export const autofillToTiptapJSON = authenticatedProcedure
       content += '\n\nAdditional instructions: ' + input.instructions;
     }
 
-    switch (input.outputFormat) {
+    switch (input.mode) {
       case 'statblock':
       case 'widestatblock': {
         const result = await generateObject({
           model: aiProvider(model),
-          maxOutputTokens: 16383,
           messages: [systemMessage.scrapeContent, { role: 'user', content }],
           schema: getGenerate5eMonsterSchema(),
         });
@@ -72,14 +74,13 @@ export const autofillToTiptapJSON = authenticatedProcedure
         return convert5eMonsterToTipTap(
           result.object,
           translateSync,
-          input.outputFormat === 'widestatblock',
+          input.mode === 'widestatblock',
         );
       }
 
       case 'spellsheet': {
         const result = await generateObject({
           model: aiProvider(model),
-          maxOutputTokens: 16383,
           messages: [systemMessage.scrapeContent, { role: 'user', content }],
           schema: getGenerate5eObjectSchema(),
         });
@@ -93,12 +94,25 @@ export const autofillToTiptapJSON = authenticatedProcedure
       case 'table': {
         const result = await generateObject({
           model: aiProvider(model),
-          maxOutputTokens: 16383,
           messages: [systemMessage.scrapeContent, { role: 'user', content }],
           schema: getGenerateTableSchema(),
         });
 
         return convertTableToTiptap(result.object);
+      }
+
+      case 'richText': {
+        const result = await generateText({
+          model: aiProvider(model),
+          messages: [systemMessage.autoFormatText, { role: 'user', content }],
+        });
+
+        const markdownManager = new MarkdownManager({
+          extensions: [...extensions, Markdown],
+        });
+        const tiptap = markdownManager.parse(result.text);
+        addMissingBlockIds(tiptap);
+        return tiptap['content'] ?? [];
       }
     }
   });

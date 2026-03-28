@@ -534,6 +534,7 @@
   "tiptapControlMenu.insert.blankStarter": "Blank Starter",
   "tiptapControlMenu.insert.autofillFromText": "Autofill from Text",
   "tiptapControlMenu.insert.autofillFromUrl": "Autofill from URL",
+  "tiptapControlMenu.insert.autoFormatText": "Autoformatted Text",
 
   "autofillDialog.text.title": "Autofill from Text",
   "autofillDialog.text.description": "Paste or type the content you want to convert.",
