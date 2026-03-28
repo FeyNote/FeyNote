@@ -1,10 +1,14 @@
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { useEffect, useState, type RefObject } from 'react';
 import type { CollaborationManagerConnection } from '../../../utils/collaboration/collaborationManager';
-import { IonCard, IonIcon, IonListHeader } from '@ionic/react';
-import { list } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { ArtifactTableOfContentsItem } from './ArtifactTableOfContentsItem';
+import { LuList } from '../../AppIcons';
+import {
+  SidemenuCard,
+  SidemenuCardHeader,
+  SidemenuCardHeaderLabel,
+} from '../../sidemenu/SidemenuComponents';
 
 interface Props {
   artifactId: string;
@@ -29,12 +33,13 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
   }
 
   return (
-    <IonCard>
-      <IonListHeader>
-        <IonIcon icon={list} size="small" />
-        &nbsp;&nbsp;
-        {t('artifactRenderer.tableOfContents')}
-      </IonListHeader>
+    <SidemenuCard>
+      <SidemenuCardHeader>
+        <LuList size={16} />
+        <SidemenuCardHeaderLabel>
+          {t('artifactRenderer.tableOfContents')}
+        </SidemenuCardHeaderLabel>
+      </SidemenuCardHeader>
       {toc.map((item) => (
         <ArtifactTableOfContentsItem
           key={item.id}
@@ -42,6 +47,6 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
           item={item}
         />
       ))}
-    </IonCard>
+    </SidemenuCard>
   );
 };

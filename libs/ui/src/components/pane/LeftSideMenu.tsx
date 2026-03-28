@@ -38,16 +38,15 @@ import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspace
 import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWorkspaceThreadIds';
 import { useInboxArtifactSnapshots } from '../../utils/artifactTree/useInboxArtifactSnapshots';
 import { useInboxWorkspaceSnapshots } from '../../utils/workspace/useInboxWorkspaceSnapshots';
+import {
+  SidemenuCard,
+  SidemenuCardHeader,
+  SidemenuCardHeaderLabel,
+  SidemenuCardItem,
+  SidemenuCardItemLabel,
+} from '../sidemenu/SidemenuComponents';
 
-const SidebarCard = styled.div`
-  background: var(--card-background);
-  border-radius: 4px;
-  margin: 8px 8px 0 8px;
-  box-shadow: var(--card-box-shadow);
-  overflow-y: auto;
-`;
-
-const TreeCard = styled(SidebarCard)`
+const TreeCard = styled(SidemenuCard)`
   display: grid;
   grid-template-rows: min-content auto;
   margin-bottom: 0;
@@ -70,21 +69,6 @@ const ConnectionStatusContainer = styled.div`
   margin-top: 8px;
 `;
 
-const MenuItem = styled.div`
-  display: flex;
-  align-items: center;
-  min-height: 34px;
-  font-size: 0.875rem;
-  padding: 0 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  color: var(--text-color);
-
-  &:hover {
-    background: var(--contrasting-element-background-hover);
-  }
-`;
-
 const MenuIcon = styled.span`
   display: inline-flex;
   align-items: center;
@@ -93,28 +77,6 @@ const MenuIcon = styled.span`
 `;
 
 const MenuLabel = styled.span`
-  margin-left: 8px;
-  flex: 1;
-`;
-
-const NowrapMenuLabel = styled(MenuLabel)`
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-`;
-
-const ListHeader = styled.div`
-  display: flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 16px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-bottom: 1px solid var(--gray-a4);
-  color: var(--text-color-dim);
-`;
-
-const ListHeaderLabel = styled.span`
   margin-left: 8px;
   flex: 1;
 `;
@@ -224,31 +186,32 @@ export const LeftSideMenu: React.FC = () => {
       $isTreeCardShowing={showTreeCard}
       $isThreadsShowing={showThreadsCard}
     >
-      <SidebarCard>
+      <SidemenuCard>
         <WorkspaceSelector />
-      </SidebarCard>
+      </SidemenuCard>
 
-      <SidebarCard>
+      <SidemenuCard>
         <SideMenuItemContextMenu
           component={PaneableComponent.PersistentSearch}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <MenuItem onClick={() => triggerGlobalSearch()}>
+          <SidemenuCardItem $isButton onClick={() => triggerGlobalSearch()}>
             <MenuIcon>
               <IoSearch />
             </MenuIcon>
             <MenuLabel>
               {t(currentWorkspaceId ? 'menu.search.workspace' : 'menu.search')}
             </MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Dashboard}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Dashboard, {
                 workspaceId: currentWorkspaceId,
@@ -265,14 +228,15 @@ export const LeftSideMenu: React.FC = () => {
                   : 'menu.dashboard',
               )}
             </MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.AllArtifacts}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -291,14 +255,15 @@ export const LeftSideMenu: React.FC = () => {
                   : 'menu.allArtifacts',
               )}
             </MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Graph}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Graph, {
                 workspaceId: currentWorkspaceId,
@@ -311,14 +276,15 @@ export const LeftSideMenu: React.FC = () => {
             <MenuLabel>
               {t(currentWorkspaceId ? 'menu.graph.workspace' : 'menu.graph')}
             </MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Inbox}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Inbox, {})
             }
@@ -332,14 +298,15 @@ export const LeftSideMenu: React.FC = () => {
                 {inboxCount}
               </Badge>
             )}
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.CreateNew}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -352,17 +319,17 @@ export const LeftSideMenu: React.FC = () => {
               <IoAdd />
             </MenuIcon>
             <MenuLabel>{t('menu.new')}</MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
-      </SidebarCard>
+      </SidemenuCard>
 
       {showTreeCard && (
         <TreeCard>
-          <ListHeader>
+          <SidemenuCardHeader>
             <LuFolderTree color="var(--text-color-dim)" />
-            <ListHeaderLabel>
+            <SidemenuCardHeaderLabel>
               {t(currentWorkspaceId ? 'menu.tree.workspace' : 'menu.tree')}
-            </ListHeaderLabel>
+            </SidemenuCardHeaderLabel>
             <InfoButton
               message={t('menu.tree.help')}
               docsLink="https://docs.feynote.com/documents/tree/#organizing-documents"
@@ -378,7 +345,7 @@ export const LeftSideMenu: React.FC = () => {
             >
               <IoExpand />
             </IconButton>
-          </ListHeader>
+          </SidemenuCardHeader>
           <ArtifactTree
             treeId={TREE_ID}
             registerAsGlobalTreeDragHandler={true}
@@ -391,12 +358,12 @@ export const LeftSideMenu: React.FC = () => {
       )}
 
       {showThreadsCard && (
-        <SidebarCard>
-          <ListHeader>
+        <SidemenuCard>
+          <SidemenuCardHeader>
             <IoChatbubbles color="var(--text-color-dim)" />
-            <ListHeaderLabel>
+            <SidemenuCardHeaderLabel>
               {t('menu.recentlyUpdatedThreads')}
-            </ListHeaderLabel>
+            </SidemenuCardHeaderLabel>
             <IconButton
               onClick={(event) =>
                 navigateWithKeyboardHandler(
@@ -408,7 +375,7 @@ export const LeftSideMenu: React.FC = () => {
             >
               <IoExpand />
             </IconButton>
-          </ListHeader>
+          </SidemenuCardHeader>
           {filteredThreads
             .slice(0, RECENT_ARTIFACTS_LIMIT)
             .map((recentlyUpdatedThread) => (
@@ -420,7 +387,8 @@ export const LeftSideMenu: React.FC = () => {
                 onDelete={load}
                 onTitleChange={() => load()}
               >
-                <MenuItem
+                <SidemenuCardItem
+                  $isButton
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
                       event,
@@ -429,10 +397,10 @@ export const LeftSideMenu: React.FC = () => {
                     )
                   }
                 >
-                  <NowrapMenuLabel>
+                  <SidemenuCardItemLabel>
                     {recentlyUpdatedThread.title || t('generic.untitled')}
-                  </NowrapMenuLabel>
-                </MenuItem>
+                  </SidemenuCardItemLabel>
+                </SidemenuCardItem>
               </AIThreadContextMenu>
             ))}
           {filteredThreads.length > RECENT_ARTIFACTS_LIMIT && (
@@ -452,16 +420,17 @@ export const LeftSideMenu: React.FC = () => {
               </Button>
             </Flex>
           )}
-        </SidebarCard>
+        </SidemenuCard>
       )}
 
-      <SidebarCard>
+      <SidemenuCard>
         <SideMenuItemContextMenu
           component={PaneableComponent.Contribute}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -474,14 +443,15 @@ export const LeftSideMenu: React.FC = () => {
               <FaHeart />
             </MenuIcon>
             <MenuLabel>{t('menu.contribute')}</MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Settings}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <MenuItem
+          <SidemenuCardItem
+            $isButton
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Settings, {})
             }
@@ -490,9 +460,9 @@ export const LeftSideMenu: React.FC = () => {
               <IoSettings />
             </MenuIcon>
             <MenuLabel>{t('menu.settings')}</MenuLabel>
-          </MenuItem>
+          </SidemenuCardItem>
         </SideMenuItemContextMenu>
-      </SidebarCard>
+      </SidemenuCard>
 
       {!showTreeCard && <div></div>}
 

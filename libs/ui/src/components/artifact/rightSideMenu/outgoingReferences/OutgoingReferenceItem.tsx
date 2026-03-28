@@ -1,14 +1,17 @@
 import { useRef } from 'react';
 import { usePaneContext } from '../../../../context/pane/PaneContext';
 import { PaneableComponent } from '../../../../context/globalPane/PaneableComponent';
-import { CompactIonItem } from '../../../CompactIonItem';
-import { NowrapIonLabel } from '../../../NowrapIonLabel';
 import { useArtifactPreviewTimer } from '../../../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
 import { ArtifactReferencePreview } from '../../../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
+import {
+  SidemenuCardItem,
+  SidemenuCardItemLabel,
+  SidemenuCardItemSublabel,
+} from '../../../sidemenu/SidemenuComponents';
 
 interface Props {
   edge: Edge;
@@ -17,20 +20,13 @@ interface Props {
 export const OutgoingReferenceItem: React.FC<Props> = (props) => {
   const { pane } = usePaneContext();
   const { t } = useTranslation();
-  const ref = useRef<HTMLIonItemElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const { previewInfo, onMouseOver, onMouseOut, close } =
     useArtifactPreviewTimer(props.edge.targetArtifactId);
 
-  const linkClicked = (
-    event: React.MouseEvent<
-      | HTMLAnchorElement
-      | HTMLDivElement
-      | HTMLIonItemElement
-      | HTMLIonLabelElement
-    >,
-  ) => {
+  const linkClicked = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -42,27 +38,27 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
   };
 
   const blockReferenceContent = (
-    <NowrapIonLabel>
+    <SidemenuCardItemLabel>
       {t('artifactRightSideMenu.outgoing.block', {
         text: props.edge.referenceText,
       })}
-      <p>
+      <SidemenuCardItemSublabel>
         {t('artifactRightSideMenu.outgoing.block.subtitle', {
           title: props.edge.targetArtifactTitle,
         })}
-      </p>
-    </NowrapIonLabel>
+      </SidemenuCardItemSublabel>
+    </SidemenuCardItemLabel>
   );
 
   const artifactReferenceContent = (
-    <NowrapIonLabel>
+    <SidemenuCardItemLabel>
       {t('artifactRightSideMenu.outgoing.artifact')}
-      <p>
+      <SidemenuCardItemSublabel>
         {t('artifactRightSideMenu.outgoing.artifact.subtitle', {
           title: props.edge.targetArtifactTitle,
         })}
-      </p>
-    </NowrapIonLabel>
+      </SidemenuCardItemSublabel>
+    </SidemenuCardItemLabel>
   );
 
   const content = props.edge.targetArtifactBlockId
@@ -75,14 +71,13 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
       currentArtifactId={props.edge.artifactId}
       edge={props.edge}
     >
-      <CompactIonItem
+      <SidemenuCardItem
         data-edge-targetArtifactId={props.edge.targetArtifactId}
-        lines="none"
         ref={ref}
+        $isButton
         onMouseOver={onMouseOver}
         onMouseOut={onMouseOut}
         onClick={linkClicked}
-        button
       >
         {content}
         {previewInfo && ref.current && (
@@ -100,7 +95,7 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
             previewTarget={ref.current}
           />
         )}
-      </CompactIonItem>
+      </SidemenuCardItem>
     </ArtifactRightSidemenuReferenceContextMenu>
   );
 };

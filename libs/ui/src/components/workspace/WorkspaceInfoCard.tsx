@@ -1,11 +1,15 @@
-import { IonCard, IonListHeader } from '@ionic/react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
-import { CompactIonItem } from '../CompactIonItem';
-import { NowrapIonLabel } from '../NowrapIonLabel';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { LuLayers } from '../AppIcons';
+import {
+  SidemenuCard,
+  SidemenuCardHeader,
+  SidemenuCardHeaderLabel,
+  SidemenuCardItem,
+  SidemenuCardItemLabel,
+} from '../sidemenu/SidemenuComponents';
 
 interface Props {
   workspaceIds: string[];
@@ -29,31 +33,34 @@ export const WorkspaceInfoCard: React.FC<Props> = ({ workspaceIds }) => {
   if (!workspaceSnapshots.length) return null;
 
   return (
-    <IonCard>
-      <IonListHeader>
+    <SidemenuCard>
+      <SidemenuCardHeader>
         <LuLayers size={16} />
-        &nbsp;&nbsp;
-        {t('rightSidemenu.workspaces')}
-      </IonListHeader>
+        <SidemenuCardHeaderLabel>
+          {t('rightSidemenu.workspaces')}
+        </SidemenuCardHeaderLabel>
+      </SidemenuCardHeader>
       {resolvedWorkspaces.length > 0 ? (
         resolvedWorkspaces.map((ws) => (
-          <CompactIonItem key={ws.id} lines="none">
+          <SidemenuCardItem key={ws.id}>
             <WorkspaceIconBubble
               icon={ws.meta.icon}
               color={ws.meta.color}
               size={20}
             />
             &nbsp;&nbsp;
-            <NowrapIonLabel>
+            <SidemenuCardItemLabel>
               {ws.meta.name || t('workspace.untitled')}
-            </NowrapIonLabel>
-          </CompactIonItem>
+            </SidemenuCardItemLabel>
+          </SidemenuCardItem>
         ))
       ) : (
-        <CompactIonItem lines="none">
-          <NowrapIonLabel>{t('rightSidemenu.workspaces.none')}</NowrapIonLabel>
-        </CompactIonItem>
+        <SidemenuCardItem>
+          <SidemenuCardItemLabel>
+            {t('rightSidemenu.workspaces.none')}
+          </SidemenuCardItemLabel>
+        </SidemenuCardItem>
       )}
-    </IonCard>
+    </SidemenuCard>
   );
 };
