@@ -31,6 +31,17 @@ import { applyUpdate, Doc as YDoc } from 'yjs';
 import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { usePreferencesContext } from '../preferences/PreferencesContext';
+import {
+  GlobalSearchResultsList,
+  SearchResult,
+} from '../../components/search/GlobalSearchResultsList';
+import { SEARCH_DELAY_MS } from '../../components/search/SEARCH_DELAY_MS';
+import { SEARCH_RESULT_LIMIT } from '../../components/search/SEARCH_RESULT_LIMIT';
+import {
+  SearchResultItemSubtitle,
+  SearchResultItemTitle,
+  SearchResultItemTitleRow,
+} from '../../components/search/SearchResultItem';
 
 const SearchContainer = styled.div<{ $isWideScreen: boolean }>`
   position: absolute;
@@ -101,15 +112,7 @@ const Title = styled.h2`
 const SearchResultsContainer = styled.div`
   flex: 1;
   min-height: 0;
-  max-height: 50vh;
   overflow-y: auto;
-`;
-
-const SearchResult = styled(IonItem)<{
-  $selected: boolean;
-}>`
-  ${(props) =>
-    props.$selected && `--background: var(--ion-background-color-step-100);`}
 `;
 
 const Backdrop = styled(IonBackdrop)`
@@ -117,36 +120,9 @@ const Backdrop = styled(IonBackdrop)`
   background: var(--ion-background-color, #aaaaaa);
 `;
 
-const ResultWithHighlightsWrapper = styled.p`
-  mark {
-    background: var(--ion-color-primary);
-    color: var(--ion-color-primary-contrast);
-  }
-`;
-
 interface Props {
   children: ReactNode;
 }
-
-/**
- * We limit search results so that performance isn't garbage
- */
-const SEARCH_RESULT_LIMIT = 25;
-
-/**
- * How often to query search results as the user types
- */
-const SEARCH_DELAY_MS = 20;
-
-/**
- * Maximum number of characters to display in the result preview
- */
-const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
-
-/**
- * Maximum number of highlights to display in the result preview
- */
-const MAX_DISPLAYED_HIGHLIGHT_COUNT = 4;
 
 export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
   children,
@@ -183,15 +159,6 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
   const workspaceId =
     currentWorkspaceId && !searchAcrossAll ? currentWorkspaceId : undefined;
-
-  const truncateTextWithEllipsis = (text: string) => {
-    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
-    const maxLength =
-      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
-        ? text.length - 1
-        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
-    return text.slice(0, maxLength) + '…';
-  };
 
   const trigger = () => {
     setSearchText('');
@@ -464,75 +431,42 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
       </Box>
 
       <SearchResultsContainer>
-        {searchResults.map((searchResult, idx) => (
-          <SearchResult
-            lines="none"
-            key={searchResult.artifact.id}
-            $selected={selectedIdx === idx}
-            onMouseOver={() => setSelectedIdx(idx)}
-            onClick={(event) => {
-              navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
-                id: searchResult.artifact.id,
-                // The browser can only "focus" one thing, so we choose the first result which is theoretically the most relevant
-                focusBlockId: searchResult.blockIds.values().next().value,
-              });
-              hide();
-            }}
-            button
-          >
-            <IonLabel>
-              {searchResult.artifact.title}
-              {searchResult.highlights
-                .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
-                .map((highlight, idx) => (
-                  <ResultWithHighlightsWrapper
-                    key={idx}
-                    dangerouslySetInnerHTML={{
-                      __html: '…' + highlight + '…',
-                    }}
-                  ></ResultWithHighlightsWrapper>
-                ))}
-              {searchResult.highlights.length >
-                MAX_DISPLAYED_HIGHLIGHT_COUNT && (
-                <p>
-                  <i>
-                    {t('globalSearch.moreHighlights', {
-                      count:
-                        searchResult.highlights.length -
-                        MAX_DISPLAYED_HIGHLIGHT_COUNT,
-                    })}
-                  </i>
-                </p>
-              )}
-              {!searchResult.highlights.length && (
-                <p>{truncateTextWithEllipsis(searchResult.previewText)}</p>
-              )}
-            </IonLabel>
-          </SearchResult>
-        ))}
+        <GlobalSearchResultsList
+          workspaceId={workspaceId}
+          searchResults={searchResults}
+          selectedIdx={selectedIdx}
+          setSelectedIdx={setSelectedIdx}
+          onResultClick={(event, artifactId, focusBlockId) => {
+            navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+              id: artifactId,
+              focusBlockId,
+            });
+            hide();
+          }}
+        />
         {!!searchText.length && !searching && (
           <SearchResult
-            lines="none"
             $selected={selectedIdx === maxSelectedIdx}
             onClick={(event) => (create(event), hide())}
             onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
-            button
           >
-            <IonLabel>
-              {t(
-                searchResults.length
-                  ? 'editor.referenceMenu.create.title'
-                  : 'editor.referenceMenu.noItems.title',
-                { title: capitalizeEachWord(searchText).trim() },
-              )}
-              <p>
+            <SearchResultItemTitleRow>
+              <SearchResultItemTitle>
                 {t(
                   searchResults.length
-                    ? 'editor.referenceMenu.create.subtitle'
-                    : 'editor.referenceMenu.noItems.subtitle',
+                    ? 'editor.referenceMenu.create.title'
+                    : 'editor.referenceMenu.noItems.title',
+                  { title: capitalizeEachWord(searchText).trim() },
                 )}
-              </p>
-            </IonLabel>
+              </SearchResultItemTitle>
+            </SearchResultItemTitleRow>
+            <SearchResultItemSubtitle>
+              {t(
+                searchResults.length
+                  ? 'editor.referenceMenu.create.subtitle'
+                  : 'editor.referenceMenu.noItems.subtitle',
+              )}
+            </SearchResultItemSubtitle>
           </SearchResult>
         )}
       </SearchResultsContainer>

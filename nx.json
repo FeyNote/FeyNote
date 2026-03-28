@@ -105,5 +105,6 @@
     "forcePathStyle": true,
     "localMode": "no-cache",
     "ciMode": "read-write"
-  }
+  },
+  "analytics": false
 }

@@ -1,5 +1,5 @@
-import { IonIcon, IonInput, IonItem, IonLabel } from '@ionic/react';
-import { useEffect, useState, type MouseEvent } from 'react';
+import { IonIcon, IonInput } from '@ionic/react';
+import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { searchArtifactTitlesAction } from '../../actions/searchArtifactTitlesAction';
 import { searchArtifactBlocksAction } from '../../actions/searchArtifactBlocksAction';
 import { usePaneContext } from '../../context/pane/PaneContext';
@@ -9,7 +9,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
-import type { ArtifactDTO } from '@feynote/global-types';
+import type { ArtifactDTO, WorkspaceSnapshot } from '@feynote/global-types';
 import styled from 'styled-components';
 import { search } from 'ionicons/icons';
 import { PaneNav } from '../pane/PaneNav';
@@ -20,6 +20,23 @@ import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspac
 import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
 import { createPortal } from 'react-dom';
 import { PersistentSearchRightSidemenu } from './PersistentSearchRightSidemenu';
+import { useSessionContext } from '../../context/session/SessionContext';
+import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
+import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
+import { getArtifactTreePaths } from '../../utils/artifactTree/getArtifactTreePaths';
+import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
+import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
+import {
+  SearchResultItem,
+  SearchResultItemSubtitle,
+  SearchResultItemTitle,
+  SearchResultItemTitleRow,
+} from './SearchResultItem';
+import { SEARCH_RESULT_LIMIT } from './SEARCH_RESULT_LIMIT';
+import { SEARCH_DELAY_MS } from './SEARCH_DELAY_MS';
+import { PANE_PERSIST_SEARCH_TEXT_DELAY_MS } from './PANE_PERSIST_SEARCH_TEXT_DELAY_MS';
+import { SearchResult } from './GlobalSearchResultsList';
 
 const PaneContent = styled.div`
   padding: 20px;
@@ -37,45 +54,6 @@ const SearchInput = styled(IonInput)`
 `;
 
 const SearchResultsContainer = styled.div``;
-
-const SearchResult = styled(IonItem)<{
-  $selected: boolean;
-}>`
-  ${(props) =>
-    props.$selected && `--background: var(--ion-background-color-step-100);`}
-`;
-
-const ResultWithHighlightsWrapper = styled.p`
-  mark {
-    background: var(--ion-color-primary);
-    color: var(--ion-color-primary-contrast);
-  }
-`;
-
-/**
- * We limit search results so that performance isn't garbage
- */
-const SEARCH_RESULT_LIMIT = 100;
-
-/**
- * How often to query search results as the user types
- */
-const SEARCH_DELAY_MS = 20;
-
-/**
- * Maximum number of characters to display in the result preview
- */
-const SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH = 150;
-
-/**
- * How long to wait before updating the persistent search text in the pane context
- */
-const PANE_PERSIST_SEARCH_TEXT_DELAY_MS = 200;
-
-/**
- * Maximum number of highlights to display in the result preview
- */
-const MAX_DISPLAYED_HIGHLIGHT_COUNT = 5;
 
 interface Props {
   initialTerm?: string;
@@ -107,15 +85,89 @@ export const PersistentSearch: React.FC<Props> = (props) => {
   const searchAcrossAll = getPreference(
     PreferenceNames.GlobalSearchAcrossAllWorkspaces,
   );
+  const showTree = getPreference(PreferenceNames.LeftPaneShowArtifactTree);
 
-  const truncateTextWithEllipsis = (text: string) => {
-    // We actually always want to show an ellipsis since the text can be of unknown length. We cut off the last character to give us a reason to show a "..."
-    const maxLength =
-      text.length <= SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH
-        ? text.length - 1
-        : SEARCH_RESULT_MAX_PREVIEW_TEXT_LENGTH;
-    return text.slice(0, maxLength) + '…';
-  };
+  const { session } = useSessionContext();
+  const { getArtifactSnapshotById } = useArtifactSnapshots();
+  const { getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById } =
+    useWorkspaceSnapshots();
+
+  const workspaceOrUserTreeConnection = useCollaborationConnection(
+    props.workspaceId
+      ? `workspace:${props.workspaceId}`
+      : `userTree:${session.userId}`,
+  );
+  const userTreeConnection = useCollaborationConnection(
+    `userTree:${session.userId}`,
+  );
+
+  const workspaceTreeOrUserTreeYKV = useMemo(
+    () => getArtifactTreeFromYDoc(workspaceOrUserTreeConnection.yjsDoc),
+    [workspaceOrUserTreeConnection.yjsDoc],
+  );
+  const userTreeYKV = useMemo(
+    () => getArtifactTreeFromYDoc(userTreeConnection.yjsDoc),
+    [userTreeConnection.yjsDoc],
+  );
+  const { rerenderReducerValue: workspaceTreeOrUserTreeRerender } =
+    useObserveYKVChanges(workspaceTreeOrUserTreeYKV);
+  const { rerenderReducerValue: userTreeRerender } =
+    useObserveYKVChanges(userTreeYKV);
+
+  const artifactIds = useMemo(
+    () => searchResults.map((r) => r.artifact.id),
+    [searchResults],
+  );
+
+  const getTitle = (id: string) => getArtifactSnapshotById(id)?.meta.title;
+
+  const artifactPathById = useMemo(() => {
+    if (!showTree) return new Map<string, string[]>();
+    const workspacePaths = props.workspaceId
+      ? getArtifactTreePaths(
+          getWorkspaceSnapshotById(props.workspaceId)?.meta.name || '',
+          artifactIds,
+          workspaceTreeOrUserTreeYKV,
+          getTitle,
+        )
+      : new Map<string, string[]>();
+
+    const userTreePaths = getArtifactTreePaths(
+      t('globalSearch.everythingPathTitle'),
+      artifactIds,
+      userTreeYKV,
+      getTitle,
+    );
+
+    for (const [key, val] of workspacePaths) {
+      userTreePaths.set(key, val);
+    }
+    return userTreePaths;
+  }, [
+    showTree,
+    artifactIds,
+    workspaceTreeOrUserTreeYKV,
+    workspaceTreeOrUserTreeRerender,
+    userTreeYKV,
+    userTreeRerender,
+    getArtifactSnapshotById,
+  ]);
+
+  const workspaceSnapshotsByArtifactId = useMemo(() => {
+    const result = new Map<string, WorkspaceSnapshot[]>();
+    for (const artifactId of artifactIds) {
+      const workspaceIds = getWorkspaceIdsForArtifactId(artifactId);
+      const snapshots = workspaceIds
+        .map((id) => getWorkspaceSnapshotById(id))
+        .filter(
+          (workspace): workspace is NonNullable<WorkspaceSnapshot> =>
+            !!workspace && !workspace.meta.deletedAt,
+        );
+
+      result.set(artifactId, snapshots);
+    }
+    return result;
+  }, [artifactIds, getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById]);
 
   // This is so that back functionality works properly, returning us to the current search state is what the user sees once they return to the tab
   const persistSearchTextToPaneState = () => {
@@ -314,63 +366,43 @@ export const PersistentSearch: React.FC<Props> = (props) => {
               paneId={pane.id}
             >
               <SearchResult
-                lines="none"
                 $selected={selectedIdx === idx}
                 onMouseOver={() => setSelectedIdx(idx)}
                 onClick={(event) =>
                   open(event, searchResult.artifact.id, searchResult.blockId)
                 }
-                button
               >
-                <IonLabel>
-                  {searchResult.artifact.title}
-                  {searchResult.highlights
-                    .slice(0, MAX_DISPLAYED_HIGHLIGHT_COUNT)
-                    .map((highlight, idx) => (
-                      <ResultWithHighlightsWrapper
-                        key={idx}
-                        dangerouslySetInnerHTML={{
-                          __html: '…' + highlight + '…',
-                        }}
-                      ></ResultWithHighlightsWrapper>
-                    ))}
-                  {searchResult.highlights.length >
-                    MAX_DISPLAYED_HIGHLIGHT_COUNT && (
-                    <p>
-                      <i>
-                        {t('globalSearch.moreHighlights', {
-                          count:
-                            searchResult.highlights.length -
-                            MAX_DISPLAYED_HIGHLIGHT_COUNT,
-                        })}
-                      </i>
-                    </p>
-                  )}
-                  {!searchResult.highlights.length &&
-                    searchResult.previewText && (
-                      <p>
-                        {truncateTextWithEllipsis(searchResult.previewText)}
-                      </p>
-                    )}
-                </IonLabel>
+                <SearchResultItem
+                  title={searchResult.artifact.title}
+                  highlights={searchResult.highlights}
+                  previewText={searchResult.previewText}
+                  treePath={artifactPathById.get(searchResult.artifact.id)}
+                  workspaceSnapshots={
+                    workspaceSnapshotsByArtifactId.get(
+                      searchResult.artifact.id,
+                    ) || []
+                  }
+                />
               </SearchResult>
             </ArtifactLinkContextMenu>
           ))}
           {!!searchText.length && (
             <SearchResult
-              lines="none"
               $selected={selectedIdx === maxSelectedIdx}
               onClick={(event) => create(event)}
               onMouseOver={() => setSelectedIdx(maxSelectedIdx)}
-              button
             >
-              <IonLabel>
-                {t(
-                  searchResults.length
-                    ? 'editor.referenceMenu.create.title'
-                    : 'editor.referenceMenu.noItems.title',
-                  { title: capitalizeEachWord(searchText).trim() },
-                )}
+              <SearchResultItemTitleRow>
+                <SearchResultItemTitle>
+                  {t(
+                    searchResults.length
+                      ? 'editor.referenceMenu.create.title'
+                      : 'editor.referenceMenu.noItems.title',
+                    { title: capitalizeEachWord(searchText).trim() },
+                  )}
+                </SearchResultItemTitle>
+              </SearchResultItemTitleRow>
+              <SearchResultItemSubtitle>
                 <p>
                   {t(
                     searchResults.length
@@ -378,7 +410,7 @@ export const PersistentSearch: React.FC<Props> = (props) => {
                       : 'editor.referenceMenu.noItems.subtitle',
                   )}
                 </p>
-              </IonLabel>
+              </SearchResultItemSubtitle>
             </SearchResult>
           )}
         </SearchResultsContainer>

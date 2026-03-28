@@ -5,7 +5,7 @@ import { getCollection, getEntry, render } from 'astro:content';
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
@@ -38,7 +38,7 @@ const articleSchema = {
   },
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": `https://feynote.com/blog/${post.slug}`
+    "@id": `https://feynote.com/blog/${post.id}`
   }
 };
 ---

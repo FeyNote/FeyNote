@@ -26,7 +26,7 @@ export const ArtifactEditorStyles = styled.div`
   .tiptap {
     padding-left: 16px;
     padding-right: 16px;
-    padding-top: 1px;
+    padding-top: 7px;
     padding-bottom: 1px;
     min-height: 500px;
     outline: none;
@@ -34,14 +34,6 @@ export const ArtifactEditorStyles = styled.div`
 
   .ProseMirror-gapcursor:after {
     border-top: 1px solid var(--sheet-text-color);
-  }
-
-  .artifactTitle {
-    --background: transparent;
-    --color: var(--sheet-h1-color);
-    --ion-font-family: var(--sheet-h1-font-family);
-    font-size: 2.1rem;
-    padding-top: 10px;
   }
 
   h1 {

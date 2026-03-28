@@ -5,6 +5,7 @@ import { enqueueArtifactUpdate } from '../../artifactUpdateQueue/artifactUpdateQ
 import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import type { JobProgressTracker } from '../JobProgressTracker';
 import type { JobSummary } from '@feynote/prisma/types';
+import { hocuspocusTrpcClient } from '@feynote/api-services';
 
 export const writeStandardizedImport = async (args: {
   importInfo: StandardizedImportInfo;
@@ -52,6 +53,13 @@ export const writeStandardizedImport = async (args: {
         'base64',
       ),
       newYBinB64: Buffer.from(artifact.yBin).toString('base64'),
+    });
+  }
+
+  if (args.job.meta.workspaceId) {
+    await hocuspocusTrpcClient.doc.addArtifactsToWorkspace.mutate({
+      workspaceId: args.job.meta.workspaceId,
+      artifactIds: createdArtifacts.map((a) => a.id),
     });
   }
 };

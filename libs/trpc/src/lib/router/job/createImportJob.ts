@@ -71,6 +71,7 @@ export const createImportJob = authenticatedProcedure
             progress: 0,
             meta: {
               importFormat: input.format,
+              workspaceId: input.workspaceId,
             },
           },
         });

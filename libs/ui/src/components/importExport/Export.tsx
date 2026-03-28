@@ -1,64 +1,62 @@
-import { IonContent, IonPage } from '@ionic/react';
 import { PaneNav } from '../pane/PaneNav';
+import {
+  PaneContent,
+  PaneContentContainer,
+} from '../pane/PaneContentContainer';
 import { useTranslation } from 'react-i18next';
 import { JobList } from './JobList';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { trpc } from '../../utils/trpc';
 import { getJobsAction } from '../../actions/getJobsAction';
 import type { ExportFormat, JobSummary } from '@feynote/prisma/types';
-import { useIndeterminateProgressBar } from '../../utils/useProgressBar';
 import styled from 'styled-components';
+import { Heading, Text } from '@radix-ui/themes';
 import { AiFillFileMarkdown, BsFiletypeJson } from '../AppIcons';
-import { Button, Card } from '@radix-ui/themes';
+import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 
-const ExportOptionsContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px 16px;
+const OptionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
 `;
 
-const StyledExportCard = styled(Card)`
+const FormatLabel = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const FormatRow = styled.button`
+  all: unset;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 32px;
-  font-size: 32px;
-  width: 200px;
-`;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms;
+  font-size: 20px;
 
-const ExportOptionsHeader = styled.h2`
-  text-align: center;
-  width: 100%;
-  padding-bottom: 16px;
-`;
-
-const ExportOptionTitle = styled.div`
-  weight: bold;
-  font-size: 16px;
-`;
-
-const ExportOptionSubtext = styled.div`
-  padding-top: 16px;
-  font-size: 16px;
-  opacity: 0.7;
-  font-style: italic;
-  text-align: center;
+  &:hover {
+    background: var(--general-background-hover);
+  }
 `;
 
 const EXPORT_OPTIONS: {
-  component: ReactNode;
+  component: React.FC;
   title: string;
+  description: string;
   format: ExportFormat;
 }[] = [
   {
-    component: <BsFiletypeJson />,
+    component: BsFiletypeJson,
     title: 'export.options.json',
+    description: 'export.options.json.description',
     format: 'json',
   },
   {
-    component: <AiFillFileMarkdown />,
+    component: AiFillFileMarkdown,
     title: 'export.options.markdown',
+    description: 'export.options.markdown.description',
     format: 'markdown',
   },
 ];
@@ -69,15 +67,13 @@ export const Export: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
   const [hasMoreJobs, setHasMoreJobs] = useState(true);
-  const { startProgressBar, ProgressBar } = useIndeterminateProgressBar();
+  const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
-    const progress = startProgressBar();
     getMoreJobs();
     const refreshInterval = setInterval(() => {
       refreshJobs();
     }, REFRESH_JOBS_INTERVAL_SECONDS);
-    progress.dismiss();
 
     return () => {
       clearInterval(refreshInterval);
@@ -85,44 +81,87 @@ export const Export: React.FC = () => {
   }, []);
 
   const openJobUrls = async (jobId: string) => {
-    const urls = await trpc.file.getFileUrlsByJobId.query({
-      jobId: jobId,
-    });
-    if (!urls.length) return;
+    const urls = await trpc.file.getFileUrlsByJobId
+      .query({
+        jobId: jobId,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+
+    if (!urls?.length) return;
     urls.forEach((url) => window.open(url, '_blank'));
   };
 
+  const jobsRef = useRef(jobs);
+  jobsRef.current = jobs;
+
   const refreshJobs = async () => {
     const exportDto = await getJobsAction({
-      // Avoids race condition of getMoreJobs and RefreshJobs being called on same render
-      limit: jobs.length || NUM_OF_INITAL_JOBS_SHOWN,
+      limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
       type: 'export',
+    }).catch((e) => {
+      console.error(e);
     });
+    if (!exportDto) return;
     setJobs(exportDto.jobs);
   };
 
   const getMoreJobs = async () => {
     const exportjobsDTO = await getJobsAction({
-      offset: jobs.length,
+      offset: jobsRef.current.length,
       limit: NUM_OF_INITAL_JOBS_SHOWN,
       type: 'export',
+    }).catch((e) => {
+      handleTRPCErrors(e);
     });
-    const totalJobs = [...jobs, ...exportjobsDTO.jobs];
+    if (!exportjobsDTO) return;
+
+    const totalJobs = [...jobsRef.current, ...exportjobsDTO.jobs];
     setJobs(totalJobs);
     setHasMoreJobs(exportjobsDTO.totalCount > totalJobs.length);
   };
 
   const _export = async (format: ExportFormat) => {
-    await trpc.job.createExportJob.mutate({
-      format: format,
-    });
+    await trpc.job.createExportJob
+      .mutate({
+        format: format,
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
+      });
+    await refreshJobs();
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('export.title')} />
-      <IonContent className="ion-padding">
-        {ProgressBar}
+      <PaneContent>
+        <Heading as="h2" size="3" mt="2">
+          {t('export.options.title')}
+        </Heading>
+        <Text size="1" color="gray">
+          {t('export.options.subtext')}
+        </Text>
+        <OptionsGrid>
+          {EXPORT_OPTIONS.map((option, i) => (
+            <FormatRow
+              key={`option-${i}`}
+              onClick={() => _export(option.format)}
+            >
+              <option.component />
+              <FormatLabel>
+                <Text size="2" weight="medium">
+                  {t(option.title)}
+                </Text>
+                <Text size="1" color="gray">
+                  {t(option.description)}
+                </Text>
+              </FormatLabel>
+            </FormatRow>
+          ))}
+        </OptionsGrid>
+
         {!!jobs.length && (
           <JobList
             title={t('export.jobList')}
@@ -132,22 +171,7 @@ export const Export: React.FC = () => {
             jobClickHandler={openJobUrls}
           />
         )}
-        <br />
-        <ExportOptionsHeader>{t('export.options.title')}</ExportOptionsHeader>
-        <ExportOptionsContainer>
-          {EXPORT_OPTIONS.map((option, i) => {
-            return (
-              <StyledExportCard key={`option-${i}`} asChild>
-                <Button onClick={() => _export(option.format)}>
-                  {option.component}
-                  <ExportOptionTitle>{t(option.title)}</ExportOptionTitle>
-                </Button>
-              </StyledExportCard>
-            );
-          })}
-        </ExportOptionsContainer>
-        <ExportOptionSubtext>{t('export.options.subtext')}</ExportOptionSubtext>
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

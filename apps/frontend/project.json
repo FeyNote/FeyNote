@@ -68,8 +68,7 @@
     "lint-locales": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "bash lintLocales.sh",
-        "cwd": "apps/frontend"
+        "command": "node scripts/lintLocales.js frontend"
       }
     }
   }

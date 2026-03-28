@@ -4,10 +4,10 @@ import { HocuspocusProvider } from '@hocuspocus/provider';
 
 import { Doc as YDoc } from 'yjs';
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
-import { IonItem } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { ArtifactTitleInput } from './ArtifactTitleInput';
 import styled from 'styled-components';
+import { ArtifactTitleContainer } from './ArtifactTitleContainer';
+import { ArtifactTitleField } from './ArtifactTitleField';
 import { useObserveYArtifactMeta } from '../../utils/collaboration/useObserveYArtifactMeta';
 import type { TableOfContentData } from '@tiptap/extension-table-of-contents';
 import { TiptapEditor } from './TiptapEditor';
@@ -63,18 +63,18 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
   };
 
   const titleInput = (
-    <IonItem lines="none" className="artifactTitle">
-      <ArtifactTitleInput
+    <ArtifactTitleContainer>
+      <ArtifactTitleField
         disabled={!props.editable}
         placeholder={t('artifactRenderer.title.placeholder')}
         value={title}
-        onIonInput={(event) => {
-          setMetaProp('title', event.target.value?.toString() || '');
-          props.onTitleChange?.(event.target.value?.toString() || '');
+        onChange={(event) => {
+          setMetaProp('title', event.target.value);
+          props.onTitleChange?.(event.target.value);
         }}
         type="text"
-      ></ArtifactTitleInput>
-    </IonItem>
+      />
+    </ArtifactTitleContainer>
   );
 
   return (
