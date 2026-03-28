@@ -12,10 +12,7 @@ import { ArtifactLinkDropdownMenu } from './ArtifactLinkContextMenu';
 import { DropdownMenu } from '@radix-ui/themes';
 import { openArtifactPrint } from '../../utils/openArtifactPrint';
 import { duplicateArtifact } from '../../utils/localDb/duplicateArtifact';
-import {
-  APP_KEYBOARD_SHORTCUTS,
-  getShortcutDisplayString,
-} from '../../utils/keyboardShortcuts';
+import { useKeyboardShortcutDisplay } from '../../utils/keyboardShortcuts';
 
 interface Props {
   artifactId: string;
@@ -33,6 +30,7 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
 
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { deletedAt } = useObserveYArtifactMeta(props.connection.yjsDoc).meta;
+  const printKeyboardShortcutDisplay = useKeyboardShortcutDisplay('print');
 
   const onDuplicateArtifactClicked = async () => {
     const id = await duplicateArtifact(props.connection.yjsDoc).catch((e) => {
@@ -50,7 +48,7 @@ export const ArtifactDropdownMenu: React.FC<Props> = (props) => {
     <DropdownMenu.Group>
       <DropdownMenu.Item
         onClick={() => openArtifactPrint(props.artifactId)}
-        shortcut={getShortcutDisplayString(APP_KEYBOARD_SHORTCUTS.print)}
+        shortcut={printKeyboardShortcutDisplay || undefined}
       >
         {t('contextMenu.printArtifact')}
       </DropdownMenu.Item>

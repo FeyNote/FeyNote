@@ -471,6 +471,20 @@ export const Settings: React.FC = () => {
               &nbsp;&nbsp;
               {t('settings.interface')}
             </IonListHeader>
+            <IonItem
+              lines="none"
+              button
+              onClick={() => {
+                navigate(
+                  PaneableComponent.KeyboardShortcuts,
+                  {},
+                  PaneTransition.Push,
+                );
+              }}
+              detail={true}
+            >
+              {t('settings.keyboardShortcuts')}
+            </IonItem>
             <IonItem lines="none" button>
               <IonToggle
                 checked={getPreference(PreferenceNames.PanesRememberOpenState)}

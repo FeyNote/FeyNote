@@ -8,10 +8,7 @@ import {
 import { ContextMenu, DropdownMenu } from '@radix-ui/themes';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { NewArtifactDialog } from './NewArtifactDialog';
-import {
-  APP_KEYBOARD_SHORTCUTS,
-  getDesktopBrowserShortcutDisplayString,
-} from '../../utils/keyboardShortcuts';
+import { useKeyboardShortcutDisplay } from '../../utils/keyboardShortcuts';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
 import { WorkspacePickerDialog } from '../workspace/WorkspacePickerDialog';
@@ -54,6 +51,11 @@ const ArtifactLinkMenuInternal: React.FC<
   const { getPreference, setPreference } = usePreferencesContext();
   const { showAlert } = useAlertContext();
   const sessionContext = useSessionContext(true);
+  const splitRightKeyboardShortcutDisplay =
+    useKeyboardShortcutDisplay('splitRight');
+  const splitDownKeyboardShortcutDisplay =
+    useKeyboardShortcutDisplay('splitDown');
+  const newTabKeyboardShortcutDisplay = useKeyboardShortcutDisplay('newTab');
   const {
     deleteArtifactOrRemoveSelfWithConfirmation,
     deleteArtifactOrRemoveSelfWithConfirmationUI,
@@ -137,10 +139,7 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.HSplit,
                 )
               }
-              shortcut={getDesktopBrowserShortcutDisplayString(
-                APP_KEYBOARD_SHORTCUTS.splitRight.native,
-                APP_KEYBOARD_SHORTCUTS.splitRight.browser,
-              )}
+              shortcut={splitRightKeyboardShortcutDisplay || undefined}
             >
               {t('contextMenu.splitRight')}
             </MenuImpl.Item>
@@ -157,10 +156,7 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.VSplit,
                 )
               }
-              shortcut={getDesktopBrowserShortcutDisplayString(
-                APP_KEYBOARD_SHORTCUTS.splitDown.native,
-                APP_KEYBOARD_SHORTCUTS.splitDown.browser,
-              )}
+              shortcut={splitDownKeyboardShortcutDisplay || undefined}
             >
               {t('contextMenu.splitDown')}
             </MenuImpl.Item>
@@ -177,10 +173,7 @@ const ArtifactLinkMenuInternal: React.FC<
                   PaneTransition.NewTab,
                 )
               }
-              shortcut={getDesktopBrowserShortcutDisplayString(
-                APP_KEYBOARD_SHORTCUTS.newTab.native,
-                APP_KEYBOARD_SHORTCUTS.newTab.browser,
-              )}
+              shortcut={newTabKeyboardShortcutDisplay || undefined}
             >
               {t('contextMenu.newTab')}
             </MenuImpl.Item>

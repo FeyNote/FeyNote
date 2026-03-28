@@ -50,6 +50,15 @@ export const setPreferences = authenticatedProcedure
       [PreferenceNames.ReferenceSearchAcrossAllWorkspaces]: z.boolean(),
       [PreferenceNames.GlobalSearchAcrossAllWorkspaces]: z.boolean(),
       [PreferenceNames.LiveExportStoragePath]: z.string().nullable(),
+      [PreferenceNames.KeyboardShortcutOverrides]: z.record(
+        z.string(),
+        z.object({
+          mod: z.boolean().optional(),
+          shift: z.boolean().optional(),
+          alt: z.boolean().optional(),
+          key: z.string().min(1),
+        }),
+      ),
     } satisfies ZodShape<AppPreferences>),
   )
   .mutation(async ({ ctx, input }): Promise<string> => {
@@ -109,6 +118,8 @@ export const setPreferences = authenticatedProcedure
             input[PreferenceNames.GlobalSearchAcrossAllWorkspaces],
           [PreferenceNames.LiveExportStoragePath]:
             input[PreferenceNames.LiveExportStoragePath],
+          [PreferenceNames.KeyboardShortcutOverrides]:
+            input[PreferenceNames.KeyboardShortcutOverrides],
         } satisfies AppPreferences,
       },
     });
