@@ -11,6 +11,7 @@
     "@ai-sdk/anthropic": "^3.0.58",
     "@ai-sdk/openai": "^3.0.41",
     "@ai-sdk/react": "^3.0.118",
+    "@astrojs/mdx": "^5.0.0",
     "@astrojs/node": "^10.0.3",
     "@astrojs/react": "^5.0.1",
     "@astrojs/rss": "^4.0.17",
