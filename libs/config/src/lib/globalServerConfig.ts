@@ -34,6 +34,7 @@ export const globalServerConfig = {
     provider: getEnvOrThrow('AI_PROVIDER'),
     apiKey: getEnvOrThrow('AI_API_KEY'),
     model: {
+      autoformat: getEnvOrThrow('AI_MODEL_CHAT_AUTOFORMAT'),
       chatLow: getEnvOrThrow('AI_MODEL_CHAT_LOW'),
       chatHigh: getEnvOrThrow('AI_MODEL_CHAT_HIGH'),
       scrapeUrl: getEnvOrThrow('AI_MODEL_SCRAPE_URL'),

@@ -8,6 +8,10 @@ RUN apk add --no-cache inotify-tools
 RUN apk add --no-cache pandoc
 RUN npm install -g tsx
 
+RUN chown -R node:node /app
+
+USER node
+
 COPY .npmrc .npmrc
 COPY package.json package.json
 COPY package-lock.json package-lock.json
