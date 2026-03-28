@@ -2,6 +2,10 @@ import styled from 'styled-components';
 
 import { InternalTreeItem, UNCATEGORIZED_TREE_NODE_ID } from './ArtifactTree';
 import { ArtifactTreeItemContextMenu } from './ArtifactTreeItemContextMenu';
+import {
+  ArtifactTreeMultiSelectContextMenu,
+  type MultiSelectAction,
+} from './ArtifactTreeMultiSelectContextMenu';
 import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
 import { IoChevronDown, IoChevronForward, LuFolder } from '../AppIcons';
 import { ItemInstance } from '@headless-tree/core';
@@ -27,45 +31,82 @@ export const TreeListItem = styled.li<{
   padding: 0;
   margin: 0;
 
+  transition: background-color 0s 80ms;
+
   ${({ $isDragTarget }) =>
     $isDragTarget &&
     `
-    background-color: var(--ion-color-primary);
-    color: var(--ion-color-primary);
+    background-color: var(--accent-a5);
+    transition: background-color 0s 0s;
+
+    div {
+      background-color: transparent;
+    }
   `}
 `;
 
 export const TreeItemContainer = styled.div<{
   $isUncategorized: boolean;
+  $isActive: boolean;
+  $isSelected: boolean;
 }>`
   display: flex;
   align-items: center;
-  padding-left: 10px;
+  padding-left: 2px;
+  border-radius: 5px;
+  transition: var(--background-hover-transition);
+
+  ${(props) =>
+    props.$isSelected &&
+    `
+    outline: 1.5px solid var(--accent-9);
+    outline-offset: -1.5px;
+  `}
+
+  ${(props) =>
+    props.$isActive &&
+    `
+    background-color: var(--contrasting-element-background-active);
+  `}
+
+  ${(props) =>
+    !props.$isUncategorized &&
+    `
+    [data-dragging="false"] &:hover {
+      background-color: var(--contrasting-element-background-hover);
+    }
+  `}
 `;
 
 export const ItemArrow = styled.div`
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 26px;
   flex-shrink: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  transition: var(--background-hover-transition);
 
   &:hover {
-    background-color: var(--card-background-hover);
+    background-color: var(--contrasting-element-background);
   }
 `;
 
+export const ItemArrowPlaceholder = styled.div`
+  width: 28px;
+  height: 26px;
+  flex-shrink: 0;
+`;
+
 export const TreeLevelSink = styled.div`
-  margin-left: 20px;
-  border-left: 1px solid var(--card-background-active);
+  margin-left: 16px;
+  border-left: 1px solid var(--contrasting-element-background-active);
 `;
 
 export const TreeItemButton = styled.button<{
   $isUncategorized: boolean;
-  $isActive: boolean;
 }>`
   white-space: nowrap;
   overflow: hidden;
@@ -77,15 +118,8 @@ export const TreeItemButton = styled.button<{
   height: 32px;
   color: var(--text-color);
   outline: none;
-  border-radius: 5px;
-  padding-left: 8px;
+  padding-left: 4px;
   padding-right: 8px;
-
-  ${(props) =>
-    props.$isActive &&
-    `
-    background-color: var(--card-background-active);
-  `}
 
   ${(props) =>
     props.$isUncategorized &&
@@ -97,9 +131,6 @@ export const TreeItemButton = styled.button<{
     !props.$isUncategorized &&
     `
     cursor: pointer;
-    &:hover {
-      background-color: var(--card-background-hover);
-    }
   `}
 `;
 
@@ -146,6 +177,9 @@ interface ArtifactTreeItemProps {
   treeItemsById: Map<string, InternalTreeItem>;
   itemIdsByParentId: Map<string | null, string[]>;
   isActive: boolean;
+  isSelected: boolean;
+  selectedCount: number;
+  onMultiSelectAction: (action: MultiSelectAction) => void;
   expandedItems: string[];
   setExpandedItems: (expandedItems: string[]) => void;
   enableContextMenu: boolean;
@@ -245,10 +279,15 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
           data-index={props.virtualItemInstance.index}
           ref={props.virtualizer.measureElement}
           $isUncategorized={false}
+          $isActive={false}
+          $isSelected={false}
         >
-          {!!props.itemIdsByParentId.get(item.id)?.length && (
+          {props.itemIdsByParentId.get(item.id)?.length ? (
             <ItemArrow
-              onClick={() => setExpanded(!props.itemInstance.isExpanded())}
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!props.itemInstance.isExpanded());
+              }}
             >
               {props.itemInstance.isExpanded() ? (
                 <IoChevronDown size={16} />
@@ -256,8 +295,10 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
                 <IoChevronForward size={16} />
               )}
             </ItemArrow>
+          ) : (
+            <ItemArrowPlaceholder />
           )}
-          <TreeItemButton $isUncategorized={true} $isActive={false}>
+          <TreeItemButton $isUncategorized={true}>
             <HiddenDocumentText>
               {t('artifactTree.hiddenDocument')}
             </HiddenDocumentText>
@@ -270,7 +311,74 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
       return hiddenContent;
     }
 
-    const innerContent = (
+    const isMultiSelected = props.isSelected && props.selectedCount > 1;
+
+    const treeItemContent = (
+      <TreeItemContainer
+        data-index={props.virtualItemInstance.index}
+        ref={props.virtualizer.measureElement}
+        $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
+        $isActive={props.isActive}
+        $isSelected={props.isSelected}
+      >
+        {props.itemIdsByParentId.get(item.id)?.length ? (
+          <ItemArrow
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!props.itemInstance.isExpanded());
+            }}
+          >
+            {props.itemInstance.isExpanded() ? (
+              <IoChevronDown size={16} />
+            ) : (
+              <IoChevronForward size={16} />
+            )}
+          </ItemArrow>
+        ) : (
+          <ItemArrowPlaceholder />
+        )}
+        <TreeItemButton
+          onClick={onClick}
+          onDoubleClick={onDoubleClick}
+          $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
+        >
+          {item.title}
+          {workspaceSnapshotsForItem.length > 0 && (
+            <BadgeContainer>
+              {workspaceSnapshotsForItem
+                .slice(0, MAX_WORKSPACE_BADGES)
+                .map((snapshot) => {
+                  const Icon =
+                    WORKSPACE_ICON_BY_ID.get(snapshot.meta.icon) || LuFolder;
+                  return (
+                    <WorkspaceBadge
+                      key={snapshot.id}
+                      $color={snapshot.meta.color}
+                    >
+                      <Icon />
+                    </WorkspaceBadge>
+                  );
+                })}
+              {workspaceSnapshotsForItem.length > MAX_WORKSPACE_BADGES && (
+                <OverflowBadge>
+                  +{workspaceSnapshotsForItem.length - MAX_WORKSPACE_BADGES}
+                </OverflowBadge>
+              )}
+            </BadgeContainer>
+          )}
+        </TreeItemButton>
+      </TreeItemContainer>
+    );
+
+    const innerContent = isMultiSelected ? (
+      <ArtifactTreeMultiSelectContextMenu
+        enabled={props.enableContextMenu}
+        selectedCount={props.selectedCount}
+        onAction={props.onMultiSelectAction}
+      >
+        {treeItemContent}
+      </ArtifactTreeMultiSelectContextMenu>
+    ) : (
       <ArtifactTreeItemContextMenu
         enabled={
           props.enableContextMenu && item.id !== UNCATEGORIZED_TREE_NODE_ID
@@ -280,54 +388,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         expandAll={expandAll}
         collapseAll={collapseAll}
       >
-        <TreeItemContainer
-          data-index={props.virtualItemInstance.index}
-          ref={props.virtualizer.measureElement}
-          $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
-        >
-          {!!props.itemIdsByParentId.get(item.id)?.length && (
-            <ItemArrow
-              onClick={() => setExpanded(!props.itemInstance.isExpanded())}
-            >
-              {props.itemInstance.isExpanded() ? (
-                <IoChevronDown size={16} />
-              ) : (
-                <IoChevronForward size={16} />
-              )}
-            </ItemArrow>
-          )}
-          <TreeItemButton
-            onClick={onClick}
-            onDoubleClick={onDoubleClick}
-            $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
-            $isActive={props.isActive}
-          >
-            {item.title}
-            {workspaceSnapshotsForItem.length > 0 && (
-              <BadgeContainer>
-                {workspaceSnapshotsForItem
-                  .slice(0, MAX_WORKSPACE_BADGES)
-                  .map((snapshot) => {
-                    const Icon =
-                      WORKSPACE_ICON_BY_ID.get(snapshot.meta.icon) || LuFolder;
-                    return (
-                      <WorkspaceBadge
-                        key={snapshot.id}
-                        $color={snapshot.meta.color}
-                      >
-                        <Icon />
-                      </WorkspaceBadge>
-                    );
-                  })}
-                {workspaceSnapshotsForItem.length > MAX_WORKSPACE_BADGES && (
-                  <OverflowBadge>
-                    +{workspaceSnapshotsForItem.length - MAX_WORKSPACE_BADGES}
-                  </OverflowBadge>
-                )}
-              </BadgeContainer>
-            )}
-          </TreeItemButton>
-        </TreeItemContainer>
+        {treeItemContent}
       </ArtifactTreeItemContextMenu>
     );
 
@@ -338,9 +399,18 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
     return previousContent;
   };
 
+  const itemProps = props.itemInstance.getProps();
+  const originalOnClick = itemProps.onClick;
+
   return (
     <TreeListItem
-      {...props.itemInstance.getProps()}
+      {...itemProps}
+      onClick={(e: React.MouseEvent) => {
+        if (!e.shiftKey && !e.ctrlKey && !e.metaKey) {
+          return;
+        }
+        originalOnClick?.(e);
+      }}
       $isUncategorized={
         props.itemInstance.getId() === UNCATEGORIZED_TREE_NODE_ID
       }

@@ -1,13 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IonLabel } from '@ionic/react';
 import { DropdownMenu } from '@radix-ui/themes';
 import styled from 'styled-components';
 import { IoAdd } from '../AppIcons';
 import { IoChevronDown } from '../AppIcons';
 import { FaPencil } from '../AppIcons';
 import { LuLayers } from '../AppIcons';
-import { CompactIonItem } from '../CompactIonItem';
 import { getWorkspaceAccessLevel } from '@feynote/shared-utils';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
@@ -18,6 +16,33 @@ import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { WorkspaceCreateModal } from './WorkspaceCreateModal';
 import { WorkspaceEditModal } from './WorkspaceEditModal';
 import { WorkspaceSharedInfoModal } from './WorkspaceSharedInfoModal';
+
+const SelectorTrigger = styled.div`
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  font-size: 0.875rem;
+  padding: 0 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-color);
+
+  &:hover {
+    background: var(--contrasting-element-background-hover);
+  }
+`;
+
+const SelectorIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  font-size: 18px;
+  color: var(--text-color-dim);
+`;
+
+const SelectorLabel = styled.span`
+  margin-left: 8px;
+  flex: 1;
+`;
 
 const WorkspaceRow = styled.div`
   display: flex;
@@ -91,7 +116,7 @@ export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
     <>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <CompactIonItem lines="none" button>
+          <SelectorTrigger>
             {currentWorkspace ? (
               <>
                 <WorkspaceIconBubble
@@ -99,24 +124,20 @@ export const WorkspaceSelector: React.FC<Props> = ({ onWorkspaceChange }) => {
                   color={currentWorkspace.meta.color}
                   size={18}
                 />
-                &nbsp;&nbsp;
-                <IonLabel>
+                <SelectorLabel>
                   {currentWorkspace.meta.name || t('workspace.untitled')}
-                </IonLabel>
+                </SelectorLabel>
               </>
             ) : (
               <>
-                <LuLayers
-                  size={18}
-                  color="rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54)"
-                />
-                &nbsp;&nbsp;
-                <IonLabel>{t('workspace.everything')}</IonLabel>
+                <SelectorIcon>
+                  <LuLayers size={18} />
+                </SelectorIcon>
+                <SelectorLabel>{t('workspace.everything')}</SelectorLabel>
               </>
             )}
-            &nbsp;
             <IoChevronDown size={12} />
-          </CompactIonItem>
+          </SelectorTrigger>
         </DropdownMenu.Trigger>
         <DropdownMenu.Content style={{ minWidth: 250 }}>
           <DropdownMenu.Item onClick={() => handleSelect(null)}>

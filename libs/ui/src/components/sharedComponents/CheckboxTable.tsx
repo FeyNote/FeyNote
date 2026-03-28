@@ -39,14 +39,16 @@ const ItemRow = styled.div`
   user-select: none;
   padding: 16px;
 
-  transition: background-color 100ms;
-  background-color: var(--card-background);
+  transition: var(--background-hover-transition);
+  background-color: var(--contrasting-element-background);
   border-radius: 4px;
   margin-top: 6px;
   margin-bottom: 0;
+  margin-left: 4px;
+  margin-right: 4px;
 
   &:hover:not(:has(.itemTitleInner:hover)) {
-    background-color: var(--ion-background-color-step-100);
+    background-color: var(--contrasting-element-background-hover);
     cursor: pointer;
   }
 `;

@@ -56,7 +56,9 @@ const ColorButton = styled.button<{ $color: string; $selected: boolean }>`
     ${(props) => (props.$selected ? 'var(--text-color)' : 'transparent')};
   cursor: pointer;
   box-shadow: ${(props) =>
-    props.$selected ? `inset 0 0 0 2px var(--card-background)` : 'none'};
+    props.$selected
+      ? `inset 0 0 0 2px var(--contrasting-element-background)`
+      : 'none'};
 
   &:hover {
     opacity: 0.85;

@@ -47,7 +47,10 @@ export {
   IoChevronForward,
   IoDocument,
   IoCloudOutline,
+  IoExpand,
+  IoGitNetwork,
   IoSearch,
+  IoSettings,
   IoTrash,
   IoInformation,
 } from 'react-icons/io5';

@@ -1,15 +1,7 @@
-import {
-  IonBadge,
-  IonButton,
-  IonCard,
-  IonIcon,
-  IonLabel,
-  IonList,
-  IonListHeader,
-} from '@ionic/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getThreadsAction } from '../../actions/getThreadsAction';
+import { Badge, Button, Flex } from '@radix-ui/themes';
 import styled from 'styled-components';
 import { EventName } from '../../context/events/EventName';
 import {
@@ -18,26 +10,26 @@ import {
   type ThreadDTO,
 } from '@feynote/shared-utils';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
-import {
-  gitNetwork,
-  home,
-  search,
-  settings,
-  add,
-  expand,
-  heart,
-  list,
-} from 'ionicons/icons';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { useGlobalSearchContext } from '../../context/globalSearch/GlobalSearchContext';
-import { CompactIonItem } from '../CompactIonItem';
-import { NowrapIonLabel } from '../NowrapIonLabel';
 import { ArtifactTree } from '../artifact/ArtifactTree';
 import { eventManager } from '../../context/events/EventManager';
 import { InfoButton } from '../info/InfoButton';
 import { AppConnectionStatus } from './AppConnectionStatus';
-import { IoChatbubbles, CiInboxIn, LuFolderTree } from '../AppIcons';
+import {
+  FaHeart,
+  FaHome,
+  IoAdd,
+  IoExpand,
+  IoGitNetwork,
+  IoSearch,
+  IoSettings,
+  IoChatbubbles,
+  CiInboxIn,
+  LuFolderTree,
+  LuList,
+} from '../AppIcons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { AIThreadContextMenu } from '../assistant/AIThreadContextMenu';
 import { SideMenuItemContextMenu } from './SideMenuItemContextMenu';
@@ -47,17 +39,18 @@ import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWo
 import { useInboxArtifactSnapshots } from '../../utils/artifactTree/useInboxArtifactSnapshots';
 import { useInboxWorkspaceSnapshots } from '../../utils/workspace/useInboxWorkspaceSnapshots';
 
-const SidebarCard = styled(IonCard)`
-  margin-bottom: 0;
+const SidebarCard = styled.div`
+  background: var(--card-background);
+  border-radius: 4px;
+  margin: 8px 8px 0 8px;
+  box-shadow: var(--card-box-shadow);
+  overflow-y: auto;
 `;
 
 const TreeCard = styled(SidebarCard)`
   display: grid;
   grid-template-rows: min-content auto;
-`;
-
-const ShowMoreButtonText = styled.span`
-  font-size: 0.75rem;
+  margin-bottom: 0;
 `;
 
 const Container = styled.div<{
@@ -77,19 +70,81 @@ const ConnectionStatusContainer = styled.div`
   margin-top: 8px;
 `;
 
+const MenuItem = styled.div`
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  font-size: 0.875rem;
+  padding: 0 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--text-color);
+
+  &:hover {
+    background: var(--contrasting-element-background-hover);
+  }
+`;
+
+const MenuIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  font-size: 18px;
+  color: var(--text-color-dim);
+`;
+
+const MenuLabel = styled.span`
+  margin-left: 8px;
+  flex: 1;
+`;
+
+const NowrapMenuLabel = styled(MenuLabel)`
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+`;
+
+const ListHeader = styled.div`
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--gray-a4);
+  color: var(--text-color-dim);
+`;
+
+const ListHeaderLabel = styled.span`
+  margin-left: 8px;
+  flex: 1;
+`;
+
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-color-dim);
+  font-size: 18px;
+
+  &:hover {
+    background: var(--gray-a3);
+  }
+`;
+
 /**
  * The globally unique tree id for react complex tree
  */
 const TREE_ID = 'leftSideMenuArtifactTree';
 
 /**
- * The default number of recent artifacts to show
+ * The number of recent artifacts to show
  */
-const RECENT_ARTIFACTS_LIMIT_DEFAULT = 5;
-/**
- * How many more recent threads to show when "more" is clicked
- */
-const RECENT_THREADS_LIMIT_INC = 10;
+const RECENT_ARTIFACTS_LIMIT = 5;
 /**
  * Reload debounce interval in ms
  */
@@ -107,18 +162,10 @@ export const LeftSideMenu: React.FC = () => {
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] = useState<
     ThreadDTO[]
   >([]);
-  const [recentlyUpdatedThreadsLimit, setRecentlyUpdatedThreadsLimit] =
-    useState(RECENT_ARTIFACTS_LIMIT_DEFAULT);
   const { inboxArtifactSnapshots } = useInboxArtifactSnapshots();
   const { inboxWorkspaceSnapshots } = useInboxWorkspaceSnapshots();
   const inboxCount =
     inboxArtifactSnapshots.length + inboxWorkspaceSnapshots.length;
-
-  const showMoreThreads = () => {
-    setRecentlyUpdatedThreadsLimit(
-      recentlyUpdatedThreadsLimit + RECENT_THREADS_LIMIT_INC,
-    );
-  };
 
   const load = () => {
     getThreadsAction()
@@ -187,50 +234,45 @@ export const LeftSideMenu: React.FC = () => {
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
-            onClick={() => triggerGlobalSearch()}
-            button
-          >
-            <IonIcon icon={search} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>
+          <MenuItem onClick={() => triggerGlobalSearch()}>
+            <MenuIcon>
+              <IoSearch />
+            </MenuIcon>
+            <MenuLabel>
               {t(currentWorkspaceId ? 'menu.search.workspace' : 'menu.search')}
-            </IonLabel>
-          </CompactIonItem>
+            </MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Dashboard}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Dashboard, {
                 workspaceId: currentWorkspaceId,
               })
             }
-            button
           >
-            <IonIcon icon={home} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>
+            <MenuIcon>
+              <FaHome />
+            </MenuIcon>
+            <MenuLabel>
               {t(
                 currentWorkspaceId
                   ? 'menu.dashboard.workspace'
                   : 'menu.dashboard',
               )}
-            </IonLabel>
-          </CompactIonItem>
+            </MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.AllArtifacts}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -238,65 +280,66 @@ export const LeftSideMenu: React.FC = () => {
                 { workspaceId: currentWorkspaceId },
               )
             }
-            button
           >
-            <IonIcon icon={list} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>
+            <MenuIcon>
+              <LuList />
+            </MenuIcon>
+            <MenuLabel>
               {t(
                 currentWorkspaceId
                   ? 'menu.allArtifacts.workspace'
                   : 'menu.allArtifacts',
               )}
-            </IonLabel>
-          </CompactIonItem>
+            </MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Graph}
           componentProps={{ workspaceId: currentWorkspaceId }}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Graph, {
                 workspaceId: currentWorkspaceId,
               })
             }
-            button
           >
-            <IonIcon icon={gitNetwork} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>
+            <MenuIcon>
+              <IoGitNetwork />
+            </MenuIcon>
+            <MenuLabel>
               {t(currentWorkspaceId ? 'menu.graph.workspace' : 'menu.graph')}
-            </IonLabel>
-          </CompactIonItem>
+            </MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Inbox}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Inbox, {})
             }
-            button
           >
-            <CiInboxIn size={18} />
-            &nbsp;&nbsp;
-            <IonLabel>{t('inbox.title')}</IonLabel>
-            {!!inboxCount && <IonBadge slot="end">{inboxCount}</IonBadge>}
-          </CompactIonItem>
+            <MenuIcon>
+              <CiInboxIn size={18} />
+            </MenuIcon>
+            <MenuLabel>{t('inbox.title')}</MenuLabel>
+            {!!inboxCount && (
+              <Badge variant="solid" radius="full" size="1" ml="auto">
+                {inboxCount}
+              </Badge>
+            )}
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.CreateNew}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -304,43 +347,38 @@ export const LeftSideMenu: React.FC = () => {
                 {},
               )
             }
-            button
           >
-            <IonIcon icon={add} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>{t('menu.new')}</IonLabel>
-          </CompactIonItem>
+            <MenuIcon>
+              <IoAdd />
+            </MenuIcon>
+            <MenuLabel>{t('menu.new')}</MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
       </SidebarCard>
 
       {showTreeCard && (
         <TreeCard>
-          <IonList class="ion-no-padding">
-            <IonListHeader lines="full">
-              <LuFolderTree color="rgba(var(--ion-text-color-rgb, 0, 0, 0), 0.54)" />
-              &nbsp;&nbsp;
-              <IonLabel>
-                {t(currentWorkspaceId ? 'menu.tree.workspace' : 'menu.tree')}
-              </IonLabel>
-              <InfoButton
-                message={t('menu.tree.help')}
-                docsLink="https://docs.feynote.com/documents/tree/#organizing-documents"
-              />
-              <IonButton
-                onClick={(event) =>
-                  navigateWithKeyboardHandler(
-                    event,
-                    PaneableComponent.ArtifactTreeFullpage,
-                    { workspaceId: currentWorkspaceId },
-                  )
-                }
-                size="small"
-                fill="clear"
-              >
-                <IonIcon icon={expand} size="small" />
-              </IonButton>
-            </IonListHeader>
-          </IonList>
+          <ListHeader>
+            <LuFolderTree color="var(--text-color-dim)" />
+            <ListHeaderLabel>
+              {t(currentWorkspaceId ? 'menu.tree.workspace' : 'menu.tree')}
+            </ListHeaderLabel>
+            <InfoButton
+              message={t('menu.tree.help')}
+              docsLink="https://docs.feynote.com/documents/tree/#organizing-documents"
+            />
+            <IconButton
+              onClick={(event) =>
+                navigateWithKeyboardHandler(
+                  event,
+                  PaneableComponent.ArtifactTreeFullpage,
+                  { workspaceId: currentWorkspaceId },
+                )
+              }
+            >
+              <IoExpand />
+            </IconButton>
+          </ListHeader>
           <ArtifactTree
             treeId={TREE_ID}
             registerAsGlobalTreeDragHandler={true}
@@ -354,12 +392,54 @@ export const LeftSideMenu: React.FC = () => {
 
       {showThreadsCard && (
         <SidebarCard>
-          <IonList class="ion-no-padding">
-            <IonListHeader lines="full">
-              <IoChatbubbles />
-              &nbsp;&nbsp;
-              <IonLabel>{t('menu.recentlyUpdatedThreads')}</IonLabel>
-              <IonButton
+          <ListHeader>
+            <IoChatbubbles color="var(--text-color-dim)" />
+            <ListHeaderLabel>
+              {t('menu.recentlyUpdatedThreads')}
+            </ListHeaderLabel>
+            <IconButton
+              onClick={(event) =>
+                navigateWithKeyboardHandler(
+                  event,
+                  PaneableComponent.AIThreadsList,
+                  {},
+                )
+              }
+            >
+              <IoExpand />
+            </IconButton>
+          </ListHeader>
+          {filteredThreads
+            .slice(0, RECENT_ARTIFACTS_LIMIT)
+            .map((recentlyUpdatedThread) => (
+              <AIThreadContextMenu
+                key={recentlyUpdatedThread.id}
+                id={recentlyUpdatedThread.id}
+                title={recentlyUpdatedThread.title || t('generic.untitled')}
+                paneId={currentPane.id}
+                onDelete={load}
+                onTitleChange={() => load()}
+              >
+                <MenuItem
+                  onClick={(event) =>
+                    navigateWithKeyboardHandler(
+                      event,
+                      PaneableComponent.AIThread,
+                      { id: recentlyUpdatedThread.id },
+                    )
+                  }
+                >
+                  <NowrapMenuLabel>
+                    {recentlyUpdatedThread.title || t('generic.untitled')}
+                  </NowrapMenuLabel>
+                </MenuItem>
+              </AIThreadContextMenu>
+            ))}
+          {filteredThreads.length > RECENT_ARTIFACTS_LIMIT && (
+            <Flex justify="center" py="1">
+              <Button
+                variant="ghost"
+                size="1"
                 onClick={(event) =>
                   navigateWithKeyboardHandler(
                     event,
@@ -367,51 +447,11 @@ export const LeftSideMenu: React.FC = () => {
                     {},
                   )
                 }
-                size="small"
-                fill="clear"
               >
-                <IonIcon icon={expand} size="small" />
-              </IonButton>
-            </IonListHeader>
-            {filteredThreads
-              .slice(0, recentlyUpdatedThreadsLimit)
-              .map((recentlyUpdatedThread) => (
-                <AIThreadContextMenu
-                  key={recentlyUpdatedThread.id}
-                  id={recentlyUpdatedThread.id}
-                  title={recentlyUpdatedThread.title || t('generic.untitled')}
-                  paneId={currentPane.id}
-                  onDelete={load}
-                  onTitleChange={() => load()}
-                >
-                  <CompactIonItem
-                    lines="none"
-                    onClick={(event) =>
-                      navigateWithKeyboardHandler(
-                        event,
-                        PaneableComponent.AIThread,
-                        { id: recentlyUpdatedThread.id },
-                      )
-                    }
-                    button
-                  >
-                    <NowrapIonLabel>
-                      {recentlyUpdatedThread.title || t('generic.untitled')}
-                    </NowrapIonLabel>
-                  </CompactIonItem>
-                </AIThreadContextMenu>
-              ))}
-            {filteredThreads.length > recentlyUpdatedThreadsLimit && (
-              <IonButton
-                onClick={showMoreThreads}
-                fill="clear"
-                size="small"
-                expand="full"
-              >
-                <ShowMoreButtonText>{t('menu.more')}</ShowMoreButtonText>
-              </IonButton>
-            )}
-          </IonList>
+                {t('menu.more')}
+              </Button>
+            </Flex>
+          )}
         </SidebarCard>
       )}
 
@@ -421,8 +461,7 @@ export const LeftSideMenu: React.FC = () => {
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(
                 event,
@@ -430,29 +469,28 @@ export const LeftSideMenu: React.FC = () => {
                 {},
               )
             }
-            button
           >
-            <IonIcon icon={heart} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>{t('menu.contribute')}</IonLabel>
-          </CompactIonItem>
+            <MenuIcon>
+              <FaHeart />
+            </MenuIcon>
+            <MenuLabel>{t('menu.contribute')}</MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
         <SideMenuItemContextMenu
           component={PaneableComponent.Settings}
           componentProps={{}}
           paneId={currentPane.id}
         >
-          <CompactIonItem
-            lines="none"
+          <MenuItem
             onClick={(event) =>
               navigateWithKeyboardHandler(event, PaneableComponent.Settings, {})
             }
-            button
           >
-            <IonIcon icon={settings} size="small" />
-            &nbsp;&nbsp;
-            <IonLabel>{t('menu.settings')}</IonLabel>
-          </CompactIonItem>
+            <MenuIcon>
+              <IoSettings />
+            </MenuIcon>
+            <MenuLabel>{t('menu.settings')}</MenuLabel>
+          </MenuItem>
         </SideMenuItemContextMenu>
       </SidebarCard>
 

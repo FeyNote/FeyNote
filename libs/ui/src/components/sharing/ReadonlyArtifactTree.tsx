@@ -326,6 +326,8 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
               innerContent = (
                 <TreeItemContainer
                   $isUncategorized={false}
+                  $isActive={false}
+                  $isSelected={false}
                   data-index={virtualItem.index}
                   ref={virtualizer.measureElement}
                 >
@@ -340,7 +342,7 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
                       )}
                     </ItemArrow>
                   )}
-                  <TreeItemButton $isUncategorized={true} $isActive={false}>
+                  <TreeItemButton $isUncategorized={true}>
                     <HiddenDocumentText>
                       {t('artifactTree.hiddenDocument')}
                     </HiddenDocumentText>
@@ -351,6 +353,8 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
               innerContent = (
                 <TreeItemContainer
                   $isUncategorized={isUncategorized}
+                  $isActive={props.selectedArtifactId === itemInstance.getId()}
+                  $isSelected={false}
                   data-index={virtualItem.index}
                   ref={virtualizer.measureElement}
                 >
@@ -368,9 +372,6 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
                   <TreeItemButton
                     onClick={() => onItemClick(itemInstance.getId())}
                     $isUncategorized={isUncategorized}
-                    $isActive={
-                      props.selectedArtifactId === itemInstance.getId()
-                    }
                   >
                     {item.title}
                   </TreeItemButton>

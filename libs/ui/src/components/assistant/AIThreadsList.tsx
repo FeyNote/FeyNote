@@ -29,7 +29,7 @@ const ThreadItemRow = styled.div`
   user-select: none;
   padding: 16px;
   transition: background-color 100ms;
-  background-color: var(--card-background);
+  background-color: var(--contrasting-element-background);
   border-radius: 4px;
   margin-top: 6px;
   cursor: pointer;

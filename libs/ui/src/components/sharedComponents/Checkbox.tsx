@@ -6,7 +6,7 @@ import styled from 'styled-components';
 const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
   $size: number;
 }>`
-  transition: background-color 150ms;
+  transition: var(--background-hover-transition);
   background-color: var(--general-background);
   ${(props) => `
     width: ${props.$size}px;

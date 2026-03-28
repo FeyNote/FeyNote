@@ -40,9 +40,21 @@ Right-clicking a document in the tree opens a context menu with the following op
 
 To create a document that's already nested inside another, right-click the parent document in the tree and choose **New Document as Tree Child**. This option is also available from the **File** menu in the toolbar when you have a document open. You'll be asked to pick a document type (text, calendar, or drawing), and the new document will be created as a child of the selected parent.
 
+## Selecting Multiple Documents
+
+You can select multiple documents in the tree to move or manage them together:
+
+- **Ctrl+click** (or **Cmd+click** on Mac) toggles individual documents in and out of your selection.
+- **Shift+click** selects a range of documents between the last selected document and the one you click.
+- **Ctrl+A** selects all visible documents in the tree.
+
+Once you have multiple documents selected, you can drag them as a group to a new location in the tree. Right-clicking the selection opens a context menu with bulk actions including **Move Within Your Tree**, **Remove from Workspace**, and **Delete All**.
+
+Clicking a document without holding a modifier key clears the selection and navigates to that document as usual.
+
 ## Moving Multiple Documents
 
-If you need to reorganize several documents at once, open **All Documents**, select the documents you want to move, then choose **Move Within Your Tree** from the **Actions** menu. A tree picker will appear where you can click a target parent. After confirming the move, all selected documents will be placed inside that parent.
+You can also reorganize several documents at once from the **All Documents** view. Select the documents you want to move, then choose **Move Within Your Tree** from the **Actions** menu. A tree picker will appear where you can click a target parent. After confirming the move, all selected documents will be placed inside that parent.
 
 ## Settings
 

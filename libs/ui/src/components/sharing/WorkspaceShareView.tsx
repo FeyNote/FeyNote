@@ -38,7 +38,7 @@ const Sidebar = styled.div`
 `;
 
 const SidebarContent = styled.div`
-  background: var(--card-background);
+  background: var(--contrasting-element-background);
   border-radius: 4px;
 `;
 
