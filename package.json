@@ -89,6 +89,7 @@
     "cors": "^2.8.6",
     "dedent": "^1.7.2",
     "dompurify": "^3.3.2",
+    "electron-squirrel-startup": "^1.0.1",
     "express": "4.22.1",
     "extract-zip": "^2.0.1",
     "flexlayout-react": "^0.8.19",
