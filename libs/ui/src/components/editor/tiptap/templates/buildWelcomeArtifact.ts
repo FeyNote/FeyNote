@@ -25,6 +25,20 @@ export const buildWelcomeArtifact = (options: {
     type: 'doc',
     content: [
       {
+        type: 'heading',
+        attrs: {
+          id: crypto.randomUUID(),
+          textAlign: 'left',
+          level: 1,
+        },
+        content: [
+          {
+            type: 'text',
+            text: t('template.welcome.title'),
+          },
+        ],
+      },
+      {
         type: 'paragraph',
         attrs: {
           id: crypto.randomUUID(),

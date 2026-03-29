@@ -9,6 +9,7 @@ export interface ImportJobStream {
   format: ImportFormat;
   fileSize: number;
   fileContents: ReadableStream<Uint8Array>;
+  workspaceId: string | null;
 }
 
 /**
@@ -57,6 +58,7 @@ export class ImportJobStreamDecoder {
       format: data['format'],
       fileSize: fileStream.size,
       fileContents: fileStream.stream,
+      workspaceId: data['workspaceId'] ?? null,
     } as ImportJobStream;
   }
 }

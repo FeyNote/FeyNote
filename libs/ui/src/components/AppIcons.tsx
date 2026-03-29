@@ -149,7 +149,7 @@ export {
   RiUnderline,
 } from 'react-icons/ri';
 
-export { RxMagicWand } from 'react-icons/rx';
+export { RxCross2, RxMagicWand } from 'react-icons/rx';
 
 export {
   TbFileTypeDocx,
