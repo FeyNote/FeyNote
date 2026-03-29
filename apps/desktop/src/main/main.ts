@@ -10,9 +10,10 @@ import {
 import path from 'path';
 import fs from 'fs/promises';
 import { pathToFileURL } from 'url';
+import squirrelStartup from 'electron-squirrel-startup';
 import { startUpdateChecker } from './updateChecker';
 
-if (require('electron-squirrel-startup')) app.quit();
+if (squirrelStartup) app.quit();
 
 declare const process: NodeJS.Process & { resourcesPath: string };
 
