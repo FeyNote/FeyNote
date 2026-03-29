@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 const OfferingCard = styled.div`
-  box-shadow: var(--card-box-shadow);
+  box-shadow: var(--contrasting-element-box-shadow);
   border-radius: var(--card-border-radius);
   padding: 16px;
   text-align: center;

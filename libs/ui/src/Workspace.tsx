@@ -64,7 +64,7 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tabset_tabbar_outer_top {
-    background: var(--card-background);
+    background: var(--contrasting-element-background);
   }
 
   .flexlayout__tabset:first-child .flexlayout__tabset_tabbar_outer_top {
@@ -196,7 +196,7 @@ const MenuInner = styled.div`
 `;
 
 const MenuButton = styled(IonButton)`
-  background: var(--card-background);
+  background: var(--contrasting-element-background);
 `;
 
 const MainGrid = styled.div<{

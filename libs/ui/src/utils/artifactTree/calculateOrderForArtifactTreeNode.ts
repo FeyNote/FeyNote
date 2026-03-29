@@ -22,7 +22,7 @@ const _calculateOrderBetween = (a: string, b: string): string => {
   return aChar + _calculateOrderBetween(a.substring(1), b.substring(1));
 };
 
-const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
+export const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
   const validRegex = /^[A-Z]*$/;
   if (!validRegex.test(a) || !validRegex.test(b)) {
     console.error('a and b must be uppercase strings');
@@ -36,7 +36,6 @@ const calculateOrderBetween = (a = 'A', b = 'Z'): string => {
     return 'Y';
   }
 
-  console.log('orders passed', a, b);
   if (a.localeCompare(b) > 0) {
     throw new Error('a must be greater than b');
   }

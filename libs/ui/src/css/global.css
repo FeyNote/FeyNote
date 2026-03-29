@@ -170,20 +170,34 @@
 
 html {
   --card-border-radius: 4px;
+  --background-hover-transition: background-color 100ms;
 }
 
 html.light {
   --text-color: #000000;
   --text-color-dim: #444444;
+  --text-color-faint: #888888;
   --text-color-inverted: #ffffff;
+
   --general-background: #ffffff;
   --general-background-hover: #efefef;
   --general-background-hint: #efefef;
 
-  --card-background: #efefef;
-  --card-background-hover: #dbdbdb;
-  --card-background-active: #e0e0e0;
-  --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  /* Cards are used for top-level app structure indication.
+   * Use cards sparingly and only for high-level containers */
+  --card-background: #ffffff;
+  --card-background-hover: #f2f2f2;
+  --card-background-active: #f2f2f2;
+  --card-box-shadow:
+    rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px,
+    rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
+
+  --contrasting-element-background: #f0f0f0;
+  --contrasting-element-background-hover: #e4e4e4;
+  --contrasting-element-background-active: #e0e0e0;
+  --contrasting-element-box-shadow:
+    rgba(0, 0, 0, 0.2) 0px 3px 1px -2px, rgba(0, 0, 0, 0.14) 0px 2px 2px 0px,
+    rgba(0, 0, 0, 0.12) 0px 1px 5px 0px;
 
   --floating-background: #ffffff;
   --floating-background-hint: #aaaaaa;
@@ -195,15 +209,22 @@ html.light {
 html.dark {
   --text-color: #ffffff;
   --text-color-dim: #999999;
+  --text-color-faint: #444444;
   --text-color-inverted: #000000;
+
   --general-background: #121212;
   --general-background-hover: #1e1e1e;
   --general-background-hint: #1e1e1e;
 
+  /* Cards are used for top-level app structure indication.
+   * Use cards sparingly and only for high-level containers */
   --card-background: #1e1e1e;
-  --card-background-hover: #161616;
-  --card-background-active: #121212;
   --card-box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.5);
+
+  --contrasting-element-background: #1e1e1e;
+  --contrasting-element-background-hover: #242424;
+  --contrasting-element-background-active: #282828;
+  --contrasting-element-box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
 
   --floating-background: #2a2a2a;
   --floating-background-hint: #444444;

@@ -1,16 +1,33 @@
-import {
-  IonButton,
-  IonCard,
-  IonIcon,
-  IonListHeader,
-  IonToggle,
-} from '@ionic/react';
+import { Switch } from '@radix-ui/themes';
 import { useTranslation } from 'react-i18next';
-import { lockClosed, settings, trash } from 'ionicons/icons';
 import { InfoButton } from '../info/InfoButton';
-import { CompactIonItem } from '../CompactIonItem';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { PreferenceNames } from '@feynote/shared-utils';
+import { IoSettings, IoTrash, LuLock } from '../AppIcons';
+import {
+  SidemenuCard,
+  SidemenuCardHeader,
+  SidemenuCardHeaderLabel,
+  SidemenuCardItem,
+  SidemenuCardItemEndSlot,
+} from '../sidemenu/SidemenuComponents';
+import styled from 'styled-components';
+
+const UnlockButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-color-dim);
+
+  &:hover {
+    background: var(--gray-a3);
+  }
+`;
 
 interface Props {
   lockedArtifacts: {
@@ -26,95 +43,92 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
-      <IonCard>
-        <IonListHeader>
-          <IonIcon icon={settings} size="small" />
-          &nbsp;&nbsp;
-          {t('graph.settings')}
+      <SidemenuCard>
+        <SidemenuCardHeader>
+          <IoSettings size={16} />
+          <SidemenuCardHeaderLabel>
+            {t('graph.settings')}
+          </SidemenuCardHeaderLabel>
           <InfoButton
             message={t('graph.settings.help')}
             docsLink="https://docs.feynote.com/documents/graph/#graph-settings"
           />
-        </IonListHeader>
-        <CompactIonItem>
+        </SidemenuCardHeader>
+        <SidemenuCardItem>
           {t('graph.settings.showOrphans')}
-
-          <IonToggle
-            slot="end"
-            onIonChange={(e) => {
-              setPreference(PreferenceNames.GraphShowOrphans, e.detail.checked);
-            }}
-            checked={getPreference(PreferenceNames.GraphShowOrphans)} // Replace with your actual state
-          ></IonToggle>
-        </CompactIonItem>
-        <CompactIonItem>
+          <SidemenuCardItemEndSlot>
+            <Switch
+              checked={getPreference(PreferenceNames.GraphShowOrphans)}
+              onCheckedChange={(checked) => {
+                setPreference(PreferenceNames.GraphShowOrphans, checked);
+              }}
+            />
+          </SidemenuCardItemEndSlot>
+        </SidemenuCardItem>
+        <SidemenuCardItem>
           {t('graph.settings.showReferenceRelations')}
-
-          <IonToggle
-            slot="end"
-            onIonChange={(e) => {
-              setPreference(
+          <SidemenuCardItemEndSlot>
+            <Switch
+              checked={getPreference(
                 PreferenceNames.GraphShowReferenceRelations,
-                e.detail.checked,
-              );
-            }}
-            checked={getPreference(PreferenceNames.GraphShowReferenceRelations)}
-          ></IonToggle>
-        </CompactIonItem>
-        <CompactIonItem>
+              )}
+              onCheckedChange={(checked) => {
+                setPreference(
+                  PreferenceNames.GraphShowReferenceRelations,
+                  checked,
+                );
+              }}
+            />
+          </SidemenuCardItemEndSlot>
+        </SidemenuCardItem>
+        <SidemenuCardItem>
           {t('graph.settings.showTreeRelations')}
-
-          <IonToggle
-            slot="end"
-            onIonChange={(e) => {
-              setPreference(
-                PreferenceNames.GraphShowTreeRelations,
-                e.detail.checked,
-              );
-            }}
-            checked={getPreference(PreferenceNames.GraphShowTreeRelations)}
-          ></IonToggle>
-        </CompactIonItem>
-        <CompactIonItem>
+          <SidemenuCardItemEndSlot>
+            <Switch
+              checked={getPreference(PreferenceNames.GraphShowTreeRelations)}
+              onCheckedChange={(checked) => {
+                setPreference(PreferenceNames.GraphShowTreeRelations, checked);
+              }}
+            />
+          </SidemenuCardItemEndSlot>
+        </SidemenuCardItem>
+        <SidemenuCardItem>
           {t('graph.settings.lockNodeOnDrag')}
-
-          <IonToggle
-            slot="end"
-            onIonChange={(e) => {
-              setPreference(
-                PreferenceNames.GraphLockNodeOnDrag,
-                e.detail.checked,
-              );
-            }}
-            checked={getPreference(PreferenceNames.GraphLockNodeOnDrag)} // Replace with your actual state
-          ></IonToggle>
-        </CompactIonItem>
-      </IonCard>
+          <SidemenuCardItemEndSlot>
+            <Switch
+              checked={getPreference(PreferenceNames.GraphLockNodeOnDrag)}
+              onCheckedChange={(checked) => {
+                setPreference(PreferenceNames.GraphLockNodeOnDrag, checked);
+              }}
+            />
+          </SidemenuCardItemEndSlot>
+        </SidemenuCardItem>
+      </SidemenuCard>
       {!!props.lockedArtifacts.length && (
-        <IonCard>
-          <IonListHeader>
-            <IonIcon icon={lockClosed} size="small" />
-            &nbsp;&nbsp;
-            {t('graph.settings.lockedArtifacts')}
+        <SidemenuCard>
+          <SidemenuCardHeader>
+            <LuLock size={16} />
+            <SidemenuCardHeaderLabel>
+              {t('graph.settings.lockedArtifacts')}
+            </SidemenuCardHeaderLabel>
             <InfoButton message={t('graph.settings.lockedArtifacts.help')} />
-          </IonListHeader>
+          </SidemenuCardHeader>
           {props.lockedArtifacts.map((artifact) => (
-            <CompactIonItem key={artifact.id}>
+            <SidemenuCardItem key={artifact.id}>
               {artifact.title}
-
-              <IonButton
-                slot="end"
-                fill="clear"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  props.unlockArtifact(artifact.id);
-                }}
-              >
-                <IonIcon slot="icon-only" icon={trash} />
-              </IonButton>
-            </CompactIonItem>
+              <SidemenuCardItemEndSlot>
+                <UnlockButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    props.unlockArtifact(artifact.id);
+                  }}
+                >
+                  <IoTrash size={16} />
+                </UnlockButton>
+              </SidemenuCardItemEndSlot>
+            </SidemenuCardItem>
           ))}
-        </IonCard>
+        </SidemenuCard>
       )}
     </>
   );

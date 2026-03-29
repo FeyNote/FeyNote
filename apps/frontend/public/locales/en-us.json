@@ -313,6 +313,7 @@
   "artifactTree.hiddenDocument": "Hidden Document",
   "artifactTree.empty": "Empty. Create a new document to get started.",
   "artifactTree.emptyReadOnly": "This workspace is empty. You have read-only access.",
+  "artifactTree.multiSelect.label": "{{count}} documents selected",
 
   "welcome.title": "Welcome to FeyNote!",
   "welcome.subtitle": "To get started, here are a few things you can do:",

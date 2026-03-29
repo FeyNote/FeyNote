@@ -10,6 +10,7 @@ import {
   dragAndDropFeature,
   hotkeysCoreFeature,
   ItemInstance,
+  selectionFeature,
   syncDataLoaderFeature,
   type DragTarget,
 } from '@headless-tree/core';
@@ -24,6 +25,7 @@ import {
   getAccessLevelCanEdit,
   getWorkspaceAccessLevel,
   getWorkspaceArtifactsFromYDoc,
+  getWorkspaceTreeNodesFromYDoc,
 } from '@feynote/shared-utils';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -36,10 +38,7 @@ import {
   getCustomDragData,
   setCustomDragData,
 } from '../../utils/artifactTree/customDrag';
-import {
-  calculateOrderForArtifactTreeNode,
-  type TreeOrderCalculationLocation,
-} from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
+import { calculateOrderBetween } from '../../utils/artifactTree/calculateOrderForArtifactTreeNode';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
@@ -52,6 +51,11 @@ import { useTreeExpandedItems } from './useTreeExpandedItems';
 import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
 import { useObserveWorkspaceUserAccess } from '../../utils/collaboration/useObserveWorkspaceUserAccess';
 import { useObserveWorkspaceMeta } from '../../utils/collaboration/useObserveWorkspaceMeta';
+import * as Sentry from '@sentry/react';
+import { MultiArtifactMoveInTreeDialog } from './allArtifacts/MultiArtifactMoveInTreeDialog';
+import { MultiArtifactDeleteDialog } from './allArtifacts/MultiArtifactDeleteDialog';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
+import { withCollaborationConnection } from '../../utils/collaboration/collaborationManager';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -65,7 +69,8 @@ const TreeVirtualizer = styled.div`
 
 const DragLine = styled.div`
   height: 4px;
-  background-color: var(--ion-color-primary-shade);
+  background-color: var(--accent-8);
+  transition: opacity 0s 80ms;
 `;
 
 const TreeNullState = styled(NullState)`
@@ -132,6 +137,10 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const focusedPane = globalPaneContext.getPaneById(undefined);
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [multiSelectAction, setMultiSelectAction] = useState<
+    'moveInTree' | 'removeFromWorkspace' | 'delete' | null
+  >(null);
+  const multiSelectActionIdsRef = useRef<Set<string>>(new Set());
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const userTreeConnection = useCollaborationConnection(
@@ -279,7 +288,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       if (comparison === 0) {
         const titleComparison = a.title.localeCompare(b.title);
         if (titleComparison === 0) {
-          return a.id.localeCompare(a.id);
+          return a.id.localeCompare(b.id);
         }
         return titleComparison;
       }
@@ -386,39 +395,50 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     (itemIds: string[], target: DragTarget<InternalTreeItem | undefined>) => {
       if (!isEditable) return;
 
-      const location = ((): TreeOrderCalculationLocation => {
-        if (!('insertionIndex' in target)) {
-          return {
-            position: 'beginning',
-          };
-        }
+      const draggedSet = new Set(itemIds);
 
-        const targetChildren = target.item.getChildren();
-        const beforeItem = targetChildren.at(target.childIndex);
-        const afterItem = targetChildren.at(target.childIndex - 1);
-        if (beforeItem && afterItem && target.childIndex !== 0) {
-          return {
-            position: 'between',
-            beforeNodeId: beforeItem.getId(),
-            afterNodeId: afterItem.getId(),
-          };
-        } else if (beforeItem) {
-          return {
-            position: 'beginning',
-          };
-        } else {
-          return {
-            position: 'end',
-          };
-        }
-      })();
-      const order = calculateOrderForArtifactTreeNode({
-        treeYKV: treeYKV,
-        parentNodeId: target.item.getId(),
-        location,
+      const targetChildrenFiltered = target.item
+        .getChildren()
+        .filter((child) => !draggedSet.has(child.getId()));
+      const insertionIndex =
+        'insertionIndex' in target ? target.insertionIndex : 0;
+      const beforeItem = targetChildrenFiltered.at(insertionIndex);
+      const afterItem =
+        'insertionIndex' in target && insertionIndex > 0
+          ? targetChildrenFiltered.at(insertionIndex - 1)
+          : undefined;
+
+      const afterOrder = afterItem
+        ? (treeItemsById.get(afterItem.getId())?.order ?? 'A')
+        : 'A';
+      const beforeOrder = beforeItem
+        ? (treeItemsById.get(beforeItem.getId())?.order ?? 'Z')
+        : 'Z';
+
+      /**
+       * I filter to "top level ids" here because range selection with shift
+       * ends up selecting children IDs too, which if included will flatten their structure
+       * out which isn't a great experience
+       */
+      const topLevelIds = itemIds.filter((id) => {
+        const item = treeItemsById.get(id);
+        return !item?.parentId || !draggedSet.has(item.parentId);
       });
+
+      const sortedTopLevelIds = [...topLevelIds].sort((a, b) => {
+        const itemA = treeItemsById.get(a);
+        const itemB = treeItemsById.get(b);
+        if (!itemA || !itemB) return 0;
+        const orderCmp = itemA.order.localeCompare(itemB.order);
+        if (orderCmp !== 0) return orderCmp;
+        const titleCmp = itemA.title.localeCompare(itemB.title);
+        if (titleCmp !== 0) return titleCmp;
+        return itemA.id.localeCompare(itemB.id);
+      });
+
       workspaceOrUserTreeConnection.yjsDoc.transact(() => {
-        for (const itemId of itemIds) {
+        let prevOrder: string | undefined;
+        for (const itemId of sortedTopLevelIds) {
           let parentNodeId: string | null = target.item.getId();
           if (parentNodeId === UNCATEGORIZED_TREE_NODE_ID) {
             treeYKV.delete(itemId);
@@ -426,14 +446,19 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           }
 
           if (parentNodeId === 'root') parentNodeId = null;
+
+          const lowerBound = prevOrder ?? afterOrder;
+          const itemOrder = calculateOrderBetween(lowerBound, beforeOrder);
+
           treeYKV.set(itemId, {
             parentNodeId,
-            order,
+            order: itemOrder,
           });
+          prevOrder = itemOrder;
         }
       });
     },
-    [isEditable, treeYKV, workspaceOrUserTreeConnection.yjsDoc],
+    [isEditable, treeYKV, treeItemsById, workspaceOrUserTreeConnection.yjsDoc],
   );
 
   const getAllParentsOf = (itemId: string): string[] => {
@@ -485,14 +510,43 @@ export const ArtifactTree: React.FC<Props> = (props) => {
       return treeItemsById.get(item.getId())?.title || '';
     },
     rootItemId: ROOT_TREE_NODE_ID,
-    features: [syncDataLoaderFeature, dragAndDropFeature, hotkeysCoreFeature],
+    indent: 17,
+    features:
+      props.mode === 'navigate'
+        ? [
+            syncDataLoaderFeature,
+            selectionFeature,
+            dragAndDropFeature,
+            hotkeysCoreFeature,
+          ]
+        : [syncDataLoaderFeature, dragAndDropFeature, hotkeysCoreFeature],
     canReorder: isEditable,
+    draggedItemOverwritesSelection: true,
     canDrop: () => isEditable,
+    setDragImage: (items) => {
+      const el = document.createElement('div');
+      el.style.cssText =
+        'position:fixed;top:-1000px;padding:4px 8px;border-radius:5px;font-size:0.8rem;' +
+        'background:var(--contrasting-element-background-active);color:var(--text-color);white-space:nowrap;';
+      const titles = items
+        .map((item) => treeItemsById.get(item.getId())?.title)
+        .filter(Boolean);
+      el.textContent =
+        titles.length <= 1
+          ? (titles[0] ?? '')
+          : `${titles[0]} (+${titles.length - 1})`;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => el.remove());
+      return { imgElement: el, xOffset: 0, yOffset: 0 };
+    },
     onDrop: (items, target) => {
       onDrop(
         items.map((el) => el.getId()),
         target,
       );
+      if (items.length <= 1) {
+        setSelectedItems([]);
+      }
     },
     canDropForeignDragObject: () => {
       return isEditable && !!getCustomDragData();
@@ -583,10 +637,15 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     }
 
     if (item.id === UNCATEGORIZED_TREE_NODE_ID) {
-      // We ignore clicks on uncategorized because it's not navigable
       return;
     }
 
+    if (event.shiftKey || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    event.stopPropagation();
+    setSelectedItems([]);
     navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
       id: item.id,
     });
@@ -607,7 +666,42 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     );
   };
 
+  const handleMultiSelectAction = useCallback(
+    (action: 'moveInTree' | 'removeFromWorkspace' | 'delete') => {
+      multiSelectActionIdsRef.current = new Set(selectedItems);
+      setMultiSelectAction(action);
+    },
+    [selectedItems],
+  );
+
+  const closeMultiSelectAction = useCallback(() => {
+    setMultiSelectAction(null);
+  }, []);
+
+  const handleBulkRemoveFromWorkspace = useCallback(async () => {
+    if (!currentWorkspaceId) return;
+    setMultiSelectAction(null);
+    try {
+      await withCollaborationConnection(
+        `workspace:${currentWorkspaceId}`,
+        async (connection) => {
+          const artifacts = getWorkspaceArtifactsFromYDoc(connection.yjsDoc);
+          const treeNodes = getWorkspaceTreeNodesFromYDoc(connection.yjsDoc);
+          connection.yjsDoc.transact(() => {
+            for (const artifactId of multiSelectActionIdsRef.current) {
+              artifacts.delete(artifactId);
+              treeNodes.delete(artifactId);
+            }
+          });
+        },
+      );
+    } catch (e) {
+      Sentry.captureException(e);
+    }
+  }, [currentWorkspaceId]);
+
   const parentRef = useRef<HTMLDivElement | null>(null);
+  const lastDragLineStyleRef = useRef<React.CSSProperties>({});
 
   const virtualizer = useVirtualizer({
     count: tree.getItems().length,
@@ -620,6 +714,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     <TreeContainer ref={parentRef}>
       <TreeVirtualizer
         {...tree.getContainerProps()}
+        data-dragging={String(!!tree.getState().dnd?.draggedItems)}
         style={{
           height: `${virtualizer.getTotalSize()}px`,
         }}
@@ -656,13 +751,81 @@ export const ArtifactTree: React.FC<Props> = (props) => {
                     onItemBodyDoubleClick(event, itemInstance)
                   }
                   isActive={focusedArtifactId === itemInstance.getId()}
+                  isSelected={
+                    props.mode === 'navigate' && itemInstance.isSelected()
+                  }
+                  selectedCount={selectedItems.length}
+                  onMultiSelectAction={handleMultiSelectAction}
                 />
               );
             })}
-            <DragLine style={tree.getDragLineStyle()} />
+            <DragLine
+              style={(() => {
+                const lineStyle = tree.getDragLineStyle(-1, -1);
+                const isHidden =
+                  'display' in lineStyle ||
+                  tree.getDragTarget()?.item.getId() ===
+                    UNCATEGORIZED_TREE_NODE_ID;
+                if (!isHidden) {
+                  lastDragLineStyleRef.current = lineStyle;
+                  return {
+                    ...lineStyle,
+                    opacity: 1,
+                    transition: 'opacity 0s 0s',
+                  };
+                }
+                const hidden: React.CSSProperties = {
+                  ...lastDragLineStyleRef.current,
+                  opacity: 0,
+                  pointerEvents: 'none',
+                };
+                return hidden;
+              })()}
+            />
           </>
         )}
       </TreeVirtualizer>
+      {multiSelectAction === 'moveInTree' && (
+        <MultiArtifactMoveInTreeDialog
+          artifactIds={multiSelectActionIdsRef.current}
+          workspaceId={currentWorkspaceId}
+          close={closeMultiSelectAction}
+        />
+      )}
+      {multiSelectAction === 'delete' && (
+        <MultiArtifactDeleteDialog
+          artifactIds={multiSelectActionIdsRef.current}
+          close={closeMultiSelectAction}
+        />
+      )}
+      {multiSelectAction === 'removeFromWorkspace' && (
+        <ActionDialog
+          title={t('allArtifacts.actions.removeFromWorkspace.confirm.title')}
+          description={t(
+            'allArtifacts.actions.removeFromWorkspace.confirm.message',
+            { count: multiSelectActionIdsRef.current.size },
+          )}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) closeMultiSelectAction();
+          }}
+          actionButtons={[
+            {
+              title: t('generic.cancel'),
+              props: {
+                color: 'gray',
+                onClick: closeMultiSelectAction,
+              },
+            },
+            {
+              title: t('generic.confirm'),
+              props: {
+                onClick: handleBulkRemoveFromWorkspace,
+              },
+            },
+          ]}
+        />
+      )}
     </TreeContainer>
   );
 };

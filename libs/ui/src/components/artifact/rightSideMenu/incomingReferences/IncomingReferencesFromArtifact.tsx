@@ -2,20 +2,39 @@ import { useRef, useState } from 'react';
 import { usePaneContext } from '../../../../context/pane/PaneContext';
 import { PaneableComponent } from '../../../../context/globalPane/PaneableComponent';
 import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
-import { CompactIonItem } from '../../../CompactIonItem';
-import { NowrapIonLabel } from '../../../NowrapIonLabel';
 import { useArtifactPreviewTimer } from '../../../editor/tiptap/extensions/artifactReferences/useArtifactPreviewTimer';
 import { ArtifactReferencePreview } from '../../../editor/tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
-import { IonButton, IonIcon } from '@ionic/react';
 import { IncomingReferenceItem } from './IncomingReferenceItem';
-import { chevronDown, chevronUp } from 'ionicons/icons';
 import styled from 'styled-components';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
+import { IoChevronDown, IoChevronUp } from '../../../AppIcons';
+import {
+  SidemenuCardItem,
+  SidemenuCardItemLabel,
+  SidemenuCardItemSublabel,
+  SidemenuCardItemEndSlot,
+} from '../../../sidemenu/SidemenuComponents';
 
 const ChildReferencesContainer = styled.div`
   margin-left: 16px;
+`;
+
+const ExpandButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--text-color-dim);
+
+  &:hover {
+    background: var(--gray-a3);
+  }
 `;
 
 interface Props {
@@ -26,7 +45,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
   const { pane } = usePaneContext();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
   const { t } = useTranslation();
-  const ref = useRef<HTMLIonItemElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [expanded, setExpanded] = useState(false);
   const edge0 = props.edges.at(0);
   if (!edge0) {
@@ -37,14 +56,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
   const { previewInfo, onMouseOver, onMouseOut, close } =
     useArtifactPreviewTimer(edge0.artifactId);
 
-  const linkClicked = (
-    event: React.MouseEvent<
-      | HTMLAnchorElement
-      | HTMLDivElement
-      | HTMLIonItemElement
-      | HTMLIonLabelElement
-    >,
-  ) => {
+  const linkClicked = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -60,36 +72,35 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
         currentArtifactId={edge0.targetArtifactId}
         edge={edge0}
       >
-        <CompactIonItem
+        <SidemenuCardItem
           data-edge-artifactId={edge0.artifactId}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
-          lines="none"
-          button
+          $isButton
         >
-          <NowrapIonLabel ref={ref} onClick={linkClicked}>
+          <SidemenuCardItemLabel ref={ref} onClick={linkClicked}>
             {edge0.artifactTitle}
-            <p>
+            <SidemenuCardItemSublabel>
               {t('artifactRightSideMenu.incoming.title.subtitle', {
                 count: props.edges.length,
               })}
-            </p>
-          </NowrapIonLabel>
+            </SidemenuCardItemSublabel>
+          </SidemenuCardItemLabel>
           {props.edges.length > 1 && (
-            <IonButton
-              fill="clear"
-              onClick={(event) => (
-                event.stopPropagation(),
-                setExpanded(!expanded)
-              )}
-              slot="end"
-              size="small"
-            >
-              <IonIcon
-                icon={expanded ? chevronUp : chevronDown}
-                slot="icon-only"
-              />
-            </IonButton>
+            <SidemenuCardItemEndSlot>
+              <ExpandButton
+                onClick={(event) => (
+                  event.stopPropagation(),
+                  setExpanded(!expanded)
+                )}
+              >
+                {expanded ? (
+                  <IoChevronUp size={14} />
+                ) : (
+                  <IoChevronDown size={14} />
+                )}
+              </ExpandButton>
+            </SidemenuCardItemEndSlot>
           )}
           {previewInfo && ref.current && (
             <ArtifactReferencePreview
@@ -108,7 +119,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
               previewTarget={ref.current}
             />
           )}
-        </CompactIonItem>
+        </SidemenuCardItem>
       </ArtifactRightSidemenuReferenceContextMenu>
       {expanded && (
         <ChildReferencesContainer>

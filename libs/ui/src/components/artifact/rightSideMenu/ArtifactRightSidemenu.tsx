@@ -1,12 +1,4 @@
-import {
-  IonButton,
-  IonCard,
-  IonIcon,
-  IonLabel,
-  IonListHeader,
-  IonSelect,
-  IonSelectOption,
-} from '@ionic/react';
+import { Button, Select } from '@radix-ui/themes';
 import { InfoButton } from '../../info/InfoButton';
 import type { YArtifactMeta } from '@feynote/global-types';
 import { trpc } from '../../../utils/trpc';
@@ -21,9 +13,6 @@ import {
 } from '../../../utils/collaboration/collaborationManager';
 import { useSessionContext } from '../../../context/session/SessionContext';
 import { artifactThemeTitleI18nByName } from '../../editor/artifactThemeTitleI18nByName';
-import { cog, link, person } from 'ionicons/icons';
-import { CompactIonItem } from '../../CompactIonItem';
-import { NowrapIonLabel } from '../../NowrapIonLabel';
 import { ArtifactSharingManagement } from '../ArtifactSharingManagement';
 import { useObserveYArtifactMeta } from '../../../utils/collaboration/useObserveYArtifactMeta';
 import { useCollaborationConnectionAuthorizationState } from '../../../utils/collaboration/useCollaborationConnectionAuthorizationState';
@@ -48,6 +37,14 @@ import { getAcceptedIncomingSharedArtifactIdsFromYDoc } from '../../../utils/art
 import { recursiveRemoveFromArtifactTree } from '../../../utils/artifactTree/recursiveRemoveFromArtifactTree';
 import { useWorkspaceSnapshots } from '../../../utils/localDb/workspaces/useWorkspaceSnapshots';
 import { WorkspaceInfoCard } from '../../workspace/WorkspaceInfoCard';
+import { IoChevronForward, IoSettings, LuLink, LuUsers } from '../../AppIcons';
+import {
+  SidemenuCard,
+  SidemenuCardHeader,
+  SidemenuCardHeaderLabel,
+  SidemenuCardItem,
+  SidemenuCardItemLabel,
+} from '../../sidemenu/SidemenuComponents';
 
 const LOCAL_GRAPH_ENABLED = false;
 
@@ -194,33 +191,36 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
 
   const aritfactSettings = artifactMeta.userId === session.userId &&
     !artifactMeta.deletedAt && (
-      <IonCard>
-        <IonListHeader>
-          <IonIcon icon={cog} size="small" />
-          &nbsp;&nbsp;
-          {t('artifactRenderer.settings')}
-        </IonListHeader>
-        <CompactIonItem lines="none" button>
-          <IonSelect
-            label={t('artifactRenderer.theme')}
-            labelPlacement="fixed"
+      <SidemenuCard>
+        <SidemenuCardHeader>
+          <IoSettings size={16} />
+          <SidemenuCardHeaderLabel>
+            {t('artifactRenderer.settings')}
+          </SidemenuCardHeaderLabel>
+        </SidemenuCardHeader>
+        <SidemenuCardItem>
+          {t('artifactRenderer.theme')}
+          <Select.Root
             value={artifactMeta.theme}
-            onIonChange={(e) => {
-              setMetaProp('theme', e.detail.value);
+            onValueChange={(value) => {
+              setMetaProp('theme', value);
             }}
           >
-            {Object.keys(artifactThemeTitleI18nByName).map((el) => (
-              <IonSelectOption key={el} value={el}>
-                {t(
-                  artifactThemeTitleI18nByName[
-                    el as keyof typeof artifactThemeTitleI18nByName
-                  ],
-                )}
-              </IonSelectOption>
-            ))}
-          </IonSelect>
-        </CompactIonItem>
-      </IonCard>
+            <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+            <Select.Content>
+              {Object.keys(artifactThemeTitleI18nByName).map((el) => (
+                <Select.Item key={el} value={el}>
+                  {t(
+                    artifactThemeTitleI18nByName[
+                      el as keyof typeof artifactThemeTitleI18nByName
+                    ],
+                  )}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </SidemenuCardItem>
+      </SidemenuCard>
     );
 
   const _removeSelfAsCollaborator = async () => {
@@ -303,75 +303,74 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   const artifactSharingSettings = authorizationState ===
     CollaborationConnectionAuthorizationState.CoOwner &&
     !isDeleted && (
-      <IonCard>
-        <IonListHeader>
-          <IonIcon icon={person} size="small" />
-          &nbsp;&nbsp;
-          {t('artifactRenderer.artifactShares')}
+      <SidemenuCard>
+        <SidemenuCardHeader>
+          <LuUsers size={16} />
+          <SidemenuCardHeaderLabel>
+            {t('artifactRenderer.artifactShares')}
+          </SidemenuCardHeaderLabel>
           <InfoButton
             message={t('artifactRenderer.artifactShares.help')}
             docsLink="https://docs.feynote.com/documents/sharing/#sharing-with-specific-users"
           />
-        </IonListHeader>
+        </SidemenuCardHeader>
         {activeUserShares.map(({ key }) => (
-          <CompactIonItem
-            lines="none"
+          <SidemenuCardItem
             key={key}
+            $isButton
             onClick={() => setShowSharingManagementDialog(true)}
-            button
           >
-            <NowrapIonLabel>
+            <SidemenuCardItemLabel>
               {knownUsersById.get(key)?.email || key}
-            </NowrapIonLabel>
-          </CompactIonItem>
+            </SidemenuCardItemLabel>
+          </SidemenuCardItem>
         ))}
         {artifactMeta.linkAccessLevel &&
           artifactMeta.linkAccessLevel !== 'noaccess' && (
-            <CompactIonItem
-              lines="none"
+            <SidemenuCardItem
+              $isButton
               onClick={() => setShowSharingManagementDialog(true)}
-              button
             >
-              <NowrapIonLabel>
+              <SidemenuCardItemLabel>
                 {t('artifactRenderer.sharedByLink')}
-              </NowrapIonLabel>
-            </CompactIonItem>
+              </SidemenuCardItemLabel>
+            </SidemenuCardItem>
           )}
         {!activeUserShares.length &&
           artifactMeta.linkAccessLevel === 'noaccess' && (
-            <CompactIonItem lines="none">
-              <NowrapIonLabel>
+            <SidemenuCardItem>
+              <SidemenuCardItemLabel>
                 {t('artifactRenderer.artifactShares.null')}
-              </NowrapIonLabel>
-            </CompactIonItem>
+              </SidemenuCardItemLabel>
+            </SidemenuCardItem>
           )}
-        <CompactIonItem
-          lines="none"
-          button
-          detail={true}
+        <SidemenuCardItem
+          $isButton
           onClick={() => setShowSharingManagementDialog(true)}
         >
-          <NowrapIonLabel>
+          <SidemenuCardItemLabel>
             {t('artifactRenderer.artifactShares.manage')}
-          </NowrapIonLabel>
-        </CompactIonItem>
-      </IonCard>
+          </SidemenuCardItemLabel>
+          <IoChevronForward size={14} color="var(--text-color-dim)" />
+        </SidemenuCardItem>
+      </SidemenuCard>
     );
 
   const artifactSharingStatus = authorizationState !==
     CollaborationConnectionAuthorizationState.CoOwner && (
-    <IonCard>
-      <IonListHeader>
-        <IonIcon icon={person} size="small" />
-        &nbsp;&nbsp;
-        {t('artifactRenderer.artifactSharedToYou')}
+    <SidemenuCard>
+      <SidemenuCardHeader>
+        <LuUsers size={16} />
+        <SidemenuCardHeaderLabel>
+          {t('artifactRenderer.artifactSharedToYou')}
+        </SidemenuCardHeaderLabel>
         <InfoButton
           message={t('artifactRenderer.artifactSharedToYou.help')}
           docsLink="https://docs.feynote.com/documents/sharing/#removing-yourself-from-a-shared-document"
         />
-      </IonListHeader>
-      <CompactIonItem lines="none">
-        <IonLabel>
+      </SidemenuCardHeader>
+      <SidemenuCardItem>
+        <SidemenuCardItemLabel>
           {t('artifactRenderer.artifactSharedToYou.message', {
             name:
               knownUsersById.get(artifactMeta.userId || '')?.email ||
@@ -384,12 +383,12 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               ? 'artifactRenderer.artifactSharedToYou.readwrite'
               : 'artifactRenderer.artifactSharedToYou.readonly',
           )}
-          <IonButton onClick={removeSelfAsCollaborator}>
-            {t('artifactRenderer.artifactSharedToYou.remove')}
-          </IonButton>
-        </IonLabel>
-      </CompactIonItem>
-    </IonCard>
+        </SidemenuCardItemLabel>
+        <Button variant="soft" size="1" onClick={removeSelfAsCollaborator}>
+          {t('artifactRenderer.artifactSharedToYou.remove')}
+        </Button>
+      </SidemenuCardItem>
+    </SidemenuCard>
   );
 
   return (
@@ -404,48 +403,51 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
       {artifactSharingSettings}
       {artifactSharingStatus}
       {!!incomingEdgesByArtifactId.length && (
-        <IonCard>
-          <IonListHeader>
-            <IonIcon icon={link} size="small" />
-            &nbsp;&nbsp;
-            {t('artifactRenderer.incomingArtifactReferences')}
+        <SidemenuCard>
+          <SidemenuCardHeader>
+            <LuLink size={16} />
+            <SidemenuCardHeaderLabel>
+              {t('artifactRenderer.incomingArtifactReferences')}
+            </SidemenuCardHeaderLabel>
             <InfoButton
               message={t('artifactRenderer.incomingArtifactReferences.help')}
               docsLink="https://docs.feynote.com/documents/references/#incoming-references"
             />
-          </IonListHeader>
+          </SidemenuCardHeader>
           {incomingEdgesByArtifactId.map(([artifactId, edges]) => (
             <IncomingReferencesFromArtifact key={artifactId} edges={edges} />
           ))}
-        </IonCard>
+        </SidemenuCard>
       )}
       {!!outgoingEdgesByArtifactId.length && (
-        <IonCard>
-          <IonListHeader>
-            <IonIcon icon={link} size="small" />
-            &nbsp;&nbsp;
-            {t('artifactRenderer.artifactReferences')}
+        <SidemenuCard>
+          <SidemenuCardHeader>
+            <LuLink size={16} />
+            <SidemenuCardHeaderLabel>
+              {t('artifactRenderer.artifactReferences')}
+            </SidemenuCardHeaderLabel>
             <InfoButton
               message={t('artifactRenderer.artifactReferences.help')}
               docsLink="https://docs.feynote.com/documents/references/#creating-references"
             />
-          </IonListHeader>
+          </SidemenuCardHeader>
           {outgoingEdgesByArtifactId.map(([artifactId, edges]) => (
             <OutgoingReferencesToArtifact key={artifactId} edges={edges} />
           ))}
-        </IonCard>
+        </SidemenuCard>
       )}
       {LOCAL_GRAPH_ENABLED && !!edges.length && (
-        <IonCard>
-          <IonListHeader>
-            <IonIcon icon={link} size="small" />
-            &nbsp;&nbsp;
-            {t('artifactRenderer.artifactLocalGraph')}
+        <SidemenuCard>
+          <SidemenuCardHeader>
+            <LuLink size={16} />
+            <SidemenuCardHeaderLabel>
+              {t('artifactRenderer.artifactLocalGraph')}
+            </SidemenuCardHeaderLabel>
             <InfoButton
               message={t('artifactRenderer.artifactLocalGraph.help')}
               docsLink="https://docs.feynote.com/documents/graph/"
             />
-          </IonListHeader>
+          </SidemenuCardHeader>
           <GraphContainer>
             <GraphRenderer
               artifacts={graphArtifacts}
@@ -454,7 +456,7 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
               enableInitialZoom={true}
             />
           </GraphContainer>
-        </IonCard>
+        </SidemenuCard>
       )}
       {sharingManagementDialog}
     </>
