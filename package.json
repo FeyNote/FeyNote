@@ -201,7 +201,7 @@
     "jest-util": "30.3.0",
     "jiti": "2.6.1",
     "jsdom": "~28.1.0",
-    "lint-staged": "^16.3.2",
+    "lint-staged": "^16.4.0",
     "nx": "22.6.3",
     "prettier": "^3.8.1",
     "prisma": "^6.19.0",
