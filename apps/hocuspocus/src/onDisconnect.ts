@@ -16,7 +16,8 @@ export async function onDisconnect(args: onDisconnectPayload) {
   metrics.hocuspocusDocumentCount.set(args.instance.getDocumentsCount());
 
   switch (type) {
-    case SupportedDocumentType.Artifact: {
+    case SupportedDocumentType.Artifact:
+    case SupportedDocumentType.Workspace: {
       memoizedShadowDocsByDocName.delete(args.documentName);
       break;
     }

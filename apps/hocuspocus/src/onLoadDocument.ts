@@ -2,7 +2,10 @@ import { onLoadDocumentPayload } from '@hocuspocus/server';
 import { applyUpdate } from 'yjs';
 
 import { prisma } from '@feynote/prisma/client';
-import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
+import {
+  ARTIFACT_META_KEY,
+  getWorkspaceMetaYKVFromYDoc,
+} from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
 import {
@@ -32,6 +35,7 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
             title: true,
             theme: true,
             type: true,
+            createdAt: true,
             yBin: true,
           },
         });
@@ -48,20 +52,22 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
             ARTIFACT_META_KEY,
           ) as TypedMap<Partial<YArtifactMeta>>;
 
-          if (!artifactMetaMap.get('id'))
+          if (!artifactMetaMap.has('id'))
             artifactMetaMap.set('id', artifact.id);
-          if (!artifactMetaMap.get('userId'))
+          if (!artifactMetaMap.has('userId'))
             artifactMetaMap.set('userId', artifact.userId);
-          if (!artifactMetaMap.get('title'))
+          if (!artifactMetaMap.has('title'))
             artifactMetaMap.set('title', artifact.title);
-          if (!artifactMetaMap.get('theme'))
+          if (!artifactMetaMap.has('theme'))
             artifactMetaMap.set('theme', artifact.theme);
-          if (!artifactMetaMap.get('type'))
+          if (!artifactMetaMap.has('type'))
             artifactMetaMap.set('type', artifact.type);
-          if (!artifactMetaMap.get('linkAccessLevel'))
+          if (!artifactMetaMap.has('linkAccessLevel'))
             artifactMetaMap.set('linkAccessLevel', 'noaccess');
-          if (artifactMetaMap.get('deletedAt') === undefined)
+          if (!artifactMetaMap.has('deletedAt'))
             artifactMetaMap.set('deletedAt', null);
+          if (!artifactMetaMap.has('createdAt'))
+            artifactMetaMap.set('createdAt', artifact.createdAt.getTime());
         });
 
         return;
@@ -96,7 +102,11 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
             id: true,
             userId: true,
             name: true,
+            icon: true,
+            color: true,
             linkAccessLevel: true,
+            deletedAt: true,
+            createdAt: true,
             yBin: true,
           },
         });
@@ -107,6 +117,22 @@ export async function onLoadDocument(args: onLoadDocumentPayload) {
         }
 
         applyUpdate(args.document, workspace.yBin);
+
+        args.document.transact(() => {
+          const metaKV = getWorkspaceMetaYKVFromYDoc(args.document);
+
+          if (!metaKV.has('id')) metaKV.set('id', workspace.id);
+          if (!metaKV.has('userId')) metaKV.set('userId', workspace.userId);
+          if (!metaKV.has('name')) metaKV.set('name', workspace.name);
+          if (!metaKV.has('icon')) metaKV.set('icon', workspace.icon);
+          if (!metaKV.has('color')) metaKV.set('color', workspace.color);
+          if (!metaKV.has('linkAccessLevel'))
+            metaKV.set('linkAccessLevel', workspace.linkAccessLevel);
+          if (!metaKV.has('deletedAt'))
+            metaKV.set('deletedAt', workspace.deletedAt?.getTime() ?? null);
+          if (!metaKV.has('createdAt'))
+            metaKV.set('createdAt', workspace.createdAt.getTime());
+        });
 
         return;
       }
