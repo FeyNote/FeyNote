@@ -64,9 +64,11 @@ const SearchWithPreviewGrid = styled.div`
 
 const PreviewPanel = styled.div`
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-  background-color: var(--ion-card-background, #ffffff);
+  background-color: var(--card-background);
   border-radius: 7px;
   overflow-y: auto;
+
+  padding: 8px;
 
   ion-card {
     margin-top: 0;
@@ -85,7 +87,7 @@ const PreviewSpinnerContainer = styled.div`
 
 const FloatingSearchContainer = styled.div`
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-  background-color: var(--ion-card-background, #ffffff);
+  background-color: var(--card-background);
   border-radius: 7px;
   overflow: hidden;
   display: flex;
@@ -117,7 +119,7 @@ const SearchResultsContainer = styled.div`
 
 const Backdrop = styled(IonBackdrop)`
   opacity: 0.85;
-  background: var(--ion-background-color, #aaaaaa);
+  background: var(--general-background);
 `;
 
 interface Props {

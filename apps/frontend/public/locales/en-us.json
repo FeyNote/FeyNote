@@ -528,7 +528,7 @@
   "deleteArtifact.title": "Remove Document?",
   "deleteArtifact.subtitle": "This will delete the document if you own it, or remove you as a collaborator if it's shared with you.",
 
-  "artifactRenderer.title.placeholder": "Olympus",
+  "artifactRenderer.title.placeholder": "Enter a title...",
   "artifactRenderer.uploadingFile": "Uploading...",
   "artifactRenderer.fileTooLarge": "File is too large",
   "artifactRenderer.diceRoll.title": "Dice Roll Result",

@@ -25,10 +25,12 @@ export const SearchResult = styled.button<{
   display: block;
   width: 100%;
 
-  ${(props) => props.$selected && `background: var(--card-background-active);`}
+  ${(props) =>
+    props.$selected &&
+    `background: var(--contrasting-element-background-hover);`}
 
   &:hover {
-    background: var(--card-background-active);
+    background: var(--contrasting-element-background-hover);
   }
 `;
 

@@ -66,7 +66,11 @@ export const ArtifactEditor: React.FC<Props> = memo((props) => {
     <ArtifactTitleContainer>
       <ArtifactTitleField
         disabled={!props.editable}
-        placeholder={t('artifactRenderer.title.placeholder')}
+        placeholder={
+          props.editable
+            ? t('artifactRenderer.title.placeholder')
+            : t('generic.untitled')
+        }
         value={title}
         onChange={(event) => {
           setMetaProp('title', event.target.value);
