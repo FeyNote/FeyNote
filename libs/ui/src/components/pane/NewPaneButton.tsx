@@ -1,5 +1,5 @@
-import { IonButton, IonIcon } from '@ionic/react';
-import { add } from 'ionicons/icons';
+import { IconButton } from '@radix-ui/themes';
+import { IoAdd } from '../AppIcons';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { createNewTab } from '../../utils/createNewTab';
 
@@ -15,14 +15,14 @@ export const NewPaneButton: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonButton
+    <IconButton
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
       onClick={newTab}
-      size="small"
-      fill="clear"
+      variant="ghost"
+      size="1"
     >
-      <IonIcon icon={add} size="small" slot="icon-only" />
-    </IonButton>
+      <IoAdd size={18} />
+    </IconButton>
   );
 };

@@ -1,22 +1,24 @@
 import { useEffect } from 'react';
 import { usePaneContext } from '../../context/pane/PaneContext';
-import { IonButton, IonIcon } from '@ionic/react';
-import { arrowBack, arrowForward, ellipsisHorizontal } from 'ionicons/icons';
+import { IconButton } from '@radix-ui/themes';
 import styled from 'styled-components';
 import { DefaultPaneDropdownMenu } from './DefaultPaneDropdownMenu';
+import { IoChevronBack, IoChevronForward, RxDotsHorizontal } from '../AppIcons';
 
 const NavContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
   height: 40px;
-  background: var(--ion-background-color, #ffffff);
-  color: var(--ion-text-color, #000000);
+  background: var(--general-background);
+  color: var(--text-color);
 `;
 
 const NavGroup = styled.div`
-  width: 80px;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
 `;
 
 interface Props {
@@ -36,13 +38,14 @@ export const PaneNav: React.FC<Props> = (props) => {
 
   const renderDropdownButton = () => {
     const contents = (
-      <IonButton
-        size="small"
-        fill="clear"
+      <IconButton
+        style={{ margin: '0' }}
+        variant="ghost"
+        size="1"
         disabled={props.renderDropdownMenu === null}
       >
-        <IonIcon slot="icon-only" icon={ellipsisHorizontal} />
-      </IonButton>
+        <RxDotsHorizontal size={18} />
+      </IconButton>
     );
 
     if (props.renderDropdownMenu) {
@@ -61,25 +64,27 @@ export const PaneNav: React.FC<Props> = (props) => {
 
   return (
     <NavContainer>
-      <NavGroup style={{ textAlign: 'left' }}>
-        <IonButton
+      <NavGroup>
+        <IconButton
+          style={{ margin: '0' }}
+          variant="ghost"
+          size="1"
           onClick={() => navigateHistoryBack()}
           disabled={!pane.history.length}
-          size="small"
-          fill="clear"
         >
-          <IonIcon icon={arrowBack} slot="icon-only" />
-        </IonButton>
-        <IonButton
+          <IoChevronBack size={18} />
+        </IconButton>
+        <IconButton
+          style={{ margin: '0' }}
+          variant="ghost"
+          size="1"
           onClick={() => navigateHistoryForward()}
           disabled={!pane.forwardHistory.length}
-          size="small"
-          fill="clear"
         >
-          <IonIcon icon={arrowForward} slot="icon-only" />
-        </IonButton>
+          <IoChevronForward size={18} />
+        </IconButton>
       </NavGroup>
-      <NavGroup style={{ textAlign: 'right' }}>
+      <NavGroup style={{ marginLeft: 'auto' }}>
         {renderDropdownButton()}
       </NavGroup>
     </NavContainer>

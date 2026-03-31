@@ -7,7 +7,6 @@ import {
   useGlobalPaneContext,
 } from './context/globalPane/GlobalPaneContext';
 import { Pane } from './components/pane/Pane';
-import { IonButton } from '@ionic/react';
 import { usePreferencesContext } from './context/preferences/PreferencesContext';
 import { LuPanelLeft, LuPanelRight } from './components/AppIcons';
 import { LeftSideMenu } from './components/pane/LeftSideMenu';
@@ -29,6 +28,7 @@ import { WelcomeDialog } from './components/dashboard/WelcomeDialog';
 import { useProvideKeyboardShortcutHandler } from './utils/keyboardShortcuts';
 import { openArtifactPrint } from './utils/openArtifactPrint';
 import { createNewTab } from './utils/createNewTab';
+import { IconButton } from '@radix-ui/themes';
 
 const MENU_SIZE_PX = 300;
 /**
@@ -65,6 +65,10 @@ const DockContainer = styled.div`
 
   .flexlayout__tabset_tabbar_outer_top {
     background: var(--contrasting-element-background);
+  }
+
+  .flexlayout__tabset_tabbar_outer {
+    height: 32px;
   }
 
   .flexlayout__tabset:first-child .flexlayout__tabset_tabbar_outer_top {
@@ -193,10 +197,6 @@ const MenuInner = styled.div`
   width: ${MENU_SIZE_PX}px;
   min-height: 100%;
   overflow: hidden;
-`;
-
-const MenuButton = styled(IonButton)`
-  background: var(--contrasting-element-background);
 `;
 
 const MainGrid = styled.div<{
@@ -483,28 +483,24 @@ export const Workspace: React.FC = () => {
           }}
         />
         {showLeftMenuButton && (
-          <MenuButton
-            style={{ position: 'absolute', left: 0 }}
-            fill="clear"
+          <IconButton
+            style={{ margin: '0', position: 'absolute', left: 0, top: '2px' }}
+            variant="ghost"
+            size="2"
             onClick={toggleLeftSideMenu}
-            size="small"
           >
-            <div slot="icon-only">
-              <LuPanelLeft />
-            </div>
-          </MenuButton>
+            <LuPanelLeft />
+          </IconButton>
         )}
         {showRightMenuButton && (
-          <MenuButton
-            style={{ position: 'absolute', right: 0 }}
-            fill="clear"
+          <IconButton
+            style={{ margin: '0', position: 'absolute', right: 0, top: '2px' }}
+            variant="ghost"
+            size="2"
             onClick={toggleRightSideMenu}
-            size="small"
           >
-            <div slot="icon-only">
-              <LuPanelRight />
-            </div>
-          </MenuButton>
+            <LuPanelRight />
+          </IconButton>
         )}
       </DockContainer>
       <Menu $side="right" $open={rightMenuOpen}>
