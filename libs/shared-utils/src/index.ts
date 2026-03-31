@@ -79,6 +79,8 @@ export * from './lib/yjs/workspace/getWorkspaceTreeNodesFromYDoc';
 export * from './lib/yjs/workspace/getWorkspaceUserAccessFromYDoc';
 export * from './lib/yjs/workspace/getWorkspaceThreadsFromYDoc';
 export * from './lib/yjs/workspace/constructWorkspaceYDoc';
+export * from './lib/yjs/timeline/getYTimelineFromYDoc';
+export * from './lib/yjs/timeline/YTimeline';
 
 export * from './lib/types/i18n';
 export * from './lib/types/FeynoteEditorMediaType';
@@ -89,3 +91,4 @@ export * from './lib/ImmediateDebouncer';
 export * from './lib/tiptap/getTiptapServerExtensions';
 export * from './lib/customTrpcTransformer';
 export * from './lib/throttleDropPromise';
+
