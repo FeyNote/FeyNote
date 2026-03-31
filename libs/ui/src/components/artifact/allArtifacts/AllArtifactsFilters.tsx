@@ -21,6 +21,7 @@ const artifactTypeToI18n: Record<ArtifactType, string> = {
   tiptap: 'allArtifacts.filter.onlyIncludeTypes.tiptap',
   calendar: 'allArtifacts.filter.onlyIncludeTypes.calendar',
   tldraw: 'allArtifacts.filter.onlyIncludeTypes.tldraw',
+  timeline: 'allArtifacts.filter.onlyIncludeTypes.timeline',
 } as const;
 
 const allArtifactsOrphansDisplaySettingToI18n: Record<

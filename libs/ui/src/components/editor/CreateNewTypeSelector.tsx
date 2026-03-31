@@ -81,6 +81,22 @@ export const CreateNewTypeSelector = (props: Props) => {
         <Card
           asChild
           onClick={() => {
+            props.newArtifact('timeline');
+          }}
+        >
+          <IonCardHeader>
+            <StyledIonCardTitle>
+              <IonIcon icon={calendar} />
+              {t('editor.artifactTypeSelector.timeline')}
+            </StyledIonCardTitle>
+          </IonCardHeader>
+          <IonCardContent>
+            {t('editor.artifactTypeSelector.timeline.description')}
+          </IonCardContent>
+        </IonCard>
+        <IonCard
+          button
+          onClick={() => {
             props.newArtifact('tldraw');
           }}
         >

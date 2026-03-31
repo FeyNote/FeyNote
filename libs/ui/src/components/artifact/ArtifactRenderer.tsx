@@ -23,6 +23,7 @@ import { usePreferencesContext } from '../../context/preferences/PreferencesCont
 import { PreferenceNames } from '@feynote/shared-utils';
 import { getIsElectron } from '../../utils/getIsElectron';
 import { getLiveExportManager } from '../../utils/liveExport/LiveExportManager';
+import { TimelineRenderer } from '../timeline/TimelineRenderer';
 
 const ArtifactRendererContainer = styled.div`
   height: 100%;
@@ -163,6 +164,17 @@ export const ArtifactRenderer: React.FC<Props> = memo((props) => {
       CollaborationConnectionAuthorizationState.CoOwner ||
       props.authorizationState ===
         CollaborationConnectionAuthorizationState.ReadWrite);
+
+  if (type === 'timeline') {
+    return render(
+      <TimelineRenderer
+        editable={isEditable}
+        yjsProvider={props.connection.tiptapCollabProvider}
+        yDoc={undefined}
+        onTitleChange={props.onTitleChange}
+      />,
+    )
+  }
 
   if (type === 'tiptap') {
     return render(

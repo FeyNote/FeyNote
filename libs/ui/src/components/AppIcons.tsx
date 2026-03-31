@@ -33,6 +33,7 @@ export {
   FaTree,
   FaCheck,
   FaMinus,
+  FaEdit,
 } from 'react-icons/fa';
 
 export { FaPencil } from 'react-icons/fa6';
@@ -100,6 +101,7 @@ export {
   LuTelescope,
   LuUndo,
   LuUsers,
+  LuCalendarCog
 } from 'react-icons/lu';
 
 export {
