@@ -26,6 +26,9 @@ import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useA
 import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
+import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
+import { FeynoteCardItem } from '../card/FeynoteCardItem';
 
 const FlexContainer = styled.div`
   display: flex;
@@ -41,33 +44,14 @@ const DashboardCard = styled(Card)`
   padding: 8px;
 `;
 
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
+const DashboardCardHeader = styled(FeynoteCardHeader)`
+  min-height: unset;
   padding: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-color-dim);
+  border-bottom: none;
 `;
 
-const CardHeaderLabel = styled.span`
-  flex: 1;
-`;
-
-const CardItem = styled.div`
-  display: flex;
-  align-items: center;
-  min-height: 34px;
-  font-size: 0.875rem;
+const DashboardCardItem = styled(FeynoteCardItem)`
   padding: 6px 8px;
-  color: var(--text-color);
-  border-radius: var(--card-border-radius);
-  cursor: pointer;
-
-  &:hover {
-    background: var(--contrasting-element-background-hover);
-  }
 `;
 
 const CardNullState = styled(NullState)`
@@ -185,11 +169,11 @@ export const Dashboard: React.FC<Props> = (props) => {
         {initialLoadComplete && (
           <FlexContainer>
             <DashboardCard>
-              <CardHeader>
+              <DashboardCardHeader>
                 <LuTelescope />
-                <CardHeaderLabel>
+                <FeynoteCardHeaderLabel>
                   {t('dashboard.recents.title')}
-                </CardHeaderLabel>
+                </FeynoteCardHeaderLabel>
                 <IconButton
                   style={{ margin: '0' }}
                   variant="ghost"
@@ -204,9 +188,10 @@ export const Dashboard: React.FC<Props> = (props) => {
                 >
                   <IoExpand size={18} />
                 </IconButton>
-              </CardHeader>
+              </DashboardCardHeader>
               {recentArtifacts.map((recentArtifact) => (
-                <CardItem
+                <DashboardCardItem
+                  $isButton
                   key={recentArtifact.id}
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
@@ -217,7 +202,7 @@ export const Dashboard: React.FC<Props> = (props) => {
                   }
                 >
                   {recentArtifact.meta.title}
-                </CardItem>
+                </DashboardCardItem>
               ))}
               {!recentArtifacts.length && (
                 <CardNullState
@@ -228,9 +213,11 @@ export const Dashboard: React.FC<Props> = (props) => {
               )}
             </DashboardCard>
             <DashboardCard>
-              <CardHeader>
+              <DashboardCardHeader>
                 <IoGitNetwork />
-                <CardHeaderLabel>{t('dashboard.graph.title')}</CardHeaderLabel>
+                <FeynoteCardHeaderLabel>
+                  {t('dashboard.graph.title')}
+                </FeynoteCardHeaderLabel>
                 <IconButton
                   style={{ margin: '0' }}
                   variant="ghost"
@@ -245,7 +232,7 @@ export const Dashboard: React.FC<Props> = (props) => {
                 >
                   <IoExpand size={18} />
                 </IconButton>
-              </CardHeader>
+              </DashboardCardHeader>
               {artifactSnapshots?.length ? (
                 <GraphRenderer
                   artifacts={graphArtifacts}
@@ -262,11 +249,11 @@ export const Dashboard: React.FC<Props> = (props) => {
             </DashboardCard>
             {recentlyUpdatedThreads && (
               <DashboardCard>
-                <CardHeader>
+                <DashboardCardHeader>
                   <IoChatbubbles />
-                  <CardHeaderLabel>
+                  <FeynoteCardHeaderLabel>
                     {t('dashboard.aiThreads.title')}
-                  </CardHeaderLabel>
+                  </FeynoteCardHeaderLabel>
                   <IconButton
                     style={{ margin: '0' }}
                     variant="ghost"
@@ -281,9 +268,10 @@ export const Dashboard: React.FC<Props> = (props) => {
                   >
                     <IoExpand size={18} />
                   </IconButton>
-                </CardHeader>
+                </DashboardCardHeader>
                 {recentlyUpdatedThreads.map((recentThread) => (
-                  <CardItem
+                  <DashboardCardItem
+                    $isButton
                     key={recentThread.id}
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
@@ -294,7 +282,7 @@ export const Dashboard: React.FC<Props> = (props) => {
                     }
                   >
                     {recentThread.title || t('generic.untitled')}
-                  </CardItem>
+                  </DashboardCardItem>
                 ))}
                 {!recentlyUpdatedThreads.length && (
                   <CardNullState
@@ -306,11 +294,11 @@ export const Dashboard: React.FC<Props> = (props) => {
               </DashboardCard>
             )}
             <DashboardCard>
-              <CardHeader>
+              <DashboardCardHeader>
                 <LuUsers />
-                <CardHeaderLabel>
+                <FeynoteCardHeaderLabel>
                   {t('dashboard.sharedContent.title')}
-                </CardHeaderLabel>
+                </FeynoteCardHeaderLabel>
                 <IconButton
                   style={{ margin: '0' }}
                   variant="ghost"
@@ -325,9 +313,10 @@ export const Dashboard: React.FC<Props> = (props) => {
                 >
                   <IoExpand size={18} />
                 </IconButton>
-              </CardHeader>
+              </DashboardCardHeader>
               {incomingSharedArtifacts.map((sharedArtifact) => (
-                <CardItem
+                <DashboardCardItem
+                  $isButton
                   key={sharedArtifact.id}
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
@@ -338,7 +327,7 @@ export const Dashboard: React.FC<Props> = (props) => {
                   }
                 >
                   {sharedArtifact.meta.title}
-                </CardItem>
+                </DashboardCardItem>
               ))}
               {!incomingSharedArtifacts.length && (
                 <CardNullState

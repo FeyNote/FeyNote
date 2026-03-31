@@ -7,11 +7,9 @@ import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
-import {
-  SidemenuCardItem,
-  SidemenuCardItemLabel,
-  SidemenuCardItemSublabel,
-} from '../../../sidemenu/SidemenuComponents';
+import { FeynoteCardItem } from '../../../card/FeynoteCardItem';
+import { FeynoteCardItemLabel } from '../../../card/FeynoteCardItemLabel';
+import { FeynoteCardItemSublabel } from '../../../card/FeynoteCardItemSublabel';
 
 interface Props {
   edge: Edge;
@@ -46,7 +44,7 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
       currentArtifactId={props.edge.targetArtifactId}
       edge={props.edge}
     >
-      <SidemenuCardItem
+      <FeynoteCardItem
         data-edge-artifactId={props.edge.artifactId}
         ref={ref}
         $isButton
@@ -54,14 +52,14 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
         onMouseOut={onMouseOut}
         onClick={linkClicked}
       >
-        <SidemenuCardItemLabel>
+        <FeynoteCardItemLabel>
           {title}
           {props.edge.targetArtifactBlockId && (
-            <SidemenuCardItemSublabel>
+            <FeynoteCardItemSublabel>
               {props.edge.referenceText}
-            </SidemenuCardItemSublabel>
+            </FeynoteCardItemSublabel>
           )}
-        </SidemenuCardItemLabel>
+        </FeynoteCardItemLabel>
         {previewInfo && ref.current && (
           <ArtifactReferencePreview
             onClick={(event) => (
@@ -77,7 +75,7 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
             previewTarget={ref.current}
           />
         )}
-      </SidemenuCardItem>
+      </FeynoteCardItem>
     </ArtifactRightSidemenuReferenceContextMenu>
   );
 };

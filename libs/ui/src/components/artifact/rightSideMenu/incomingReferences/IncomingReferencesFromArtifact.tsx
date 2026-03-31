@@ -10,12 +10,10 @@ import { IncomingReferenceItem } from './IncomingReferenceItem';
 import styled from 'styled-components';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 import { IoChevronDown, IoChevronUp } from '../../../AppIcons';
-import {
-  SidemenuCardItem,
-  SidemenuCardItemLabel,
-  SidemenuCardItemSublabel,
-  SidemenuCardItemEndSlot,
-} from '../../../sidemenu/SidemenuComponents';
+import { FeynoteCardItem } from '../../../card/FeynoteCardItem';
+import { FeynoteCardItemLabel } from '../../../card/FeynoteCardItemLabel';
+import { FeynoteCardItemSublabel } from '../../../card/FeynoteCardItemSublabel';
+import { FeynoteCardItemEndSlot } from '../../../card/FeynoteCardItemEndSlot';
 
 const ChildReferencesContainer = styled.div`
   margin-left: 16px;
@@ -72,22 +70,22 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
         currentArtifactId={edge0.targetArtifactId}
         edge={edge0}
       >
-        <SidemenuCardItem
+        <FeynoteCardItem
           data-edge-artifactId={edge0.artifactId}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
           $isButton
         >
-          <SidemenuCardItemLabel ref={ref} onClick={linkClicked}>
+          <FeynoteCardItemLabel ref={ref} onClick={linkClicked}>
             {edge0.artifactTitle}
-            <SidemenuCardItemSublabel>
+            <FeynoteCardItemSublabel>
               {t('artifactRightSideMenu.incoming.title.subtitle', {
                 count: props.edges.length,
               })}
-            </SidemenuCardItemSublabel>
-          </SidemenuCardItemLabel>
+            </FeynoteCardItemSublabel>
+          </FeynoteCardItemLabel>
           {props.edges.length > 1 && (
-            <SidemenuCardItemEndSlot>
+            <FeynoteCardItemEndSlot>
               <ExpandButton
                 onClick={(event) => (
                   event.stopPropagation(),
@@ -100,7 +98,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
                   <IoChevronDown size={14} />
                 )}
               </ExpandButton>
-            </SidemenuCardItemEndSlot>
+            </FeynoteCardItemEndSlot>
           )}
           {previewInfo && ref.current && (
             <ArtifactReferencePreview
@@ -119,7 +117,7 @@ export const IncomingReferencesFromArtifact: React.FC<Props> = (props) => {
               previewTarget={ref.current}
             />
           )}
-        </SidemenuCardItem>
+        </FeynoteCardItem>
       </ArtifactRightSidemenuReferenceContextMenu>
       {expanded && (
         <ChildReferencesContainer>

@@ -3,13 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
 import { WorkspaceIconBubble } from './WorkspaceIconBubble';
 import { LuLayers } from '../AppIcons';
-import {
-  SidemenuCard,
-  SidemenuCardHeader,
-  SidemenuCardHeaderLabel,
-  SidemenuCardItem,
-  SidemenuCardItemLabel,
-} from '../sidemenu/SidemenuComponents';
+import { FeynoteCard } from '../card/FeynoteCard';
+import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
+import { FeynoteCardItem } from '../card/FeynoteCardItem';
+import { FeynoteCardItemLabel } from '../card/FeynoteCardItemLabel';
 
 interface Props {
   workspaceIds: string[];
@@ -33,34 +31,34 @@ export const WorkspaceInfoCard: React.FC<Props> = ({ workspaceIds }) => {
   if (!workspaceSnapshots.length) return null;
 
   return (
-    <SidemenuCard>
-      <SidemenuCardHeader>
+    <FeynoteCard>
+      <FeynoteCardHeader>
         <LuLayers size={16} />
-        <SidemenuCardHeaderLabel>
+        <FeynoteCardHeaderLabel>
           {t('rightSidemenu.workspaces')}
-        </SidemenuCardHeaderLabel>
-      </SidemenuCardHeader>
+        </FeynoteCardHeaderLabel>
+      </FeynoteCardHeader>
       {resolvedWorkspaces.length > 0 ? (
         resolvedWorkspaces.map((ws) => (
-          <SidemenuCardItem key={ws.id}>
+          <FeynoteCardItem key={ws.id}>
             <WorkspaceIconBubble
               icon={ws.meta.icon}
               color={ws.meta.color}
               size={20}
             />
             &nbsp;&nbsp;
-            <SidemenuCardItemLabel>
+            <FeynoteCardItemLabel>
               {ws.meta.name || t('workspace.untitled')}
-            </SidemenuCardItemLabel>
-          </SidemenuCardItem>
+            </FeynoteCardItemLabel>
+          </FeynoteCardItem>
         ))
       ) : (
-        <SidemenuCardItem>
-          <SidemenuCardItemLabel>
+        <FeynoteCardItem>
+          <FeynoteCardItemLabel>
             {t('rightSidemenu.workspaces.none')}
-          </SidemenuCardItemLabel>
-        </SidemenuCardItem>
+          </FeynoteCardItemLabel>
+        </FeynoteCardItem>
       )}
-    </SidemenuCard>
+    </FeynoteCard>
   );
 };

@@ -85,6 +85,7 @@ export {
   LuList,
   LuListOrdered,
   LuMap,
+  LuMonitor,
   LuPanelLeft,
   LuPanelRight,
   LuRedo,

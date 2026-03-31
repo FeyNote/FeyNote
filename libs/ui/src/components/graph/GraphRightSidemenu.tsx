@@ -4,13 +4,11 @@ import { InfoButton } from '../info/InfoButton';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { IoSettings, IoTrash, LuLock } from '../AppIcons';
-import {
-  SidemenuCard,
-  SidemenuCardHeader,
-  SidemenuCardHeaderLabel,
-  SidemenuCardItem,
-  SidemenuCardItemEndSlot,
-} from '../sidemenu/SidemenuComponents';
+import { FeynoteCard } from '../card/FeynoteCard';
+import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
+import { FeynoteCardItem } from '../card/FeynoteCardItem';
+import { FeynoteCardItemEndSlot } from '../card/FeynoteCardItemEndSlot';
 import styled from 'styled-components';
 
 const UnlockButton = styled.button`
@@ -43,31 +41,29 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
 
   return (
     <>
-      <SidemenuCard>
-        <SidemenuCardHeader>
+      <FeynoteCard>
+        <FeynoteCardHeader>
           <IoSettings size={16} />
-          <SidemenuCardHeaderLabel>
-            {t('graph.settings')}
-          </SidemenuCardHeaderLabel>
+          <FeynoteCardHeaderLabel>{t('graph.settings')}</FeynoteCardHeaderLabel>
           <InfoButton
             message={t('graph.settings.help')}
             docsLink="https://docs.feynote.com/documents/graph/#graph-settings"
           />
-        </SidemenuCardHeader>
-        <SidemenuCardItem>
+        </FeynoteCardHeader>
+        <FeynoteCardItem>
           {t('graph.settings.showOrphans')}
-          <SidemenuCardItemEndSlot>
+          <FeynoteCardItemEndSlot>
             <Switch
               checked={getPreference(PreferenceNames.GraphShowOrphans)}
               onCheckedChange={(checked) => {
                 setPreference(PreferenceNames.GraphShowOrphans, checked);
               }}
             />
-          </SidemenuCardItemEndSlot>
-        </SidemenuCardItem>
-        <SidemenuCardItem>
+          </FeynoteCardItemEndSlot>
+        </FeynoteCardItem>
+        <FeynoteCardItem>
           {t('graph.settings.showReferenceRelations')}
-          <SidemenuCardItemEndSlot>
+          <FeynoteCardItemEndSlot>
             <Switch
               checked={getPreference(
                 PreferenceNames.GraphShowReferenceRelations,
@@ -79,44 +75,44 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
                 );
               }}
             />
-          </SidemenuCardItemEndSlot>
-        </SidemenuCardItem>
-        <SidemenuCardItem>
+          </FeynoteCardItemEndSlot>
+        </FeynoteCardItem>
+        <FeynoteCardItem>
           {t('graph.settings.showTreeRelations')}
-          <SidemenuCardItemEndSlot>
+          <FeynoteCardItemEndSlot>
             <Switch
               checked={getPreference(PreferenceNames.GraphShowTreeRelations)}
               onCheckedChange={(checked) => {
                 setPreference(PreferenceNames.GraphShowTreeRelations, checked);
               }}
             />
-          </SidemenuCardItemEndSlot>
-        </SidemenuCardItem>
-        <SidemenuCardItem>
+          </FeynoteCardItemEndSlot>
+        </FeynoteCardItem>
+        <FeynoteCardItem>
           {t('graph.settings.lockNodeOnDrag')}
-          <SidemenuCardItemEndSlot>
+          <FeynoteCardItemEndSlot>
             <Switch
               checked={getPreference(PreferenceNames.GraphLockNodeOnDrag)}
               onCheckedChange={(checked) => {
                 setPreference(PreferenceNames.GraphLockNodeOnDrag, checked);
               }}
             />
-          </SidemenuCardItemEndSlot>
-        </SidemenuCardItem>
-      </SidemenuCard>
+          </FeynoteCardItemEndSlot>
+        </FeynoteCardItem>
+      </FeynoteCard>
       {!!props.lockedArtifacts.length && (
-        <SidemenuCard>
-          <SidemenuCardHeader>
+        <FeynoteCard>
+          <FeynoteCardHeader>
             <LuLock size={16} />
-            <SidemenuCardHeaderLabel>
+            <FeynoteCardHeaderLabel>
               {t('graph.settings.lockedArtifacts')}
-            </SidemenuCardHeaderLabel>
+            </FeynoteCardHeaderLabel>
             <InfoButton message={t('graph.settings.lockedArtifacts.help')} />
-          </SidemenuCardHeader>
+          </FeynoteCardHeader>
           {props.lockedArtifacts.map((artifact) => (
-            <SidemenuCardItem key={artifact.id}>
+            <FeynoteCardItem key={artifact.id}>
               {artifact.title}
-              <SidemenuCardItemEndSlot>
+              <FeynoteCardItemEndSlot>
                 <UnlockButton
                   onClick={(e) => {
                     e.stopPropagation();
@@ -125,10 +121,10 @@ export const GraphRightSidemenu: React.FC<Props> = (props) => {
                 >
                   <IoTrash size={16} />
                 </UnlockButton>
-              </SidemenuCardItemEndSlot>
-            </SidemenuCardItem>
+              </FeynoteCardItemEndSlot>
+            </FeynoteCardItem>
           ))}
-        </SidemenuCard>
+        </FeynoteCard>
       )}
     </>
   );

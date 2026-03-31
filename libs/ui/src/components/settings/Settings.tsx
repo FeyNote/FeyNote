@@ -9,17 +9,7 @@ import {
   WorkspaceArtifactSharingMode,
   WorkspaceNewItemMode,
 } from '@feynote/shared-utils';
-import {
-  IonCard,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-  IonSelect,
-  IonSelectOption,
-  IonToggle,
-} from '@ionic/react';
+import { Select, Switch } from '@radix-ui/themes';
 import {
   PaneContentContainer,
   PaneContent,
@@ -30,7 +20,14 @@ import { usePreferencesContext } from '../../context/preferences/PreferencesCont
 import styled from 'styled-components';
 import { getRandomColor } from '../../utils/getRandomColor';
 import { PaneNav } from '../pane/PaneNav';
-import { folderOpen, help, person, tv } from 'ionicons/icons';
+import {
+  CiUser,
+  FaPencil,
+  IoChevronForward,
+  IoInformation,
+  LuFolder,
+  LuMonitor,
+} from '../AppIcons';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
@@ -38,20 +35,30 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { DebugDump } from './DebugDump';
+import { InfoButton } from '../info/InfoButton';
 import { useAlertContext } from '../../context/alert/AlertContext';
 import { getIsElectron } from '../../utils/getIsElectron';
 import { getElectronAPI } from '../../utils/electronAPI';
 import { getLiveExportManager } from '../../utils/liveExport/LiveExportManager';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { ProgressBarDialog } from '../info/ProgressBarDialog';
+import { FeynoteCard } from '../card/FeynoteCard';
+import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
+import { FeynoteCardItem } from '../card/FeynoteCardItem';
+import { FeynoteCardItemLabel } from '../card/FeynoteCardItemLabel';
+import { FeynoteCardItemSublabel } from '../card/FeynoteCardItemSublabel';
 
-// Generally not a great idea to override Ionic styles, but this is the only option I could find
-const FontSizeSelectOption = styled(IonSelectOption)<{
-  $fontSize: string;
-}>`
-  .alert-radio-label.sc-ion-alert-md {
-    font-size: ${(props) => props.$fontSize} !important;
-  }
+const SettingsLink = styled.a`
+  text-decoration: none;
+  color: inherit;
+  display: block;
+`;
+
+const VersionText = styled.p`
+  margin: 16px;
+  font-size: 0.75rem;
+  color: var(--text-color-dim);
 `;
 
 const themeToI18n = {
@@ -307,533 +314,509 @@ export const Settings: React.FC = () => {
     <PaneContentContainer>
       <PaneNav title={t('settings.title')} />
       <PaneContent>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={help} size="small" />
-              &nbsp;&nbsp;
+        <FeynoteCard>
+          <FeynoteCardHeader>
+            <IoInformation size={16} />
+            <FeynoteCardHeaderLabel>
               {t('settings.help')}
-            </IonListHeader>
-            <IonItem
-              lines="none"
-              href="https://docs.feynote.com"
-              target="_blank"
-              detail={true}
-            >
-              {t('settings.help.docs')}
-            </IonItem>
-            <IonItem
-              lines="none"
-              href="https://discord.gg/Tz8trXrd4C"
-              target="_blank"
-              detail={true}
-            >
-              {t('settings.help.contact')}
-            </IonItem>
-            <DebugDump>
-              <IonItem lines="none" button detail={true}>
+            </FeynoteCardHeaderLabel>
+          </FeynoteCardHeader>
+          <SettingsLink
+            href="https://docs.feynote.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FeynoteCardItem $isButton>
+              <FeynoteCardItemLabel>
+                {t('settings.help.docs')}
+              </FeynoteCardItemLabel>
+              <IoChevronForward size={14} color="var(--text-color-dim)" />
+            </FeynoteCardItem>
+          </SettingsLink>
+          <SettingsLink
+            href="https://discord.gg/Tz8trXrd4C"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <FeynoteCardItem $isButton>
+              <FeynoteCardItemLabel>
+                {t('settings.help.contact')}
+              </FeynoteCardItemLabel>
+              <IoChevronForward size={14} color="var(--text-color-dim)" />
+            </FeynoteCardItem>
+          </SettingsLink>
+          <DebugDump>
+            <FeynoteCardItem $isButton>
+              <FeynoteCardItemLabel>
                 {t('settings.help.debugDownload')}
-              </IonItem>
-            </DebugDump>
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={person} size="small" />
-              &nbsp;&nbsp;
-              <IonLabel>
-                {t('settings.account')}
-                <p>
-                  {t('settings.email.current', {
-                    email: session.email,
-                  })}
-                </p>
-              </IonLabel>
-            </IonListHeader>
-            <IonItem
-              lines="none"
-              button
-              onClick={() => {
-                navigate(PaneableComponent.Import, {}, PaneTransition.Push);
-              }}
-              target="_blank"
-              detail={true}
-            >
-              {t('settings.import')}
-            </IonItem>
-            <IonItem
-              lines="none"
-              button
-              onClick={() => {
-                navigate(PaneableComponent.Export, {}, PaneTransition.Push);
-              }}
-              target="_blank"
-              detail={true}
-            >
-              {t('settings.export')}
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={
-                  getPreference(PreferenceNames.PreferencesSync) ===
-                  PreferencesSync.Enabled
-                }
-                onIonChange={(event) =>
-                  togglePreferencesSync(event.detail.checked)
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.preferencesSync')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem
-              lines="none"
-              onClick={triggerResetEmail}
-              detail={true}
-              button
-            >
-              <IonLabel>{t('settings.resetEmail')}</IonLabel>
-            </IonItem>
-            <IonItem
-              lines="none"
-              onClick={triggerResetPassword}
-              detail={true}
-              button
-            >
-              <IonLabel>{t('settings.resetPassword')}</IonLabel>
-            </IonItem>
-            <IonItem
-              lines="none"
-              onClick={() => setSession(null)}
-              detail={true}
-              button
-            >
-              <IonLabel>{t('menu.signOut')}</IonLabel>
-            </IonItem>
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={folderOpen} size="small" />
-              &nbsp;&nbsp;
-              <IonLabel>
-                {t('settings.liveExport.title')}
-                <p>{t('settings.liveExport.description')}</p>
-              </IonLabel>
-            </IonListHeader>
-            {getIsElectron() ? (
-              liveExportPath ? (
-                <>
-                  <IonItem lines="none">
-                    <IonLabel class="ion-text-wrap">
-                      <p>
-                        {t('settings.liveExport.currentPath', {
-                          path: liveExportPath,
-                        })}
-                      </p>
-                    </IonLabel>
-                  </IonItem>
-                  <IonItem
-                    lines="none"
-                    button
-                    onClick={disableLiveExport}
-                    detail={true}
-                  >
-                    <IonLabel color="danger">
-                      {t('settings.liveExport.disable')}
-                    </IonLabel>
-                  </IonItem>
-                </>
-              ) : (
-                <IonItem
-                  lines="none"
-                  button
-                  onClick={enableLiveExport}
-                  detail={true}
-                >
-                  <IonLabel>{t('settings.liveExport.selectFolder')}</IonLabel>
-                </IonItem>
-              )
+              </FeynoteCardItemLabel>
+              <IoChevronForward size={14} color="var(--text-color-dim)" />
+            </FeynoteCardItem>
+          </DebugDump>
+        </FeynoteCard>
+        <FeynoteCard>
+          <FeynoteCardHeader>
+            <CiUser size={16} />
+            <FeynoteCardHeaderLabel>
+              {t('settings.account')}
+              <FeynoteCardItemSublabel>
+                {t('settings.email.current', {
+                  email: session.email,
+                })}
+              </FeynoteCardItemSublabel>
+            </FeynoteCardHeaderLabel>
+            <InfoButton
+              message={t('settings.account.help')}
+              docsLink="https://docs.feynote.com/settings/general/#account-settings"
+            />
+          </FeynoteCardHeader>
+          <FeynoteCardItem
+            $isButton
+            onClick={() => {
+              navigate(PaneableComponent.Import, {}, PaneTransition.Push);
+            }}
+          >
+            <FeynoteCardItemLabel>{t('settings.import')}</FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+          <FeynoteCardItem
+            $isButton
+            onClick={() => {
+              navigate(PaneableComponent.Export, {}, PaneTransition.Push);
+            }}
+          >
+            <FeynoteCardItemLabel>{t('settings.export')}</FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.preferencesSync')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={
+                getPreference(PreferenceNames.PreferencesSync) ===
+                PreferencesSync.Enabled
+              }
+              onCheckedChange={(checked) => togglePreferencesSync(checked)}
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem $isButton onClick={triggerResetEmail}>
+            <FeynoteCardItemLabel>
+              {t('settings.resetEmail')}
+            </FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+          <FeynoteCardItem $isButton onClick={triggerResetPassword}>
+            <FeynoteCardItemLabel>
+              {t('settings.resetPassword')}
+            </FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+          <FeynoteCardItem $isButton onClick={() => setSession(null)}>
+            <FeynoteCardItemLabel>{t('menu.signOut')}</FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+        </FeynoteCard>
+        <FeynoteCard>
+          <FeynoteCardHeader>
+            <LuFolder size={16} />
+            <FeynoteCardHeaderLabel>
+              {t('settings.liveExport.title')}
+              <FeynoteCardItemSublabel>
+                {t('settings.liveExport.description')}
+              </FeynoteCardItemSublabel>
+            </FeynoteCardHeaderLabel>
+            <InfoButton
+              message={t('settings.liveExport.help')}
+              docsLink="https://docs.feynote.com/settings/live-export/"
+            />
+          </FeynoteCardHeader>
+          {getIsElectron() ? (
+            liveExportPath ? (
+              <>
+                <FeynoteCardItem>
+                  <FeynoteCardItemSublabel style={{ whiteSpace: 'normal' }}>
+                    {t('settings.liveExport.currentPath', {
+                      path: liveExportPath,
+                    })}
+                  </FeynoteCardItemSublabel>
+                </FeynoteCardItem>
+                <FeynoteCardItem $isButton onClick={disableLiveExport}>
+                  <FeynoteCardItemLabel style={{ color: 'var(--red-11)' }}>
+                    {t('settings.liveExport.disable')}
+                  </FeynoteCardItemLabel>
+                  <IoChevronForward size={14} color="var(--text-color-dim)" />
+                </FeynoteCardItem>
+              </>
             ) : (
-              <IonItem lines="none">
-                <IonLabel>
-                  <p>{t('settings.liveExport.desktopOnly')}</p>
-                </IonLabel>
-              </IonItem>
-            )}
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={tv} size="small" />
-              &nbsp;&nbsp;
+              <FeynoteCardItem $isButton onClick={enableLiveExport}>
+                <FeynoteCardItemLabel>
+                  {t('settings.liveExport.selectFolder')}
+                </FeynoteCardItemLabel>
+                <IoChevronForward size={14} color="var(--text-color-dim)" />
+              </FeynoteCardItem>
+            )
+          ) : (
+            <FeynoteCardItem>
+              <FeynoteCardItemSublabel>
+                {t('settings.liveExport.desktopOnly')}
+              </FeynoteCardItemSublabel>
+            </FeynoteCardItem>
+          )}
+        </FeynoteCard>
+        <FeynoteCard>
+          <FeynoteCardHeader>
+            <LuMonitor size={16} />
+            <FeynoteCardHeaderLabel>
               {t('settings.interface')}
-            </IonListHeader>
-            <IonItem
-              lines="none"
-              button
-              onClick={() => {
-                navigate(
-                  PaneableComponent.KeyboardShortcuts,
-                  {},
-                  PaneTransition.Push,
-                );
-              }}
-              detail={true}
-            >
+            </FeynoteCardHeaderLabel>
+            <InfoButton
+              message={t('settings.interface.help')}
+              docsLink="https://docs.feynote.com/settings/general/#interface-settings"
+            />
+          </FeynoteCardHeader>
+          <FeynoteCardItem
+            $isButton
+            onClick={() => {
+              navigate(
+                PaneableComponent.KeyboardShortcuts,
+                {},
+                PaneTransition.Push,
+              );
+            }}
+          >
+            <FeynoteCardItemLabel>
               {t('settings.keyboardShortcuts')}
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(PreferenceNames.PanesRememberOpenState)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.PanesRememberOpenState,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.panesRememberOpenState')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneStartOpen,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.leftSideMenu')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(PreferenceNames.RightPaneStartOpen)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.RightPaneStartOpen,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.rightSideMenu')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
-                  PreferenceNames.LeftPaneShowArtifactTree,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneShowArtifactTree,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.leftSideMenuShowArtifactTree')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
+            </FeynoteCardItemLabel>
+            <IoChevronForward size={14} color="var(--text-color-dim)" />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.panesRememberOpenState')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(PreferenceNames.PanesRememberOpenState)}
+              onCheckedChange={(checked) =>
+                setPreference(PreferenceNames.PanesRememberOpenState, checked)
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.leftSideMenu')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(PreferenceNames.LeftPaneStartOpen)}
+              onCheckedChange={(checked) =>
+                setPreference(PreferenceNames.LeftPaneStartOpen, checked)
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.rightSideMenu')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(PreferenceNames.RightPaneStartOpen)}
+              onCheckedChange={(checked) =>
+                setPreference(PreferenceNames.RightPaneStartOpen, checked)
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.leftSideMenuShowArtifactTree')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(PreferenceNames.LeftPaneShowArtifactTree)}
+              onCheckedChange={(checked) =>
+                setPreference(PreferenceNames.LeftPaneShowArtifactTree, checked)
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.leftSideMenuArtifactTreeAutoExpandOnNavigate')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(
+                PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
+              )}
+              onCheckedChange={(checked) =>
+                setPreference(
                   PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneArtifactTreeAutoExpandOnNavigate,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.leftSideMenuArtifactTreeAutoExpandOnNavigate')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
+                  checked,
+                )
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.leftSideMenuArtifactTreeShowUncategorized')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(
+                PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
+              )}
+              onCheckedChange={(checked) =>
+                setPreference(
                   PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneArtifactTreeShowUncategorized,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.leftSideMenuArtifactTreeShowUncategorized')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
+                  checked,
+                )
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.leftSideMenuShowRecentThreads')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(PreferenceNames.LeftPaneShowRecentThreads)}
+              onCheckedChange={(checked) =>
+                setPreference(
                   PreferenceNames.LeftPaneShowRecentThreads,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.LeftPaneShowRecentThreads,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.leftSideMenuShowRecentThreads')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
+                  checked,
+                )
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.workspace.globalSearchAcrossAll')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(
+                PreferenceNames.GlobalSearchAcrossAllWorkspaces,
+              )}
+              onCheckedChange={(checked) =>
+                setPreference(
                   PreferenceNames.GlobalSearchAcrossAllWorkspaces,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.GlobalSearchAcrossAllWorkspaces,
-                    event.detail.checked,
-                  )
-                }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.workspace.globalSearchAcrossAll')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.language')}
-                labelPlacement="stacked"
-                value={getPreference(PreferenceNames.Language) || 'navigator'}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.Language,
-                    event.detail.value === 'navigator'
-                      ? null
-                      : event.detail.value,
-                  )
-                }
-              >
-                <IonSelectOption value={'navigator'} key={'navigator'}>
+                  checked,
+                )
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.language')}
+            <Select.Root
+              value={getPreference(PreferenceNames.Language) || 'navigator'}
+              onValueChange={(value) =>
+                setPreference(
+                  PreferenceNames.Language,
+                  value === 'navigator' ? null : (value as SupportedLanguages),
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
+                <Select.Item value="navigator" key="navigator">
                   {t('settings.language.default')}
-                </IonSelectOption>
+                </Select.Item>
                 {languageOptions.map((languageOption) => (
-                  <IonSelectOption
+                  <Select.Item
                     value={languageOption[0]}
                     key={languageOption[0]}
                   >
                     {languageOption[1]}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.theme')}
-                labelPlacement="stacked"
-                value={getPreference(PreferenceNames.Theme)}
-                onIonChange={(event) =>
-                  setPreference(PreferenceNames.Theme, event.detail.value)
-                }
-              >
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.theme')}
+            <Select.Root
+              value={getPreference(PreferenceNames.Theme)}
+              onValueChange={(value) =>
+                setPreference(PreferenceNames.Theme, value as AppTheme)
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(AppTheme).map((theme) => (
-                  <IonSelectOption value={theme} key={theme}>
+                  <Select.Item value={theme} key={theme}>
                     {t(themeToI18n[theme])}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.fontSize')}
-                labelPlacement="stacked"
-                value={getPreference(PreferenceNames.FontSize)}
-                onIonChange={(event) =>
-                  setPreference(PreferenceNames.FontSize, event.detail.value)
-                }
-              >
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.fontSize')}
+            <Select.Root
+              value={getPreference(PreferenceNames.FontSize)}
+              onValueChange={(value) =>
+                setPreference(
+                  PreferenceNames.FontSize,
+                  value as SupportedFontSize,
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(SupportedFontSize).map((fontSize) => (
-                  <FontSizeSelectOption
-                    value={fontSize}
-                    key={fontSize}
-                    $fontSize={fontSize}
-                  >
+                  <Select.Item value={fontSize} key={fontSize}>
                     {t(fontSizeToI18n[fontSize])}
-                  </FontSizeSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-          </IonList>
-        </IonCard>
-        <IonCard>
-          <IonList>
-            <IonListHeader>
-              <IonIcon icon={tv} size="small" />
-              &nbsp;&nbsp;
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+        </FeynoteCard>
+        <FeynoteCard>
+          <FeynoteCardHeader>
+            <FaPencil size={16} />
+            <FeynoteCardHeaderLabel>
               {t('settings.editor')}
-            </IonListHeader>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.artifact.referenceNewArtifactSharingMode')}
-                labelPlacement="stacked"
-                value={getPreference(
+            </FeynoteCardHeaderLabel>
+            <InfoButton
+              message={t('settings.editor.help')}
+              docsLink="https://docs.feynote.com/settings/general/#editor-settings"
+            />
+          </FeynoteCardHeader>
+          <FeynoteCardItem>
+            {t('settings.artifact.referenceNewArtifactSharingMode')}
+            <Select.Root
+              value={getPreference(
+                PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
+              )}
+              onValueChange={(value) =>
+                setPreference(
                   PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.ArtifactReferenceNewArtifactSharingMode,
-                    event.detail.value,
-                  )
-                }
-              >
+                  value as ArtifactReferenceNewArtifactSharingMode,
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(ArtifactReferenceNewArtifactSharingMode).map(
                   (value) => (
-                    <IonSelectOption value={value} key={value}>
+                    <Select.Item value={value} key={value}>
                       {t(artifactReferenceNewArtifactSharingModeToI18n[value])}
-                    </IonSelectOption>
+                    </Select.Item>
                   ),
                 )}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t(
-                  'settings.artifact.referenceExistingArtifactSharingMode',
-                )}
-                labelPlacement="stacked"
-                value={getPreference(
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.artifact.referenceExistingArtifactSharingMode')}
+            <Select.Root
+              value={getPreference(
+                PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
+              )}
+              onValueChange={(value) =>
+                setPreference(
                   PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.ArtifactReferenceExistingArtifactSharingMode,
-                    event.detail.value,
-                  )
-                }
-              >
+                  value as ArtifactReferenceExistingArtifactSharingMode,
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(
                   ArtifactReferenceExistingArtifactSharingMode,
                 ).map((value) => (
-                  <IonSelectOption value={value} key={value}>
+                  <Select.Item value={value} key={value}>
                     {t(
                       artifactReferenceExistingArtifactSharingModeToI18n[value],
                     )}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.workspace.newItemMode')}
-                labelPlacement="stacked"
-                value={getPreference(PreferenceNames.WorkspaceNewItemMode)}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.WorkspaceNewItemMode,
-                    event.detail.value,
-                  )
-                }
-              >
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.workspace.newItemMode')}
+            <Select.Root
+              value={getPreference(PreferenceNames.WorkspaceNewItemMode)}
+              onValueChange={(value) =>
+                setPreference(
+                  PreferenceNames.WorkspaceNewItemMode,
+                  value as WorkspaceNewItemMode,
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(WorkspaceNewItemMode).map((value) => (
-                  <IonSelectOption value={value} key={value}>
+                  <Select.Item value={value} key={value}>
                     {t(workspaceNewItemModeToI18n[value])}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.workspace.artifactSharingMode')}
-                labelPlacement="stacked"
-                value={getPreference(
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.workspace.artifactSharingMode')}
+            <Select.Root
+              value={getPreference(
+                PreferenceNames.WorkspaceArtifactSharingMode,
+              )}
+              onValueChange={(value) =>
+                setPreference(
                   PreferenceNames.WorkspaceArtifactSharingMode,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.WorkspaceArtifactSharingMode,
-                    event.detail.value,
-                  )
-                }
-              >
+                  value as WorkspaceArtifactSharingMode,
+                )
+              }
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
                 {Object.values(WorkspaceArtifactSharingMode).map((value) => (
-                  <IonSelectOption value={value} key={value}>
+                  <Select.Item value={value} key={value}>
                     {t(workspaceArtifactSharingModeToI18n[value])}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-            <IonItem lines="none" button>
-              <IonToggle
-                checked={getPreference(
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            <FeynoteCardItemLabel>
+              {t('settings.workspace.referenceSearchAcrossAll')}
+            </FeynoteCardItemLabel>
+            <Switch
+              checked={getPreference(
+                PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
+              )}
+              onCheckedChange={(checked) =>
+                setPreference(
                   PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
-                )}
-                onIonChange={(event) =>
-                  setPreference(
-                    PreferenceNames.ReferenceSearchAcrossAllWorkspaces,
-                    event.detail.checked,
-                  )
+                  checked,
+                )
+              }
+            />
+          </FeynoteCardItem>
+          <FeynoteCardItem>
+            {t('settings.collaborationColor')}
+            <Select.Root
+              value={collaborationColorValue}
+              onValueChange={(value) => {
+                let color = value;
+                if (color === 'random') {
+                  color = getRandomColor();
                 }
-              >
-                <IonLabel class="ion-text-wrap">
-                  {t('settings.workspace.referenceSearchAcrossAll')}
-                </IonLabel>
-              </IonToggle>
-            </IonItem>
-            <IonItem lines="none">
-              <IonSelect
-                label={t('settings.collaborationColor')}
-                labelPlacement="stacked"
-                value={collaborationColorValue}
-                onIonChange={(event) => {
-                  let value = event.detail.value;
-                  if (value === 'random') {
-                    value = getRandomColor();
-                  }
-                  setPreference(PreferenceNames.CollaborationColor, value);
-                }}
-                interfaceOptions={{
-                  cssClass: 'color-select-popover',
-                }}
-              >
-                <IonSelectOption value={'random'}>
+                setPreference(PreferenceNames.CollaborationColor, color);
+              }}
+            >
+              <Select.Trigger variant="ghost" style={{ marginLeft: 'auto' }} />
+              <Select.Content>
+                <Select.Item value="random">
                   {t('settings.collaborationColor.random')}
-                </IonSelectOption>
+                </Select.Item>
                 {Object.entries(colorOptions).map(([color, i18nCode]) => (
-                  <IonSelectOption value={color} key={color}>
+                  <Select.Item value={color} key={color}>
                     {t(i18nCode)}
-                  </IonSelectOption>
+                  </Select.Item>
                 ))}
-              </IonSelect>
-            </IonItem>
-          </IonList>
-        </IonCard>
-        <br />
-        <IonItem>
-          <IonLabel>
-            <p>
-              {t('settings.version', {
-                version: import.meta.env.VITE_APP_VERSION,
-              })}
-            </p>
-          </IonLabel>
-        </IonItem>
+              </Select.Content>
+            </Select.Root>
+          </FeynoteCardItem>
+        </FeynoteCard>
+        <VersionText>
+          {t('settings.version', {
+            version: import.meta.env.VITE_APP_VERSION,
+          })}
+        </VersionText>
       </PaneContent>
       <ActionDialog
         title={t('settings.liveExport.bulkExport.confirmTitle')}
