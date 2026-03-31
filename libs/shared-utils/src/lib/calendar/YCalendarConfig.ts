@@ -5,8 +5,8 @@ export interface YCalendarConfig {
   calendarStartDayOfWeek: number; // Zero-indexed
   daysInWeek: number;
   monthsInYear: number;
-  defaultCenter: string | null;
   daysInMonth: TypedArray<number>;
+  defaultCenter: string | null;
   leapInMonth: TypedArray<number>;
   monthNames: TypedArray<string>;
   dayOfWeekNames: TypedArray<string>;
