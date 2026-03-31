@@ -16,6 +16,7 @@ export const NewPaneButton: React.FC<Props> = (props) => {
 
   return (
     <IconButton
+      style={{ margin: '0' }}
       onMouseDown={(e) => e.stopPropagation()}
       onTouchStart={(e) => e.stopPropagation()}
       onClick={newTab}

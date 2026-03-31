@@ -1,4 +1,4 @@
-import { IonButton, IonCard, IonCardTitle, IonIcon } from '@ionic/react';
+import { Card, IconButton } from '@radix-ui/themes';
 import {
   PaneContentContainer,
   PaneContent,
@@ -6,17 +6,16 @@ import {
 import { getThreadsAction } from '../../actions/getThreadsAction';
 import { useEffect, useMemo, useState } from 'react';
 import {
-  chatboxEllipses,
-  expand,
-  gitNetwork,
-  people,
-  telescope,
-} from 'ionicons/icons';
+  IoChatbubbles,
+  IoExpand,
+  IoGitNetwork,
+  LuTelescope,
+  LuUsers,
+} from '../AppIcons';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
-import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { GraphRenderer } from '../graph/GraphRenderer';
@@ -32,27 +31,48 @@ const FlexContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 16px;
+  padding: 16px;
 `;
 
-const CardTitle = styled(IonCardTitle)`
-  padding: 8px;
-  display: flex;
-  align-items: center;
-`;
-
-const Card = styled(IonCard)`
+const DashboardCard = styled(Card)`
   width: 350px;
   max-height: 400px;
   padding: 8px;
 `;
 
+const CardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color-dim);
+`;
+
+const CardHeaderLabel = styled.span`
+  flex: 1;
+`;
+
+const CardItem = styled.div`
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  font-size: 0.875rem;
+  padding: 6px 8px;
+  color: var(--text-color);
+  border-radius: var(--card-border-radius);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--contrasting-element-background-hover);
+  }
+`;
+
 const CardNullState = styled(NullState)`
   padding-top: 24px;
   padding-bottom: 24px;
-`;
-
-const CardTitleButton = styled(IonButton)`
-  margin-left: auto;
 `;
 
 interface Props {
@@ -164,11 +184,16 @@ export const Dashboard: React.FC<Props> = (props) => {
       <PaneContent>
         {initialLoadComplete && (
           <FlexContainer>
-            <Card>
-              <CardTitle>
-                <IonIcon icon={telescope} />
-                &nbsp;{t('dashboard.recents.title')}
-                <CardTitleButton
+            <DashboardCard>
+              <CardHeader>
+                <LuTelescope />
+                <CardHeaderLabel>
+                  {t('dashboard.recents.title')}
+                </CardHeaderLabel>
+                <IconButton
+                  style={{ margin: '0' }}
+                  variant="ghost"
+                  size="1"
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
                       event,
@@ -176,15 +201,12 @@ export const Dashboard: React.FC<Props> = (props) => {
                       {},
                     )
                   }
-                  size="small"
-                  fill="clear"
                 >
-                  <IonIcon icon={expand} size="small" />
-                </CardTitleButton>
-              </CardTitle>
+                  <IoExpand size={18} />
+                </IconButton>
+              </CardHeader>
               {recentArtifacts.map((recentArtifact) => (
-                <CompactIonItem
-                  lines="none"
+                <CardItem
                   key={recentArtifact.id}
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
@@ -193,10 +215,9 @@ export const Dashboard: React.FC<Props> = (props) => {
                       { id: recentArtifact.id },
                     )
                   }
-                  button
                 >
                   {recentArtifact.meta.title}
-                </CompactIonItem>
+                </CardItem>
               ))}
               {!recentArtifacts.length && (
                 <CardNullState
@@ -205,12 +226,15 @@ export const Dashboard: React.FC<Props> = (props) => {
                   message={t('dashboard.noRecentArtifacts.message')}
                 />
               )}
-            </Card>
-            <Card>
-              <CardTitle>
-                <IonIcon icon={gitNetwork} />
-                &nbsp;{t('dashboard.graph.title')}
-                <CardTitleButton
+            </DashboardCard>
+            <DashboardCard>
+              <CardHeader>
+                <IoGitNetwork />
+                <CardHeaderLabel>{t('dashboard.graph.title')}</CardHeaderLabel>
+                <IconButton
+                  style={{ margin: '0' }}
+                  variant="ghost"
+                  size="1"
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
                       event,
@@ -218,12 +242,10 @@ export const Dashboard: React.FC<Props> = (props) => {
                       { workspaceId: props.workspaceId },
                     )
                   }
-                  size="small"
-                  fill="clear"
                 >
-                  <IonIcon icon={expand} size="small" />
-                </CardTitleButton>
-              </CardTitle>
+                  <IoExpand size={18} />
+                </IconButton>
+              </CardHeader>
               {artifactSnapshots?.length ? (
                 <GraphRenderer
                   artifacts={graphArtifacts}
@@ -237,13 +259,18 @@ export const Dashboard: React.FC<Props> = (props) => {
                   message={t('dashboard.noGraph.message')}
                 />
               )}
-            </Card>
+            </DashboardCard>
             {recentlyUpdatedThreads && (
-              <Card>
-                <CardTitle>
-                  <IonIcon icon={chatboxEllipses} />
-                  &nbsp;{t('dashboard.aiThreads.title')}
-                  <CardTitleButton
+              <DashboardCard>
+                <CardHeader>
+                  <IoChatbubbles />
+                  <CardHeaderLabel>
+                    {t('dashboard.aiThreads.title')}
+                  </CardHeaderLabel>
+                  <IconButton
+                    style={{ margin: '0' }}
+                    variant="ghost"
+                    size="1"
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
                         event,
@@ -251,15 +278,12 @@ export const Dashboard: React.FC<Props> = (props) => {
                         {},
                       )
                     }
-                    size="small"
-                    fill="clear"
                   >
-                    <IonIcon icon={expand} size="small" />
-                  </CardTitleButton>
-                </CardTitle>
+                    <IoExpand size={18} />
+                  </IconButton>
+                </CardHeader>
                 {recentlyUpdatedThreads.map((recentThread) => (
-                  <CompactIonItem
-                    lines="none"
+                  <CardItem
                     key={recentThread.id}
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
@@ -268,10 +292,9 @@ export const Dashboard: React.FC<Props> = (props) => {
                         { id: recentThread.id },
                       )
                     }
-                    button
                   >
                     {recentThread.title || t('generic.untitled')}
-                  </CompactIonItem>
+                  </CardItem>
                 ))}
                 {!recentlyUpdatedThreads.length && (
                   <CardNullState
@@ -280,13 +303,18 @@ export const Dashboard: React.FC<Props> = (props) => {
                     message={t('dashboard.noRecentThreads.message')}
                   />
                 )}
-              </Card>
+              </DashboardCard>
             )}
-            <Card>
-              <CardTitle>
-                <IonIcon icon={people} />
-                &nbsp;{t('dashboard.sharedContent.title')}
-                <CardTitleButton
+            <DashboardCard>
+              <CardHeader>
+                <LuUsers />
+                <CardHeaderLabel>
+                  {t('dashboard.sharedContent.title')}
+                </CardHeaderLabel>
+                <IconButton
+                  style={{ margin: '0' }}
+                  variant="ghost"
+                  size="1"
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
                       event,
@@ -294,15 +322,12 @@ export const Dashboard: React.FC<Props> = (props) => {
                       {},
                     )
                   }
-                  size="small"
-                  fill="clear"
                 >
-                  <IonIcon icon={expand} size="small" />
-                </CardTitleButton>
-              </CardTitle>
+                  <IoExpand size={18} />
+                </IconButton>
+              </CardHeader>
               {incomingSharedArtifacts.map((sharedArtifact) => (
-                <CompactIonItem
-                  lines="none"
+                <CardItem
                   key={sharedArtifact.id}
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
@@ -311,10 +336,9 @@ export const Dashboard: React.FC<Props> = (props) => {
                       { id: sharedArtifact.id },
                     )
                   }
-                  button
                 >
                   {sharedArtifact.meta.title}
-                </CompactIonItem>
+                </CardItem>
               ))}
               {!incomingSharedArtifacts.length && (
                 <CardNullState
@@ -323,7 +347,7 @@ export const Dashboard: React.FC<Props> = (props) => {
                   message={t('dashboard.noSharedContent.message')}
                 />
               )}
-            </Card>
+            </DashboardCard>
           </FlexContainer>
         )}
       </PaneContent>
