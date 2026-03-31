@@ -1,4 +1,8 @@
-import { IonButton, IonContent, IonIcon, IonPage } from '@ionic/react';
+import { IonButton, IonIcon } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { ReadonlyArtifactViewer } from '../artifact/ReadonlySimpleArtifact';
 import styled from 'styled-components';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
@@ -28,8 +32,8 @@ interface Props {
 
 export const ArtifactShareView: React.FC<Props> = (props) => {
   return (
-    <IonPage>
-      <IonContent>
+    <PaneContentContainer>
+      <PaneContent>
         <Grid>
           <LogoActionContainer>
             <PrintButton
@@ -46,7 +50,7 @@ export const ArtifactShareView: React.FC<Props> = (props) => {
             <ReadonlyArtifactViewer artifactId={props.artifactId} />
           </FloatingPresentation>
         </Grid>
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

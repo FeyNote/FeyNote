@@ -11,17 +11,19 @@ import {
 } from '@feynote/shared-utils';
 import {
   IonCard,
-  IonContent,
   IonIcon,
   IonItem,
   IonLabel,
   IonList,
   IonListHeader,
-  IonPage,
   IonSelect,
   IonSelectOption,
   IonToggle,
 } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { t } from 'i18next';
 import { useMemo, useState } from 'react';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
@@ -302,9 +304,9 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('settings.title')} />
-      <IonContent>
+      <PaneContent>
         <IonCard>
           <IonList>
             <IonListHeader>
@@ -832,7 +834,7 @@ export const Settings: React.FC = () => {
             </p>
           </IonLabel>
         </IonItem>
-      </IonContent>
+      </PaneContent>
       <ActionDialog
         title={t('settings.liveExport.bulkExport.confirmTitle')}
         description={
@@ -885,6 +887,6 @@ export const Settings: React.FC = () => {
         }}
         actionButtons="okay"
       />
-    </IonPage>
+    </PaneContentContainer>
   );
 };

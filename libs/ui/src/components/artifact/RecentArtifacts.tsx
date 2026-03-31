@@ -1,11 +1,8 @@
+import { IonCard, IonCardTitle, IonIcon, IonLabel } from '@ionic/react';
 import {
-  IonCard,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonLabel,
-  IonPage,
-} from '@ionic/react';
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useMemo } from 'react';
 import { telescope } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -46,9 +43,9 @@ export const RecentArtifacts: React.FC = () => {
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('recentArtifacts.title')} />
-      <IonContent>
+      <PaneContent>
         {recentArtifacts && (
           <Card>
             <Title>
@@ -89,7 +86,7 @@ export const RecentArtifacts: React.FC = () => {
             )}
           </Card>
         )}
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

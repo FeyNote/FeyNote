@@ -1,11 +1,8 @@
+import { IonCard, IonCardTitle, IonIcon, IonLabel } from '@ionic/react';
 import {
-  IonCard,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonLabel,
-  IonPage,
-} from '@ionic/react';
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useMemo } from 'react';
 import { people } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -50,9 +47,9 @@ export const SharedContent: React.FC = () => {
   );
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('sharedContent.title')} />
-      <IonContent>
+      <PaneContent>
         {incomingSharedArtifacts && (
           <Card>
             <Title>
@@ -91,7 +88,7 @@ export const SharedContent: React.FC = () => {
             )}
           </Card>
         )}
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

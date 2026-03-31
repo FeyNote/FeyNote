@@ -2,7 +2,6 @@ import {
   IonButton,
   IonButtons,
   IonCheckbox,
-  IonContent,
   IonFooter,
   IonHeader,
   IonIcon,
@@ -11,6 +10,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/react';
+import { PaneContent } from '../pane/PaneContentContainer';
 import { close } from 'ionicons/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,7 +57,7 @@ export const SelectModal = <T extends string>(props: Props<T>) => {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent>
+      <PaneContent>
         <Container>
           {props.subtitle && (
             <PaddedLabelContainer>
@@ -88,7 +88,7 @@ export const SelectModal = <T extends string>(props: Props<T>) => {
             </IonItem>
           ))}
         </Container>
-      </IonContent>
+      </PaneContent>
       <IonFooter style={{ textAlign: 'right' }}>
         <IonButton
           fill="clear"

@@ -1,4 +1,7 @@
-import { IonContent, IonPage } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
@@ -204,7 +207,7 @@ export const Graph: React.FC<Props> = (props) => {
   ]);
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav
         title={
           selectedWorkspaceSnapshot
@@ -216,7 +219,7 @@ export const Graph: React.FC<Props> = (props) => {
             : t('graph.title')
         }
       />
-      <IonContent>
+      <PaneContent>
         {artifactSnapshots?.length ? (
           <GraphRenderer
             artifacts={graphArtifacts}
@@ -240,7 +243,7 @@ export const Graph: React.FC<Props> = (props) => {
             icon={gitNetwork}
           />
         )}
-      </IonContent>
+      </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
@@ -256,6 +259,6 @@ export const Graph: React.FC<Props> = (props) => {
           />,
           sidemenuContentRef.current,
         )}
-    </IonPage>
+    </PaneContentContainer>
   );
 };

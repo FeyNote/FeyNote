@@ -1,10 +1,8 @@
+import { IonButton, IonCard, IonCardTitle } from '@ionic/react';
 import {
-  IonButton,
-  IonCard,
-  IonCardTitle,
-  IonContent,
-  IonPage,
-} from '@ionic/react';
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -163,9 +161,9 @@ export const Contribute: React.FC = () => {
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('contribute.title')} />
-      <IonContent>
+      <PaneContent>
         <ContributeDescription className="ion-padding">
           {t('contribute.description')}
         </ContributeDescription>
@@ -273,7 +271,7 @@ export const Contribute: React.FC = () => {
         <br />
         <br />
         <br />
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

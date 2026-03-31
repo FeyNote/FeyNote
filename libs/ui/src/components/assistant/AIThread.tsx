@@ -1,4 +1,7 @@
-import { IonContent, IonPage } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useChat } from '@ai-sdk/react';
@@ -319,7 +322,7 @@ export const AIThread: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav
         title={title || t('assistant.thread.emptyTitle')}
         renderDropdownMenu={(children) => (
@@ -340,7 +343,7 @@ export const AIThread: React.FC<Props> = (props) => {
           </AIThreadDropdownMenu>
         )}
       />
-      <IonContent>
+      <PaneContent>
         <ChatContainer>
           {ProgressBar}
           {isLoadingInitialState ? (
@@ -406,7 +409,7 @@ export const AIThread: React.FC<Props> = (props) => {
             </IconButton>
           </ChatTextContainer>
         </ChatContainer>
-      </IonContent>
+      </PaneContent>
       <ActionDialog
         title={t('aiThread.retry.confirmation')}
         open={!!retryConfirmMessageId}
@@ -441,6 +444,6 @@ export const AIThread: React.FC<Props> = (props) => {
           <WorkspaceInfoCard workspaceIds={workspaceIdsForThread} />,
           sidemenuContentRef.current,
         )}
-    </IonPage>
+    </PaneContentContainer>
   );
 };

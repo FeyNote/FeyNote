@@ -1,5 +1,6 @@
-import { IonCard, IonCardHeader, IonContent, IonText } from '@ionic/react';
+import { IonCard, IonCardHeader, IonText } from '@ionic/react';
 import styled from 'styled-components';
+import { PaneContent } from '../pane/PaneContentContainer';
 import { SignInWithGoogle } from './SignInWithGoogle';
 
 export const CenteredContainer = styled.div`
@@ -32,8 +33,8 @@ export const SignInWithGoogleButton = styled(SignInWithGoogle)`
   justify-content: center;
 `;
 
-export const IonContentFantasyBackground = styled(IonContent)`
-  --background: url('https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg')
+export const IonContentFantasyBackground = styled(PaneContent)`
+  background: url('https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg')
     top center / cover no-repeat fixed padding-box content-box
-    var(--ion-background-color, #ffffff);
+    var(--background-color, #ffffff);
 `;

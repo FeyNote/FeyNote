@@ -5,8 +5,8 @@ import {
   IonCardTitle,
   IonInput,
   IonItem,
-  IonPage,
 } from '@ionic/react';
+import { PaneContentContainer } from '../pane/PaneContentContainer';
 import {
   CenteredContainer,
   CenteredIonCard,
@@ -117,7 +117,7 @@ export const Login: React.FC<Props> = (props) => {
   };
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
         <CenteredIonCard>
@@ -188,6 +188,6 @@ export const Login: React.FC<Props> = (props) => {
           </IonCardContent>
         </CenteredIonCard>
       </IonContentFantasyBackground>
-    </IonPage>
+    </PaneContentContainer>
   );
 };

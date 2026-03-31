@@ -1,4 +1,8 @@
-import { IonButton, IonCard, IonContent, IonPage } from '@ionic/react';
+import { IonButton, IonCard } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useRef } from 'react';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { PaneNav } from '../pane/PaneNav';
@@ -65,12 +69,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     actionButton?: React.ReactNode,
   ) => {
     return (
-      <IonPage data-id={props.id}>
+      <PaneContentContainer data-id={props.id}>
         <PaneNav title={title} />
-        <IonContent
-          className="ion-padding-start ion-padding-end"
-          style={{ position: 'relative' }}
-        >
+        <PaneContent>
           <IonCard>
             <StatusMessage>
               {message}
@@ -83,8 +84,8 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
               )}
             </StatusMessage>
           </IonCard>
-        </IonContent>
-      </IonPage>
+        </PaneContent>
+      </PaneContentContainer>
     );
   };
 
@@ -111,9 +112,9 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
     // When we're loading because we're waiting on idb, we show an empty page to be less jarring
     // since this usually only occurs for a few frames
     return (
-      <IonPage data-id={props.id}>
+      <PaneContentContainer data-id={props.id}>
         <PaneNav title={''} />
-      </IonPage>
+      </PaneContentContainer>
     );
   }
 
@@ -130,7 +131,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   }
 
   return (
-    <IonPage data-id={props.id}>
+    <PaneContentContainer data-id={props.id}>
       <PaneNav
         title={title || ''}
         renderDropdownMenu={(children) => (
@@ -146,10 +147,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
           </ArtifactDropdownMenu>
         )}
       />
-      <IonContent
-        className="ion-padding-start ion-padding-end"
-        style={{ position: 'relative' }}
-      >
+      <PaneContent>
         <ArtifactRenderer
           artifactId={props.id}
           connection={connection}
@@ -161,7 +159,7 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
           }}
           undelete={() => undelete()}
         />
-      </IonContent>
+      </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
@@ -173,6 +171,6 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
           />,
           sidemenuContentRef.current,
         )}
-    </IonPage>
+    </PaneContentContainer>
   );
 };

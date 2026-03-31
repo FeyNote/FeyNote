@@ -1,11 +1,8 @@
+import { IonButton, IonCard, IonCardTitle, IonIcon } from '@ionic/react';
 import {
-  IonButton,
-  IonCard,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonPage,
-} from '@ionic/react';
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { getThreadsAction } from '../../actions/getThreadsAction';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -152,7 +149,7 @@ export const Dashboard: React.FC<Props> = (props) => {
   }, []);
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav
         title={
           selectedWorkspaceSnapshot
@@ -164,7 +161,7 @@ export const Dashboard: React.FC<Props> = (props) => {
             : t('dashboard.title')
         }
       />
-      <IonContent>
+      <PaneContent>
         {initialLoadComplete && (
           <FlexContainer>
             <Card>
@@ -329,7 +326,7 @@ export const Dashboard: React.FC<Props> = (props) => {
             </Card>
           </FlexContainer>
         )}
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };
