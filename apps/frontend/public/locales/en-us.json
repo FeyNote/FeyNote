@@ -298,16 +298,11 @@
   "dashboard.title.workspaceNamed": "{{name}} Dashboard",
   "dashboard.recents.title": "Recent Documents",
   "dashboard.aiThreads.title": "Recent Threads",
-  "dashboard.graph.title": "Graph",
   "dashboard.sharedContent.title": "Shared With You",
   "dashboard.noRecentArtifacts.title": "No Documents",
   "dashboard.noRecentArtifacts.message": "Click the create new button in the left side menu to create one!",
-  "dashboard.noGraph.title": "Graph Empty",
-  "dashboard.noGraph.message": "Create an document to see it in the graph!",
   "dashboard.noRecentThreads.title": "No Threads",
   "dashboard.noRecentThreads.message": "Click the create new button in the left side menu to create one!",
-  "dashboard.noSharedContent.title": "No Content Shared With You",
-  "dashboard.noSharedContent.message": "Documents will show up here if another user shares their content with you",
 
   "artifactTreeFullpage.title": "Your Tree",
   "artifactTreeFullpage.title.workspaceNamed": "{{name}} Tree",
@@ -387,13 +382,10 @@
   "jobList.showMore": "Show More",
 
   "sharedContent.title": "Shared Content",
-  "sharedContent.artifacts.title": "Documents Shared With You",
   "sharedContent.noArtifacts.title": "No Documents Shared With You",
   "sharedContent.noArtifacts.message": "Documents will show up here if another user shares their content with you",
   "sharedContent.unknownUser": "Unknown User",
   "sharedContent.sharedBy": "Shared by:",
-
-  "recentArtifacts.title": "Recent Documents",
 
   "persistentSearch.title": "Global Search",
   "persistentSearch.title.workspaceNamed": "{{name}} Search",

@@ -1,4 +1,3 @@
-import { Card, IconButton } from '@radix-ui/themes';
 import {
   PaneContentContainer,
   PaneContent,
@@ -7,8 +6,8 @@ import { getThreadsAction } from '../../actions/getThreadsAction';
 import { useEffect, useMemo, useState } from 'react';
 import {
   IoChatbubbles,
+  IoChevronForward,
   IoExpand,
-  IoGitNetwork,
   LuTelescope,
   LuUsers,
 } from '../AppIcons';
@@ -26,37 +25,105 @@ import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useA
 import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
-import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
-import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
-import { FeynoteCardItem } from '../card/FeynoteCardItem';
+import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWorkspaceThreadIds';
+import { AllArtifactsSortOrder } from '../artifact/allArtifacts/AllArtifactsSort';
 
-const FlexContainer = styled.div`
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  container-type: inline-size;
+`;
+
+const SectionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 32px;
+
+  @container (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const GraphSection = styled.div`
+  position: relative;
+  height: 280px;
+  max-width: 720px;
+  margin: 0 auto 32px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-a4);
+  overflow: hidden;
+`;
+
+const GraphExpandButton = styled.button`
+  all: unset;
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-color-dim);
+  background: var(--card-background);
+  box-shadow: var(--card-box-shadow);
+  z-index: 1;
+
+  &:hover {
+    color: var(--text-color);
+    background: var(--general-background-hover);
+  }
 `;
 
-const DashboardCard = styled(Card)`
-  width: 350px;
-  max-height: 400px;
-  padding: 8px;
+const Section = styled.div`
+  margin-bottom: 32px;
 `;
 
-const DashboardCardHeader = styled(FeynoteCardHeader)`
-  min-height: unset;
-  padding: 8px;
-  border-bottom: none;
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-a4);
+  margin-bottom: 4px;
+  color: var(--text-color-dim);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-color);
+  }
 `;
 
-const DashboardCardItem = styled(FeynoteCardItem)`
-  padding: 6px 8px;
+const SectionHeaderLabel = styled.span`
+  flex: 1;
 `;
 
-const CardNullState = styled(NullState)`
-  padding-top: 24px;
-  padding-bottom: 24px;
+const Item = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  margin: 0 -16px;
+  font-size: 0.875rem;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 150ms;
+
+  &:hover {
+    background: var(--general-background-hover);
+  }
+`;
+
+const SectionNullState = styled(NullState)`
+  padding-top: 16px;
+  padding-bottom: 16px;
 `;
 
 interface Props {
@@ -105,6 +172,14 @@ export const Dashboard: React.FC<Props> = (props) => {
 
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] =
     useState<ThreadDTO[]>();
+  const currentWorkspaceThreadIds = useCurrentWorkspaceThreadIds();
+  const filteredThreads = useMemo(() => {
+    if (!recentlyUpdatedThreads) return undefined;
+    if (!currentWorkspaceThreadIds) return recentlyUpdatedThreads;
+    return recentlyUpdatedThreads.filter((thread) =>
+      currentWorkspaceThreadIds.has(thread.id),
+    );
+  }, [recentlyUpdatedThreads, currentWorkspaceThreadIds]);
   const edges = useMemo(() => {
     if (!artifactSnapshots) return [];
 
@@ -167,61 +242,10 @@ export const Dashboard: React.FC<Props> = (props) => {
       />
       <PaneContent>
         {initialLoadComplete && (
-          <FlexContainer>
-            <DashboardCard>
-              <DashboardCardHeader>
-                <LuTelescope />
-                <FeynoteCardHeaderLabel>
-                  {t('dashboard.recents.title')}
-                </FeynoteCardHeaderLabel>
-                <IconButton
-                  style={{ margin: '0' }}
-                  variant="ghost"
-                  size="1"
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.RecentArtifacts,
-                      {},
-                    )
-                  }
-                >
-                  <IoExpand size={18} />
-                </IconButton>
-              </DashboardCardHeader>
-              {recentArtifacts.map((recentArtifact) => (
-                <DashboardCardItem
-                  $isButton
-                  key={recentArtifact.id}
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.Artifact,
-                      { id: recentArtifact.id },
-                    )
-                  }
-                >
-                  {recentArtifact.meta.title}
-                </DashboardCardItem>
-              ))}
-              {!recentArtifacts.length && (
-                <CardNullState
-                  size="small"
-                  title={t('dashboard.noRecentArtifacts.title')}
-                  message={t('dashboard.noRecentArtifacts.message')}
-                />
-              )}
-            </DashboardCard>
-            <DashboardCard>
-              <DashboardCardHeader>
-                <IoGitNetwork />
-                <FeynoteCardHeaderLabel>
-                  {t('dashboard.graph.title')}
-                </FeynoteCardHeaderLabel>
-                <IconButton
-                  style={{ margin: '0' }}
-                  variant="ghost"
-                  size="1"
+          <Container>
+            {artifactSnapshots?.length ? (
+              <GraphSection>
+                <GraphExpandButton
                   onClick={(event) =>
                     navigateWithKeyboardHandler(
                       event,
@@ -230,34 +254,62 @@ export const Dashboard: React.FC<Props> = (props) => {
                     )
                   }
                 >
-                  <IoExpand size={18} />
-                </IconButton>
-              </DashboardCardHeader>
-              {artifactSnapshots?.length ? (
+                  <IoExpand size={16} />
+                </GraphExpandButton>
                 <GraphRenderer
                   artifacts={graphArtifacts}
                   edges={edges}
                   enableInitialZoom={true}
                 />
-              ) : (
-                <CardNullState
-                  size="small"
-                  title={t('dashboard.noGraph.title')}
-                  message={t('dashboard.noGraph.message')}
-                />
-              )}
-            </DashboardCard>
-            {recentlyUpdatedThreads && (
-              <DashboardCard>
-                <DashboardCardHeader>
-                  <IoChatbubbles />
-                  <FeynoteCardHeaderLabel>
-                    {t('dashboard.aiThreads.title')}
-                  </FeynoteCardHeaderLabel>
-                  <IconButton
-                    style={{ margin: '0' }}
-                    variant="ghost"
-                    size="1"
+              </GraphSection>
+            ) : null}
+
+            <SectionsGrid>
+              <Section>
+                <SectionHeader
+                  onClick={(event) =>
+                    navigateWithKeyboardHandler(
+                      event,
+                      PaneableComponent.AllArtifacts,
+                      {
+                        workspaceId: props.workspaceId,
+                        initialSortOrder: AllArtifactsSortOrder.UpdatedAtDesc,
+                      },
+                    )
+                  }
+                >
+                  <LuTelescope size={14} />
+                  <SectionHeaderLabel>
+                    {t('dashboard.recents.title')}
+                  </SectionHeaderLabel>
+                  <IoChevronForward size={12} />
+                </SectionHeader>
+                {recentArtifacts.map((recentArtifact) => (
+                  <Item
+                    key={recentArtifact.id}
+                    onClick={(event) =>
+                      navigateWithKeyboardHandler(
+                        event,
+                        PaneableComponent.Artifact,
+                        { id: recentArtifact.id },
+                      )
+                    }
+                  >
+                    {recentArtifact.meta.title}
+                  </Item>
+                ))}
+                {!recentArtifacts.length && (
+                  <SectionNullState
+                    size="small"
+                    title={t('dashboard.noRecentArtifacts.title')}
+                    message={t('dashboard.noRecentArtifacts.message')}
+                  />
+                )}
+              </Section>
+
+              {filteredThreads && (
+                <Section>
+                  <SectionHeader
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
                         event,
@@ -266,78 +318,71 @@ export const Dashboard: React.FC<Props> = (props) => {
                       )
                     }
                   >
-                    <IoExpand size={18} />
-                  </IconButton>
-                </DashboardCardHeader>
-                {recentlyUpdatedThreads.map((recentThread) => (
-                  <DashboardCardItem
-                    $isButton
-                    key={recentThread.id}
+                    <IoChatbubbles size={14} />
+                    <SectionHeaderLabel>
+                      {t('dashboard.aiThreads.title')}
+                    </SectionHeaderLabel>
+                    <IoChevronForward size={12} />
+                  </SectionHeader>
+                  {filteredThreads.map((recentThread) => (
+                    <Item
+                      key={recentThread.id}
+                      onClick={(event) =>
+                        navigateWithKeyboardHandler(
+                          event,
+                          PaneableComponent.AIThread,
+                          { id: recentThread.id },
+                        )
+                      }
+                    >
+                      {recentThread.title || t('generic.untitled')}
+                    </Item>
+                  ))}
+                  {!filteredThreads.length && (
+                    <SectionNullState
+                      size="small"
+                      title={t('dashboard.noRecentThreads.title')}
+                      message={t('dashboard.noRecentThreads.message')}
+                    />
+                  )}
+                </Section>
+              )}
+
+              {!!incomingSharedArtifacts.length && (
+                <Section>
+                  <SectionHeader
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
                         event,
-                        PaneableComponent.AIThread,
-                        { id: recentThread.id },
+                        PaneableComponent.SharedContent,
+                        {},
                       )
                     }
                   >
-                    {recentThread.title || t('generic.untitled')}
-                  </DashboardCardItem>
-                ))}
-                {!recentlyUpdatedThreads.length && (
-                  <CardNullState
-                    size="small"
-                    title={t('dashboard.noRecentThreads.title')}
-                    message={t('dashboard.noRecentThreads.message')}
-                  />
-                )}
-              </DashboardCard>
-            )}
-            <DashboardCard>
-              <DashboardCardHeader>
-                <LuUsers />
-                <FeynoteCardHeaderLabel>
-                  {t('dashboard.sharedContent.title')}
-                </FeynoteCardHeaderLabel>
-                <IconButton
-                  style={{ margin: '0' }}
-                  variant="ghost"
-                  size="1"
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.SharedContent,
-                      {},
-                    )
-                  }
-                >
-                  <IoExpand size={18} />
-                </IconButton>
-              </DashboardCardHeader>
-              {incomingSharedArtifacts.map((sharedArtifact) => (
-                <DashboardCardItem
-                  $isButton
-                  key={sharedArtifact.id}
-                  onClick={(event) =>
-                    navigateWithKeyboardHandler(
-                      event,
-                      PaneableComponent.Artifact,
-                      { id: sharedArtifact.id },
-                    )
-                  }
-                >
-                  {sharedArtifact.meta.title}
-                </DashboardCardItem>
-              ))}
-              {!incomingSharedArtifacts.length && (
-                <CardNullState
-                  size="small"
-                  title={t('dashboard.noSharedContent.title')}
-                  message={t('dashboard.noSharedContent.message')}
-                />
+                    <LuUsers size={14} />
+                    <SectionHeaderLabel>
+                      {t('dashboard.sharedContent.title')}
+                    </SectionHeaderLabel>
+                    <IoChevronForward size={12} />
+                  </SectionHeader>
+                  {incomingSharedArtifacts.map((sharedArtifact) => (
+                    <Item
+                      key={sharedArtifact.id}
+                      onClick={(event) =>
+                        navigateWithKeyboardHandler(
+                          event,
+                          PaneableComponent.Artifact,
+                          { id: sharedArtifact.id },
+                        )
+                      }
+                    >
+                      {sharedArtifact.meta.title}
+                    </Item>
+                  ))}
+                </Section>
               )}
-            </DashboardCard>
-          </FlexContainer>
+            </SectionsGrid>
+          </Container>
         )}
       </PaneContent>
     </PaneContentContainer>
