@@ -1,4 +1,4 @@
-import { IonIcon } from '@ionic/react';
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -11,6 +11,12 @@ const HEADER_FONT_SIZE = {
   large: '1.5rem',
 } as const;
 
+const ICON_FONT_SIZE = {
+  xsmall: '1.25rem',
+  small: '1.5rem',
+  large: '2rem',
+} as const;
+
 const Header = styled.h2<{
   $size: 'xsmall' | 'small' | 'large';
 }>`
@@ -20,9 +26,16 @@ const Header = styled.h2<{
   margin-bottom: 8px;
 `;
 
+const IconContainer = styled.span<{
+  $size: 'xsmall' | 'small' | 'large';
+}>`
+  font-size: ${(props) => ICON_FONT_SIZE[props.$size]};
+  color: var(--text-color-dim);
+`;
+
 interface Props {
   size?: 'xsmall' | 'small' | 'large';
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   message?: string;
   className?: string;
@@ -33,12 +46,7 @@ export const NullState = (props: Props) => {
 
   return (
     <Container className={props.className}>
-      {!!props.icon && (
-        <IonIcon
-          icon={props.icon}
-          size={size === 'large' ? 'large' : undefined}
-        />
-      )}
+      {props.icon && <IconContainer $size={size}>{props.icon}</IconContainer>}
       <br />
       <div>
         <Header $size={size}>{props.title}</Header>

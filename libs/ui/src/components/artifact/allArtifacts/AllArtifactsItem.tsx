@@ -1,8 +1,13 @@
 import type { ArtifactSnapshot } from '@feynote/global-types';
-import { IonIcon } from '@ionic/react';
 import type { ArtifactType } from '@prisma/client';
-import { calendar, document, pencil } from 'ionicons/icons';
-import { CiInboxIn, CiInboxOut, CiUser } from '../../AppIcons';
+import {
+  CiInboxIn,
+  CiInboxOut,
+  CiUser,
+  IoCalendar,
+  IoDocument,
+  FaPencil,
+} from '../../AppIcons';
 import styled from 'styled-components';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useMemo, type MouseEvent } from 'react';
@@ -21,9 +26,12 @@ const ItemRow = styled.div<{
   align-items: center;
 `;
 
-const ItemIcon = styled(IonIcon)`
+const ItemIcon = styled.span`
+  display: flex;
+  align-items: center;
   margin-left: 18px;
-  font-size: 20px;
+  font-size: 16px;
+  color: var(--text-color-dim);
 `;
 
 const ItemTitle = styled.div`
@@ -43,10 +51,10 @@ const ItemDataslot = styled.div`
   padding-right: 4px;
 `;
 
-const artifactTypeToIcon: Record<ArtifactType, string> = {
-  tiptap: document,
-  calendar,
-  tldraw: pencil,
+const artifactTypeToIcon: Record<ArtifactType, React.ReactNode> = {
+  tiptap: <IoDocument />,
+  calendar: <IoCalendar />,
+  tldraw: <FaPencil />,
 };
 
 interface Props {
@@ -90,7 +98,7 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
 
   return (
     <ItemRow $numDataCols={numDataCols}>
-      <ItemIcon icon={artifactTypeToIcon[props.artifact.meta.type]} />
+      <ItemIcon>{artifactTypeToIcon[props.artifact.meta.type]}</ItemIcon>
       <ItemTitle>
         <span
           className="itemTitleInner"

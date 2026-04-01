@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
 import { useMemo } from 'react';
 import { NullState } from '../info/NullState';
-import { gitNetwork } from 'ionicons/icons';
+import { IoGitNetwork } from '../AppIcons';
 import styled from 'styled-components';
 import { PreferenceNames } from '@feynote/shared-utils';
 import type { FeynoteGraphLink } from './GraphRenderer';
@@ -240,7 +240,7 @@ export const Graph: React.FC<Props> = (props) => {
           <StyledNullState
             title={t('graph.nullState.title')}
             message={t('graph.nullState.message')}
-            icon={gitNetwork}
+            icon={<IoGitNetwork />}
           />
         )}
       </PaneContent>

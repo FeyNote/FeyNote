@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { getThreadsAction } from '../../actions/getThreadsAction';
-import { chatbubbles } from 'ionicons/icons';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
 import {
@@ -137,7 +136,7 @@ export const AIThreadsList: React.FC = () => {
         <NullState
           title={t('assistant.threads.nullState.title')}
           message={t('assistant.threads.nullState.message')}
-          icon={chatbubbles}
+          icon={<IoChatbubbles />}
         />
       );
 

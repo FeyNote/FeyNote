@@ -794,7 +794,7 @@
   "editor.artifactTypeSelector.tldraw": "Drawing Document",
   "editor.artifactTypeSelector.tldraw.description": "Create drawings, annotate maps, whiteboard, or just sketch something out",
   "editor.artifactTypeSelector.thread": "Assistant Thread",
-  "editor.artifactTypeSelector.thread.description": "Grab content from the web via URL, format monster details into a statblock, ask questions about rules, or generate new content",
+  "editor.artifactTypeSelector.thread.description": "Ask questions about rules or ideate, automatically format content, or generate statblocks",
 
   "globalSearch.title": "Global Search",
   "globalSearch.title.workspace": "Workspace Search",

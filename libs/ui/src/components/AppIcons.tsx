@@ -51,6 +51,7 @@ export {
   IoCloudOutline,
   IoExpand,
   IoGitNetwork,
+  IoMailOpen,
   IoSearch,
   IoSettings,
   IoTrash,

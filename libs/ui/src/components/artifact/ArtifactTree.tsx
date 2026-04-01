@@ -33,7 +33,7 @@ import { useAlertContext } from '../../context/alert/AlertContext';
 import { ArtifactTreeItem } from './ArtifactTreeItem';
 import { addArtifactToWorkspaceWithSharingPrompt } from '../../utils/workspace/addArtifactToWorkspaceWithSharingPrompt';
 import { NullState } from '../info/NullState';
-import { documentOutline } from 'ionicons/icons';
+import { IoDocument } from '../AppIcons';
 import {
   getCustomDragData,
   setCustomDragData,
@@ -722,7 +722,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         {treeIsEmpty ? (
           <TreeNullState
             size="xsmall"
-            icon={documentOutline}
+            icon={<IoDocument />}
             title={
               !isEditable && currentWorkspaceId
                 ? t('artifactTree.emptyReadOnly')
