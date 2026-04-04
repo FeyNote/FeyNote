@@ -1,4 +1,3 @@
-import { IonIcon, IonInput } from '@ionic/react';
 import { useEffect, useMemo, useState, type MouseEvent } from 'react';
 import { searchArtifactTitlesAction } from '../../actions/searchArtifactTitlesAction';
 import { searchArtifactBlocksAction } from '../../actions/searchArtifactBlocksAction';
@@ -11,7 +10,8 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import type { ArtifactDTO, WorkspaceSnapshot } from '@feynote/global-types';
 import styled from 'styled-components';
-import { search } from 'ionicons/icons';
+import { Box, TextField } from '@radix-ui/themes';
+import { IoSearch } from '../AppIcons';
 import { PaneNav } from '../pane/PaneNav';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { ArtifactLinkContextMenu } from '../artifact/ArtifactLinkContextMenu';
@@ -43,14 +43,8 @@ const PaneContent = styled.div`
   padding-top: 0;
 `;
 
-const SearchInput = styled(IonInput)`
-  --background: transparent;
-  --highlight-height: 0;
-  --highlight-color-focused: var(--ion-text-color, #000000);
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+const SearchInputContainer = styled(Box)`
+  padding: 10px 0;
 `;
 
 const SearchResultsContainer = styled.div``;
@@ -350,14 +344,19 @@ export const PersistentSearch: React.FC<Props> = (props) => {
         }
       />
       <PaneContent>
-        <SearchInput
-          onIonInput={(event) => setSearchText(event.detail.value || '')}
-          value={searchText}
-          placeholder={t('globalSearch.placeholder')}
-          inputMode="search"
-        >
-          <IonIcon slot="start" icon={search} aria-hidden="true"></IonIcon>
-        </SearchInput>
+        <SearchInputContainer>
+          <TextField.Root
+            onChange={(event) => setSearchText(event.target.value)}
+            value={searchText}
+            placeholder={t('globalSearch.placeholder')}
+            inputMode="search"
+            size="3"
+          >
+            <TextField.Slot>
+              <IoSearch height="16" width="16" />
+            </TextField.Slot>
+          </TextField.Root>
+        </SearchInputContainer>
         <SearchResultsContainer>
           {searchResults.map((searchResult, idx) => (
             <ArtifactLinkContextMenu
@@ -403,13 +402,11 @@ export const PersistentSearch: React.FC<Props> = (props) => {
                 </SearchResultItemTitle>
               </SearchResultItemTitleRow>
               <SearchResultItemSubtitle>
-                <p>
-                  {t(
-                    searchResults.length
-                      ? 'editor.referenceMenu.create.subtitle'
-                      : 'editor.referenceMenu.noItems.subtitle',
-                  )}
-                </p>
+                {t(
+                  searchResults.length
+                    ? 'editor.referenceMenu.create.subtitle'
+                    : 'editor.referenceMenu.noItems.subtitle',
+                )}
               </SearchResultItemSubtitle>
             </SearchResult>
           )}

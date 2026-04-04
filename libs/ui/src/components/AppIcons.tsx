@@ -93,6 +93,7 @@ export {
   LuPanelRight,
   LuRedo,
   LuScroll,
+  LuShare2,
   LuShield,
   LuSword,
   LuTable,
