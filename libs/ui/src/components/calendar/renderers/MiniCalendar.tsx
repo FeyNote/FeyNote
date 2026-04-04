@@ -1,6 +1,6 @@
-import { IonButton, IonIcon } from '@ionic/react';
+import { IconButton } from '@radix-ui/themes';
 import styled from 'styled-components';
-import { chevronBack, chevronForward } from 'ionicons/icons';
+import { IoChevronBack, IoChevronForward } from '../../AppIcons';
 import type { CalendarRenderProps } from './CalendarRenderProps';
 
 const CalendarContainer = styled.div``;
@@ -20,11 +20,7 @@ const MonthSwitcher = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-const NextBackButton = styled(IonButton)`
-  margin-left: 16px;
-  margin-right: 16px;
+  gap: 16px;
 `;
 
 const MonthYearName = styled.div`
@@ -70,19 +66,19 @@ const CalendarDay = styled.button<{
   ${(props) =>
     props.$selected
       ? `
-    background: var(--ion-color-primary);
-    border: 1px solid var(--ion-color-primary);
+    background: var(--accent-9);
+    border: 1px solid var(--accent-9);
     color: white;
   `
       : ''}
 
   &:hover {
-    background: rgba(var(--ion-background-color-rgb, rgb(255, 255, 255)), 0.5);
+    background: var(--accent-a3);
 
     ${(props) =>
       props.$selected
         ? `
-      background: var(--ion-color-primary);
+      background: var(--accent-9);
     `
         : ''}
   }
@@ -109,23 +105,25 @@ export const MiniCalendar: React.FC<CalendarRenderProps> = (props) => {
   const showSwitcher = props.monthNames.length !== 1 || props.centerYear !== 1;
   const switcher = (
     <MonthSwitcher>
-      <NextBackButton
-        size="small"
-        fill="clear"
+      <IconButton
+        variant="ghost"
+        size="1"
+        style={{ margin: '0' }}
         onClick={() => props.moveCenter(-1)}
       >
-        <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
-      </NextBackButton>
+        <IoChevronBack />
+      </IconButton>
       <MonthYearName>
         {props.monthNames.get(props.centerMonth - 1)} {props.centerYear}
       </MonthYearName>
-      <NextBackButton
-        size="small"
-        fill="clear"
+      <IconButton
+        variant="ghost"
+        size="1"
+        style={{ margin: '0' }}
         onClick={() => props.moveCenter(1)}
       >
-        <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
-      </NextBackButton>
+        <IoChevronForward />
+      </IconButton>
     </MonthSwitcher>
   );
 

@@ -75,7 +75,7 @@ const NodeDot = styled.div`
   width: ${NODE_RADIUS * 2}px;
   height: ${NODE_RADIUS * 2}px;
   border-radius: 50%;
-  background: var(--floating-background);
+  background: var(--text-color-faint);
   flex-shrink: 0;
 `;
 

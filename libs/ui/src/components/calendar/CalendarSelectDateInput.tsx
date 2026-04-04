@@ -1,8 +1,8 @@
 import type { YCalendarConfig } from '@feynote/shared-utils';
-import { IonButton, IonIcon, IonInput } from '@ionic/react';
+import { IconButton, TextField } from '@radix-ui/themes';
 import { useTranslation } from 'react-i18next';
 import type { TypedMap } from 'yjs-types';
-import { calendar, checkmark } from 'ionicons/icons';
+import { IoCalendar, FaCheck } from '../AppIcons';
 import { useEffect, useRef, useState } from 'react';
 import { ArtifactCalendar } from './ArtifactCalendar';
 import { Doc as YDoc } from 'yjs';
@@ -17,6 +17,18 @@ const CalendarSelectDateGrid = styled.div`
 
 const ArtifactCalendarContainer = styled.div`
   overflow-y: auto;
+  padding-top: 8px;
+  padding-left: 8px;
+`;
+
+const InputContainer = styled.div`
+  padding: 8px 12px;
+`;
+
+const InputLabel = styled.label`
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
 `;
 
 interface Props {
@@ -28,7 +40,7 @@ interface Props {
 export const CalendarSelectDateInput: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [text, setText] = useState('');
-  const inputRef = useRef<HTMLIonInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const setCenterRef = useRef<(center: string) => void>(undefined);
   const calendarContainerRef = useRef<HTMLDivElement>(null);
 
@@ -39,14 +51,14 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
     props.onSubmit(text);
   };
 
-  const keyUpHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+  const keyUpHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
 
     submit();
   };
 
-  const onIonInput = (value: string) => {
+  const onInputChange = (value: string) => {
     if (value && isSessionCalendar(props.configMap) && !value.startsWith('#')) {
       value = `#${value}`;
     }
@@ -69,7 +81,7 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
 
   useEffect(() => {
     setTimeout(() => {
-      inputRef.current?.setFocus();
+      inputRef.current?.focus();
     });
   }, []);
 
@@ -97,31 +109,33 @@ export const CalendarSelectDateInput: React.FC<Props> = (props) => {
           onDayClicked={(datestamp: string) => setText(datestamp)}
         />
       </ArtifactCalendarContainer>
-      <IonInput
-        className="ion-padding-start ion-padding-end"
-        label={t('calendar.selectDate.label')}
-        labelPlacement="stacked"
-        placeholder={t(inputPlaceholderI18n)}
-        ref={inputRef}
-        onKeyUp={keyUpHandler}
-        onIonInput={(e) => onIonInput(e.detail.value || '')}
-        value={text}
-      >
-        <IonIcon slot="start" icon={calendar} aria-hidden="true"></IonIcon>
-        <IonButton
-          disabled={!isValid}
-          fill="clear"
-          slot="end"
-          aria-label={t('calendar.selectDate.submit')}
-          onClick={submit}
+      <InputContainer>
+        <InputLabel>{t('calendar.selectDate.label')}</InputLabel>
+        <TextField.Root
+          ref={inputRef}
+          placeholder={t(inputPlaceholderI18n)}
+          onKeyUp={keyUpHandler}
+          onChange={(e) => onInputChange(e.target.value)}
+          value={text}
+          size="3"
         >
-          <IonIcon
-            slot="icon-only"
-            icon={checkmark}
-            aria-hidden="true"
-          ></IonIcon>
-        </IonButton>
-      </IonInput>
+          <TextField.Slot>
+            <IoCalendar />
+          </TextField.Slot>
+          <TextField.Slot>
+            <IconButton
+              variant="ghost"
+              size="1"
+              style={{ margin: '0' }}
+              disabled={!isValid}
+              aria-label={t('calendar.selectDate.submit')}
+              onClick={submit}
+            >
+              <FaCheck />
+            </IconButton>
+          </TextField.Slot>
+        </TextField.Root>
+      </InputContainer>
     </CalendarSelectDateGrid>
   );
 };

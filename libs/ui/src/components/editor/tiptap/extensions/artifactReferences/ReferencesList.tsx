@@ -67,7 +67,7 @@ const SuggestionListItem = styled.button<{
   background-color: var(--ion-card-background, #ffffff);
   ${(props) =>
     props.$selected
-      ? `background-color: var(--ion-background-color, #dddddd);`
+      ? `background-color: var(--contrasting-element-background-hover);`
       : ``}
   width: 100%;
   min-height: 52px;
@@ -78,7 +78,7 @@ const SuggestionListItem = styled.button<{
 
 const SuggestionListItemIcon = styled.div`
   text-align: center;
-  background-color: var(--ion-background-color, #ffffff);
+  background-color: var(--general-background);
   height: 34px;
   width: 34px;
   border-radius: 6px;
@@ -609,6 +609,7 @@ export const ReferencesList = forwardRef<unknown, Props>((props, ref) => {
         description,
         children: message,
         actionButtons,
+        size: 'large',
         onOpenChange: (open) => {
           if (!open) {
             setTimeout(() => {
