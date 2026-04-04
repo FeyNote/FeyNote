@@ -113,14 +113,14 @@ export const Import: React.FC = () => {
   jobsRef.current = jobs;
 
   const getJobs = async () => {
-    const importjobsDTO = await getJobsAction({
+    const jobs = await getJobsAction({
       type: 'import',
     }).catch((e) => {
       handleTRPCErrors(e);
     });
-    if (!importjobsDTO) return;
+    if (!jobs) return;
 
-    setJobs(importjobsDTO.jobs);
+    setJobs(jobs);
   };
 
   const jobClickHandler = async (jobId: string) => {

@@ -13,7 +13,7 @@ const JOB_PROGRESS_UPDATE_PERIOD_SECONDS = 2;
 
 export class JobProgressTracker {
   protected updateProgress: (percent: number) => void;
-  private stepCount = 0;
+  private stepCount;
 
   constructor(args: { jobId: string; userId: string; stepCount: number }) {
     this.stepCount = args.stepCount;

@@ -342,8 +342,8 @@
   "import.options.markdown.description": "Documents with formatting",
   "import.options.text.description": "Plain text documents",
   "import.file.browse": "Click to select, or drag a .zip file here",
-  "import.file.error.type": "Invalid file type selected. File must be of type(s);",
-  "import.file.error.size": "File size limit exceeded. File must have a size of under;",
+  "import.file.error.type": "Invalid file type selected. File must be of type(s) {{fileTypes}}",
+  "import.file.error.size": "File size limit exceeded. File must have a size of under {{fileSize}}MB",
   "import.job.error.limit": "Job limit exceeded. Please try your request again in five minutes.",
   "import.workspace": "Importing to workspace: {{workspaceName}}",
 

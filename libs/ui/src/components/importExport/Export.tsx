@@ -92,14 +92,14 @@ export const Export: React.FC = () => {
   jobsRef.current = jobs;
 
   const getJobs = async () => {
-    const exportjobsDTO = await getJobsAction({
+    const jobs = await getJobsAction({
       type: 'export',
     }).catch((e) => {
       handleTRPCErrors(e);
     });
-    if (!exportjobsDTO) return;
+    if (!jobs) return;
 
-    setJobs(exportjobsDTO.jobs);
+    setJobs(jobs);
   };
 
   const _export = async (format: ExportFormat) => {

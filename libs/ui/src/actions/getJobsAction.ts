@@ -4,15 +4,15 @@ import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
 export async function getJobsAction(input: {
   type?: 'import' | 'export';
-}): Promise<{ jobs: JobSummary[] }> {
+}): Promise<JobSummary[]> {
   try {
-    const result = await trpc.job.getJobs.query(input);
+    const jobs = await trpc.job.getJobsV2.query(input);
     try {
       const manifestDb = await getManifestDb();
       const tx = manifestDb.transaction(ObjectStoreName.Jobs, 'readwrite');
       const store = tx.objectStore(ObjectStoreName.Jobs);
       await store.clear();
-      for (const item of result.jobs) {
+      for (const item of jobs) {
         await store.put(item);
       }
       tx.commit();
@@ -20,7 +20,7 @@ export async function getJobsAction(input: {
     } catch {
       // Cache update failed, that's okay
     }
-    return result;
+    return jobs;
   } catch {
     const manifestDb = await getManifestDb();
     const cachedItems = await manifestDb.getAll(ObjectStoreName.Jobs);
@@ -31,6 +31,6 @@ export async function getJobsAction(input: {
       .sort((a, b) => {
         return b.createdAt.getTime() - a.createdAt.getTime();
       });
-    return { jobs: sortedJobs };
+    return sortedJobs;
   }
 }
