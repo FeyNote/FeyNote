@@ -1,22 +1,19 @@
-import {
-  IonButton,
-  IonCardContent,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonInput,
-} from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import { PaneContentContainer } from '../pane/PaneContentContainer';
 import * as Sentry from '@sentry/react';
 import {
   CenteredContainer,
-  CenteredIonCard,
-  CenteredIonCardHeader,
-  CenteredIonInputContainer,
+  AuthCard,
+  AuthCardHeader,
+  AuthCardTitle,
+  AuthCardSubtitle,
+  AuthCardContent,
+  AuthInputContainer,
   IonContentFantasyBackground,
 } from './styles';
 import { trpc } from '../../utils/trpc';
 import { useState } from 'react';
-import { getIonInputClassNames } from './input';
+import { AuthInput } from './AuthInput';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
@@ -124,60 +121,50 @@ export const ResetPassword: React.FC<Props> = (props) => {
     <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
-        <CenteredIonCard>
-          <CenteredIonCardHeader>
-            <IonCardTitle>{t('auth.resetPassword.title')}</IonCardTitle>
-            <IonCardSubtitle>
+        <AuthCard>
+          <AuthCardHeader>
+            <AuthCardTitle>{t('auth.resetPassword.title')}</AuthCardTitle>
+            <AuthCardSubtitle>
               {t('auth.resetPassword.subtitle')}
-            </IonCardSubtitle>
-          </CenteredIonCardHeader>
-          <IonCardContent>
-            <CenteredIonInputContainer>
-              <IonInput
-                className={getIonInputClassNames(
-                  passwordIsValid,
-                  passwordIsTouched,
-                )}
+            </AuthCardSubtitle>
+          </AuthCardHeader>
+          <AuthCardContent>
+            <AuthInputContainer>
+              <AuthInput
                 label={t('auth.resetPassword.password.label')}
                 type="password"
-                labelPlacement="stacked"
                 placeholder={t('auth.resetPassword.password.placeholder')}
                 errorText={t('auth.resetPassword.password.error')}
                 value={password}
                 disabled={isLoading}
-                onIonInput={(e) =>
-                  passwordInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setPasswordIsTouched(false)}
+                isValid={passwordIsValid}
+                isTouched={passwordIsTouched}
+                onChange={passwordInputHandler}
+                onBlur={() => setPasswordIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(
-                  confirmPasswordIsValid,
-                  confirmPasswordIsTouched,
-                )}
+              <AuthInput
                 label={t('auth.resetPassword.confirmPassword.label')}
                 type="password"
-                labelPlacement="stacked"
                 placeholder={t(
                   'auth.resetPassword.confirmPassword.placeholder',
                 )}
                 errorText={t('auth.resetPassword.confirmPassword.error')}
                 value={confirmPassword}
                 disabled={isLoading}
-                onIonInput={(e) =>
-                  confirmPasswordInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setConfirmPasswordIsTouched(false)}
+                isValid={confirmPasswordIsValid}
+                isTouched={confirmPasswordIsTouched}
+                onChange={confirmPasswordInputHandler}
+                onBlur={() => setConfirmPasswordIsTouched(false)}
               />
-            </CenteredIonInputContainer>
+            </AuthInputContainer>
             <br />
             <CenteredContainer>
-              <IonButton onClick={submitReset} disabled={disableSubmitButton}>
+              <Button onClick={submitReset} disabled={disableSubmitButton}>
                 {t('auth.resetPassword.submit')}
-              </IonButton>
+              </Button>
             </CenteredContainer>
-          </IonCardContent>
-        </CenteredIonCard>
+          </AuthCardContent>
+        </AuthCard>
       </IonContentFantasyBackground>
     </PaneContentContainer>
   );

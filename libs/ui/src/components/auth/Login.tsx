@@ -1,33 +1,35 @@
-import {
-  IonButton,
-  IonCardContent,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonInput,
-  IonItem,
-} from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import { PaneContentContainer } from '../pane/PaneContentContainer';
 import {
   CenteredContainer,
-  CenteredIonCard,
-  CenteredIonCardHeader,
-  CenteredIonInputContainer,
-  CenteredIonText,
+  AuthCard,
+  AuthCardHeader,
+  AuthCardTitle,
+  AuthCardSubtitle,
+  AuthCardContent,
+  AuthInputContainer,
+  AuthCenteredText,
   IonContentFantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../utils/trpc';
 import { useState } from 'react';
-import { getIonInputClassNames } from './input';
+import { AuthInput } from './AuthInput';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { ToggleAuthTypeButton } from './ToggleAuthTypeButton';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
-import { useAlertContext } from '../../context/alert/AlertContext';
+import { ActionDialog } from '../sharedComponents/ActionDialog';
 
 interface Props {
   setAuthType: (authType: 'register' | 'login') => void;
+}
+
+interface DialogState {
+  open: boolean;
+  title: string;
+  description?: string;
 }
 
 export const Login: React.FC<Props> = (props) => {
@@ -38,7 +40,10 @@ export const Login: React.FC<Props> = (props) => {
   const [passwordIsTouched, setPasswordIsTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { handleTRPCErrors } = useHandleTRPCErrors();
-  const { showAlert } = useAlertContext();
+  const [dialog, setDialog] = useState<DialogState>({
+    open: false,
+    title: '',
+  });
 
   const { setSession } = useSessionContext();
 
@@ -64,9 +69,10 @@ export const Login: React.FC<Props> = (props) => {
 
   const submitTriggerReset = () => {
     if (!email) {
-      showAlert({
-        title: t('auth.login.forgot.noEmail'),
-        actionButtons: 'okay',
+      setDialog({
+        open: true,
+        title: t('auth.login.forgot.noEmail.header'),
+        description: t('auth.login.forgot.noEmail'),
       });
       return;
     }
@@ -77,20 +83,20 @@ export const Login: React.FC<Props> = (props) => {
         email,
         returnUrl: window.location.origin,
       })
-      .then((_session) => {
-        showAlert({
+      .then(() => {
+        setDialog({
+          open: true,
           title: t('auth.login.forgot.submitted.header'),
-          children: t('auth.login.forgot.submitted.message'),
-          actionButtons: 'okay',
+          description: t('auth.login.forgot.submitted.message'),
         });
       })
       .catch((error) => {
         handleTRPCErrors(error, {
           404: () => {
-            showAlert({
+            setDialog({
+              open: true,
               title: t('auth.login.forgot.notFound.header'),
-              children: t('auth.login.forgot.notFound.message'),
-              actionButtons: 'okay',
+              description: t('auth.login.forgot.notFound.message'),
             });
           },
         });
@@ -110,7 +116,7 @@ export const Login: React.FC<Props> = (props) => {
     setPassword(value);
   };
 
-  const enterKeyHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+  const enterKeyHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       submitLogin();
     }
@@ -120,74 +126,79 @@ export const Login: React.FC<Props> = (props) => {
     <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
-        <CenteredIonCard>
-          <CenteredIonCardHeader>
-            <IonCardTitle>{t('auth.login.card.title')}</IonCardTitle>
-            <IonCardSubtitle>{t('auth.login.card.subtitle')}</IonCardSubtitle>
-          </CenteredIonCardHeader>
-          <IonCardContent>
-            <CenteredIonInputContainer>
-              <IonInput
-                className={getIonInputClassNames(true, emailIsTouched)}
+        <AuthCard>
+          <AuthCardHeader>
+            <AuthCardTitle>{t('auth.login.card.title')}</AuthCardTitle>
+            <AuthCardSubtitle>{t('auth.login.card.subtitle')}</AuthCardSubtitle>
+          </AuthCardHeader>
+          <AuthCardContent>
+            <AuthInputContainer>
+              <AuthInput
                 label={t('auth.login.email.label')}
                 type="email"
-                labelPlacement="stacked"
                 placeholder={t('auth.login.email.placeholder')}
                 value={email}
                 disabled={isLoading}
                 errorText={t('auth.login.email.error')}
-                onIonInput={(e) => emailInputHandler(e.target.value as string)}
-                onIonBlur={() => setEmailIsTouched(false)}
+                isValid={true}
+                isTouched={emailIsTouched}
+                onChange={emailInputHandler}
+                onBlur={() => setEmailIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(true, passwordIsTouched)}
+              <AuthInput
                 label={t('auth.login.password.label')}
                 type="password"
-                labelPlacement="stacked"
                 placeholder={t('auth.login.password.placeholder')}
                 errorText={t('auth.login.password.error')}
                 value={password}
                 disabled={isLoading}
+                isValid={true}
+                isTouched={passwordIsTouched}
+                onChange={passwordInputHandler}
+                onBlur={() => setPasswordIsTouched(false)}
                 onKeyDown={enterKeyHandler}
-                onIonInput={(e) =>
-                  passwordInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setPasswordIsTouched(false)}
               />
-            </CenteredIonInputContainer>
-            <IonItem lines="none">
-              <CenteredIonText>
-                <sub>
-                  <i>
-                    {t('auth.tos.text')}{' '}
-                    <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
-                  </i>
-                </sub>
-              </CenteredIonText>
-            </IonItem>
+            </AuthInputContainer>
+            <AuthCenteredText>
+              <sub>
+                <i>
+                  {t('auth.tos.text')}{' '}
+                  <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
+                </i>
+              </sub>
+            </AuthCenteredText>
             <CenteredContainer>
-              <IonButton onClick={submitLogin} disabled={isLoading}>
+              <Button onClick={submitLogin} disabled={isLoading}>
                 {t('auth.login.submit')}
-              </IonButton>
-              <IonButton onClick={submitTriggerReset} fill="clear">
+              </Button>
+              <Button
+                onClick={submitTriggerReset}
+                variant="ghost"
+                style={{ margin: '0' }}
+              >
                 {t('auth.login.forgot')}
-              </IonButton>
+              </Button>
             </CenteredContainer>
             <SignInWithGoogleButton />
-            <IonItem lines="none">
-              <CenteredIonText>
-                <sub>
-                  <ToggleAuthTypeButton
-                    onClick={() => props.setAuthType('register')}
-                  >
-                    {t('auth.login.switchToRegister')}
-                  </ToggleAuthTypeButton>
-                </sub>
-              </CenteredIonText>
-            </IonItem>
-          </IonCardContent>
-        </CenteredIonCard>
+            <AuthCenteredText>
+              <sub>
+                <ToggleAuthTypeButton
+                  onClick={() => props.setAuthType('register')}
+                >
+                  {t('auth.login.switchToRegister')}
+                </ToggleAuthTypeButton>
+              </sub>
+            </AuthCenteredText>
+          </AuthCardContent>
+        </AuthCard>
       </IonContentFantasyBackground>
+      <ActionDialog
+        open={dialog.open}
+        onOpenChange={(open) => setDialog((prev) => ({ ...prev, open }))}
+        title={dialog.title}
+        description={dialog.description}
+        actionButtons="okay"
+      />
     </PaneContentContainer>
   );
 };

@@ -1,22 +1,19 @@
-import {
-  IonButton,
-  IonCardContent,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonInput,
-} from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import { PaneContentContainer } from '../pane/PaneContentContainer';
 import * as Sentry from '@sentry/react';
 import {
   CenteredContainer,
-  CenteredIonCard,
-  CenteredIonCardHeader,
-  CenteredIonInputContainer,
+  AuthCard,
+  AuthCardHeader,
+  AuthCardTitle,
+  AuthCardSubtitle,
+  AuthCardContent,
+  AuthInputContainer,
   IonContentFantasyBackground,
 } from './styles';
 import { trpc } from '../../utils/trpc';
 import { useState } from 'react';
-import { getIonInputClassNames } from './input';
+import { AuthInput } from './AuthInput';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
@@ -162,51 +159,46 @@ export const ResetEmail: React.FC<Props> = (props) => {
     <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
-        <CenteredIonCard>
-          <CenteredIonCardHeader>
-            <IonCardTitle>{t('auth.resetEmail.title')}</IonCardTitle>
-            <IonCardSubtitle>{t('auth.resetEmail.subtitle')}</IonCardSubtitle>
-          </CenteredIonCardHeader>
-          <IonCardContent>
-            <CenteredIonInputContainer>
-              <IonInput
-                className={getIonInputClassNames(emailIsValid, emailIsTouched)}
+        <AuthCard>
+          <AuthCardHeader>
+            <AuthCardTitle>{t('auth.resetEmail.title')}</AuthCardTitle>
+            <AuthCardSubtitle>{t('auth.resetEmail.subtitle')}</AuthCardSubtitle>
+          </AuthCardHeader>
+          <AuthCardContent>
+            <AuthInputContainer>
+              <AuthInput
                 label={t('auth.resetEmail.email.label')}
                 type="email"
-                labelPlacement="stacked"
                 placeholder={t('auth.resetEmail.email.placeholder')}
                 errorText={t('auth.resetEmail.email.error')}
                 value={email}
                 disabled={isLoading}
-                onIonInput={(e) => emailInputHandler(e.target.value as string)}
-                onIonBlur={() => setEmailIsTouched(false)}
+                isValid={emailIsValid}
+                isTouched={emailIsTouched}
+                onChange={emailInputHandler}
+                onBlur={() => setEmailIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(
-                  confirmEmailIsValid,
-                  confirmEmailIsTouched,
-                )}
+              <AuthInput
                 label={t('auth.resetEmail.confirmEmail.label')}
                 type="email"
-                labelPlacement="stacked"
                 placeholder={t('auth.resetEmail.confirmEmail.placeholder')}
                 errorText={t('auth.resetEmail.confirmEmail.error')}
                 value={confirmEmail}
                 disabled={isLoading}
-                onIonInput={(e) =>
-                  confirmEmailInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setConfirmEmailIsTouched(false)}
+                isValid={confirmEmailIsValid}
+                isTouched={confirmEmailIsTouched}
+                onChange={confirmEmailInputHandler}
+                onBlur={() => setConfirmEmailIsTouched(false)}
               />
-            </CenteredIonInputContainer>
+            </AuthInputContainer>
             <br />
             <CenteredContainer>
-              <IonButton onClick={submitReset} disabled={disableSubmitButton}>
+              <Button onClick={submitReset} disabled={disableSubmitButton}>
                 {t('auth.resetEmail.submit')}
-              </IonButton>
+              </Button>
             </CenteredContainer>
-          </IonCardContent>
-        </CenteredIonCard>
+          </AuthCardContent>
+        </AuthCard>
       </IonContentFantasyBackground>
     </PaneContentContainer>
   );
