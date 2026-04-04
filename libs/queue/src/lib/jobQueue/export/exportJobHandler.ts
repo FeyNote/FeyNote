@@ -36,7 +36,7 @@ export const exportJobHandler = async (job: JobSummary) => {
   const totalArtifactCount = await prisma.artifact.count({
     where: { userId: job.userId, deletedAt: null },
   });
-  const progressTracker = new JobProgressTracker(job.id, 1);
+  const progressTracker = new JobProgressTracker({userId: job.userId, jobId: job.id, stepCount: 2});
 
   try {
     const batchSize = 50;

@@ -19,7 +19,6 @@ export const importFromZip = async (args: {
   progressTracker: JobProgressTracker;
 }) => {
   await using tempWorkingDir = await mkdtempDisposable('/tmp/');
-
   const purpose = FilePurpose.job;
   const stream = await streamFileFromS3(args.storageKey, purpose);
   const zipPath = join(tempWorkingDir.path, 'blob');

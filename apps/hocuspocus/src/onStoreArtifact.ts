@@ -61,7 +61,6 @@ export async function onStoreArtifact(
         : null,
       json: {
         ...(artifact.json as unknown as Record<string, unknown>),
-        tiptapBody,
         meta: artifactMeta,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Thanks Prisma
         userAccess: userAccessPOJO as any,

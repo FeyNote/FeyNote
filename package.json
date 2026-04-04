@@ -91,7 +91,6 @@
     "dompurify": "^3.3.3",
     "electron-squirrel-startup": "^1.0.1",
     "express": "4.22.1",
-    "extract-zip": "^2.0.1",
     "flexlayout-react": "^0.8.19",
     "google-auth-library": "^10.6.2",
     "https-proxy-agent": "^8.0.0",
@@ -133,6 +132,7 @@
     "workbox-strategies": "^7.4.0",
     "workbox-sw": "^7.4.0",
     "y-utility": "^0.1.4",
+    "yauzl-promise": "^4.0.0",
     "yjs": "^13.6.30",
     "zip-stream": "^7.0.2",
     "zod": "^4.3.6"
@@ -180,6 +180,7 @@
     "@types/serviceworker": "^0.0.194",
     "@types/styled-components": "5.1.36",
     "@types/turndown": "^5.0.6",
+    "@types/yauzl-promise": "^4.0.1",
     "@types/zip-stream": "^7.0.0",
     "@typescript-eslint/eslint-plugin": "8.44.1",
     "@typescript-eslint/parser": "8.44.1",

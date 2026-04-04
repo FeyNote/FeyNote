@@ -199,7 +199,10 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
       });
       navigate(PaneableComponent.Import, {}, PaneTransition.Push);
     } catch (e) {
-      handleTRPCErrors(e, { 413: t('import.fileTooLarge') });
+      handleTRPCErrors(e, {
+        413: `${t('import.file.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        429: t('import.job.error.limit'),
+      });
       console.error(e);
     }
     setDisableUploadBtn(false);

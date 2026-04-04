@@ -108,18 +108,14 @@ export const createArtifact = authenticatedProcedure
       })();
 
       const json = {
-        tiptapBody:
-          artifactMeta.type === 'tiptap'
-            ? getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY)
-            : undefined,
         meta: artifactMeta,
       } satisfies ArtifactJSON;
 
       const yBin = Buffer.from(encodeStateAsUpdate(yDoc));
 
       let text = '';
-      if (json.tiptapBody) {
-        text = getTextForJSONContent(json.tiptapBody);
+      if (artifactMeta.type === 'tiptap') {
+        text = getTextForJSONContent(getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY));
       }
 
       const existingConflict = await prisma.artifact.findUnique({
