@@ -16,6 +16,7 @@ export const useEdges = () => {
 
   return useMemo(
     () => ({
+      edgesLoading: edgeStore.isLoading,
       getEdgesForArtifactId: (
         ...args: Parameters<typeof edgeStore.getEdgesForArtifactId>
       ) => {

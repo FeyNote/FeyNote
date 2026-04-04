@@ -38,7 +38,7 @@ export class PreferencesService {
     [PreferenceNames.PreferencesSync]: PreferencesSync.Enabled,
 
     [PreferenceNames.GraphShowOrphans]: true,
-    [PreferenceNames.GraphLockNodeOnDrag]: true,
+    [PreferenceNames.GraphLockNodeOnDrag]: false,
     [PreferenceNames.GraphShowReferenceRelations]: true,
     [PreferenceNames.GraphShowTreeRelations]: true,
 

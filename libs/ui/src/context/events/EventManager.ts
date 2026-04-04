@@ -48,7 +48,6 @@ export class EventManager {
     eventName: T,
     listener: EventListener<T>,
   ): () => void {
-    console.log('hi', eventName.substring(0, 10));
     this.eventListeners[eventName].add(listener);
 
     return () => {
