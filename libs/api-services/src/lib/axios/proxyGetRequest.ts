@@ -2,18 +2,16 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { globalServerConfig } from '@feynote/config';
 
-export const proxyGetRequest = async (
-  url: string,
-  config?: Partial<AxiosRequestConfig>,
-) => {
-  const signal = AbortSignal.timeout(15000);
+export const proxyGetRequest = async (args: {
+  url: string;
+  config?: Partial<AxiosRequestConfig>;
+}) => {
   const requestConfig = {
     headers: {
       'User-Agent':
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:107.0) Gecko/20100101 Firefox/107.0',
     },
-    signal,
-    ...config,
+    ...args.config,
   } satisfies AxiosRequestConfig;
   if (globalServerConfig.proxy.enabled) {
     const proxyUrl = new URL(globalServerConfig.proxy.url);
@@ -21,6 +19,6 @@ export const proxyGetRequest = async (
     proxyUrl.password = globalServerConfig.proxy.password;
     requestConfig['httpsAgent'] = new HttpsProxyAgent(proxyUrl);
   }
-  const res = await axios.get(url, requestConfig);
+  const res = await axios.get(args.url, requestConfig);
   return res;
 };
