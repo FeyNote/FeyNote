@@ -9,7 +9,7 @@ import {
   AuthCardSubtitle,
   AuthCardContent,
   AuthInputContainer,
-  IonContentFantasyBackground,
+  FantasyBackground,
 } from './styles';
 import { trpc } from '../../utils/trpc';
 import { useState } from 'react';
@@ -119,7 +119,7 @@ export const ResetPassword: React.FC<Props> = (props) => {
 
   return (
     <PaneContentContainer>
-      <IonContentFantasyBackground>
+      <FantasyBackground>
         <LogoActionContainer />
         <AuthCard>
           <AuthCardHeader>
@@ -165,7 +165,7 @@ export const ResetPassword: React.FC<Props> = (props) => {
             </CenteredContainer>
           </AuthCardContent>
         </AuthCard>
-      </IonContentFantasyBackground>
+      </FantasyBackground>
     </PaneContentContainer>
   );
 };

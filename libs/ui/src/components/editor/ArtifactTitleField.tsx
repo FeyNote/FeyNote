@@ -5,13 +5,13 @@ export const ArtifactTitleField = styled.input`
   background: transparent;
   border: none;
   outline: none;
-  color: var(--ion-text-color);
+  color: var(--text-color);
   font-size: 1.25rem;
   font-weight: 500;
   padding: 0;
 
   &::placeholder {
-    color: var(--ion-color-medium);
+    color: var(--medium-color);
   }
 
   &:disabled {

@@ -45,10 +45,10 @@ import type { ActionDialog } from '../../../../sharedComponents/ActionDialog';
 const SuggestionListContainer = styled.div`
   width: min(350px, 100vw);
   max-height: 450px;
-  background-color: var(--ion-card-background, #ffffff);
+  background-color: var(--card-background);
   border-radius: 4px;
   box-shadow: 1px 1px 12px rgba(0, 0, 0, 0.4);
-  color: var(--ion-text-color, #000000);
+  color: var(--text-color);
   overflow-y: auto;
   padding: 4px;
 `;
@@ -63,8 +63,8 @@ const SuggestionListItem = styled.button<{
 
   border-radius: 4px;
 
-  color: var(--ion-text-color, #000000);
-  background-color: var(--ion-card-background, #ffffff);
+  color: var(--text-color);
+  background-color: var(--card-background);
   ${(props) =>
     props.$selected
       ? `background-color: var(--contrasting-element-background-hover);`
@@ -97,7 +97,7 @@ const SuggestionListItemTitle = styled.div`
 `;
 
 const SuggestionListItemSubtitle = styled.div`
-  color: rgba(var(--ion-text-color-rgb, rgb(0, 0, 0)), 0.8);
+  color: rgba(var(--text-color-rgb), 0.8);
   font-size: 0.6875rem;
 `;
 

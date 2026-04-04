@@ -60,7 +60,7 @@ _Fully customizable fantasy calendar system_
 
 ## Tech Stack
 
-- **Frontend**: React 19, Radix UI (also some Ionic, but that's slowly being removed)
+- **Frontend**: React 19, Radix UI
 - **Text Editor**: TipTap with a ton of custom extensions
 - **Map & Drawing**: TLDraw
 - **Calendar**: Completely custom

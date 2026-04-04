@@ -63,10 +63,11 @@ export const SignInWithGoogleButton = styled(SignInWithGoogle)`
   justify-content: center;
 `;
 
-export const IonContentFantasyBackground = styled(PaneContent)`
+export const FantasyBackground = styled(PaneContent)`
   grid-row: 1 / -1;
   padding-left: 0;
   padding-right: 0;
+  min-height: 100vh;
   background: url('https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg')
     top center / cover no-repeat fixed padding-box content-box
     var(--background-color, #ffffff);

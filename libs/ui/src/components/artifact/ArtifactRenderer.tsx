@@ -44,7 +44,7 @@ const FileUploadOverlay = styled.div`
 const FileUploadOverlayContent = styled.div`
   color: white;
   padding: 10px;
-  background: var(--ion-card-background);
+  background: var(--card-background);
   border-radius: 4px;
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.6);
   display: grid;

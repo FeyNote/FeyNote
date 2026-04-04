@@ -15,11 +15,6 @@ import { CollaborationConnectionAuthorizationState } from '../../utils/collabora
 
 const AIFCEditorContainer = styled.div`
   margin: 8px 0;
-
-  ion-card {
-    background: none;
-    box-shadow: none;
-  }
 `;
 
 interface Props {

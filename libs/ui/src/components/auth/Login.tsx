@@ -9,7 +9,7 @@ import {
   AuthCardContent,
   AuthInputContainer,
   AuthCenteredText,
-  IonContentFantasyBackground,
+  FantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { trpc } from '../../utils/trpc';
@@ -124,7 +124,7 @@ export const Login: React.FC<Props> = (props) => {
 
   return (
     <PaneContentContainer>
-      <IonContentFantasyBackground>
+      <FantasyBackground>
         <LogoActionContainer />
         <AuthCard>
           <AuthCardHeader>
@@ -191,7 +191,7 @@ export const Login: React.FC<Props> = (props) => {
             </AuthCenteredText>
           </AuthCardContent>
         </AuthCard>
-      </IonContentFantasyBackground>
+      </FantasyBackground>
       <ActionDialog
         open={dialog.open}
         onOpenChange={(open) => setDialog((prev) => ({ ...prev, open }))}

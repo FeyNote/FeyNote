@@ -93,7 +93,7 @@ export const ArtifactEditorStyles = styled.div`
 
   hr {
     height: 1px;
-    background: var(--ion-color-medium);
+    background: var(--medium-color);
     margin-top: 8px;
     margin-bottom: 8px;
     border: none;
@@ -177,8 +177,8 @@ export const ArtifactEditorStyles = styled.div`
     position: absolute;
     top: 0;
     right: 0;
-    background: var(--ion-background-color-step-100);
-    color: var(--ion-text-color-step-100);
+    background: var(--contrasting-element-background);
+    color: var(--text-color);
     border-radius: 50%;
     width: 1rem;
     height: 1rem;

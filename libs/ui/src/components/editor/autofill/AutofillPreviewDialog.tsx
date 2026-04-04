@@ -18,11 +18,6 @@ interface Props {
 const PreviewContainer = styled.div`
   max-height: 400px;
   overflow-y: auto;
-
-  ion-card {
-    background: none;
-    box-shadow: none;
-  }
 `;
 
 export const AutofillPreviewDialog: React.FC<Props> = (props) => {

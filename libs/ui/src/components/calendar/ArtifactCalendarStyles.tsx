@@ -6,7 +6,7 @@ export const ArtifactCalendarStyles = styled.div`
 
   text-rendering: optimizeLegibility;
   font-family: var(--sheet-font-family);
-  --ion-font-family: var(--sheet-font-family);
+  --font-family: var(--sheet-font-family);
   color: var(--sheet-text-color);
 
   --day-border-color: gray;

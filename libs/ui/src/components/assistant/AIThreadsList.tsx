@@ -34,7 +34,7 @@ const ThreadItemRow = styled.div`
   cursor: pointer;
 
   &:hover {
-    background-color: var(--ion-background-color-step-100);
+    background-color: var(--contrasting-element-background-hover);
   }
 `;
 

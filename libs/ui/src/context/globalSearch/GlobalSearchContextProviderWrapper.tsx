@@ -72,13 +72,6 @@ const PreviewPanel = styled.div`
   overflow-y: auto;
 
   padding: 8px;
-
-  ion-card {
-    margin-top: 0;
-    margin-bottom: 0;
-    box-shadow: none;
-    cursor: pointer;
-  }
 `;
 
 const PreviewSpinnerContainer = styled.div`

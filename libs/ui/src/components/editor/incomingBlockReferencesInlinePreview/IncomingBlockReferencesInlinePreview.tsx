@@ -10,7 +10,7 @@ import { getEdgeStore } from '../../../utils/localDb/edges/edgeStore';
 import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
 
 const Container = styled.div`
-  background-color: var(--ion-background-color);
+  background-color: var(--general-background);
   border-radius: 8px;
 `;
 

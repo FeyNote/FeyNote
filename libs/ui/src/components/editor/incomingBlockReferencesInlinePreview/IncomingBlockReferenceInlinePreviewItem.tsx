@@ -6,7 +6,7 @@ import { useArtifactPreviewTimer } from '../tiptap/extensions/artifactReferences
 import { ArtifactReferencePreview } from '../tiptap/extensions/artifactReferences/ArtifactReferencePreview';
 
 const Container = styled.div`
-  background: var(--ion-card-background);
+  background: var(--card-background);
 
   box-shadow: 1px 1px 7px 0px rgba(0, 0, 0, 0.1);
 

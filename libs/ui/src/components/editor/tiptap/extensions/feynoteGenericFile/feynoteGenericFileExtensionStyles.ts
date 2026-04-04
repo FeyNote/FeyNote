@@ -5,10 +5,10 @@ export const feynoteGenericFileExtensionStyles = css`
     display: grid;
     grid-template-columns: 1fr minmax(100px, min-content) 1fr;
     padding: 8px;
-    border: 1px solid var(--ion-background-color-step-200);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 
-    color: var(--ion-text-color);
+    color: var(--text-color);
     cursor: pointer;
     text-decoration: none;
     text-wrap: nowrap;
@@ -21,7 +21,7 @@ export const feynoteGenericFileExtensionStyles = css`
     width: fit-content;
 
     &.ProseMirror-selectednode {
-      outline: 1px solid var(--ion-color-primary);
+      outline: 1px solid var(--accent-color);
       outline-offset: -1px;
     }
 
@@ -31,7 +31,7 @@ export const feynoteGenericFileExtensionStyles = css`
       margin-right: 8px;
 
       svg {
-        fill: var(--ion-text-color);
+        fill: var(--text-color);
         height: 1rem;
       }
     }
@@ -47,7 +47,7 @@ export const feynoteGenericFileExtensionStyles = css`
       margin-left: 8px;
 
       svg {
-        fill: var(--ion-color-primary);
+        fill: var(--accent-color);
         height: 1rem;
       }
     }

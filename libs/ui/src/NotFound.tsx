@@ -1,12 +1,8 @@
 import { PaneContentContainer } from './components/pane/PaneContentContainer';
 import { useTranslation } from 'react-i18next';
-import { IonContentFantasyBackground } from './components/auth/styles';
+import { FantasyBackground } from './components/auth/styles';
 import styled from 'styled-components';
 import { LogoActionContainer } from './components/sharedComponents/LogoActionContainer';
-
-const FullHeightBackground = styled(IonContentFantasyBackground)`
-  min-height: 100vh;
-`;
 
 const MessageContainer = styled.div`
   color: inherit;
@@ -25,13 +21,13 @@ export const NotFound: React.FC = () => {
   const { t } = useTranslation();
   return (
     <PaneContentContainer>
-      <FullHeightBackground>
+      <FantasyBackground>
         <LogoActionContainer />
         <MessageContainer>
           <h1>{t('notFound.title')}</h1>
           {t('notFound.message')}
         </MessageContainer>
-      </FullHeightBackground>
+      </FantasyBackground>
     </PaneContentContainer>
   );
 };

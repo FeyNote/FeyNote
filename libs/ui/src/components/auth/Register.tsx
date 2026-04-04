@@ -10,7 +10,7 @@ import {
   AuthCardContent,
   AuthInputContainer,
   AuthCenteredText,
-  IonContentFantasyBackground,
+  FantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { validateEmail, validatePassword } from '@feynote/shared-utils';
@@ -114,7 +114,7 @@ export const Register: React.FC<Props> = (props) => {
 
   return (
     <PaneContentContainer>
-      <IonContentFantasyBackground>
+      <FantasyBackground>
         <LogoActionContainer />
         <AuthCard>
           <AuthCardHeader>
@@ -200,7 +200,7 @@ export const Register: React.FC<Props> = (props) => {
             </AuthCenteredText>
           </AuthCardContent>
         </AuthCard>
-      </IonContentFantasyBackground>
+      </FantasyBackground>
     </PaneContentContainer>
   );
 };
