@@ -7,11 +7,9 @@ import { useTranslation } from 'react-i18next';
 import type { Edge } from '@feynote/shared-utils';
 import { ArtifactRightSidemenuReferenceContextMenu } from '../ArtifactRightSidemenuReferenceContextMenu';
 import { useNavigateWithKeyboardHandler } from '../../../../utils/useNavigateWithKeyboardHandler';
-import {
-  SidemenuCardItem,
-  SidemenuCardItemLabel,
-  SidemenuCardItemSublabel,
-} from '../../../sidemenu/SidemenuComponents';
+import { FeynoteCardItem } from '../../../card/FeynoteCardItem';
+import { FeynoteCardItemLabel } from '../../../card/FeynoteCardItemLabel';
+import { FeynoteCardItemSublabel } from '../../../card/FeynoteCardItemSublabel';
 
 interface Props {
   edge: Edge;
@@ -38,27 +36,27 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
   };
 
   const blockReferenceContent = (
-    <SidemenuCardItemLabel>
+    <FeynoteCardItemLabel>
       {t('artifactRightSideMenu.outgoing.block', {
         text: props.edge.referenceText,
       })}
-      <SidemenuCardItemSublabel>
+      <FeynoteCardItemSublabel>
         {t('artifactRightSideMenu.outgoing.block.subtitle', {
           title: props.edge.targetArtifactTitle,
         })}
-      </SidemenuCardItemSublabel>
-    </SidemenuCardItemLabel>
+      </FeynoteCardItemSublabel>
+    </FeynoteCardItemLabel>
   );
 
   const artifactReferenceContent = (
-    <SidemenuCardItemLabel>
+    <FeynoteCardItemLabel>
       {t('artifactRightSideMenu.outgoing.artifact')}
-      <SidemenuCardItemSublabel>
+      <FeynoteCardItemSublabel>
         {t('artifactRightSideMenu.outgoing.artifact.subtitle', {
           title: props.edge.targetArtifactTitle,
         })}
-      </SidemenuCardItemSublabel>
-    </SidemenuCardItemLabel>
+      </FeynoteCardItemSublabel>
+    </FeynoteCardItemLabel>
   );
 
   const content = props.edge.targetArtifactBlockId
@@ -71,7 +69,7 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
       currentArtifactId={props.edge.artifactId}
       edge={props.edge}
     >
-      <SidemenuCardItem
+      <FeynoteCardItem
         data-edge-targetArtifactId={props.edge.targetArtifactId}
         ref={ref}
         $isButton
@@ -95,7 +93,7 @@ export const OutgoingReferenceItem: React.FC<Props> = (props) => {
             previewTarget={ref.current}
           />
         )}
-      </SidemenuCardItem>
+      </FeynoteCardItem>
     </ArtifactRightSidemenuReferenceContextMenu>
   );
 };

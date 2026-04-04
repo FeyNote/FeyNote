@@ -6,9 +6,9 @@ import { scrollBlockIntoView } from '../../editor/scrollBlockIntoView';
 import { animateHighlightBlock } from '../../editor/animateHighlightBlock';
 import { usePaneContext } from '../../../context/pane/PaneContext';
 import { ArtifactTableOfContentsItemContextMenu } from './ArtifactTableOfContentsItemContextMenu';
-import { SidemenuCardItem } from '../../sidemenu/SidemenuComponents';
+import { FeynoteCardItem } from '../../card/FeynoteCardItem';
 
-const ToCItem = styled(SidemenuCardItem)`
+const ToCItem = styled(FeynoteCardItem)`
   margin-left: calc(0.875rem * (var(--toc-level) - 1));
 `;
 

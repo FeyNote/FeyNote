@@ -1,10 +1,13 @@
-import { IonContent, IonPage } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { PaneNav } from '../pane/PaneNav';
 import { useTranslation } from 'react-i18next';
 import { GraphRenderer } from './GraphRenderer';
 import { useMemo } from 'react';
 import { NullState } from '../info/NullState';
-import { gitNetwork } from 'ionicons/icons';
+import { IoGitNetwork } from '../AppIcons';
 import styled from 'styled-components';
 import { PreferenceNames } from '@feynote/shared-utils';
 import type { FeynoteGraphLink } from './GraphRenderer';
@@ -204,7 +207,7 @@ export const Graph: React.FC<Props> = (props) => {
   ]);
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav
         title={
           selectedWorkspaceSnapshot
@@ -216,7 +219,7 @@ export const Graph: React.FC<Props> = (props) => {
             : t('graph.title')
         }
       />
-      <IonContent>
+      <PaneContent>
         {artifactSnapshots?.length ? (
           <GraphRenderer
             artifacts={graphArtifacts}
@@ -237,10 +240,10 @@ export const Graph: React.FC<Props> = (props) => {
           <StyledNullState
             title={t('graph.nullState.title')}
             message={t('graph.nullState.message')}
-            icon={gitNetwork}
+            icon={<IoGitNetwork />}
           />
         )}
-      </IonContent>
+      </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
         createPortal(
@@ -256,6 +259,6 @@ export const Graph: React.FC<Props> = (props) => {
           />,
           sidemenuContentRef.current,
         )}
-    </IonPage>
+    </PaneContentContainer>
   );
 };

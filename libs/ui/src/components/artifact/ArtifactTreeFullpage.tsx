@@ -1,4 +1,8 @@
-import { IonCard, IonCardTitle, IonContent, IonPage } from '@ionic/react';
+import { IonCard, IonCardTitle } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { PaneNav } from '../pane/PaneNav';
@@ -36,9 +40,9 @@ export const ArtifactTreeFullpage: React.FC<Props> = (props) => {
     : t('artifactTreeFullpage.title');
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={title} />
-      <IonContent>
+      <PaneContent>
         <Card>
           <Title>
             <LuFolderTree />
@@ -54,7 +58,7 @@ export const ArtifactTreeFullpage: React.FC<Props> = (props) => {
             enableOpenItemMemory={true}
           />
         </Card>
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

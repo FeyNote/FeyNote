@@ -5,8 +5,8 @@ import {
   IonCardTitle,
   IonInput,
   IonItem,
-  IonPage,
 } from '@ionic/react';
+import { PaneContentContainer } from '../pane/PaneContentContainer';
 import React, { useState } from 'react';
 import {
   CenteredContainer,
@@ -117,7 +117,7 @@ export const Register: React.FC<Props> = (props) => {
     !confirmPasswordIsValid;
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
         <CenteredIonCard>
@@ -222,6 +222,6 @@ export const Register: React.FC<Props> = (props) => {
           </IonCardContent>
         </CenteredIonCard>
       </IonContentFantasyBackground>
-    </IonPage>
+    </PaneContentContainer>
   );
 };

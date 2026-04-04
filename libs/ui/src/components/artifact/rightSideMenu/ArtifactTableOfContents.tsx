@@ -4,11 +4,9 @@ import type { CollaborationManagerConnection } from '../../../utils/collaboratio
 import { useTranslation } from 'react-i18next';
 import { ArtifactTableOfContentsItem } from './ArtifactTableOfContentsItem';
 import { LuList } from '../../AppIcons';
-import {
-  SidemenuCard,
-  SidemenuCardHeader,
-  SidemenuCardHeaderLabel,
-} from '../../sidemenu/SidemenuComponents';
+import { FeynoteCard } from '../../card/FeynoteCard';
+import { FeynoteCardHeader } from '../../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../../card/FeynoteCardHeaderLabel';
 
 interface Props {
   artifactId: string;
@@ -33,13 +31,13 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
   }
 
   return (
-    <SidemenuCard>
-      <SidemenuCardHeader>
+    <FeynoteCard>
+      <FeynoteCardHeader>
         <LuList size={16} />
-        <SidemenuCardHeaderLabel>
+        <FeynoteCardHeaderLabel>
           {t('artifactRenderer.tableOfContents')}
-        </SidemenuCardHeaderLabel>
-      </SidemenuCardHeader>
+        </FeynoteCardHeaderLabel>
+      </FeynoteCardHeader>
       {toc.map((item) => (
         <ArtifactTableOfContentsItem
           key={item.id}
@@ -47,6 +45,6 @@ export const ArtifactTableOfContents: React.FC<Props> = (props) => {
           item={item}
         />
       ))}
-    </SidemenuCard>
+    </FeynoteCard>
   );
 };

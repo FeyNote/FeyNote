@@ -1,37 +1,46 @@
 import {
-  IonCard,
-  IonCardTitle,
-  IonContent,
-  IonIcon,
-  IonLabel,
-  IonPage,
-} from '@ionic/react';
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useMemo } from 'react';
-import { people } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { NullState } from '../info/NullState';
 import { PaneNav } from '../pane/PaneNav';
-import { CompactIonItem } from '../CompactIonItem';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { useKnownUsers } from '../../utils/localDb/knownUsers/useKnownUsers';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 
-const Title = styled(IonCardTitle)`
-  padding: 8px;
+const Container = styled.div`
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 32px;
+`;
+
+const Item = styled.div`
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 40px;
+  padding: 8px 16px;
+  margin: 0 -16px;
+  font-size: 0.875rem;
+  color: var(--text-color);
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 150ms;
+
+  &:hover {
+    background: var(--general-background-hover);
+  }
 `;
 
-const Card = styled(IonCard)`
-  padding: 8px;
-`;
-
-const StyledNullState = styled(NullState)`
-  padding-top: 24px;
-  padding-bottom: 24px;
+const ItemSublabel = styled.span`
+  font-size: 0.75rem;
+  color: var(--text-color-dim);
+  margin-top: 2px;
 `;
 
 export const SharedContent: React.FC = () => {
@@ -50,18 +59,13 @@ export const SharedContent: React.FC = () => {
   );
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <PaneNav title={t('sharedContent.title')} />
-      <IonContent>
+      <PaneContent>
         {incomingSharedArtifacts && (
-          <Card>
-            <Title>
-              <IonIcon icon={people} />
-              &nbsp;{t('sharedContent.artifacts.title')}
-            </Title>
+          <Container>
             {incomingSharedArtifacts.map((sharedArtifact) => (
-              <CompactIonItem
-                lines="none"
+              <Item
                 key={sharedArtifact.id}
                 onClick={(event) =>
                   navigateWithKeyboardHandler(
@@ -70,28 +74,25 @@ export const SharedContent: React.FC = () => {
                     { id: sharedArtifact.id },
                   )
                 }
-                button
               >
-                <IonLabel>
-                  {sharedArtifact.meta.title}
-                  <p>
-                    {t('sharedContent.sharedBy')}{' '}
-                    {getKnownUserById(sharedArtifact.meta.userId)?.name ||
-                      t('sharedContent.unknownUser')}
-                  </p>
-                </IonLabel>
-              </CompactIonItem>
+                {sharedArtifact.meta.title}
+                <ItemSublabel>
+                  {t('sharedContent.sharedBy')}{' '}
+                  {getKnownUserById(sharedArtifact.meta.userId)?.name ||
+                    t('sharedContent.unknownUser')}
+                </ItemSublabel>
+              </Item>
             ))}
             {!incomingSharedArtifacts.length && (
-              <StyledNullState
+              <NullState
                 size="small"
                 title={t('sharedContent.noArtifacts.title')}
                 message={t('sharedContent.noArtifacts.message')}
               />
             )}
-          </Card>
+          </Container>
         )}
-      </IonContent>
-    </IonPage>
+      </PaneContent>
+    </PaneContentContainer>
   );
 };

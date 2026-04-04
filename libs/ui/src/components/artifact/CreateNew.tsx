@@ -1,4 +1,7 @@
-import { IonContent, IonPage } from '@ionic/react';
+import {
+  PaneContentContainer,
+  PaneContent,
+} from '../pane/PaneContentContainer';
 import { useState, useMemo } from 'react';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -198,16 +201,16 @@ export const CreateNew: React.FC = () => {
   };
 
   return (
-    <IonPage id="main">
+    <PaneContentContainer id="main">
       <PaneNav title={t('createNew.title')} />
-      <IonContent className="ion-padding">
+      <PaneContent style={{ paddingTop: 16, paddingBottom: 16 }}>
         <CreateNewTypeSelector
           newArtifact={(type) =>
             handleNewItem({ kind: 'artifact', artifactType: type })
           }
           newAIThread={() => handleNewItem({ kind: 'thread' })}
         />
-      </IonContent>
+      </PaneContent>
       <ActionDialog
         open={!!readOnlyWorkspaceItemPendingCreation}
         onOpenChange={(open) => {
@@ -239,6 +242,6 @@ export const CreateNew: React.FC = () => {
           },
         ]}
       />
-    </IonPage>
+    </PaneContentContainer>
   );
 };

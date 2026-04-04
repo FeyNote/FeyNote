@@ -1,8 +1,12 @@
-import { IonButton, IonContent, IonIcon, IonPage } from '@ionic/react';
 import { ReadonlyArtifactViewer } from '../artifact/ReadonlySimpleArtifact';
 import styled from 'styled-components';
 import { LogoActionContainer } from '../sharedComponents/LogoActionContainer';
-import { print } from 'ionicons/icons';
+import { RiPrinterLine } from '../AppIcons';
+import { IconButton } from '@radix-ui/themes';
+
+const Container = styled.div`
+  min-height: 100vh;
+`;
 
 const FloatingPresentation = styled.div`
   width: min(max(500px, 75%), 100%);
@@ -12,13 +16,7 @@ const FloatingPresentation = styled.div`
   padding: 8px;
 `;
 
-const Grid = styled.div`
-  display: grid;
-  grid-template-rows: 100px auto;
-  height: 100%;
-`;
-
-const PrintButton = styled(IonButton)`
+const PrintButtonContainer = styled.div`
   margin-left: auto;
 `;
 
@@ -28,25 +26,24 @@ interface Props {
 
 export const ArtifactShareView: React.FC<Props> = (props) => {
   return (
-    <IonPage>
-      <IonContent>
-        <Grid>
-          <LogoActionContainer>
-            <PrintButton
-              color="dark"
-              fill="clear"
-              onClick={() => {
-                window.open(`/artifact/print/${props.artifactId}`);
-              }}
-            >
-              <IonIcon icon={print} slot="icon-only" />
-            </PrintButton>
-          </LogoActionContainer>
-          <FloatingPresentation>
-            <ReadonlyArtifactViewer artifactId={props.artifactId} />
-          </FloatingPresentation>
-        </Grid>
-      </IonContent>
-    </IonPage>
+    <Container>
+      <LogoActionContainer>
+        <PrintButtonContainer>
+          <IconButton
+            variant="ghost"
+            color="gray"
+            size="2"
+            onClick={() => {
+              window.open(`/artifact/print/${props.artifactId}`);
+            }}
+          >
+            <RiPrinterLine />
+          </IconButton>
+        </PrintButtonContainer>
+      </LogoActionContainer>
+      <FloatingPresentation>
+        <ReadonlyArtifactViewer artifactId={props.artifactId} />
+      </FloatingPresentation>
+    </Container>
   );
 };

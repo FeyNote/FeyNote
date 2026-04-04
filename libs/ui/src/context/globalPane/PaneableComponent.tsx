@@ -1,6 +1,5 @@
 import { ComponentProps } from 'react';
 import { Artifact } from '../../components/artifact/Artifact';
-import { RecentArtifacts } from '../../components/artifact/RecentArtifacts';
 import { AIThread } from '../../components/assistant/AIThread';
 import { AIThreadsList } from '../../components/assistant/AIThreadsList';
 import { Dashboard } from '../../components/dashboard/Dashboard';
@@ -30,7 +29,6 @@ export enum PaneableComponent {
   AIThreadsList = 'AIThreadsList',
   Graph = 'Graph',
   SharedContent = 'SharedContent',
-  RecentArtifacts = 'RecentArtifacts',
   Export = 'Export',
   Import = 'Import',
   ImportFileUpload = 'ImportFileUpload',
@@ -59,7 +57,6 @@ export type PaneableComponentProps = {
   [PaneableComponent.AIThreadsList]: ComponentProps<typeof AIThreadsList>;
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
   [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
-  [PaneableComponent.RecentArtifacts]: ComponentProps<typeof RecentArtifacts>;
   [PaneableComponent.Import]: ComponentProps<typeof Import>;
   [PaneableComponent.ImportFileUpload]: ComponentProps<typeof ImportFileUpload>;
   [PaneableComponent.Export]: ComponentProps<typeof Export>;
@@ -86,7 +83,6 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.AIThreadsList]: AIThreadsList,
     [PaneableComponent.Graph]: Graph,
     [PaneableComponent.SharedContent]: SharedContent,
-    [PaneableComponent.RecentArtifacts]: RecentArtifacts,
     [PaneableComponent.Export]: Export,
     [PaneableComponent.Import]: Import,
     [PaneableComponent.ImportFileUpload]: ImportFileUpload,
@@ -97,10 +93,10 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } satisfies Record<PaneableComponent, React.FC<any>>;
 
-  // I was unable to find a way to map-type this properly
-  return paneableComponentNameToComponent[componentName] as unknown as React.FC<
-    PaneableComponentProps[T]
-  >;
+  const component =
+    paneableComponentNameToComponent[componentName] ?? Dashboard;
+
+  return component as unknown as React.FC<PaneableComponentProps[T]>;
 };
 
 /**
@@ -118,7 +114,6 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
   [PaneableComponent.Graph]: 'graph.title',
   [PaneableComponent.SharedContent]: 'sharedContent.title',
-  [PaneableComponent.RecentArtifacts]: 'recentArtifacts.title',
   [PaneableComponent.Export]: 'export.title',
   [PaneableComponent.Import]: 'import.title',
   [PaneableComponent.ImportFileUpload]: 'importFileUpload.title',

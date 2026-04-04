@@ -11,7 +11,7 @@ import { useSessionContext } from '../../context/session/SessionContext';
 import { NullState } from '../info/NullState';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
-import { mailOpenOutline } from 'ionicons/icons';
+import { IoMailOpen } from '../AppIcons';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
@@ -126,7 +126,7 @@ export const Inbox: React.FC = () => {
         {inboxWorkspaceSnapshots.length === 0 &&
         inboxArtifactSnapshots.length === 0 ? (
           <StyledNullState
-            icon={mailOpenOutline}
+            icon={<IoMailOpen />}
             title={t('inbox.empty')}
             message={t('inbox.empty.message')}
           />

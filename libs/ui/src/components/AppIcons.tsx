@@ -51,6 +51,7 @@ export {
   IoCloudOutline,
   IoExpand,
   IoGitNetwork,
+  IoMailOpen,
   IoSearch,
   IoSettings,
   IoTrash,
@@ -85,6 +86,7 @@ export {
   LuList,
   LuListOrdered,
   LuMap,
+  LuMonitor,
   LuPanelLeft,
   LuPanelRight,
   LuRedo,
@@ -149,7 +151,7 @@ export {
   RiUnderline,
 } from 'react-icons/ri';
 
-export { RxCross2, RxMagicWand } from 'react-icons/rx';
+export { RxCross2, RxDotsHorizontal, RxMagicWand } from 'react-icons/rx';
 
 export {
   TbFileTypeDocx,

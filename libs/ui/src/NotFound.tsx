@@ -1,4 +1,5 @@
-import { IonCard, IonPage } from '@ionic/react';
+import { IonCard } from '@ionic/react';
+import { PaneContentContainer } from './components/pane/PaneContentContainer';
 import { useTranslation } from 'react-i18next';
 import { IonContentFantasyBackground } from './components/auth/styles';
 import styled from 'styled-components';
@@ -17,7 +18,7 @@ const MessageContainer = styled(IonCard)`
 export const NotFound: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <IonPage>
+    <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
         <MessageContainer>
@@ -25,6 +26,6 @@ export const NotFound: React.FC = () => {
           {t('notFound.message')}
         </MessageContainer>
       </IonContentFantasyBackground>
-    </IonPage>
+    </PaneContentContainer>
   );
 };

@@ -1,14 +1,8 @@
-import {
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
-  IonIcon,
-} from '@ionic/react';
 import type { ArtifactType } from '@prisma/client';
-import { calendar, chatbox, document, pencil } from 'ionicons/icons';
+import { IoCalendar, IoChatbubbles, IoDocument, FaPencil } from '../AppIcons';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
+import { Card, Flex, Text } from '@radix-ui/themes';
 
 const OptionsContainer = styled.div`
   text-align: center;
@@ -22,23 +16,11 @@ const Heading = styled.h1`
 const OptionsList = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
-
-  ion-card {
-    padding: 8px;
-  }
-`;
-
-const StyledIonCardTitle = styled(IonCardTitle)`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  ion-icon {
-    margin-right: 8px;
-  }
+  gap: 16px;
 `;
 
 interface Props {
@@ -56,71 +38,87 @@ export const CreateNewTypeSelector = (props: Props) => {
     <OptionsContainer>
       <Heading>{t('editor.artifactTypeSelector.title')}</Heading>
       <OptionsList>
-        <IonCard
-          button
+        <Card
+          asChild
           onClick={() => {
             props.newArtifact('tiptap');
           }}
         >
-          <IonCardHeader>
-            <StyledIonCardTitle>
-              <IonIcon icon={document} />
-              {t('editor.artifactTypeSelector.tiptap')}
-            </StyledIonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {t('editor.artifactTypeSelector.tiptap.description')}
-          </IonCardContent>
-        </IonCard>
-        <IonCard
-          button
+          <button>
+            <Flex direction="column" align="center" gap="2" p="3">
+              <Flex align="center" gap="2">
+                <IoDocument />
+                <Text weight="medium">
+                  {t('editor.artifactTypeSelector.tiptap')}
+                </Text>
+              </Flex>
+              <Text size="2" color="gray">
+                {t('editor.artifactTypeSelector.tiptap.description')}
+              </Text>
+            </Flex>
+          </button>
+        </Card>
+        <Card
+          asChild
           onClick={() => {
             props.newArtifact('calendar');
           }}
         >
-          <IonCardHeader>
-            <StyledIonCardTitle>
-              <IonIcon icon={calendar} />
-              {t('editor.artifactTypeSelector.calendar')}
-            </StyledIonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {t('editor.artifactTypeSelector.calendar.description')}
-          </IonCardContent>
-        </IonCard>
-        <IonCard
-          button
+          <button>
+            <Flex direction="column" align="center" gap="2" p="3">
+              <Flex align="center" gap="2">
+                <IoCalendar />
+                <Text weight="medium">
+                  {t('editor.artifactTypeSelector.calendar')}
+                </Text>
+              </Flex>
+              <Text size="2" color="gray">
+                {t('editor.artifactTypeSelector.calendar.description')}
+              </Text>
+            </Flex>
+          </button>
+        </Card>
+        <Card
+          asChild
           onClick={() => {
             props.newArtifact('tldraw');
           }}
         >
-          <IonCardHeader>
-            <StyledIonCardTitle>
-              <IonIcon icon={pencil} />
-              {t('editor.artifactTypeSelector.tldraw')}
-            </StyledIonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {t('editor.artifactTypeSelector.tldraw.description')}
-          </IonCardContent>
-        </IonCard>
+          <button>
+            <Flex direction="column" align="center" gap="2" p="3">
+              <Flex align="center" gap="2">
+                <FaPencil />
+                <Text weight="medium">
+                  {t('editor.artifactTypeSelector.tldraw')}
+                </Text>
+              </Flex>
+              <Text size="2" color="gray">
+                {t('editor.artifactTypeSelector.tldraw.description')}
+              </Text>
+            </Flex>
+          </button>
+        </Card>
         {props.options?.showNewAIThread !== false && (
-          <IonCard
-            button
+          <Card
+            asChild
             onClick={() => {
               props.newAIThread();
             }}
           >
-            <IonCardHeader>
-              <StyledIonCardTitle>
-                <IonIcon icon={chatbox} />
-                {t('editor.artifactTypeSelector.thread')}
-              </StyledIonCardTitle>
-            </IonCardHeader>
-            <IonCardContent>
-              {t('editor.artifactTypeSelector.thread.description')}
-            </IonCardContent>
-          </IonCard>
+            <button>
+              <Flex direction="column" align="center" gap="2" p="3">
+                <Flex align="center" gap="2">
+                  <IoChatbubbles />
+                  <Text weight="medium">
+                    {t('editor.artifactTypeSelector.thread')}
+                  </Text>
+                </Flex>
+                <Text size="2" color="gray">
+                  {t('editor.artifactTypeSelector.thread.description')}
+                </Text>
+              </Flex>
+            </button>
+          </Card>
         )}
       </OptionsList>
     </OptionsContainer>

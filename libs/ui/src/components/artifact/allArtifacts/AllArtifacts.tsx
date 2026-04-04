@@ -70,6 +70,7 @@ const dateCompareWithFallback = (
 
 interface Props {
   initialImportJobId?: string;
+  initialSortOrder?: AllArtifactsSortOrder;
   workspaceId: string | null;
 }
 
@@ -87,7 +88,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
     ReadonlySet<string>
   >(new Set<string>());
   const [order, setOrder] = useState<AllArtifactsSortOrder>(
-    AllArtifactsSortOrder.AlphabeticalAsc,
+    props.initialSortOrder ?? AllArtifactsSortOrder.AlphabeticalAsc,
   );
   const [filterableImportJobs, setFilterableImportJobs] = useState<
     {

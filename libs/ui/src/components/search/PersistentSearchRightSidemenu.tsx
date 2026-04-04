@@ -3,13 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { PreferenceNames } from '@feynote/shared-utils';
 import { IoSettings } from '../AppIcons';
-import {
-  SidemenuCard,
-  SidemenuCardHeader,
-  SidemenuCardHeaderLabel,
-  SidemenuCardItem,
-  SidemenuCardItemEndSlot,
-} from '../sidemenu/SidemenuComponents';
+import { FeynoteCard } from '../card/FeynoteCard';
+import { FeynoteCardHeader } from '../card/FeynoteCardHeader';
+import { FeynoteCardHeaderLabel } from '../card/FeynoteCardHeaderLabel';
+import { FeynoteCardItem } from '../card/FeynoteCardItem';
+import { FeynoteCardItemEndSlot } from '../card/FeynoteCardItemEndSlot';
 
 export const PersistentSearchRightSidemenu: React.FC = () => {
   const { t } = useTranslation();
@@ -19,16 +17,16 @@ export const PersistentSearchRightSidemenu: React.FC = () => {
   );
 
   return (
-    <SidemenuCard>
-      <SidemenuCardHeader>
+    <FeynoteCard>
+      <FeynoteCardHeader>
         <IoSettings size={16} />
-        <SidemenuCardHeaderLabel>
+        <FeynoteCardHeaderLabel>
           {t('persistentSearch.settings')}
-        </SidemenuCardHeaderLabel>
-      </SidemenuCardHeader>
-      <SidemenuCardItem>
+        </FeynoteCardHeaderLabel>
+      </FeynoteCardHeader>
+      <FeynoteCardItem>
         {t('globalSearch.searchAllWorkspaces')}
-        <SidemenuCardItemEndSlot>
+        <FeynoteCardItemEndSlot>
           <Switch
             checked={searchAcrossAll}
             onCheckedChange={(checked) => {
@@ -38,8 +36,8 @@ export const PersistentSearchRightSidemenu: React.FC = () => {
               );
             }}
           />
-        </SidemenuCardItemEndSlot>
-      </SidemenuCardItem>
-    </SidemenuCard>
+        </FeynoteCardItemEndSlot>
+      </FeynoteCardItem>
+    </FeynoteCard>
   );
 };

@@ -4,8 +4,8 @@ import {
   IonCardSubtitle,
   IonCardTitle,
   IonInput,
-  IonPage,
 } from '@ionic/react';
+import { PaneContentContainer } from '../pane/PaneContentContainer';
 import * as Sentry from '@sentry/react';
 import {
   CenteredContainer,
@@ -121,7 +121,7 @@ export const ResetPassword: React.FC<Props> = (props) => {
     isLoading || !passwordIsValid || !confirmPasswordIsValid;
 
   return (
-    <IonPage>
+    <PaneContentContainer>
       <IonContentFantasyBackground>
         <LogoActionContainer />
         <CenteredIonCard>
@@ -179,6 +179,6 @@ export const ResetPassword: React.FC<Props> = (props) => {
           </IonCardContent>
         </CenteredIonCard>
       </IonContentFantasyBackground>
-    </IonPage>
+    </PaneContentContainer>
   );
 };
