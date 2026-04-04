@@ -1,4 +1,3 @@
-import { IonCard, IonCardTitle } from '@ionic/react';
 import {
   PaneContentContainer,
   PaneContent,
@@ -12,15 +11,18 @@ import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspac
 
 const TREE_ID = 'artifactTreeFullpage';
 
-const Card = styled(IonCard)`
+const Card = styled.div`
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--card-border-radius);
+  background: var(--card-background);
+  box-shadow: var(--card-box-shadow);
 `;
 
-const Title = styled(IonCardTitle)`
+const Title = styled.h2`
   padding: 8px;
   display: flex;
   align-items: center;
+  font-size: 1.1rem;
 `;
 
 interface Props {

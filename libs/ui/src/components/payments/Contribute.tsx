@@ -19,7 +19,7 @@ const CurrentSubscriptionCard = styled.div`
   padding: 16px;
   background: var(--card-background);
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--card-box-shadow);
 `;
 
 const OfferingContainer = styled.div`
