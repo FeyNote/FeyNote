@@ -8,6 +8,7 @@ export type EventData = {
   [EventName.ArtifactUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ArtifactUpdated];
   [EventName.ThreadUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.ThreadUpdated];
   [EventName.WorkspaceUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.WorkspaceUpdated];
+  [EventName.JobUpdated]: WebsocketMessageJSON[WebsocketMessageEvent.JobUpdated];
 
   [EventName.WebsocketError]: void;
   [EventName.WebsocketReconnect]: void;

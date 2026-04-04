@@ -12,7 +12,6 @@ export interface TemplateResult {
   linkAccessLevel: YArtifactMeta['linkAccessLevel'];
   theme: YArtifactMeta['theme'];
   json: {
-    tiptapBody: JSONContent;
     meta: YArtifactMeta;
   };
   yBin: Uint8Array;
@@ -33,7 +32,6 @@ export const templateBuilderHelper = (
     linkAccessLevel: meta.linkAccessLevel,
     theme: meta.theme,
     json: {
-      tiptapBody: tiptapJSON,
       meta: meta,
     },
     yBin: encodeStateAsUpdate(yDoc),

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { Badge, Button, Flex, Text } from '@radix-ui/themes';
+import { Badge, Flex, Text } from '@radix-ui/themes';
 import {
   type ExportFormat,
   type ImportFormat,
@@ -34,8 +34,6 @@ const SectionHeader = styled.div`
 
 interface Props {
   jobs: JobSummary[];
-  hasMoreJobs: boolean;
-  getMoreJobs: () => Promise<void>;
   title: string;
   jobClickHandler: (jobId: string) => Promise<void>;
 }
@@ -109,7 +107,7 @@ export const JobList: React.FC<Props> = (props) => {
                   {t('jobList.success')}
                 </Badge>
               )}
-              {job.status === 'inprogress' && (
+              {(job.status === 'inprogress' || job.status === 'notstarted') && (
                 <Badge color="blue" variant="soft">
                   {t('jobList.inProgress')}
                 </Badge>
@@ -118,13 +116,6 @@ export const JobList: React.FC<Props> = (props) => {
           </JobRow>
         );
       })}
-      {props.hasMoreJobs && (
-        <Flex justify="center" py="3">
-          <Button variant="ghost" size="1" onClick={() => props.getMoreJobs()}>
-            {t('jobList.showMore')}
-          </Button>
-        </Flex>
-      )}
     </div>
   );
 };

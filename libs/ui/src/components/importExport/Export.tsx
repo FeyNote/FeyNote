@@ -13,6 +13,8 @@ import styled from 'styled-components';
 import { Heading, Text } from '@radix-ui/themes';
 import { AiFillFileMarkdown, BsFiletypeJson } from '../AppIcons';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 
 const OptionsGrid = styled.div`
   display: grid;
@@ -60,24 +62,17 @@ const EXPORT_OPTIONS: {
     format: 'markdown',
   },
 ];
-const NUM_OF_INITAL_JOBS_SHOWN = 5;
-const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
 export const Export: React.FC = () => {
   const { t } = useTranslation();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
-  const [hasMoreJobs, setHasMoreJobs] = useState(true);
   const { handleTRPCErrors } = useHandleTRPCErrors();
 
   useEffect(() => {
-    getMoreJobs();
-    const refreshInterval = setInterval(() => {
-      refreshJobs();
-    }, REFRESH_JOBS_INTERVAL_SECONDS);
-
-    return () => {
-      clearInterval(refreshInterval);
-    };
+    getJobs();
+    return eventManager.addEventListener(EventName.JobUpdated, async (_) =>
+      getJobs(),
+    );
   }, []);
 
   const openJobUrls = async (jobId: string) => {
@@ -96,30 +91,15 @@ export const Export: React.FC = () => {
   const jobsRef = useRef(jobs);
   jobsRef.current = jobs;
 
-  const refreshJobs = async () => {
-    const exportDto = await getJobsAction({
-      limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
-      type: 'export',
-    }).catch((e) => {
-      console.error(e);
-    });
-    if (!exportDto) return;
-    setJobs(exportDto.jobs);
-  };
-
-  const getMoreJobs = async () => {
-    const exportjobsDTO = await getJobsAction({
-      offset: jobsRef.current.length,
-      limit: NUM_OF_INITAL_JOBS_SHOWN,
+  const getJobs = async () => {
+    const jobs = await getJobsAction({
       type: 'export',
     }).catch((e) => {
       handleTRPCErrors(e);
     });
-    if (!exportjobsDTO) return;
+    if (!jobs) return;
 
-    const totalJobs = [...jobsRef.current, ...exportjobsDTO.jobs];
-    setJobs(totalJobs);
-    setHasMoreJobs(exportjobsDTO.totalCount > totalJobs.length);
+    setJobs(jobs);
   };
 
   const _export = async (format: ExportFormat) => {
@@ -130,7 +110,6 @@ export const Export: React.FC = () => {
       .catch((e) => {
         handleTRPCErrors(e);
       });
-    await refreshJobs();
   };
 
   return (
@@ -165,9 +144,7 @@ export const Export: React.FC = () => {
         {!!jobs.length && (
           <JobList
             title={t('export.jobList')}
-            hasMoreJobs={hasMoreJobs}
             jobs={jobs}
-            getMoreJobs={getMoreJobs}
             jobClickHandler={openJobUrls}
           />
         )}

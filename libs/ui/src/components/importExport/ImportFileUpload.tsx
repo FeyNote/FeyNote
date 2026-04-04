@@ -145,13 +145,13 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
   const validateAndSetFile = (selectedFile: File) => {
     if (!ALLOWED_FILE_TYPES.includes(selectedFile.type)) {
       setFileInputError(
-        `${t('import.file.error.type')} ${ALLOWED_FILE_TYPES_STR}`,
+        t('import.file.error.type', { fileTypes: ALLOWED_FILE_TYPES_STR }),
       );
       return;
     }
     if (selectedFile.size >= FILE_SIZE_LIMIT) {
       setFileInputError(
-        `${t('import.file.error.size')} ${FILE_SIZE_LIMIT / 1000000}MB`,
+        t('import.file.error.size', { fileSize: FILE_SIZE_LIMIT / 100000 }),
       );
       return;
     }
@@ -199,7 +199,12 @@ export const ImportFileUpload: React.FC<Props> = (props: Props) => {
       });
       navigate(PaneableComponent.Import, {}, PaneTransition.Push);
     } catch (e) {
-      handleTRPCErrors(e, { 413: t('import.fileTooLarge') });
+      handleTRPCErrors(e, {
+        413: t('import.file.error.size', {
+          fileSize: FILE_SIZE_LIMIT / 100000,
+        }),
+        429: t('import.job.error.limit'),
+      });
       console.error(e);
     }
     setDisableUploadBtn(false);

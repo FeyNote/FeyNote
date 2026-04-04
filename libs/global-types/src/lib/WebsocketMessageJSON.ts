@@ -17,4 +17,7 @@ export type WebsocketMessageJSON = {
   [WebsocketMessageEvent.WorkspaceUpdated]: {
     workspaceId: string;
   };
+  [WebsocketMessageEvent.JobUpdated]: {
+    jobId: string;
+  };
 };

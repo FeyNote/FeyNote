@@ -53,7 +53,9 @@ export const autofillToTiptapJSON = authenticatedProcedure
       content = input.source.text;
       model = globalServerConfig.ai.model.autoformat;
     } else {
-      const res = await proxyGetRequest(input.source.url);
+      const res = await proxyGetRequest({
+        url: input.source.url,
+      });
       content = convertHtmlToPlainText(res.data).slice(0, 50000);
       model = globalServerConfig.ai.model.scrapeUrl;
     }
