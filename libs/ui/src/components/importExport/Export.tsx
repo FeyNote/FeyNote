@@ -70,9 +70,8 @@ export const Export: React.FC = () => {
 
   useEffect(() => {
     getJobs();
-    return eventManager.addEventListener(
-      EventName.JobUpdated,
-      async (_) => getJobs()
+    return eventManager.addEventListener(EventName.JobUpdated, async (_) =>
+      getJobs(),
     );
   }, []);
 

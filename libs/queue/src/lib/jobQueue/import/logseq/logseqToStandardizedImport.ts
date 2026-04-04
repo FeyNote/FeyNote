@@ -339,8 +339,8 @@ const handleLogseqGraph = async (args: {
           type: ArtifactType.tiptap,
           linkAccessLevel: ArtifactAccessLevel.noaccess,
           deletedAt: null,
-          createdAt
-        } satisfies YArtifactMeta
+          createdAt,
+        } satisfies YArtifactMeta,
       },
       yBin,
     });

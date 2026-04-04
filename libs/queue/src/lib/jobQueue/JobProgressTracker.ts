@@ -1,6 +1,9 @@
 import { prisma } from '@feynote/prisma/client';
 import { throttleDropPromise } from '@feynote/shared-utils';
-import { enqueueOutgoingWebsocketMessage, wsRoomNameForUserId } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
 
 /**
@@ -12,12 +15,8 @@ export class JobProgressTracker {
   protected updateProgress: (percent: number) => void;
   private stepCount = 0;
 
-  constructor(args: {
-    jobId: string,
-    userId: string,
-    stepCount: number
-  }) {
-    this.stepCount = args.stepCount
+  constructor(args: { jobId: string; userId: string; stepCount: number }) {
+    this.stepCount = args.stepCount;
     this.updateProgress = throttleDropPromise(
       async (percentProgress: number) => {
         try {

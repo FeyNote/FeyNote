@@ -24,7 +24,11 @@ export const importJobHandler = async (job: JobSummary) => {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
-  const progressTracker = new JobProgressTracker({userId: job.userId, jobId: job.id, stepCount: 2});
+  const progressTracker = new JobProgressTracker({
+    userId: job.userId,
+    jobId: job.id,
+    stepCount: 2,
+  });
   switch (importFormat) {
     case 'obsidian':
       await importFromZip({

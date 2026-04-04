@@ -93,8 +93,8 @@ export const textMdToStandardizedImport = async (args: {
           type: ArtifactType.tiptap,
           linkAccessLevel: ArtifactAccessLevel.noaccess,
           deletedAt: null,
-          createdAt
-        } satisfies YArtifactMeta
+          createdAt,
+        } satisfies YArtifactMeta,
       },
       jobId: args.job.id,
       yBin,

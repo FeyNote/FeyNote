@@ -115,7 +115,9 @@ export const createArtifact = authenticatedProcedure
 
       let text = '';
       if (artifactMeta.type === 'tiptap') {
-        text = getTextForJSONContent(getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY));
+        text = getTextForJSONContent(
+          getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY),
+        );
       }
 
       const existingConflict = await prisma.artifact.findUnique({

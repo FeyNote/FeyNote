@@ -104,12 +104,9 @@ export const Import: React.FC = () => {
 
   useEffect(() => {
     getJobs();
-    return eventManager.addEventListener(
-      EventName.JobUpdated,
-      async (_) => {
-        getJobs()
-      }
-    );
+    return eventManager.addEventListener(EventName.JobUpdated, async (_) => {
+      getJobs();
+    });
   }, []);
 
   const jobsRef = useRef(jobs);

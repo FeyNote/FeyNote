@@ -54,7 +54,6 @@ program
     convertMessagesV4ToV5(pageSize, cooldown, true);
   });
 
-
 program
   .command('cleanupJobs')
   .option(
@@ -72,7 +71,7 @@ program
     const deleteAfterDays = parseInt(options.deleteAfterDays);
     const timeoutAfterMinutes = parseInt(options.timeoutAfterMinutes);
 
-    cleanupJobs({deleteAfterDays, timeoutAfterMinutes});
+    cleanupJobs({ deleteAfterDays, timeoutAfterMinutes });
   });
 
 program

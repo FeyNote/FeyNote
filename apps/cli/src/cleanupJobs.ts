@@ -1,5 +1,5 @@
-import { prisma } from "@feynote/prisma/client";
-import { JobStatus } from "@prisma/client";
+import { prisma } from '@feynote/prisma/client';
+import { JobStatus } from '@prisma/client';
 
 export const cleanupJobs = async (args: {
   deleteAfterDays: number;
@@ -11,25 +11,27 @@ export const cleanupJobs = async (args: {
   await prisma.job.deleteMany({
     where: {
       updatedAt: {
-        lt: deleteBeforeDate
-      }
-    }
+        lt: deleteBeforeDate,
+      },
+    },
   });
 
   const timeoutBeforeDate = new Date();
-  timeoutBeforeDate.setDate(timeoutBeforeDate.getDate() - args.timeoutAfterMinutes);
+  timeoutBeforeDate.setDate(
+    timeoutBeforeDate.getDate() - args.timeoutAfterMinutes,
+  );
 
   await prisma.job.updateMany({
     where: {
       updatedAt: {
-        lt: timeoutBeforeDate
+        lt: timeoutBeforeDate,
       },
       status: {
         not: JobStatus.success,
-      }
+      },
     },
     data: {
-      status: JobStatus.failed
-    }
-  })
-}
+      status: JobStatus.failed,
+    },
+  });
+};

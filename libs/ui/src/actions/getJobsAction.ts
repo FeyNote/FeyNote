@@ -4,7 +4,7 @@ import { getManifestDb, ObjectStoreName } from '../utils/localDb/localDb';
 
 export async function getJobsAction(input: {
   type?: 'import' | 'export';
-}): Promise<{ jobs: JobSummary[]; }> {
+}): Promise<{ jobs: JobSummary[] }> {
   try {
     const result = await trpc.job.getJobs.query(input);
     try {
