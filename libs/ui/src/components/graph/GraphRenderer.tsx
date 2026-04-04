@@ -1,51 +1,41 @@
-import ForceGraph2D, {
-  ForceGraphMethods,
-  NodeObject,
-} from 'react-force-graph-2d';
 import {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentProps,
-} from 'react';
-import { isDarkMode } from '../../utils/isDarkMode';
+  ReactFlow,
+  ReactFlowProvider,
+  Handle,
+  useNodesState,
+  useEdgesState,
+  useReactFlow,
+  useInternalNode,
+  Position,
+  MarkerType,
+  type Node,
+  type EdgeProps,
+  type NodeProps,
+  type NodeMouseHandler,
+  type InternalNode,
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
+import {
+  forceSimulation,
+  forceLink,
+  forceManyBody,
+  forceCenter,
+  forceCollide,
+  type SimulationNodeDatum,
+  type SimulationLinkDatum,
+} from 'd3-force';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import styled from 'styled-components';
-import { useWidthObserver } from '../../utils/useWidthObserver';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
+import { useGraphData, type GraphData } from './useGraphData';
+import { PreferenceNames } from '@feynote/shared-utils';
+import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
+import { CollaborationGate } from '../collaboration/CollaborationGate';
 
-function drawRoundedRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-}
-
-const GraphContainer = styled.div<{
-  $nodeHovered: boolean;
-}>`
-  height: 100%;
-  overflow: hidden;
-  ${(props) => (props.$nodeHovered ? 'cursor: pointer;' : '')}
-`;
+const NODE_RADIUS = 8;
+const NODE_HITBOX = NODE_RADIUS * 2 + 4;
 
 export interface FeynoteGraphLink {
   source: string;
@@ -53,298 +43,454 @@ export interface FeynoteGraphLink {
   type: 'reference' | 'tree';
 }
 
-interface FeynoteGraphNode {
-  id: string;
-  name: string;
-  neighbors: FeynoteGraphNode[];
-  links: FeynoteGraphLink[];
+type FeynoteNodeData = {
+  label: string;
+  dimmed: boolean;
+};
+
+type FeynoteNode = Node<FeynoteNodeData>;
+
+type Highlight = {
+  nodeIds: Set<string>;
+  edgeIds: Set<string>;
+} | null;
+
+type AdjacencyEntry = { neighborIds: Set<string>; edgeIds: Set<string> };
+
+const GraphContainer = styled.div`
+  height: 100%;
+  overflow: hidden;
+`;
+
+const NodeWrapper = styled.div<{ $dimmed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: ${(props) => (props.$dimmed ? 0.3 : 1)};
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+`;
+
+const NodeDot = styled.div`
+  width: ${NODE_RADIUS * 2}px;
+  height: ${NODE_RADIUS * 2}px;
+  border-radius: 50%;
+  background: var(--floating-background);
+  flex-shrink: 0;
+`;
+
+const NodeLabel = styled.div`
+  font-size: 11px;
+  font-family: sans-serif;
+  color: var(--text-color);
+  white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const hiddenHandleStyle: React.CSSProperties = {
+  opacity: 0,
+  pointerEvents: 'none',
+  position: 'absolute',
+  left: NODE_RADIUS,
+  top: NODE_RADIUS,
+};
+
+function FeynoteGraphNodeComponent({ data }: NodeProps<FeynoteNode>) {
+  return (
+    <NodeWrapper $dimmed={data.dimmed}>
+      <Handle type="target" position={Position.Top} style={hiddenHandleStyle} />
+      <Handle type="source" position={Position.Top} style={hiddenHandleStyle} />
+      <NodeDot />
+      <NodeLabel>{data.label}</NodeLabel>
+    </NodeWrapper>
+  );
 }
 
-const FeynoteForceGraph2D = ForceGraph2D<FeynoteGraphNode, FeynoteGraphLink>;
-type FeynoteForceGraphData = NonNullable<
-  ComponentProps<typeof FeynoteForceGraph2D>['graphData']
->;
+function getNodeDotCenter(node: InternalNode<FeynoteNode>) {
+  return {
+    x: node.internals.positionAbsolute.x + NODE_RADIUS,
+    y: node.internals.positionAbsolute.y + NODE_RADIUS,
+  };
+}
 
-/**
- * The radius (in relative space) of each drawn node within the visualization
- */
-const NODE_RADIUS = 5;
-const NODE_LABEL_FONT_SIZE_PX = 10;
+function getCircleIntersection(
+  center: { x: number; y: number },
+  dx: number,
+  dy: number,
+  radius: number,
+) {
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist === 0) return center;
+  return {
+    x: center.x + (dx / dist) * radius,
+    y: center.y + (dy / dist) * radius,
+  };
+}
+
+function FloatingEdge({ id, source, target, style, markerEnd }: EdgeProps) {
+  const sourceNode = useInternalNode<FeynoteNode>(source);
+  const targetNode = useInternalNode<FeynoteNode>(target);
+
+  if (!sourceNode || !targetNode) return null;
+
+  const sourceCenter = getNodeDotCenter(sourceNode);
+  const targetCenter = getNodeDotCenter(targetNode);
+  const dx = targetCenter.x - sourceCenter.x;
+  const dy = targetCenter.y - sourceCenter.y;
+
+  const s = getCircleIntersection(sourceCenter, dx, dy, NODE_RADIUS);
+  const t = getCircleIntersection(targetCenter, -dx, -dy, NODE_RADIUS);
+
+  return (
+    <path
+      id={id}
+      d={`M ${s.x},${s.y} L ${t.x},${t.y}`}
+      style={style}
+      markerEnd={markerEnd}
+    />
+  );
+}
+
+const nodeTypes = { feynoteNode: FeynoteGraphNodeComponent };
+const edgeTypes = { floating: FloatingEdge };
+
+interface SimNode extends SimulationNodeDatum {
+  id: string;
+}
+
+interface SimLink extends SimulationLinkDatum<SimNode> {
+  source: string;
+  target: string;
+}
+
+function runInitialSimulation(
+  nodeIds: string[],
+  links: { source: string; target: string }[],
+): Map<string, { x: number; y: number }> {
+  const simNodes: SimNode[] = nodeIds.map((id) => ({ id }));
+  const simLinks: SimLink[] = links.map((l) => ({
+    source: l.source,
+    target: l.target,
+  }));
+
+  const simulation = forceSimulation<SimNode>(simNodes)
+    .force(
+      'link',
+      forceLink<SimNode, SimLink>(simLinks)
+        .id((d) => d.id)
+        .distance(100),
+    )
+    .force('charge', forceManyBody<SimNode>().strength(-300).distanceMax(400))
+    .force('center', forceCenter<SimNode>(0, 0))
+    .force('collide', forceCollide<SimNode>(NODE_RADIUS + 30))
+    .stop();
+
+  const tickCount = Math.ceil(
+    Math.log(simulation.alphaMin()) / Math.log(1 - simulation.alphaDecay()),
+  );
+  for (let i = 0; i < tickCount; i++) {
+    simulation.tick();
+  }
+
+  const positions = new Map<string, { x: number; y: number }>();
+  for (const simNode of simNodes) {
+    positions.set(simNode.id, { x: simNode.x ?? 0, y: simNode.y ?? 0 });
+  }
+  return positions;
+}
+
+function placeNewNode(
+  nodeId: string,
+  adjacency: Map<string, AdjacencyEntry>,
+  existingPositions: Map<string, { x: number; y: number }>,
+): { x: number; y: number } {
+  const entry = adjacency.get(nodeId);
+  if (entry) {
+    const neighborPositions: { x: number; y: number }[] = [];
+    for (const neighborId of entry.neighborIds) {
+      const pos = existingPositions.get(neighborId);
+      if (pos) neighborPositions.push(pos);
+    }
+    if (neighborPositions.length > 0) {
+      const avgX =
+        neighborPositions.reduce((s, p) => s + p.x, 0) /
+        neighborPositions.length;
+      const avgY =
+        neighborPositions.reduce((s, p) => s + p.y, 0) /
+        neighborPositions.length;
+      const angle = Math.random() * Math.PI * 2;
+      return {
+        x: avgX + Math.cos(angle) * 120,
+        y: avgY + Math.sin(angle) * 120,
+      };
+    }
+  }
+
+  const allPositions = [...existingPositions.values()];
+  if (allPositions.length > 0) {
+    const maxX = Math.max(...allPositions.map((p) => p.x));
+    const avgY =
+      allPositions.reduce((s, p) => s + p.y, 0) / allPositions.length;
+    return { x: maxX + NODE_HITBOX + 40, y: avgY };
+  }
+
+  return { x: 0, y: 0 };
+}
 
 interface Props {
-  artifacts: {
-    id: string;
-    title: string;
-  }[];
-  edges: FeynoteGraphLink[];
-  artifactPositions?: Map<string, { x: number; y: number }>;
-  onNodeDragEnd?: (node: FeynoteGraphNode, x: number, y: number) => void;
-  enableInitialZoom?: boolean;
+  graphData: GraphData;
+  workspaceId: string | null;
+  onlyRelatedTo?: string;
+  interactive?: boolean;
+  disableDragLock?: boolean;
+  children: (props: {
+    graphData: GraphData;
+    contents: React.ReactNode;
+  }) => React.ReactNode;
 }
 
-export const GraphRenderer: React.FC<Props> = memo((props) => {
-  const graphContainerRef = useRef<HTMLDivElement>(null);
-  const forceGraphRef =
-    useRef<ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>>(null);
-  const initialZoomPerformedRef = useRef(!props.enableInitialZoom);
-  const { pane, isPaneFocused } = usePaneContext();
-  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
-  const [highlightNodes, setHighlightNodes] = useState(
-    new Set<FeynoteGraphNode>(),
-  );
-  const [highlightLinks, setHighlightLinks] = useState(
-    new Set<FeynoteGraphLink>(),
-  );
-  const [hoverNode, setHoverNode] = useState<FeynoteGraphNode | null>(null);
-  const _isDarkMode = useMemo(() => isDarkMode(), []);
+const GraphRendererInner: React.FC<Props> = (props) => {
+  const { getPreference } = usePreferencesContext();
 
-  const { height: displayHeight, width: displayWidth } = useWidthObserver(
-    graphContainerRef,
-    [
-      graphContainerRef.current,
-      pane.currentView.navigationEventId,
-      isPaneFocused,
-    ],
-  );
-
-  const { graphData, nodesById } = useMemo(() => {
-    const nodesById: Record<string, FeynoteForceGraphData['nodes'][number]> =
-      {};
-    const graphData = {
-      nodes: [],
-      links: [],
-    } satisfies FeynoteForceGraphData as FeynoteForceGraphData;
-
-    for (const artifact of props.artifacts) {
-      const node = {
-        id: artifact.id,
-        name: artifact.title,
-        neighbors: [],
-        links: [],
+  const { graphData } = props;
+  const { artifactPositions } = graphData;
+  const { graphArtifacts, graphLinks } = useMemo(() => {
+    if (!props.onlyRelatedTo) {
+      return {
+        graphArtifacts: graphData.graphArtifacts,
+        graphLinks: graphData.graphLinks,
       };
-      graphData.nodes.push(node);
-      nodesById[node.id] = node;
     }
 
-    for (const edge of props.edges) {
-      if (!nodesById[edge.source] || !nodesById[edge.target]) {
-        continue;
-      }
-
-      graphData.links.push({
-        source: edge.source,
-        target: edge.target,
-        type: edge.type,
-      });
-    }
-
-    for (const link of graphData.links) {
-      const sourceNode = nodesById[link.source];
-      const targetNode = nodesById[link.target];
-      if (!sourceNode || !targetNode) {
-        continue;
-      }
-      sourceNode.neighbors.push(targetNode);
-      sourceNode.links.push(link);
-      targetNode.neighbors.push(sourceNode);
-      targetNode.links.push(link);
+    const targetId = props.onlyRelatedTo;
+    const relatedIds = new Set<string>([targetId]);
+    for (const edge of graphData.graphLinks) {
+      if (edge.source === targetId) relatedIds.add(edge.target);
+      if (edge.target === targetId) relatedIds.add(edge.source);
     }
 
     return {
-      graphData,
-      nodesById,
+      graphArtifacts: graphData.graphArtifacts.filter((a) =>
+        relatedIds.has(a.id),
+      ),
+      graphLinks: graphData.graphLinks.filter(
+        (e) => e.source === targetId || e.target === targetId,
+      ),
     };
-  }, [props.artifacts, props.edges]);
+  }, [graphData.graphArtifacts, graphData.graphLinks, props.onlyRelatedTo]);
+  const { pane } = usePaneContext();
+  const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
+  const { fitView } = useReactFlow();
+
+  const previousPositionsRef = useRef(
+    new Map<string, { x: number; y: number }>(),
+  );
+
+  const adjacencyMap = useMemo(() => {
+    const map = new Map<string, AdjacencyEntry>(
+      graphArtifacts.map((a) => [
+        a.id,
+        {
+          neighborIds: new Set(),
+          edgeIds: new Set(),
+        },
+      ]),
+    );
+    for (const link of graphLinks) {
+      const edgeId = `${link.source}-${link.target}-${link.type}`;
+
+      const sourceEntry = map.get(link.source);
+      if (!sourceEntry) continue;
+      const targetEntry = map.get(link.target);
+      if (!targetEntry) continue;
+
+      sourceEntry.neighborIds.add(link.target);
+      sourceEntry.edgeIds.add(edgeId);
+      targetEntry.neighborIds.add(link.source);
+      targetEntry.edgeIds.add(edgeId);
+    }
+    return map;
+  }, [graphArtifacts, graphLinks]);
+
+  const nodePositions = useMemo(() => {
+    const prev = previousPositionsRef.current;
+
+    if (prev.size === 0 && graphArtifacts.length > 0) {
+      const ids = graphArtifacts.map((a) => a.id);
+      const links = graphLinks.filter(
+        (e) => adjacencyMap.has(e.source) && adjacencyMap.has(e.target),
+      );
+      const positions = runInitialSimulation(ids, links);
+      previousPositionsRef.current = positions;
+      return positions;
+    }
+
+    for (const artifact of graphArtifacts) {
+      if (!prev.has(artifact.id)) {
+        prev.set(artifact.id, placeNewNode(artifact.id, adjacencyMap, prev));
+      }
+    }
+    return prev;
+  }, [graphArtifacts, graphLinks, adjacencyMap]);
+
+  const rfNodes = useMemo(() => {
+    return graphArtifacts.map((artifact) => {
+      const locked = artifactPositions.get(artifact.id);
+      const pos = locked ?? nodePositions.get(artifact.id) ?? { x: 0, y: 0 };
+      return {
+        id: artifact.id,
+        type: 'feynoteNode',
+        data: { label: artifact.title, dimmed: false },
+        position: pos,
+      };
+    });
+  }, [graphArtifacts, artifactPositions, nodePositions]);
+
+  const rfEdges = useMemo(() => {
+    return graphLinks
+      .filter((e) => adjacencyMap.has(e.source) && adjacencyMap.has(e.target))
+      .map((link) => ({
+        id: `${link.source}-${link.target}-${link.type}`,
+        source: link.source,
+        target: link.target,
+        type: 'floating',
+        style:
+          link.type === 'tree'
+            ? { stroke: '#777', strokeDasharray: '6 3' }
+            : { stroke: '#999' },
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 15,
+          height: 15,
+          color: '#999',
+        },
+      }));
+  }, [graphLinks, adjacencyMap]);
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
 
   useEffect(() => {
-    for (const artifact of props.artifacts) {
-      const position = props.artifactPositions?.get(artifact.id);
-      if (position) {
-        const node = nodesById[artifact.id];
-        if (node) {
-          node.fx = position.x;
-          node.fy = position.y;
-        }
-      } else {
-        const node = nodesById[artifact.id];
-        if (node) {
-          node.fx = undefined;
-          node.fy = undefined;
-        }
+    setNodes(rfNodes);
+    setEdges(rfEdges);
+  }, [rfNodes, rfEdges, setNodes, setEdges]);
+
+  const [highlight, setHighlight] = useState<Highlight>(null);
+
+  const onNodeMouseEnter: NodeMouseHandler<FeynoteNode> = useCallback(
+    (_, node) => {
+      const entry = adjacencyMap.get(node.id);
+      if (entry) {
+        setHighlight({
+          nodeIds: new Set([node.id, ...entry.neighborIds]),
+          edgeIds: entry.edgeIds,
+        });
       }
-    }
-  }, [props.artifactPositions, props.artifacts, nodesById]);
-
-  const updateHighlight = () => {
-    setHighlightNodes(highlightNodes);
-    setHighlightLinks(highlightLinks);
-  };
-
-  const handleNodeClick = (node: FeynoteGraphNode, event: MouseEvent) => {
-    navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
-      id: node.id,
-    });
-  };
-
-  const handleNodeHover = (node: FeynoteGraphNode | null) => {
-    highlightNodes.clear();
-    highlightLinks.clear();
-    if (node) {
-      highlightNodes.add(node);
-      node.neighbors?.forEach((neighbor) => highlightNodes.add(neighbor));
-      node.links?.forEach((link) => highlightLinks.add(link));
-    }
-
-    setHoverNode(node || null);
-    updateHighlight();
-  };
-
-  const handleLinkHover = (link: FeynoteGraphLink | null) => {
-    highlightNodes.clear();
-    highlightLinks.clear();
-
-    if (link) {
-      highlightLinks.add(link);
-      const sourceNode = nodesById[link.source];
-      if (sourceNode) {
-        highlightNodes.add(sourceNode);
-      }
-      const targetNode = nodesById[link.target];
-      if (targetNode) {
-        highlightNodes.add(targetNode);
-      }
-    }
-
-    updateHighlight();
-  };
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) {
-      return text;
-    }
-    return text.slice(0, maxLength - 1).trim() + '…';
-  };
-
-  const paintRing = useCallback(
-    (node: NodeObject<FeynoteGraphNode>, ctx: CanvasRenderingContext2D) => {
-      if (!node.x || !node.y) return;
-
-      const isHighlighted = highlightNodes.has(node);
-      const label = isHighlighted
-        ? truncateText(node.name, 70)
-        : truncateText(node.name, 22);
-
-      // Text styling
-      ctx.font = `${NODE_LABEL_FONT_SIZE_PX}px sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-
-      const textWidth = ctx.measureText(label).width;
-      const padding = 1;
-      const borderRadius = 4;
-      const bgX = node.x - textWidth / 2 - padding;
-      const bgY = node.y + NODE_RADIUS * 2;
-      const bgWidth = textWidth + padding * 2;
-      // Multiplied by a fraction since there's some weird scaling shenanegans
-      const bgHeight = NODE_LABEL_FONT_SIZE_PX * 0.7 + padding * 2;
-
-      // Draw rounded background
-      if (isHighlighted || !hoverNode) {
-        ctx.fillStyle = _isDarkMode
-          ? 'rgba(0, 0, 0, 0.3)'
-          : 'rgba(255, 255, 255, 0.3)';
-        drawRoundedRect(ctx, bgX, bgY, bgWidth, bgHeight, borderRadius);
-        ctx.fill();
-      }
-
-      // Draw text
-      const textOpacity =
-        highlightNodes.has(node) || !highlightNodes.size ? '1' : '0.5';
-      ctx.fillStyle = _isDarkMode
-        ? `rgba(255,255,255,${textOpacity})`
-        : `rgba(0,0,0,${textOpacity})`;
-      ctx.fillText(label, node.x, bgY + padding);
     },
-    [hoverNode],
+    [adjacencyMap],
   );
+
+  const onNodeMouseLeave: NodeMouseHandler<FeynoteNode> = useCallback(() => {
+    setHighlight(null);
+  }, []);
+
+  const styledNodes = useMemo(() => {
+    if (!highlight) return nodes;
+    return nodes.map((node) => ({
+      ...node,
+      data: {
+        ...node.data,
+        dimmed: !highlight.nodeIds.has(node.id),
+      },
+    }));
+  }, [nodes, highlight]);
+
+  const styledEdges = useMemo(() => {
+    if (!highlight) return edges;
+    return edges.map((edge) => ({
+      ...edge,
+      style: {
+        ...edge.style,
+        opacity: highlight.edgeIds.has(edge.id) ? 1 : 0.2,
+      },
+    }));
+  }, [edges, highlight]);
+
+  const onNodeClick: NodeMouseHandler<FeynoteNode> = useCallback(
+    (event, node) => {
+      navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
+        id: node.id,
+      });
+    },
+    [navigateWithKeyboardHandler],
+  );
+
+  const onNodeDragStop: NodeMouseHandler<FeynoteNode> = useCallback(
+    (_, node) => {
+      if (props.disableDragLock) return;
+      if (!getPreference(PreferenceNames.GraphLockNodeOnDrag)) return;
+
+      graphData.artifactsYKV.set(node.id, {
+        lock: {
+          x: node.position.x,
+          y: node.position.y,
+        },
+      });
+    },
+    [props.disableDragLock, getPreference, graphData.artifactsYKV],
+  );
+
+  useEffect(() => {
+    requestAnimationFrame(() => fitView({ padding: 0.15, duration: 0 }));
+  }, [pane.currentView.navigationEventId, fitView]);
 
   return (
-    <GraphContainer ref={graphContainerRef} $nodeHovered={!!hoverNode}>
-      {displayWidth !== undefined && displayHeight !== undefined && (
-        <FeynoteForceGraph2D
-          ref={
-            ((el: ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>) => {
-              el?.d3Force('charge')?.distanceMax(150);
-              el?.d3Force('link')?.distance(65);
-              el?.d3Force('charge')?.strength(-140);
-
-              forceGraphRef.current = el;
-            }) as unknown as React.MutableRefObject<
-              ForceGraphMethods<FeynoteGraphNode, FeynoteGraphLink>
-            >
-          }
-          cooldownTime={650}
-          onEngineStop={() => {
-            if (initialZoomPerformedRef.current) return;
-
-            forceGraphRef.current?.zoomToFit(200, displayWidth * 0.1);
-            initialZoomPerformedRef.current = true;
-          }}
-          graphData={graphData}
-          nodeRelSize={NODE_RADIUS}
-          autoPauseRedraw={true}
-          nodeColor={(node) => {
-            const opacity =
-              highlightNodes.has(node) || !highlightNodes.size ? '1' : '0.4';
-            return _isDarkMode
-              ? `rgba(100,100,100,${opacity})`
-              : `rgba(100,100,100,${opacity})`;
-          }}
-          linkColor={(link) => {
-            const opacity =
-              highlightLinks.has(link) || !highlightLinks.size ? '0.8' : '0.4';
-            if (link.type === 'tree') {
-              return _isDarkMode
-                ? `rgba(90,110,140,${opacity})`
-                : `rgba(120,140,170,${opacity})`;
-            }
-            return _isDarkMode
-              ? `rgba(100,100,100,${opacity})`
-              : `rgba(150,150,150,${opacity})`;
-          }}
-          linkLineDash={(link) => (link.type === 'tree' ? [4, 2] : null)}
-          linkDirectionalParticleColor={(_) =>
-            _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'
-          }
-          linkWidth={(link) => (highlightLinks.has(link) ? 5 : 1)}
-          linkDirectionalParticles={(link) => (link.type === 'tree' ? 0 : 4)}
-          linkDirectionalParticleWidth={(link) =>
-            highlightLinks.has(link) ? 4 : 0
-          }
-          linkDirectionalArrowLength={(link) => (link.type === 'tree' ? 0 : 7)}
-          linkDirectionalArrowRelPos={1}
-          linkDirectionalArrowColor={() =>
-            _isDarkMode ? 'rgba(100,100,100,0.5)' : 'rgba(100,100,100,0.5)'
-          }
-          nodeCanvasObjectMode={() => 'after'}
-          nodeCanvasObject={paintRing}
-          onNodeHover={handleNodeHover}
-          onNodeClick={handleNodeClick}
-          onLinkHover={handleLinkHover}
-          nodeLabel={() => ''}
-          width={displayWidth}
-          height={displayHeight}
-          onNodeDragEnd={(node) => {
-            if (
-              props.onNodeDragEnd &&
-              typeof node.x === 'number' &&
-              typeof node.y === 'number'
-            ) {
-              props.onNodeDragEnd(node, node.x, node.y);
-            }
-          }}
-        />
-      )}
-    </GraphContainer>
+    <ReactFlow
+      nodes={styledNodes}
+      edges={styledEdges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      onNodeClick={onNodeClick}
+      onNodeDragStop={onNodeDragStop}
+      onNodeMouseEnter={onNodeMouseEnter}
+      onNodeMouseLeave={onNodeMouseLeave}
+      fitView
+      fitViewOptions={{ padding: 0.15 }}
+      minZoom={0.1}
+      maxZoom={2}
+      nodesDraggable={!!props.interactive}
+      nodesConnectable={false}
+      elementsSelectable={false}
+      panOnDrag={!!props.interactive}
+      zoomOnScroll={!!props.interactive}
+      zoomOnPinch={!!props.interactive}
+      zoomOnDoubleClick={false}
+      proOptions={{ hideAttribution: true }}
+    />
   );
-});
+};
+
+export const GraphRenderer: React.FC<Omit<Props, 'graphData'>> = memo(
+  (props) => {
+    const graphData = useGraphData(props.workspaceId);
+
+    const contents = (
+      <ReactFlowProvider>
+        <GraphContainer>
+          <CollaborationGate connection={graphData.connection}>
+            <GraphRendererInner {...props} graphData={graphData} />
+          </CollaborationGate>
+        </GraphContainer>
+      </ReactFlowProvider>
+    );
+
+    return props.children({
+      graphData,
+      contents,
+    });
+  },
+);

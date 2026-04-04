@@ -20,10 +20,8 @@ import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeybo
 import { GraphRenderer } from '../graph/GraphRenderer';
 import { useSessionContext } from '../../context/session/SessionContext';
 import { type ThreadDTO } from '@feynote/shared-utils';
-import type { FeynoteGraphLink } from '../graph/GraphRenderer';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
 import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
-import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useCurrentWorkspaceThreadIds } from '../../utils/workspace/useCurrentWorkspaceThreadIds';
 import { AllArtifactsSortOrder } from '../artifact/allArtifacts/AllArtifactsSort';
@@ -136,7 +134,6 @@ export const Dashboard: React.FC<Props> = (props) => {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { session } = useSessionContext();
   const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
-  const { getEdgesForArtifactId } = useEdges();
   const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
     props.workspaceId || undefined,
   );
@@ -161,14 +158,6 @@ export const Dashboard: React.FC<Props> = (props) => {
       .sort((a, b) => b.updatedAt - a.updatedAt)
       .slice(0, 10);
   }, [artifactSnapshots]);
-  const graphArtifacts = useMemo(() => {
-    if (!artifactSnapshots) return [];
-
-    return artifactSnapshots.map((artifact) => ({
-      id: artifact.id,
-      title: artifact.meta.title,
-    }));
-  }, [artifactSnapshots]);
 
   const [recentlyUpdatedThreads, setRecentlyUpdatedThreads] =
     useState<ThreadDTO[]>();
@@ -180,30 +169,6 @@ export const Dashboard: React.FC<Props> = (props) => {
       currentWorkspaceThreadIds.has(thread.id),
     );
   }, [recentlyUpdatedThreads, currentWorkspaceThreadIds]);
-  const edges = useMemo(() => {
-    if (!artifactSnapshots) return [];
-
-    const seen = new Set<string>();
-    const links: FeynoteGraphLink[] = [];
-
-    for (const artifact of artifactSnapshots) {
-      const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
-        artifact.id,
-      );
-
-      for (const edge of [...incomingEdges, ...outgoingEdges]) {
-        if (seen.has(edge.id)) continue;
-        seen.add(edge.id);
-        links.push({
-          source: edge.artifactId,
-          target: edge.targetArtifactId,
-          type: 'reference',
-        });
-      }
-    }
-
-    return links;
-  }, [artifactSnapshots, getEdgesForArtifactId]);
 
   const getUserThreads = async () => {
     getThreadsAction()
@@ -257,10 +222,12 @@ export const Dashboard: React.FC<Props> = (props) => {
                   <IoExpand size={16} />
                 </GraphExpandButton>
                 <GraphRenderer
-                  artifacts={graphArtifacts}
-                  edges={edges}
-                  enableInitialZoom={true}
-                />
+                  workspaceId={props.workspaceId}
+                  interactive
+                  disableDragLock
+                >
+                  {(args) => args.contents}
+                </GraphRenderer>
               </GraphSection>
             ) : null}
 

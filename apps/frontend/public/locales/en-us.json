@@ -414,13 +414,6 @@
   "createNew.readOnlyWorkspace.title": "Read-only workspace",
   "createNew.readOnlyWorkspace.message": "You have read-only access to this workspace. This document will be created in your personal collection.",
   "artifact.title": "Document",
-  "artifact.noAccess.title": "No Access",
-  "artifact.noAccess.message": "You don't have access to this document",
-  "artifact.noAccess.action": "Retry",
-  "artifact.loading.failed.title": "Error",
-  "artifact.loading.failed.message": "There was an error while loading this document. Please close the app and re-open.",
-  "artifact.loading.title": "Loading document",
-  "artifact.loading.message": "Loading document...",
   "artifact.duplicateTitle": "Copy of {{title}}",
   "artifact.deletedBanner.message": "This document was deleted on {{date}}.",
   "artifact.deletedBanner.messageEditable": "This document was deleted on {{date}}. Click to restore.",
@@ -1080,5 +1073,12 @@
   "generic.never": "Never",
   "generic.always": "Always",
   "generic.readMore": "Read more",
-  "generic.open": "Open"
+  "generic.open": "Open",
+  "collaboration.loading.title": "Loading",
+  "collaboration.loading.message": "Please wait while the document loads.",
+  "collaboration.failed.title": "Failed to load",
+  "collaboration.failed.message": "Something went wrong loading this document.",
+  "collaboration.noAccess.title": "No access",
+  "collaboration.noAccess.message": "You do not have access to this document.",
+  "collaboration.noAccess.action": "Re-authenticate"
 }
