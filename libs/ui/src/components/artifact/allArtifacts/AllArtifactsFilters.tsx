@@ -99,6 +99,20 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
             : [...props.currentFilters.byUser]
         }
         options={byUserOptions}
+        quickActions={[
+          {
+            title: t('allArtifacts.filter.byUser.sharedWithMe'),
+            onClick: (options, setSelectedValues) => {
+              setSelectedValues(
+                new Set(
+                  options
+                    .filter((o) => o.value !== session.userId)
+                    .map((o) => o.value),
+                ),
+              );
+            },
+          },
+        ]}
       >
         <Button variant="soft" size="2">
           <CiUser width="16" height="16" />

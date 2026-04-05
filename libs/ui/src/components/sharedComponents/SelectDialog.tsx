@@ -1,4 +1,4 @@
-import { Flex } from '@radix-ui/themes';
+import { Button, Flex } from '@radix-ui/themes';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from './Checkbox';
@@ -21,6 +21,13 @@ interface Props {
     title: string;
   }[];
   children: React.ReactNode;
+  quickActions?: {
+    title: string;
+    onClick: (
+      options: ReadonlyArray<{ value: string; title: string }>,
+      setSelectedValues: (values: Set<string>) => void,
+    ) => void;
+  }[];
 }
 
 export const SelectDialog = (props: Props) => {
@@ -86,6 +93,39 @@ export const SelectDialog = (props: Props) => {
           {el.title}
         </StyledClickableFlexItem>
       ))}
+      {props.allowMultiple && (
+        <Flex gap="3" mt="3" justify="start" wrap="wrap">
+          <Button
+            variant="soft"
+            size="1"
+            color="gray"
+            onClick={() =>
+              setSelectedValues(new Set(props.options.map((o) => o.value)))
+            }
+          >
+            {t('generic.selectAll')}
+          </Button>
+          <Button
+            variant="soft"
+            size="1"
+            color="gray"
+            onClick={() => setSelectedValues(new Set())}
+          >
+            {t('generic.deselectAll')}
+          </Button>
+          {props.quickActions?.map((action, idx) => (
+            <Button
+              key={idx}
+              variant="soft"
+              size="1"
+              color="gray"
+              onClick={() => action.onClick(props.options, setSelectedValues)}
+            >
+              {action.title}
+            </Button>
+          ))}
+        </Flex>
+      )}
     </ActionDialog>
   );
 };
