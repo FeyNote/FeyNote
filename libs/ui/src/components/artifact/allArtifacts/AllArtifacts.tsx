@@ -85,7 +85,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   const { session } = useSessionContext();
   const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { workspaceSnapshots, getWorkspaceIdsForArtifactId } =
+  const { workspaceSnapshots, getWorkspaceSnapshotsForArtifactId } =
     useWorkspaceSnapshots();
 
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
@@ -231,7 +231,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
 
         if (
           filters.workspaceId === NO_WORKSPACE_FILTER_VALUE &&
-          getWorkspaceIdsForArtifactId(artifact.id).length > 0
+          getWorkspaceSnapshotsForArtifactId(artifact.id).length > 0
         ) {
           return false;
         }
@@ -343,7 +343,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   }, [
     artifactSnapshots,
     getEdgesForArtifactId,
-    getWorkspaceIdsForArtifactId,
+    getWorkspaceSnapshotsForArtifactId,
     order,
     filters,
     selectedImportArtifactIds,

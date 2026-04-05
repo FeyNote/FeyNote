@@ -64,10 +64,11 @@ export const ArtifactRightSidemenu: React.FC<Props> = (props) => {
   );
   const { navigate } = useGlobalPaneContext();
   const { currentWorkspaceId } = useCurrentWorkspaceId();
-  const { getWorkspaceIdsForArtifactId } = useWorkspaceSnapshots();
+  const { getWorkspaceSnapshotsForArtifactId } = useWorkspaceSnapshots();
   const workspaceIdsForArtifact = useMemo(
-    () => getWorkspaceIdsForArtifactId(props.artifactId),
-    [props.artifactId, getWorkspaceIdsForArtifactId],
+    () =>
+      getWorkspaceSnapshotsForArtifactId(props.artifactId).map((ws) => ws.id),
+    [props.artifactId, getWorkspaceSnapshotsForArtifactId],
   );
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [showManagementDialog, setShowSharingManagementDialog] =

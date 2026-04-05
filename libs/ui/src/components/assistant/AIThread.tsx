@@ -135,10 +135,10 @@ export const AIThread: React.FC<Props> = (props) => {
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { showAlert } = useAlertContext();
   const { sidemenuContentRef } = useSidemenuContext();
-  const { getWorkspaceIdsForThreadId } = useWorkspaceSnapshots();
+  const { getWorkspaceSnapshotsForThreadId } = useWorkspaceSnapshots();
   const workspaceIdsForThread = useMemo(
-    () => getWorkspaceIdsForThreadId(props.id),
-    [props.id, getWorkspaceIdsForThreadId],
+    () => getWorkspaceSnapshotsForThreadId(props.id).map((ws) => ws.id),
+    [props.id, getWorkspaceSnapshotsForThreadId],
   );
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [input, setInput] = useState('');

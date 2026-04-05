@@ -9,7 +9,7 @@ import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVCha
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
 import { getArtifactTreePaths } from '../../utils/artifactTree/getArtifactTreePaths';
 import { PreferenceNames } from '@feynote/shared-utils';
-import type { ArtifactDTO, WorkspaceSnapshot } from '@feynote/global-types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import { SearchResultItem } from './SearchResultItem';
 import { useTranslation } from 'react-i18next';
 
@@ -59,7 +59,7 @@ export const GlobalSearchResultsList: React.FC<Props> = (props) => {
     PreferenceNames.GlobalSearchAcrossAllWorkspaces,
   );
   const { getArtifactSnapshotById } = useArtifactSnapshots();
-  const { getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById } =
+  const { getWorkspaceSnapshotById, getWorkspaceSnapshotsForArtifactId } =
     useWorkspaceSnapshots();
   const { t } = useTranslation();
 
@@ -129,22 +129,6 @@ export const GlobalSearchResultsList: React.FC<Props> = (props) => {
     getArtifactSnapshotById,
   ]);
 
-  const workspaceSnapshotsByArtifactId = useMemo(() => {
-    const result = new Map<string, WorkspaceSnapshot[]>();
-    for (const artifactId of artifactIds) {
-      const workspaceIds = getWorkspaceIdsForArtifactId(artifactId);
-      const snapshots = workspaceIds
-        .map((id) => getWorkspaceSnapshotById(id))
-        .filter(
-          (workspace): workspace is NonNullable<WorkspaceSnapshot> =>
-            !!workspace && !workspace.meta.deletedAt,
-        );
-
-      result.set(artifactId, snapshots);
-    }
-    return result;
-  }, [artifactIds, getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById]);
-
   return (
     <>
       {props.searchResults.map((searchResult, idx) => (
@@ -166,9 +150,9 @@ export const GlobalSearchResultsList: React.FC<Props> = (props) => {
             highlights={searchResult.highlights}
             previewText={searchResult.previewText}
             treePath={artifactPathById.get(searchResult.artifact.id)}
-            workspaceSnapshots={
-              workspaceSnapshotsByArtifactId.get(searchResult.artifact.id) || []
-            }
+            workspaceSnapshots={getWorkspaceSnapshotsForArtifactId(
+              searchResult.artifact.id,
+            )}
           />
         </SearchResult>
       ))}

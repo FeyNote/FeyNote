@@ -15,7 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { useSingleDoubleClick } from '../../utils/useSingleDoubleClick';
 import { useCurrentWorkspaceId } from '../../utils/workspace/useCurrentWorkspaceId';
 import { useWorkspaceSnapshots } from '../../utils/localDb/workspaces/useWorkspaceSnapshots';
-import type { WorkspaceSnapshot } from '@feynote/global-types';
 import { WorkspaceBadges } from '../workspace/WorkspaceBadges';
 
 export const TreeListItem = styled.li<{
@@ -160,25 +159,13 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
   const item = props.treeItemsById.get(props.itemInstance.getId());
   const { t } = useTranslation();
   const { currentWorkspaceId } = useCurrentWorkspaceId();
-  const { getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById } =
-    useWorkspaceSnapshots();
+  const { getWorkspaceSnapshotsForArtifactId } = useWorkspaceSnapshots();
 
   const workspaceSnapshotsForItem = useMemo(() => {
-    if (currentWorkspaceId) return []; // We do not show badges when a workspace is active
+    if (currentWorkspaceId) return [];
     if (!item || item.id === UNCATEGORIZED_TREE_NODE_ID) return [];
-    const workspaceIds = getWorkspaceIdsForArtifactId(item.id);
-    return workspaceIds
-      .map((id) => getWorkspaceSnapshotById(id))
-      .filter(
-        (workspace): workspace is NonNullable<WorkspaceSnapshot> =>
-          !!workspace && !workspace.meta.deletedAt,
-      );
-  }, [
-    currentWorkspaceId,
-    item?.id,
-    getWorkspaceIdsForArtifactId,
-    getWorkspaceSnapshotById,
-  ]);
+    return getWorkspaceSnapshotsForArtifactId(item.id);
+  }, [currentWorkspaceId, item?.id, getWorkspaceSnapshotsForArtifactId]);
 
   const { onClick, onDoubleClick } = useSingleDoubleClick(
     undefined,
