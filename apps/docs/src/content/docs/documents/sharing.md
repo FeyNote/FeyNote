@@ -35,7 +35,7 @@ If you frequently share documents with the same group of people for the same pur
 
 ## Finding Shared Content
 
-- The **Shared With You** card on the dashboard shows your most recently updated shared documents. Clicking the section header opens the All Documents page with the "Shared with me" filter pre-applied.
+- The **Shared With You** section on the [dashboard](/docs/general/dashboard) shows documents that other users have shared with you. Clicking the section header opens the full shared content view.
 - On the **All Documents** page, the **Users** filter dialog has a "Shared with me" button along with "Select all" and "Deselect all" for quick filtering. When "Shared with me" is active, the individual user checkboxes are disabled and only documents owned by others are shown.
 
 ### Inbox
