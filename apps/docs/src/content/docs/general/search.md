@@ -15,6 +15,8 @@ When you open search, a dialog appears with a text field. Start typing and resul
 
 Each result shows the document title along with highlighted snippets of matching text so you can tell at a glance which result you're looking for. If a document has more matches than can be shown, you'll see a note like "3 more results found in this document".
 
+Results also display small colored [workspace](/docs/general/workspaces) badges next to the title, showing which workspaces contain each document. If the [document tree](/docs/documents/tree) is enabled, a breadcrumb path appears below the title showing where the document sits in the tree hierarchy, making it easy to distinguish between similarly named documents in different locations.
+
 Use the **Arrow Up** and **Arrow Down** keys to move through the results, and press **Enter** to open the selected one. You can also click any result directly.
 
 ## Creating Documents from Search
