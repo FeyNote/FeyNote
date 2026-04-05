@@ -143,6 +143,21 @@ export const buildArtifactReferencesExtension = (args: {
       char: '@',
       allowSpaces: true,
       allow: () => mentionMenuOptsRef.enableMentionMenu,
+      command: ({ editor, range, props }) => {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(range, [
+            {
+              type: 'artifactReference',
+              attrs: { ...props, mentionSuggestionChar: '@' },
+            },
+          ])
+          .run();
+        editor.view.dom.ownerDocument.defaultView
+          ?.getSelection()
+          ?.collapseToEnd();
+      },
     },
     renderHTML({ options, node }) {
       const edgeStore = getEdgeStore();
