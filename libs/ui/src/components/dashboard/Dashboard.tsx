@@ -321,8 +321,11 @@ export const Dashboard: React.FC<Props> = (props) => {
                     onClick={(event) =>
                       navigateWithKeyboardHandler(
                         event,
-                        PaneableComponent.SharedContent,
-                        {},
+                        PaneableComponent.AllArtifacts,
+                        {
+                          workspaceId: props.workspaceId,
+                          initialSharedWithMe: true,
+                        },
                       )
                     }
                   >

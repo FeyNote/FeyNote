@@ -73,6 +73,7 @@ const dateCompareWithFallback = (
 interface Props {
   initialImportJobId?: string;
   initialSortOrder?: AllArtifactsSortOrder;
+  initialSharedWithMe?: boolean;
   workspaceId: string | null;
 }
 
@@ -105,6 +106,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
     workspaceId: props.workspaceId,
     havingTitleText: '',
     byUser: new Set(),
+    sharedWithMe: props.initialSharedWithMe ?? false,
     orphans: AllArtifactsOrphansDisplaySetting.Include,
     onlyRelatedTo: new Set(),
     onlyIncludeTypes: new Set(),
@@ -217,6 +219,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
     Number(!!filters.havingTitleText.length) +
     Number(!!filters.onlyRelatedToImportJobs.size) +
     Number(!!filters.byUser.size) +
+    Number(filters.sharedWithMe) +
     Number(filters.orphans !== AllArtifactsOrphansDisplaySetting.Include) +
     Number(!!filters.onlyRelatedTo.size) +
     Number(!!filters.onlyIncludeTypes.size);
@@ -239,6 +242,10 @@ export const AllArtifacts: React.FC<Props> = (props) => {
             .toLowerCase()
             .includes(filters.havingTitleText.toLowerCase())
         ) {
+          return false;
+        }
+
+        if (filters.sharedWithMe && artifact.meta.userId === session.userId) {
           return false;
         }
 

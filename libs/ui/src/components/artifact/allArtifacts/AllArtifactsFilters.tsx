@@ -38,6 +38,7 @@ export interface FilterOptions {
   workspaceId: string | null;
   havingTitleText: string;
   byUser: ReadonlySet<string>;
+  sharedWithMe: boolean;
   orphans: AllArtifactsOrphansDisplaySetting;
   onlyRelatedTo: ReadonlySet<string>;
   onlyIncludeTypes: ReadonlySet<ArtifactType>;
@@ -84,7 +85,7 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
         onChange={(value) => {
           const final =
             value.length === byUserOptions.length
-              ? new Set([])
+              ? new Set<string>()
               : new Set(value);
           props.onCurrentFiltersChange({
             ...props.currentFilters,
@@ -93,6 +94,7 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
         }}
         title={t('allArtifacts.filter.byUser.modalTitle')}
         allowMultiple={true}
+        disabled={props.currentFilters.sharedWithMe}
         selectedValues={
           props.currentFilters.byUser.size === 0
             ? byUserOptions.map((el) => el.value)
@@ -102,25 +104,26 @@ export const AllArtifactsFilters: React.FC<Props> = (props) => {
         quickActions={[
           {
             title: t('allArtifacts.filter.byUser.sharedWithMe'),
-            onClick: (options, setSelectedValues) => {
-              setSelectedValues(
-                new Set(
-                  options
-                    .filter((o) => o.value !== session.userId)
-                    .map((o) => o.value),
-                ),
-              );
+            active: props.currentFilters.sharedWithMe,
+            onClick: () => {
+              props.onCurrentFiltersChange({
+                ...props.currentFilters,
+                byUser: new Set(),
+                sharedWithMe: !props.currentFilters.sharedWithMe,
+              });
             },
           },
         ]}
       >
         <Button variant="soft" size="2">
           <CiUser width="16" height="16" />
-          {props.currentFilters.byUser.size
-            ? t('allArtifacts.filter.byUser.title.active', {
-                count: props.currentFilters.byUser.size,
-              })
-            : t('allArtifacts.filter.byUser.title')}
+          {props.currentFilters.sharedWithMe
+            ? t('allArtifacts.filter.byUser.sharedWithMe')
+            : props.currentFilters.byUser.size
+              ? t('allArtifacts.filter.byUser.title.active', {
+                  count: props.currentFilters.byUser.size,
+                })
+              : t('allArtifacts.filter.byUser.title')}
         </Button>
       </SelectDialog>
 

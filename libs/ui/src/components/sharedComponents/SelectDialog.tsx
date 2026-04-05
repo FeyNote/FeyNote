@@ -5,9 +5,10 @@ import { Checkbox } from './Checkbox';
 import styled from 'styled-components';
 import { ActionDialog } from './ActionDialog';
 
-const StyledClickableFlexItem = styled(Flex)`
-  cursor: pointer;
+const StyledClickableFlexItem = styled(Flex)<{ $disabled?: boolean }>`
+  cursor: ${(props) => (props.$disabled ? 'default' : 'pointer')};
   user-select: none;
+  opacity: ${(props) => (props.$disabled ? 0.4 : 1)};
 `;
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
   subtitle?: string;
   selectedValues: ReadonlyArray<string>;
   allowMultiple: boolean;
+  disabled?: boolean;
   options: {
     value: string;
     title: string;
@@ -23,10 +25,8 @@ interface Props {
   children: React.ReactNode;
   quickActions?: {
     title: string;
-    onClick: (
-      options: ReadonlyArray<{ value: string; title: string }>,
-      setSelectedValues: (values: Set<string>) => void,
-    ) => void;
+    active?: boolean;
+    onClick: () => void;
   }[];
 }
 
@@ -75,7 +75,9 @@ export const SelectDialog = (props: Props) => {
           gap="2"
           align="center"
           key={el.value}
+          $disabled={props.disabled}
           onClick={() => {
+            if (props.disabled) return;
             if (props.allowMultiple) {
               const editableSet = new Set(selectedValues);
               if (selectedValues.has(el.value)) {
@@ -99,6 +101,7 @@ export const SelectDialog = (props: Props) => {
             variant="soft"
             size="1"
             color="gray"
+            disabled={props.disabled}
             onClick={() =>
               setSelectedValues(new Set(props.options.map((o) => o.value)))
             }
@@ -109,6 +112,7 @@ export const SelectDialog = (props: Props) => {
             variant="soft"
             size="1"
             color="gray"
+            disabled={props.disabled}
             onClick={() => setSelectedValues(new Set())}
           >
             {t('generic.deselectAll')}
@@ -116,10 +120,9 @@ export const SelectDialog = (props: Props) => {
           {props.quickActions?.map((action, idx) => (
             <Button
               key={idx}
-              variant="soft"
+              variant={action.active ? 'solid' : 'soft'}
               size="1"
-              color="gray"
-              onClick={() => action.onClick(props.options, setSelectedValues)}
+              onClick={action.onClick}
             >
               {action.title}
             </Button>

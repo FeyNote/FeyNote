@@ -23,6 +23,6 @@ This card only appears once you have created at least one thread. If you haven't
 
 ## Shared With You
 
-The **Shared With You** card shows up to 10 documents that other users have shared with you, sorted by most recently updated. Click any document to open it, or click the expand button to see the full list of shared content.
+The **Shared With You** card shows up to 10 documents that other users have shared with you, sorted by most recently updated. Click any document to open it, or click the section header to open the All Documents page with the "Shared with me" filter pre-applied.
 
 For more on how sharing works, see [Sharing Documents](/docs/documents/sharing).

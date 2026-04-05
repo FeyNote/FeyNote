@@ -5,7 +5,6 @@ import { AIThreadsList } from '../../components/assistant/AIThreadsList';
 import { Dashboard } from '../../components/dashboard/Dashboard';
 import { Graph } from '../../components/graph/Graph';
 import { Settings } from '../../components/settings/Settings';
-import { SharedContent } from '../../components/sharing/SharedContent';
 import { CreateNew } from '../../components/artifact/CreateNew';
 import { Contribute } from '../../components/payments/Contribute';
 import { PersistentSearch } from '../../components/search/PersistentSearch';
@@ -28,7 +27,6 @@ export enum PaneableComponent {
   AIThread = 'AIThread',
   AIThreadsList = 'AIThreadsList',
   Graph = 'Graph',
-  SharedContent = 'SharedContent',
   Export = 'Export',
   Import = 'Import',
   ImportFileUpload = 'ImportFileUpload',
@@ -56,7 +54,6 @@ export type PaneableComponentProps = {
   [PaneableComponent.AIThread]: ComponentProps<typeof AIThread>;
   [PaneableComponent.AIThreadsList]: ComponentProps<typeof AIThreadsList>;
   [PaneableComponent.Graph]: ComponentProps<typeof Graph>;
-  [PaneableComponent.SharedContent]: ComponentProps<typeof SharedContent>;
   [PaneableComponent.Import]: ComponentProps<typeof Import>;
   [PaneableComponent.ImportFileUpload]: ComponentProps<typeof ImportFileUpload>;
   [PaneableComponent.Export]: ComponentProps<typeof Export>;
@@ -82,7 +79,6 @@ export const getPaneableComponent = <T extends PaneableComponent>(
     [PaneableComponent.AIThread]: AIThread,
     [PaneableComponent.AIThreadsList]: AIThreadsList,
     [PaneableComponent.Graph]: Graph,
-    [PaneableComponent.SharedContent]: SharedContent,
     [PaneableComponent.Export]: Export,
     [PaneableComponent.Import]: Import,
     [PaneableComponent.ImportFileUpload]: ImportFileUpload,
@@ -113,7 +109,6 @@ export const paneableComponentNameToDefaultI18nTitle = {
   [PaneableComponent.AIThread]: 'assistant.title',
   [PaneableComponent.AIThreadsList]: 'assistant.thread.unknownTitle',
   [PaneableComponent.Graph]: 'graph.title',
-  [PaneableComponent.SharedContent]: 'sharedContent.title',
   [PaneableComponent.Export]: 'export.title',
   [PaneableComponent.Import]: 'import.title',
   [PaneableComponent.ImportFileUpload]: 'importFileUpload.title',

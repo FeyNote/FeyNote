@@ -382,12 +382,6 @@
   "jobList.inProgress": "Job in-progress...",
   "jobList.showMore": "Show More",
 
-  "sharedContent.title": "Shared Content",
-  "sharedContent.noArtifacts.title": "No Documents Shared With You",
-  "sharedContent.noArtifacts.message": "Documents will show up here if another user shares their content with you",
-  "sharedContent.unknownUser": "Unknown User",
-  "sharedContent.sharedBy": "Shared by:",
-
   "persistentSearch.title": "Global Search",
   "persistentSearch.title.workspaceNamed": "{{name}} Search",
   "persistentSearch.settings": "Settings",

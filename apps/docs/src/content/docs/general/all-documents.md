@@ -3,7 +3,7 @@ title: All Documents
 description: Browse, sort, filter, and manage every document in your collection from a single list.
 ---
 
-The All Documents page shows every document in your collection in a single list. It's useful for getting a bird's-eye view of everything you have, finding specific documents, or managing several documents at once. You can get to it by clicking **All Documents** in the left sidebar. When you have a [workspace](/docs/general/workspaces) active, this page shows only documents in that workspace. Switch to **Everything** to see your full collection.
+The All Documents page shows every document in your collection in a single list. It's useful for getting a bird's-eye view of everything you have, finding specific documents, or managing several documents at once. You can get to it by clicking **All Documents** in the left sidebar. When you have a [workspace](/docs/general/workspaces) active, this page shows only documents in that workspace. Switch to **Everything** to see your full collection, or choose **Not in any workspace** to see only documents that haven't been added to a workspace yet.
 
 ## Sorting
 
@@ -20,7 +20,7 @@ When you sort by a date, a date column appears in the list so you can see the re
 A row of filter buttons sits above the document list. You can combine as many filters as you like, and a count of active filters is displayed so you always know when filters are narrowing your view.
 
 - **Search** reveals a text field that filters documents by title as you type.
-- **Users** lets you show only documents owned by specific users. "Me" is always available, along with any other users who own documents you have access to. This is handy when you have shared documents from collaborators and want to filter for a particular person's content.
+- **Users** lets you show only documents owned by specific users. "Me" is always available, along with any other users who own documents you have access to. The dialog also has **Select all**, **Deselect all**, and **Shared with me** buttons at the bottom for quick filtering. When "Shared with me" is active, only documents owned by others are shown and the individual user checkboxes are disabled.
 - **Relations** controls whether documents with no [references](/docs/documents/references) are included, excluded, or shown exclusively. This is helpful for finding "orphan" documents that aren't linked to anything else.
 - **Types** lets you show only specific document types: text, drawing, or calendar.
 
