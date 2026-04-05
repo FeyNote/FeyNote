@@ -117,13 +117,15 @@ When you click inside a note block, a small toolbar appears above it with option
 
 ## Autofill
 
-Autofill lets you turn unformatted text or web content into ready-to-use statblocks, spell blocks, and tables without having to fill in every field by hand. Paste a wall of monster stats, drop in a URL from your favorite homebrew site, and FeyNote will parse and format it for you.
+Autofill lets you turn unformatted text or web content into ready-to-use formatted content without having to structure everything by hand. Paste a wall of monster stats, drop in a URL from your favorite homebrew site, or paste in raw notes with any type of messy formatting, and FeyNote will parse and format it for you.
 
 Autofill is available from the **Insert** menu in the toolbar. When you hover over **Monster Statblock**, **Wide Monster Statblock**, **Spell, Item, Feat, etc.**, or **Table**, a submenu appears with three options:
 
 - **Blank Starter** inserts an empty template for you to fill in manually.
 - **Autofill from Text** opens a dialog where you can paste or type content to be formatted.
 - **Autofill from URL** opens a dialog where you can provide a link to a page containing the content you want to import.
+
+For general-purpose text formatting, the **Insert** menu also includes an **Autoformatted Text** option. See [Autoformatted Text](#autoformatted-text) below.
 
 ### Autofill from Text
 
@@ -145,6 +147,14 @@ After entering your content, you have two options:
 
 - **Preview** generates the formatted result and shows it in a preview dialog so you can check the output before committing. From the preview you can either go back to adjust your input or click **Insert** to add the content to your document.
 - **Insert** skips the preview and places the formatted content directly into your document at the cursor position.
+
+## Autoformatted Text
+
+Autoformatted Text takes raw, unformatted text and converts it into well-structured rich text with proper headings, lists, tables, and other formatting applied automatically. This is useful when you have content copied from a PDF, a chat message, markdown, or plain-text notes that you want to clean up without manually formatting everything yourself.
+
+To use it, open the **Insert** menu in the toolbar and choose **Autoformatted Text**. A dialog will open with a large text area where you can paste or type your content. Unlike the block-specific [Autofill](#autofill) options, Autoformatted Text produces general rich text rather than a statblock, spell block, or table.
+
+You can optionally provide formatting hints in the instructions field, such as "use bullet points for the list of items" or "make the first line a heading". After entering your content, use **Preview** to check the result before inserting, or **Insert** to place the formatted text directly into your document.
 
 ## Dice Notation
 
