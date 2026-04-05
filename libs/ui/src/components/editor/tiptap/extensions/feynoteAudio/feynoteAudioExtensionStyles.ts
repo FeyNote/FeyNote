@@ -10,7 +10,7 @@ export const feynoteAudioExtensionStyles = css`
     align-items: center;
     justify-items: center;
 
-    border: 1px solid var(--ion-background-color-step-200);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 
     .feynote-audio {
@@ -23,13 +23,13 @@ export const feynoteAudioExtensionStyles = css`
       align-items: center;
 
       svg {
-        fill: var(--ion-color-primary);
+        fill: var(--accent-color);
         height: 1rem;
       }
     }
 
     &.ProseMirror-selectednode {
-      outline: 1px solid var(--ion-color-primary);
+      outline: 1px solid var(--accent-color);
       outline-offset: -1px;
     }
   }

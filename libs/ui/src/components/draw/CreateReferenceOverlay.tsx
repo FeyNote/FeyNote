@@ -5,17 +5,11 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { ArtifactDTO } from '@feynote/global-types';
 import { trpc } from '../../utils/trpc';
 import styled from 'styled-components';
-import {
-  IonBackdrop,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-} from '@ionic/react';
-import { search } from 'ionicons/icons';
+import { IoSearch } from '../AppIcons';
 import { capitalizeEachWord } from '@feynote/shared-utils';
 import { CalendarSelectDate } from '../calendar/CalendarSelectDate';
 import { createArtifact } from '../../utils/localDb/createArtifact';
+import { TextField } from '@radix-ui/themes';
 
 const SearchContainer = styled.div`
   position: absolute;
@@ -30,7 +24,7 @@ const SearchContainer = styled.div`
 
 const FloatingSearchContainer = styled.div`
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-  background-color: var(--ion-card-background, #ffffff);
+  background-color: var(--card-background);
   border-radius: 7px;
   overflow: hidden;
 `;
@@ -40,20 +34,32 @@ const SearchResultsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const SearchInput = styled(IonInput)`
-  font-size: 1rem;
-  --background: transparent;
-  --highlight-height: 0;
-  --highlight-color-focused: var(--ion-text-color, #000000);
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+const SearchInputContainer = styled.div`
+  padding: 10px;
 `;
 
-const Backdrop = styled(IonBackdrop)`
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 2;
   opacity: 0.7;
-  background: var(--ion-background-color, #aaaaaa);
+  background: var(--general-background);
+`;
+
+const ResultItem = styled.div`
+  padding: 10px 12px;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--contrasting-element-background-hover);
+  }
+`;
+
+const ResultSubtext = styled.span`
+  display: block;
+  font-size: 0.85rem;
+  color: var(--gray-11);
+  margin-top: 2px;
 `;
 
 /**
@@ -97,12 +103,12 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const { t } = useTranslation();
-  const inputRef = useRef<HTMLIonInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [calendarSelectInfo, setCalendarSelectInfo] = useState<ReferenceItem>();
 
   useEffect(() => {
     setTimeout(() => {
-      inputRef.current?.setFocus();
+      inputRef.current?.focus();
     });
   }, []);
 
@@ -222,20 +228,24 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
       <h1>{t('editor.referenceMenu.title')}</h1>
 
       <FloatingSearchContainer>
-        <SearchInput
-          ref={inputRef}
-          onIonInput={(event) => setSearchText(event.detail.value || '')}
-          value={searchText}
-          placeholder={t('editor.referenceMenu.search')}
-        >
-          <IonIcon slot="start" icon={search} aria-hidden="true"></IonIcon>
-        </SearchInput>
+        <SearchInputContainer>
+          <TextField.Root
+            ref={inputRef}
+            onChange={(event) => setSearchText(event.target.value)}
+            value={searchText}
+            placeholder={t('editor.referenceMenu.search')}
+            size="3"
+          >
+            <TextField.Slot>
+              <IoSearch />
+            </TextField.Slot>
+          </TextField.Root>
+        </SearchInputContainer>
 
         {ProgressBar}
         <SearchResultsContainer>
           {searchResults.map((searchResult) => (
-            <IonItem
-              lines="none"
+            <ResultItem
               key={searchResult.artifactId + searchResult.artifactBlockId}
               onClick={() => {
                 if (searchResult.artifact.type === 'calendar') {
@@ -249,55 +259,44 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
                   );
                 }
               }}
-              detail
-              button
             >
-              <IonLabel>
-                {trimSearchResultText(searchResult.referenceText)}
-                <p>
-                  {searchResult.artifactBlockId
-                    ? t('editor.referenceMenu.artifactBlock', {
-                        title: searchResult.artifact.title,
-                      })
-                    : t('editor.referenceMenu.artifact')}
-                </p>
-              </IonLabel>
-            </IonItem>
+              {trimSearchResultText(searchResult.referenceText)}
+              <ResultSubtext>
+                {searchResult.artifactBlockId
+                  ? t('editor.referenceMenu.artifactBlock', {
+                      title: searchResult.artifact.title,
+                    })
+                  : t('editor.referenceMenu.artifact')}
+              </ResultSubtext>
+            </ResultItem>
           ))}
           {!!searchText.length && searchText === searchedText && (
-            <IonItem
-              lines="none"
-              onClick={() => (create(), props.hide())}
-              detail
-              button
-            >
-              <IonLabel>
-                {searchResults.length
-                  ? t('editor.referenceMenu.create.title', {
-                      title: capitalizeEachWord(searchText).trim(),
-                    })
-                  : t('editor.referenceMenu.noItems.title', {
-                      title: capitalizeEachWord(searchText).trim(),
-                    })}
-                <p>
-                  {t(
-                    searchResults.length
-                      ? 'editor.referenceMenu.create.subtitle'
-                      : 'editor.referenceMenu.noItems.subtitle',
-                  )}
-                </p>
-              </IonLabel>
-            </IonItem>
+            <ResultItem onClick={() => (create(), props.hide())}>
+              {searchResults.length
+                ? t('editor.referenceMenu.create.title', {
+                    title: capitalizeEachWord(searchText).trim(),
+                  })
+                : t('editor.referenceMenu.noItems.title', {
+                    title: capitalizeEachWord(searchText).trim(),
+                  })}
+              <ResultSubtext>
+                {t(
+                  searchResults.length
+                    ? 'editor.referenceMenu.create.subtitle'
+                    : 'editor.referenceMenu.noItems.subtitle',
+                )}
+              </ResultSubtext>
+            </ResultItem>
           )}
           {!searchResults.length &&
             !!searchText.length &&
             searchText !== searchedText && (
-              <IonItem lines="none">
-                <IonLabel>
-                  {t('editor.referenceMenu.searching.title')}
-                  <p>{t('editor.referenceMenu.searching.subtitle')}</p>
-                </IonLabel>
-              </IonItem>
+              <ResultItem>
+                {t('editor.referenceMenu.searching.title')}
+                <ResultSubtext>
+                  {t('editor.referenceMenu.searching.subtitle')}
+                </ResultSubtext>
+              </ResultItem>
             )}
         </SearchResultsContainer>
       </FloatingSearchContainer>
@@ -328,11 +327,7 @@ export const CreateReferenceOverlay: React.FC<Props> = (props) => {
 
   return (
     <>
-      <Backdrop
-        visible={true}
-        onIonBackdropTap={props.hide}
-        stopPropagation={true}
-      />
+      <Backdrop onClick={props.hide} />
       {calendarSelectUI || searchUI}
     </>
   );

@@ -44,7 +44,7 @@ const ResultsTableSelectionFilteredWarning = styled.div`
   padding-left: 16px;
   padding-top: 6px;
   padding-bottom: 6px;
-  color: var(--ion-text-div);
+  color: var(--text-color-dim);
 `;
 
 const localeCompareWithFallback = (

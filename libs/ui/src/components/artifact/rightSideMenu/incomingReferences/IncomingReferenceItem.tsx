@@ -45,7 +45,7 @@ export const IncomingReferenceItem: React.FC<Props> = (props) => {
       edge={props.edge}
     >
       <FeynoteCardItem
-        data-edge-artifactId={props.edge.artifactId}
+        data-edge-artifactid={props.edge.artifactId}
         ref={ref}
         $isButton
         onMouseOver={onMouseOver}

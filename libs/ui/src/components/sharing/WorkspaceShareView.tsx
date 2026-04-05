@@ -68,10 +68,6 @@ const FloatingPresentation = styled.div`
   padding-left: 8px;
   padding-right: 8px;
   overflow-y: auto;
-
-  ion-card {
-    margin-top: 0;
-  }
 `;
 
 const NullStateContainer = styled.div`

@@ -37,7 +37,7 @@ export const ToastViewport = styled(ToastPrimitive.Viewport)`
 `;
 
 const ToastRoot = styled(ToastPrimitive.Root)`
-  background-color: var(--ion-background-color, #fff);
+  background-color: var(--general-background);
   border-radius: 6px;
   box-shadow:
     hsl(206 22% 7% / 35%) 0px 10px 38px -10px,
@@ -125,22 +125,22 @@ const Button = styled.button<{
   ${(props) =>
     props.$color === 'primary' &&
     `
-    background-color: var(--ion-color-primary);
+    background-color: var(--accent-color);
     color: white;
 
     &:hover, &:focus {
-      background-color: var(--ion-color-primary-tint);
+      background-color: var(--accent-color-tint);
     }
   `}
 
   ${(props) =>
     props.$color === 'success' &&
     `
-    background-color: var(--ion-color-success);
+    background-color: var(--success-color);
     color: white;
 
     &:hover, &:focus {
-      background-color: var(--ion-color-success-tint);
+      background-color: var(--success-color-tint);
     }
   `}
 `;

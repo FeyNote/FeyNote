@@ -24,7 +24,7 @@ const StyledCheckboxRoot = styled(RadixCheckbox.Root)<{
   }
 
   &:focus {
-    outline: 1px solid var(--ion-color-primary);
+    outline: 1px solid var(--accent-color);
   }
 `;
 

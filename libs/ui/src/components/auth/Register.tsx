@@ -1,24 +1,20 @@
-import {
-  IonButton,
-  IonCardContent,
-  IonCardSubtitle,
-  IonCardTitle,
-  IonInput,
-  IonItem,
-} from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import { PaneContentContainer } from '../pane/PaneContentContainer';
 import React, { useState } from 'react';
 import {
   CenteredContainer,
-  CenteredIonCard,
-  CenteredIonCardHeader,
-  CenteredIonInputContainer,
-  CenteredIonText,
-  IonContentFantasyBackground,
+  AuthCard,
+  AuthCardHeader,
+  AuthCardTitle,
+  AuthCardSubtitle,
+  AuthCardContent,
+  AuthInputContainer,
+  AuthCenteredText,
+  FantasyBackground,
   SignInWithGoogleButton,
 } from './styles';
 import { validateEmail, validatePassword } from '@feynote/shared-utils';
-import { getIonInputClassNames } from './input';
+import { AuthInput } from './AuthInput';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
@@ -103,7 +99,7 @@ export const Register: React.FC<Props> = (props) => {
     setConfirmPassword(value);
   };
 
-  const enterKeyHandler = (e: React.KeyboardEvent<HTMLIonInputElement>) => {
+  const enterKeyHandler = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       submitRegister();
     }
@@ -118,110 +114,93 @@ export const Register: React.FC<Props> = (props) => {
 
   return (
     <PaneContentContainer>
-      <IonContentFantasyBackground>
+      <FantasyBackground>
         <LogoActionContainer />
-        <CenteredIonCard>
-          <CenteredIonCardHeader>
-            <IonCardTitle>{t('auth.register.card.title')}</IonCardTitle>
-            <IonCardSubtitle>
+        <AuthCard>
+          <AuthCardHeader>
+            <AuthCardTitle>{t('auth.register.card.title')}</AuthCardTitle>
+            <AuthCardSubtitle>
               {t('auth.register.card.subtitle')}
-            </IonCardSubtitle>
-          </CenteredIonCardHeader>
-          <IonCardContent>
-            <CenteredIonInputContainer>
-              <IonInput
-                className={getIonInputClassNames(nameIsValid, nameIsTouched)}
+            </AuthCardSubtitle>
+          </AuthCardHeader>
+          <AuthCardContent>
+            <AuthInputContainer>
+              <AuthInput
                 label={t('auth.register.name.label')}
                 type="text"
-                labelPlacement="stacked"
                 placeholder={t('auth.register.name.placeholder')}
                 value={name}
                 disabled={isLoading}
                 errorText={t('auth.register.name.error')}
-                onIonInput={(e) => nameInputHandler(e.target.value as string)}
-                onIonBlur={() => setNameIsTouched(false)}
+                isValid={nameIsValid}
+                isTouched={nameIsTouched}
+                onChange={nameInputHandler}
+                onBlur={() => setNameIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(emailIsValid, emailIsTouched)}
+              <AuthInput
                 label={t('auth.register.email.label')}
                 type="email"
-                labelPlacement="stacked"
                 placeholder={t('auth.register.email.placeholder')}
                 value={email}
                 disabled={isLoading}
                 errorText={t('auth.register.email.error')}
-                onIonInput={(e) => emailInputHandler(e.target.value as string)}
-                onIonBlur={() => setEmailIsTouched(false)}
+                isValid={emailIsValid}
+                isTouched={emailIsTouched}
+                onChange={emailInputHandler}
+                onBlur={() => setEmailIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(
-                  passwordIsValid,
-                  passwordIsTouched,
-                )}
+              <AuthInput
                 label={t('auth.register.password.label')}
                 type="password"
-                labelPlacement="stacked"
                 placeholder={t('auth.register.password.placeholder')}
                 errorText={t('auth.register.password.error')}
                 value={password}
                 disabled={isLoading}
-                onIonInput={(e) =>
-                  passwordInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setPasswordIsTouched(false)}
+                isValid={passwordIsValid}
+                isTouched={passwordIsTouched}
+                onChange={passwordInputHandler}
+                onBlur={() => setPasswordIsTouched(false)}
               />
-              <IonInput
-                className={getIonInputClassNames(
-                  confirmPasswordIsValid,
-                  confirmPasswordIsTouched,
-                )}
+              <AuthInput
                 label={t('auth.register.confirmPassword.label')}
                 type="password"
-                labelPlacement="stacked"
                 placeholder={t('auth.register.confirmPassword.placeholder')}
                 errorText={t('auth.register.confirmPassword.error')}
                 disabled={isLoading}
                 value={confirmPassword}
+                isValid={confirmPasswordIsValid}
+                isTouched={confirmPasswordIsTouched}
+                onChange={confirmPasswordInputHandler}
+                onBlur={() => setConfirmPasswordIsTouched(false)}
                 onKeyDown={enterKeyHandler}
-                onIonInput={(e) =>
-                  confirmPasswordInputHandler(e.target.value as string)
-                }
-                onIonBlur={() => setConfirmPasswordIsTouched(false)}
               />
-            </CenteredIonInputContainer>
-            <IonItem lines="none">
-              <CenteredIonText>
-                <sub>
-                  <i>
-                    {t('auth.tos.text')}{' '}
-                    <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
-                  </i>
-                </sub>
-              </CenteredIonText>
-            </IonItem>
+            </AuthInputContainer>
+            <AuthCenteredText>
+              <sub>
+                <i>
+                  {t('auth.tos.text')}{' '}
+                  <a href="https://feynote.com/tos">{t('auth.tos.link')}</a>
+                </i>
+              </sub>
+            </AuthCenteredText>
             <CenteredContainer>
-              <IonButton
-                onClick={submitRegister}
-                disabled={disableRegisterButton}
-              >
+              <Button onClick={submitRegister} disabled={disableRegisterButton}>
                 {t('auth.register.submit')}
-              </IonButton>
+              </Button>
             </CenteredContainer>
             <SignInWithGoogleButton />
-            <IonItem lines="none">
-              <CenteredIonText>
-                <sub>
-                  <ToggleAuthTypeButton
-                    onClick={() => props.setAuthType('login')}
-                  >
-                    {t('auth.register.switchToLogin')}
-                  </ToggleAuthTypeButton>
-                </sub>
-              </CenteredIonText>
-            </IonItem>
-          </IonCardContent>
-        </CenteredIonCard>
-      </IonContentFantasyBackground>
+            <AuthCenteredText>
+              <sub>
+                <ToggleAuthTypeButton
+                  onClick={() => props.setAuthType('login')}
+                >
+                  {t('auth.register.switchToLogin')}
+                </ToggleAuthTypeButton>
+              </sub>
+            </AuthCenteredText>
+          </AuthCardContent>
+        </AuthCard>
+      </FantasyBackground>
     </PaneContentContainer>
   );
 };

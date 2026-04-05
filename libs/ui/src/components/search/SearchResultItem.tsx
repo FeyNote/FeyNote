@@ -43,8 +43,8 @@ const Highlights = styled.p`
 
 const HighlightWrapper = styled.span`
   mark {
-    background: var(--ion-color-primary);
-    color: var(--ion-color-primary-contrast);
+    background: var(--accent-color);
+    color: var(--accent-color-contrast);
   }
 `;
 

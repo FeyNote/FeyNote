@@ -1,19 +1,6 @@
 import { Doc as YDoc } from 'yjs';
 import { Array as YArray } from 'yjs';
-import {
-  IonButton,
-  IonCol,
-  IonGrid,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonRadio,
-  IonRadioGroup,
-  IonRow,
-} from '@ionic/react';
-import { settings } from 'ionicons/icons';
+import { Flex, IconButton, RadioGroup } from '@radix-ui/themes';
 import type { TypedMap } from 'yjs-types';
 import {
   generateGregorianMondayCalendarConfig,
@@ -25,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, type MutableRefObject } from 'react';
 import { getCurrentGregorianDatestamp } from './getCurrentGregorianDatestamp';
 import styled from 'styled-components';
+import { IoSettings } from '../AppIcons';
 
 const calendarPresetToConfigBuilder = {
   'gregorian-sunday': generateGregorianSundayCalendarConfig,
@@ -45,6 +33,10 @@ const calendarPresetToI18N = {
   session: ['calendar.preset.session', 'calendar.preset.session.subtext'],
   custom: ['calendar.preset.custom', 'calendar.preset.custom.subtext'],
 } satisfies Record<YCalendarConfig['preset'], [string, string]>;
+
+function isCalendarPreset(value: string): value is YCalendarConfig['preset'] {
+  return value in calendarPresetToConfigBuilder;
+}
 
 /**
  * Must be bounded since this can cause major performance issues
@@ -72,18 +64,13 @@ const SettingsContainer = styled.div<{
   ${(props) => (props.$open ? 'box-shadow: 1px 1px 7px rgba(0,0,0,0.3);' : '')}
 `;
 
-const SettingsButton = styled(IonButton)<{
-  $showSettings: boolean;
-}>`
-  color: var(--editor-button-color);
+const SettingsButtonContainer = styled.div`
+  text-align: right;
+  margin-top: 8px;
+`;
 
-  ${(props) =>
-    props.$showSettings
-      ? ''
-      : `
-    position: absolute;
-    right: 16px;
-  `}
+const SettingsButtonPositioner = styled.div`
+  display: inline-block;
 `;
 
 const SettingsOptions = styled.div`
@@ -92,8 +79,53 @@ const SettingsOptions = styled.div`
   margin-bottom: 16px;
 `;
 
-const SettingsButtonContainer = styled.div`
-  text-align: right;
+const WarningText = styled.p`
+  font-size: 0.85rem;
+  color: var(--gray-11);
+  margin-bottom: 8px;
+`;
+
+const PresetSubtext = styled.span`
+  display: block;
+  font-size: 0.8rem;
+  color: var(--gray-11);
+  margin-top: 2px;
+  margin-left: 24px;
+`;
+
+const ConfigInput = styled.input`
+  border: 1px solid var(--general-background-hint);
+  border-radius: 4px;
+  background: var(--general-background);
+  padding: 6px 8px;
+  width: 100%;
+  outline: none;
+  color: inherit;
+
+  &:focus {
+    border-color: var(--accent-9);
+  }
+`;
+
+const InputLabel = styled.label`
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+`;
+
+const ConfigItem = styled.div`
+  margin-bottom: 12px;
+`;
+
+const AdvancedSettingsContainer = styled.div`
+  margin-top: 16px;
+`;
+
+const MonthConfigRow = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
 `;
 
 interface Props {
@@ -288,164 +320,142 @@ export const CalendarConfig: React.FC<Props> = (props) => {
 
   const basicSettings = (
     <div>
-      <IonItem lines="none">
-        <IonLabel>
-          <p>{t('calendar.preset.warning')}</p>
-        </IonLabel>
-      </IonItem>
-      <IonRadioGroup
+      <WarningText>{t('calendar.preset.warning')}</WarningText>
+      <RadioGroup.Root
         value={getPreset()}
-        onIonChange={(event) => presetChange(event.detail.value)}
+        onValueChange={(value) => {
+          if (isCalendarPreset(value)) {
+            presetChange(value);
+          }
+        }}
       >
-        {Object.entries(calendarPresetToI18N).map(
-          ([presetName, [i18nTitle, i18nSubtext]]) => (
-            <IonItem key={presetName} lines="none">
-              <IonRadio justify="start" labelPlacement="end" value={presetName}>
-                <IonLabel>
+        <Flex direction="column" gap="2">
+          {Object.entries(calendarPresetToI18N).map(
+            ([presetName, [i18nTitle, i18nSubtext]]) => (
+              <div key={presetName}>
+                <RadioGroup.Item value={presetName}>
                   {t(i18nTitle)}
-                  <p>{t(i18nSubtext)}</p>
-                </IonLabel>
-              </IonRadio>
-            </IonItem>
-          ),
-        )}
-      </IonRadioGroup>
+                </RadioGroup.Item>
+                <PresetSubtext>{t(i18nSubtext)}</PresetSubtext>
+              </div>
+            ),
+          )}
+        </Flex>
+      </RadioGroup.Root>
     </div>
   );
 
   const advancedSettings = (
-    <IonList>
-      <IonItem>
-        <IonInput
-          labelPlacement="stacked"
-          label={t('calendar.monthsInYear')}
-          onIonInput={(event) =>
-            onMonthsInYearChange(event.detail.value || '0')
-          }
+    <AdvancedSettingsContainer>
+      <ConfigItem>
+        <InputLabel>{t('calendar.monthsInYear')}</InputLabel>
+        <ConfigInput
+          onChange={(event) => onMonthsInYearChange(event.target.value)}
           min={1}
           max={MAX_MONTHS_IN_YEAR}
           type="number"
-          debounce={200}
           value={props.configMap.get('monthsInYear') || ''}
         />
-      </IonItem>
-      <IonGrid>
-        {new Array(
-          Math.min(
-            props.configMap.get('monthsInYear') || 1,
-            MAX_MONTHS_IN_YEAR,
-          ),
-        )
-          .fill(0)
-          .map((_, idx) => (
-            <IonRow key={idx}>
-              <IonCol size="6">
-                <IonItem>
-                  <IonInput
-                    labelPlacement="stacked"
-                    label={t('calendar.nameForMonth', {
-                      number: idx + 1,
-                    })}
-                    onIonInput={(event) =>
-                      onMonthNameChange(idx, event.detail.value || '')
-                    }
-                    debounce={200}
-                    value={getMonthName(idx)}
-                  />
-                </IonItem>
-              </IonCol>
-              <IonCol size="3">
-                <IonItem key={idx}>
-                  <IonInput
-                    labelPlacement="stacked"
-                    label={t('calendar.month.days')}
-                    onIonInput={(event) =>
-                      onDaysInMonthChange(idx, event.detail.value || '')
-                    }
-                    min={1}
-                    max={MAX_DAYS_IN_MONTH}
-                    type="number"
-                    debounce={200}
-                    value={getDaysInMonth(idx)}
-                  />
-                </IonItem>
-              </IonCol>
-              <IonCol size="3">
-                <IonItem key={idx}>
-                  <IonInput
-                    labelPlacement="stacked"
-                    label={t('calendar.month.leap')}
-                    min={0}
-                    max={MAX_LEAP}
-                    type="number"
-                    onIonInput={(event) =>
-                      onLeapInMonthChange(idx, event.detail.value || '')
-                    }
-                    debounce={200}
-                    value={getLeapInMonth(idx)}
-                  />
-                </IonItem>
-              </IonCol>
-            </IonRow>
-          ))}
-      </IonGrid>
-      <IonItem>
-        <IonInput
-          labelPlacement="stacked"
-          label={t('calendar.daysInWeek')}
-          onIonInput={(event) => onDaysInWeekChange(event.detail.value || '0')}
+      </ConfigItem>
+      {new Array(
+        Math.min(props.configMap.get('monthsInYear') || 1, MAX_MONTHS_IN_YEAR),
+      )
+        .fill(0)
+        .map((_, idx) => (
+          <MonthConfigRow key={idx}>
+            <div>
+              <InputLabel>
+                {t('calendar.nameForMonth', {
+                  number: idx + 1,
+                })}
+              </InputLabel>
+              <ConfigInput
+                onChange={(event) => onMonthNameChange(idx, event.target.value)}
+                value={getMonthName(idx)}
+              />
+            </div>
+            <div>
+              <InputLabel>{t('calendar.month.days')}</InputLabel>
+              <ConfigInput
+                onChange={(event) =>
+                  onDaysInMonthChange(idx, event.target.value)
+                }
+                min={1}
+                max={MAX_DAYS_IN_MONTH}
+                type="number"
+                value={getDaysInMonth(idx)}
+              />
+            </div>
+            <div>
+              <InputLabel>{t('calendar.month.leap')}</InputLabel>
+              <ConfigInput
+                min={0}
+                max={MAX_LEAP}
+                type="number"
+                onChange={(event) =>
+                  onLeapInMonthChange(idx, event.target.value)
+                }
+                value={getLeapInMonth(idx)}
+              />
+            </div>
+          </MonthConfigRow>
+        ))}
+      <ConfigItem>
+        <InputLabel>{t('calendar.daysInWeek')}</InputLabel>
+        <ConfigInput
+          onChange={(event) => onDaysInWeekChange(event.target.value)}
           min={1}
           max={MAX_DAYS_IN_WEEK}
           type="number"
-          debounce={200}
           value={props.configMap.get('daysInWeek') || ''}
         />
-      </IonItem>
+      </ConfigItem>
       {new Array(
         Math.min(props.configMap.get('daysInWeek') || 1, MAX_DAYS_IN_WEEK),
       )
         .fill(0)
         .map((_, idx) => (
-          <IonItem key={idx}>
-            <IonInput
-              labelPlacement="stacked"
-              label={t('calendar.nameForDay', {
+          <ConfigItem key={idx}>
+            <InputLabel>
+              {t('calendar.nameForDay', {
                 number: idx + 1,
               })}
-              onIonInput={(event) =>
-                onDayOfWeekNameChange(idx, event.detail.value || '')
+            </InputLabel>
+            <ConfigInput
+              onChange={(event) =>
+                onDayOfWeekNameChange(idx, event.target.value)
               }
-              debounce={200}
               value={getDayOfWeekName(idx)}
             />
-          </IonItem>
+          </ConfigItem>
         ))}
-      <IonItem>
-        <IonInput
-          labelPlacement="stacked"
-          label={t('calendar.defaultCenter')}
-          onIonInput={(event) =>
-            onDefaultCenterChange(event.detail.value || null)
+      <ConfigItem>
+        <InputLabel>{t('calendar.defaultCenter')}</InputLabel>
+        <ConfigInput
+          onChange={(event) =>
+            onDefaultCenterChange(event.target.value || null)
           }
           type="text"
-          debounce={200}
           value={props.configMap.get('defaultCenter') || ''}
         />
-      </IonItem>
+      </ConfigItem>
       <br />
-    </IonList>
+    </AdvancedSettingsContainer>
   );
 
   return (
     <SettingsContainer $open={showSettings}>
       <SettingsButtonContainer>
-        <SettingsButton
-          $showSettings={showSettings}
-          fill="clear"
-          onClick={() => setShowSettings(!showSettings)}
-        >
-          <IonIcon slot="icon-only" icon={settings} />
-        </SettingsButton>
+        <SettingsButtonPositioner>
+          <IconButton
+            variant="ghost"
+            size="2"
+            style={{ margin: '0' }}
+            onClick={() => setShowSettings(!showSettings)}
+          >
+            <IoSettings />
+          </IconButton>
+        </SettingsButtonPositioner>
       </SettingsButtonContainer>
       {showSettings && (
         <SettingsOptions>

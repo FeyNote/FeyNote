@@ -9,7 +9,7 @@ export const statsheetActionButtonStyles = css`
     flex-direction: row;
     gap: 8px;
 
-    background: var(--ion-background-color-step-250, #ffffff);
+    background: var(--contrasting-element-background);
     box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.4);
     padding: 2px 3px;
     border-radius: 4px;
@@ -35,7 +35,7 @@ export const statsheetActionButtonStyles = css`
       border-radius: 4px;
 
       &:hover {
-        background: var(--ion-background-color, #cccccc);
+        background: var(--general-background);
       }
 
       i {
@@ -46,7 +46,7 @@ export const statsheetActionButtonStyles = css`
         stroke-width: 10px;
         stroke-dasharray: 2, 2;
         stroke-linejoin: round;
-        fill: var(--ion-text-color);
+        fill: var(--text-color);
       }
     }
   }

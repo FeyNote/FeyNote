@@ -36,7 +36,9 @@ export const renderReferenceList = (args: {
           return;
         }
 
-        document.body.appendChild(component.element);
+        const themeRoot =
+          document.querySelector('.radix-themes') || document.body;
+        themeRoot.appendChild(component.element);
 
         updatePosition(props.editor, component.element as HTMLElement);
       },

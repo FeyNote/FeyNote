@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
 
 const Container = styled.div`
-  background-color: var(--ion-color-danger);
+  background-color: var(--danger-color);
   color: black;
   padding: 16px;
   margin: 8px 0;

@@ -1,15 +1,7 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { GlobalSearchContext } from './GlobalSearchContext';
-import {
-  IonBackdrop,
-  IonButton,
-  IonIcon,
-  IonItem,
-  IonLabel,
-} from '@ionic/react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { ellipsisHorizontal, open } from 'ionicons/icons';
 import { searchArtifactTitlesAction } from '../../actions/searchArtifactTitlesAction';
 import { searchArtifactBlocksAction } from '../../actions/searchArtifactBlocksAction';
 import { getArtifactYBinByIdAction } from '../../actions/getArtifactYBinByIdAction';
@@ -24,8 +16,19 @@ import {
 } from '../globalPane/GlobalPaneContext';
 import { createArtifact } from '../../utils/localDb/createArtifact';
 import { useNavigateWithKeyboardHandler } from '../../utils/useNavigateWithKeyboardHandler';
-import { Box, DropdownMenu, Spinner, TextField } from '@radix-ui/themes';
-import { IoSearch } from '../../components/AppIcons';
+import {
+  Box,
+  DropdownMenu,
+  IconButton,
+  Spinner,
+  Text,
+  TextField,
+} from '@radix-ui/themes';
+import {
+  IoSearch,
+  LuExternalLink,
+  RxDotsHorizontal,
+} from '../../components/AppIcons';
 import { useProvideKeyboardShortcutHandler } from '../../utils/keyboardShortcuts';
 import { applyUpdate, Doc as YDoc } from 'yjs';
 import { ReadonlyArtifactContent } from '../../components/artifact/ReadonlyArtifactContent';
@@ -69,13 +72,6 @@ const PreviewPanel = styled.div`
   overflow-y: auto;
 
   padding: 8px;
-
-  ion-card {
-    margin-top: 0;
-    margin-bottom: 0;
-    box-shadow: none;
-    cursor: pointer;
-  }
 `;
 
 const PreviewSpinnerContainer = styled.div`
@@ -117,7 +113,10 @@ const SearchResultsContainer = styled.div`
   overflow-y: auto;
 `;
 
-const Backdrop = styled(IonBackdrop)`
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9;
   opacity: 0.85;
   background: var(--general-background);
 `;
@@ -512,7 +511,7 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
 
   const searchUI = (
     <>
-      <Backdrop visible={true} onIonBackdropTap={hide} stopPropagation={true} />
+      <Backdrop onClick={hide} />
       <SearchContainer $isWideScreen={isWideScreen}>
         {sessionContext?.session ? (
           <>
@@ -526,13 +525,13 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                 {currentWorkspaceId && (
                   <DropdownMenu.Root>
                     <DropdownMenu.Trigger>
-                      <IonButton fill="clear">
-                        <IonIcon
-                          size="small"
-                          slot="icon-only"
-                          icon={ellipsisHorizontal}
-                        />
-                      </IonButton>
+                      <IconButton
+                        variant="ghost"
+                        size="2"
+                        style={{ margin: '0' }}
+                      >
+                        <RxDotsHorizontal />
+                      </IconButton>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Content>
                       <DropdownMenu.CheckboxItem
@@ -549,13 +548,15 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
                     </DropdownMenu.Content>
                   </DropdownMenu.Root>
                 )}
-                <IonButton
-                  fill="clear"
+                <IconButton
+                  variant="ghost"
+                  size="2"
+                  style={{ margin: '0' }}
                   onClick={openPersistentSearch}
                   aria-label={t('globalSearch.openPersistentSearch')}
                 >
-                  <IonIcon size="small" slot="icon-only" icon={open} />
-                </IonButton>
+                  <LuExternalLink />
+                </IconButton>
               </TitleActionContainer>
             </TitleContainer>
 
@@ -570,9 +571,11 @@ export const GlobalSearchContextProviderWrapper: React.FC<Props> = ({
           </>
         ) : (
           <SearchResultsContainer>
-            <IonItem>
-              <IonLabel>{t('globalSearch.loggedOut')}</IonLabel>
-            </IonItem>
+            <Box p="3">
+              <Text size="2" color="gray">
+                {t('globalSearch.loggedOut')}
+              </Text>
+            </Box>
           </SearchResultsContainer>
         )}
       </SearchContainer>

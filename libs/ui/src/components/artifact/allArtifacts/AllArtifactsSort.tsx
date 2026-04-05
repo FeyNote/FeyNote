@@ -1,8 +1,7 @@
-import { IonIcon } from '@ionic/react';
-import { filter } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { SelectDialog } from '../../sharedComponents/SelectDialog';
 import { Button } from '@radix-ui/themes';
+import { LuFilter } from '../../AppIcons';
 
 export enum AllArtifactsSortOrder {
   AlphabeticalAsc = 'alphabeticalAsc',
@@ -47,7 +46,7 @@ export const AllArtifactsSort: React.FC<Props> = (props) => {
       }))}
     >
       <Button variant="soft" size="2">
-        <IonIcon icon={filter} slot="start" />
+        <LuFilter />
         {t(orderToI18n[props.currentSortOrder])}
       </Button>
     </SelectDialog>

@@ -16,13 +16,13 @@ export const feynoteMediaExtensionStyles = css`
 
       .resizable-media-border {
         position: absolute;
-        background-color: var(--ion-color-primary);
+        background-color: var(--accent-color);
         cursor: pointer;
       }
 
       .resizable-media-handle {
         position: absolute;
-        background-color: var(--ion-color-primary);
+        background-color: var(--accent-color);
         height: 10px;
         width: 10px;
         border-radius: 50%;
@@ -55,7 +55,7 @@ export const feynoteMediaExtensionStyles = css`
 
     &.ProseMirror-selectednode {
       .resizable-media-resize-container:not(.edit-mode) {
-        outline: 1px solid var(--ion-color-primary);
+        outline: 1px solid var(--accent-color);
         outline-offset: -1px;
       }
     }

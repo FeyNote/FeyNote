@@ -13,7 +13,7 @@ import { ActionDialog } from '../../sharedComponents/ActionDialog';
 import styled from 'styled-components';
 
 const TreeContainer = styled.div`
-  background: var(--ion-card-background);
+  background: var(--card-background);
   border-radius: 5px;
 `;
 
