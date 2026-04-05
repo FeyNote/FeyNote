@@ -371,6 +371,7 @@ export const ReadonlyArtifactTree: React.FC<Props> = (props) => {
                   )}
                   <TreeItemButton
                     onClick={() => onItemClick(itemInstance.getId())}
+                    title={item.title}
                     $isUncategorized={isUncategorized}
                   >
                     {item.title}

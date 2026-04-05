@@ -296,6 +296,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         <TreeItemButton
           onClick={onClick}
           onDoubleClick={onDoubleClick}
+          title={item.title}
           $isUncategorized={item.id === UNCATEGORIZED_TREE_NODE_ID}
         >
           {item.title}
