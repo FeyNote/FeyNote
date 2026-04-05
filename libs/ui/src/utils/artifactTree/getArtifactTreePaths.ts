@@ -46,7 +46,7 @@ export const getArtifactTreePaths = (
       currentId = nextParent;
     }
 
-    if (rootTitle) path.push(rootTitle);
+    if (rootTitle) path.unshift(rootTitle);
     result.set(artifactId, path);
   }
 
