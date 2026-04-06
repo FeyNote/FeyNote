@@ -24,28 +24,29 @@ interface HeadingInfo {
   id: string;
 }
 
-function getDecorations(
-  doc: PmNode,
+function processContainer(
+  container: PmNode,
+  baseOffset: number,
+  isDoc: boolean,
   collapsedIds: ReadonlySet<string>,
-): DecorationSet {
-  if (collapsedIds.size === 0) return DecorationSet.empty;
-
+  decorations: Decoration[],
+) {
   const headings: HeadingInfo[] = [];
-  const allNodes: Array<{ pos: number; size: number }> = [];
+  const children: Array<{ pos: number; size: number; node: PmNode }> = [];
 
-  doc.forEach((node, offset) => {
-    allNodes.push({ pos: offset, size: node.nodeSize });
-    if (node.type.name === 'heading' && node.attrs.id) {
+  container.forEach((child, offset) => {
+    const absPos = isDoc ? offset : baseOffset + 1 + offset;
+    children.push({ pos: absPos, size: child.nodeSize, node: child });
+    if (child.type.name === 'heading' && child.attrs.id) {
       headings.push({
-        pos: offset,
-        level: node.attrs.level,
-        size: node.nodeSize,
-        id: node.attrs.id,
+        pos: absPos,
+        level: child.attrs.level,
+        size: child.nodeSize,
+        id: child.attrs.id,
       });
     }
   });
 
-  const decorations: Decoration[] = [];
   const hiddenRanges: Array<{ from: number; to: number }> = [];
 
   for (let i = 0; i < headings.length; i++) {
@@ -59,7 +60,10 @@ function getDecorations(
     );
 
     const rangeStart = heading.pos + heading.size;
-    let rangeEnd = doc.content.size;
+    const containerEnd = isDoc
+      ? container.content.size
+      : baseOffset + 1 + container.content.size;
+    let rangeEnd = containerEnd;
     for (let j = i + 1; j < headings.length; j++) {
       if (headings[j].level <= heading.level) {
         rangeEnd = headings[j].pos;
@@ -72,20 +76,36 @@ function getDecorations(
     }
   }
 
-  for (const node of allNodes) {
-    const nodeEnd = node.pos + node.size;
+  for (const child of children) {
+    const childEnd = child.pos + child.size;
+    let hidden = false;
+
     for (const range of hiddenRanges) {
-      if (node.pos >= range.from && nodeEnd <= range.to) {
+      if (child.pos >= range.from && childEnd <= range.to) {
         decorations.push(
-          Decoration.node(node.pos, nodeEnd, {
+          Decoration.node(child.pos, childEnd, {
             class: 'editor-collapsed-content',
           }),
         );
+        hidden = true;
         break;
       }
     }
-  }
 
+    if (!hidden && child.node.type.name === 'blockGroup') {
+      processContainer(child.node, child.pos, false, collapsedIds, decorations);
+    }
+  }
+}
+
+function getDecorations(
+  doc: PmNode,
+  collapsedIds: ReadonlySet<string>,
+): DecorationSet {
+  if (collapsedIds.size === 0) return DecorationSet.empty;
+
+  const decorations: Decoration[] = [];
+  processContainer(doc, 0, true, collapsedIds, decorations);
   return DecorationSet.create(doc, decorations);
 }
 
