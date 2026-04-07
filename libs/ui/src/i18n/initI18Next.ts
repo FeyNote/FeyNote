@@ -21,7 +21,6 @@ export const initI18Next = () => {
       },
       lng: language,
       fallbackLng: FALLBACK_LANGUAGE,
-      showSupportNotice: false,
     });
 
   setBrowserLanguage(language);
