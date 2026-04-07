@@ -44,38 +44,90 @@ const articleSchema = {
 ---
 <style>
   .page-content {
-    max-width: min(1200px, 100%);
+    max-width: min(800px, 100%);
     margin-left: auto;
     margin-right: auto;
   }
 
-  .post a {
-    text-decoration: none;
-    display: grid;
-    grid-template-columns: 100px auto;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .post img {
-    width: 100px;
-  }
-
-  .page-content > h1 {
-    font-family: "Libre Baskerville";
-    margin-bottom: 0;
-  }
-
   .blog-content-container {
     color: var(--blogpost-text-color);
-    padding: 20px;
+    padding: 40px 48px;
     background: var(--blogpost-bg);
     border-radius: 8px;
+    line-height: 1.75;
   }
 
-  time {
+  .blog-content-container h1 {
+    font-family: "Libre Baskerville";
+    margin-bottom: 0;
+    line-height: 1.3;
+  }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-size: 0.9rem;
-    margin-bottom: 10px;
+    margin-top: 8px;
+    opacity: 0.8;
+  }
+
+  .post-meta-separator {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .featured-image {
+    width: 100%;
+    max-height: 360px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-top: 24px;
+  }
+
+  .blog-body {
+    margin-top: 32px;
+  }
+
+  .blog-body :global(h2) {
+    font-family: "Libre Baskerville";
+    margin-top: 2.5em;
+    margin-bottom: 0.6em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
+  }
+
+  .blog-body :global(h3) {
+    font-family: "Libre Baskerville";
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+  }
+
+  .blog-body :global(p) {
+    margin-top: 0;
+    margin-bottom: 1.25em;
+  }
+
+  .back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    opacity: 0.7;
+  }
+
+  .back-link:hover {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .blog-content-container {
+      padding: 24px 20px;
+    }
   }
 </style>
 <RootLayout
@@ -86,13 +138,24 @@ const articleSchema = {
   structuredData={articleSchema}
 >
   <div class="page-content">
+    <a class="back-link" href="/blog">&larr; Back to Blog</a>
     <div class="blog-content-container standard-box-shadow">
       <h1>{post.data.title}</h1>
-      <time>{post.data.publishDate.toLocaleDateString()}</time>&nbsp;&nbsp;&nbsp;&nbsp;<time>{post.data.readingTime}</time>
-      <br />
-      <br />
-
-      <Content />
+      <div class="post-meta">
+        <time>{post.data.publishDate.toLocaleDateString()}</time>
+        {post.data.readingTime && (
+          <>
+            <span class="post-meta-separator"></span>
+            <span>{post.data.readingTime}</span>
+          </>
+        )}
+      </div>
+      {post.data.featuredImageUrl && (
+        <img class="featured-image" src={post.data.featuredImageUrl} alt="" />
+      )}
+      <div class="blog-body">
+        <Content />
+      </div>
     </div>
   </div>
 </RootLayout>
