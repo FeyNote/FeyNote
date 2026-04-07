@@ -10,6 +10,11 @@ import {
 } from '@feynote/prisma/types';
 import { importJobHandler } from './import/importJobHandler';
 import { exportJobHandler } from './export/exportJobHandler';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
   JOB_QUEUE_NAME,
@@ -24,6 +29,13 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       ...jobSummary,
     });
     const job = prismaJobSummaryToJobSummary(prismaJobSummary);
+    enqueueOutgoingWebsocketMessage({
+      room: wsRoomNameForUserId(job.userId),
+      event: WebsocketMessageEvent.JobUpdated,
+      json: {
+        jobId: job.id,
+      },
+    });
     let status: JobStatus = JobStatus.success;
 
     try {
@@ -51,6 +63,14 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
       data: {
         status,
         progress: 100,
+      },
+    });
+
+    enqueueOutgoingWebsocketMessage({
+      room: wsRoomNameForUserId(job.userId),
+      event: WebsocketMessageEvent.JobUpdated,
+      json: {
+        jobId: job.id,
       },
     });
     console.log(`Finished processing job ${args.id}`);

@@ -10,6 +10,7 @@ import { PassThrough } from 'stream';
 import { artifactWithReferences } from './artifactReferenceSummary';
 import type { JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
+import { logger } from '@feynote/api-services';
 
 export const exportJobHandler = async (job: JobSummary) => {
   const jobFormat = job.meta.exportFormat;
@@ -32,11 +33,17 @@ export const exportJobHandler = async (job: JobSummary) => {
       if (!errored) resolve();
     });
   });
+
+  logger.info(`Export Job: Beginning Upload of ZipStream to S3`);
   const uploadP = uploadFileToS3(passThrough, mimetype, FilePurpose.job);
   const totalArtifactCount = await prisma.artifact.count({
     where: { userId: job.userId, deletedAt: null },
   });
-  const progressTracker = new JobProgressTracker(job.id, 1);
+  const progressTracker = new JobProgressTracker({
+    userId: job.userId,
+    jobId: job.id,
+    stepCount: 2,
+  });
 
   try {
     const batchSize = 50;
@@ -57,6 +64,9 @@ export const exportJobHandler = async (job: JobSummary) => {
         continue;
       }
 
+      logger.info(
+        `Export Job: Working on converting ${artifactsWithReferences.length + 1} into ${jobFormat}`,
+      );
       const artifactExports = transformArtifactsToArtifactExports(
         artifactsWithReferences,
         jobFormat,

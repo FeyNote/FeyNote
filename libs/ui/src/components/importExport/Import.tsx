@@ -22,6 +22,8 @@ import { PaneTransition } from '../../context/globalPane/GlobalPaneContext';
 import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { usePaneContext } from '../../context/pane/PaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
+import { eventManager } from '../../context/events/EventManager';
+import { EventName } from '../../context/events/EventName';
 
 const OptionsGrid = styled.div`
   display: grid;
@@ -93,55 +95,32 @@ const IMPORT_OPTIONS: {
     format: 'text',
   },
 ];
-const NUM_OF_INITAL_JOBS_SHOWN = 5;
-const REFRESH_JOBS_INTERVAL_SECONDS = 2000;
 
 export const Import: React.FC = () => {
   const { t } = useTranslation();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [jobs, setJobs] = useState<JobSummary[]>([]);
-  const [hasMoreJobs, setHasMoreJobs] = useState(false);
   const { navigate } = usePaneContext();
 
   useEffect(() => {
-    getMoreJobs();
-    const refreshInterval = setInterval(() => {
-      refreshJobs();
-    }, REFRESH_JOBS_INTERVAL_SECONDS);
-
-    return () => {
-      clearInterval(refreshInterval);
-    };
+    getJobs();
+    return eventManager.addEventListener(EventName.JobUpdated, async (_) => {
+      getJobs();
+    });
   }, []);
 
   const jobsRef = useRef(jobs);
   jobsRef.current = jobs;
 
-  const refreshJobs = async () => {
-    const importDto = await getJobsAction({
-      limit: jobsRef.current.length || NUM_OF_INITAL_JOBS_SHOWN,
-      type: 'import',
-    }).catch((e) => {
-      console.error(e);
-    });
-    if (!importDto) return;
-
-    setJobs(importDto.jobs);
-  };
-
-  const getMoreJobs = async () => {
-    const importjobsDTO = await getJobsAction({
-      offset: jobsRef.current.length,
-      limit: NUM_OF_INITAL_JOBS_SHOWN,
+  const getJobs = async () => {
+    const jobs = await getJobsAction({
       type: 'import',
     }).catch((e) => {
       handleTRPCErrors(e);
     });
-    if (!importjobsDTO) return;
+    if (!jobs) return;
 
-    const totalJobs = [...jobsRef.current, ...importjobsDTO.jobs];
-    setJobs(totalJobs);
-    setHasMoreJobs(importjobsDTO.totalCount > totalJobs.length);
+    setJobs(jobs);
   };
 
   const jobClickHandler = async (jobId: string) => {
@@ -190,9 +169,7 @@ export const Import: React.FC = () => {
         {!!jobs.length && (
           <JobList
             title={t('import.jobList')}
-            hasMoreJobs={hasMoreJobs}
             jobs={jobs}
-            getMoreJobs={getMoreJobs}
             jobClickHandler={jobClickHandler}
           />
         )}

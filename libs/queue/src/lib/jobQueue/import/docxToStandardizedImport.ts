@@ -33,6 +33,7 @@ import { updateDocxBookmarks } from './html/updateDocxBookmarks';
 import { populateHeadersToBlockInfoMap } from './html/populateHeadersToBlockInfoMap';
 import { populateBookmarksToBlockInfoMap } from './html/populateBookmarksToBlockInfoMap';
 import { updateMediaLinks } from './html/updateMediaLinks';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 export const docxToStandardizedImport = async (args: {
   job: JobSummary;
@@ -116,6 +117,7 @@ export const docxToStandardizedImport = async (args: {
 
     const text = getTextForJSONContent(tiptap);
 
+    const createdAt = new Date().getTime();
     const yDoc = constructYArtifact({
       id: artifactId,
       userId: args.job.userId,
@@ -124,6 +126,7 @@ export const docxToStandardizedImport = async (args: {
       type: ArtifactType.tiptap,
       linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
+      createdAt,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
       tiptap,
@@ -139,7 +142,18 @@ export const docxToStandardizedImport = async (args: {
       title,
       type: ArtifactType.tiptap,
       text,
-      json: tiptap,
+      json: {
+        meta: {
+          id: artifactId,
+          userId: args.job.userId,
+          title,
+          theme: ArtifactTheme.default,
+          type: ArtifactType.tiptap,
+          linkAccessLevel: ArtifactAccessLevel.noaccess,
+          deletedAt: null,
+          createdAt,
+        } satisfies YArtifactMeta,
+      },
       jobId: args.job.id,
       yBin,
     });

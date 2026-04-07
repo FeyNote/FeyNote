@@ -150,8 +150,8 @@ export const AllArtifacts: React.FC<Props> = (props) => {
 
   const getFilterableImportJobs = async () => {
     try {
-      const jobs = await getJobsAction({ type: 'import', limit: 10 });
-      const showableImportJobs = jobs.jobs
+      const jobs = await getJobsAction({ type: 'import' });
+      const showableImportJobs = jobs
         .filter((jobSummary) => {
           // Only allow selecting of import jobs that have succeeded and have artifacts associated with them
           return (

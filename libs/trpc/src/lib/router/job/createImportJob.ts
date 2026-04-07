@@ -2,7 +2,11 @@ import { authenticatedProcedure } from '../../middleware/authenticatedProcedure'
 import { prisma } from '@feynote/prisma/client';
 import { FilePurpose, JobStatus, JobType, type Job } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
-import { enqueueJob } from '@feynote/queue';
+import {
+  enqueueJob,
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '@feynote/queue';
 import { ImportJobStreamDecoder } from '@feynote/shared-utils';
 import type { ParserZodEsque } from '@trpc/server/unstable-core-do-not-import';
 import { octetInputParser } from '@trpc/server/http';
@@ -12,6 +16,7 @@ import {
 } from '@feynote/api-services';
 import type { ReadableStream as NodeWebReadableStream } from 'stream/web';
 import { Readable } from 'stream';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 type UtilityParser<TInput, TOutput> = ParserZodEsque<TInput, TOutput> & {
   parse: (input: unknown) => TOutput;
@@ -95,6 +100,13 @@ export const createImportJob = authenticatedProcedure
       enqueueJob({
         triggeredByUserId: ctx.session.userId,
         jobId: importJob.id,
+      });
+      enqueueOutgoingWebsocketMessage({
+        room: wsRoomNameForUserId(importJob.userId),
+        event: WebsocketMessageEvent.JobUpdated,
+        json: {
+          jobId: importJob.id,
+        },
       });
 
       return importJob;
