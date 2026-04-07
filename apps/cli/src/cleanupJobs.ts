@@ -1,37 +1,52 @@
+import { logger } from '@feynote/api-services';
 import { prisma } from '@feynote/prisma/client';
 import { JobStatus } from '@prisma/client';
+import * as Sentry from '@sentry/node';
 
 export const cleanupJobs = async (args: {
   deleteAfterDays: number;
   timeoutAfterMinutes: number;
 }) => {
-  const deleteBeforeDate = new Date();
-  deleteBeforeDate.setDate(deleteBeforeDate.getDate() - args.deleteAfterDays);
+  try {
+    logger.info(`Running Job Cleanup`);
 
-  await prisma.job.deleteMany({
-    where: {
-      updatedAt: {
-        lt: deleteBeforeDate,
-      },
-    },
-  });
+    const deleteBeforeDate = new Date();
+    deleteBeforeDate.setDate(deleteBeforeDate.getDate() - args.deleteAfterDays);
 
-  const timeoutBeforeDate = new Date();
-  timeoutBeforeDate.setDate(
-    timeoutBeforeDate.getDate() - args.timeoutAfterMinutes,
-  );
+    const deleted = await prisma.job.deleteMany({
+      where: {
+        updatedAt: {
+          lt: deleteBeforeDate,
+        },
+      },
+    });
 
-  await prisma.job.updateMany({
-    where: {
-      updatedAt: {
-        lt: timeoutBeforeDate,
+    logger.info(`Deleted ${deleted.count} old jobs`);
+
+    const timeoutBeforeDate = new Date();
+    timeoutBeforeDate.setMinutes(
+      timeoutBeforeDate.getMinutes() - args.timeoutAfterMinutes,
+    );
+
+    const updated = await prisma.job.updateMany({
+      where: {
+        updatedAt: {
+          lt: timeoutBeforeDate,
+        },
+        status: {
+          not: JobStatus.success,
+        },
       },
-      status: {
-        not: JobStatus.success,
+      data: {
+        status: JobStatus.failed,
       },
-    },
-    data: {
-      status: JobStatus.failed,
-    },
-  });
+    });
+
+    logger.info(`Marked ${updated.count} hanging jobs as failed`);
+  } catch (e) {
+    logger.error(e);
+    Sentry.captureException(e);
+
+    throw e;
+  }
 };
