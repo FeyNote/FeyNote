@@ -109,7 +109,7 @@
     "radix-ui": "^1.4.3",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-i18next": "^16.5.6",
+    "react-i18next": "^17.0.2",
     "react-icons": "^5.6.0",
     "react-is": "19.2.4",
     "remove-markdown": "^0.6.3",
