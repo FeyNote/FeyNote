@@ -6,6 +6,9 @@ updates:
       interval: 'weekly'
       day: 'monday'
       time: '16:00' # UTC
+    cooldown:
+      default-days: 5
+      semver-major-days: 10
     open-pull-requests-limit: 50
     groups:
       dedent:
@@ -88,6 +91,10 @@ updates:
       commitlint:
         patterns:
           - '@commitlint/*'
+      i18next:
+        patterns:
+          - 'react-i18next'
+          - 'i18next'
     ignore:
       - dependency-name: 'nx'
       - dependency-name: '@nx*' # Ignored because nx must be upgraded through CLI
