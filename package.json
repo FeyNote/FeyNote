@@ -95,7 +95,7 @@
     "express": "4.22.1",
     "flexlayout-react": "^0.8.19",
     "google-auth-library": "^10.6.2",
-    "https-proxy-agent": "^8.0.0",
+    "https-proxy-agent": "^9.0.0",
     "i18next": "^25.8.16",
     "idb": "^8.0.3",
     "ioredis": "^5.10.1",
