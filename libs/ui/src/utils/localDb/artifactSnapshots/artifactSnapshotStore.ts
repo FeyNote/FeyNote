@@ -65,12 +65,6 @@ class ArtifactSnapshotStore {
       this._isLoading = false;
       this.notify();
     });
-
-    // For contextless use within React
-    this.getArtifactSnapshotById = this.getArtifactSnapshotById.bind(this);
-    this.listen = this.listen.bind(this);
-    this.listenForArtifactId = this.listenForArtifactId.bind(this);
-    this.listenForFetchFailure = this.listenForFetchFailure.bind(this);
   }
 
   public getArtifactSnapshots(): ReadonlyArray<ArtifactSnapshot> {

@@ -35,7 +35,7 @@ export const OverflowBadge = styled.span`
 export const MAX_WORKSPACE_BADGES = 2;
 
 interface Props {
-  workspaceSnapshots: WorkspaceSnapshot[];
+  workspaceSnapshots: ReadonlyArray<WorkspaceSnapshot>;
 }
 
 export const WorkspaceBadges: React.FC<Props> = (props) => {

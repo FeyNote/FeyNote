@@ -32,7 +32,7 @@ import { capitalize } from '@feynote/shared-utils';
 import { useHandleTRPCErrors } from '../../../utils/useHandleTRPCErrors';
 import { Button, DropdownMenu } from '@radix-ui/themes';
 import { WorkspaceIconBubble } from '../../workspace/WorkspaceIconBubble';
-import { LuLayers, IoChevronDown } from '../../AppIcons';
+import { LuLayers, LuFolder, IoChevronDown } from '../../AppIcons';
 
 const HeaderItemsContainer = styled.div`
   display: flex;
@@ -46,6 +46,8 @@ const ResultsTableSelectionFilteredWarning = styled.div`
   padding-bottom: 6px;
   color: var(--text-color-dim);
 `;
+
+const NO_WORKSPACE_FILTER_VALUE = '__no_workspace__';
 
 const localeCompareWithFallback = (
   [str1, str2]: [string, string],
@@ -71,6 +73,7 @@ const dateCompareWithFallback = (
 interface Props {
   initialImportJobId?: string;
   initialSortOrder?: AllArtifactsSortOrder;
+  initialSharedWithMe?: boolean;
   workspaceId: string | null;
 }
 
@@ -82,7 +85,8 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   const { session } = useSessionContext();
   const { artifactSnapshots: allArtifactSnapshots } = useArtifactSnapshots();
   const { getEdgesForArtifactId } = useEdges();
-  const { workspaceSnapshots } = useWorkspaceSnapshots();
+  const { workspaceSnapshots, getWorkspaceSnapshotsForArtifactId } =
+    useWorkspaceSnapshots();
 
   const [selectedArtifactIds, setSelectedArtifactIds] = useState<
     ReadonlySet<string>
@@ -102,19 +106,22 @@ export const AllArtifacts: React.FC<Props> = (props) => {
     workspaceId: props.workspaceId,
     havingTitleText: '',
     byUser: new Set(),
+    sharedWithMe: props.initialSharedWithMe ?? false,
     orphans: AllArtifactsOrphansDisplaySetting.Include,
     onlyRelatedTo: new Set(),
     onlyIncludeTypes: new Set(),
     onlyRelatedToImportJobs: new Set(),
   }));
 
-  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
-    filters.workspaceId || undefined,
-  );
-  const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
-    filters.workspaceId || undefined,
-  );
-  const artifactSnapshots = filters.workspaceId
+  const realWorkspaceId =
+    filters.workspaceId && filters.workspaceId !== NO_WORKSPACE_FILTER_VALUE
+      ? filters.workspaceId
+      : undefined;
+  const { workspaceSnapshot: selectedWorkspaceSnapshot } =
+    useWorkspaceSnapshot(realWorkspaceId);
+  const { artifactSnapshotsForWorkspace } =
+    useArtifactSnapshotsForWorkspaceId(realWorkspaceId);
+  const artifactSnapshots = realWorkspaceId
     ? artifactSnapshotsForWorkspace
     : allArtifactSnapshots;
 
@@ -212,6 +219,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
     Number(!!filters.havingTitleText.length) +
     Number(!!filters.onlyRelatedToImportJobs.size) +
     Number(!!filters.byUser.size) +
+    Number(filters.sharedWithMe) +
     Number(filters.orphans !== AllArtifactsOrphansDisplaySetting.Include) +
     Number(!!filters.onlyRelatedTo.size) +
     Number(!!filters.onlyIncludeTypes.size);
@@ -222,11 +230,22 @@ export const AllArtifacts: React.FC<Props> = (props) => {
         if (!artifact.meta.userId) return false;
 
         if (
+          filters.workspaceId === NO_WORKSPACE_FILTER_VALUE &&
+          getWorkspaceSnapshotsForArtifactId(artifact.id).length > 0
+        ) {
+          return false;
+        }
+
+        if (
           filters.havingTitleText &&
           !artifact.meta.title
             .toLowerCase()
             .includes(filters.havingTitleText.toLowerCase())
         ) {
+          return false;
+        }
+
+        if (filters.sharedWithMe && artifact.meta.userId === session.userId) {
           return false;
         }
 
@@ -324,6 +343,7 @@ export const AllArtifacts: React.FC<Props> = (props) => {
   }, [
     artifactSnapshots,
     getEdgesForArtifactId,
+    getWorkspaceSnapshotsForArtifactId,
     order,
     filters,
     selectedImportArtifactIds,
@@ -385,6 +405,11 @@ export const AllArtifacts: React.FC<Props> = (props) => {
                         {selectedWorkspaceSnapshot.meta.name ||
                           t('workspace.untitled')}
                       </>
+                    ) : filters.workspaceId === NO_WORKSPACE_FILTER_VALUE ? (
+                      <>
+                        <LuFolder size={16} />
+                        {t('workspace.notInAny')}
+                      </>
                     ) : (
                       <>
                         <LuLayers size={16} />
@@ -402,6 +427,17 @@ export const AllArtifacts: React.FC<Props> = (props) => {
                   >
                     <LuLayers size={18} />
                     {t('workspace.everything')}
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    onClick={() =>
+                      setFilters({
+                        ...filters,
+                        workspaceId: NO_WORKSPACE_FILTER_VALUE,
+                      })
+                    }
+                  >
+                    <LuFolder size={18} />
+                    {t('workspace.notInAny')}
                   </DropdownMenu.Item>
                   {workspaceSnapshots.length > 0 && <DropdownMenu.Separator />}
                   {workspaceSnapshots.map((ws) => (
@@ -460,9 +496,11 @@ export const AllArtifacts: React.FC<Props> = (props) => {
               {artifactSnapshots && !artifactSnapshots.length && (
                 <div>
                   {t(
-                    filters.workspaceId
-                      ? 'allArtifacts.noArtifacts.workspace'
-                      : 'allArtifacts.noArtifacts',
+                    filters.workspaceId === NO_WORKSPACE_FILTER_VALUE
+                      ? 'allArtifacts.noArtifacts.notInAnyWorkspace'
+                      : filters.workspaceId
+                        ? 'allArtifacts.noArtifacts.workspace'
+                        : 'allArtifacts.noArtifacts',
                   )}
                 </div>
               )}

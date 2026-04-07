@@ -13,6 +13,8 @@ import { PaneableComponent } from '../../../context/globalPane/PaneableComponent
 import { useMemo, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
+import { WorkspaceBadges } from '../../workspace/WorkspaceBadges';
+import { useWorkspaceSnapshots } from '../../../utils/localDb/workspaces/useWorkspaceSnapshots';
 
 const ItemRow = styled.div<{
   $numDataCols: number;
@@ -73,6 +75,7 @@ interface Props {
 export const AllArtifactsItem: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
+  const { getWorkspaceSnapshotsForArtifactId } = useWorkspaceSnapshots();
 
   const goTo = (event: MouseEvent) => {
     navigateWithKeyboardHandler(event, PaneableComponent.Artifact, {
@@ -80,7 +83,7 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
     });
   };
 
-  const numDataCols = 4;
+  const numDataCols = 5;
 
   const createdAtDate = useMemo(() => {
     return new Date(props.artifact.meta.createdAt).toLocaleDateString();
@@ -107,6 +110,14 @@ export const AllArtifactsItem: React.FC<Props> = (props) => {
           {props.artifact.meta.title}
         </span>
       </ItemTitle>
+
+      <ItemDataslot>
+        <WorkspaceBadges
+          workspaceSnapshots={getWorkspaceSnapshotsForArtifactId(
+            props.artifact.id,
+          )}
+        />
+      </ItemDataslot>
 
       {props.dataViews.createdAt && (
         <div

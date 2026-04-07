@@ -11,6 +11,7 @@ import { diceDecorationExtensionStyles } from './tiptap/extensions/diceDecoratio
 import { feynoteMediaExtensionStyles } from './tiptap/extensions/feynoteMedia/feynoteMediaExtensionStyles';
 import { feynoteGenericFileExtensionStyles } from './tiptap/extensions/feynoteGenericFile/feynoteGenericFileExtensionStyles';
 import { feynoteAudioExtensionStyles } from './tiptap/extensions/feynoteAudio/feynoteAudioExtensionStyles';
+import { headingExtensionStyles } from './tiptap/extensions/heading/headingExtensionStyles';
 
 export const ArtifactEditorStyles = styled.div`
   ${themeVariables.default}
@@ -219,4 +220,5 @@ export const ArtifactEditorStyles = styled.div`
   ${feynoteGenericFileExtensionStyles}
   ${feynoteAudioExtensionStyles}
   ${diceDecorationExtensionStyles}
+  ${headingExtensionStyles}
 `;

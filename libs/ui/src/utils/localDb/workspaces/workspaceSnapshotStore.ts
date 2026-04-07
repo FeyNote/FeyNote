@@ -17,6 +17,11 @@ class WorkspaceSnapshotStore {
 
   private workspaceSnapshotsById = new Map<string, WorkspaceSnapshot>();
   private workspaceSnapshots: WorkspaceSnapshot[] = [];
+  private workspaceSnapshotsByArtifactId = new Map<
+    string,
+    WorkspaceSnapshot[]
+  >();
+  private workspaceSnapshotsByThreadId = new Map<string, WorkspaceSnapshot[]>();
 
   private _isLoading = true;
   public get isLoading() {
@@ -26,6 +31,8 @@ class WorkspaceSnapshotStore {
   constructor() {
     eventManager.addEventListener(EventName.LocaldbSessionUpdated, async () => {
       this.workspaceSnapshotsById.clear();
+      this.workspaceSnapshotsByArtifactId.clear();
+      this.workspaceSnapshotsByThreadId.clear();
       this.sessionInvalidationRandom = crypto.randomUUID();
       this._isLoading = true;
       this.notify();
@@ -51,11 +58,6 @@ class WorkspaceSnapshotStore {
       this._isLoading = false;
       this.notify();
     });
-
-    this.getWorkspaceSnapshotById = this.getWorkspaceSnapshotById.bind(this);
-    this.listen = this.listen.bind(this);
-    this.listenForWorkspaceId = this.listenForWorkspaceId.bind(this);
-    this.listenForFetchFailure = this.listenForFetchFailure.bind(this);
   }
 
   public getWorkspaceSnapshots(): ReadonlyArray<WorkspaceSnapshot> {
@@ -70,24 +72,16 @@ class WorkspaceSnapshotStore {
     return this.workspaceSnapshotsById.get(id);
   }
 
-  public getWorkspaceIdsForArtifactId(artifactId: string): string[] {
-    const ids: string[] = [];
-    for (const snapshot of this.workspaceSnapshots) {
-      if (snapshot.artifactIds.includes(artifactId)) {
-        ids.push(snapshot.id);
-      }
-    }
-    return ids;
+  public getWorkspaceSnapshotsForArtifactId(
+    artifactId: string,
+  ): ReadonlyArray<WorkspaceSnapshot> {
+    return this.workspaceSnapshotsByArtifactId.get(artifactId) ?? [];
   }
 
-  public getWorkspaceIdsForThreadId(threadId: string): string[] {
-    const ids: string[] = [];
-    for (const snapshot of this.workspaceSnapshots) {
-      if (snapshot.threadIds.includes(threadId)) {
-        ids.push(snapshot.id);
-      }
-    }
-    return ids;
+  public getWorkspaceSnapshotsForThreadId(
+    threadId: string,
+  ): ReadonlyArray<WorkspaceSnapshot> {
+    return this.workspaceSnapshotsByThreadId.get(threadId) ?? [];
   }
 
   public listen(listener: () => void) {
@@ -118,6 +112,30 @@ class WorkspaceSnapshotStore {
     };
   }
 
+  private rebuildIndexes() {
+    this.workspaceSnapshotsByArtifactId.clear();
+    this.workspaceSnapshotsByThreadId.clear();
+    for (const snapshot of this.workspaceSnapshots) {
+      if (snapshot.meta.deletedAt) continue;
+      for (const artifactId of snapshot.artifactIds) {
+        let list = this.workspaceSnapshotsByArtifactId.get(artifactId);
+        if (!list) {
+          list = [];
+          this.workspaceSnapshotsByArtifactId.set(artifactId, list);
+        }
+        list.push(snapshot);
+      }
+      for (const threadId of snapshot.threadIds) {
+        let list = this.workspaceSnapshotsByThreadId.get(threadId);
+        if (!list) {
+          list = [];
+          this.workspaceSnapshotsByThreadId.set(threadId, list);
+        }
+        list.push(snapshot);
+      }
+    }
+  }
+
   private async loadAllWorkspaceSnapshots() {
     const inflightRandomBefore = (this.loadAllWorkspaceSnapshotsRandom =
       crypto.randomUUID());
@@ -131,6 +149,7 @@ class WorkspaceSnapshotStore {
 
     this.workspaceSnapshotsById = new Map(result.map((el) => [el.id, el]));
     this.workspaceSnapshots = result;
+    this.rebuildIndexes();
   }
 
   private async loadWorkspaceSnapshot(workspaceId: string) {
@@ -158,6 +177,7 @@ class WorkspaceSnapshotStore {
           this.workspaceSnapshots = Array.from(
             this.workspaceSnapshotsById.values(),
           );
+          this.rebuildIndexes();
           this.notify([workspaceId]);
 
           return;
@@ -176,6 +196,7 @@ class WorkspaceSnapshotStore {
 
     this.workspaceSnapshotsById.set(workspaceId, response);
     this.workspaceSnapshots = Array.from(this.workspaceSnapshotsById.values());
+    this.rebuildIndexes();
   }
 
   private notify(workspaceIds?: string[]) {

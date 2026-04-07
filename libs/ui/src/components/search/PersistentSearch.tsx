@@ -8,7 +8,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { useGlobalPaneContext } from '../../context/globalPane/GlobalPaneContext';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { useTranslation } from 'react-i18next';
-import type { ArtifactDTO, WorkspaceSnapshot } from '@feynote/global-types';
+import type { ArtifactDTO } from '@feynote/global-types';
 import styled from 'styled-components';
 import { Box, TextField } from '@radix-ui/themes';
 import { IoSearch } from '../AppIcons';
@@ -83,7 +83,7 @@ export const PersistentSearch: React.FC<Props> = (props) => {
 
   const { session } = useSessionContext();
   const { getArtifactSnapshotById } = useArtifactSnapshots();
-  const { getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById } =
+  const { getWorkspaceSnapshotById, getWorkspaceSnapshotsForArtifactId } =
     useWorkspaceSnapshots();
 
   const workspaceOrUserTreeConnection = useCollaborationConnection(
@@ -146,22 +146,6 @@ export const PersistentSearch: React.FC<Props> = (props) => {
     userTreeRerender,
     getArtifactSnapshotById,
   ]);
-
-  const workspaceSnapshotsByArtifactId = useMemo(() => {
-    const result = new Map<string, WorkspaceSnapshot[]>();
-    for (const artifactId of artifactIds) {
-      const workspaceIds = getWorkspaceIdsForArtifactId(artifactId);
-      const snapshots = workspaceIds
-        .map((id) => getWorkspaceSnapshotById(id))
-        .filter(
-          (workspace): workspace is NonNullable<WorkspaceSnapshot> =>
-            !!workspace && !workspace.meta.deletedAt,
-        );
-
-      result.set(artifactId, snapshots);
-    }
-    return result;
-  }, [artifactIds, getWorkspaceIdsForArtifactId, getWorkspaceSnapshotById]);
 
   // This is so that back functionality works properly, returning us to the current search state is what the user sees once they return to the tab
   const persistSearchTextToPaneState = () => {
@@ -376,11 +360,9 @@ export const PersistentSearch: React.FC<Props> = (props) => {
                   highlights={searchResult.highlights}
                   previewText={searchResult.previewText}
                   treePath={artifactPathById.get(searchResult.artifact.id)}
-                  workspaceSnapshots={
-                    workspaceSnapshotsByArtifactId.get(
-                      searchResult.artifact.id,
-                    ) || []
-                  }
+                  workspaceSnapshots={getWorkspaceSnapshotsForArtifactId(
+                    searchResult.artifact.id,
+                  )}
                 />
               </SearchResult>
             </ArtifactLinkContextMenu>

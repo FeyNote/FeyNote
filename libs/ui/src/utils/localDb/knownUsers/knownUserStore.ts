@@ -52,13 +52,6 @@ class KnownUserStore {
       this._isLoading = false;
       this.notify();
     });
-
-    // For contextless use within React
-    this.getKnownUsersById = this.getKnownUsersById.bind(this);
-    this.getKnownUserById = this.getKnownUserById.bind(this);
-    this.listen = this.listen.bind(this);
-    this.listenForUserId = this.listenForUserId.bind(this);
-    this.listenForFetchFailure = this.listenForFetchFailure.bind(this);
   }
 
   public getKnownUsersById(): ReadonlyMap<string, KnownUserDoc> {

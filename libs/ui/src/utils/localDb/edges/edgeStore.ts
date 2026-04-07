@@ -81,16 +81,6 @@ class EdgeStore {
       this._isLoading = false;
       this.notify();
     });
-
-    // For contextless use within React
-    this.provideStaticEdgesForArtifactId =
-      this.provideStaticEdgesForArtifactId.bind(this);
-    this.getEdgesForArtifactId = this.getEdgesForArtifactId.bind(this);
-    this.getIncomingEdgesForBlock = this.getIncomingEdgesForBlock.bind(this);
-    this.getEdge = this.getEdge.bind(this);
-    this.listen = this.listen.bind(this);
-    this.listenForArtifactId = this.listenForArtifactId.bind(this);
-    this.listenForFetchFailure = this.listenForFetchFailure.bind(this);
   }
 
   /**

@@ -15,6 +15,14 @@ const PathText = styled.p`
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-wrap: wrap;
+`;
+
+const PathSegment = styled.span`
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 `;
 
 export const SearchResultItemTitleRow = styled.span`
@@ -60,7 +68,7 @@ interface Props {
   highlights: string[];
   previewText: string;
   treePath: string[] | undefined;
-  workspaceSnapshots: WorkspaceSnapshot[];
+  workspaceSnapshots: ReadonlyArray<WorkspaceSnapshot>;
 }
 
 export const SearchResultItem: React.FC<Props> = (props) => {
@@ -74,13 +82,33 @@ export const SearchResultItem: React.FC<Props> = (props) => {
       </SearchResultItemTitleRow>
       {props.treePath && props.treePath.length > 0 && (
         <PathText>
-          <IoChevronForward size={10} />
-          {props.treePath.map((segment, idx) => (
-            <Fragment key={idx}>
-              {idx > 0 && <IoChevronForward size={10} />}
-              {segment}
-            </Fragment>
-          ))}
+          {props.treePath.length <= 3 ? (
+            props.treePath.map((segment, idx) => (
+              <PathSegment key={idx}>
+                <IoChevronForward size={10} />
+                {segment}
+              </PathSegment>
+            ))
+          ) : (
+            <>
+              <PathSegment>
+                <IoChevronForward size={10} />
+                {props.treePath[0]}
+              </PathSegment>
+              <PathSegment>
+                <IoChevronForward size={10} />
+                &hellip;
+              </PathSegment>
+              <PathSegment>
+                <IoChevronForward size={10} />
+                {props.treePath[props.treePath.length - 2]}
+              </PathSegment>
+              <PathSegment>
+                <IoChevronForward size={10} />
+                {props.treePath[props.treePath.length - 1]}
+              </PathSegment>
+            </>
+          )}
           <IoChevronForward size={10} />
         </PathText>
       )}
