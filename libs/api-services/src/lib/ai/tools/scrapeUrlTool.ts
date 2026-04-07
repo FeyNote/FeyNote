@@ -26,7 +26,7 @@ const displayUrlExecutor = async (
   params: ScrapeUrlParams,
 ): Promise<UIMessagePart<UIDataTypes, FeynoteUITool>[] | null> => {
   try {
-    const res = await proxyGetRequest(params.url);
+    const res = await proxyGetRequest({ url: params.url });
     const html = convertHtmlToPlainText(res.data);
     const messages: ModelMessage[] = [
       systemMessage.scrapeContent,

@@ -35,8 +35,12 @@ export const uploadStandardizedMedia = async (
         let ext: string;
         let file = new Readable();
         if ('url' in mediaInfo) {
-          const response = await proxyGetRequest(mediaInfo.url, {
-            responseType: 'stream',
+          const response = await proxyGetRequest({
+            url: mediaInfo.url,
+            config: {
+              responseType: 'stream',
+              signal: AbortSignal.timeout(15000),
+            },
           });
 
           file = response.data;

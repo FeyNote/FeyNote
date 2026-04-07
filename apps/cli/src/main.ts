@@ -3,6 +3,7 @@ import { reindexArtifacts } from './reindexArtifacts';
 import { convertMessagesV4ToV5 } from './convertMessagesV4ToV5';
 import { decryptDebugDump } from './decryptDebugDump';
 import { searchProvider } from '@feynote/search';
+import { cleanupJobs } from './cleanupJobs';
 
 program
   .command('migrateSearchProvider')
@@ -51,6 +52,26 @@ program
     const cooldown = parseInt(options.cooldown);
 
     convertMessagesV4ToV5(pageSize, cooldown, true);
+  });
+
+program
+  .command('cleanupJobs')
+  .option(
+    '--delete-after-days <number>',
+    'How many days past the last updated at to delete the job',
+    '30',
+  )
+  .option(
+    '--timeout-after-minutes <number>',
+    'How long a job can stay idle before its marked as failed',
+    '20',
+  )
+  .description('Cleans up the jobs')
+  .action((options) => {
+    const deleteAfterDays = parseInt(options.deleteAfterDays);
+    const timeoutAfterMinutes = parseInt(options.timeoutAfterMinutes);
+
+    cleanupJobs({ deleteAfterDays, timeoutAfterMinutes });
   });
 
 program

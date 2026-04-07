@@ -9,6 +9,7 @@ export enum EventName {
   ArtifactUpdated = WebsocketMessageEvent.ArtifactUpdated,
   ThreadUpdated = WebsocketMessageEvent.ThreadUpdated,
   WorkspaceUpdated = WebsocketMessageEvent.WorkspaceUpdated,
+  JobUpdated = WebsocketMessageEvent.JobUpdated,
 
   // lint-locales-disable
   WebsocketError = 'websocket.error',

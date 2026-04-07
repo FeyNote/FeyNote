@@ -29,6 +29,7 @@ import { populateHeadersToBlockInfoMap } from './populateHeadersToBlockInfoMap';
 import { replaceObsidianReferencedHeadings } from './replaceObsidianReferencedHeadings';
 import type { JobProgressTracker } from '../../JobProgressTracker';
 import type { JobSummary } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 export const obsidianToStandardizedImport = async (args: {
   job: JobSummary;
@@ -120,6 +121,7 @@ export const obsidianToStandardizedImport = async (args: {
 
     const text = getTextForJSONContent(tiptap);
 
+    const createdAt = new Date().getTime();
     const yDoc = constructYArtifact({
       id: artifactId,
       userId: args.job.userId,
@@ -128,6 +130,7 @@ export const obsidianToStandardizedImport = async (args: {
       type: ArtifactType.tiptap,
       linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
+      createdAt,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
       tiptap,
@@ -143,7 +146,18 @@ export const obsidianToStandardizedImport = async (args: {
       title,
       type: ArtifactType.tiptap,
       text,
-      json: tiptap,
+      json: {
+        meta: {
+          id: artifactId,
+          userId: args.job.userId,
+          title,
+          theme: ArtifactTheme.default,
+          type: ArtifactType.tiptap,
+          linkAccessLevel: ArtifactAccessLevel.noaccess,
+          deletedAt: null,
+          createdAt,
+        } satisfies YArtifactMeta,
+      },
       jobId: args.job.id,
       yBin,
     });

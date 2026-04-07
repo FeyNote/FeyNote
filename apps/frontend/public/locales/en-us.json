@@ -342,9 +342,9 @@
   "import.options.markdown.description": "Documents with formatting",
   "import.options.text.description": "Plain text documents",
   "import.file.browse": "Click to select, or drag a .zip file here",
-  "import.file.error.type": "Invalid file type selected. File must be of type(s);",
-  "import.file.error.size": "File size limit exceeded. File must have a size of under;",
-  "import.fileTooLarge": "File is too large",
+  "import.file.error.type": "Invalid file type selected. File must be of type(s) {{fileTypes}}",
+  "import.file.error.size": "File size limit exceeded. File must have a size of under {{fileSize}}MB",
+  "import.job.error.limit": "Job limit exceeded. Please try your request again in five minutes.",
   "import.workspace": "Importing to workspace: {{workspaceName}}",
 
   "export.title": "Export Content",
@@ -380,7 +380,6 @@
   "jobList.error.unknown": "I'm sorry an unknown error has occurred, please try your upload again. If your problem persists please contact support.",
   "jobList.success": "Job successfully finished.",
   "jobList.inProgress": "Job in-progress...",
-  "jobList.showMore": "Show More",
 
   "sharedContent.title": "Shared Content",
   "sharedContent.noArtifacts.title": "No Documents Shared With You",

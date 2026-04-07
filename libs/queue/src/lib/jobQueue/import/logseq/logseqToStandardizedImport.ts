@@ -25,6 +25,7 @@ import { replaceMarkdownMediaLinks } from '../replaceMarkdownMediaLinks';
 import { replaceMarkdownMediaTags } from '../replaceMarkdownMediaTags';
 import type { JobProgressTracker } from '../../JobProgressTracker';
 import type { JobSummary } from '@feynote/prisma/types';
+import type { YArtifactMeta } from '@feynote/global-types';
 
 const replaceBlockquotes = (content: string): string => {
   // Returns two elements; > Blockquote text
@@ -205,7 +206,9 @@ const convertMarkdownToHtml = async (
   if (referencedBlockWithId) {
     markdown = addUniqueBlockId(referencedBlockWithId.id, markdown);
   }
+
   const html = marked.parse(markdown);
+
   return html;
 };
 
@@ -301,6 +304,7 @@ const handleLogseqGraph = async (args: {
 
     const icon = page.properties?.icon ? page.properties.icon + ' ' : '';
     const title = icon + page['page-name'];
+    const createdAt = new Date().getTime();
     const yDoc = constructYArtifact({
       id,
       userId: args.job.userId,
@@ -309,6 +313,7 @@ const handleLogseqGraph = async (args: {
       type: ArtifactType.tiptap,
       linkAccessLevel: ArtifactAccessLevel.noaccess,
       deletedAt: null,
+      createdAt,
     });
     const tiptapYContent = TiptapTransformer.toYdoc(
       tiptap,
@@ -325,7 +330,18 @@ const handleLogseqGraph = async (args: {
       title,
       type: ArtifactType.tiptap,
       text,
-      json: tiptap,
+      json: {
+        meta: {
+          id,
+          userId: args.job.userId,
+          title,
+          theme: ArtifactTheme.default,
+          type: ArtifactType.tiptap,
+          linkAccessLevel: ArtifactAccessLevel.noaccess,
+          deletedAt: null,
+          createdAt,
+        } satisfies YArtifactMeta,
+      },
       yBin,
     });
 

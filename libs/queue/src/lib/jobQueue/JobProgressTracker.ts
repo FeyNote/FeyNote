@@ -1,5 +1,10 @@
 import { prisma } from '@feynote/prisma/client';
 import { throttleDropPromise } from '@feynote/shared-utils';
+import {
+  enqueueOutgoingWebsocketMessage,
+  wsRoomNameForUserId,
+} from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
+import { WebsocketMessageEvent } from '@feynote/global-types';
 
 /**
  * How often to write the job percentage completion to the database
@@ -8,17 +13,16 @@ const JOB_PROGRESS_UPDATE_PERIOD_SECONDS = 2;
 
 export class JobProgressTracker {
   protected updateProgress: (percent: number) => void;
+  private stepCount;
 
-  constructor(
-    jobId: string,
-    private stepCount: number,
-  ) {
+  constructor(args: { jobId: string; userId: string; stepCount: number }) {
+    this.stepCount = args.stepCount;
     this.updateProgress = throttleDropPromise(
       async (percentProgress: number) => {
         try {
           await prisma.job.update({
             where: {
-              id: jobId,
+              id: args.jobId,
             },
             data: {
               progress: Math.min(Math.floor(percentProgress), 100),
@@ -27,6 +31,13 @@ export class JobProgressTracker {
         } catch (e) {
           console.error(e);
         }
+        enqueueOutgoingWebsocketMessage({
+          room: wsRoomNameForUserId(args.userId),
+          event: WebsocketMessageEvent.JobUpdated,
+          json: {
+            jobId: args.jobId,
+          },
+        });
       },
       JOB_PROGRESS_UPDATE_PERIOD_SECONDS * 1000,
     );
