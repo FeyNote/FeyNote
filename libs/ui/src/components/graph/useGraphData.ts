@@ -1,57 +1,30 @@
-import {
-  PaneContentContainer,
-  PaneContent,
-} from '../pane/PaneContentContainer';
-import { PaneNav } from '../pane/PaneNav';
-import { useTranslation } from 'react-i18next';
-import { GraphRenderer } from './GraphRenderer';
 import { useMemo } from 'react';
-import { NullState } from '../info/NullState';
-import { IoGitNetwork } from '../AppIcons';
-import styled from 'styled-components';
 import { PreferenceNames } from '@feynote/shared-utils';
+import { YKeyValue } from 'y-utility/y-keyvalue';
 import type { FeynoteGraphLink } from './GraphRenderer';
 import { useSessionContext } from '../../context/session/SessionContext';
-import { YKeyValue } from 'y-utility/y-keyvalue';
-import { usePaneContext } from '../../context/pane/PaneContext';
-import { useSidemenuContext } from '../../context/sidemenu/SidemenuContext';
-import { GraphRightSidemenu } from './GraphRightSidemenu';
-import { createPortal } from 'react-dom';
 import { usePreferencesContext } from '../../context/preferences/PreferencesContext';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { useArtifactSnapshots } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshots';
+import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
 import { useEdges } from '../../utils/localDb/edges/useEdges';
 import { getArtifactTreeFromYDoc } from '../../utils/artifactTree/getArtifactTreeFromYDoc';
-import { useArtifactSnapshotsForWorkspaceId } from '../../utils/localDb/artifactSnapshots/useArtifactSnapshotsForWorkspaceId';
-import { useWorkspaceSnapshot } from '../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useObserveYKVChanges } from '../../utils/collaboration/useObserveYKVChanges';
 
 const GRAPH_ARTIFACTS_YKV_KEY = 'graphArtifacts';
 
-const StyledNullState = styled(NullState)`
-  margin-top: 10vh;
-`;
+export type GraphData = ReturnType<typeof useGraphData>;
 
-interface Props {
-  workspaceId: string | null;
-}
-
-export const Graph: React.FC<Props> = (props) => {
+export function useGraphData(workspaceId: string | null) {
   const { getPreference } = usePreferencesContext();
-  const { isPaneFocused } = usePaneContext();
-  const { sidemenuContentRef } = useSidemenuContext();
   const { session } = useSessionContext();
-  const { t } = useTranslation();
   const { artifactSnapshotsLoading, artifactSnapshots: allArtifactSnapshots } =
     useArtifactSnapshots();
-  const { getEdgesForArtifactId } = useEdges();
-  const { workspaceSnapshot: selectedWorkspaceSnapshot } = useWorkspaceSnapshot(
-    props.workspaceId || undefined,
-  );
+  const { edgesLoading, getEdgesForArtifactId } = useEdges();
   const { artifactSnapshotsForWorkspace } = useArtifactSnapshotsForWorkspaceId(
-    props.workspaceId || undefined,
+    workspaceId || undefined,
   );
-  const artifactSnapshots = props.workspaceId
+  const artifactSnapshots = workspaceId
     ? (artifactSnapshotsForWorkspace ?? [])
     : allArtifactSnapshots;
 
@@ -63,8 +36,8 @@ export const Graph: React.FC<Props> = (props) => {
     PreferenceNames.GraphShowTreeRelations,
   );
 
-  const docName = props.workspaceId
-    ? `workspace:${props.workspaceId}`
+  const docName = workspaceId
+    ? `workspace:${workspaceId}`
     : `userTree:${session.userId}`;
   const connection = useCollaborationConnection(docName);
   const yDoc = connection.yjsDoc;
@@ -79,14 +52,12 @@ export const Graph: React.FC<Props> = (props) => {
         } | null;
       };
     }>(GRAPH_ARTIFACTS_YKV_KEY);
-    const yKeyValue = new YKeyValue<{
+    return new YKeyValue<{
       lock: {
         x: number;
         y: number;
       } | null;
     }>(yArray);
-
-    return yKeyValue;
   }, [yDoc]);
 
   const treeYKV = useMemo(() => {
@@ -158,62 +129,83 @@ export const Graph: React.FC<Props> = (props) => {
     showReferenceRelations,
     showTreeRelations,
     treeLinkedArtifactIds,
+    edgesLoading,
   ]);
 
   const artifactPositions = useMemo(() => {
     const positions = new Map<string, { x: number; y: number }>();
     for (const artifact of artifactSnapshots || []) {
-      const position = artifactsYKV.get(artifact.id);
-      if (position?.lock) {
-        positions.set(artifact.id, position.lock);
+      const record = artifactsYKV.get(artifact.id);
+      if (record?.lock) {
+        positions.set(artifact.id, record.lock);
       }
     }
     return positions;
   }, [artifactsYKVRerenderValue, artifactsYKV, artifactSnapshots]);
 
-  return (
-    <PaneContentContainer>
-      <PaneNav
-        title={
-          selectedWorkspaceSnapshot
-            ? t('graph.title.workspaceNamed', {
-                name:
-                  selectedWorkspaceSnapshot.meta.name ||
-                  t('workspace.untitled'),
-              })
-            : t('graph.title')
+  const graphLinks = useMemo(() => {
+    const links: FeynoteGraphLink[] = [];
+    const seenPairs = new Set<string>();
+
+    const addLink = (link: FeynoteGraphLink) => {
+      if (link.source === link.target) return;
+      const key = `${link.source}-${link.target}-${link.type}`;
+      if (seenPairs.has(key)) return;
+      seenPairs.add(key);
+      links.push(link);
+    };
+
+    if (showReferenceRelations) {
+      const seenEdgeIds = new Set<string>();
+      for (const artifact of artifactSnapshots) {
+        const { incomingEdges, outgoingEdges } = getEdgesForArtifactId(
+          artifact.id,
+        );
+
+        for (const edge of [...incomingEdges, ...outgoingEdges]) {
+          if (seenEdgeIds.has(edge.id)) continue;
+          seenEdgeIds.add(edge.id);
+          addLink({
+            source: edge.artifactId,
+            target: edge.targetArtifactId,
+            type: 'reference',
+          });
         }
-      />
-      <PaneContent>
-        <GraphRenderer workspaceId={props.workspaceId} interactive>
-          {(args) =>
-            args.graphData.graphArtifacts.length ? (
-              args.contents
-            ) : (
-              <StyledNullState
-                title={t('graph.nullState.title')}
-                message={t('graph.nullState.message')}
-                icon={<IoGitNetwork />}
-              />
-            )
-          }
-        </GraphRenderer>
-      </PaneContent>
-      {isPaneFocused &&
-        sidemenuContentRef.current &&
-        createPortal(
-          <GraphRightSidemenu
-            lockedArtifacts={graphArtifacts.filter((artifact) =>
-              artifactPositions.has(artifact.id),
-            )}
-            unlockArtifact={(id) => {
-              artifactsYKV.set(id, {
-                lock: null,
-              });
-            }}
-          />,
-          sidemenuContentRef.current,
-        )}
-    </PaneContentContainer>
+      }
+    }
+
+    if (showTreeRelations) {
+      for (const link of treeLinks) {
+        addLink(link);
+      }
+    }
+
+    return links;
+  }, [
+    artifactSnapshots,
+    getEdgesForArtifactId,
+    showReferenceRelations,
+    showTreeRelations,
+    treeLinks,
+    edgesLoading,
+  ]);
+
+  return useMemo(
+    () => ({
+      graphArtifacts,
+      graphLinks,
+      artifactPositions,
+      artifactsYKV,
+      artifactSnapshots,
+      connection,
+    }),
+    [
+      graphArtifacts,
+      graphLinks,
+      artifactPositions,
+      artifactsYKV,
+      artifactSnapshots,
+      connection,
+    ],
   );
-};
+}

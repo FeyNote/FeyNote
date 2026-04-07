@@ -1,4 +1,3 @@
-import { IonButton, IonCard } from '@ionic/react';
 import {
   PaneContentContainer,
   PaneContent,
@@ -17,17 +16,9 @@ import { useCollaborationConnectionAuthorizationState } from '../../utils/collab
 import { ARTIFACT_META_KEY } from '@feynote/shared-utils';
 import type { TypedMap } from 'yjs-types';
 import type { YArtifactMeta } from '@feynote/global-types';
-import { useTranslation } from 'react-i18next';
-import styled from 'styled-components';
 import { useCollaborationConnection } from '../../utils/collaboration/useCollaborationConnection';
 import { CollaborationConnectionAuthorizationState } from '../../utils/collaboration/collaborationManager';
-
-const StatusMessage = styled.div`
-  text-align: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  color: var(--ion-text-color);
-`;
+import { CollaborationGate } from '../collaboration/CollaborationGate';
 
 interface ArtifactProps {
   id: string;
@@ -38,7 +29,6 @@ interface ArtifactProps {
 export const Artifact: React.FC<ArtifactProps> = (props) => {
   const { pane, navigate, isPaneFocused } = usePaneContext();
   const { sidemenuContentRef } = useSidemenuContext();
-  const { t } = useTranslation();
   // We use a ref instead of state because this method is called on every keystroke and we don't want
   // to re-render the component stack top to bottom
   const onTocUpdateRef =
@@ -47,88 +37,22 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
   const connection = useCollaborationConnection(`artifact:${props.id}`);
 
   const { title } = useObserveYArtifactMeta(connection.yjsDoc).meta;
-  const { authorizationState, idbSynced } =
+  const { authorizationState } =
     useCollaborationConnectionAuthorizationState(connection);
 
   const undelete = () => {
     if (
       authorizationState === CollaborationConnectionAuthorizationState.CoOwner
     ) {
-      const yDoc = connection.yjsDoc;
-      yDoc.transact(() => {
+      connection.yjsDoc.transact(() => {
         (
-          yDoc.getMap(ARTIFACT_META_KEY) as TypedMap<Partial<YArtifactMeta>>
+          connection.yjsDoc.getMap(ARTIFACT_META_KEY) as TypedMap<
+            Partial<YArtifactMeta>
+          >
         ).set('deletedAt', null);
       });
     }
   };
-
-  const renderBlockingMessage = (
-    title: string,
-    message: string,
-    actionButton?: React.ReactNode,
-  ) => {
-    return (
-      <PaneContentContainer data-id={props.id}>
-        <PaneNav title={title} />
-        <PaneContent>
-          <IonCard>
-            <StatusMessage>
-              {message}
-              {actionButton && (
-                <>
-                  <br />
-                  <br />
-                  {actionButton}
-                </>
-              )}
-            </StatusMessage>
-          </IonCard>
-        </PaneContent>
-      </PaneContentContainer>
-    );
-  };
-
-  if (authorizationState === CollaborationConnectionAuthorizationState.Failed) {
-    return renderBlockingMessage(
-      t('artifact.loading.failed.title'),
-      t('artifact.loading.failed.message'),
-    );
-  }
-
-  if (
-    authorizationState === CollaborationConnectionAuthorizationState.Loading &&
-    idbSynced // We only want to show this loading dialogue when we're truly waiting on network
-  ) {
-    return renderBlockingMessage(
-      t('artifact.loading.title'),
-      t('artifact.loading.message'),
-    );
-  }
-
-  if (
-    authorizationState === CollaborationConnectionAuthorizationState.Loading
-  ) {
-    // When we're loading because we're waiting on idb, we show an empty page to be less jarring
-    // since this usually only occurs for a few frames
-    return (
-      <PaneContentContainer data-id={props.id}>
-        <PaneNav title={''} />
-      </PaneContentContainer>
-    );
-  }
-
-  if (
-    authorizationState === CollaborationConnectionAuthorizationState.NoAccess
-  ) {
-    return renderBlockingMessage(
-      t('artifact.noAccess.title'),
-      t('artifact.noAccess.message'),
-      <IonButton size="small" onClick={() => connection.reauthenticate()}>
-        {t('artifact.noAccess.action')}
-      </IonButton>,
-    );
-  }
 
   return (
     <PaneContentContainer data-id={props.id}>
@@ -148,17 +72,19 @@ export const Artifact: React.FC<ArtifactProps> = (props) => {
         )}
       />
       <PaneContent>
-        <ArtifactRenderer
-          artifactId={props.id}
-          connection={connection}
-          authorizationState={authorizationState}
-          scrollToBlockId={props.focusBlockId}
-          scrollToDate={props.focusDate}
-          onTocUpdate={(content) => {
-            onTocUpdateRef.current?.(content);
-          }}
-          undelete={() => undelete()}
-        />
+        <CollaborationGate connection={connection}>
+          <ArtifactRenderer
+            artifactId={props.id}
+            connection={connection}
+            authorizationState={authorizationState}
+            scrollToBlockId={props.focusBlockId}
+            scrollToDate={props.focusDate}
+            onTocUpdate={(content) => {
+              onTocUpdateRef.current?.(content);
+            }}
+            undelete={() => undelete()}
+          />
+        </CollaborationGate>
       </PaneContent>
       {isPaneFocused &&
         sidemenuContentRef.current &&
