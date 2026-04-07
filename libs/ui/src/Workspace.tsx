@@ -46,17 +46,17 @@ const DockContainer = styled.div`
   overflow: hidden;
 
   .flexlayout__layout {
-    --color-text: var(--ion-text-color, #000000);
-    --color-background: var(--ion-background-color, #ffffff);
-    --color-base: var(--ion-background-color, #ffffff);
-    --color-tab-selected-background: var(--ion-background-color, #ffffff);
-    --color-tabset-background-selected: var(--ion-background-color, #ffffff);
-    --color-1: var(--ion-background-color-step-100);
-    --color-2: var(--ion-background-color-step-200);
-    --color-3: var(--ion-background-color-step-300);
-    --color-4: var(--ion-background-color-step-400);
-    --color-5: var(--ion-background-color-step-500);
-    --color-6: var(--ion-background-color-step-600);
+    --color-text: var(--text-color);
+    --color-background: var(--general-background);
+    --color-base: var(--general-background);
+    --color-tab-selected-background: var(--general-background);
+    --color-tabset-background-selected: var(--general-background);
+    --color-1: var(--background-step-100);
+    --color-2: var(--background-step-200);
+    --color-3: var(--background-step-300);
+    --color-4: var(--background-step-400);
+    --color-5: var(--background-step-500);
+    --color-6: var(--background-step-600);
   }
 
   .flexlayout__splitter {
@@ -118,8 +118,8 @@ const DockContainer = styled.div`
   .flexlayout__tab_button--selected {
     --tab-curve: 10px;
     --tab-outline-width: 0;
-    --tab-outline-color: var(--ion-background-color, #ffffff);
-    --tab-background-active: var(--ion-background-color, #ffffff);
+    --tab-outline-color: var(--general-background);
+    --tab-background-active: var(--general-background);
 
     &::before,
     &::after {
@@ -150,10 +150,7 @@ const DockContainer = styled.div`
   }
 
   .flexlayout__tab_button--unselected {
-    background-color: rgba(
-      var(--ion-background-color-rgb, rgb(255, 255, 255)),
-      0.5
-    );
+    background-color: rgba(var(--general-background-rgb), 0.5);
   }
 
   .flexlayout__tab_button_trailing {
@@ -176,7 +173,7 @@ const Menu = styled.div<{
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
-  background-color: var(--ion-background-color);
+  background-color: var(--general-background);
 
   ${(props) =>
     props.$open &&

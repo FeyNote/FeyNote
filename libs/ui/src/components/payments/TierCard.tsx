@@ -1,11 +1,12 @@
-import { IonButton } from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 
 const OfferingCard = styled.div`
-  box-shadow: var(--contrasting-element-box-shadow);
+  box-shadow: var(--card-box-shadow);
   border-radius: var(--card-border-radius);
+  background: var(--card-background);
   padding: 16px;
   text-align: center;
 
@@ -50,9 +51,7 @@ const PYOInput = styled.input<{
 }>`
   border: 2px solid
     ${(props) =>
-      props.$active
-        ? 'var(--ion-color-primary)'
-        : 'var(--general-background-hint)'};
+      props.$active ? 'var(--accent-9)' : 'var(--general-background-hint)'};
   border-radius: 4px;
   background: var(--general-background);
   outline: none;
@@ -117,15 +116,16 @@ export const TierCard: React.FC<Props> = (props) => {
       {props.pricing.mode === 'pyo' && props.action === 'subscribe' && (
         <PYOAmountSelector>
           {props.pricing.suggested.map((el) => (
-            <IonButton
-              fill={selectedAmount === el ? 'outline' : 'clear'}
+            <Button
+              key={el}
+              variant={selectedAmount === el ? 'solid' : 'outline'}
               onClick={() => {
                 setSelectedAmount(el);
                 setEnteredAmount(undefined);
               }}
             >
               ${el}
-            </IonButton>
+            </Button>
           ))}
           <PYOInput
             $active={!!enteredAmount}
@@ -133,6 +133,7 @@ export const TierCard: React.FC<Props> = (props) => {
             min={minimum}
             placeholder="$"
             onFocus={() => {
+              setSelectedAmount(undefined);
               if (enteredAmount) return;
               setEnteredAmount(minimum);
             }}
@@ -147,26 +148,26 @@ export const TierCard: React.FC<Props> = (props) => {
       )}
 
       {props.action === 'current' && (
-        <IonButton fill="clear" onClick={props.onManage}>
+        <Button variant="outline" onClick={props.onManage}>
           {t('contribute.activePlan')}
-        </IonButton>
+        </Button>
       )}
 
       {props.action === 'manage' && (
-        <IonButton onClick={props.onManage}>{t('contribute.manage')}</IonButton>
+        <Button onClick={props.onManage}>{t('contribute.manage')}</Button>
       )}
 
       {props.action === 'subscribe' && (
         <div>
-          <IonButton
-            expand="block"
+          <Button
+            style={{ width: '100%' }}
             disabled={isInvalid}
             onClick={() =>
               props.onSubscribe((enteredAmount || selectedAmount || 1) * 100)
             }
           >
             {t('contribute.subscribe')}
-          </IonButton>
+          </Button>
           {props.pricing.mode === 'pyo' &&
             enteredAmount &&
             enteredAmount < props.pricing.minimum && (

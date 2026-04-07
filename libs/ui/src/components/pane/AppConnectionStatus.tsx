@@ -31,9 +31,9 @@ export const AppConnectionStatus = () => {
       return {
         icon: IoCloudOutline,
         status: onlineMessage,
-        statusColor: 'var(--ion-text-color)', // Not a huge fan of the inline colors here. We'll revamp this once we remove Ionic.
+        statusColor: 'var(--text-color)',
         lastSync: lastSyncedAt ? lastSyncMessage : neverSyncedMessage,
-        lastSyncColor: 'var(--ion-text-color)',
+        lastSyncColor: 'var(--text-color)',
         help: t('connectionStatus.online.help'),
         docsLink: 'https://docs.feynote.com/general/offline/#connection-status',
       };
@@ -41,9 +41,9 @@ export const AppConnectionStatus = () => {
       return {
         icon: IoCloudOutline,
         status: offlineMessage,
-        statusColor: 'var(--ion-color-warning)',
+        statusColor: 'var(--warning-color)',
         lastSync: lastSyncedAt ? lastSyncMessage : neverSyncedMessage,
-        lastSyncColor: 'var(--ion-color-warning)',
+        lastSyncColor: 'var(--warning-color)',
         help: t('connectionStatus.offline.help'),
         docsLink: 'https://docs.feynote.com/general/offline/#connection-status',
       };

@@ -4,7 +4,7 @@ export const indentationExtensionStyles = css`
   [data-content-type='blockGroup'] {
     margin-left: 2px;
     padding-left: 22px;
-    border-left: 1px solid var(--ion-background-color-step-300, lightgray);
+    border-left: 1px solid var(--background-step-300);
     position: relative;
     min-height: 20px;
 

@@ -20,7 +20,7 @@ import { sanitizeUrl } from './extensions/tiptap-ui/tiptap-utils';
 const Container = styled.div`
   border-radius: 4px;
   padding: 8px;
-  background: var(--ion-background-color-step-100);
+  background: var(--contrasting-element-background);
   box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
   font-size: 0.85rem;
 `;

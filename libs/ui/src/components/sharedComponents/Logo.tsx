@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 const LogoWrapper = styled.a`
   font-size: 1.1rem;
-  color: var(--ion-text-color, #000000);
+  color: var(--text-color);
   text-decoration: none;
 `;
 

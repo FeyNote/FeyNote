@@ -1,5 +1,5 @@
-import { IonButton, IonIcon } from '@ionic/react';
-import { copy, share } from 'ionicons/icons';
+import { IconButton } from '@radix-ui/themes';
+import { LuShare2, RiFileCopyLine } from '../AppIcons';
 
 interface Props {
   copyText: string;
@@ -51,15 +51,19 @@ export const CopyWithWebshareButton: React.FC<Props> = (props) => {
 
   if (hasWebShareAPI) {
     return (
-      <IonButton fill="clear" onClick={webShare}>
-        <IonIcon icon={share} slot="icon-only" />
-      </IonButton>
+      <IconButton variant="ghost" style={{ margin: '0' }} onClick={webShare}>
+        <LuShare2 />
+      </IconButton>
     );
   }
 
   return (
-    <IonButton fill="clear" onClick={copyToClipboard}>
-      <IonIcon icon={copy} slot="icon-only"></IonIcon>
-    </IonButton>
+    <IconButton
+      variant="ghost"
+      style={{ margin: '0' }}
+      onClick={copyToClipboard}
+    >
+      <RiFileCopyLine />
+    </IconButton>
   );
 };

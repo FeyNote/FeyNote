@@ -1,4 +1,4 @@
-import { IonButton, IonCard, IonCardTitle } from '@ionic/react';
+import { Button } from '@radix-ui/themes';
 import {
   PaneContentContainer,
   PaneContent,
@@ -12,10 +12,14 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import styled from 'styled-components';
 import { TierCard } from './TierCard';
 
-const CurrentSubscriptionCard = styled(IonCard)`
+const CurrentSubscriptionCard = styled.div`
   max-width: 400px;
   margin: 16px auto;
   text-align: center;
+  padding: 16px;
+  background: var(--card-background);
+  border-radius: 8px;
+  box-shadow: var(--card-box-shadow);
 `;
 
 const OfferingContainer = styled.div`
@@ -34,12 +38,15 @@ const OfferingContainer = styled.div`
 const FrequencySelector = styled.div`
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 8px;
 `;
 
 const ContributeDescription = styled.p`
   max-width: 700px;
   text-align: left;
   margin: auto;
+  padding: 0 16px;
 `;
 
 const subscriptionModelNameToI18n = {
@@ -164,10 +171,10 @@ export const Contribute: React.FC = () => {
     <PaneContentContainer>
       <PaneNav title={t('contribute.title')} />
       <PaneContent>
-        <ContributeDescription className="ion-padding">
+        <ContributeDescription>
           {t('contribute.description')}
         </ContributeDescription>
-        <ContributeDescription className="ion-padding">
+        <ContributeDescription>
           {t('contribute.description.2')}&nbsp;
           <a href="https://feynote.com/about" target="_blank" rel="noreferrer">
             {t('contribute.about')}
@@ -175,8 +182,8 @@ export const Contribute: React.FC = () => {
         </ContributeDescription>
         <br />
         {subscriptions.length > 0 && (
-          <CurrentSubscriptionCard className="ion-padding">
-            <IonCardTitle>{t('contribute.currentSubscriptions')}</IonCardTitle>
+          <CurrentSubscriptionCard>
+            <h2>{t('contribute.currentSubscriptions')}</h2>
             <div>
               {subscriptions.map((subscription) => (
                 <div key={subscription.id}>
@@ -185,12 +192,12 @@ export const Contribute: React.FC = () => {
                     <br />
                     {renderSubscriptionExpirationInformation(subscription)}
                   </p>
-                  <IonButton
+                  <Button
                     disabled={!subscription.activeWithStripe}
                     onClick={manageSubscriptions}
                   >
                     {t('contribute.manage')}
-                  </IonButton>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -198,22 +205,22 @@ export const Contribute: React.FC = () => {
         )}
 
         <FrequencySelector>
-          <IonButton
-            fill={viewInMonthly ? 'outline' : 'clear'}
+          <Button
+            variant={viewInMonthly ? 'solid' : 'outline'}
             onClick={() => {
               setViewInMonthly(true);
             }}
           >
             {t('contribute.monthly')}
-          </IonButton>
-          <IonButton
-            fill={viewInMonthly ? 'clear' : 'outline'}
+          </Button>
+          <Button
+            variant={viewInMonthly ? 'outline' : 'solid'}
             onClick={() => {
               setViewInMonthly(false);
             }}
           >
             {t('contribute.yearly')}
-          </IonButton>
+          </Button>
         </FrequencySelector>
 
         <OfferingContainer>

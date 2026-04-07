@@ -12,7 +12,7 @@ const Container = styled.div`
 `;
 
 const IconBackdrop = styled.div`
-  background: var(--ion-color-primary-shade);
+  background: var(--accent-color-shade);
   color: white;
   border-radius: 100%;
   height: 12px;

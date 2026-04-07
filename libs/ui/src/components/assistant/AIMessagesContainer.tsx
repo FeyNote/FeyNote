@@ -14,7 +14,7 @@ const Scroller = styled.div<{
   overflow: auto;
   overflow-anchor: none;
   position: relative;
-  border-bottom: 2px solid var(--ion-border-color);
+  border-bottom: 2px solid var(--border-color);
 
   ${(props) => (props.$visible ? '' : 'visibility: hidden;')}
 `;
@@ -22,7 +22,7 @@ const Scroller = styled.div<{
 const UserMessageContainer = styled.div`
   margin-left: auto;
   max-width: 80%;
-  background: var(--ion-background-color-step-100);
+  background: var(--contrasting-element-background);
   border-radius: 1rem;
   padding: 0.75rem 1rem;
   margin-bottom: 0.5rem;

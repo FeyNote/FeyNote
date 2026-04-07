@@ -7,7 +7,7 @@ const ProgressRoot = styled(Progress.Root)<{
 }>`
   position: relative;
   overflow: hidden;
-  background: var(--ion-background-color-step-100);
+  background: var(--contrasting-element-background);
   border-radius: 10px;
   height: ${(props) => (props.$barStyle === 'thick' ? '4px' : '2px')};
   width: 100%;
@@ -18,7 +18,7 @@ const ProgressRoot = styled(Progress.Root)<{
 `;
 
 const ProgressIndicator = styled(Progress.Indicator)`
-  background-color: var(--ion-text-color);
+  background-color: var(--text-color);
   width: 100%;
   height: 100%;
   transition: transform 250ms cubic-bezier(0.65, 0, 0.35, 1);

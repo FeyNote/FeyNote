@@ -1,7 +1,7 @@
-import { IonButton, IonIcon } from '@ionic/react';
+import { IconButton } from '@radix-ui/themes';
 import styled from 'styled-components';
 import type { CalendarRenderProps } from './CalendarRenderProps';
-import { chevronBack, chevronForward } from 'ionicons/icons';
+import { IoChevronBack, IoChevronForward } from '../../AppIcons';
 import { PaneableComponent } from '../../../context/globalPane/PaneableComponent';
 import { useNavigateWithKeyboardHandler } from '../../../utils/useNavigateWithKeyboardHandler';
 import { Edge } from '@feynote/shared-utils';
@@ -26,13 +26,7 @@ const MonthSwitcher = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-`;
-
-const NextBackButton = styled(IonButton)`
-  margin-left: 16px;
-  margin-right: 16px;
-
-  color: var(--editor-button-color);
+  gap: 16px;
 `;
 
 const MonthYearName = styled.div`
@@ -127,15 +121,25 @@ export const FullsizeCalendar: React.FC<FullsizeCalendarProps> = (props) => {
   const showSwitcher = props.monthNames.length !== 1 || props.centerYear !== 1;
   const switcher = (
     <MonthSwitcher>
-      <NextBackButton fill="clear" onClick={() => props.moveCenter(-1)}>
-        <IonIcon aria-hidden="true" slot="icon-only" icon={chevronBack} />
-      </NextBackButton>
+      <IconButton
+        variant="ghost"
+        size="2"
+        style={{ margin: '0' }}
+        onClick={() => props.moveCenter(-1)}
+      >
+        <IoChevronBack />
+      </IconButton>
       <MonthYearName>
         {props.monthNames.get(props.centerMonth - 1)} {props.centerYear}
       </MonthYearName>
-      <NextBackButton fill="clear" onClick={() => props.moveCenter(1)}>
-        <IonIcon aria-hidden="true" slot="icon-only" icon={chevronForward} />
-      </NextBackButton>
+      <IconButton
+        variant="ghost"
+        size="2"
+        style={{ margin: '0' }}
+        onClick={() => props.moveCenter(1)}
+      >
+        <IoChevronForward />
+      </IconButton>
     </MonthSwitcher>
   );
 

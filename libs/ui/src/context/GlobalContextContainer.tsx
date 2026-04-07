@@ -4,7 +4,7 @@ import { GlobalPaneContextProviderWrapper } from './globalPane/GlobalPaneContext
 import { PreferencesContextProviderWrapper } from './preferences/PreferencesContextProviderWrapper';
 import { Theme } from '@radix-ui/themes';
 import { ToastContextProvider } from './toast/ToastContextProvider';
-import { IonApp } from '@ionic/react';
+
 import { PaneableComponent } from './globalPane/PaneableComponent';
 import { SidemenuContextProviderWrapper } from './sidemenu/SidemenuContextProviderWrapper';
 import { GlobalSearchContextProviderWrapper } from './globalSearch/GlobalSearchContextProviderWrapper';
@@ -92,7 +92,7 @@ export const GlobalContextContainer: React.FC<Props> = (props) => {
           <PreferencesContextProviderWrapper>
             <SidemenuContextProviderWrapper>
               {renderPaneProviders(
-                <IonApp>{renderAuthenticatedProviders(props.children)}</IonApp>,
+                renderAuthenticatedProviders(props.children),
               )}
             </SidemenuContextProviderWrapper>
           </PreferencesContextProviderWrapper>

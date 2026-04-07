@@ -58,7 +58,7 @@ const StyledHTMLContainer = styled(HTMLContainer)<{
   ${({ $type }) =>
     $type === 'circle'
       ? `
-    background-color: var(--ion-color-primary);
+    background-color: var(--accent-color);
     box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.7);
   `
       : ''}

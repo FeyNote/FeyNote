@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import type { ChatStatus } from 'ai';
 
 const ErrorText = styled.span`
-  color: var(--ion-color-danger);
+  color: var(--danger-color);
 `;
 
 interface Props {

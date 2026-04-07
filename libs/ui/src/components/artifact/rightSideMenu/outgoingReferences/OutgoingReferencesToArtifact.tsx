@@ -82,7 +82,7 @@ export const OutgoingReferencesToArtifact: React.FC<Props> = (props) => {
         edge={edge0}
       >
         <FeynoteCardItem
-          data-edge-artifactId={edge0.targetArtifactId}
+          data-edge-artifactid={edge0.targetArtifactId}
           onMouseOver={onMouseOver}
           onMouseOut={onMouseOut}
           $isButton

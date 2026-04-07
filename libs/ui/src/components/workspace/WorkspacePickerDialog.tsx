@@ -22,7 +22,7 @@ const WorkspaceItem = styled.button<{ $selected: boolean }>`
   gap: 10px;
   padding: 8px 12px;
   border: 2px solid
-    ${(props) => (props.$selected ? 'var(--ion-color-primary)' : 'transparent')};
+    ${(props) => (props.$selected ? 'var(--accent-color)' : 'transparent')};
   border-radius: 8px;
   background: var(--general-background);
   cursor: pointer;
