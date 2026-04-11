@@ -260,6 +260,7 @@ jobs:
           at: .
       - run:
           name: make
+          no_output_timeout: 30m
           command: |
             cd apps/desktop
             npx electron-forge make
