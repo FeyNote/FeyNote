@@ -66,9 +66,9 @@ export const TiptapEditor = (props: Props) => {
     // Dice roller does not support kh/kl, only kh1/kl1
     notation = notation.replaceAll(/kh\b/g, 'kh1').replaceAll(/kl\b/g, 'kl1');
     // Dice roller does not support "+4 to hit", only 1d20+4
-    notation = notation.replaceAll(/^(\+\d+) to hit$/g, '1d20$1');
+    notation = notation.replaceAll(/^([+-]\d+) to hit$/g, '1d20$1');
     // Dice roller does not support "+4", only 1d20+4
-    notation = notation.replaceAll(/^(\+\d+)$/g, '1d20$1');
+    notation = notation.replaceAll(/^([+-]\d+)$/g, '1d20$1');
 
     const diceRoll = new DiceRoll(notation);
 

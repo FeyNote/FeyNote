@@ -20,7 +20,7 @@ import { Node } from 'prosemirror-model';
 // 2d8+4asdf
 // https://regex101.com/r/2ChQen/2
 const DICE_NOTATION_REGEX =
-  /(\b\d+d\d+((kh\d*|kl\d*|k\d+)\b)?(\s?[+-]\s?\d+\b)?\b(\s?[+-]\s?\d+d\d+((kh|kl|k\d+)\b)?(\s?[+-]\s?\d+\b)?\b)*)|(\+\d+ to hit\b)|(\+\d+\b)/g;
+  /(\b\d+d\d+((kh\d*|kl\d*|k\d+)\b)?(\s?[+-]\s?\d+\b)?\b(\s?[+-]\s?\d+d\d+((kh|kl|k\d+)\b)?(\s?[+-]\s?\d+\b)?\b)*)|([+-]\d+ to hit\b)|([+-]\d+\b)/g;
 
 function getDecorations(doc: Node) {
   const decorations: Decoration[] = [];
