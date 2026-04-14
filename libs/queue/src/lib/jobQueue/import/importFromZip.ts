@@ -42,4 +42,5 @@ export const importFromZip = async (args: {
     job: args.job,
     progressTracker: args.progressTracker,
   });
+  logger.info('Finished writing standardized imports.');
 };

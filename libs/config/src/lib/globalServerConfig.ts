@@ -100,6 +100,15 @@ export const globalServerConfig = {
     queueCompleteCount: parseInt(
       process.env['WORKER_QUEUE_COMPLETE_COUNT'] || '1000',
     ),
+    enable: {
+      artifactUpdate: coerceBoolean(
+        process.env['WORKER_ENABLE_ARTIFACT_UPDATE'] || 'true',
+      ),
+      workspaceUpdate: coerceBoolean(
+        process.env['WORKER_ENABLE_WORKSPACE_UPDATE'] || 'true',
+      ),
+      job: coerceBoolean(process.env['WORKER_ENABLE_JOB'] || 'true'),
+    },
     queueFailCount: parseInt(process.env['WORKER_QUEUE_FAIL_COUNT'] || '5000'),
     redis: {
       host: getEnvOrThrow('WORKER_REDIS_HOST'),
