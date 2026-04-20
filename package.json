@@ -166,7 +166,7 @@
     "@nx/workspace": "22.6.3",
     "@swc-node/register": "1.11.1",
     "@swc/cli": "0.8.1",
-    "@swc/core": "1.15.24",
+    "@swc/core": "1.15.26",
     "@swc/plugin-styled-components": "^12.8.0",
     "@types/electron-squirrel-startup": "^1.0.2",
     "@types/express": "4.17.21",
