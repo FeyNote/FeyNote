@@ -204,7 +204,7 @@
     "jsdom": "~29.0.2",
     "lint-staged": "^16.4.0",
     "nx": "22.6.3",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.3",
     "prisma": "^6.19.0",
     "rollup-plugin-visualizer": "^7.0.1",
     "ts-jest": "29.4.9",
