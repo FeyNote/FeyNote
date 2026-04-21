@@ -1,4 +1,5 @@
 import {
+  logger,
   proxyGetRequest,
   transformAndUploadFileToS3ForUser,
 } from '@feynote/api-services';
@@ -35,6 +36,7 @@ export const uploadStandardizedMedia = async (
         let ext: string;
         let file = new Readable();
         if ('url' in mediaInfo) {
+          logger.debug(`Retrieving media content from ${mediaInfo.url}`);
           const response = await proxyGetRequest({
             url: mediaInfo.url,
             config: {
@@ -47,6 +49,9 @@ export const uploadStandardizedMedia = async (
           ext = extname(mediaInfo.url);
           fileName = basename(mediaInfo.url, ext);
         } else {
+          logger.debug(
+            `Beinning stream of local stored media content ${mediaInfo.path}`,
+          );
           ext = extname(mediaInfo.path);
           fileName = basename(mediaInfo.path, ext);
           file = createReadStream(mediaInfo.path);
@@ -82,6 +87,8 @@ export const uploadStandardizedMedia = async (
           ),
           step: 2,
         });
+
+        logger.debug(`Finished uploading media ${fileName}`);
         return fileData;
       });
     }),

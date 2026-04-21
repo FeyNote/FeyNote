@@ -15,10 +15,26 @@ import {
   wsRoomNameForUserId,
 } from '../outgoingWebsocketMessageQueue/outgoingWebsocketMessageQueue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
+import { logger } from '@feynote/api-services';
+
+const QUEUE_WORKER_TIMEOUT = 10 * 60 * 1000;
 
 export const jobQueueWorker = new Worker<JobQueueItem, void>(
   JOB_QUEUE_NAME,
   async (args) => {
+    const jobTimeoutTimerId = setTimeout(async () => {
+      await prisma.job.update({
+        where: {
+          id: args.data.jobId,
+        },
+        data: {
+          status: JobStatus.failed,
+        },
+      });
+      logger.error('Job Failed: Timeout Limit Reached');
+      process.exit(1);
+    }, QUEUE_WORKER_TIMEOUT);
+
     const prismaJobSummary = await prisma.job.update({
       where: {
         id: args.data.jobId,
@@ -73,6 +89,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
         jobId: job.id,
       },
     });
+    clearTimeout(jobTimeoutTimerId);
     console.log(`Finished processing job ${args.id}`);
   },
   {

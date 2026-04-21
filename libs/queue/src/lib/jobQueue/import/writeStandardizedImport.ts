@@ -5,7 +5,7 @@ import { enqueueArtifactUpdate } from '../../artifactUpdateQueue/artifactUpdateQ
 import { encodeStateAsUpdate, Doc as YDoc } from 'yjs';
 import type { JobProgressTracker } from '../JobProgressTracker';
 import type { JobSummary } from '@feynote/prisma/types';
-import { hocuspocusTrpcClient } from '@feynote/api-services';
+import { hocuspocusTrpcClient, logger } from '@feynote/api-services';
 
 export const writeStandardizedImport = async (args: {
   importInfo: StandardizedImportInfo;
@@ -17,6 +17,8 @@ export const writeStandardizedImport = async (args: {
     args.importInfo,
     args.progressTracker,
   );
+  logger.info('Saving Artifacts to Prisma');
+
   const createdArtifacts = await prisma.$transaction(async (tx) => {
     const createdArtifacts = await tx.artifact.createManyAndReturn({
       data: args.importInfo.artifactsToCreate,
@@ -44,6 +46,8 @@ export const writeStandardizedImport = async (args: {
     return createdArtifacts;
   });
 
+  logger.info('Enqueing Artifact Updates');
+
   for (const artifact of createdArtifacts) {
     await enqueueArtifactUpdate({
       artifactId: artifact.id,
@@ -57,6 +61,7 @@ export const writeStandardizedImport = async (args: {
   }
 
   if (args.job.meta.workspaceId) {
+    logger.debug('Associating artifacts to workspace');
     await hocuspocusTrpcClient.doc.addArtifactsToWorkspace.mutate({
       workspaceId: args.job.meta.workspaceId,
       artifactIds: createdArtifacts.map((a) => a.id),

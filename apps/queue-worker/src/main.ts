@@ -8,18 +8,30 @@ import './instrument.ts';
 
 import { globalServerConfig } from '@feynote/config';
 
-artifactUpdateQueueWorker.run();
-workspaceUpdateQueueWorker.run();
-jobQueueWorker.run();
+if (globalServerConfig.worker.enable.artifactUpdate) {
+  artifactUpdateQueueWorker.run();
+}
+if (globalServerConfig.worker.enable.workspaceUpdate) {
+  workspaceUpdateQueueWorker.run();
+}
+if (globalServerConfig.worker.enable.job) {
+  jobQueueWorker.run();
+}
 
 setupMinimalMetricsServer({
   port: globalServerConfig.worker.restPort,
 });
 
 const shutdown = async () => {
-  await artifactUpdateQueueWorker.close();
-  await workspaceUpdateQueueWorker.close();
-  await jobQueueWorker.close();
+  if (globalServerConfig.worker.enable.artifactUpdate) {
+    await artifactUpdateQueueWorker.close();
+  }
+  if (globalServerConfig.worker.enable.workspaceUpdate) {
+    await workspaceUpdateQueueWorker.close();
+  }
+  if (globalServerConfig.worker.enable.job) {
+    await jobQueueWorker.close();
+  }
 
   process.exit(0);
 };

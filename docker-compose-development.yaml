@@ -20,6 +20,9 @@ x-common-env-vars: &common-env-vars
   LOGGER_LEVEL: debug
   LOGGER_TRANSPORTS_CONSOLE: 'true'
   LOGGER_TRANSPORTS_SENTRY: 'false'
+  WORKER_ENABLE_JOB: 'true'
+  WORKER_ENABLE_ARTIFACT_UPDATE: 'true'
+  WORKER_ENABLE_WORKSPACE_UPDATE: 'true'
 
 name: feynote
 services:
