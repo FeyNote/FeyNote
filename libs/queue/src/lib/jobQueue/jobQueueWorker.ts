@@ -32,7 +32,7 @@ export const jobQueueWorker = new Worker<JobQueueItem, void>(
         },
       });
       logger.error('Job Failed: Timeout Limit Reached');
-      process.exit();
+      process.exit(1);
     }, QUEUE_WORKER_TIMEOUT);
 
     const prismaJobSummary = await prisma.job.update({
