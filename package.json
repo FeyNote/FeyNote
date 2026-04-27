@@ -90,7 +90,7 @@
     "cors": "^2.8.6",
     "d3-force": "^3.0.0",
     "dedent": "^1.7.2",
-    "dompurify": "^3.4.0",
+    "dompurify": "^3.4.1",
     "electron-squirrel-startup": "^1.0.1",
     "express": "4.22.1",
     "flexlayout-react": "^0.8.19",
