@@ -187,7 +187,7 @@
     "@vitejs/plugin-react": "5.1.4",
     "babel-jest": "30.3.0",
     "babel-plugin-styled-components": "2.1.4",
-    "electron": "^41.2.0",
+    "electron": "^41.2.2",
     "esbuild": "^0.28.0",
     "eslint": "9.36.0",
     "eslint-config-prettier": "10.1.1",
