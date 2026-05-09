@@ -162,7 +162,6 @@ export const AIThread: React.FC<Props> = (props) => {
         api: `${getApiUrls().rest}/message/`,
         headers: {
           Authorization: `Bearer ${sessionContext.session.token}`,
-          'Content-Type': 'application/json',
         },
         body: {
           threadId: props.id,
