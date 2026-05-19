@@ -93,7 +93,7 @@
     "dompurify": "^3.4.3",
     "electron-squirrel-startup": "^1.0.1",
     "express": "4.22.1",
-    "flexlayout-react": "^0.8.19",
+    "flexlayout-react": "^0.9.1",
     "google-auth-library": "^10.6.2",
     "https-proxy-agent": "^9.0.0",
     "i18next": "^26.1.0",
