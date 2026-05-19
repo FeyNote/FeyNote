@@ -1,2 +1,2 @@
-npx nx affected -t lint,lint-locales,typecheck --parallel 8
-npx lint-staged
+./node_modules/.bin/nx affected -t lint,lint-locales,typecheck --parallel 8
+./node_modules/.bin/lint-staged

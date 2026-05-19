@@ -28,8 +28,8 @@ case "${1:-}" in
     docker compose -f "$COMPOSE_FILE" stop
     docker compose -f "$COMPOSE_FILE" build backend
     docker compose -f "$COMPOSE_FILE" up -d
-    docker compose -f "$COMPOSE_FILE" exec backend npx prisma migrate dev
-    docker compose -f "$COMPOSE_FILE" exec backend npx nx run search:migrate
+    docker compose -f "$COMPOSE_FILE" exec backend ./node_modules/.bin/prisma migrate dev
+    docker compose -f "$COMPOSE_FILE" exec backend ./node_modules/.bin/nx run search:migrate
     docker compose -f "$COMPOSE_FILE" restart proxy
     ;;
 
@@ -58,7 +58,7 @@ case "${1:-}" in
 
   exec-cli)
     shift
-    docker compose -f "$COMPOSE_FILE" exec backend npx tsx --tsconfig /app/apps/cli/tsconfig.json /app/apps/cli/src/main.ts "$@"
+    docker compose -f "$COMPOSE_FILE" exec backend tsx --tsconfig /app/apps/cli/tsconfig.json /app/apps/cli/src/main.ts "$@"
     ;;
 
   *)

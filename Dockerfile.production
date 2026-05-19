@@ -7,20 +7,32 @@ RUN apk update
 RUN apk add --no-cache inotify-tools
 RUN apk add --no-cache pandoc
 
-COPY .npmrc .npmrc
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm ci
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
+RUN corepack enable
+RUN mkdir -p $PNPM_HOME && chown -R node:node $PNPM_HOME
 
-COPY tsconfig.base.json tsconfig.base.json
-COPY nx.json nx.json
+RUN chown -R node:node /app
 
-COPY scripts scripts
-COPY apps apps
-COPY libs libs
-COPY prisma prisma
+USER node
 
-RUN npx prisma generate
+RUN pnpm add -g tsx
+
+COPY --chown=node:node .npmrc .npmrc
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node pnpm-lock.yaml pnpm-lock.yaml
+COPY --chown=node:node pnpm-workspace.yaml pnpm-workspace.yaml
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=node:node tsconfig.base.json tsconfig.base.json
+COPY --chown=node:node nx.json nx.json
+
+COPY --chown=node:node scripts scripts
+COPY --chown=node:node apps apps
+COPY --chown=node:node libs libs
+COPY --chown=node:node prisma prisma
+
+RUN ./node_modules/.bin/prisma generate
 
 ENV NX_NO_CLOUD=true
 ENV I18N_PATH=/app/dist/libs/api-services/src/lib/i18n/locales
@@ -30,6 +42,6 @@ ARG APP_VERSION
 ENV APP_VERSION=$APP_VERSION
 ENV VITE_APP_VERSION=$APP_VERSION
 
-RUN npx nx run-many -t build -p backend,cli,docs,hocuspocus,queue-worker,websocket,www --parallel=6
+RUN ./node_modules/.bin/nx run-many -t build -p backend,cli,docs,hocuspocus,queue-worker,websocket,www --parallel=6
 
 CMD echo "Must provide command to run containers"
