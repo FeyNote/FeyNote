@@ -1,18 +1,25 @@
 export interface YTimelineConfig {
   startingEraBeginsAtZero: boolean;
-  priorEraTitle: string;
   startingEraTitle: string; // Not an era object since the start time is predetermined
-  priorEraStart: YTimelineDate;
-  weekWpochDayIndx: number;
+  priorEraTitle?: string; //
+  priorEraStart?: YTimelineDate;
+  weekEpochDayIndx: number;
   weekDaysResetEachMonth: boolean;
   hoursInDay: number;
   minutesInDay: number;
   dateDisplayFormat: YTimelineDateDisplayFormat;
-  timelineDefaultDisplayFormat: YTimelineDisplayFormat;
-  timelineFormat: YTimelineFormat;
+  defaultDisplayType: YTimelineDisplayType;
+  calendarType: YTimelineCalendarType;
 }
 
-export enum YTimelineFormat {
+export interface YTimelineMoons {
+  color: string;
+  name: string;
+  length: number;
+  offset: number;
+}
+
+export enum YTimelineCalendarType {
   Harptos = 'harptos',
   Exandria = 'exandria',
   Eberron = 'eberron',
@@ -20,7 +27,7 @@ export enum YTimelineFormat {
   Custom = 'custom',
 }
 
-export enum YTimelineDisplayFormat {
+export enum YTimelineDisplayType {
   List = 'list',
   Gantt = 'gantt',
   Calendar = 'calendar'
