@@ -3,19 +3,28 @@ import { Doc as YDoc } from 'yjs';
 import { useTranslation } from "react-i18next";
 import { useObserveTimeline } from "../../utils/collaboration/useObserveTimeline";
 import { useObserveYArtifactMeta } from "../../utils/collaboration/useObserveYArtifactMeta";
-import { ARTIFACT_META_KEY, YTimelineDisplayFormat, YTimelineFormat } from "@feynote/shared-utils";
-import styled from 'styled-components'
-import { Text, Button, CheckboxGroup, DropdownMenu, Flex, RadioGroup } from "@radix-ui/themes";
+import { ARTIFACT_META_KEY, YTimelineDisplayType, YTimelineCalendarType } from "@feynote/shared-utils";
+import { Text, Button, CheckboxGroup, DropdownMenu, Flex, RadioGroup, Dialog } from "@radix-ui/themes";
 import { FaEdit, LuCalendarCog } from '../AppIcons';
+import { ArtifactTitleContainer } from "../editor/ArtifactTitleContainer";
+import { ArtifactTitleField } from "../editor/ArtifactTitleField";
+import { TimelineModal } from "./TimelineModal";
+import { styled } from "styled-components";
 
 
-const TimelineTitle = styled.input`
-  font-size: 2rem;
-  background-color: var(--ion-background-color, #fff);
-  border: none;
-  margin-top: 10px;
-  outline: none;
-  width: 100%;
+const ModalContainer = styled(Dialog.Content)`
+  display: flex;
+  max-width: 1040px;
+`;
+
+const ModalSideMenu = styled.div`
+  display: flex;
+  max-width: 240px;
+`;
+
+const ModalOverview = styled.div`
+  display: flex;
+  background-color: var(--general-background);
 `;
 
 type DocArgOptions =
@@ -37,37 +46,37 @@ export const TimelineRenderer = (props: Props) => {
   const { t } = useTranslation();
   const yDoc = props.yDoc || props.yjsProvider.document;
   const yMeta = useObserveYArtifactMeta(yDoc);
-  const { config, configYKV, timelineSelectedDisplayFormats, timelineSelectedDisplayFormatsYArray } = useObserveTimeline(yDoc)
+  const { config, configYKV, displayTypes, displayTypesYArray } = useObserveTimeline(yDoc)
 
   const setMetaProp = (metaPropName: string, value: string) => {
     yDoc.getMap(ARTIFACT_META_KEY).set(metaPropName, value);
   };
 
-  const getTimeformatText = (timeFormat: YTimelineFormat) => {
+  const getTimeformatText = (timeFormat: YTimelineCalendarType) => {
     switch(timeFormat) {
-      case YTimelineFormat.Harptos:
+      case YTimelineCalendarType.Harptos:
         return t('timelineRenderer.timeFormat.harptos')
-      case YTimelineFormat.Exandria:
+      case YTimelineCalendarType.Exandria:
         return t('timelineRenderer.timeFormat.exandria')
-      case YTimelineFormat.Eberron:
+      case YTimelineCalendarType.Eberron:
         return t('timelineRenderer.timeFormat.eberron')
-      case YTimelineFormat.Gregorian:
+      case YTimelineCalendarType.Gregorian:
         return t('timelineRenderer.timeFormat.gregorian')
       default:
         return t('timelineRenderer.timeFormat.gregorianCustom')
     }
   }
 
-  const toggleView = (format: YTimelineDisplayFormat) => {
-    const formatIdx = timelineSelectedDisplayFormats.find((displayFormat) => displayFormat === format)
+  const toggleView = (format: YTimelineDisplayType) => {
+    const formatIdx = displayTypes.find((displayType) => displayType === format)
     if (formatIdx === undefined) {
-      timelineSelectedDisplayFormatsYArray.push([format])
+      displayTypesYArray.push([format])
       return
     }
-    timelineSelectedDisplayFormatsYArray.delete(formatIdx)
+    displayTypesYArray.delete(formatIdx)
   }
 
-  const getFormatDefaultBtn = (format: YTimelineDisplayFormat) => {
+  const getFormatDefaultBtn = (format: YTimelineDisplayType) => {
     if (format === config.timelineDefaultDisplayFormat) {
       return (
         <Button>{t('timelineRenderer.view.default')}</Button>
@@ -80,78 +89,98 @@ export const TimelineRenderer = (props: Props) => {
 
   return (
     <>
-      <Flex justify="between" align="center" gap="1">
-        <TimelineTitle
-          disabled={!props.editable}
-          placeholder={t('timelineRenderer.title.placeholder')}
-          value={yMeta.title}
-          onChange={(event) => {
-            setMetaProp('title', event.target.value?.toString() || '');
-            props.onTitleChange?.(event.target.value?.toString() || '');
-          }}
-          type="text"
-        />
-        <Button variant="soft" size="2">
-          {t('timelineRenderer.time.system')}
-          <FaEdit width="18" height="18" />
-        </Button>
-      </Flex>
-      <Flex align="center" gap="1">
-        <DropdownMenu.Root>
-        	<DropdownMenu.Trigger>
+      <Dialog.Root open={true}>
+        <Flex justify="between" align="center" gap="1">
+          <ArtifactTitleContainer>
+            <ArtifactTitleField
+              disabled={!props.editable}
+              placeholder={
+                props.editable
+                  ? t('timelineRenderer.title.placeholder')
+                  : t('generic.untitled')
+              }
+              value={yMeta.meta.title}
+              onChange={(event) => {
+                setMetaProp('title', event.target.value);
+                props.onTitleChange?.(event.target.value);
+              }}
+              type="text"
+            />
+          </ArtifactTitleContainer>
+          <Dialog.Trigger>
             <Button variant="soft" size="2">
-              <LuCalendarCog width="18" height="18" />
-              {getTimeformatText(config.timelineFormat)}
+              {t('timelineRenderer.time.system')}
+              <FaEdit width="18" height="18" />
             </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content size="2">
-            <RadioGroup.Root defaultValue={config.timelineFormat} name="example">
-              <DropdownMenu.Item onClick={() => configYKV.set('timelineFormat', YTimelineFormat.Harptos)}>
-                <RadioGroup.Item value={YTimelineFormat.Harptos}>{getTimeformatText(YTimelineFormat.Harptos)}</RadioGroup.Item>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => configYKV.set('timelineFormat', YTimelineFormat.Exandria)}>
-                <RadioGroup.Item value={YTimelineFormat.Exandria}>{getTimeformatText(YTimelineFormat.Exandria)}</RadioGroup.Item>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => configYKV.set('timelineFormat', YTimelineFormat.Eberron)}>
-                <RadioGroup.Item value={YTimelineFormat.Eberron}>{getTimeformatText(YTimelineFormat.Eberron)}</RadioGroup.Item>
-              </DropdownMenu.Item>
-              <DropdownMenu.Item onClick={() => configYKV.set('timelineFormat', YTimelineFormat.Gregorian)}>
-                <RadioGroup.Item value={YTimelineFormat.Gregorian}>{getTimeformatText(YTimelineFormat.Gregorian)}</RadioGroup.Item>
-              </DropdownMenu.Item>
-            </RadioGroup.Root>
-			      <DropdownMenu.Separator />
-              <DropdownMenu.Item onClick={() => console.log('todo edit modal')}>
-                {t('timelineRenderer.timeFormat.editSystems')}
-              </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-        <DropdownMenu.Root>
-        	<DropdownMenu.Trigger>
-            <Button variant="soft" size="2">
-              <LuCalendarCog width="18" height="18" />
-              {t('timelineRenderer.view.title')}
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content size="2">
-            <CheckboxGroup.Root defaultValue={timelineSelectedDisplayFormats} name="example">
-              <CheckboxGroup.Item value={YTimelineDisplayFormat.List}>
-                <Flex align="center" justify="between">
-                  <Text onClick={() => toggleView(YTimelineDisplayFormat.List)}>{t('timelineRenderer.view.list')}</Text>
-                  {getFormatDefaultBtn(YTimelineDisplayFormat.List)}
-                </Flex>
-              </CheckboxGroup.Item>
-              <CheckboxGroup.Item value={YTimelineDisplayFormat.Gantt}>
-                <Text onClick={() => toggleView(YTimelineDisplayFormat.Gantt)}>{t('timelineRenderer.view.gantt')}</Text>
-                {getFormatDefaultBtn(YTimelineDisplayFormat.Gantt)}
-              </CheckboxGroup.Item>
-              <CheckboxGroup.Item value={YTimelineDisplayFormat.Calendar}>
-                <Text onClick={() => toggleView(YTimelineDisplayFormat.Calendar)}>{t('timelineRenderer.view.calendar')}</Text>
-                {getFormatDefaultBtn(YTimelineDisplayFormat.Calendar)}
-              </CheckboxGroup.Item>
-            </CheckboxGroup.Root>
-          </DropdownMenu.Content>
-        </DropdownMenu.Root>
-      </Flex>
+          </Dialog.Trigger>
+        </Flex>
+        <Flex align="center" gap="1">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <Button variant="soft" size="2">
+                <LuCalendarCog width="18" height="18" />
+                {getTimeformatText(config.timelineFormat)}
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content size="2">
+              <RadioGroup.Root defaultValue={config.timelineFormat} name="example">
+                <DropdownMenu.Item onClick={() => configYKV.set('calendarType', YTimelineCalendarType.Harptos)}>
+                  <RadioGroup.Item value={YTimelineCalendarType.Harptos}>{getTimeformatText(YTimelineCalendarType.Harptos)}</RadioGroup.Item>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => configYKV.set('calendarType', YTimelineCalendarType.Exandria)}>
+                  <RadioGroup.Item value={YTimelineCalendarType.Exandria}>{getTimeformatText(YTimelineCalendarType.Exandria)}</RadioGroup.Item>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => configYKV.set('calendarType', YTimelineCalendarType.Eberron)}>
+                  <RadioGroup.Item value={YTimelineCalendarType.Eberron}>{getTimeformatText(YTimelineCalendarType.Eberron)}</RadioGroup.Item>
+                </DropdownMenu.Item>
+                <DropdownMenu.Item onClick={() => configYKV.set('calendarType', YTimelineCalendarType.Gregorian)}>
+                  <RadioGroup.Item value={YTimelineCalendarType.Gregorian}>{getTimeformatText(YTimelineCalendarType.Gregorian)}</RadioGroup.Item>
+                </DropdownMenu.Item>
+              </RadioGroup.Root>
+              <DropdownMenu.Separator />
+                <Dialog.Trigger>
+                  <DropdownMenu.Item>
+                    {t('timelineRenderer.timeFormat.editSystems')}
+                  </DropdownMenu.Item>
+                </Dialog.Trigger>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger>
+              <Button variant="soft" size="2">
+                <LuCalendarCog width="18" height="18" />
+                {t('timelineRenderer.view.title')}
+              </Button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Content size="2">
+              <CheckboxGroup.Root defaultValue={displayTypes} name="example">
+                <CheckboxGroup.Item value={YTimelineDisplayType.List}>
+                  <Flex align="center" justify="between">
+                    <Text onClick={() => toggleView(YTimelineDisplayType.List)}>{t('timelineRenderer.view.list')}</Text>
+                    {getFormatDefaultBtn(YTimelineDisplayType.List)}
+                  </Flex>
+                </CheckboxGroup.Item>
+                <CheckboxGroup.Item value={YTimelineDisplayType.Gantt}>
+                  <Text onClick={() => toggleView(YTimelineDisplayType.Gantt)}>{t('timelineRenderer.view.gantt')}</Text>
+                  {getFormatDefaultBtn(YTimelineDisplayType.Gantt)}
+                </CheckboxGroup.Item>
+                <CheckboxGroup.Item value={YTimelineDisplayType.Calendar}>
+                  <Text onClick={() => toggleView(YTimelineDisplayType.Calendar)}>{t('timelineRenderer.view.calendar')}</Text>
+                  {getFormatDefaultBtn(YTimelineDisplayType.Calendar)}
+                </CheckboxGroup.Item>
+              </CheckboxGroup.Root>
+            </DropdownMenu.Content>
+          </DropdownMenu.Root>
+        </Flex>
+        <ModalContainer>
+          <ModalSideMenu>
+
+          </ModalSideMenu>
+          <ModalOverview>
+
+          </ModalOverview>
+        </ModalContainer>
+      </Dialog.Root>
     </>
   )
 }

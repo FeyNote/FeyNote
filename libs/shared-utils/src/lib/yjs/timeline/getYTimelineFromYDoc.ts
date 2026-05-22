@@ -7,9 +7,11 @@ import type { TypedYKV } from '../TypedYKV';
 const TIMELINE_CONFIG_KEY = 'timelineConfig'
 const TIMELINE_EVENTS_KEY = 'timelineEvents'
 const TIMELINE_ADDITIONAL_ERAS_KEY = 'timelineAdditionalEras'
-const TIMELINE_MONTHS_KEY = 'timelineMonthsKey'
-const TIMELINE_WEEK_DAYS_KEY = 'timelineWeekDaysKey'
-const TIMELINE_SELECTED_DISPLAY_FORMATS = 'timelineSelectedDisplayFormats'
+const TIMELINE_MONTHS_KEY = 'timelineMonths'
+const TIMELINE_WEEK_DAYS_KEY = 'timelineWeekDays'
+const TIMELINE_DATE_DISPLAY_FORMATS_KEY = 'timelineDateDisplayFormats'
+const TIMELINE_MOONS_KEY = 'timelineMoons'
+const TIMELINE_DISPLAY_TYPES = 'timelineDisplayTypes'
 
 export const getYTimelineFromYDoc = (yDoc: YDoc) => {
   const config = new YKeyValue(yDoc.getArray<{
@@ -17,12 +19,13 @@ export const getYTimelineFromYDoc = (yDoc: YDoc) => {
     val: YTimelineConfig[keyof YTimelineConfig]
   }>(TIMELINE_CONFIG_KEY)) as TypedYKV<YTimelineConfig>
 
-
   const events = yDoc.getArray<YTimelineEvent>(TIMELINE_EVENTS_KEY) as TypedArray<YTimelineEvent>;
   const additionalEras = yDoc.getArray<YTimelineEra>(TIMELINE_ADDITIONAL_ERAS_KEY) as TypedArray<YTimelineEra>;
   const months = yDoc.getArray<YTimelineMonth>(TIMELINE_MONTHS_KEY) as TypedArray<YTimelineMonth>;
   const weekDays = yDoc.getArray<string>(TIMELINE_WEEK_DAYS_KEY) as TypedArray<string>;
-  const timelineSelectedDisplayFormats = yDoc.getArray<string>(TIMELINE_SELECTED_DISPLAY_FORMATS) as TypedArray<string>;
+  const dateDisplayFormats = yDoc.getArray<string>(TIMELINE_DATE_DISPLAY_FORMATS_KEY) as TypedArray<string>;
+  const moons = yDoc.getArray<string>(TIMELINE_MOONS_KEY) as TypedArray<string>;
+  const displayTypes = yDoc.getArray<string>(TIMELINE_DISPLAY_TYPES) as TypedArray<string>;
 
   return {
     config,
@@ -30,6 +33,8 @@ export const getYTimelineFromYDoc = (yDoc: YDoc) => {
     additionalEras,
     months,
     weekDays,
-    timelineSelectedDisplayFormats,
+    dateDisplayFormats,
+    moons,
+    displayTypes,
   }
 }

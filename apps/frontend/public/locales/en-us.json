@@ -781,6 +781,8 @@
   "editor.artifactTypeSelector.tiptap.description": "Write notes, stories, or lore about your world in an interactive text editor with superpowers!",
   "editor.artifactTypeSelector.calendar": "Calendar Document",
   "editor.artifactTypeSelector.calendar.description": "Create a fantasy calendar to keep track of in-world events or your campaign's sessions",
+  "editor.artifactTypeSelector.timeline": "Timeline Document",
+  "editor.artifactTypeSelector.timeline.description": "Create a fantasy timeline to keep track of in-world events or your campaign's sessions",
   "editor.artifactTypeSelector.tldraw": "Drawing Document",
   "editor.artifactTypeSelector.tldraw.description": "Create drawings, annotate maps, whiteboard, or just sketch something out",
   "editor.artifactTypeSelector.thread": "Assistant Thread",

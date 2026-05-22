@@ -1,5 +1,5 @@
 import type { ArtifactType } from '@prisma/client';
-import { IoCalendar, IoChatbubbles, IoDocument, FaPencil } from '../AppIcons';
+import { IoCalendar, IoChatbubbles, IoDocument } from '../AppIcons';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { Card, Flex, Text } from '@radix-ui/themes';
@@ -61,7 +61,7 @@ export const CreateNewTypeSelector = (props: Props) => {
         <Card
           asChild
           onClick={() => {
-            props.newArtifact('calendar');
+            props.newArtifact('timeline');
           }}
         >
           <button>
@@ -69,47 +69,11 @@ export const CreateNewTypeSelector = (props: Props) => {
               <Flex align="center" gap="2">
                 <IoCalendar />
                 <Text weight="medium">
-                  {t('editor.artifactTypeSelector.calendar')}
+                  {t('editor.artifactTypeSelector.timeline')}
                 </Text>
               </Flex>
               <Text size="2" color="gray">
-                {t('editor.artifactTypeSelector.calendar.description')}
-              </Text>
-            </Flex>
-          </button>
-        </Card>
-        <Card
-          asChild
-          onClick={() => {
-            props.newArtifact('timeline');
-          }}
-        >
-          <IonCardHeader>
-            <StyledIonCardTitle>
-              <IonIcon icon={calendar} />
-              {t('editor.artifactTypeSelector.timeline')}
-            </StyledIonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {t('editor.artifactTypeSelector.timeline.description')}
-          </IonCardContent>
-        </IonCard>
-        <IonCard
-          button
-          onClick={() => {
-            props.newArtifact('tldraw');
-          }}
-        >
-          <button>
-            <Flex direction="column" align="center" gap="2" p="3">
-              <Flex align="center" gap="2">
-                <FaPencil />
-                <Text weight="medium">
-                  {t('editor.artifactTypeSelector.tldraw')}
-                </Text>
-              </Flex>
-              <Text size="2" color="gray">
-                {t('editor.artifactTypeSelector.tldraw.description')}
+                {t('editor.artifactTypeSelector.timeline.description')}
               </Text>
             </Flex>
           </button>

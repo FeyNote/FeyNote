@@ -1,8 +1,8 @@
 import {
   getYTimelineFromYDoc,
   YTimelineDateDisplayFormat,
-  YTimelineDisplayFormat,
-  YTimelineFormat,
+  YTimelineDisplayType,
+  YTimelineCalendarType,
 } from '@feynote/shared-utils';
 import { useMemo } from 'react';
 import { Doc as YDoc } from 'yjs';
@@ -20,20 +20,13 @@ export const useObserveTimeline = (yDoc: YDoc) => {
   const config = useMemo(() => {
     return {
       dateDisplayFormat: yTimeline.config.get('dateDisplayFormat') || YTimelineDateDisplayFormat.YYMMDD,
-      timelineDefaultDisplayFormat: yTimeline.config.get('timelineDefaultDisplayFormat') || YTimelineDisplayFormat.List,
-      timelineFormat: yTimeline.config.get('timelineFormat') || YTimelineFormat.Gregorian,
+      timelineDefaultDisplayFormat: yTimeline.config.get('defaultDisplayType') || YTimelineDisplayType.List,
+      timelineFormat: yTimeline.config.get('calendarType') || YTimelineCalendarType.Gregorian,
       startingEraBeginsAtZero: yTimeline.config.get('startingEraBeginsAtZero') || false,
       priorEraTitle: yTimeline.config.get('startingEraBeginsAtZero') || false,
       startingEraTitle: yTimeline.config.get('startingEraTitle') || t('timeline.startingEraTitle.default'),
-      priorEraStart: yTimeline.config.get('priorEraStart') || {
-        year: 3276,
-        monthIdx: 0,
-        dayIdx: 0,
-        time: {
-
-        }
-      },
-      weekWpochDayIndx: yTimeline.config.get('weekWpochDayIndx'),
+      priorEraStart: yTimeline.config.get('priorEraStart'),
+      weekEpochDayIndx: yTimeline.config.get('weekEpochDayIndx'),
       weekDaysResetEachMonth: yTimeline.config.get('weekDaysResetEachMonth'),
       hoursInDay: yTimeline.config.get('hoursInDay'),
       minutesInDay: yTimeline.config.get('minutesInDay'),
@@ -50,10 +43,20 @@ export const useObserveTimeline = (yDoc: YDoc) => {
     return yTimeline.additionalEras.toArray() || []
   }, [additionalEraRerenderReducer])
 
-  const { rerenderReducerValue: timelineSelectedDisplayFormatsRerenderReducer } = useObserveYArrayChanges(yTimeline.timelineSelectedDisplayFormats)
-  const timelineSelectedDisplayFormats = useMemo(() => {
-    return yTimeline.timelineSelectedDisplayFormats.toArray() || []
-  }, [timelineSelectedDisplayFormatsRerenderReducer])
+  const { rerenderReducerValue: dateDisplayFormatsRerenderReducer } = useObserveYArrayChanges(yTimeline.dateDisplayFormats)
+  const dateDisplayFormats = useMemo(() => {
+    return yTimeline.dateDisplayFormats.toArray() || []
+  }, [dateDisplayFormatsRerenderReducer])
+
+  const { rerenderReducerValue: moonsRerenderReducer } = useObserveYArrayChanges(yTimeline.moons)
+  const moons = useMemo(() => {
+    return yTimeline.moons.toArray() || []
+  }, [moonsRerenderReducer])
+
+  const { rerenderReducerValue: displayTypesRerenderReducer } = useObserveYArrayChanges(yTimeline.displayTypes)
+  const displayTypes = useMemo(() => {
+    return yTimeline.displayTypes.toArray() || []
+  }, [displayTypesRerenderReducer])
 
   const { rerenderReducerValue: monthsRerenderReducer } = useObserveYArrayChanges(yTimeline.months)
   const months = useMemo(() => {
@@ -137,7 +140,11 @@ export const useObserveTimeline = (yDoc: YDoc) => {
     monthsYArray: yTimeline.months,
     weekDays,
     weekDaysYArray: yTimeline.weekDays,
-    timelineSelectedDisplayFormats,
-    timelineSelectedDisplayFormatsYArray: yTimeline.timelineSelectedDisplayFormats,
+    dateDisplayFormats,
+    dateDisplayFormatsYArray: yTimeline.dateDisplayFormats,
+    moons,
+    moonsYArray: yTimeline.moons,
+    displayTypes,
+    displayTypesYArray: yTimeline.displayTypes,
   };
 };
