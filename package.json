@@ -8,9 +8,9 @@
   },
   "private": true,
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.77",
-    "@ai-sdk/openai": "^3.0.63",
-    "@ai-sdk/react": "^3.0.184",
+    "@ai-sdk/anthropic": "^3.0.78",
+    "@ai-sdk/openai": "^3.0.64",
+    "@ai-sdk/react": "^3.0.189",
     "@astrojs/mdx": "^5.0.6",
     "@astrojs/node": "^10.1.1",
     "@astrojs/react": "^5.0.5",
