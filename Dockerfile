@@ -6,26 +6,33 @@ WORKDIR /app
 RUN apk update
 RUN apk add --no-cache inotify-tools
 RUN apk add --no-cache pandoc
-RUN npm install -g tsx
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME/bin:$PATH"
+RUN corepack enable
+RUN mkdir -p $PNPM_HOME && chown -R node:node $PNPM_HOME
 
 RUN chown -R node:node /app
 
 USER node
 
-COPY .npmrc .npmrc
-COPY package.json package.json
-COPY package-lock.json package-lock.json
-RUN npm ci
+RUN pnpm add -g tsx
 
-COPY tsconfig.base.json tsconfig.base.json
-COPY nx.json nx.json
+COPY --chown=node:node .npmrc .npmrc
+COPY --chown=node:node package.json package.json
+COPY --chown=node:node pnpm-lock.yaml pnpm-lock.yaml
+COPY --chown=node:node pnpm-workspace.yaml pnpm-workspace.yaml
+RUN pnpm install --frozen-lockfile
 
-COPY scripts scripts
-COPY apps apps
-COPY libs libs
-COPY prisma prisma
+COPY --chown=node:node tsconfig.base.json tsconfig.base.json
+COPY --chown=node:node nx.json nx.json
 
-RUN npx prisma generate
+COPY --chown=node:node scripts scripts
+COPY --chown=node:node apps apps
+COPY --chown=node:node libs libs
+COPY --chown=node:node prisma prisma
+
+RUN ./node_modules/.bin/prisma generate
 
 ENV I18N_PATH=/app/libs/api-services/src/lib/i18n/locales
 

@@ -2,6 +2,16 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@5.1.0
   node: circleci/node@7.1.0
+commands:
+  install_dependencies:
+    description: 'Install dependencies'
+    steps:
+      - run:
+          name: enable-corepack
+          command: sudo corepack enable
+      - run:
+          name: install-packages
+          command: pnpm install --frozen-lockfile
 jobs:
   build_and_test:
     resource_class: large
@@ -23,28 +33,28 @@ jobs:
           POSTGRES_DB: dnd-assistant
     steps:
       - checkout
-      - node/install-packages
+      - install_dependencies
       - run:
           name: commitlint
           command: |
             if [ -n "$CIRCLE_PULL_REQUEST" ]; then
               # For PRs: validate all commits in the PR
-              npx commitlint --from origin/main --to HEAD --verbose
+              ./node_modules/.bin/commitlint --from origin/main --to HEAD --verbose
             else
               # For direct pushes: validate the last commit
-              npx commitlint --from HEAD~1 --to HEAD --verbose
+              ./node_modules/.bin/commitlint --from HEAD~1 --to HEAD --verbose
             fi
       - run:
           name: prettier
-          command: npx prettier --check .
+          command: ./node_modules/.bin/prettier --check .
       - run:
           name: migrate
-          command: npx prisma migrate dev
+          command: ./node_modules/.bin/prisma migrate dev
       - run:
           name: lint, lint-locales, typecheck, test, build
           command: |
             export ENABLE_BUNDLE_ANALYZER=true
-            npx nx run-many --targets=lint,lint-locales,typecheck,test,build
+            ./node_modules/.bin/nx run-many --targets=lint,lint-locales,typecheck,test,build
       - store_artifacts:
           path: ./dist/apps/frontend/stats.html
           destination: frontend-bundle-stats.html
@@ -72,14 +82,14 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup
-      - node/install-packages
+      - install_dependencies
       - run:
           name: build-frontend
           command: |
             export VITE_APP_VERSION=$CIRCLE_TAG
             export SOURCEMAP_UPLOAD=true
             export NODE_OPTIONS=--max-old-space-size=8192
-            npx nx build frontend --skip-nx-cache
+            ./node_modules/.bin/nx build frontend --skip-nx-cache
             [ -f "dist/apps/frontend/index.html" ] && [ -f "dist/apps/frontend/service-worker.js" ] || { echo "Both index.html and service-worker.js must exist. Something went wrong during build"; exit 1; }
       - run:
           name: move-frontend-build
@@ -94,10 +104,10 @@ jobs:
     steps:
       - checkout
       - aws-cli/setup
-      - node/install-packages
+      - install_dependencies
       - run:
           name: build-docs
-          command: npx nx build docs --skip-nx-cache
+          command: ./node_modules/.bin/nx build docs --skip-nx-cache
       - run:
           name: push
           command: ./scripts/push-docs-s3.sh ${CIRCLE_TAG:=stg}
@@ -107,7 +117,7 @@ jobs:
       - image: cimg/node:24.7
     steps:
       - checkout
-      - node/install-packages
+      - install_dependencies
       - run:
           name: build-frontend-for-desktop
           command: ./scripts/prepare-for-electron-build.sh
@@ -125,8 +135,11 @@ jobs:
       - node/install:
           node-version: '24'
       - run:
+          name: enable-corepack
+          command: sudo corepack enable
+      - run:
           name: install-packages
-          command: npm install
+          command: pnpm install --frozen-lockfile
       - attach_workspace:
           at: .
       - run:
@@ -166,7 +179,7 @@ jobs:
           name: arm64
           command: |
             cd apps/desktop
-            npx electron-forge make --arch=arm64
+            ../../node_modules/.bin/electron-forge make --arch=arm64
       - run:
           name: collect-arm64-artifacts
           command: |
@@ -182,7 +195,7 @@ jobs:
           name: x64
           command: |
             cd apps/desktop
-            npx electron-forge make --arch=x64
+            ../../node_modules/.bin/electron-forge make --arch=x64
       - run:
           name: collect-x64-artifacts
           command: |
@@ -206,7 +219,7 @@ jobs:
       - image: cimg/node:24.7
     steps:
       - checkout
-      - node/install-packages
+      - install_dependencies
       - attach_workspace:
           at: .
       - run:
@@ -216,7 +229,7 @@ jobs:
           name: make
           command: |
             cd apps/desktop
-            npx electron-forge make
+            ../../node_modules/.bin/electron-forge make
       - run:
           name: collect-artifacts
           command: |
@@ -245,15 +258,18 @@ jobs:
           command: |
             nvm install 24
             nvm use 24
+      - run:
+          name: enable-corepack
+          command: corepack enable
       - restore_cache:
           keys:
-            - npm-windows-v2-{{ checksum "package-lock.json" }}
-            - npm-windows-v2-
+            - pnpm-windows-v1-{{ checksum "pnpm-lock.yaml" }}
+            - pnpm-windows-v1-
       - run:
           name: install-packages
-          command: npm install
+          command: pnpm install --frozen-lockfile
       - save_cache:
-          key: npm-windows-v2-{{ checksum "package-lock.json" }}
+          key: pnpm-windows-v1-{{ checksum "pnpm-lock.yaml" }}
           paths:
             - node_modules
       - attach_workspace:
@@ -263,7 +279,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             cd apps/desktop
-            npx electron-forge make
+            ../../node_modules/.bin/electron-forge make
       - run:
           name: collect-artifacts
           command: |

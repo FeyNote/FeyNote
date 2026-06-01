@@ -87,6 +87,7 @@ Both versions fully support offline mode. The desktop version adds a few feature
 #### Prerequisites
 
 - Node, I recommend using NVM (see .nvmrc for the current Node version we use)
+- pnpm
 - Docker and Docker Compose
 
 #### Quick Start
@@ -102,7 +103,8 @@ Both versions fully support offline mode. The desktop version adds a few feature
 
    ```bash
    nvm use
-   npm install
+   corepack enable
+   pnpm install
    ```
 
 3. **Set up environment**

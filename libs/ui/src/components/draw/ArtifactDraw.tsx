@@ -42,6 +42,7 @@ import {
   TextToolbarItem,
   TLComponents,
   Tldraw,
+  TldrawUiMenuActionItem,
   TldrawUiMenuItem,
   TldrawUiMenuSubmenu,
   TLUiAssetUrlOverrides,
@@ -52,7 +53,6 @@ import {
   ToggleSnapModeItem,
   ToggleWrapModeItem,
   TriangleToolbarItem,
-  useActions,
   useCanRedo,
   useCanUndo,
   useEditor,
@@ -272,11 +272,10 @@ export const ArtifactDraw: React.FC<Props> = memo((props) => {
     QuickActions: () => {
       const canUndo = useCanUndo();
       const canRedo = useCanRedo();
-      const actions = useActions();
       return (
         <DefaultQuickActions>
-          <TldrawUiMenuItem {...actions.undo} disabled={!canUndo} />
-          <TldrawUiMenuItem {...actions.redo} disabled={!canRedo} />
+          <TldrawUiMenuActionItem actionId="undo" disabled={!canUndo} />
+          <TldrawUiMenuActionItem actionId="redo" disabled={!canRedo} />
         </DefaultQuickActions>
       );
     },

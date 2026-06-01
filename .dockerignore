@@ -11,3 +11,4 @@ apps/docs/dist
 *.md
 .env*
 .nx
+.pnpm-store

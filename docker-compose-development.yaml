@@ -47,7 +47,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: npx nx serve frontend
+    command: ./node_modules/.bin/nx serve frontend
     environment:
       <<: *common-env-vars
     depends_on:
@@ -60,7 +60,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: npx nx serve www
+    command: ./node_modules/.bin/nx serve www
     environment:
       <<: *common-env-vars
     depends_on:
@@ -73,7 +73,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: npx nx serve docs
+    command: ./node_modules/.bin/nx serve docs
     environment:
       <<: *common-env-vars
     stop_grace_period: 1s
@@ -174,7 +174,7 @@ services:
     volumes:
       - ./apps:/app/apps
       - ./libs:/app/libs
-    command: ./scripts/watchandrun.sh 'npx nx graph --host=0.0.0.0 --open=false' ./apps ./libs
+    command: ./scripts/watchandrun.sh './node_modules/.bin/nx graph --host=0.0.0.0 --open=false' ./apps ./libs
     stop_grace_period: 1s
   postgres:
     image: postgres:16.0

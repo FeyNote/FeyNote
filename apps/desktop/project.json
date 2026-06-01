@@ -8,7 +8,7 @@
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cd apps/desktop && NODE_ENV=development npx electron-forge start"
+        "command": "cd apps/desktop && NODE_ENV=development ../../node_modules/.bin/electron-forge start"
       }
     },
     "package": {
@@ -17,7 +17,7 @@
       "options": {
         "commands": [
           "rm -rf apps/desktop/renderer && cp -r dist/apps/frontend apps/desktop/renderer",
-          "cd apps/desktop && npx electron-forge package"
+          "cd apps/desktop && ../../node_modules/.bin/electron-forge package"
         ],
         "parallel": false
       }
@@ -26,7 +26,7 @@
       "executor": "nx:run-commands",
       "dependsOn": ["package"],
       "options": {
-        "command": "cd apps/desktop && npx electron-forge make"
+        "command": "cd apps/desktop && ../../node_modules/.bin/electron-forge make"
       }
     },
     "typecheck": {

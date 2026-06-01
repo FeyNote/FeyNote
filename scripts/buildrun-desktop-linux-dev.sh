@@ -11,7 +11,7 @@ $SCRIPTPATH/prepare-for-electron-build.sh
 
 cd apps/desktop
 
-npx electron-forge make --targets @electron-forge/maker-deb
+../../node_modules/.bin/electron-forge make --targets @electron-forge/maker-deb
 
 VERSION="${CIRCLE_TAG#v}"
 sudo apt install ./out/make/deb/x64/feynote-desktop_${VERSION}_amd64.deb
