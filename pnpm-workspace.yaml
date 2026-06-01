@@ -12,6 +12,7 @@ overrides:
   '@tiptap/core': $@tiptap/core
   '@tiptap/pm': $@tiptap/core
   '@tiptap/react': $@tiptap/react
+  ai: $ai
 
 allowBuilds:
   '@parcel/watcher': true
