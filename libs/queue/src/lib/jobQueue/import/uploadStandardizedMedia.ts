@@ -48,13 +48,6 @@ export const uploadStandardizedMedia = async (
 
           if ('url' in mediaInfo) {
             logger.debug(`Retrieving media content from ${mediaInfo.url}`);
-            await fetch(
-              'https://80--main--dnd-assistant--cmeyer.coder.tartarus.cloud/api/timeout',
-              {
-                signal: abortController.signal,
-              },
-            );
-
             const response = await proxyGetRequest({
               url: mediaInfo.url,
               config: {
