@@ -6,7 +6,7 @@ import {
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
 import pLimit from 'p-limit';
 import { basename, extname } from 'path';
-import { FilePurpose, type Prisma } from '@prisma/client';
+import { FilePurpose } from '@prisma/client';
 import { Readable } from 'stream';
 import { createReadStream } from 'fs';
 import mime from 'mime';
@@ -25,98 +25,95 @@ export const uploadStandardizedMedia = async (
   let counter = 0;
   const results = await Promise.allSettled(
     importInfo.mediaFilesToUpload.map(async (mediaInfo, idx) => {
-      // eslint-disable-next-line no-async-promise-executor
-      return limit(
-        () =>
-          new Promise<Prisma.FileCreateManyInput>(async (res, rej) => {
-            try {
-              counter++;
+      return limit(async () => {
+        try {
+          counter++;
 
-              if (counter > ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
-                const errorMsg = 'Too many http links';
-                logger.info(errorMsg);
-                return rej(new Error(errorMsg));
-              }
+          if (counter > ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
+            const errorMsg = 'Too many http links';
+            logger.debug(errorMsg);
+            throw new Error(errorMsg);
+          }
 
-              let fileName: string;
-              let ext: string;
-              let file = new Readable();
+          let fileName: string;
+          let ext: string;
+          let file = new Readable();
 
-              const abortController = new AbortController();
-              const timeout = setTimeout(() => {
-                abortController.abort();
-                file.destroy();
-                const errorMsg = `Request timed out for handling media url from, ${'path' in mediaInfo ? mediaInfo.path : mediaInfo.url}`;
-                logger.info(errorMsg);
-                return rej(new Error(errorMsg));
-              }, MEDIA_PROCESSING_REQUEST_TIMEOUT);
+          const abortController = new AbortController();
+          const timeout = setTimeout(() => {
+            abortController.abort(
+              `Media processing timeout hit while processing data from url ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
+            );
+            file.destroy();
+          }, MEDIA_PROCESSING_REQUEST_TIMEOUT);
 
-              if ('url' in mediaInfo) {
-                logger.debug(`Retrieving media content from ${mediaInfo.url}`);
-                const response = await proxyGetRequest({
-                  url: mediaInfo.url,
-                  config: {
-                    responseType: 'stream',
-                    signal: abortController.signal,
-                  },
-                });
+          if ('url' in mediaInfo) {
+            logger.debug(`Retrieving media content from ${mediaInfo.url}`);
+            const response = await proxyGetRequest({
+              url: mediaInfo.url,
+              config: {
+                responseType: 'stream',
+                signal: abortController.signal,
+              },
+            });
 
-                if (abortController.signal.aborted) return;
+            file = response.data;
+            ext = extname(mediaInfo.url);
+            fileName = basename(mediaInfo.url, ext);
+          } else {
+            logger.debug(
+              `Beinning stream of local stored media content ${mediaInfo.path}`,
+            );
+            ext = extname(mediaInfo.path);
+            fileName = basename(mediaInfo.path, ext);
+            file = createReadStream(mediaInfo.path);
+          }
 
-                file = response.data;
-                ext = extname(mediaInfo.url);
-                fileName = basename(mediaInfo.url, ext);
-              } else {
-                logger.debug(
-                  `Beinning stream of local stored media content ${mediaInfo.path}`,
-                );
-                ext = extname(mediaInfo.path);
-                fileName = basename(mediaInfo.path, ext);
-                file = createReadStream(mediaInfo.path);
-              }
+          const purpose = FilePurpose.artifact;
+          const mimetype = mime.lookup(ext);
 
-              const purpose = FilePurpose.artifact;
-              const mimetype = mime.lookup(ext);
+          const { uploadResult } = await transformAndUploadFileToS3ForUser({
+            userId,
+            file,
+            purpose,
+            mimetype,
+            storageKey: mediaInfo.storageKey,
+          });
 
-              const { uploadResult } = await transformAndUploadFileToS3ForUser({
-                userId,
-                file,
-                purpose,
-                mimetype,
-                storageKey: mediaInfo.storageKey,
-              });
+          if (abortController.signal.aborted) {
+            throw new Error(
+              `Media processing timeout hit while attempting to transform and upload media to s3 ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
+            );
+          }
+          clearTimeout(timeout);
 
-              if (abortController.signal.aborted) return;
-              clearTimeout(timeout);
+          const fileData = {
+            id: mediaInfo.id,
+            artifactId: mediaInfo.associatedArtifactId,
+            userId,
+            name: fileName,
+            mimetype,
+            storageKey: uploadResult.key,
+            purpose,
+            metadata: {
+              uploadResult,
+            },
+          };
 
-              const fileData = {
-                id: mediaInfo.id,
-                artifactId: mediaInfo.associatedArtifactId,
-                userId,
-                name: fileName,
-                mimetype,
-                storageKey: uploadResult.key,
-                purpose,
-                metadata: {
-                  uploadResult,
-                },
-              };
+          progressTracker.onProgress({
+            progress: Math.floor(
+              (idx / importInfo.mediaFilesToUpload.length) * 100,
+            ),
+            step: 2,
+          });
 
-              progressTracker.onProgress({
-                progress: Math.floor(
-                  (idx / importInfo.mediaFilesToUpload.length) * 100,
-                ),
-                step: 2,
-              });
-
-              logger.debug(`Finished uploading media ${fileName}`);
-              return res(fileData);
-            } catch (e) {
-              logger.error(e);
-              return rej(e);
-            }
-          }),
-      );
+          logger.debug(`Finished uploading media ${fileName}`);
+          return fileData;
+        } catch (e) {
+          logger.error(e);
+          throw e;
+        }
+      });
     }),
   );
 
