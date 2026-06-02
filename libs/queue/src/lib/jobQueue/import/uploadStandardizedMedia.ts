@@ -1,6 +1,7 @@
 import {
   logger,
   proxyGetRequest,
+  TimeoutError,
   transformAndUploadFileToS3ForUser,
 } from '@feynote/api-services';
 import type { StandardizedImportInfo } from './StandardizedImportInfo';
@@ -16,6 +17,8 @@ const ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD = 5000;
 const UPLOAD_CONCURRENCY = 3;
 const MEDIA_PROCESSING_REQUEST_TIMEOUT = 15000;
 
+class TooManyLinksError extends Error {}
+
 export const uploadStandardizedMedia = async (
   userId: string,
   importInfo: StandardizedImportInfo,
@@ -30,9 +33,7 @@ export const uploadStandardizedMedia = async (
           counter++;
 
           if (counter > ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
-            const errorMsg = 'Too many http links';
-            logger.debug(errorMsg);
-            throw new Error(errorMsg);
+            throw new TooManyLinksError('Too many http links');
           }
 
           let fileName: string;
@@ -42,7 +43,9 @@ export const uploadStandardizedMedia = async (
           const abortController = new AbortController();
           const timeout = setTimeout(() => {
             abortController.abort(
-              `Media processing timeout hit while processing data from url ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
+              new TimeoutError(
+                `Media processing timeout hit while processing data from url ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
+              ),
             );
             file.destroy();
           }, MEDIA_PROCESSING_REQUEST_TIMEOUT);
@@ -81,7 +84,7 @@ export const uploadStandardizedMedia = async (
           });
 
           if (abortController.signal.aborted) {
-            throw new Error(
+            throw new TimeoutError(
               `Media processing timeout hit while attempting to transform and upload media to s3 ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
             );
           }
@@ -110,6 +113,9 @@ export const uploadStandardizedMedia = async (
           logger.debug(`Finished uploading media ${fileName}`);
           return fileData;
         } catch (e) {
+          if (e instanceof TimeoutError || e instanceof TooManyLinksError) {
+            throw e;
+          }
           logger.error(e);
           throw e;
         }
