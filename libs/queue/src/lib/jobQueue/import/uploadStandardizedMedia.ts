@@ -33,7 +33,7 @@ export const uploadStandardizedMedia = async (
           counter++;
 
           if (counter > ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD) {
-            throw new TooManyLinksError('Too many http links');
+            throw new TooManyLinksError();
           }
 
           let fileName: string;
@@ -42,16 +42,19 @@ export const uploadStandardizedMedia = async (
 
           const abortController = new AbortController();
           const timeout = setTimeout(() => {
-            abortController.abort(
-              new TimeoutError(
-                `Media processing timeout hit while processing data from url ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
-              ),
-            );
+            abortController.abort(new TimeoutError());
             file.destroy();
           }, MEDIA_PROCESSING_REQUEST_TIMEOUT);
 
           if ('url' in mediaInfo) {
             logger.debug(`Retrieving media content from ${mediaInfo.url}`);
+            await fetch(
+              'https://80--main--dnd-assistant--cmeyer.coder.tartarus.cloud/api/timeout',
+              {
+                signal: abortController.signal,
+              },
+            );
+
             const response = await proxyGetRequest({
               url: mediaInfo.url,
               config: {
@@ -84,9 +87,7 @@ export const uploadStandardizedMedia = async (
           });
 
           if (abortController.signal.aborted) {
-            throw new TimeoutError(
-              `Media processing timeout hit while attempting to transform and upload media to s3 ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
-            );
+            throw new TimeoutError();
           }
           clearTimeout(timeout);
 
@@ -113,7 +114,16 @@ export const uploadStandardizedMedia = async (
           logger.debug(`Finished uploading media ${fileName}`);
           return fileData;
         } catch (e) {
-          if (e instanceof TimeoutError || e instanceof TooManyLinksError) {
+          if (e instanceof TimeoutError) {
+            logger.debug(
+              `Media processing timeout hit while processing data from url ${'url' in mediaInfo ? mediaInfo.url : mediaInfo.path}`,
+            );
+            throw e;
+          }
+          if (e instanceof TooManyLinksError) {
+            logger.debug(
+              `Too many http links in import job, skipping media upload`,
+            );
             throw e;
           }
           logger.error(e);
