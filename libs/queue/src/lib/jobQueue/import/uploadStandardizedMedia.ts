@@ -17,7 +17,12 @@ const ALLOWED_NUMBER_OF_HTTP_LINKS_PER_UPLOAD = 5000;
 const UPLOAD_CONCURRENCY = 3;
 const MEDIA_PROCESSING_REQUEST_TIMEOUT = 15000;
 
-class TooManyLinksError extends Error {}
+class TooManyLinksError extends Error {
+  constructor() {
+    super();
+    this.name = 'TooManyLinksError';
+  }
+}
 
 export const uploadStandardizedMedia = async (
   userId: string,
