@@ -9,7 +9,7 @@ import pLimit from 'p-limit';
 import { basename, extname } from 'path';
 import { FilePurpose } from '@prisma/client';
 import { Readable } from 'stream';
-import { createReadStream } from 'fs';
+import { createReadStream, type ReadStream } from 'fs';
 import mime from 'mime';
 import type { JobProgressTracker } from '../JobProgressTracker';
 
@@ -43,16 +43,25 @@ export const uploadStandardizedMedia = async (
 
           let fileName: string;
           let ext: string;
-          let file = new Readable();
+          let file: Readable | ReadStream = new Readable();
 
           const abortController = new AbortController();
           const timeout = setTimeout(() => {
-            abortController.abort(new TimeoutError());
-            file.destroy();
+            if (file.closed) return;
+
+            logger.debug(
+              `Request timeout on media ${idx + 1}/${importInfo.mediaFilesToUpload.length}`,
+            );
+            abortController.abort();
+            file._destroy(new TimeoutError(), () => {
+              // Do nothing
+            });
           }, MEDIA_PROCESSING_REQUEST_TIMEOUT);
 
           if ('url' in mediaInfo) {
-            logger.debug(`Retrieving media content from ${mediaInfo.url}`);
+            logger.debug(
+              `Retrieving media content from ${mediaInfo.url} ${idx + 1}/${importInfo.mediaFilesToUpload.length}`,
+            );
             const response = await proxyGetRequest({
               url: mediaInfo.url,
               config: {
@@ -66,7 +75,7 @@ export const uploadStandardizedMedia = async (
             fileName = basename(mediaInfo.url, ext);
           } else {
             logger.debug(
-              `Beinning stream of local stored media content ${mediaInfo.path}`,
+              `Beginning stream of local stored media content ${mediaInfo.path} ${idx + 1}/${importInfo.mediaFilesToUpload.length}`,
             );
             ext = extname(mediaInfo.path);
             fileName = basename(mediaInfo.path, ext);
@@ -104,12 +113,14 @@ export const uploadStandardizedMedia = async (
 
           progressTracker.onProgress({
             progress: Math.floor(
-              (idx / importInfo.mediaFilesToUpload.length) * 100,
+              (idx + 1 / importInfo.mediaFilesToUpload.length) * 100,
             ),
             step: 2,
           });
 
-          logger.debug(`Finished uploading media ${fileName}`);
+          logger.debug(
+            `Finished uploading media ${fileName} ${idx + 1}/${importInfo.mediaFilesToUpload.length}`,
+          );
           return fileData;
         } catch (e) {
           if (e instanceof TimeoutError) {

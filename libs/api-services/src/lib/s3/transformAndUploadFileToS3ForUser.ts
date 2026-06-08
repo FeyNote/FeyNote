@@ -80,6 +80,7 @@ export async function transformAndUploadFileToS3ForUser(args: {
     });
 
     const onError = (err: Error) => {
+      args.file.destroy(err);
       filePipeline.destroy(err);
       limitedFilePipeline.destroy(err);
       limiter.destroy(err);
@@ -89,6 +90,7 @@ export async function transformAndUploadFileToS3ForUser(args: {
 
     // All pipelines _must_ have error handlers since each
     // pipe can emit it's own error and will be considered uncaught (server crash)
+    args.file.on('error', onError);
     filePipeline.on('error', onError);
     limitedFilePipeline.on('error', onError);
     limiter.on('error', onError);
