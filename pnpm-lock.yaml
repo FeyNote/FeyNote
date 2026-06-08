@@ -270,8 +270,8 @@ importers:
         specifier: 4.22.1
         version: 4.22.1
       flexlayout-react:
-        specifier: ^0.8.19
-        version: 0.8.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+        specifier: ^0.9.1
+        version: 0.9.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       google-auth-library:
         specifier: ^10.6.2
         version: 10.6.2
@@ -9939,8 +9939,8 @@ packages:
     resolution: {integrity: sha512-9UbaD6XdAL97+k/n+N7JwX46K/M6Zc6KcFYskrYL8wbBV/Uyk0CTAMY0VT+qiK5PM7AIc9aTWYtq65U7T+aCNQ==}
     engines: {node: '>=8'}
 
-  flexlayout-react@0.8.19:
-    resolution: {integrity: sha512-OC8PvAZ7ElYutiSQhLbuycpzxXdIQuyREozWGu8Wx3+6G4r3ctBMUiSYEVKICgiW1wLOPwvZOSpOFqddG3eoVg==}
+  flexlayout-react@0.9.1:
+    resolution: {integrity: sha512-sB/93gKvDUBcukvxeNsu88ziobdsBfZQCDk9tTaxZOruaefpCpjpkSjhrhgoomWmTrSz8xnpHj8QcUaRf0Begg==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
@@ -27138,7 +27138,7 @@ snapshots:
 
   flattie@1.1.1: {}
 
-  flexlayout-react@0.8.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
+  flexlayout-react@0.9.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:
       react: 19.2.7
       react-dom: 19.2.7(react@19.2.7)
