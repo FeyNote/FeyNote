@@ -113,7 +113,7 @@ export const uploadStandardizedMedia = async (
 
           progressTracker.onProgress({
             progress: Math.floor(
-              (idx / importInfo.mediaFilesToUpload.length) * 100,
+              (idx + 1 / importInfo.mediaFilesToUpload.length) * 100,
             ),
             step: 2,
           });
