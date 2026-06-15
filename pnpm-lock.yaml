@@ -273,8 +273,8 @@ importers:
         specifier: ^0.8.19
         version: 0.8.19(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       google-auth-library:
-        specifier: ^10.6.2
-        version: 10.6.2
+        specifier: ^10.7.0
+        version: 10.7.0
       https-proxy-agent:
         specifier: ^9.0.0
         version: 9.0.0
@@ -9868,8 +9868,8 @@ packages:
     resolution: {integrity: sha512-w4n9cPWyP7aHxKxYHFQMegj7WIAsL/YX/C4Bs5Rr8s1H9M1rNtRWRsw+ovYMkXDQ5S4ZbYHsHAPmevPjPgw44w==}
     deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
-  gaxios@7.1.4:
-    resolution: {integrity: sha512-bTIgTsM2bWn3XklZISBTQX7ZSddGW+IO3bMdGaemHZ3tbqExMENHLx6kKZ/KlejgrMtj8q7wBItt51yegqalrA==}
+  gaxios@7.1.5:
+    resolution: {integrity: sha512-5FZy72Rh8LhtjmvDrKkI+lVhrsQrVKVsItxMoDm5mNQE+xR0WVIIs+jzPSJgBvKVsLi24fZhXJIsNI0bihDzFg==}
     engines: {node: '>=18'}
 
   gcp-metadata@8.1.2:
@@ -10044,8 +10044,8 @@ packages:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
 
-  google-auth-library@10.6.2:
-    resolution: {integrity: sha512-e27Z6EThmVNNvtYASwQxose/G57rkRuaRbQyxM2bvYLLX/GqWZ5chWq2EBoUchJbCc57eC9ArzO5wMsEmWftCw==}
+  google-auth-library@10.7.0:
+    resolution: {integrity: sha512-QpTAbNJ36TliZLx3TTtahR8HG0hN9RllL1e3FymOvQSIKK8JmgV58H924ub2wa2DsS3ANjjP1Aw1N+Ramc8hqQ==}
     engines: {node: '>=18'}
 
   google-logging-utils@1.1.3:
@@ -26789,7 +26789,7 @@ snapshots:
   gar@1.0.4:
     optional: true
 
-  gaxios@7.1.4:
+  gaxios@7.1.5:
     dependencies:
       extend: 3.0.2
       https-proxy-agent: 7.0.6
@@ -26799,7 +26799,7 @@ snapshots:
 
   gcp-metadata@8.1.2:
     dependencies:
-      gaxios: 7.1.4
+      gaxios: 7.1.5
       google-logging-utils: 1.1.3
       json-bigint: 1.0.0
     transitivePeerDependencies:
@@ -27010,11 +27010,11 @@ snapshots:
       define-properties: 1.2.1
       gopd: 1.2.0
 
-  google-auth-library@10.6.2:
+  google-auth-library@10.7.0:
     dependencies:
       base64-js: 1.5.1
       ecdsa-sig-formatter: 1.0.11
-      gaxios: 7.1.4
+      gaxios: 7.1.5
       gcp-metadata: 8.1.2
       google-logging-utils: 1.1.3
       jws: 4.0.1

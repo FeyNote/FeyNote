@@ -95,7 +95,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "express": "4.22.1",
     "flexlayout-react": "^0.8.19",
-    "google-auth-library": "^10.6.2",
+    "google-auth-library": "^10.7.0",
     "https-proxy-agent": "^9.0.0",
     "i18next": "^26.3.1",
     "idb": "^8.0.3",
