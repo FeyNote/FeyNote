@@ -646,8 +646,8 @@ importers:
         specifier: ^7.11.1
         version: 7.11.1
       '@electron-forge/maker-squirrel':
-        specifier: ^7.11.1
-        version: 7.11.1
+        specifier: ^7.11.2
+        version: 7.11.2
       '@electron-forge/maker-zip':
         specifier: ^7.11.1
         version: 7.11.1
@@ -2419,10 +2419,6 @@ packages:
 
   '@electron-forge/maker-rpm@7.11.2':
     resolution: {integrity: sha512-BEj/DcW6bSpmOyKUa3UsOgT7Hm3ZuP0Wa6OuQEunjxeCWn7yoDTDtjuYA0xRvzk+T4NCyDO3RBGjy6nYNSPU2Q==}
-    engines: {node: '>= 16.4.0'}
-
-  '@electron-forge/maker-squirrel@7.11.1':
-    resolution: {integrity: sha512-oSg7fgad6l+X0DjtRkSpMzB0AjzyDO4mb2gzM4kTodkP1ADeiMi08bxy0ZeCESqLm5+fG72cAPmEr3BAPvI1yw==}
     engines: {node: '>= 16.4.0'}
 
   '@electron-forge/maker-squirrel@7.11.2':
@@ -18135,17 +18131,6 @@ snapshots:
       '@electron-forge/shared-types': 7.11.2
     optionalDependencies:
       electron-installer-redhat: 3.4.0
-    transitivePeerDependencies:
-      - bluebird
-      - supports-color
-
-  '@electron-forge/maker-squirrel@7.11.1':
-    dependencies:
-      '@electron-forge/maker-base': 7.11.1
-      '@electron-forge/shared-types': 7.11.1
-      fs-extra: 10.1.0
-    optionalDependencies:
-      electron-winstaller: 5.4.0
     transitivePeerDependencies:
       - bluebird
       - supports-color
