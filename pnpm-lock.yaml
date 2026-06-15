@@ -655,8 +655,8 @@ importers:
         specifier: ^7.11.1
         version: 7.11.1
       '@electron-forge/plugin-vite':
-        specifier: ^7.11.1
-        version: 7.11.1
+        specifier: ^7.11.2
+        version: 7.11.2
       electron:
         specifier: ^40.2.1
         version: 40.10.0
@@ -2451,10 +2451,6 @@ packages:
 
   '@electron-forge/plugin-base@7.11.2':
     resolution: {integrity: sha512-tIFzEE2+D9NnCAn/rLwSkh8H59IqN+G973JNl7xmCzquO6qa7/veitZOQFGO79Zmmgkc8R/fmiCbh7LIdLS9Tg==}
-    engines: {node: '>= 16.4.0'}
-
-  '@electron-forge/plugin-vite@7.11.1':
-    resolution: {integrity: sha512-kc/WQs/0+9VC9Q4oSSocMa02YxKDvAYxhWtNcL+qlswZMJlxe8gX7vl/yXq9AjPQxw7f3jzf7nruUPKQ+vyLLg==}
     engines: {node: '>= 16.4.0'}
 
   '@electron-forge/plugin-vite@7.11.2':
@@ -18225,18 +18221,6 @@ snapshots:
       - bluebird
       - supports-color
 
-  '@electron-forge/plugin-vite@7.11.1':
-    dependencies:
-      '@electron-forge/plugin-base': 7.11.1
-      '@electron-forge/shared-types': 7.11.1
-      chalk: 4.1.2
-      debug: 4.4.3
-      fs-extra: 10.1.0
-      listr2: 7.0.2
-    transitivePeerDependencies:
-      - bluebird
-      - supports-color
-
   '@electron-forge/plugin-vite@7.11.2':
     dependencies:
       '@electron-forge/plugin-base': 7.11.2
@@ -18404,7 +18388,7 @@ snapshots:
       make-fetch-happen: 10.2.1
       nopt: 6.0.0
       proc-log: 2.0.1
-      semver: 7.8.2
+      semver: 7.8.4
       tar: 6.2.1
       which: 2.0.2
     transitivePeerDependencies:
@@ -19915,7 +19899,7 @@ snapshots:
   '@npmcli/fs@2.1.2':
     dependencies:
       '@gar/promisify': 1.1.3
-      semver: 7.8.2
+      semver: 7.8.4
 
   '@npmcli/move-file@2.0.1':
     dependencies:
