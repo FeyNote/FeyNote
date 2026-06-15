@@ -643,8 +643,8 @@ importers:
         specifier: ^7.11.2
         version: 7.11.2
       '@electron-forge/maker-rpm':
-        specifier: ^7.11.1
-        version: 7.11.1
+        specifier: ^7.11.2
+        version: 7.11.2
       '@electron-forge/maker-squirrel':
         specifier: ^7.11.2
         version: 7.11.2
@@ -2397,10 +2397,6 @@ packages:
     resolution: {integrity: sha512-RbOvlCahSlYBkY1XFgD5QuoifZltEY3ezYGqJYnV1z6RiUK1DfUXwdidmclBLI9d6u8NNr9xWPv79LHVc9ZA3Q==}
     engines: {node: '>= 16.4.0'}
 
-  '@electron-forge/maker-base@7.11.1':
-    resolution: {integrity: sha512-yhZrCGoN6bDeiB5DHFaueZ1h84AReElEj+f0hl2Ph4UbZnO0cnLpbx+Bs+XfMLAiA+beC8muB5UDK5ysfuT9BQ==}
-    engines: {node: '>= 16.4.0'}
-
   '@electron-forge/maker-base@7.11.2':
     resolution: {integrity: sha512-9934zYu9WVdgCYQXvtS+eL1oyLagsY8JlWhZmoK8yWTYftSAydH7jb3seVpfy6n85SYmY/yjcAy2lvOTy5dUwA==}
     engines: {node: '>= 16.4.0'}
@@ -2411,10 +2407,6 @@ packages:
 
   '@electron-forge/maker-dmg@7.11.2':
     resolution: {integrity: sha512-vh8/mnu3xyMbRcz3S0TV1rB7ZyGhMK60Yz2f2R+Zmj1EbAivLEq5UAvzHdB+kLttr0Dpjp2FIX4TcZ9neD4Y9g==}
-    engines: {node: '>= 16.4.0'}
-
-  '@electron-forge/maker-rpm@7.11.1':
-    resolution: {integrity: sha512-iEfJPRQQyaTqk2EbUfZgulChNWvxGXeYUH0xBX/r5cj1pL4vcJXt3jLMQBVn3mk/0Ytv9UWRs8R/XuNWX6sf2w==}
     engines: {node: '>= 16.4.0'}
 
   '@electron-forge/maker-rpm@7.11.2':
@@ -2445,10 +2437,6 @@ packages:
     resolution: {integrity: sha512-YwK4ZF3+uW7PBEV/ho59NVTriP3fCahskORrztUaFIdG0QP3hqMsfmo01euv98FDsBEW9UXo7/EW8t5jpmYZ0Q==}
     engines: {node: '>= 16.4.0'}
 
-  '@electron-forge/shared-types@7.11.1':
-    resolution: {integrity: sha512-vvBWdAEh53UJlDGUevpaJk1+sqDMQibfrbHR+0IPA4MPyQex7/Uhv3vYH9oGHujBVAChQahjAuJt0fG6IJBLZg==}
-    engines: {node: '>= 16.4.0'}
-
   '@electron-forge/shared-types@7.11.2':
     resolution: {integrity: sha512-Tcles7y74xy3jN5dEC+Pt1duJYk4c7W2xu98tjWW8RewmfKD2uHkie6I1I3yifPFZXZ/QfTlaFOOoKIQ9ENZjg==}
     engines: {node: '>= 16.4.0'}
@@ -2472,10 +2460,6 @@ packages:
   '@electron-forge/template-webpack@7.11.2':
     resolution: {integrity: sha512-JjG8XIZctrSZvTlii7Hqvt/pHDKigRk4PoLTQCs1TiT05ZWsn40itBm8cbja3L7bfm0ccDd3JTWWOl2G7PhlmA==}
     engines: {node: '>= 16.4.0'}
-
-  '@electron-forge/tracer@7.11.1':
-    resolution: {integrity: sha512-tiB6cglVQFcSw9N8GRwVwZUeB9u0DOx2Mj7aFXBUsFLUYQapvVGv51tUSy/UAW5lvmubGscYIILuVko+II3+NA==}
-    engines: {node: '>= 14.17.5'}
 
   '@electron-forge/tracer@7.11.2':
     resolution: {integrity: sha512-U8j5Hyj2Zt7I5PciJvPJfmEv69Gb/Da9v+k655z3Jj1cuY0UnToEJ61IhXrzlTYqo+jUKC+fgAjDJ6vltJTS0A==}
@@ -18072,15 +18056,6 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@electron-forge/maker-base@7.11.1':
-    dependencies:
-      '@electron-forge/shared-types': 7.11.1
-      fs-extra: 10.1.0
-      which: 2.0.2
-    transitivePeerDependencies:
-      - bluebird
-      - supports-color
-
   '@electron-forge/maker-base@7.11.2':
     dependencies:
       '@electron-forge/shared-types': 7.11.2
@@ -18107,16 +18082,6 @@ snapshots:
       fs-extra: 10.1.0
     optionalDependencies:
       electron-installer-dmg: 5.0.1
-    transitivePeerDependencies:
-      - bluebird
-      - supports-color
-
-  '@electron-forge/maker-rpm@7.11.1':
-    dependencies:
-      '@electron-forge/maker-base': 7.11.1
-      '@electron-forge/shared-types': 7.11.1
-    optionalDependencies:
-      electron-installer-redhat: 3.4.0
     transitivePeerDependencies:
       - bluebird
       - supports-color
@@ -18183,16 +18148,6 @@ snapshots:
   '@electron-forge/publisher-base@7.11.2':
     dependencies:
       '@electron-forge/shared-types': 7.11.2
-    transitivePeerDependencies:
-      - bluebird
-      - supports-color
-
-  '@electron-forge/shared-types@7.11.1':
-    dependencies:
-      '@electron-forge/tracer': 7.11.1
-      '@electron/packager': 18.4.4
-      '@electron/rebuild': 3.7.2
-      listr2: 7.0.2
     transitivePeerDependencies:
       - bluebird
       - supports-color
@@ -18270,10 +18225,6 @@ snapshots:
     transitivePeerDependencies:
       - bluebird
       - supports-color
-
-  '@electron-forge/tracer@7.11.1':
-    dependencies:
-      chrome-trace-event: 1.0.4
 
   '@electron-forge/tracer@7.11.2':
     dependencies:
