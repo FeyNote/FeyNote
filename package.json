@@ -203,7 +203,7 @@
     "jest-util": "30.4.1",
     "jiti": "2.7.0",
     "jsdom": "~29.1.1",
-    "lint-staged": "^16.4.0",
+    "lint-staged": "^17.0.7",
     "lodash": "^4.17.21",
     "nx": "22.6.3",
     "prettier": "^3.8.4",
