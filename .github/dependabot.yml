@@ -3,13 +3,12 @@ updates:
   - package-ecosystem: 'npm'
     directory: '/'
     schedule:
-      interval: 'weekly'
-      day: 'monday'
+      interval: 'daily'
       time: '16:00' # UTC
+    open-pull-requests-limit: 5
     cooldown:
       default-days: 5
       semver-major-days: 10
-    open-pull-requests-limit: 50
     groups:
       dedent:
         patterns:
