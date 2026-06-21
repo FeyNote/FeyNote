@@ -81,7 +81,7 @@
     "@types/dedent": "^0.7.2",
     "@types/multer": "^2.1.0",
     "@types/remove-markdown": "^0.3.4",
-    "@xyflow/react": "^12.10.2",
+    "@xyflow/react": "^12.11.0",
     "accept-language": "^3.0.20",
     "ai": "^6.0.206",
     "astro": "^6.4.6",
