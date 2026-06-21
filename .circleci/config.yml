@@ -133,7 +133,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '24'
+          node-version: '24.7'
       - run:
           name: enable-corepack
           command: sudo corepack enable
@@ -256,8 +256,8 @@ jobs:
       - run:
           name: install-node
           command: |
-            nvm install 24
-            nvm use 24
+            nvm install 24.7
+            nvm use 24.7
       - run:
           name: enable-corepack
           command: corepack enable
