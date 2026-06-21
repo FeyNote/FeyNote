@@ -556,6 +556,7 @@
   "artifactSharing.noaccess": "No Access",
   "artifactSharing.readwrite": "Read & Write",
   "artifactSharing.readonly": "Read Only",
+  "artifactSharing.coowner": "Co-owner",
   "artifactSharing.link": "Public Access via Link",
   "artifactSharing.link.help": "A link makes it easy for you to send an document via other platforms. When you enable link visibility, anyone with the link will be able to access the content you've created within your document.",
   "artifactSharing.link.accessLevel": "Link Access",

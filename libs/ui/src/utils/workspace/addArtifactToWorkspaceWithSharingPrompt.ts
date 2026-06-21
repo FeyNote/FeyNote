@@ -45,6 +45,13 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
         .toArray()
         .filter((m) => m.val.accessLevel !== 'noaccess');
 
+      if (meta.userId && !workspaceMembers.some((m) => m.key === meta.userId)) {
+        workspaceMembers.push({
+          key: meta.userId,
+          val: { accessLevel: 'readwrite' },
+        });
+      }
+
       const artifacts = getWorkspaceArtifactsFromYDoc(connection.yjsDoc);
 
       canEditWorkspace =

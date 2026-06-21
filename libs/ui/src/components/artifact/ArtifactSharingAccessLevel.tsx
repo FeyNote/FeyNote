@@ -6,7 +6,7 @@ export const accessLevelI18n = {
   noaccess: 'artifactSharing.noaccess',
   readwrite: 'artifactSharing.readwrite',
   readonly: 'artifactSharing.readonly',
-  coowner: 'artifactSharing.readonly',
+  coowner: 'artifactSharing.coowner',
 } satisfies Record<ArtifactAccessLevel, string>;
 
 interface ArtifactSharingAccessLevelSelectProps {
