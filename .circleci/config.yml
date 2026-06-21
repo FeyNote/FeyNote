@@ -261,17 +261,9 @@ jobs:
       - run:
           name: enable-corepack
           command: corepack enable
-      - restore_cache:
-          keys:
-            - pnpm-windows-v1-{{ checksum "pnpm-lock.yaml" }}
-            - pnpm-windows-v1-
       - run:
           name: install-packages
           command: pnpm install --frozen-lockfile
-      - save_cache:
-          key: pnpm-windows-v1-{{ checksum "pnpm-lock.yaml" }}
-          paths:
-            - node_modules
       - attach_workspace:
           at: .
       - run:

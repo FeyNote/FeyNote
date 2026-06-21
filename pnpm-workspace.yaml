@@ -25,7 +25,9 @@ allowBuilds:
   electron: true
   electron-winstaller: true
   esbuild: true
+  fs-xattr: true
   less: false
+  macos-alias: true
   msgpackr-extract: true
   nx: true
   prisma: true
