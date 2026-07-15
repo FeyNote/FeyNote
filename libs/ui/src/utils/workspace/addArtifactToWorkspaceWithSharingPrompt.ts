@@ -78,12 +78,14 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
 
   let artifactUserAccessByUserId: Map<string, YArtifactUserAccess> = new Map();
   let artifactLinkAccessLevel = 'noaccess' as ArtifactAccessLevel;
+  let artifactOwnerId: string | undefined;
   let canEditArtifactSharing = false;
   await withCollaborationConnection(
     `artifact:${opts.artifactId}`,
     async (connection) => {
       const meta = getMetaFromYArtifact(connection.yjsDoc);
       artifactLinkAccessLevel = meta.linkAccessLevel;
+      artifactOwnerId = meta.userId;
 
       const userAccess = getWorkspaceUserAccessFromYDoc(connection.yjsDoc);
       artifactUserAccessByUserId = new Map(
@@ -103,6 +105,8 @@ export const addArtifactToWorkspaceWithSharingPrompt = async (opts: {
 
   const workspaceMembersWithLessPermissionsInArtifact = workspaceMembers.filter(
     (workspaceMember) => {
+      if (workspaceMember.key === artifactOwnerId) return false;
+
       const artifactAccessLevel = artifactUserAccessByUserId.get(
         workspaceMember.key,
       )?.accessLevel;
