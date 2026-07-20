@@ -210,7 +210,7 @@
     "prisma": "^6.19.3",
     "rollup-plugin-visualizer": "^7.0.1",
     "ts-jest": "29.4.11",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vite": "7.3.5",
     "vite-plugin-dts": "4.5.4",
     "vite-plugin-pwa": "^1.2.0",
