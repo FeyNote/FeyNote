@@ -1,0 +1,29 @@
+---
+import RootLayout from '../../components/RootLayout.astro';
+import Landing from '../../components/Landing.astro';
+import {
+  DEFAULT_LOCALE,
+  WWW_SUPPORTED_LOCALES,
+  makeTranslator,
+} from '../../i18n/translations';
+
+export function getStaticPaths() {
+  return WWW_SUPPORTED_LOCALES.filter((loc) => loc !== DEFAULT_LOCALE).map(
+    (loc) => ({ params: { lang: loc } }),
+  );
+}
+
+const { lang } = Astro.params;
+if (!lang) throw new Error('lang param missing');
+const t = makeTranslator(lang);
+---
+
+<RootLayout
+  locale={lang}
+  t={t}
+  title={t('landing.metaTitle')}
+  description={t('landing.metaDescription')}
+  contained={false}
+>
+  <Landing t={t} locale={lang} />
+</RootLayout>

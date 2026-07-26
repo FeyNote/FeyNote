@@ -1,116 +1,160 @@
 ---
 import { Picture } from 'astro:assets';
-import RootLayout from '../../components/RootLayout.astro'
 import { getCollection } from 'astro:content';
+import RootLayout from '../../components/RootLayout.astro';
+import Hero from '../../components/Hero.astro';
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_LOCALE_ONLY,
+  makeTranslator,
+} from '../../i18n/translations';
+
+const locale = DEFAULT_LOCALE;
+const t = makeTranslator(locale);
 
 const posts = await getCollection('blog');
-const sortedPosts = posts.sort((a, b) =>
-  b.data.publishDate.valueOf() - a.data.publishDate.valueOf()
+const sortedPosts = posts.sort(
+  (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
+
+const breadcrumbs = [
+  { name: t('site.name'), url: '/' },
+  { name: t('blog.title'), url: '/blog/' },
+];
 ---
+
+<RootLayout
+  locale={locale}
+  t={t}
+  title={t('blog.metaTitle')}
+  description={t('blog.metaDescription')}
+  breadcrumbs={breadcrumbs}
+  availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
+>
+  <Hero compact>
+    <h1>{t('blog.title')}</h1>
+    <p class="lead">{t('blog.subtitle')}</p>
+  </Hero>
+
+  <section class="section-shell blog-listing">
+    <ul class="posts">
+      {
+        sortedPosts.map((post) => (
+          <li class="post card">
+            <a href={`/blog/${post.id}/`}>
+              {post.data.featuredImageUrl && (
+                <Picture
+                  src={post.data.featuredImageUrl}
+                  alt={`${t('blog.featuredImageAlt')} ${post.data.title}`}
+                  widths={[400, 800]}
+                  sizes="(max-width: 800px) 92vw, 33vw"
+                  formats={['avif', 'webp']}
+                  loading="lazy"
+                  decoding="async"
+                  inferSize
+                  layout="none"
+                />
+              )}
+              <div class="post-body">
+                <time datetime={post.data.publishDate.toISOString()}>
+                  {post.data.publishDate.toLocaleDateString()}
+                </time>
+                <h2>{post.data.title}</h2>
+                <p>{post.data.preview}</p>
+                <span class="read-more">{t('blog.readMore')}</span>
+              </div>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</RootLayout>
+
 <style>
-  .page-content {
-    max-width: min(1500px, 100%);
-    margin-left: auto;
-    margin-right: auto;
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
   }
 
-  ul {
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 55ch;
+  }
+
+  .blog-listing {
+    padding-top: 48px;
+  }
+
+  .posts {
+    list-style: none;
+    margin: 0;
     padding: 0;
-  }
-
-  .posts-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 30px;
-  }
-
-  @media (max-width: 2000px) {
-    .posts-container {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  @media (max-width: 1400px) {
-    .posts-container {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  @media (max-width: 800px) {
-    .posts-container {
-      grid-template-columns: 1fr;
-    }
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
   }
 
   .post {
-    border-radius: 8px;
+    padding: 0;
     overflow: hidden;
-    position: relative;
-    list-style: none;
-    margin-bottom: 40px;
-    background: var(--blogpost-bg);
-    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
-  }
-
-  .post:hover {
-    opacity: 0.9;
-  }
-
-  .post-title {
-    padding: 20px;
   }
 
   .post a {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     text-decoration: none;
-    display: grid;
-    grid-template-rows: auto auto;
+    color: inherit;
   }
 
-  .post img {
-    height: 300px;
+  .post :global(img) {
     width: 100%;
+    height: 200px;
     object-fit: cover;
-    margin-left: auto;
-    margin-right: auto;
   }
 
-  .post h2 {
-    font-size: 1.4rem;
-    margin-bottom: 0;
+  .post-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px;
+    flex: 1 0 auto;
   }
 
   .post time {
     font-size: 0.8rem;
-    margin-bottom: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .post h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+
+  .post p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    flex: 1 0 auto;
+  }
+
+  .read-more {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .post:hover {
+    border-color: var(--accent);
+  }
+
+  .post:hover .read-more {
+    text-decoration: underline;
   }
 </style>
-<RootLayout
-  title="Blog - FeyNote"
-  description="Tips, guides, and updates for TTRPG players and Dungeon Masters. Learn how to organize your D&D campaigns, build worlds, and get the most out of FeyNote."
->
-  <div class="page-content">
-    <h1>Our Blog</h1>
-    <br />
-    <ul class="posts-container">
-      {sortedPosts.map(post => (
-        <li class="post">
-          <a href={`/blog/${post.id}`}>
-            <Picture
-              src={post.data.featuredImageUrl}
-              alt={`Featured image for ${post.data.title}`}
-              inferSize={true}
-              formats={['avif', 'webp']}
-              layout="constrained"
-            />
-            <div class="post-title">
-              <h2>{post.data.title}</h2>
-              <time>{post.data.publishDate.toLocaleDateString()}</time>
-              <p>{post.data.preview}</p>
-            </div>
-          </a>
-        </li>
-      ))}
-    </ul>
-  </div>
-</RootLayout>

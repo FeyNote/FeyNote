@@ -1,0 +1,36 @@
+---
+import RootLayout from '../../components/RootLayout.astro';
+import Features from '../../components/Features.astro';
+import {
+  DEFAULT_LOCALE,
+  WWW_SUPPORTED_LOCALES,
+  localePath,
+  makeTranslator,
+} from '../../i18n/translations';
+
+export function getStaticPaths() {
+  return WWW_SUPPORTED_LOCALES.filter((loc) => loc !== DEFAULT_LOCALE).map(
+    (loc) => ({ params: { lang: loc } }),
+  );
+}
+
+const { lang } = Astro.params;
+if (!lang) throw new Error('lang param missing');
+const t = makeTranslator(lang);
+
+const breadcrumbs = [
+  { name: t('site.name'), url: localePath(lang, '/') },
+  { name: t('features.title'), url: localePath(lang, '/features') },
+];
+---
+
+<RootLayout
+  locale={lang}
+  t={t}
+  title={t('features.metaTitle')}
+  description={t('features.metaDescription')}
+  breadcrumbs={breadcrumbs}
+  contained={false}
+>
+  <Features t={t} />
+</RootLayout>

@@ -1,0 +1,358 @@
+---
+import { Picture } from 'astro:assets';
+import {
+  DEFAULT_LOCALE,
+  LOCALE_NAMES,
+  WWW_SUPPORTED_LOCALES,
+  localePath,
+  toBcp47,
+  type Translator,
+} from '../i18n/translations';
+
+interface Props {
+  t: Translator;
+  locale: string;
+  basePath: string;
+  availableLocales: string[];
+}
+
+const { t, locale, basePath, availableLocales } = Astro.props;
+
+const homeHref = localePath(locale, '/');
+const currentName = LOCALE_NAMES[locale] ?? locale;
+
+const links = [
+  { href: localePath(locale, '/features'), label: t('nav.features') },
+  { href: localePath(locale, '/pricing'), label: t('nav.pricing') },
+  { href: localePath(locale, '/download'), label: t('nav.download') },
+  { href: '/blog/', label: t('nav.blog') },
+  { href: localePath(locale, '/about'), label: t('nav.about') },
+];
+
+const externalLinks = [
+  { href: 'https://docs.feynote.com', label: t('nav.docs') },
+  { href: 'https://discord.gg/Tz8trXrd4C', label: t('nav.discord') },
+  { href: 'https://github.com/FeyNote/FeyNote', label: t('nav.github') },
+];
+
+const localeHref = (loc: string) => {
+  if (!availableLocales.includes(loc)) return localePath(loc, '/');
+  if (loc === DEFAULT_LOCALE) return basePath;
+  return `/${loc}${basePath}`;
+};
+---
+
+<nav class="site-nav">
+  <a class="brand" href={homeHref}>
+    <Picture
+      src="https://static.feynote.com/icons/feynote-icon-original-20241220.png"
+      alt={t('site.logoAlt')}
+      width={32}
+      height={32}
+      formats={['avif', 'webp']}
+      layout="fixed"
+      loading="eager"
+      decoding="async"
+    />
+    <span>{t('site.name')}</span>
+  </a>
+
+  <input type="checkbox" id="nav-toggle" class="nav-toggle" />
+  <label class="nav-toggle-label" for="nav-toggle">
+    <span class="visually-hidden">{t('nav.menu')}</span>
+    <svg
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+    >
+      <path d="M3 6h18"></path>
+      <path d="M3 12h18"></path>
+      <path d="M3 18h18"></path>
+    </svg>
+  </label>
+
+  <div class="nav-links">
+    {links.map((link) => <a href={link.href}>{link.label}</a>)}
+    {
+      externalLinks.map((link) => (
+        <a href={link.href} target="_blank" rel="noopener">
+          {link.label}
+        </a>
+      ))
+    }
+
+    {
+      WWW_SUPPORTED_LOCALES.length > 1 && (
+        <details class="lang-switcher">
+          <summary aria-label={`${t('nav.language')}: ${currentName}`}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span>{currentName}</span>
+          </summary>
+          <ul class="lang-menu">
+            {WWW_SUPPORTED_LOCALES.map((loc) => (
+              <li>
+                <a
+                  href={localeHref(loc)}
+                  hreflang={toBcp47(loc)}
+                  aria-current={loc === locale ? 'true' : undefined}
+                >
+                  {LOCALE_NAMES[loc] ?? loc}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )
+    }
+
+    <a class="nav-app-button" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+  </div>
+</nav>
+
+<script>
+  document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    document
+      .querySelectorAll<HTMLDetailsElement>('details.lang-switcher[open]')
+      .forEach((details) => {
+        if (!details.contains(target)) details.open = false;
+      });
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    const open = document.querySelector<HTMLDetailsElement>(
+      'details.lang-switcher[open]',
+    );
+    if (!open) return;
+    open.open = false;
+    open.querySelector<HTMLElement>('summary')?.focus();
+  });
+
+  document
+    .querySelectorAll<HTMLDetailsElement>('details.lang-switcher')
+    .forEach((details) => {
+      const summary = details.querySelector<HTMLElement>('summary');
+      const syncExpanded = () =>
+        summary?.setAttribute('aria-expanded', details.open ? 'true' : 'false');
+      details.addEventListener('toggle', syncExpanded);
+      syncExpanded();
+    });
+</script>
+
+<style>
+  .site-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 24px;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 18px 24px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.25rem;
+    text-decoration: none;
+    color: var(--nav-text);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  }
+
+  .brand :global(img) {
+    display: block;
+  }
+
+  .nav-toggle {
+    display: none;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .nav-toggle-label {
+    display: none;
+    color: var(--nav-text);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--nav-border);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+  }
+
+  .nav-links > a {
+    color: var(--nav-text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .nav-links > a:not(.nav-app-button):hover {
+    color: var(--accent-light);
+  }
+
+  .nav-app-button {
+    padding: 8px 16px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #ffffff;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  }
+
+  .nav-app-button:hover {
+    background: var(--accent-hover);
+    color: #ffffff;
+  }
+
+  .lang-switcher {
+    position: relative;
+  }
+
+  .lang-switcher summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--nav-border);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--nav-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+
+  .lang-switcher summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .lang-switcher summary:hover {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .lang-menu {
+    position: absolute;
+    top: 100%;
+    inset-inline-end: 0;
+    z-index: 100;
+    min-width: 220px;
+    max-height: min(60vh, 480px);
+    overflow: auto;
+    margin: 8px 0 0;
+    padding: 6px 0;
+    list-style: none;
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 1px 1px 20px rgba(0, 0, 0, 0.35);
+  }
+
+  .lang-menu a {
+    display: block;
+    padding: 8px 18px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.95rem;
+    text-shadow: none;
+  }
+
+  .lang-menu a:hover {
+    background: var(--surface-hover);
+  }
+
+  .lang-menu a[aria-current='true'] {
+    font-weight: 600;
+    color: var(--accent-light);
+  }
+
+  @media (max-width: 1200px) {
+    .site-nav {
+      flex-wrap: wrap;
+      padding: 14px 20px;
+    }
+
+    .nav-toggle-label {
+      display: inline-flex;
+    }
+
+    .nav-links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 14px;
+      padding-top: 14px;
+    }
+
+    .nav-toggle {
+      display: block;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .nav-toggle:checked ~ .nav-links {
+      display: flex;
+    }
+
+    .nav-toggle:focus-visible ~ .nav-toggle-label {
+      outline: 2px solid var(--accent-light);
+      outline-offset: 2px;
+    }
+
+    .lang-menu {
+      inset-inline-end: auto;
+      inset-inline-start: 0;
+      max-width: calc(100vw - 48px);
+    }
+  }
+</style>
