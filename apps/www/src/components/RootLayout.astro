@@ -1,221 +1,376 @@
 ---
-import { Picture } from 'astro:assets';
+import Nav from './Nav.astro';
+import Footer from './Footer.astro';
 import GlobalStyles from './GlobalStyles.astro';
+import {
+  DEFAULT_LOCALE,
+  WWW_SUPPORTED_LOCALES,
+  isRtl,
+  makeTranslator,
+  stripLocalePrefix,
+  toBcp47,
+  toOgLocale,
+  type Translator,
+} from '../i18n/translations';
+
+interface Breadcrumb {
+  name: string;
+  url: string;
+}
+
+interface Props {
+  locale?: string;
+  t?: Translator;
+  title: string;
+  description: string;
+  image?: string;
+  imageAlt?: string;
+  ogType?: string;
+  noindex?: boolean;
+  structuredData?: unknown;
+  breadcrumbs?: Breadcrumb[];
+  contained?: boolean;
+  availableLocales?: string[];
+}
+
 const {
+  locale = DEFAULT_LOCALE,
+  t = makeTranslator(DEFAULT_LOCALE),
   title,
   description,
-  image = "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg",
-  ogType = "website",
+  image = 'https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg',
+  imageAlt,
+  ogType = 'website',
   noindex = false,
-  structuredData = null
+  structuredData = null,
+  breadcrumbs,
+  contained = true,
+  availableLocales = WWW_SUPPORTED_LOCALES,
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const resolvedImageAlt = imageAlt ?? t('landing.heroImageAlt');
 
-const defaultStructuredData = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "Organization",
-      "@id": "https://feynote.com/#organization",
-      "name": "FeyNote",
-      "url": "https://feynote.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://static.feynote.com/icons/feynote-icon-original-20241220.png"
-      },
-      "description": "Free note-taking app for world-builders and tabletop RPG players",
-      "sameAs": [
-        "https://github.com/FeyNote/FeyNote",
-        "https://discord.gg/Tz8trXrd4C"
-      ]
-    },
-    {
-      "@type": "WebSite",
-      "@id": "https://feynote.com/#website",
-      "url": "https://feynote.com",
-      "name": "FeyNote",
-      "publisher": {
-        "@id": "https://feynote.com/#organization"
-      }
-    }
-  ]
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const basePath = stripLocalePrefix(Astro.url.pathname);
+
+const alternateUrlFor = (loc: string) => {
+  const path = loc === DEFAULT_LOCALE ? basePath : `/${loc}${basePath}`;
+  return new URL(path, Astro.site).toString();
 };
 
-const finalStructuredData = structuredData || defaultStructuredData;
+const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
+const localeHomeURL = new URL(homeHref, Astro.site).toString();
+
+const htmlLang = toBcp47(locale);
+const htmlDir = isRtl(locale) ? 'rtl' : 'ltr';
+const ogLocale = toOgLocale(locale);
+const ogLocaleAlternates = availableLocales
+  .filter((loc) => loc !== locale)
+  .map((loc) => toOgLocale(loc));
+
+const withTrailingSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
+
+const breadcrumbGraphItem = breadcrumbs?.length
+  ? {
+      '@type': 'BreadcrumbList',
+      itemListElement: breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: crumb.name,
+        item: new URL(withTrailingSlash(crumb.url), Astro.site).toString(),
+      })),
+    }
+  : null;
+
+const defaultStructuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': 'https://feynote.com/#organization',
+      name: 'FeyNote',
+      url: 'https://feynote.com/',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://static.feynote.com/icons/feynote-icon-original-20241220.png',
+      },
+      description: t('landing.metaDescription'),
+      sameAs: [
+        'https://github.com/FeyNote/FeyNote',
+        'https://discord.gg/Tz8trXrd4C',
+      ],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${localeHomeURL}#website`,
+      url: localeHomeURL,
+      name: 'FeyNote',
+      publisher: { '@id': 'https://feynote.com/#organization' },
+      inLanguage: htmlLang,
+    },
+    {
+      '@type': 'SoftwareApplication',
+      name: 'FeyNote',
+      applicationCategory: 'ProductivityApplication',
+      operatingSystem: ['Web', 'Windows', 'macOS', 'Linux'],
+      url: localeHomeURL,
+      inLanguage: htmlLang,
+      description: t('landing.subtitle'),
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    },
+    ...(breadcrumbGraphItem ? [breadcrumbGraphItem] : []),
+  ],
+};
+
+const finalStructuredData = structuredData ?? defaultStructuredData;
 ---
+
 <!doctype html>
-<html lang="en">
+<html lang={htmlLang} dir={htmlDir}>
   <head>
     <meta charset="utf-8" />
     <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="darkreader-lock" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="darkreader-lock" />
 
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="description" content={description} />
+    <meta name="author" content="FeyNote" />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex, nofollow" />
+      ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large" />
+      )
+    }
 
     <link rel="canonical" href={canonicalURL} />
+    {
+      availableLocales.map((loc) => (
+        <link
+          rel="alternate"
+          hreflang={toBcp47(loc)}
+          href={alternateUrlFor(loc)}
+        />
+      ))
+    }
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={alternateUrlFor(DEFAULT_LOCALE)}
+    />
 
-    <!-- Open Graph -->
     <meta property="og:type" content={ogType} />
-    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content="FeyNote" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:image" content={image} />
-    <meta property="og:site_name" content="FeyNote" />
+    <meta property="og:image:alt" content={resolvedImageAlt} />
+    <meta property="og:locale" content={ogLocale} />
+    {
+      ogLocaleAlternates.map((altLocale) => (
+        <meta property="og:locale:alternate" content={altLocale} />
+      ))
+    }
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
+    <meta name="twitter:image:alt" content={resolvedImageAlt} />
+
+    <meta name="theme-color" content="#14181f" />
+    <meta name="color-scheme" content="light dark" />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="alternate" type="application/rss+xml" title="FeyNote Blog" href="/rss.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="FeyNote Blog"
+      href="/rss.xml"
+    />
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="https://static.feynote.com/assets/favicon-20240925.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/ios/180.png" />
-    <link rel="icon" type="image/png" sizes="192x192" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-192-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png" />
+    <link rel="preconnect" href="https://static.feynote.com" crossorigin />
+    <link rel="dns-prefetch" href="https://static.feynote.com" />
 
-    <script type="application/ld+json" set:html={JSON.stringify(finalStructuredData)} />
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://static.feynote.com/assets/favicon-20240925.ico"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="https://static.feynote.com/icons/generated/pwabuilder-20241220/ios/180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-192-192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="https://static.feynote.com/icons/generated/pwabuilder-20241220/android/android-launchericon-512-512.png"
+    />
 
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="921628de-7259-4592-ae46-667d8d1f8b46"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet"></noscript>
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(finalStructuredData)}
+    />
+
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="921628de-7259-4592-ae46-667d8d1f8b46"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript
+      ><link
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+        rel="stylesheet"
+      /></noscript
+    >
+
+    <slot name="head" />
 
     <GlobalStyles />
-    <style>
+    <style is:global>
+      :root {
+        --bg: #f7f6f3;
+        --surface: #ffffff;
+        --surface-hover: rgba(0, 0, 0, 0.05);
+        --text: #16181d;
+        --text-muted: #55595f;
+        --border: rgba(0, 0, 0, 0.1);
+        --accent: #256be7;
+        --accent-hover: #1c56bd;
+        --accent-light: #4d8bf5;
+        --hero-overlay: rgba(6, 8, 16, 0.66);
+        --hero-text: #ffffff;
+        --nav-text: #ffffff;
+        --nav-border: rgba(255, 255, 255, 0.35);
+        --footer-bg: #14181f;
+        --footer-text: #d3d8e2;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #14181f;
+          --surface: #1c2129;
+          --surface-hover: rgba(255, 255, 255, 0.06);
+          --text: #e8ebf0;
+          --text-muted: #a4acba;
+          --border: rgba(255, 255, 255, 0.12);
+          --hero-overlay: rgba(4, 6, 12, 0.72);
+          --footer-bg: #0e1116;
+        }
+      }
+
       html {
         min-height: 100vh;
       }
 
       body {
         margin: 0;
-        padding: 8px;
+        padding: 0;
         min-height: 100vh;
-        font-family: "Inter", sans-serif;
+        display: flex;
+        flex-direction: column;
+        font-family: 'Inter', sans-serif;
         font-weight: 400;
-        font-style: normal;
+        line-height: 1.6;
+        color: var(--text);
+        background: var(--bg);
       }
 
-      @media (prefers-color-scheme: dark) {
-        body {
-          --bg-gradient-start: rgba(0,0,0,0.6);
-          --bg-gradient-end: rgba(0,0,0,0.8);
-          --card-bg: rgba(0,0,15,0.7);
-          --blogpost-bg: rgba(0,0,0,0.7);
-          --blogpost-text-color: rgb(240,240,240);
-          color: white;
-        }
+      h1,
+      h2,
+      h3 {
+        font-family: 'Libre Baskerville', serif;
+        font-weight: 400;
+        line-height: 1.25;
       }
 
-      @media (prefers-color-scheme: light) {
-        body {
-          --bg-gradient-start: rgba(255,255,255,1);
-          --bg-gradient-end: rgba(255,255,255,0.03);
-          --card-bg: rgba(255,255,255,0.7);
-          --blogpost-bg: white;
-          --blogpost-text-color: rgb(0,0,0);
-          color: black;
-        }
+      .site-header {
+        position: static;
+        background: var(--footer-bg);
+        z-index: 20;
       }
 
-      .nav {
-        display: grid;
-        grid-template-columns: auto auto;
-        align-items: center;
-        justify-content: left;
-        height: 40px;
-        padding-left: 16px;
-        padding-right: 16px;
+      .site-header.floating {
+        position: absolute;
+        top: 0;
+        inset-inline: 0;
+        background: none;
       }
 
-      .nav .title {
-        font-size: 1.2rem;
-        margin-right: 35px;
-        text-decoration: none;
-
-        display: flex;
-        align-items: center;
-        gap: 5px;
+      .site-main {
+        flex: 1 0 auto;
       }
 
-      .nav .title img {
-        width: 30px;
+      .page-shell {
+        max-width: min(1500px, 90%);
+        margin: 0 auto;
+        padding-top: 40px;
       }
 
-      .nav-links {
-        display: flex;
-        flex-wrap: wrap;
-        line-height: 2rem;
+      .section-shell {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding-inline: 24px;
       }
 
-      .nav .nav-item {
-        font-size: 1rem;
-        margin-right: 12px;
-        text-decoration: none;
+      .prose {
+        max-width: 70ch;
       }
 
-      .content {
-        max-width: min(1500px, 85%);
-        margin-top: 60px;
-        margin-left: auto;
-        margin-right: auto;
-        padding-bottom: 100px;
+      .prose p {
+        color: var(--text-muted);
       }
 
-      .fantasy-bg {
-        background-position: center center;
-        background-attachment: fixed;
-        background-repeat: no-repeat;
-        background-size: cover;
-        background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-1120x1645-20240924.jpg");
-      }
-
-      @media (min-width: 1121px) {
-        .fantasy-bg {
-          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg");
-        }
-      }
-
-      @media (min-width: 2241px) {
-        .fantasy-bg {
-          background-image: linear-gradient(var(--bg-gradient-start),var(--bg-gradient-end)), url("https://static.feynote.com/art/czepeku-medusaswake-4480x6580-20240924.jpg");
+      @media (max-width: 1200px) {
+        .site-header.floating {
+          position: static;
+          background: var(--footer-bg);
         }
       }
     </style>
   </head>
-  <body class="fantasy-bg">
-    <div class="nav">
-      <a class="title" href="/">
-        <Picture
-          src="https://static.feynote.com/icons/feynote-icon-original-20241220.png"
-          alt="FeyNote logo"
-          height="30"
-          width="30"
-          formats={['avif', 'webp']}
-          layout="fixed"
-        />
-        FeyNote
-      </a>
+  <body>
+    <header class:list={['site-header', { floating: !contained }]}>
+      <Nav
+        t={t}
+        locale={locale}
+        basePath={basePath}
+        availableLocales={availableLocales}
+      />
+    </header>
 
-      <div class="nav-links">
-        <a class="nav-item" href="/download">Download</a>
-        <a class="nav-item" href="/pricing">Pricing</a>
-        <a class="nav-item" href="/blog">Blog</a>
-        <a class="nav-item" href="/about">About</a>
-        <a class="nav-item" href="https://docs.feynote.com">Docs</a>
-        <a class="nav-item" href="https://discord.gg/Tz8trXrd4C" target="_blank">Discord</a>
-        <a class="nav-item" href="https://github.com/FeyNote/FeyNote" target="_blank">GitHub</a>
-      </div>
-    </div>
-    <div class="content">
-      <slot />
-    </div>
+    <main class="site-main">
+      {
+        contained ? (
+          <div class="page-shell">
+            <slot />
+          </div>
+        ) : (
+          <slot />
+        )
+      }
+    </main>
+
+    <Footer t={t} locale={locale} />
   </body>
 </html>

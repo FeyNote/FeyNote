@@ -1,0 +1,229 @@
+---
+import { FaWindows, FaApple, FaLinux } from 'react-icons/fa';
+import Hero from './Hero.astro';
+import { getFileSize } from '../getFileSize';
+import type { Translator } from '../i18n/translations';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+
+const BASE_URL =
+  'https://feynote-public.s3.us-east-1.amazonaws.com/desktop/prod/';
+
+const downloads = {
+  windows: [{ label: t('download.file.windowsExe'), file: 'FeyNote-Setup.exe' }],
+  macos: [
+    { label: t('download.file.macosArm'), file: 'FeyNote-arm64.dmg' },
+    { label: t('download.file.macosIntel'), file: 'FeyNote-x64.dmg' },
+  ],
+  linux: [
+    { label: t('download.file.linuxDeb'), file: 'FeyNote-linux-amd64.deb' },
+    { label: t('download.file.linuxRpm'), file: 'FeyNote-linux-x86_64.rpm' },
+    { label: t('download.file.linuxZip'), file: 'FeyNote-linux-x64.zip' },
+  ],
+};
+
+function formatBytes(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(1)} MB`;
+}
+
+const allEntries = [
+  ...downloads.windows,
+  ...downloads.macos,
+  ...downloads.linux,
+];
+const sizes = await Promise.all(
+  allEntries.map((dl) => getFileSize(BASE_URL + dl.file)),
+);
+const sizeByFile = new Map(
+  allEntries.map((dl, i) => [
+    dl.file,
+    sizes[i] !== null ? formatBytes(sizes[i]) : '',
+  ]),
+);
+
+const recommended = {
+  windows: { ...downloads.windows[0], buttonLabel: t('download.button.windows') },
+  macos: { ...downloads.macos[0], buttonLabel: t('download.button.macos') },
+  linux: { ...downloads.linux[0], buttonLabel: t('download.button.linux') },
+};
+
+const ua = Astro.request.headers.get('user-agent') ?? '';
+let platform: 'windows' | 'macos' | 'linux' | 'unknown' = 'unknown';
+if (ua.includes('Win')) platform = 'windows';
+else if (ua.includes('Mac')) platform = 'macos';
+else if (ua.includes('Linux') && !ua.includes('Android')) platform = 'linux';
+
+const rec = platform !== 'unknown' ? recommended[platform] : null;
+
+const platformCards = [
+  {
+    heading: t('download.platform.windows'),
+    Icon: FaWindows,
+    entries: downloads.windows,
+  },
+  {
+    heading: t('download.platform.macos'),
+    Icon: FaApple,
+    entries: downloads.macos,
+  },
+  {
+    heading: t('download.platform.linux'),
+    Icon: FaLinux,
+    entries: downloads.linux,
+  },
+];
+---
+
+<Hero compact>
+  <h1>{t('download.title')}</h1>
+  <p class="lead">{t('download.subtitle')}</p>
+
+  {
+    rec && (
+      <div class="btn-row rec-row">
+        <a href={BASE_URL + rec.file} class="btn primary rec-button">
+          {platform === 'windows' && <FaWindows aria-hidden="true" />}
+          {platform === 'macos' && <FaApple aria-hidden="true" />}
+          {platform === 'linux' && <FaLinux aria-hidden="true" />}
+          <span>{rec.buttonLabel}</span>
+          {sizeByFile.get(rec.file) && (
+            <span class="size">({sizeByFile.get(rec.file)})</span>
+          )}
+        </a>
+      </div>
+    )
+  }
+</Hero>
+
+<section class="section-shell download-content">
+  <h2>{t('download.all.title')}</h2>
+
+  <div class="platform-cards">
+    {
+      platformCards.map((card) => (
+        <div class="platform-card card">
+          <h3>
+            <card.Icon size={20} aria-hidden="true" />
+            {card.heading}
+          </h3>
+          <div class="download-links">
+            {card.entries.map((dl) => (
+              <a href={BASE_URL + dl.file} class="download-link">
+                <span>{dl.label}</span>
+                {sizeByFile.get(dl.file) && (
+                  <span class="size">{sizeByFile.get(dl.file)}</span>
+                )}
+              </a>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="web-callout card">
+    <div>
+      <h3>{t('download.web.title')}</h3>
+      <p>{t('download.web.description')}</p>
+    </div>
+    <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+  </div>
+</section>
+
+<style>
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 55ch;
+  }
+
+  .rec-row {
+    margin-top: 28px;
+  }
+
+  .btn.rec-button {
+    padding: 16px 32px;
+    font-size: 1.05rem;
+  }
+
+  .size {
+    opacity: 0.7;
+    font-size: 0.9rem;
+  }
+
+  .download-content {
+    padding-top: 48px;
+  }
+
+  .download-content h2 {
+    font-size: 1.6rem;
+    margin: 0 0 20px;
+  }
+
+  .platform-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .platform-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 1.15rem;
+  }
+
+  .download-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .download-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .download-link:hover {
+    background: var(--accent-hover);
+  }
+
+  .web-callout {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .web-callout h3 {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+  }
+
+  .web-callout p {
+    margin: 0;
+    color: var(--text-muted);
+  }
+</style>

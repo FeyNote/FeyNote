@@ -1,48 +1,104 @@
 ---
-import RootLayout from '../components/RootLayout.astro'
-import GoToAppButton from '../components/GoToAppButton.astro'
+import RootLayout from '../components/RootLayout.astro';
+import Hero from '../components/Hero.astro';
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_LOCALE_ONLY,
+  localePath,
+  makeTranslator,
+} from '../i18n/translations';
+
+const locale = DEFAULT_LOCALE;
+const t = makeTranslator(locale);
 ---
+
+<RootLayout
+  locale={locale}
+  t={t}
+  title={t('notFound.metaTitle')}
+  description={t('notFound.metaDescription')}
+  noindex={true}
+  availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
+>
+  <Hero compact>
+    <h1>{t('notFound.title')}</h1>
+    <p class="lead">{t('notFound.description')}</p>
+
+    <div class="btn-row">
+      <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+      <a class="btn outline" href={localePath(locale, '/')}>
+        {t('notFound.backHome')}
+      </a>
+    </div>
+  </Hero>
+
+  <section class="section-shell suggestions">
+    <h2>{t('notFound.suggestions')}</h2>
+    <ul>
+      <li>
+        <a href={localePath(locale, '/features')}>{t('nav.features')}</a>
+      </li>
+      <li><a href={localePath(locale, '/pricing')}>{t('nav.pricing')}</a></li>
+      <li><a href={localePath(locale, '/download')}>{t('nav.download')}</a></li>
+      <li><a href="/blog/">{t('nav.blog')}</a></li>
+      <li>
+        <a href="https://docs.feynote.com" target="_blank" rel="noopener">
+          {t('nav.docs')}
+        </a>
+      </li>
+    </ul>
+  </section>
+</RootLayout>
+
 <style>
-  .center {
-    text-align: center;
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
   }
 
-  .page-content {
-    max-width: min(1500px, 75%);
-    margin-left: auto;
-    margin-right: auto;
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 55ch;
   }
 
-  @media (prefers-color-scheme: light) {
-    .cloud-content {
-      background: var(--card-bg);
-      padding: 20px;
-      box-shadow: 1px 1px 20px rgba(0,0,0,0.2);
-    }
+  .btn-row {
+    margin-top: 28px;
   }
 
-  h2 {
-    font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 8px;
+  .suggestions {
+    padding-top: 48px;
+  }
+
+  .suggestions h2 {
+    font-size: 1.4rem;
+    margin: 0 0 16px;
+  }
+
+  .suggestions ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .suggestions a {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.95rem;
+  }
+
+  .suggestions a:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
   }
 </style>
-<RootLayout
-  title="Page Not Found - FeyNote"
-  description="The page you're looking for doesn't exist. Return to FeyNote to continue organizing your TTRPG campaigns and world-building notes."
-  noindex={true}
->
-  <div class="page-content">
-    <h1>Not Found</h1>
-
-    The resource you specified was not found.
-
-    <br />
-    <br />
-    <br />
-
-    <div class="center">
-      <GoToAppButton />
-    </div>
-  </div>
-</RootLayout>

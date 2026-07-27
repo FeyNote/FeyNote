@@ -26,6 +26,12 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "lint-locales": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/lintLocales.js www"
+      }
     }
   }
 }

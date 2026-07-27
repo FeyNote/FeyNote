@@ -1,0 +1,116 @@
+---
+import Hero from './Hero.astro';
+import type { Translator } from '../i18n/translations';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+---
+
+<Hero compact>
+  <h1>{t('about.title')}</h1>
+  <p class="lead">{t('about.lead')}</p>
+</Hero>
+
+<article class="section-shell about-content">
+  <p class="intro">{t('about.intro')}</p>
+
+  <section>
+    <h2>{t('about.julian.title')} 👋</h2>
+    <p>{t('about.julian.1')}</p>
+    <p>{t('about.julian.2')}</p>
+  </section>
+
+  <section>
+    <h2>{t('about.chris.title')} 👋</h2>
+    <p>{t('about.chris.1')}</p>
+    <p>{t('about.chris.2')}</p>
+  </section>
+
+  <section>
+    <h2>{t('about.contact.title')}</h2>
+    <ul class="contact-list">
+      <li>
+        {t('about.contact.docs')}{' '}
+        <a href="https://docs.feynote.com" target="_blank" rel="noopener">
+          docs.feynote.com
+        </a>
+      </li>
+      <li>
+        {t('about.contact.discord')}{' '}
+        <a href="https://discord.gg/Tz8trXrd4C" target="_blank" rel="noopener">
+          {t('nav.discord')}
+        </a>
+      </li>
+      <li>
+        {t('about.contact.github')}{' '}
+        <a
+          href="https://github.com/FeyNote/FeyNote/issues"
+          target="_blank"
+          rel="noopener"
+        >
+          {t('nav.github')}
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <div class="btn-row">
+    <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+  </div>
+</article>
+
+<style>
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 55ch;
+  }
+
+  .section-shell.about-content {
+    max-width: 800px;
+    padding-top: 48px;
+  }
+
+  .intro {
+    font-size: 1.1rem;
+  }
+
+  .about-content section {
+    margin-bottom: 40px;
+  }
+
+  .about-content h2 {
+    font-size: 1.4rem;
+    margin: 0 0 12px;
+  }
+
+  .about-content p {
+    color: var(--text-muted);
+    margin: 0 0 14px;
+  }
+
+  .about-content p a,
+  .contact-list a {
+    color: var(--accent);
+  }
+
+  .contact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  .contact-list li {
+    margin-bottom: 12px;
+  }
+</style>

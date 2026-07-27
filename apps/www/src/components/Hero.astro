@@ -1,0 +1,84 @@
+---
+import { Picture } from 'astro:assets';
+
+const DEFAULT_BG_URL =
+  'https://static.feynote.com/art/czepeku-medusaswake-2240x3290-20240924.jpg';
+const DEFAULT_BG_SIZE = { width: 2240, height: 3290 };
+
+interface Props {
+  bgUrl?: string;
+  compact?: boolean;
+}
+
+const { bgUrl = DEFAULT_BG_URL, compact = false } = Astro.props;
+
+const sizeProps =
+  bgUrl === DEFAULT_BG_URL ? DEFAULT_BG_SIZE : { inferSize: true as const };
+---
+
+<section class:list={['hero', { compact }]}>
+  <Picture
+    src={bgUrl}
+    widths={[640, 1280, 1920]}
+    sizes="100vw"
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    alt=""
+    class="hero-bg"
+    loading="eager"
+    decoding="async"
+    fetchpriority="high"
+    layout="none"
+    {...sizeProps}
+  />
+  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    overflow: hidden;
+    color: var(--hero-text);
+    padding: 140px 24px 90px;
+  }
+
+  .hero.compact {
+    padding: 150px 24px 60px;
+  }
+
+  .hero :global(.hero-bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.75) 0%, transparent 200px),
+      var(--hero-overlay);
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1200px) {
+    .hero,
+    .hero.compact {
+      padding: 56px 24px 56px;
+    }
+  }
+</style>

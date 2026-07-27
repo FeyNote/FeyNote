@@ -1,0 +1,328 @@
+---
+import { Picture } from 'astro:assets';
+import Hero from './Hero.astro';
+import {
+  DEFAULT_LOCALE,
+  LOCALE_NAMES,
+  WWW_SUPPORTED_LOCALES,
+  localePath,
+  toBcp47,
+  type Translator,
+} from '../i18n/translations';
+
+interface Props {
+  t: Translator;
+  locale: string;
+}
+
+const { t, locale } = Astro.props;
+
+const sections = [
+  {
+    title: t('landing.sections.statblocks.title'),
+    description: t('landing.sections.statblocks.description'),
+    imageAlt: t('landing.sections.statblocks.imageAlt'),
+    image:
+      'https://static.feynote.com/screenshots/feynote-embedded-statblocks-20251129.jpg',
+  },
+  {
+    title: t('landing.sections.references.title'),
+    description: t('landing.sections.references.description'),
+    imageAlt: t('landing.sections.references.imageAlt'),
+    image:
+      'https://static.feynote.com/screenshots/feynote-references-20240924.jpg',
+  },
+  {
+    title: t('landing.sections.collaboration.title'),
+    description: t('landing.sections.collaboration.description'),
+    imageAlt: t('landing.sections.collaboration.imageAlt'),
+    image: 'https://static.feynote.com/screenshots/feynote-sharing-20240924.jpg',
+  },
+  {
+    title: t('landing.sections.calendars.title'),
+    description: t('landing.sections.calendars.description'),
+    imageAlt: t('landing.sections.calendars.imageAlt'),
+    image: 'https://static.feynote.com/screenshots/feynote-calendar-20240924.jpg',
+  },
+  {
+    title: t('landing.sections.graph.title'),
+    description: t('landing.sections.graph.description'),
+    imageAlt: t('landing.sections.graph.imageAlt'),
+    image: 'https://static.feynote.com/screenshots/feynote-graph-20240924.jpg',
+  },
+  {
+    title: t('landing.sections.importer.title'),
+    description: t('landing.sections.importer.description'),
+    imageAlt: t('landing.sections.importer.imageAlt'),
+    image: 'https://static.feynote.com/screenshots/feynote-chatbot-20250716.jpg',
+  },
+];
+
+const reasons = [
+  t('landing.why.free'),
+  t('landing.why.offline'),
+  t('landing.why.collaboration'),
+  t('landing.why.ttrpg'),
+  t('landing.why.openSource'),
+  t('landing.why.yourData'),
+];
+
+const downloadHref = localePath(locale, '/download');
+const localeHref = (loc: string) => (loc === DEFAULT_LOCALE ? '/' : `/${loc}/`);
+---
+
+<Hero>
+  <div class="hero-split">
+    <div class="hero-copy">
+      <h1>{t('landing.title')}</h1>
+      <p class="subtitle">{t('landing.subtitle')}</p>
+
+      <div class="btn-row">
+        <a class="btn primary" href="https://app.feynote.com">
+          {t('landing.cta.primary')}
+        </a>
+        <a class="btn outline" href={downloadHref}>
+          {t('landing.cta.secondary')}
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-shot">
+      <Picture
+        src="https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"
+        alt={t('landing.heroImageAlt')}
+        widths={[480, 960, 1440]}
+        sizes="(max-width: 1000px) 92vw, 46vw"
+        formats={['avif', 'webp']}
+        fallbackFormat="jpg"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+        inferSize
+        layout="none"
+      />
+    </div>
+  </div>
+</Hero>
+
+<section class="section-shell features">
+  <h2>{t('landing.sections.title')}</h2>
+
+  <div class="feature-grid">
+    {
+      sections.map((section) => (
+        <article class="feature card">
+          <h3>{section.title}</h3>
+          <p>{section.description}</p>
+          <Picture
+            src={section.image}
+            alt={section.imageAlt}
+            widths={[480, 960]}
+            sizes="(max-width: 900px) 92vw, 46vw"
+            formats={['avif', 'webp']}
+            fallbackFormat="jpg"
+            loading="lazy"
+            decoding="async"
+            inferSize
+            layout="none"
+          />
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<section class="section-shell why">
+  <h2>{t('landing.why.title')}</h2>
+  <ul>
+    {reasons.map((reason) => <li>{reason}</li>)}
+  </ul>
+</section>
+
+{
+  WWW_SUPPORTED_LOCALES.length > 1 && (
+    <section class="section-shell languages">
+      <h2>{t('landing.languages.title')}</h2>
+      <p>{t('landing.languages.description')}</p>
+      <ul aria-label={t('landing.languages.title')}>
+        {WWW_SUPPORTED_LOCALES.map((loc) => (
+          <li>
+            <a
+              href={localeHref(loc)}
+              hreflang={toBcp47(loc)}
+              aria-current={loc === locale ? 'true' : undefined}
+            >
+              {LOCALE_NAMES[loc] ?? loc}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<section class="section-shell closing">
+  <h2>{t('landing.closing.title')}</h2>
+  <p>{t('landing.closing.description')}</p>
+  <div class="btn-row">
+    <a class="btn primary" href="https://app.feynote.com">
+      {t('landing.cta.primary')}
+    </a>
+    <a class="btn outline" href={downloadHref}>
+      {t('landing.cta.secondary')}
+    </a>
+  </div>
+</section>
+
+<style>
+  .hero-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+
+  @media (max-width: 1000px) {
+    .hero-split {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    margin: 0 0 18px;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    margin: 0 0 28px;
+    opacity: 0.92;
+    max-width: 55ch;
+  }
+
+  .hero-shot :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  .section-shell {
+    padding-top: 72px;
+  }
+
+  .section-shell h2 {
+    font-size: 1.8rem;
+    margin: 0 0 24px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .feature p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    flex: 1 0 auto;
+  }
+
+  .feature :global(img) {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    object-position: top left;
+    border-radius: 6px;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.25);
+  }
+
+  .why ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px 32px;
+  }
+
+  .why li {
+    position: relative;
+    padding-inline-start: 26px;
+    color: var(--text-muted);
+  }
+
+  .why li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.55em;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .languages p {
+    color: var(--text-muted);
+    margin-top: 0;
+  }
+
+  .languages ul {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .languages a {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .languages a:hover,
+  .languages a[aria-current='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+  }
+
+  .closing {
+    text-align: center;
+    padding-bottom: 24px;
+  }
+
+  .closing p {
+    color: var(--text-muted);
+    max-width: 60ch;
+    margin: 0 auto 24px;
+  }
+
+  .closing .btn-row {
+    justify-content: center;
+  }
+
+  .closing .btn.outline {
+    border-color: var(--border);
+  }
+</style>
