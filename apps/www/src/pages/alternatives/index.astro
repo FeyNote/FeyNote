@@ -2,13 +2,33 @@
 import RootLayout from "../../components/RootLayout.astro";
 import DiscordButton from "../../components/DiscordButton.astro";
 import { competitorList } from "../../data/competitors";
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_LOCALE_ONLY,
+  makeTranslator,
+} from "../../i18n/translations";
+
+const locale = DEFAULT_LOCALE;
+const t = makeTranslator(locale);
 
 const title = "Free, Open Source Alternatives to Note-Taking Apps - FeyNote";
 const description =
   "Side-by-side comparisons of FeyNote with the note-taking and world-building apps people switch from most often. Free and open source.";
+
+const breadcrumbs = [
+  { name: t("site.name"), url: "/" },
+  { name: "Alternatives", url: "/alternatives/" },
+];
 ---
 
-<RootLayout title={title} description={description}>
+<RootLayout
+  locale={locale}
+  t={t}
+  title={title}
+  description={description}
+  breadcrumbs={breadcrumbs}
+  availableLocales={DEFAULT_LOCALE_ONLY}
+>
   <header class="hub-hero">
     <p class="hub-eyebrow">Switching to FeyNote</p>
     <h1 class="hub-h1">A free, open source alternative to note-taking</h1>
