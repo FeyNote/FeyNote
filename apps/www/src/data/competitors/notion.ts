@@ -149,8 +149,8 @@ export const notion: CompetitorData = {
       body: "Notion spans databases, project management, docs, and team wikis. FeyNote focuses on world-building and campaign notes, and doesn't try to run your business.",
     },
     {
-      title: 'Mature native apps',
-      body: "Notion ships polished desktop and mobile apps today. FeyNote's native desktop and mobile apps are still in the works — it currently runs as an offline-capable web app.",
+      title: 'Integrations and automations',
+      body: "Notion connects to Slack, Google Calendar, Jira, and hundreds of other tools, with a public API and built-in automations. FeyNote keeps its focus at the game table and doesn't plug into your work stack.",
     },
   ],
   migration: {
@@ -159,20 +159,21 @@ export const notion: CompetitorData = {
       'Export your Notion workspace as Markdown and bring it into FeyNote with the content importer.',
     steps: [
       {
-        body: 'In Notion, open Settings, then Export content, and export your workspace as Markdown & CSV.',
+        body: 'In Notion, click the three dots menu in the top-right corner, select "Export", set your export format to "Markdown & CSV", and hit Export.',
+      },
+      {
+        body: "Check that Notion didn't double-zip your export — FeyNote's importer accepts a single zip with your Markdown files at the base level. If the downloaded zip contains more zip parts inside, unzip all of them into one base-level folder and zip that folder back up into a single zip.",
       },
       {
         body: 'Create a free FeyNote account at app.feynote.com.',
       },
       {
-        body: 'In FeyNote, open the content importer and upload your exported Markdown files.',
+        body: 'In FeyNote, navigate to Settings in the left-side bar, select "Import Document Data", then "Import Markdown Files", and choose your exported Notion zip.',
       },
       {
         body: 'Review your imported notes — internal links and images come across, and you can organize them into your tree from there.',
       },
     ],
-    docsUrl: 'https://docs.feynote.com',
-    docsLabel: 'Read the import documentation',
   },
   faqs: [
     {

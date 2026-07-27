@@ -1,6 +1,7 @@
 ---
 import { competitorList } from "../data/competitors";
 import type { CompetitorData, RowValue } from "../data/competitors/types";
+import DiscordButton from "./DiscordButton.astro";
 
 interface Props {
   competitor: CompetitorData;
@@ -26,6 +27,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     <a class="cmp-btn primary" href="https://app.feynote.com">
       Create a free account
     </a>
+    <DiscordButton />
     {
       competitor.migration.importUrl ? (
         <a class="cmp-btn outline" href={competitor.migration.importUrl}>
@@ -120,8 +122,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
       <section class="cmp-honest">
         <h2>Where {competitor.name} is honestly stronger</h2>
         <p class="cmp-section-lead">
-          We're not pretending FeyNote wins on everything. Here's what
-          {competitor.name} does better than us today.
+          We're not pretending FeyNote wins on everything. Here's what {competitor.name} does better than us today.
         </p>
         <ul class="cmp-card-list cmp-card-list-muted">
           {competitor.competitorWins.map((item) => (
@@ -205,6 +206,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
       <a class="cmp-btn primary" href="https://app.feynote.com">
         Create a free account
       </a>
+      <DiscordButton />
     </div>
   </section>
 

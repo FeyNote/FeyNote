@@ -1,5 +1,6 @@
 ---
 import RootLayout from "../../components/RootLayout.astro";
+import DiscordButton from "../../components/DiscordButton.astro";
 import { competitorList } from "../../data/competitors";
 
 const title = "Free, Open Source Alternatives to Note-Taking Apps - FeyNote";
@@ -10,7 +11,7 @@ const description =
 <RootLayout title={title} description={description}>
   <header class="hub-hero">
     <p class="hub-eyebrow">Switching to FeyNote</p>
-    <h1 class="hub-h1">A free, open source alternative to your notes app</h1>
+    <h1 class="hub-h1">A free, open source alternative to note-taking</h1>
     <p class="hub-lead">
       Side-by-side comparisons with the note-taking apps people switch from
       most often. FeyNote is free, open source, and built for tabletop RPG
@@ -46,6 +47,7 @@ const description =
         <a class="hub-btn primary" href="https://app.feynote.com">
           Create a free account
         </a>
+        <DiscordButton />
       </div>
     </section>
   </article>
