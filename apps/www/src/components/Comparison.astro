@@ -160,7 +160,7 @@ const renderValue = (
         competitor.migration.steps.map((step, idx) => (
           <li class="card">
             <span class="cmp-step-num">{idx + 1}</span>
-            <span class="cmp-step-body" set:html={step.body} />
+            <span class="cmp-step-body">{step.body}</span>
           </li>
         ))
       }
