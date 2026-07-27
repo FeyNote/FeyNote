@@ -6,7 +6,7 @@ export const notion: CompetitorData = {
   url: 'https://www.notion.com/',
   tagline: 'The free, open source Notion alternative for world-builders',
   subtitle:
-    'FeyNote is a free, open source note-taking app built for tabletop RPG players and world-builders. Statblocks, fantasy calendars, deep references, and real-time collaboration, with no ads and no content limits.',
+    'Our platform supports an extra subset of tabletop features to enhance content creation. Statblocks, fantasy calendars, deep references, and real-time collaboration, with no ads and no content limits.',
   seoDescription:
     'A free, open source Notion alternative built for D&D and TTRPG campaign notes. Statblocks, fantasy calendars, offline editing, and real-time collaboration. Always free.',
   cardSummary:
@@ -132,7 +132,7 @@ export const notion: CompetitorData = {
     },
     {
       title: 'Works offline at the table',
-      body: "FeyNote is offline-first, so your notes are fully editable without a connection — in a basement game store or at a table with no Wi-Fi. Notion's offline support is limited.",
+      body: "FeyNote is offline-first, so your notes are fully editable without a connection, whether in a basement game store or at a table with no Wi-Fi. Notion's offline support is limited.",
     },
     {
       title: 'Free with no member seats',
@@ -162,7 +162,7 @@ export const notion: CompetitorData = {
         body: 'In Notion, click the three dots menu in the top-right corner, select "Export", set your export format to "Markdown & CSV", and hit Export.',
       },
       {
-        body: "Check that Notion didn't double-zip your export — FeyNote's importer accepts a single zip with your Markdown files at the base level. If the downloaded zip contains more zip parts inside, unzip all of them into one base-level folder and zip that folder back up into a single zip.",
+        body: "Check that Notion didn't double-zip your export. FeyNote's importer accepts a single zip with your Markdown files at the base level. If the downloaded zip contains more zip parts inside, unzip all of them into one base-level folder and zip that folder back up into a single zip.",
       },
       {
         body: 'Create a free FeyNote account at app.feynote.com.',
@@ -171,7 +171,7 @@ export const notion: CompetitorData = {
         body: 'In FeyNote, navigate to Settings in the left-side bar, select "Import Document Data", then "Import Markdown Files", and choose your exported Notion zip.',
       },
       {
-        body: 'Review your imported notes — internal links and images come across, and you can organize them into your tree from there.',
+        body: 'Review your imported notes. Internal links and images come across, and you can organize them into your tree from there.',
       },
     ],
   },
