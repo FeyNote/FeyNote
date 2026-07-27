@@ -1,0 +1,47 @@
+---
+import RootLayout from "../../components/RootLayout.astro";
+import Comparison from "../../components/Comparison.astro";
+import { competitors, competitorSlugs } from "../../data/competitors";
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_LOCALE_ONLY,
+  makeTranslator,
+} from "../../i18n/translations";
+
+export function getStaticPaths() {
+  return competitorSlugs.map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+if (!slug || !(slug in competitors)) {
+  throw new Error(`Unknown competitor slug: ${slug}`);
+}
+const competitor = competitors[slug];
+
+const locale = DEFAULT_LOCALE;
+const t = makeTranslator(locale);
+
+const title = `${competitor.name} Alternative - Free & Open Source | FeyNote`;
+const description = competitor.seoDescription ?? competitor.subtitle;
+
+const breadcrumbs = [
+  { name: t("site.name"), url: "/" },
+  { name: "Alternatives", url: "/alternatives/" },
+  { name: competitor.name, url: `/alternatives/${competitor.slug}/` },
+];
+
+const faqs = competitor.faqs;
+---
+
+<RootLayout
+  locale={locale}
+  t={t}
+  title={title}
+  description={description}
+  breadcrumbs={breadcrumbs}
+  faqs={faqs}
+  availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
+>
+  <Comparison competitor={competitor} />
+</RootLayout>

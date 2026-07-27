@@ -8,6 +8,7 @@ import {
   toBcp47,
   type Translator,
 } from '../i18n/translations';
+import { APP_URL, DISCORD_INVITE_URL, GITHUB_URL } from '../urls';
 
 interface Props {
   t: Translator;
@@ -31,8 +32,8 @@ const links = [
 
 const externalLinks = [
   { href: 'https://docs.feynote.com', label: t('nav.docs') },
-  { href: 'https://discord.gg/Tz8trXrd4C', label: t('nav.discord') },
-  { href: 'https://github.com/FeyNote/FeyNote', label: t('nav.github') },
+  { href: DISCORD_INVITE_URL, label: t('nav.discord') },
+  { href: GITHUB_URL, label: t('nav.github') },
 ];
 
 const localeHref = (loc: string) => {
@@ -81,7 +82,7 @@ const localeHref = (loc: string) => {
     {links.map((link) => <a href={link.href}>{link.label}</a>)}
     {
       externalLinks.map((link) => (
-        <a href={link.href} target="_blank" rel="noopener">
+        <a href={link.href} target="_blank" rel="noopener noreferrer">
           {link.label}
         </a>
       ))
@@ -126,7 +127,7 @@ const localeHref = (loc: string) => {
       )
     }
 
-    <a class="nav-app-button" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+    <a class="nav-app-button" href={APP_URL}>{t('nav.goToApp')}</a>
   </div>
 </nav>
 

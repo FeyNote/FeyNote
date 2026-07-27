@@ -12,6 +12,7 @@ import {
   toOgLocale,
   type Translator,
 } from '../i18n/translations';
+import { DISCORD_INVITE_URL, GITHUB_URL } from '../urls';
 
 interface Breadcrumb {
   name: string;
@@ -118,10 +119,7 @@ const defaultStructuredData = {
         url: 'https://static.feynote.com/icons/feynote-icon-original-20241220.png',
       },
       description: t('landing.metaDescription'),
-      sameAs: [
-        'https://github.com/FeyNote/FeyNote',
-        'https://discord.gg/Tz8trXrd4C',
-      ],
+      sameAs: [GITHUB_URL, DISCORD_INVITE_URL],
     },
     {
       '@type': 'WebSite',
@@ -257,7 +255,7 @@ const finalStructuredData = structuredData ?? defaultStructuredData;
 
     <script
       type="application/ld+json"
-      set:html={JSON.stringify(finalStructuredData)}
+      set:html={JSON.stringify(finalStructuredData).replace(/</g, '\\u003c')}
     />
 
     <script
