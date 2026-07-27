@@ -12,8 +12,8 @@ export const notion: CompetitorData = {
   cardSummary:
     'Free tier caps documents, collaborators, and embeds. Paid plans from $12/month. No TTRPG features.',
   intro: [
-    'Notion is a popular note taking application that offers a large variety of features in a tiered account system. While Notion does have the concept of a Free tier, it unfortunately severely gatekeeps or limits its feature set to users of that tier, with the majority of functionality locked behind its paid subscription at $12/month.',
-    'Feynote is a free-to-use note taking application offering free functionality that many competitors lock behind a paywall. Our platform supports an extra subset of tabletop features to enhance content creation. We are fully opensource and community funded.',
+    'Notion is a popular note-taking application that offers a large variety of features in a tiered account system. While Notion does have the concept of a Free tier, it unfortunately severely gatekeeps or limits its feature set to users of that tier, with the majority of functionality locked behind its paid subscription at $12/month.',
+    'FeyNote is a free-to-use note-taking application offering free functionality that many competitors lock behind a paywall. Our platform supports an extra subset of tabletop features to enhance content creation. We are fully open source and community-funded.',
   ],
   pricingSummary: {
     feynote:
@@ -51,7 +51,7 @@ export const notion: CompetitorData = {
       feature: 'Map/Image Markup Tool',
       feynote: true,
       competitor: false,
-      note: 'Feynote has a dedicated set of tooling for fantasy world building and maps, Notion is general purpose.',
+      note: 'FeyNote has a dedicated set of tooling for fantasy world-building and maps, Notion is general purpose.',
     },
     {
       feature: 'File Upload',
@@ -62,7 +62,7 @@ export const notion: CompetitorData = {
       feature: 'Graph Based Notetaking',
       feynote: true,
       competitor: false,
-      note: "Feynote allows you to choose whether you'd like to structure your notes by relationships or by hierarchy.",
+      note: "FeyNote allows you to choose whether you'd like to structure your notes by relationships or by hierarchy.",
     },
     {
       feature: 'Workspace Collaborators',
@@ -102,7 +102,7 @@ export const notion: CompetitorData = {
     },
     {
       feature: 'Collection Export',
-      feynote: 'Yes, supports Markdown documents & Json with references intact',
+      feynote: 'Yes, supports Markdown documents & JSON with references intact',
       competitor: 'Yes, but mangles your content',
     },
     {
@@ -111,7 +111,7 @@ export const notion: CompetitorData = {
       competitor: false,
     },
     {
-      feature: 'Content Import by Url',
+      feature: 'Content Import by URL',
       feynote: true,
       competitor: false,
     },
