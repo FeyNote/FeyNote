@@ -13,7 +13,7 @@ export const notion: CompetitorData = {
     'Free tier caps documents, collaborators, and embeds. Paid plans from $12/month. No TTRPG features.',
   intro: [
     'Notion is a popular note-taking application that offers a large variety of features in a tiered account system. While Notion does have the concept of a Free tier, it unfortunately severely gatekeeps or limits its feature set to users of that tier, with the majority of functionality locked behind its paid subscription at $12/month.',
-    'FeyNote is a free-to-use note-taking application offering free functionality that many competitors lock behind a paywall. Our platform supports an extra subset of tabletop features to enhance content creation. We are fully open source and community-funded.',
+    'FeyNote is a free-to-use note-taking application offering free functionality that many competitors lock behind a paywall. Our platform supports an extra subset of tabletop features to enhance content creation for D&D, Pathfinder, and other TTRPG campaigns. We are fully open source and community-funded.',
   ],
   pricingSummary: {
     feynote:
@@ -159,7 +159,7 @@ export const notion: CompetitorData = {
       'Export your Notion workspace as Markdown and bring it into FeyNote with the content importer.',
     steps: [
       {
-        body: 'In Notion, click the three dots menu in the top-right corner, select "Export", set your export format to "Markdown & CSV", and hit Export.',
+        body: 'In Notion, open Settings, select "Export content", then "Export all workspace content", and choose "Markdown & CSV" as the export format.',
       },
       {
         body: "Check that Notion didn't double-zip your export. FeyNote's importer accepts a single zip with your Markdown files at the base level. If the downloaded zip contains more zip parts inside, unzip all of them into one base-level folder and zip that folder back up into a single zip.",
