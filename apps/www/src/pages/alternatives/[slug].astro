@@ -30,10 +30,7 @@ const breadcrumbs = [
   { name: competitor.name, url: `/alternatives/${competitor.slug}/` },
 ];
 
-const faqs = competitor.faqs.map((item) => ({
-  question: item.q,
-  answer: item.a,
-}));
+const faqs = competitor.faqs;
 ---
 
 <RootLayout
@@ -44,6 +41,7 @@ const faqs = competitor.faqs.map((item) => ({
   breadcrumbs={breadcrumbs}
   faqs={faqs}
   availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
 >
   <Comparison competitor={competitor} />
 </RootLayout>

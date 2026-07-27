@@ -177,20 +177,25 @@ export const notion: CompetitorData = {
   },
   faqs: [
     {
-      q: "Is FeyNote actually free? What's the catch?",
-      a: 'Genuinely free. No ads, no limits on the amount of content, and every application feature is available to everyone. We accept pay-what-you-want contributions that raise limits only on things that are costly to host, like extra-large file uploads.',
+      question: "Is FeyNote actually free? What's the catch?",
+      answer:
+        'Genuinely free. No ads, no limits on the amount of content, and every application feature is available to everyone. We accept pay-what-you-want contributions that raise limits only on things that are costly to host, like extra-large file uploads.',
     },
     {
-      q: 'Can I keep using Notion while I try FeyNote?',
-      a: "Yes. Importing into FeyNote doesn't touch your Notion workspace. Run them side by side for a campaign arc and see which one fits your table.",
+      question: 'Can I keep using Notion while I try FeyNote?',
+      answer:
+        "Yes. Importing into FeyNote doesn't touch your Notion workspace. Run them side by side for a campaign arc and see which one fits your table.",
     },
     {
-      q: 'Do I need FeyNote to be a Notion replacement for everything?',
-      a: 'No. Plenty of people keep Notion for work and use FeyNote for their campaigns and world-building, where its statblocks, references, and calendars actually fit the job.',
+      question: 'Do I need FeyNote to be a Notion replacement for everything?',
+      answer:
+        'No. Plenty of people keep Notion for work and use FeyNote for their campaigns and world-building, where its statblocks, references, and calendars actually fit the job.',
     },
     {
-      q: 'Is there a free, open source alternative to Notion for D&D notes?',
-      a: 'Yes. FeyNote is free and open source, built specifically for tabletop RPG notes: embedded statblocks, deep references between documents, graph view, custom fantasy calendars, offline editing, and real-time collaboration with your party.',
+      question:
+        'Is there a free, open source alternative to Notion for D&D notes?',
+      answer:
+        'Yes. FeyNote is free and open source, built specifically for tabletop RPG notes: embedded statblocks, deep references between documents, graph view, custom fantasy calendars, offline editing, and real-time collaboration with your party.',
     },
   ],
   closing: [

@@ -43,7 +43,11 @@ const t = makeTranslator(locale);
       <li><a href={localePath(locale, '/download')}>{t('nav.download')}</a></li>
       <li><a href="/blog/">{t('nav.blog')}</a></li>
       <li>
-        <a href="https://docs.feynote.com" target="_blank" rel="noopener">
+        <a
+          href="https://docs.feynote.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {t('nav.docs')}
         </a>
       </li>

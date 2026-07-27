@@ -1,5 +1,6 @@
 ---
 import { localePath, type Translator } from '../i18n/translations';
+import { APP_URL, DISCORD_INVITE_URL, GITHUB_URL } from '../urls';
 
 interface Props {
   t: Translator;
@@ -27,7 +28,12 @@ const columns = [
         label: t('nav.download'),
         external: false,
       },
-      { href: 'https://app.feynote.com', label: t('nav.goToApp'), external: false },
+      {
+        href: '/alternatives/',
+        label: t('nav.alternatives'),
+        external: false,
+      },
+      { href: APP_URL, label: t('nav.goToApp'), external: false },
     ],
   },
   {
@@ -36,12 +42,12 @@ const columns = [
       { href: '/blog/', label: t('nav.blog'), external: false },
       { href: 'https://docs.feynote.com', label: t('nav.docs'), external: true },
       {
-        href: 'https://discord.gg/Tz8trXrd4C',
+        href: DISCORD_INVITE_URL,
         label: t('nav.discord'),
         external: true,
       },
       {
-        href: 'https://github.com/FeyNote/FeyNote',
+        href: GITHUB_URL,
         label: t('nav.github'),
         external: true,
       },
@@ -78,7 +84,7 @@ const columns = [
                 <a
                   href={link.href}
                   target={link.external ? '_blank' : undefined}
-                  rel={link.external ? 'noopener' : undefined}
+                  rel={link.external ? 'noopener noreferrer' : undefined}
                 >
                   {link.label}
                 </a>

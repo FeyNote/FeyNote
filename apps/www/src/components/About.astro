@@ -1,6 +1,7 @@
 ---
 import Hero from './Hero.astro';
 import type { Translator } from '../i18n/translations';
+import { APP_URL, DISCORD_INVITE_URL, GITHUB_URL } from '../urls';
 
 interface Props {
   t: Translator;
@@ -34,14 +35,18 @@ const { t } = Astro.props;
     <ul class="contact-list">
       <li>
         {t('about.contact.docs')}{' '}
-        <a href="https://docs.feynote.com" target="_blank" rel="noopener">
+        <a
+          href="https://docs.feynote.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           docs.feynote.com
         </a>
       </li>
       <li>
         {t('about.contact.discord')}{' '}
         <a
-          href="https://discord.gg/Tz8trXrd4C"
+          href={DISCORD_INVITE_URL}
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -51,9 +56,9 @@ const { t } = Astro.props;
       <li>
         {t('about.contact.github')}{' '}
         <a
-          href="https://github.com/FeyNote/FeyNote/issues"
+          href={`${GITHUB_URL}/issues`}
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
         >
           {t('nav.github')}
         </a>
@@ -62,7 +67,7 @@ const { t } = Astro.props;
   </section>
 
   <div class="btn-row">
-    <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+    <a class="btn primary" href={APP_URL}>{t('nav.goToApp')}</a>
   </div>
 </article>
 

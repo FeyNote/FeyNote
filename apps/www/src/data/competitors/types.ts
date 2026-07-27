@@ -13,11 +13,12 @@ export interface ListItem {
 }
 
 export interface FaqItem {
-  q: string;
-  a: string;
+  question: string;
+  answer: string;
 }
 
 export interface MigrationStep {
+  /** May contain inline HTML links; rendered with set:html. */
   body: string;
 }
 

@@ -1,7 +1,9 @@
 ---
-import { competitorList } from "../data/competitors";
-import type { CompetitorData, RowValue } from "../data/competitors/types";
-import DiscordButton from "./DiscordButton.astro";
+import { competitorList } from '../data/competitors';
+import type { CompetitorData, RowValue } from '../data/competitors/types';
+import Hero from './Hero.astro';
+import DiscordButton from './DiscordButton.astro';
+import { APP_URL } from '../urls';
 
 interface Props {
   competitor: CompetitorData;
@@ -9,66 +11,77 @@ interface Props {
 
 const { competitor } = Astro.props;
 
-const otherCompetitors = competitorList.filter((c) => c.slug !== competitor.slug);
+const otherCompetitors = competitorList.filter(
+  (c) => c.slug !== competitor.slug,
+);
 
-const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"; label: string } => {
-  if (value === true) return { kind: "yes", label: "Yes" };
-  if (value === false) return { kind: "no", label: "No" };
-  if (value === "partial") return { kind: "partial", label: "Partial" };
-  return { kind: "text", label: value };
+const renderValue = (
+  value: RowValue,
+): { kind: 'yes' | 'no' | 'partial' | 'text'; label: string } => {
+  if (value === true) return { kind: 'yes', label: 'Yes' };
+  if (value === false) return { kind: 'no', label: 'No' };
+  if (value === 'partial') return { kind: 'partial', label: 'Partial' };
+  return { kind: 'text', label: value };
 };
 ---
 
-<header class="cmp-hero">
+<Hero compact>
+  <nav class="cmp-crumbs" aria-label="Breadcrumb">
+    <a href="/">FeyNote</a>
+    <span aria-hidden="true">/</span>
+    <a href="/alternatives/">Alternatives</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{competitor.name}</span>
+  </nav>
   <p class="cmp-eyebrow">FeyNote vs {competitor.name}</p>
-  <h1 class="cmp-h1">{competitor.tagline}</h1>
-  <p class="cmp-lead">{competitor.subtitle}</p>
-  <div class="cmp-hero-cta">
-    <a class="cmp-btn primary" href="https://app.feynote.com">
+  <h1>{competitor.tagline}</h1>
+  <p class="lead">{competitor.subtitle}</p>
+  <div class="btn-row cmp-hero-cta">
+    <a class="btn primary" href={APP_URL}>
       Create a free account
     </a>
     <DiscordButton />
     {
       competitor.migration.importUrl ? (
-        <a class="cmp-btn outline" href={competitor.migration.importUrl}>
+        <a class="btn outline" href={competitor.migration.importUrl}>
           Import from {competitor.name}
         </a>
       ) : (
-        <a class="cmp-btn outline" href="#cmp-migration">
+        <a class="btn outline" href="#cmp-migration">
           See how to migrate
         </a>
       )
     }
   </div>
-</header>
+</Hero>
 
 <article class="cmp-body">
-  <section class="cmp-intro">
+  <section class="section-shell cmp-intro">
     {competitor.intro.map((para) => <p>{para}</p>)}
   </section>
 
-  <section class="cmp-pricing">
+  <section class="section-shell">
     <h2>How they price</h2>
     <div class="cmp-price-cards">
-      <div class="cmp-price-card cmp-price-us">
+      <div class="card cmp-price-us">
         <h3>FeyNote</h3>
         <p>{competitor.pricingSummary.feynote}</p>
       </div>
-      <div class="cmp-price-card cmp-price-them">
+      <div class="card cmp-price-them">
         <h3>{competitor.name}</h3>
         <p>{competitor.pricingSummary.competitor}</p>
       </div>
     </div>
   </section>
 
-  <section class="cmp-table-wrap">
+  <section class="section-shell">
     <h2>Feature by feature</h2>
     <p class="cmp-section-lead">
       We've tried to be fair here. Where {competitor.name} is genuinely
       stronger, we say so. Feature claims are sourced from each product's
       own documentation.
     </p>
-    <div class="cmp-table-scroll">
+    <div class="card cmp-table-scroll">
       <table class="cmp-table">
         <thead>
           <tr>
@@ -91,7 +104,10 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
                   <td class={`cmp-cell cmp-cell-${fn.kind}`} data-label="FeyNote">
                     <span class="cmp-cell-pill">{fn.label}</span>
                   </td>
-                  <td class={`cmp-cell cmp-cell-${comp.kind}`} data-label={competitor.name}>
+                  <td
+                    class={`cmp-cell cmp-cell-${comp.kind}`}
+                    data-label={competitor.name}
+                  >
                     <span class="cmp-cell-pill">{comp.label}</span>
                   </td>
                 </tr>
@@ -103,12 +119,12 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     </div>
   </section>
 
-  <section class="cmp-why">
+  <section class="section-shell">
     <h2>Why people switch from {competitor.name} to FeyNote</h2>
     <ul class="cmp-card-list">
       {
         competitor.whySwitch.map((item) => (
-          <li>
+          <li class="card">
             <strong>{item.title}</strong>
             <span>{item.body}</span>
           </li>
@@ -119,7 +135,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
   {
     competitor.competitorWins.length > 0 && (
-      <section class="cmp-honest">
+      <section class="section-shell">
         <h2>Where {competitor.name} is honestly stronger</h2>
         <p class="cmp-section-lead">
           We're not pretending FeyNote wins on everything. Here's what {competitor.name} does better than us today.
@@ -136,42 +152,48 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     )
   }
 
-  <section class="cmp-migration" id="cmp-migration">
+  <section class="section-shell" id="cmp-migration">
     <h2>{competitor.migration.headline}</h2>
     <p class="cmp-section-lead">{competitor.migration.summary}</p>
     <ol class="cmp-steps">
       {
         competitor.migration.steps.map((step, idx) => (
-          <li>
+          <li class="card">
             <span class="cmp-step-num">{idx + 1}</span>
-            <span class="cmp-step-body">{step.body}</span>
+            <span class="cmp-step-body" set:html={step.body} />
           </li>
         ))
       }
     </ol>
-    {competitor.migration.note && (
-      <p class="cmp-migration-note">{competitor.migration.note}</p>
-    )}
-    <div class="cmp-migration-cta">
-      {competitor.migration.importUrl && (
-        <a class="cmp-btn primary" href={competitor.migration.importUrl}>
-          Start importing
-        </a>
-      )}
-      {competitor.migration.docsUrl && (
-        <a
-          class="cmp-btn outline"
-          href={competitor.migration.docsUrl}
-          target="_blank"
-          rel="noopener"
-        >
-          {competitor.migration.docsLabel ?? "Read the import guide"}
-        </a>
-      )}
+    {
+      competitor.migration.note && (
+        <p class="cmp-migration-note">{competitor.migration.note}</p>
+      )
+    }
+    <div class="btn-row">
+      {
+        competitor.migration.importUrl && (
+          <a class="btn primary" href={competitor.migration.importUrl}>
+            Start importing
+          </a>
+        )
+      }
+      {
+        competitor.migration.docsUrl && (
+          <a
+            class="btn outline"
+            href={competitor.migration.docsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {competitor.migration.docsLabel ?? 'Read the import guide'}
+          </a>
+        )
+      }
     </div>
   </section>
 
-  <section class="cmp-makers">
+  <section class="section-shell cmp-makers">
     <h2>About the people behind FeyNote</h2>
     <p>
       FeyNote is built and run by Julian and Chris, two software engineers
@@ -186,73 +208,63 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     </p>
   </section>
 
-  <section class="cmp-faq">
+  <section class="section-shell">
     <h2>Common questions about switching from {competitor.name}</h2>
     <div class="cmp-faq-list">
       {
         competitor.faqs.map((item) => (
-          <details class="cmp-faq-item">
-            <summary>{item.q}</summary>
-            <p>{item.a}</p>
+          <details class="card cmp-faq-item">
+            <summary>{item.question}</summary>
+            <p>{item.answer}</p>
           </details>
         ))
       }
     </div>
   </section>
 
-  <section class="cmp-closing">
+  <section class="section-shell cmp-closing">
     {competitor.closing.map((para) => <p>{para}</p>)}
-    <div class="cmp-final-cta">
-      <a class="cmp-btn primary" href="https://app.feynote.com">
+    <div class="btn-row cmp-final-cta">
+      <a class="btn primary" href={APP_URL}>
         Create a free account
       </a>
       <DiscordButton />
     </div>
   </section>
 
-  {
-    otherCompetitors.length > 0 && (
-      <section class="cmp-other">
-        <h2>Switching from a different app?</h2>
-        <ul class="cmp-other-list">
-          {otherCompetitors.map((other) => (
-            <li>
-              <a href={`/alternatives/${other.slug}/`}>
-                FeyNote vs {other.name}
-              </a>
-            </li>
-          ))}
+  <section class="section-shell cmp-other">
+    <h2>Switching from a different app?</h2>
+    <ul class="cmp-other-list">
+      {
+        otherCompetitors.map((other) => (
           <li>
-            <a href="/alternatives/">See all comparisons</a>
+            <a href={`/alternatives/${other.slug}/`}>
+              FeyNote vs {other.name}
+            </a>
           </li>
-        </ul>
-      </section>
-    )
-  }
+        ))
+      }
+      <li>
+        <a href="/alternatives/">See all comparisons</a>
+      </li>
+    </ul>
+    <p class="cmp-disclaimer">
+      {competitor.name} is a trademark of its respective owner. FeyNote is
+      not affiliated with or endorsed by {competitor.name}. Feature and
+      pricing claims are based on each product's public documentation and
+      may change.
+    </p>
+  </section>
 </article>
 
 <style>
-  .cmp-hero,
-  .cmp-body {
-    --cmp-accent: #256be7;
-    --cmp-muted: rgba(0, 0, 0, 0.65);
-    --cmp-yes-text: #2c6b2f;
-    --cmp-partial-text: #6b4f0d;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    .cmp-hero,
-    .cmp-body {
-      --cmp-muted: rgba(255, 255, 255, 0.75);
-      --cmp-yes-text: #9fd8a2;
-      --cmp-partial-text: #f2d27a;
-    }
-  }
-
-  .cmp-hero {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 24px;
+  .cmp-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin-bottom: 16px;
   }
 
   .cmp-eyebrow {
@@ -263,75 +275,43 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     margin: 0 0 12px;
   }
 
-  .cmp-h1 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    margin: 0 0 16px;
-    font-weight: 600;
-    line-height: 1.15;
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
   }
 
-  .cmp-lead {
-    font-size: 1.15rem;
+  .lead {
     margin: 0 0 24px;
-    opacity: 0.95;
-    line-height: 1.5;
-    max-width: 720px;
-  }
-
-  .cmp-hero-cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .cmp-btn {
-    display: inline-block;
-    padding: 12px 22px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-  }
-
-  .cmp-btn.primary {
-    background: var(--cmp-accent);
-    color: #ffffff;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-  }
-
-  .cmp-btn.outline {
-    background: transparent;
-    color: inherit;
-    border: 1px solid currentColor;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 65ch;
   }
 
   .cmp-body {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 36px 24px 0;
     line-height: 1.65;
+    padding-bottom: 72px;
+  }
+
+  .cmp-body .section-shell {
+    padding-top: 56px;
   }
 
   .cmp-body h2 {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     margin: 0 0 16px;
   }
 
   .cmp-body p {
-    color: var(--cmp-muted);
+    color: var(--text-muted);
     margin: 0 0 14px;
-  }
-
-  .cmp-body section {
-    margin-bottom: 64px;
   }
 
   .cmp-intro p {
     font-size: 1.05rem;
+    max-width: 75ch;
   }
 
   .cmp-section-lead {
-    color: var(--cmp-muted);
     margin-bottom: 24px;
   }
 
@@ -347,35 +327,26 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     }
   }
 
-  .cmp-price-card {
-    background: var(--card-bg);
-    padding: 20px 22px;
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-  }
-
-  .cmp-price-card h3 {
+  .cmp-price-cards h3 {
     margin: 0 0 8px;
     font-size: 1.1rem;
   }
 
-  .cmp-price-card p {
+  .cmp-price-cards p {
     margin: 0;
-    color: var(--cmp-muted);
   }
 
   .cmp-price-us {
-    border-left: 4px solid var(--cmp-accent);
+    border-left: 4px solid var(--accent);
   }
 
   .cmp-price-them {
-    border-left: 4px solid var(--cmp-muted);
+    border-left: 4px solid var(--text-muted);
   }
 
   .cmp-table-scroll {
-    border-radius: 4px;
-    background: var(--card-bg);
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+    padding: 0;
+    overflow-x: auto;
   }
 
   .cmp-table {
@@ -388,16 +359,16 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     text-align: left;
     padding: 14px 16px;
     font-weight: 600;
-    border-bottom: 1px solid rgba(127, 127, 127, 0.25);
+    border-bottom: 1px solid var(--border);
   }
 
   .cmp-table thead th:nth-child(2) {
-    color: var(--cmp-accent);
+    color: var(--accent-hover);
   }
 
   @media (prefers-color-scheme: dark) {
     .cmp-table thead th:nth-child(2) {
-      color: #7fa8f0;
+      color: var(--accent-light);
     }
   }
 
@@ -406,17 +377,22 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     padding: 14px 16px;
     font-weight: 500;
     vertical-align: top;
-    border-bottom: 1px solid rgba(127, 127, 127, 0.15);
+    border-bottom: 1px solid var(--border);
   }
 
   .cmp-table tbody td {
     padding: 14px 16px;
     vertical-align: top;
-    border-bottom: 1px solid rgba(127, 127, 127, 0.15);
+    border-bottom: 1px solid var(--border);
     width: 22%;
   }
 
-  @media (max-width: 640px) {
+  .cmp-table tbody tr:last-child th,
+  .cmp-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  @media (max-width: 880px) {
     .cmp-table,
     .cmp-table thead,
     .cmp-table tbody,
@@ -438,7 +414,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
     .cmp-table tr {
       padding: 14px 16px;
-      border-bottom: 1px solid rgba(127, 127, 127, 0.18);
+      border-bottom: 1px solid var(--border);
     }
 
     .cmp-table tr:last-child {
@@ -462,7 +438,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     .cmp-table tbody td::before {
       content: attr(data-label);
       font-size: 0.85rem;
-      color: var(--cmp-muted);
+      color: var(--text-muted);
       font-weight: 500;
     }
 
@@ -473,7 +449,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
   .cmp-row-note {
     display: block;
-    color: var(--cmp-muted);
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin-top: 4px;
     font-weight: 400;
@@ -489,17 +465,27 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
   .cmp-cell-yes .cmp-cell-pill {
     background: rgba(94, 139, 86, 0.22);
-    color: var(--cmp-yes-text);
+    color: #2c6b2f;
   }
 
   .cmp-cell-no .cmp-cell-pill {
     background: rgba(140, 140, 140, 0.18);
-    color: var(--cmp-muted);
+    color: var(--text-muted);
   }
 
   .cmp-cell-partial .cmp-cell-pill {
     background: rgba(216, 165, 60, 0.25);
-    color: var(--cmp-partial-text);
+    color: #6b4f0d;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .cmp-cell-yes .cmp-cell-pill {
+      color: #9fd8a2;
+    }
+
+    .cmp-cell-partial .cmp-cell-pill {
+      color: #f2d27a;
+    }
   }
 
   .cmp-cell-text .cmp-cell-pill {
@@ -519,10 +505,6 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   }
 
   .cmp-card-list li {
-    background: var(--card-bg);
-    padding: 18px 20px;
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -533,14 +515,14 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   }
 
   .cmp-card-list li span {
-    color: var(--cmp-muted);
+    color: var(--text-muted);
     font-size: 0.95rem;
   }
 
   .cmp-card-list-muted li {
-    background: transparent;
-    box-shadow: none;
-    border: 1px dashed rgba(127, 127, 127, 0.5);
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px;
   }
 
   .cmp-steps {
@@ -554,11 +536,8 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   .cmp-steps li {
     display: flex;
     gap: 14px;
-    background: var(--card-bg);
-    padding: 14px 18px;
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
     align-items: flex-start;
+    padding: 14px 18px;
   }
 
   .cmp-step-num {
@@ -566,7 +545,7 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
     width: 28px;
     height: 28px;
     border-radius: 999px;
-    background: var(--cmp-accent);
+    background: var(--accent);
     color: #ffffff;
     display: inline-flex;
     align-items: center;
@@ -576,25 +555,17 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   }
 
   .cmp-step-body {
-    color: var(--cmp-muted);
+    color: var(--text-muted);
   }
 
   .cmp-migration-note {
     font-style: italic;
-    color: var(--cmp-muted);
     margin: 8px 0 16px;
-  }
-
-  .cmp-migration-cta,
-  .cmp-final-cta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 16px;
   }
 
   .cmp-makers p {
     font-size: 1rem;
+    max-width: 75ch;
   }
 
   .cmp-faq-list {
@@ -603,9 +574,6 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   }
 
   .cmp-faq-item {
-    background: var(--card-bg);
-    border-radius: 4px;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
     padding: 0;
     overflow: hidden;
   }
@@ -623,17 +591,17 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
   }
 
   .cmp-faq-item summary::after {
-    content: "+";
+    content: '+';
     position: absolute;
     right: 18px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 1.2rem;
-    color: var(--cmp-muted);
+    color: var(--text-muted);
   }
 
   .cmp-faq-item[open] summary::after {
-    content: "\2212";
+    content: '\2212';
   }
 
   .cmp-faq-item p {
@@ -652,12 +620,15 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
   .cmp-final-cta {
     justify-content: center;
+    margin-top: 16px;
   }
 
   .cmp-other {
     text-align: center;
-    border-top: 1px solid rgba(127, 127, 127, 0.3);
-    padding-top: 32px;
+  }
+
+  .cmp-other h2 {
+    font-size: 1.4rem;
   }
 
   .cmp-other-list {
@@ -672,5 +643,11 @@ const renderValue = (value: RowValue): { kind: "yes" | "no" | "partial" | "text"
 
   .cmp-other-list a {
     font-weight: 500;
+  }
+
+  .cmp-disclaimer {
+    margin-top: 32px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
   }
 </style>

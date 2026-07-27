@@ -1,9 +1,9 @@
 ---
-const DISCORD_INVITE_URL = "https://discord.gg/Tz8trXrd4C";
+import { DISCORD_INVITE_URL } from '../urls';
 ---
 
 <a
-  class="discord-btn"
+  class="btn discord-btn"
   href={DISCORD_INVITE_URL}
   target="_blank"
   rel="noopener noreferrer"
@@ -24,16 +24,13 @@ const DISCORD_INVITE_URL = "https://discord.gg/Tz8trXrd4C";
 
 <style>
   .discord-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 22px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
     background: #5865f2;
     color: #ffffff;
-    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+    border: 1px solid #5865f2;
+  }
+
+  .discord-btn:hover {
+    background: #4752c4;
+    border-color: #4752c4;
   }
 </style>

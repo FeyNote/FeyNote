@@ -1,23 +1,25 @@
 ---
-import RootLayout from "../../components/RootLayout.astro";
-import DiscordButton from "../../components/DiscordButton.astro";
-import { competitorList } from "../../data/competitors";
+import RootLayout from '../../components/RootLayout.astro';
+import Hero from '../../components/Hero.astro';
+import DiscordButton from '../../components/DiscordButton.astro';
+import { competitorList } from '../../data/competitors';
+import { APP_URL } from '../../urls';
 import {
   DEFAULT_LOCALE,
   DEFAULT_LOCALE_ONLY,
   makeTranslator,
-} from "../../i18n/translations";
+} from '../../i18n/translations';
 
 const locale = DEFAULT_LOCALE;
 const t = makeTranslator(locale);
 
-const title = "Free, Open Source Alternatives to Note-Taking Apps - FeyNote";
+const title = 'Free, Open Source Alternatives to Note-Taking Apps - FeyNote';
 const description =
-  "Side-by-side comparisons of FeyNote with the note-taking and world-building apps people switch from most often. Free and open source.";
+  'Side-by-side comparisons of FeyNote with the note-taking and world-building apps people switch from most often. Free and open source.';
 
 const breadcrumbs = [
-  { name: t("site.name"), url: "/" },
-  { name: "Alternatives", url: "/alternatives/" },
+  { name: t('site.name'), url: '/' },
+  { name: 'Alternatives', url: '/alternatives/' },
 ];
 ---
 
@@ -28,25 +30,26 @@ const breadcrumbs = [
   description={description}
   breadcrumbs={breadcrumbs}
   availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
 >
-  <header class="hub-hero">
+  <Hero compact>
     <p class="hub-eyebrow">Switching to FeyNote</p>
-    <h1 class="hub-h1">A free, open source alternative to note-taking</h1>
-    <p class="hub-lead">
+    <h1>A free, open source alternative to note-taking</h1>
+    <p class="lead">
       Side-by-side comparisons with the note-taking apps people switch from
       most often. FeyNote is free, open source, and built for tabletop RPG
       players and world-builders.
     </p>
-  </header>
+  </Hero>
 
   <article class="hub-body">
-    <section class="hub-list">
+    <section class="section-shell">
       <h2>Pick your current app</h2>
-      <ul>
+      <ul class="hub-list">
         {
           competitorList.map((competitor) => (
             <li>
-              <a href={`/alternatives/${competitor.slug}/`}>
+              <a class="card" href={`/alternatives/${competitor.slug}/`}>
                 <strong>FeyNote vs {competitor.name}</strong>
                 <span>{competitor.cardSummary}</span>
               </a>
@@ -56,139 +59,92 @@ const breadcrumbs = [
       </ul>
     </section>
 
-    <section class="hub-cta">
+    <section class="section-shell">
       <h2>Not sure which app to compare?</h2>
       <p>
         FeyNote is free, so there's really no reason not to give it a try. If
         we don't currently support importing from your favorite app, hop into
         our Discord and let us know. We'd love to help you.
       </p>
-      <div class="hub-cta-row">
-        <a class="hub-btn primary" href="https://app.feynote.com">
+      <div class="btn-row">
+        <a class="btn primary" href={APP_URL}>
           Create a free account
         </a>
         <DiscordButton />
       </div>
     </section>
   </article>
-
-  <style>
-    .hub-hero,
-    .hub-body {
-      --hub-accent: #256be7;
-      --hub-muted: rgba(0, 0, 0, 0.65);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .hub-hero,
-      .hub-body {
-        --hub-muted: rgba(255, 255, 255, 0.75);
-      }
-    }
-
-    .hub-hero {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .hub-eyebrow {
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.85rem;
-      opacity: 0.85;
-      margin: 0 0 12px;
-    }
-
-    .hub-h1 {
-      font-size: clamp(2rem, 4vw, 3rem);
-      margin: 0 0 16px;
-      font-weight: 600;
-      line-height: 1.15;
-    }
-
-    .hub-lead {
-      font-size: 1.15rem;
-      margin: 0;
-      opacity: 0.95;
-      line-height: 1.5;
-      max-width: 720px;
-    }
-
-    .hub-body {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 36px 24px 0;
-      line-height: 1.65;
-    }
-
-    .hub-body h2 {
-      font-size: 1.6rem;
-      margin: 0 0 16px;
-    }
-
-    .hub-body section {
-      margin-bottom: 60px;
-    }
-
-    .hub-list ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-    }
-
-    .hub-list a {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      background: var(--card-bg);
-      padding: 18px 20px;
-      border-radius: 4px;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-      height: 100%;
-    }
-
-    .hub-list a:hover {
-      box-shadow: 1px 4px 14px rgba(0, 0, 0, 0.3);
-    }
-
-    .hub-list strong {
-      font-size: 1rem;
-    }
-
-    .hub-list span {
-      color: var(--hub-muted);
-      font-size: 0.95rem;
-    }
-
-    .hub-cta p {
-      color: var(--hub-muted);
-      margin: 0 0 16px;
-    }
-
-    .hub-cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .hub-btn {
-      display: inline-block;
-      padding: 12px 22px;
-      border-radius: 4px;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .hub-btn.primary {
-      background: var(--hub-accent);
-      color: #ffffff;
-      box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
-    }
-  </style>
 </RootLayout>
+
+<style>
+  .hub-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin: 0 0 12px;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 65ch;
+  }
+
+  .hub-body {
+    line-height: 1.65;
+    padding-bottom: 72px;
+  }
+
+  .hub-body .section-shell {
+    padding-top: 56px;
+  }
+
+  .hub-body h2 {
+    font-size: 1.8rem;
+    margin: 0 0 16px;
+  }
+
+  .hub-body p {
+    color: var(--text-muted);
+    margin: 0 0 16px;
+    max-width: 75ch;
+  }
+
+  .hub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .hub-list a {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+  }
+
+  .hub-list a:hover {
+    background: var(--surface-hover);
+  }
+
+  .hub-list strong {
+    font-size: 1rem;
+  }
+
+  .hub-list span {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+</style>
