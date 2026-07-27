@@ -4,7 +4,7 @@ const UUID_PATTERN =
 const DESCRIPTION_MAX_LENGTH = 155;
 
 const FALLBACK_DESCRIPTION =
-  'User-created TTRPG content on FeyNote. Free note-taking app for D&D and tabletop RPG campaigns with statblocks, spells, and collaboration.';
+  'User-created TTRPG content on FeyNote. Free note-taking app for D&D campaigns, tabletop RPG sessions, and worldbuilding, with statblocks, spells, and collaboration.';
 
 export function isUuid(value: string | undefined): value is string {
   return !!value && UUID_PATTERN.test(value);

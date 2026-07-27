@@ -1,6 +1,7 @@
 ---
 import RootLayout from '../../components/RootLayout.astro';
 import Landing from '../../components/Landing.astro';
+import { getLandingFaqs } from '../../getLandingFaqs';
 import {
   DEFAULT_LOCALE,
   WWW_SUPPORTED_LOCALES,
@@ -23,6 +24,7 @@ const t = makeTranslator(lang);
   t={t}
   title={t('landing.metaTitle')}
   description={t('landing.metaDescription')}
+  faqs={getLandingFaqs(t)}
   contained={false}
 >
   <Landing t={t} locale={lang} />

@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
 import Hero from './Hero.astro';
+import { getLandingFaqs } from '../getLandingFaqs';
 import {
   DEFAULT_LOCALE,
   LOCALE_NAMES,
@@ -63,9 +64,12 @@ const reasons = [
   t('landing.why.offline'),
   t('landing.why.collaboration'),
   t('landing.why.ttrpg'),
+  t('landing.why.import'),
   t('landing.why.openSource'),
   t('landing.why.yourData'),
 ];
+
+const faqs = getLandingFaqs(t);
 
 const downloadHref = localePath(locale, '/download');
 const localeHref = (loc: string) => (loc === DEFAULT_LOCALE ? '/' : `/${loc}/`);
@@ -160,6 +164,20 @@ const localeHref = (loc: string) => (loc === DEFAULT_LOCALE ? '/' : `/${loc}/`);
     </section>
   )
 }
+
+<section class="section-shell faq">
+  <h2>{t('landing.faq.title')}</h2>
+  <dl>
+    {
+      faqs.map((faq) => (
+        <div>
+          <dt>{faq.question}</dt>
+          <dd>{faq.answer}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</section>
 
 <section class="section-shell closing">
   <h2>{t('landing.closing.title')}</h2>
@@ -305,6 +323,23 @@ const localeHref = (loc: string) => (loc === DEFAULT_LOCALE ? '/' : `/${loc}/`);
     background: var(--accent);
     border-color: var(--accent);
     color: #ffffff;
+  }
+
+  .faq dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px 40px;
+  }
+
+  .faq dt {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .faq dd {
+    margin: 0;
+    color: var(--text-muted);
   }
 
   .closing {

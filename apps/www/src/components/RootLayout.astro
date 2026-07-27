@@ -18,6 +18,11 @@ interface Breadcrumb {
   url: string;
 }
 
+interface Faq {
+  question: string;
+  answer: string;
+}
+
 interface Props {
   locale?: string;
   t?: Translator;
@@ -29,6 +34,7 @@ interface Props {
   noindex?: boolean;
   structuredData?: unknown;
   breadcrumbs?: Breadcrumb[];
+  faqs?: Faq[];
   contained?: boolean;
   availableLocales?: string[];
 }
@@ -44,6 +50,7 @@ const {
   noindex = false,
   structuredData = null,
   breadcrumbs,
+  faqs,
   contained = true,
   availableLocales = WWW_SUPPORTED_LOCALES,
 } = Astro.props;
@@ -82,6 +89,22 @@ const breadcrumbGraphItem = breadcrumbs?.length
     }
   : null;
 
+const faqGraphItem = faqs?.length
+  ? {
+      '@type': 'FAQPage',
+      '@id': `${canonicalURL.toString()}#faq`,
+      inLanguage: htmlLang,
+      mainEntity: faqs.map((faq) => ({
+        '@type': 'Question',
+        name: faq.question,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: faq.answer,
+        },
+      })),
+    }
+  : null;
+
 const defaultStructuredData = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -110,12 +133,23 @@ const defaultStructuredData = {
     },
     {
       '@type': 'SoftwareApplication',
+      '@id': 'https://feynote.com/#software',
       name: 'FeyNote',
       applicationCategory: 'ProductivityApplication',
       operatingSystem: ['Web', 'Windows', 'macOS', 'Linux'],
       url: localeHomeURL,
       inLanguage: htmlLang,
       description: t('landing.subtitle'),
+      publisher: { '@id': 'https://feynote.com/#organization' },
+      isAccessibleForFree: true,
+      featureList: [
+        t('landing.sections.statblocks.title'),
+        t('landing.sections.references.title'),
+        t('landing.sections.collaboration.title'),
+        t('landing.sections.calendars.title'),
+        t('landing.sections.graph.title'),
+        t('landing.sections.importer.title'),
+      ],
       offers: {
         '@type': 'Offer',
         price: '0',
@@ -123,6 +157,7 @@ const defaultStructuredData = {
       },
     },
     ...(breadcrumbGraphItem ? [breadcrumbGraphItem] : []),
+    ...(faqGraphItem ? [faqGraphItem] : []),
   ],
 };
 
