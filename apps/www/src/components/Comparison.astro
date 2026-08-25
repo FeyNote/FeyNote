@@ -1,5 +1,4 @@
 ---
-import { competitorList } from '../data/competitors';
 import type { CompetitorData, RowValue } from '../data/competitors/types';
 import Hero from './Hero.astro';
 import DiscordButton from './DiscordButton.astro';
@@ -10,10 +9,6 @@ interface Props {
 }
 
 const { competitor } = Astro.props;
-
-const otherCompetitors = competitorList.filter(
-  (c) => c.slug !== competitor.slug,
-);
 
 const renderValue = (
   value: RowValue,
@@ -193,21 +188,6 @@ const renderValue = (
     </div>
   </section>
 
-  <section class="section-shell cmp-makers">
-    <h2>About the people behind FeyNote</h2>
-    <p>
-      FeyNote is built and run by Julian and Chris, two software engineers
-      who spend a lot of their free time playing TTRPGs. We're not a
-      venture-backed startup. We built the campaign notes app we wanted to
-      use at our own tables, the source code is on GitHub, and contributions
-      go directly toward hosting and our artists.
-    </p>
-    <p>
-      If you ever want to leave FeyNote, you can export your documents to
-      JSON or Markdown. Your worlds are yours.
-    </p>
-  </section>
-
   <section class="section-shell">
     <h2>Common questions about switching from {competitor.name}</h2>
     <div class="cmp-faq-list">
@@ -230,30 +210,6 @@ const renderValue = (
       </a>
       <DiscordButton />
     </div>
-  </section>
-
-  <section class="section-shell cmp-other">
-    <h2>Switching from a different app?</h2>
-    <ul class="cmp-other-list">
-      {
-        otherCompetitors.map((other) => (
-          <li>
-            <a href={`/alternatives/${other.slug}/`}>
-              FeyNote vs {other.name}
-            </a>
-          </li>
-        ))
-      }
-      <li>
-        <a href="/alternatives/">See all comparisons</a>
-      </li>
-    </ul>
-    <p class="cmp-disclaimer">
-      {competitor.name} is a trademark of its respective owner. FeyNote is
-      not affiliated with or endorsed by {competitor.name}. Feature and
-      pricing claims are based on each product's public documentation and
-      may change.
-    </p>
   </section>
 </article>
 
@@ -563,11 +519,6 @@ const renderValue = (
     margin: 8px 0 16px;
   }
 
-  .cmp-makers p {
-    font-size: 1rem;
-    max-width: 75ch;
-  }
-
   .cmp-faq-list {
     display: grid;
     gap: 10px;
@@ -623,31 +574,5 @@ const renderValue = (
     margin-top: 16px;
   }
 
-  .cmp-other {
-    text-align: center;
-  }
 
-  .cmp-other h2 {
-    font-size: 1.4rem;
-  }
-
-  .cmp-other-list {
-    list-style: none;
-    padding: 0;
-    margin: 16px 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 16px;
-    justify-content: center;
-  }
-
-  .cmp-other-list a {
-    font-weight: 500;
-  }
-
-  .cmp-disclaimer {
-    margin-top: 32px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-  }
 </style>
