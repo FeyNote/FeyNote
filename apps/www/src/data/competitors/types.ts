@@ -28,6 +28,8 @@ export interface CompetitorData {
   url: string;
   tagline: string;
   subtitle: string;
+  /** Overrides the default "<name> Alternative - Free & Open Source | FeyNote" page title. */
+  metaTitle?: string;
   seoDescription?: string;
   cardSummary: string;
   intro: string[];

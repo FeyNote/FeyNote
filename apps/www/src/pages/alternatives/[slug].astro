@@ -21,7 +21,9 @@ const competitor = competitors[slug];
 const locale = DEFAULT_LOCALE;
 const t = makeTranslator(locale);
 
-const title = `${competitor.name} Alternative - Free & Open Source | FeyNote`;
+const title =
+  competitor.metaTitle ??
+  `${competitor.name} Alternative - Free & Open Source | FeyNote`;
 const description = competitor.seoDescription ?? competitor.subtitle;
 
 const breadcrumbs = [
