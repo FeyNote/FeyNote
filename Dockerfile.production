@@ -9,7 +9,7 @@ RUN apk add --no-cache pandoc
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME/bin:$PATH"
-RUN corepack enable
+RUN npm install -g corepack && corepack enable
 RUN mkdir -p $PNPM_HOME && chown -R node:node $PNPM_HOME
 
 RUN chown -R node:node /app

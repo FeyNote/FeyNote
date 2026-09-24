@@ -6,8 +6,6 @@ export const notion: CompetitorData = {
   url: 'https://www.notion.com/',
   tagline:
     'The free, open source Notion alternative for world-builders and D&D',
-  metaTitle:
-    'The free, open source Notion alternative for world-builders and D&D',
   subtitle:
     'FeyNote is a free, community-driven and open-source note-taking application designed for speed, scale and collaboration. We allow for granular-based permissioning that allows you to choose how and what you want to share alongside a flexible organization system that keeps your notes in a style that best fits you!',
   seoDescription:
