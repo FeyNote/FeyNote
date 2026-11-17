@@ -98,7 +98,9 @@ export const exportJobHandler = async (job: JobSummary) => {
       offset += batchSize;
 
       progressTracker.onProgress({
-        progress: Math.floor((offset + batchSize / totalArtifactCount) * 100),
+        progress: Math.floor(
+          (Math.min(offset, totalArtifactCount) / totalArtifactCount) * 100,
+        ),
         step: 1,
       });
     } while (hasMore);
