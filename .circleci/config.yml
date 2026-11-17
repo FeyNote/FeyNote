@@ -16,7 +16,7 @@ jobs:
   build_and_test:
     resource_class: large
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
         environment:
           EMAIL_FROM_NAME: CI_PLACEHOLDER
           EMAIL_FROM_ADDRESS: CI_PLACEHOLDER
@@ -61,7 +61,7 @@ jobs:
   push_backend:
     resource_class: medium
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
     steps:
       - checkout
       - setup_remote_docker:
@@ -78,7 +78,7 @@ jobs:
   push_frontend:
     resource_class: large
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
     steps:
       - checkout
       - aws-cli/setup
@@ -100,7 +100,7 @@ jobs:
   push_docs:
     resource_class: medium
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
     steps:
       - checkout
       - aws-cli/setup
@@ -114,7 +114,7 @@ jobs:
   build_desktop_frontend:
     resource_class: large
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
     steps:
       - checkout
       - install_dependencies
@@ -133,7 +133,7 @@ jobs:
     steps:
       - checkout
       - node/install:
-          node-version: '24.7'
+          node-version: '24.22.1'
       - run:
           name: enable-corepack
           command: sudo corepack enable
@@ -216,7 +216,7 @@ jobs:
   desktop_linux:
     resource_class: medium+
     docker:
-      - image: cimg/node:24.7
+      - image: cimg/node:24.22.1
     steps:
       - checkout
       - install_dependencies

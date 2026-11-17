@@ -1,0 +1,221 @@
+---
+import Hero from './Hero.astro';
+import type { Translator } from '../i18n/translations';
+
+interface Props {
+  t: Translator;
+}
+
+const { t } = Astro.props;
+
+const groups = [
+  {
+    heading: t('features.core.title'),
+    items: [
+      {
+        title: t('features.core.ttrpg.title'),
+        description: t('features.core.ttrpg.description'),
+      },
+      {
+        title: t('features.core.collaboration.title'),
+        description: t('features.core.collaboration.description'),
+      },
+      {
+        title: t('features.core.offline.title'),
+        description: t('features.core.offline.description'),
+      },
+      {
+        title: t('features.core.themes.title'),
+        description: t('features.core.themes.description'),
+      },
+      {
+        title: t('features.core.panes.title'),
+        description: t('features.core.panes.description'),
+      },
+      {
+        title: t('features.core.urls.title'),
+        description: t('features.core.urls.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.relationships.title'),
+    items: [
+      {
+        title: t('features.relationships.tree.title'),
+        description: t('features.relationships.tree.description'),
+      },
+      {
+        title: t('features.relationships.graph.title'),
+        description: t('features.relationships.graph.description'),
+      },
+      {
+        title: t('features.relationships.references.title'),
+        description: t('features.relationships.references.description'),
+      },
+      {
+        title: t('features.relationships.previews.title'),
+        description: t('features.relationships.previews.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.text.title'),
+    items: [
+      {
+        title: t('features.text.blocks.title'),
+        description: t('features.text.blocks.description'),
+      },
+      {
+        title: t('features.text.fonts.title'),
+        description: t('features.text.fonts.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.calendars.title'),
+    items: [
+      {
+        title: t('features.calendars.customization.title'),
+        description: t('features.calendars.customization.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.import.title'),
+    items: [
+      {
+        title: t('features.import.obsidian.title'),
+        description: t('features.import.obsidian.description'),
+      },
+      {
+        title: t('features.import.logseq.title'),
+        description: t('features.import.logseq.description'),
+      },
+      {
+        title: t('features.import.url.title'),
+        description: t('features.import.url.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.export.title'),
+    items: [
+      {
+        title: t('features.export.json.title'),
+        description: t('features.export.json.description'),
+      },
+      {
+        title: t('features.export.markdown.title'),
+        description: t('features.export.markdown.description'),
+      },
+    ],
+  },
+  {
+    heading: t('features.upcoming.title'),
+    upcoming: true,
+    items: [
+      {
+        title: t('features.upcoming.unlinked.title'),
+        description: t('features.upcoming.unlinked.description'),
+      },
+      {
+        title: t('features.upcoming.googleDocs.title'),
+        description: t('features.upcoming.googleDocs.description'),
+      },
+      {
+        title: t('features.upcoming.themes.title'),
+        description: t('features.upcoming.themes.description'),
+      },
+      {
+        title: t('features.upcoming.mobile.title'),
+        description: t('features.upcoming.mobile.description'),
+      },
+    ],
+  },
+];
+---
+
+<Hero compact>
+  <h1>{t('features.title')}</h1>
+  <p class="lead">{t('features.subtitle')}</p>
+</Hero>
+
+<section class="section-shell features-content">
+  {
+    groups.map((group) => (
+      <section class:list={['group', { upcoming: group.upcoming }]}>
+        <h2>{group.heading}</h2>
+        <div class="items">
+          {group.items.map((item) => (
+            <div class="item card">
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <div class="btn-row">
+    <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+  </div>
+</section>
+
+<style>
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0 0 12px;
+  }
+
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.92;
+    max-width: 60ch;
+  }
+
+  .features-content {
+    padding-top: 48px;
+  }
+
+  .group {
+    margin-bottom: 48px;
+  }
+
+  .group h2 {
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .item h3 {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+  }
+
+  .item p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .group.upcoming .item {
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .features-content .btn-row {
+    justify-content: center;
+  }
+</style>

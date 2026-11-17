@@ -9,10 +9,17 @@ const IGNORE_NEXT_LINE_PATTERN = 'lint-locales-disable-next-line';
 const IGNORE_ENABLE_PATTERN = 'lint-locales-enable';
 const ARTIFACT_VALUE_REGEX = /".*":\s*".*[aA]rtifact/;
 
+const DEFAULT_SOURCE_EXTS = ['.ts', '.tsx'];
+
 const CONFIGS = {
   frontend: {
     localeFile: 'apps/frontend/public/locales/en-us.json',
     sourceDirs: ['apps/frontend/src', 'libs/ui/src', 'libs/shared-utils/src'],
+  },
+  www: {
+    localeFile: 'apps/www/src/i18n/locales/en-us.json',
+    sourceDirs: ['apps/www/src'],
+    sourceExts: ['.ts', '.tsx', '.astro'],
   },
   backend: {
     localeFile: 'libs/api-services/src/lib/i18n/locales/en-us.json',
@@ -35,6 +42,7 @@ if (!target || !CONFIGS[target]) {
 const config = CONFIGS[target];
 const localeFile = path.join(ROOT, config.localeFile);
 const sourceDirs = config.sourceDirs.map((d) => path.join(ROOT, d));
+const sourceExts = config.sourceExts || DEFAULT_SOURCE_EXTS;
 
 function getAllFilePaths(dir, exts) {
   const results = [];
@@ -53,7 +61,7 @@ function extractDottedStrings(dirs) {
   const strings = new Set();
   for (const dir of dirs) {
     if (!fs.existsSync(dir)) continue;
-    for (const file of getAllFilePaths(dir, ['.ts', '.tsx'])) {
+    for (const file of getAllFilePaths(dir, sourceExts)) {
       const lines = fs.readFileSync(file, 'utf8').split('\n');
       let disabled = false;
       for (let i = 0; i < lines.length; i++) {

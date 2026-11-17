@@ -32,7 +32,47 @@
     color: inherit;
   }
 
-  .standard-box-shadow {
-    box-shadow: 1px 1px 7px rgba(0,0,0,0.2);
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    color: #ffffff;
+    border: 1px solid var(--accent);
+  }
+
+  .btn.primary:hover {
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .btn.outline {
+    background: transparent;
+    color: inherit;
+    border: 1px solid currentColor;
+  }
+
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 1px 1px 7px rgba(0, 0, 0, 0.06);
   }
 </style>

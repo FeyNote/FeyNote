@@ -1,6 +1,6 @@
 ---
 import RootLayout from '../../components/RootLayout.astro'
-import GoToAppButton from '../../components/GoToAppButton.astro'
+import { DEFAULT_LOCALE_ONLY } from '../../i18n/translations';
 ---
 <style>
   .center {
@@ -17,6 +17,7 @@ import GoToAppButton from '../../components/GoToAppButton.astro'
   title="Payment Cancelled - FeyNote"
   description="Your payment was cancelled. Return to FeyNote anytime to explore our free TTRPG note-taking features."
   noindex={true}
+  availableLocales={DEFAULT_LOCALE_ONLY}
 >
   <div class="main center">
     <h1>Payment Cancelled</h1>
@@ -29,6 +30,6 @@ import GoToAppButton from '../../components/GoToAppButton.astro'
     <br />
     <br />
 
-    <GoToAppButton />
+    <a class="btn primary" href="https://app.feynote.com">Go to Web App</a>
   </div>
 </RootLayout>

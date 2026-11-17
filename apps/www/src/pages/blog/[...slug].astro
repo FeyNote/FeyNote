@@ -1,6 +1,12 @@
 ---
-import RootLayout from '../../components/RootLayout.astro'
-import { getCollection, getEntry, render } from 'astro:content';
+import { getCollection, render } from 'astro:content';
+import RootLayout from '../../components/RootLayout.astro';
+import Hero from '../../components/Hero.astro';
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_LOCALE_ONLY,
+  makeTranslator,
+} from '../../i18n/translations';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -10,66 +16,142 @@ export async function getStaticPaths() {
   }));
 }
 
+const locale = DEFAULT_LOCALE;
+const t = makeTranslator(locale);
+
 const { post } = Astro.props;
 if (!post) {
   return Astro.redirect('/404');
 }
 const { Content } = await render(post);
 
+const fallbackImage =
+  'https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg';
+
+const breadcrumbs = [
+  { name: t('site.name'), url: '/' },
+  { name: t('blog.title'), url: '/blog/' },
+  { name: post.data.title, url: `/blog/${post.id}/` },
+];
+
 const articleSchema = {
-  "@context": "https://schema.org",
-  "@type": "Article",
-  "headline": post.data.title,
-  "description": post.data.description,
-  "image": post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg",
-  "datePublished": post.data.publishDate.toISOString(),
-  "dateModified": post.data.updatedDate?.toISOString() || post.data.publishDate.toISOString(),
-  "author": {
-    "@type": "Person",
-    "name": post.data.author || "FeyNote Team"
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: post.data.title,
+  description: post.data.description,
+  image: post.data.featuredImageUrl || fallbackImage,
+  datePublished: post.data.publishDate.toISOString(),
+  dateModified:
+    post.data.updatedDate?.toISOString() || post.data.publishDate.toISOString(),
+  inLanguage: locale,
+  author: {
+    '@type': 'Person',
+    name: post.data.author || 'FeyNote Team',
   },
-  "publisher": {
-    "@type": "Organization",
-    "name": "FeyNote",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://static.feynote.com/icons/feynote-icon-original-20241220.png"
-    }
+  publisher: {
+    '@type': 'Organization',
+    '@id': 'https://feynote.com/#organization',
+    name: 'FeyNote',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://static.feynote.com/icons/feynote-icon-original-20241220.png',
+    },
   },
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": `https://feynote.com/blog/${post.id}`
-  }
+  mainEntityOfPage: {
+    '@type': 'WebPage',
+    '@id': `https://feynote.com/blog/${post.id}/`,
+  },
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: `https://feynote.com${crumb.url}`,
+    })),
+  },
 };
 ---
+
+<RootLayout
+  locale={locale}
+  t={t}
+  title={`${post.data.title} - FeyNote`}
+  description={post.data.description}
+  image={post.data.featuredImageUrl || fallbackImage}
+  imageAlt={`${t('blog.featuredImageAlt')} ${post.data.title}`}
+  ogType="article"
+  structuredData={articleSchema}
+  availableLocales={DEFAULT_LOCALE_ONLY}
+  contained={false}
+>
+  <Hero compact bgUrl={post.data.featuredImageUrl || undefined}>
+    <a class="back-link" href="/blog/">&larr; {t('blog.back')}</a>
+    <h1>{post.data.title}</h1>
+    <div class="post-meta">
+      <time datetime={post.data.publishDate.toISOString()}>
+        {post.data.publishDate.toLocaleDateString()}
+      </time>
+      {
+        post.data.readingTime && (
+          <>
+            <span class="post-meta-separator" />
+            <span>{post.data.readingTime}</span>
+          </>
+        )
+      }
+      {
+        post.data.author && (
+          <>
+            <span class="post-meta-separator" />
+            <span>{post.data.author}</span>
+          </>
+        )
+      }
+    </div>
+  </Hero>
+
+  <div class="post-shell">
+    <article class="post-body card">
+      <Content />
+    </article>
+
+    <section class="post-cta card">
+      <div>
+        <h2>{t('landing.closing.title')}</h2>
+        <p>{t('landing.closing.description')}</p>
+      </div>
+      <a class="btn primary" href="https://app.feynote.com">{t('nav.goToApp')}</a>
+    </section>
+  </div>
+</RootLayout>
+
 <style>
-  .page-content {
-    max-width: min(800px, 100%);
-    margin-left: auto;
-    margin-right: auto;
+  .back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    opacity: 0.85;
   }
 
-  .blog-content-container {
-    color: var(--blogpost-text-color);
-    padding: 40px 48px;
-    background: var(--blogpost-bg);
-    border-radius: 8px;
-    line-height: 1.75;
+  .back-link:hover {
+    opacity: 1;
   }
 
-  .blog-content-container h1 {
-    font-family: "Libre Baskerville";
-    margin-bottom: 0;
-    line-height: 1.3;
+  h1 {
+    font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+    margin: 0 0 12px;
+    max-width: 20ch;
   }
 
   .post-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 10px;
     font-size: 0.9rem;
-    margin-top: 8px;
-    opacity: 0.8;
+    opacity: 0.85;
   }
 
   .post-meta-separator {
@@ -81,81 +163,118 @@ const articleSchema = {
     opacity: 0.6;
   }
 
-  .featured-image {
-    width: 100%;
-    max-height: 360px;
-    object-fit: cover;
-    border-radius: 6px;
-    margin-top: 24px;
+  .post-shell {
+    max-width: 840px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
   }
 
-  .blog-body {
-    margin-top: 32px;
-  }
-
-  .blog-body :global(h2) {
-    font-family: "Libre Baskerville";
-    margin-top: 2.5em;
-    margin-bottom: 0.6em;
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(128, 128, 128, 0.25);
-  }
-
-  .blog-body :global(h3) {
-    font-family: "Libre Baskerville";
-    margin-top: 2em;
-    margin-bottom: 0.5em;
-  }
-
-  .blog-body :global(p) {
-    margin-top: 0;
-    margin-bottom: 1.25em;
-  }
-
-  .back-link {
-    display: inline-block;
-    margin-bottom: 16px;
-    font-size: 0.9rem;
-    text-decoration: none;
-    opacity: 0.7;
-  }
-
-  .back-link:hover {
-    opacity: 1;
+  .post-body {
+    padding: 40px 48px;
+    font-size: 1.05rem;
+    line-height: 1.75;
   }
 
   @media (max-width: 640px) {
-    .blog-content-container {
+    .post-body {
       padding: 24px 20px;
     }
   }
+
+  .post-body :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .post-body :global(p) {
+    margin: 0 0 1.25em;
+    color: var(--text-muted);
+  }
+
+  .post-body :global(h2) {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.5rem;
+    margin: 2.2em 0 0.6em;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-body :global(h3) {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.2rem;
+    margin: 1.8em 0 0.5em;
+  }
+
+  .post-body :global(ul),
+  .post-body :global(ol) {
+    margin: 0 0 1.25em;
+    padding-inline-start: 1.4em;
+    color: var(--text-muted);
+  }
+
+  .post-body :global(li) {
+    margin-bottom: 0.5em;
+  }
+
+  .post-body :global(a) {
+    color: var(--accent);
+  }
+
+  .post-body :global(blockquote) {
+    margin: 0 0 1.25em;
+    padding: 4px 0 4px 20px;
+    border-inline-start: 3px solid var(--accent);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .post-body :global(img) {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  .post-body :global(hr) {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 2.5em 0;
+  }
+
+  .post-body :global(code) {
+    background: var(--surface-hover);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.9em;
+  }
+
+  .post-body :global(pre) {
+    overflow-x: auto;
+    padding: 16px;
+    border-radius: 6px;
+    background: var(--surface-hover);
+  }
+
+  .post-body :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .post-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .post-cta h2 {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+  }
+
+  .post-cta p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
 </style>
-<RootLayout
-  title={post.data.title + " - FeyNote"}
-  description={post.data.description}
-  image={post.data.featuredImageUrl || "https://static.feynote.com/screenshots/feynote-artifact-20240924.jpg"}
-  ogType="article"
-  structuredData={articleSchema}
->
-  <div class="page-content">
-    <a class="back-link" href="/blog">&larr; Back to Blog</a>
-    <div class="blog-content-container standard-box-shadow">
-      <h1>{post.data.title}</h1>
-      <div class="post-meta">
-        <time>{post.data.publishDate.toLocaleDateString()}</time>
-        {post.data.readingTime && (
-          <>
-            <span class="post-meta-separator"></span>
-            <span>{post.data.readingTime}</span>
-          </>
-        )}
-      </div>
-      {post.data.featuredImageUrl && (
-        <img class="featured-image" src={post.data.featuredImageUrl} alt="" />
-      )}
-      <div class="blog-body">
-        <Content />
-      </div>
-    </div>
-  </div>
-</RootLayout>

@@ -1,0 +1,35 @@
+---
+import RootLayout from '../../components/RootLayout.astro';
+import Download from '../../components/Download.astro';
+import {
+  DEFAULT_LOCALE,
+  WWW_SUPPORTED_LOCALES,
+  localePath,
+  makeTranslator,
+} from '../../i18n/translations';
+
+export const prerender = false;
+
+const { lang } = Astro.params;
+if (!lang || lang === DEFAULT_LOCALE || !WWW_SUPPORTED_LOCALES.includes(lang)) {
+  return Astro.redirect('/download/', 302);
+}
+
+const t = makeTranslator(lang);
+
+const breadcrumbs = [
+  { name: t('site.name'), url: localePath(lang, '/') },
+  { name: t('download.title'), url: localePath(lang, '/download') },
+];
+---
+
+<RootLayout
+  locale={lang}
+  t={t}
+  title={t('download.metaTitle')}
+  description={t('download.metaDescription')}
+  breadcrumbs={breadcrumbs}
+  contained={false}
+>
+  <Download t={t} />
+</RootLayout>
