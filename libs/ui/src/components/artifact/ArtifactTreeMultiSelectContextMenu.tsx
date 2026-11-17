@@ -9,7 +9,11 @@ import {
   getWorkspaceAccessLevel,
 } from '@feynote/shared-utils';
 
-export type MultiSelectAction = 'moveInTree' | 'removeFromWorkspace' | 'delete';
+export type MultiSelectAction =
+  | 'moveInTree'
+  | 'removeFromWorkspace'
+  | 'export'
+  | 'delete';
 
 interface Props {
   enabled: boolean;
@@ -61,6 +65,9 @@ export const ArtifactTreeMultiSelectContextMenu: React.FC<Props> = (props) => {
             {t('workspace.removeDocument')}
           </ContextMenu.Item>
         )}
+        <ContextMenu.Item onClick={() => props.onAction('export')}>
+          {t('allArtifacts.actions.export')}
+        </ContextMenu.Item>
         <ContextMenu.Separator />
         <ContextMenu.Item color="red" onClick={() => props.onAction('delete')}>
           {t('allArtifacts.actions.delete')}

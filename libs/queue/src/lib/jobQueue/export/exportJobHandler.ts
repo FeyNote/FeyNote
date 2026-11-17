@@ -2,16 +2,18 @@ import { transformArtifactsToArtifactExports } from './transformArtifactsToExpor
 import ZipStream from 'zip-stream';
 import {
   getSignedFileUrlsForUser,
+  getSignedFileUrlsForUserAndArtifacts,
   uploadFileToS3,
 } from '@feynote/api-services';
-import { FilePurpose } from '@prisma/client';
+import { FilePurpose, type Prisma } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import { PassThrough } from 'stream';
 import { artifactWithReferences } from './artifactReferenceSummary';
-import type { JobSummary } from '@feynote/prisma/types';
+import { JobErrorCode, type JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
 import { logger } from '@feynote/api-services';
 import { getUniqueExportFilename } from './getUniqueExportFilename';
+import { getArtifactsAreExportable } from './getArtifactsAreExportable';
 
 export const exportJobHandler = async (job: JobSummary) => {
   const jobFormat = job.meta.exportFormat;
@@ -19,7 +21,33 @@ export const exportJobHandler = async (job: JobSummary) => {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
-  const userFileToS3Map = await getSignedFileUrlsForUser(job.userId);
+  const artifactIds = job.meta.exportArtifactIds
+    ? [...new Set(job.meta.exportArtifactIds)]
+    : undefined;
+
+  if (
+    artifactIds &&
+    !(await getArtifactsAreExportable(job.userId, artifactIds))
+  ) {
+    await prisma.job.update({
+      where: { id: job.id },
+      data: {
+        meta: {
+          ...job.meta,
+          error: JobErrorCode.ExportArtifactsUnavailable,
+        },
+      },
+    });
+    throw new Error(`Export job requested unavailable artifacts: ${job.id}`);
+  }
+
+  const artifactWhere: Prisma.ArtifactWhereInput = artifactIds
+    ? { id: { in: artifactIds }, deletedAt: null }
+    : { userId: job.userId, deletedAt: null };
+
+  const userFileToS3Map = artifactIds
+    ? await getSignedFileUrlsForUserAndArtifacts(job.userId, artifactIds)
+    : await getSignedFileUrlsForUser(job.userId);
   const mimetype = 'application/zip';
   const zipStream = new ZipStream();
   const passThrough = new PassThrough();
@@ -38,7 +66,7 @@ export const exportJobHandler = async (job: JobSummary) => {
   logger.info(`Export Job: Beginning Upload of ZipStream to S3`);
   const uploadP = uploadFileToS3(passThrough, mimetype, FilePurpose.job);
   const totalArtifactCount = await prisma.artifact.count({
-    where: { userId: job.userId, deletedAt: null },
+    where: artifactWhere,
   });
   const progressTracker = new JobProgressTracker({
     userId: job.userId,
@@ -54,7 +82,7 @@ export const exportJobHandler = async (job: JobSummary) => {
     let offset = 0;
     do {
       const artifactsWithReferences = await prisma.artifact.findMany({
-        where: { userId: job.userId, deletedAt: null },
+        where: artifactWhere,
         ...artifactWithReferences,
         take: batchSize,
         skip: offset,

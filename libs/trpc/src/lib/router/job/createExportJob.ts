@@ -14,6 +14,7 @@ export const createExportJob = authenticatedProcedure
   .input(
     z.object({
       format: zExportFormat,
+      artifactIds: z.array(z.uuid()).min(1).optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -26,6 +27,7 @@ export const createExportJob = authenticatedProcedure
         type: JobType.export,
         meta: {
           exportFormat: input.format,
+          exportArtifactIds: input.artifactIds,
         },
       },
     });

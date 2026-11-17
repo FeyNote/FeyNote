@@ -28,6 +28,7 @@ export type ImportFormat = z.infer<typeof zImportFormat>;
 
 export enum JobErrorCode {
   UnknownError = 'unknown_error',
+  ExportArtifactsUnavailable = 'export_artifacts_unavailable',
 }
 
 const jobSummarySchema = z.object({
@@ -40,6 +41,7 @@ const jobSummarySchema = z.object({
   meta: z.object({
     importFormat: zImportFormat.optional(),
     exportFormat: zExportFormat.optional(),
+    exportArtifactIds: z.array(z.string()).optional(),
     error: z.nativeEnum(JobErrorCode).optional(),
     importedArtifactIds: z.array(z.string()).optional(),
     workspaceId: z.string().nullable().optional(),
@@ -53,6 +55,7 @@ export type JobSummary = Omit<
   meta: {
     importFormat?: ImportFormat;
     exportFormat?: ExportFormat;
+    exportArtifactIds?: string[];
     error?: JobErrorCode;
     importedArtifactIds?: string[];
     workspaceId?: string | null;

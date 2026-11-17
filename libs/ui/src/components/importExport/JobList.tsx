@@ -59,6 +59,7 @@ export const JobList: React.FC<Props> = (props) => {
     string
   > = {
     unknown_error: t('jobList.error.unknown'),
+    export_artifacts_unavailable: t('jobList.error.exportArtifactsUnavailable'),
   };
 
   return (
@@ -83,7 +84,12 @@ export const JobList: React.FC<Props> = (props) => {
           >
             <Flex direction="column" gap="1" style={{ flex: 1 }}>
               <Text size="2" weight="medium">
-                {formatTranslation}
+                {job.meta.exportArtifactIds
+                  ? t('jobList.format.withDocumentCount', {
+                      format: formatTranslation,
+                      count: job.meta.exportArtifactIds.length,
+                    })
+                  : formatTranslation}
               </Text>
               <Text size="1" color="gray">
                 {job.createdAt.toLocaleString()}

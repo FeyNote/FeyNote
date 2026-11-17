@@ -148,6 +148,7 @@ interface ArtifactTreeItemProps {
   isSelected: boolean;
   selectedCount: number;
   onMultiSelectAction: (action: MultiSelectAction) => void;
+  onExport: (itemId: string) => void;
   expandedItems: string[];
   setExpandedItems: (expandedItems: string[]) => void;
   enableContextMenu: boolean;
@@ -322,6 +323,7 @@ export const ArtifactTreeItem: React.FC<ArtifactTreeItemProps> = (props) => {
         paneId={undefined}
         expandAll={expandAll}
         collapseAll={collapseAll}
+        onExport={() => props.onExport(item.id)}
       >
         {treeItemContent}
       </ArtifactTreeItemContextMenu>

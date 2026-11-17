@@ -11,10 +11,10 @@ import { getJobsAction } from '../../actions/getJobsAction';
 import type { ExportFormat, JobSummary } from '@feynote/prisma/types';
 import styled from 'styled-components';
 import { Heading, Text } from '@radix-ui/themes';
-import { AiFillFileMarkdown, BsFiletypeJson } from '../AppIcons';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
+import { EXPORT_OPTIONS } from './EXPORT_OPTIONS';
 
 const OptionsGrid = styled.div`
   display: grid;
@@ -42,26 +42,6 @@ const FormatRow = styled.button`
     background: var(--general-background-hover);
   }
 `;
-
-const EXPORT_OPTIONS: {
-  component: React.FC;
-  title: string;
-  description: string;
-  format: ExportFormat;
-}[] = [
-  {
-    component: BsFiletypeJson,
-    title: 'export.options.json',
-    description: 'export.options.json.description',
-    format: 'json',
-  },
-  {
-    component: AiFillFileMarkdown,
-    title: 'export.options.markdown',
-    description: 'export.options.markdown.description',
-    format: 'markdown',
-  },
-];
 
 export const Export: React.FC = () => {
   const { t } = useTranslation();

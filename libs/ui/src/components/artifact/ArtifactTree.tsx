@@ -56,6 +56,9 @@ import { MultiArtifactMoveInTreeDialog } from './allArtifacts/MultiArtifactMoveI
 import { MultiArtifactDeleteDialog } from './allArtifacts/MultiArtifactDeleteDialog';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
 import { withCollaborationConnection } from '../../utils/collaboration/collaborationManager';
+import type { MultiSelectAction } from './ArtifactTreeMultiSelectContextMenu';
+import { getAllChildIdsForTreeItem } from '../../utils/artifactTree/getAllChildIdsForTreeItem';
+import { ExportDialog } from '../importExport/ExportDialog';
 
 const TreeContainer = styled.div`
   height: 100%;
@@ -141,6 +144,9 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     'moveInTree' | 'removeFromWorkspace' | 'delete' | null
   >(null);
   const multiSelectActionIdsRef = useRef<Set<string>>(new Set());
+  const [exportArtifactIds, setExportArtifactIds] = useState<string[] | null>(
+    null,
+  );
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const userTreeConnection = useCollaborationConnection(
@@ -666,12 +672,45 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     );
   };
 
+  const getItemIdsWithChildren = useCallback(
+    (itemIds: string[]) => {
+      const ids = new Set<string>();
+      for (const itemId of itemIds) {
+        const item = treeItemsById.get(itemId);
+        if (!item) continue;
+        ids.add(itemId);
+        const childIds = getAllChildIdsForTreeItem(
+          treeItemsById,
+          itemIdsByParentId,
+          item,
+          0,
+        );
+        for (const childId of childIds) {
+          ids.add(childId);
+        }
+      }
+      return Array.from(ids);
+    },
+    [treeItemsById, itemIdsByParentId],
+  );
+
+  const handleExport = useCallback(
+    (itemId: string) => {
+      setExportArtifactIds(getItemIdsWithChildren([itemId]));
+    },
+    [getItemIdsWithChildren],
+  );
+
   const handleMultiSelectAction = useCallback(
-    (action: 'moveInTree' | 'removeFromWorkspace' | 'delete') => {
+    (action: MultiSelectAction) => {
+      if (action === 'export') {
+        setExportArtifactIds(getItemIdsWithChildren(selectedItems));
+        return;
+      }
       multiSelectActionIdsRef.current = new Set(selectedItems);
       setMultiSelectAction(action);
     },
-    [selectedItems],
+    [selectedItems, getItemIdsWithChildren],
   );
 
   const closeMultiSelectAction = useCallback(() => {
@@ -756,6 +795,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
                   }
                   selectedCount={selectedItems.length}
                   onMultiSelectAction={handleMultiSelectAction}
+                  onExport={handleExport}
                 />
               );
             })}
@@ -796,6 +836,12 @@ export const ArtifactTree: React.FC<Props> = (props) => {
         <MultiArtifactDeleteDialog
           artifactIds={multiSelectActionIdsRef.current}
           close={closeMultiSelectAction}
+        />
+      )}
+      {exportArtifactIds && (
+        <ExportDialog
+          artifactIds={exportArtifactIds}
+          close={() => setExportArtifactIds(null)}
         />
       )}
       {multiSelectAction === 'removeFromWorkspace' && (
