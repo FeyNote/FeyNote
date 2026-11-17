@@ -42,6 +42,7 @@ const jobSummarySchema = z.object({
     importFormat: zImportFormat.optional(),
     exportFormat: zExportFormat.optional(),
     exportArtifactIds: z.array(z.string()).optional(),
+    exportArtifactCount: z.number().optional(),
     error: z.nativeEnum(JobErrorCode).optional(),
     importedArtifactIds: z.array(z.string()).optional(),
     workspaceId: z.string().nullable().optional(),
@@ -56,6 +57,7 @@ export type JobSummary = Omit<
     importFormat?: ImportFormat;
     exportFormat?: ExportFormat;
     exportArtifactIds?: string[];
+    exportArtifactCount?: number;
     error?: JobErrorCode;
     importedArtifactIds?: string[];
     workspaceId?: string | null;
@@ -70,6 +72,14 @@ export const prismaJobSummaryToJobSummary = (
 ): JobSummary => {
   const jobSummary = jobSummarySchema.parse(job);
   return jobSummary as JobSummary;
+};
+
+export const removeExportArtifactIdsFromJobSummary = (
+  jobSummary: JobSummary,
+): JobSummary => {
+  const meta = { ...jobSummary.meta };
+  delete meta.exportArtifactIds;
+  return { ...jobSummary, meta };
 };
 
 export type PrismaJobSummary = Prisma.JobGetPayload<typeof jobSummary>;

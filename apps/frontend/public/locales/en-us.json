@@ -385,7 +385,7 @@
   "jobList.format.docx": "DocX",
   "jobList.format.gDrive": "Google Drive",
   "jobList.format.unknown": "Unknown Format",
-  "jobList.format.withDocumentCount": "{{format}}, {{count}} document(s)",
+  "jobList.documentCount": "{{count}} document(s)",
   "jobList.error.unknown": "I'm sorry an unknown error has occurred, please try your upload again. If your problem persists please contact support.",
   "jobList.error.exportArtifactsUnavailable": "Some of the selected documents were deleted, or you no longer have access to them.",
   "jobList.success": "Job successfully finished.",

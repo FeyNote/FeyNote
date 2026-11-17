@@ -34,6 +34,7 @@ export const createExportJob = authenticatedProcedure
         meta: {
           exportFormat: input.format,
           exportArtifactIds: input.artifactIds,
+          exportArtifactCount: input.artifactIds?.length,
         },
       },
     });

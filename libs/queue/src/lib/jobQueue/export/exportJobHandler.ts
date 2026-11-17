@@ -14,7 +14,9 @@ import { logger } from '@feynote/api-services';
 import { reserveUniqueExportFilename } from './reserveUniqueExportFilename';
 import { getUserCanReadAllArtifacts } from './getUserCanReadAllArtifacts';
 
-const markJobArtifactsUnavailable = async (job: JobSummary) => {
+const failJobForUnavailableArtifacts = async (
+  job: JobSummary,
+): Promise<never> => {
   await prisma.job.update({
     where: { id: job.id },
     data: {
@@ -24,7 +26,7 @@ const markJobArtifactsUnavailable = async (job: JobSummary) => {
       },
     },
   });
-  return new Error(`Export job requested unavailable artifacts: ${job.id}`);
+  throw new Error(`Export job requested unavailable artifacts: ${job.id}`);
 };
 
 export const exportJobHandler = async (job: JobSummary) => {
@@ -39,7 +41,7 @@ export const exportJobHandler = async (job: JobSummary) => {
     artifactIds &&
     !(await getUserCanReadAllArtifacts(job.userId, artifactIds))
   ) {
-    throw await markJobArtifactsUnavailable(job);
+    await failJobForUnavailableArtifacts(job);
   }
 
   const artifactWhere: Prisma.ArtifactWhereInput = artifactIds
@@ -139,7 +141,7 @@ export const exportJobHandler = async (job: JobSummary) => {
     } while (hasMore);
 
     if (artifactIds && exportedArtifactCount !== artifactIds.length) {
-      throw await markJobArtifactsUnavailable(job);
+      await failJobForUnavailableArtifacts(job);
     }
   } catch (err) {
     const error = err instanceof Error ? err : new Error('Unknown error');
