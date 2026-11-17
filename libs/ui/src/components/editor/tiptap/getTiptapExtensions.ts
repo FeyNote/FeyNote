@@ -65,6 +65,7 @@ import { FeynoteImageExtension } from './extensions/feynoteImage/FeynoteImageExt
 import { FeynoteVideoExtension } from './extensions/feynoteVideo/FeynoteVideoExtension';
 import { ClipboardExtension } from './extensions/clipboard/ClipboardExtension';
 import { FocusExtension } from './extensions/focus/FocusExtension';
+import { FirstBlockExtension } from './extensions/firstBlock/FirstBlockExtension';
 import { DiceDecorationExtension } from './extensions/diceDecoration/DiceDecorationExtension';
 import { LinkKeyboardShortcutExtension } from './extensions/linkKeyboardShortcutExtension';
 import { FeynoteGenericFileExtension } from './extensions/feynoteGenericFile/FeynoteGenericFileExtension';
@@ -232,6 +233,7 @@ export const getTiptapExtensions = (args: {
       },
     }),
     FocusExtension,
+    FirstBlockExtension,
     ClipboardExtension,
     TableOfContentsExtension.configure({
       anchorTypes: [TiptapBlockType.Heading],
