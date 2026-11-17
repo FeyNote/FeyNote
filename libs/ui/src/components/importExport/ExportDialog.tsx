@@ -2,7 +2,10 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled from 'styled-components';
 import { Flex, RadioGroup, Text } from '@radix-ui/themes';
-import { getArtifactAccessLevel } from '@feynote/shared-utils';
+import {
+  getArtifactAccessLevel,
+  MAX_EXPORT_ARTIFACT_COUNT,
+} from '@feynote/shared-utils';
 import type { ExportFormat } from '@feynote/prisma/types';
 import type { ArtifactSnapshot } from '@feynote/global-types';
 import { ActionDialog } from '../sharedComponents/ActionDialog';
@@ -17,6 +20,7 @@ import { PaneableComponent } from '../../context/globalPane/PaneableComponent';
 import { trpc } from '../../utils/trpc';
 import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { EXPORT_OPTIONS } from './EXPORT_OPTIONS';
+import { ExportFormatLabel } from './ExportFormatLabel';
 
 const ArtifactListContainer = styled.div`
   position: relative;
@@ -24,22 +28,20 @@ const ArtifactListContainer = styled.div`
   margin-bottom: 16px;
 `;
 
-const FormatOption = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 20px;
+const ArtifactListItemTitle = styled.div`
+  margin-left: 16px;
 `;
 
 interface Props {
-  artifactIds: string[];
+  artifactIds: ReadonlySet<string>;
   close: () => void;
 }
 
 export const ExportDialog: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { session } = useSessionContext();
-  const { getArtifactSnapshotById } = useArtifactSnapshots();
+  const { getArtifactSnapshotById, artifactSnapshotsLoading } =
+    useArtifactSnapshots();
   const { navigate } = useGlobalPaneContext();
   const { handleTRPCErrors } = useHandleTRPCErrors();
   const [format, setFormat] = useState<ExportFormat>('markdown');
@@ -57,9 +59,31 @@ export const ExportDialog: React.FC<Props> = (props) => {
     return snapshots;
   }, [props.artifactIds, getArtifactSnapshotById, session.userId]);
 
-  const [selectedArtifactIds, setSelectedArtifactIds] = useState<
+  const exportableArtifactIds = useMemo(
+    () => exportableArtifactSnapshots.map((snapshot) => snapshot.id),
+    [exportableArtifactSnapshots],
+  );
+
+  const [uncheckedArtifactIds, setUncheckedArtifactIds] = useState<
     ReadonlySet<string>
-  >(() => new Set(exportableArtifactSnapshots.map((el) => el.id)));
+  >(new Set());
+
+  const selectedArtifactIds = useMemo(
+    () =>
+      new Set(
+        exportableArtifactIds.filter((id) => !uncheckedArtifactIds.has(id)),
+      ),
+    [exportableArtifactIds, uncheckedArtifactIds],
+  );
+
+  const setSelectedArtifactIds = (newSelectedIds: ReadonlySet<string>) => {
+    setUncheckedArtifactIds(
+      new Set(exportableArtifactIds.filter((id) => !newSelectedIds.has(id))),
+    );
+  };
+
+  const tooManyArtifactsSelected =
+    selectedArtifactIds.size > MAX_EXPORT_ARTIFACT_COUNT;
 
   const checkboxTableEntries = useMemo(
     () =>
@@ -71,24 +95,23 @@ export const ExportDialog: React.FC<Props> = (props) => {
   );
 
   const startExport = async () => {
-    const artifactIds = exportableArtifactSnapshots
-      .map((el) => el.id)
-      .filter((id) => selectedArtifactIds.has(id));
-
-    try {
-      await trpc.job.createExportJob.mutate({
+    const exportJob = await trpc.job.createExportJob
+      .mutate({
         format,
-        artifactIds,
+        artifactIds: Array.from(selectedArtifactIds),
+      })
+      .catch((e) => {
+        handleTRPCErrors(e);
       });
-    } catch (e) {
-      handleTRPCErrors(e);
-      return;
-    }
+    if (!exportJob) return;
 
     navigate(undefined, PaneableComponent.Export, {}, PaneTransition.Push);
   };
 
   const getDescription = () => {
+    if (artifactSnapshotsLoading) {
+      return t('exportDialog.loading');
+    }
     if (!exportableArtifactSnapshots.length) {
       return t('exportDialog.noDocuments');
     }
@@ -121,7 +144,10 @@ export const ExportDialog: React.FC<Props> = (props) => {
           title: t('exportDialog.export'),
           props: {
             onClick: startExport,
-            disabled: !selectedArtifactIds.size,
+            disabled:
+              artifactSnapshotsLoading ||
+              !selectedArtifactIds.size ||
+              tooManyArtifactsSelected,
           },
         },
       ]}
@@ -142,9 +168,11 @@ export const ExportDialog: React.FC<Props> = (props) => {
               </Text>
             }
             renderItem={({ entry }) => (
-              <Text size="2">
-                {entry.value.meta.title || t('generic.untitled')}
-              </Text>
+              <ArtifactListItemTitle>
+                <Text size="2">
+                  {entry.value.meta.title || t('generic.untitled')}
+                </Text>
+              </ArtifactListItemTitle>
             )}
           />
         </ArtifactListContainer>
@@ -154,24 +182,16 @@ export const ExportDialog: React.FC<Props> = (props) => {
           <RadioGroup.Root
             value={format}
             onValueChange={(value) => {
-              const option = EXPORT_OPTIONS.find((el) => el.format === value);
-              if (option) setFormat(option.format);
+              const exportOption = EXPORT_OPTIONS.find(
+                (option) => option.format === value,
+              );
+              if (exportOption) setFormat(exportOption.format);
             }}
           >
             <Flex direction="column" gap="3">
               {EXPORT_OPTIONS.map((option) => (
                 <RadioGroup.Item key={option.format} value={option.format}>
-                  <FormatOption>
-                    <option.component />
-                    <Flex direction="column">
-                      <Text size="2" weight="medium">
-                        {t(option.title)}
-                      </Text>
-                      <Text size="1" color="gray">
-                        {t(option.description)}
-                      </Text>
-                    </Flex>
-                  </FormatOption>
+                  <ExportFormatLabel option={option} />
                 </RadioGroup.Item>
               ))}
             </Flex>
@@ -179,6 +199,13 @@ export const ExportDialog: React.FC<Props> = (props) => {
           <Text as="p" size="1" color="gray" mt="3">
             {t('export.options.subtext')}
           </Text>
+          {tooManyArtifactsSelected && (
+            <Text as="p" size="2" color="red" mt="3">
+              {t('exportDialog.tooManyDocuments', {
+                maxCount: MAX_EXPORT_ARTIFACT_COUNT,
+              })}
+            </Text>
+          )}
         </>
       )}
     </ActionDialog>

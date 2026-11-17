@@ -1,12 +1,12 @@
-export const getUniqueExportFilename = (
+export const reserveUniqueExportFilename = (
   usedFilenames: Set<string>,
-  title: string,
+  sanitizedTitle: string,
   extension: string,
 ): string => {
-  let filename = `${title}.${extension}`;
+  let filename = `${sanitizedTitle}.${extension}`;
   let counter = 2;
   while (usedFilenames.has(filename.toLowerCase())) {
-    filename = `${title} (${counter}).${extension}`;
+    filename = `${sanitizedTitle} (${counter}).${extension}`;
     counter++;
   }
   usedFilenames.add(filename.toLowerCase());

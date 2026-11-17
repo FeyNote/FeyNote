@@ -10,6 +10,7 @@ export * from './lib/crypto/sha256Hex';
 export * from './lib/crypto/hmacSha256Hex';
 
 export * from './lib/edgesReferences/getEdgeId';
+export * from './lib/export/MAX_EXPORT_ARTIFACT_COUNT';
 export * from './lib/validation/assert';
 export * from './lib/validation/getAccessLevelCanEdit';
 export * from './lib/validation/getAccessLevelCanShare';

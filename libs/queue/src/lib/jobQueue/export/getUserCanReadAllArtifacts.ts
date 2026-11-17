@@ -1,7 +1,7 @@
 import { prisma } from '@feynote/prisma/client';
 import { getArtifactAccessLevel } from '@feynote/shared-utils';
 
-export const getArtifactsAreExportable = async (
+export const getUserCanReadAllArtifacts = async (
   userId: string,
   artifactIds: string[],
 ): Promise<boolean> => {

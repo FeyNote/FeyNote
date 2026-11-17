@@ -1,0 +1,1 @@
+export const MAX_EXPORT_ARTIFACT_COUNT = 10000;

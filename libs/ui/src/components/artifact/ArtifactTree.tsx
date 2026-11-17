@@ -140,13 +140,11 @@ export const ArtifactTree: React.FC<Props> = (props) => {
   const focusedPane = globalPaneContext.getPaneById(undefined);
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [multiSelectAction, setMultiSelectAction] = useState<
-    'moveInTree' | 'removeFromWorkspace' | 'delete' | null
-  >(null);
+  const [multiSelectAction, setMultiSelectAction] =
+    useState<MultiSelectAction | null>(null);
   const multiSelectActionIdsRef = useRef<Set<string>>(new Set());
-  const [exportArtifactIds, setExportArtifactIds] = useState<string[] | null>(
-    null,
-  );
+  const [exportArtifactIds, setExportArtifactIds] =
+    useState<ReadonlySet<string> | null>(null);
   const { navigateWithKeyboardHandler } = useNavigateWithKeyboardHandler();
 
   const userTreeConnection = useCollaborationConnection(
@@ -689,7 +687,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
           ids.add(childId);
         }
       }
-      return Array.from(ids);
+      return ids;
     },
     [treeItemsById, itemIdsByParentId],
   );
@@ -701,16 +699,16 @@ export const ArtifactTree: React.FC<Props> = (props) => {
     [getItemIdsWithChildren],
   );
 
+  const handleMultiSelectExport = useCallback(() => {
+    setExportArtifactIds(getItemIdsWithChildren(selectedItems));
+  }, [selectedItems, getItemIdsWithChildren]);
+
   const handleMultiSelectAction = useCallback(
     (action: MultiSelectAction) => {
-      if (action === 'export') {
-        setExportArtifactIds(getItemIdsWithChildren(selectedItems));
-        return;
-      }
       multiSelectActionIdsRef.current = new Set(selectedItems);
       setMultiSelectAction(action);
     },
-    [selectedItems, getItemIdsWithChildren],
+    [selectedItems],
   );
 
   const closeMultiSelectAction = useCallback(() => {
@@ -796,6 +794,7 @@ export const ArtifactTree: React.FC<Props> = (props) => {
                   selectedCount={selectedItems.length}
                   onMultiSelectAction={handleMultiSelectAction}
                   onExport={handleExport}
+                  onMultiSelectExport={handleMultiSelectExport}
                 />
               );
             })}

@@ -15,6 +15,7 @@ import { useHandleTRPCErrors } from '../../utils/useHandleTRPCErrors';
 import { eventManager } from '../../context/events/EventManager';
 import { EventName } from '../../context/events/EventName';
 import { EXPORT_OPTIONS } from './EXPORT_OPTIONS';
+import { ExportFormatLabel } from './ExportFormatLabel';
 
 const OptionsGrid = styled.div`
   display: grid;
@@ -22,21 +23,12 @@ const OptionsGrid = styled.div`
   gap: 4px;
 `;
 
-const FormatLabel = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
 const FormatRow = styled.button`
   all: unset;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   padding: 12px 16px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 150ms;
-  font-size: 20px;
 
   &:hover {
     background: var(--general-background-hover);
@@ -108,15 +100,7 @@ export const Export: React.FC = () => {
               key={`option-${i}`}
               onClick={() => _export(option.format)}
             >
-              <option.component />
-              <FormatLabel>
-                <Text size="2" weight="medium">
-                  {t(option.title)}
-                </Text>
-                <Text size="1" color="gray">
-                  {t(option.description)}
-                </Text>
-              </FormatLabel>
+              <ExportFormatLabel option={option} />
             </FormatRow>
           ))}
         </OptionsGrid>

@@ -43,6 +43,7 @@ Each row has a checkbox on the left. Click to select individual documents, or sh
 - **Move Within Your Tree** moves the selected documents to a new position in your [document tree](/docs/documents/tree).
 - **Manage Sharing** lets you adjust [sharing](/docs/documents/sharing) settings for all selected documents at once.
 - **Add to Workspace**, **Move to Workspace**, and **Remove from Workspace** for managing which [workspace](/docs/general/workspaces) documents belong to.
+- **Export** exports the selected documents to our available export formats.
 - **Delete All** deletes the selected documents.
 
 If some of your selected documents are hidden by your current filters, a warning appears letting you know how many selected documents are not visible. This way you won't accidentally act on documents you can't see in the list.

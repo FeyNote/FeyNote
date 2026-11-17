@@ -19,17 +19,23 @@ export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
     props;
 
   const extraContextMenuContent = (
-    <ContextMenu.Group>
-      <ContextMenu.Item onClick={expandAll}>
-        {t('contextMenu.expandAll')}
-      </ContextMenu.Item>
-      <ContextMenu.Item onClick={collapseAll}>
-        {t('contextMenu.collapseAll')}
-      </ContextMenu.Item>
-      <ContextMenu.Item onClick={onExport}>
-        {t('contextMenu.exportArtifact')}
-      </ContextMenu.Item>
-    </ContextMenu.Group>
+    <>
+      <ContextMenu.Group>
+        <ContextMenu.Item onClick={expandAll}>
+          {t('contextMenu.expandAll')}
+        </ContextMenu.Item>
+        <ContextMenu.Item onClick={collapseAll}>
+          {t('contextMenu.collapseAll')}
+        </ContextMenu.Item>
+      </ContextMenu.Group>
+      <ContextMenu.Separator />
+      <ContextMenu.Group>
+        <ContextMenu.Item onClick={onExport}>
+          {t('contextMenu.exportArtifact')}
+        </ContextMenu.Item>
+      </ContextMenu.Group>
+      <ContextMenu.Separator />
+    </>
   );
 
   if (!enabled) {

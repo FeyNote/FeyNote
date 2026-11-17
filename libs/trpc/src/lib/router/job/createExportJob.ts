@@ -9,12 +9,18 @@ import {
   wsRoomNameForUserId,
 } from '@feynote/queue';
 import { WebsocketMessageEvent } from '@feynote/global-types';
+import { MAX_EXPORT_ARTIFACT_COUNT } from '@feynote/shared-utils';
 
 export const createExportJob = authenticatedProcedure
   .input(
     z.object({
       format: zExportFormat,
-      artifactIds: z.array(z.uuid()).min(1).optional(),
+      artifactIds: z
+        .array(z.uuid())
+        .min(1)
+        .max(MAX_EXPORT_ARTIFACT_COUNT)
+        .transform((ids) => Array.from(new Set(ids)))
+        .optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {

@@ -277,7 +277,7 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
       )}
       {showExportUi && (
         <ExportDialog
-          artifactIds={Array.from(props.selectedArtifactIds)}
+          artifactIds={props.selectedArtifactIds}
           close={() => setShowExportUi(false)}
         />
       )}

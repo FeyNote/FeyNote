@@ -12,7 +12,7 @@ import type { ArtifactWithReferences } from './artifactReferenceSummary';
 import { ExportFormat } from '@feynote/prisma/types';
 
 export interface ArtifactExport {
-  title: string;
+  sanitizedTitle: string;
   extension: string;
   content: string;
 }
@@ -27,11 +27,10 @@ export const transformArtifactsToArtifactExports = (
     applyUpdate(yDoc, artifactSummary.yBin);
     const tiptap = getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY);
 
-    const title = sanitizeFilename(
+    const sanitizedTitle = sanitizeFilename(
       getMetaFromYArtifact(yDoc).title,
       artifactSummary.id,
     );
-    const extension = type === 'markdown' ? 'md' : 'json';
 
     switch (type) {
       case 'markdown': {
@@ -39,11 +38,11 @@ export const transformArtifactsToArtifactExports = (
         const html = generateHTML(tiptap, extensions);
         let markdown = `${artifactSummary.id}\n`;
         markdown += htmlToMarkdown(html);
-        return { title, extension, content: markdown };
+        return { sanitizedTitle, extension: 'md', content: markdown };
       }
       case 'json': {
         const content = JSON.stringify(tiptap);
-        return { title, extension, content };
+        return { sanitizedTitle, extension: 'json', content };
       }
     }
   });

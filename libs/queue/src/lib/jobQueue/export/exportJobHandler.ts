@@ -1,8 +1,7 @@
 import { transformArtifactsToArtifactExports } from './transformArtifactsToExportFormat';
 import ZipStream from 'zip-stream';
 import {
-  getSignedFileUrlsForUser,
-  getSignedFileUrlsForUserAndArtifacts,
+  getSignedFileUrlsForReadableArtifacts,
   uploadFileToS3,
 } from '@feynote/api-services';
 import { FilePurpose, type Prisma } from '@prisma/client';
@@ -12,8 +11,21 @@ import { artifactWithReferences } from './artifactReferenceSummary';
 import { JobErrorCode, type JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
 import { logger } from '@feynote/api-services';
-import { getUniqueExportFilename } from './getUniqueExportFilename';
-import { getArtifactsAreExportable } from './getArtifactsAreExportable';
+import { reserveUniqueExportFilename } from './reserveUniqueExportFilename';
+import { getUserCanReadAllArtifacts } from './getUserCanReadAllArtifacts';
+
+const markJobArtifactsUnavailable = async (job: JobSummary) => {
+  await prisma.job.update({
+    where: { id: job.id },
+    data: {
+      meta: {
+        ...job.meta,
+        error: JobErrorCode.ExportArtifactsUnavailable,
+      },
+    },
+  });
+  return new Error(`Export job requested unavailable artifacts: ${job.id}`);
+};
 
 export const exportJobHandler = async (job: JobSummary) => {
   const jobFormat = job.meta.exportFormat;
@@ -21,33 +33,23 @@ export const exportJobHandler = async (job: JobSummary) => {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
-  const artifactIds = job.meta.exportArtifactIds
-    ? [...new Set(job.meta.exportArtifactIds)]
-    : undefined;
+  const artifactIds = job.meta.exportArtifactIds;
 
   if (
     artifactIds &&
-    !(await getArtifactsAreExportable(job.userId, artifactIds))
+    !(await getUserCanReadAllArtifacts(job.userId, artifactIds))
   ) {
-    await prisma.job.update({
-      where: { id: job.id },
-      data: {
-        meta: {
-          ...job.meta,
-          error: JobErrorCode.ExportArtifactsUnavailable,
-        },
-      },
-    });
-    throw new Error(`Export job requested unavailable artifacts: ${job.id}`);
+    throw await markJobArtifactsUnavailable(job);
   }
 
   const artifactWhere: Prisma.ArtifactWhereInput = artifactIds
     ? { id: { in: artifactIds }, deletedAt: null }
     : { userId: job.userId, deletedAt: null };
 
-  const userFileToS3Map = artifactIds
-    ? await getSignedFileUrlsForUserAndArtifacts(job.userId, artifactIds)
-    : await getSignedFileUrlsForUser(job.userId);
+  const signedUrlByFileId = await getSignedFileUrlsForReadableArtifacts(
+    job.userId,
+    artifactIds ?? [],
+  );
   const mimetype = 'application/zip';
   const zipStream = new ZipStream();
   const passThrough = new PassThrough();
@@ -71,10 +73,11 @@ export const exportJobHandler = async (job: JobSummary) => {
   const progressTracker = new JobProgressTracker({
     userId: job.userId,
     jobId: job.id,
-    stepCount: 2,
+    stepCount: 1,
   });
 
   const usedFilenames = new Set<string>();
+  let exportedArtifactCount = 0;
 
   try {
     const batchSize = 50;
@@ -83,6 +86,7 @@ export const exportJobHandler = async (job: JobSummary) => {
     do {
       const artifactsWithReferences = await prisma.artifact.findMany({
         where: artifactWhere,
+        orderBy: { id: 'asc' },
         ...artifactWithReferences,
         take: batchSize,
         skip: offset,
@@ -101,7 +105,7 @@ export const exportJobHandler = async (job: JobSummary) => {
       const artifactExports = transformArtifactsToArtifactExports(
         artifactsWithReferences,
         jobFormat,
-        userFileToS3Map,
+        signedUrlByFileId,
       );
 
       for (const artifactExport of artifactExports) {
@@ -109,9 +113,9 @@ export const exportJobHandler = async (job: JobSummary) => {
           zipStream.entry(
             artifactExport.content,
             {
-              name: getUniqueExportFilename(
+              name: reserveUniqueExportFilename(
                 usedFilenames,
-                artifactExport.title,
+                artifactExport.sanitizedTitle,
                 artifactExport.extension,
               ),
             },
@@ -123,6 +127,7 @@ export const exportJobHandler = async (job: JobSummary) => {
         });
       }
 
+      exportedArtifactCount += artifactExports.length;
       offset += batchSize;
 
       progressTracker.onProgress({
@@ -132,6 +137,10 @@ export const exportJobHandler = async (job: JobSummary) => {
         step: 1,
       });
     } while (hasMore);
+
+    if (artifactIds && exportedArtifactCount !== artifactIds.length) {
+      throw await markJobArtifactsUnavailable(job);
+    }
   } catch (err) {
     const error = err instanceof Error ? err : new Error('Unknown error');
     pipeProcessingP.catch(() => {
