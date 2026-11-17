@@ -15,6 +15,7 @@ interface Props {
   enabled: boolean;
   selectedCount: number;
   onAction: (action: MultiSelectAction) => void;
+  onExport: () => void;
   children: React.ReactNode;
 }
 
@@ -61,6 +62,9 @@ export const ArtifactTreeMultiSelectContextMenu: React.FC<Props> = (props) => {
             {t('workspace.removeDocument')}
           </ContextMenu.Item>
         )}
+        <ContextMenu.Item onClick={props.onExport}>
+          {t('allArtifacts.actions.export')}
+        </ContextMenu.Item>
         <ContextMenu.Separator />
         <ContextMenu.Item color="red" onClick={() => props.onAction('delete')}>
           {t('allArtifacts.actions.delete')}

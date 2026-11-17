@@ -1,5 +1,6 @@
 import type { ArtifactType } from '@prisma/client';
-import { sanitizeFilename } from './sanitizeFilename';
+import { t } from 'i18next';
+import { sanitizeFilename } from '@feynote/shared-utils';
 
 const artifactTypeToExt = {
   tiptap: 'md',
@@ -12,7 +13,7 @@ export const getExportFilename = (
   artifactId: string,
   type: ArtifactType,
 ): string => {
-  const sanitizedTitle = sanitizeFilename(title);
+  const sanitizedTitle = sanitizeFilename(title, t('generic.untitled'));
   const shortId = artifactId.slice(0, 8);
   return `${sanitizedTitle} (${shortId}).${artifactTypeToExt[type]}`;
 };

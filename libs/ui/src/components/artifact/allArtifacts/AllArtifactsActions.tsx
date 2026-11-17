@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/react';
 import { MultiArtifactMoveInTreeDialog } from './MultiArtifactMoveInTreeDialog';
 import { MultiArtifactDeleteDialog } from './MultiArtifactDeleteDialog';
 import { MultiArtifactSharingDialog } from './MultiArtifactSharingDialog';
+import { ExportDialog } from '../../importExport/ExportDialog';
 import { useWorkspaceSnapshot } from '../../../utils/localDb/workspaces/useWorkspaceSnapshot';
 import { useWorkspaceSnapshots } from '../../../utils/localDb/workspaces/useWorkspaceSnapshots';
 import { useSessionContext } from '../../../context/session/SessionContext';
@@ -64,6 +65,7 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
   const [showMoveInTreeUi, setShowMoveInTreeUi] = useState(false);
   const [showSharingUi, setShowSharingUi] = useState(false);
   const [showDeleteUi, setShowDeleteUi] = useState(false);
+  const [showExportUi, setShowExportUi] = useState(false);
   const [showPickerFor, setShowPickerFor] = useState<'add' | 'move' | null>(
     null,
   );
@@ -251,6 +253,9 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
           <DropdownMenu.Item onClick={() => setShowSharingUi(true)}>
             {t('allArtifacts.actions.manageSharing')}
           </DropdownMenu.Item>
+          <DropdownMenu.Item onClick={() => setShowExportUi(true)}>
+            {t('allArtifacts.actions.export')}
+          </DropdownMenu.Item>
           <DropdownMenu.Separator />
           <DropdownMenu.Item onClick={() => setShowDeleteUi(true)} color="red">
             {t('allArtifacts.actions.delete')}
@@ -268,6 +273,12 @@ export const AllArtifactsActions: React.FC<Props> = (props) => {
         <MultiArtifactDeleteDialog
           artifactIds={props.selectedArtifactIds}
           close={() => setShowDeleteUi(false)}
+        />
+      )}
+      {showExportUi && (
+        <ExportDialog
+          artifactIds={props.selectedArtifactIds}
+          close={() => setShowExportUi(false)}
         />
       )}
       {showSharingUi && (

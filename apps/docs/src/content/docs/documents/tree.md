@@ -30,6 +30,7 @@ If you'd like the tree to automatically scroll and expand to show whichever docu
 Right-clicking a document in the tree opens a context menu with the following options:
 
 - **Expand all** and **Collapse all** to open or close all descendants at once
+- **Export Document** to export the document and its children in our allowed export formats
 - **Split right** and **Split down** to open the document in a new [pane](/docs/general/layout/desktop-panes)
 - **New tab** to open the document in a new tab
 - **New Document as Tree Child** to create a new document nested inside the one you clicked (permission dependent if in a workspace)
@@ -48,7 +49,7 @@ You can select multiple documents in the tree to move or manage them together:
 - **Shift+click** selects a range of documents between the last selected document and the one you click.
 - **Ctrl+A** selects all visible documents in the tree.
 
-Once you have multiple documents selected, you can drag them as a group to a new location in the tree. Right-clicking the selection opens a context menu with bulk actions including **Move Within Your Tree**, **Remove from Workspace**, and **Delete All**.
+Once you have multiple documents selected, you can drag them as a group to a new location in the tree. Right-clicking the selection opens a context menu with bulk actions including **Move Within Your Tree**, **Remove from Workspace**, **Export**, and **Delete All**.
 
 Clicking a document without holding a modifier key clears the selection and navigates to that document as usual.
 

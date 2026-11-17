@@ -183,6 +183,8 @@ model File {
   metadata   Json
   createdAt  DateTime    @default(now()) @db.Timestamptz(6)
   updatedAt  DateTime    @updatedAt @db.Timestamptz(6)
+
+  @@index([artifactId])
 }
 
 enum FilePurpose {

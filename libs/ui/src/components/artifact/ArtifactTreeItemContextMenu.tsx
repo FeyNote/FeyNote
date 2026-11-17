@@ -9,22 +9,33 @@ interface Props extends ArtifactLinkContextMenuProps {
   enabled: boolean;
   expandAll: () => void;
   collapseAll: () => void;
+  onExport: () => void;
 }
 
 export const ArtifactTreeItemContextMenu: React.FC<Props> = (props) => {
   const { t } = useTranslation();
 
-  const { enabled, expandAll, collapseAll, ...contextMenuProps } = props;
+  const { enabled, expandAll, collapseAll, onExport, ...contextMenuProps } =
+    props;
 
   const extraContextMenuContent = (
-    <ContextMenu.Group>
-      <ContextMenu.Item onClick={expandAll}>
-        {t('contextMenu.expandAll')}
-      </ContextMenu.Item>
-      <ContextMenu.Item onClick={collapseAll}>
-        {t('contextMenu.collapseAll')}
-      </ContextMenu.Item>
-    </ContextMenu.Group>
+    <>
+      <ContextMenu.Group>
+        <ContextMenu.Item onClick={expandAll}>
+          {t('contextMenu.expandAll')}
+        </ContextMenu.Item>
+        <ContextMenu.Item onClick={collapseAll}>
+          {t('contextMenu.collapseAll')}
+        </ContextMenu.Item>
+      </ContextMenu.Group>
+      <ContextMenu.Separator />
+      <ContextMenu.Group>
+        <ContextMenu.Item onClick={onExport}>
+          {t('contextMenu.exportArtifact')}
+        </ContextMenu.Item>
+      </ContextMenu.Group>
+      <ContextMenu.Separator />
+    </>
   );
 
   if (!enabled) {

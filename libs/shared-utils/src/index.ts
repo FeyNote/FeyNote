@@ -10,6 +10,7 @@ export * from './lib/crypto/sha256Hex';
 export * from './lib/crypto/hmacSha256Hex';
 
 export * from './lib/edgesReferences/getEdgeId';
+export * from './lib/export/MAX_EXPORT_ARTIFACT_COUNT';
 export * from './lib/validation/assert';
 export * from './lib/validation/getAccessLevelCanEdit';
 export * from './lib/validation/getAccessLevelCanShare';
@@ -27,6 +28,7 @@ export * from './lib/parsers/readableStreamToUint8Array';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
 export * from './lib/text/capitalizeEachWord';
+export * from './lib/text/sanitizeFilename';
 export * from './lib/tiptap/ARTIFACT_TIPTAP_BODY_KEY';
 export * from './lib/tiptap/getIdForJSONContent';
 export * from './lib/tiptap/getJSONContentById';

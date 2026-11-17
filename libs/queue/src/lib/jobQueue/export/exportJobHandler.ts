@@ -1,16 +1,33 @@
 import { transformArtifactsToArtifactExports } from './transformArtifactsToExportFormat';
 import ZipStream from 'zip-stream';
 import {
-  getSignedFileUrlsForUser,
+  getSignedFileUrlsForReadableArtifacts,
   uploadFileToS3,
 } from '@feynote/api-services';
-import { FilePurpose } from '@prisma/client';
+import { FilePurpose, type Prisma } from '@prisma/client';
 import { prisma } from '@feynote/prisma/client';
 import { PassThrough } from 'stream';
 import { artifactWithReferences } from './artifactReferenceSummary';
-import type { JobSummary } from '@feynote/prisma/types';
+import { JobErrorCode, type JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
 import { logger } from '@feynote/api-services';
+import { reserveUniqueExportFilename } from './reserveUniqueExportFilename';
+import { getUserCanReadAllArtifacts } from './getUserCanReadAllArtifacts';
+
+const failJobForUnavailableArtifacts = async (
+  job: JobSummary,
+): Promise<never> => {
+  await prisma.job.update({
+    where: { id: job.id },
+    data: {
+      meta: {
+        ...job.meta,
+        error: JobErrorCode.ExportArtifactsUnavailable,
+      },
+    },
+  });
+  throw new Error(`Export job requested unavailable artifacts: ${job.id}`);
+};
 
 export const exportJobHandler = async (job: JobSummary) => {
   const jobFormat = job.meta.exportFormat;
@@ -18,7 +35,23 @@ export const exportJobHandler = async (job: JobSummary) => {
     throw new Error(`Job meta is invalid for its assigned type: ${job.id}`);
   }
 
-  const userFileToS3Map = await getSignedFileUrlsForUser(job.userId);
+  const artifactIds = job.meta.exportArtifactIds;
+
+  if (
+    artifactIds &&
+    !(await getUserCanReadAllArtifacts(job.userId, artifactIds))
+  ) {
+    await failJobForUnavailableArtifacts(job);
+  }
+
+  const artifactWhere: Prisma.ArtifactWhereInput = artifactIds
+    ? { id: { in: artifactIds }, deletedAt: null }
+    : { userId: job.userId, deletedAt: null };
+
+  const signedUrlByFileId = await getSignedFileUrlsForReadableArtifacts(
+    job.userId,
+    artifactIds ?? [],
+  );
   const mimetype = 'application/zip';
   const zipStream = new ZipStream();
   const passThrough = new PassThrough();
@@ -37,13 +70,16 @@ export const exportJobHandler = async (job: JobSummary) => {
   logger.info(`Export Job: Beginning Upload of ZipStream to S3`);
   const uploadP = uploadFileToS3(passThrough, mimetype, FilePurpose.job);
   const totalArtifactCount = await prisma.artifact.count({
-    where: { userId: job.userId, deletedAt: null },
+    where: artifactWhere,
   });
   const progressTracker = new JobProgressTracker({
     userId: job.userId,
     jobId: job.id,
-    stepCount: 2,
+    stepCount: 1,
   });
+
+  const usedFilenames = new Set<string>();
+  let exportedArtifactCount = 0;
 
   try {
     const batchSize = 50;
@@ -51,7 +87,8 @@ export const exportJobHandler = async (job: JobSummary) => {
     let offset = 0;
     do {
       const artifactsWithReferences = await prisma.artifact.findMany({
-        where: { userId: job.userId, deletedAt: null },
+        where: artifactWhere,
+        orderBy: { id: 'asc' },
         ...artifactWithReferences,
         take: batchSize,
         skip: offset,
@@ -70,14 +107,20 @@ export const exportJobHandler = async (job: JobSummary) => {
       const artifactExports = transformArtifactsToArtifactExports(
         artifactsWithReferences,
         jobFormat,
-        userFileToS3Map,
+        signedUrlByFileId,
       );
 
       for (const artifactExport of artifactExports) {
         await new Promise<void>((resolve, reject) => {
           zipStream.entry(
             artifactExport.content,
-            { name: artifactExport.title },
+            {
+              name: reserveUniqueExportFilename(
+                usedFilenames,
+                artifactExport.sanitizedTitle,
+                artifactExport.extension,
+              ),
+            },
             (err) => {
               if (err) reject(err);
               else resolve();
@@ -86,13 +129,20 @@ export const exportJobHandler = async (job: JobSummary) => {
         });
       }
 
+      exportedArtifactCount += artifactExports.length;
       offset += batchSize;
 
       progressTracker.onProgress({
-        progress: Math.floor((offset + batchSize / totalArtifactCount) * 100),
+        progress: Math.floor(
+          (Math.min(offset, totalArtifactCount) / totalArtifactCount) * 100,
+        ),
         step: 1,
       });
     } while (hasMore);
+
+    if (artifactIds && exportedArtifactCount !== artifactIds.length) {
+      await failJobForUnavailableArtifacts(job);
+    }
   } catch (err) {
     const error = err instanceof Error ? err : new Error('Unknown error');
     pipeProcessingP.catch(() => {

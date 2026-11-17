@@ -3,6 +3,7 @@ import { prisma } from '@feynote/prisma/client';
 import {
   jobSummary,
   prismaJobSummaryToJobSummary,
+  removeExportArtifactIdsFromJobSummary,
   type JobSummary,
 } from '@feynote/prisma/types';
 import { JobType } from '@prisma/client';
@@ -42,7 +43,9 @@ export const getJobs = authenticatedProcedure
         },
       });
       return {
-        jobs: jobs.map(prismaJobSummaryToJobSummary),
+        jobs: jobs
+          .map(prismaJobSummaryToJobSummary)
+          .map(removeExportArtifactIdsFromJobSummary),
         totalCount,
       };
     },
