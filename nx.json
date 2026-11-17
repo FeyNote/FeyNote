@@ -99,12 +99,5 @@
   "tui": {
     "enabled": false
   },
-  "s3": {
-    "region": "us-east-1",
-    "bucket": "ci-feynote-nx-cache",
-    "forcePathStyle": true,
-    "localMode": "no-cache",
-    "ciMode": "read-write"
-  },
   "analytics": false
 }
