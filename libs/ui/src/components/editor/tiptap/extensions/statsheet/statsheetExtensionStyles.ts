@@ -160,4 +160,8 @@ export const statsheetExtensionStyles = css`
   }
 
   ${statsheetActionButtonStyles}
+
+  &.is-first-block .statsheet-action-buttons {
+    top: -12px;
+  }
 `;

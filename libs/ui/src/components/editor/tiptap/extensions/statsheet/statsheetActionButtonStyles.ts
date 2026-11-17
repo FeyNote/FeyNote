@@ -51,11 +51,6 @@ export const statsheetActionButtonStyles = css`
     }
   }
 
-  &:first-child .statsheet-action-buttons {
-    top: -12px;
-    right: 4px;
-  }
-
   &.has-focus .statsheet-action-buttons {
     visibility: visible;
     opacity: 1;
