@@ -1,0 +1,25 @@
+## About FeyNote
+
+- FeyNote is an Nx monorepo. The stack is React with Radix Themes, tRPC, Express, Y.js, Hocuspocus, Socket.IO, Prisma on PostgreSQL, Typesense and BullMQ on Valkey.
+- The code calls a user document an "artifact". All text that a user can see, for example translations and the docs, calls it a "document".
+- `apps/frontend` is the entry point of the web app. Most of the app code is in `libs/ui`. The app is local-first. It keeps data in the browser with IndexedDB (`libs/ui/src/utils/localDb`) and has a service worker.
+- `apps/desktop` is the Electron app. It loads the web app.
+- `apps/backend` is the Express server. It has the tRPC router and a small number of Express routes for auth, files, messages and Stripe.
+- `libs/trpc` has the tRPC procedures. Most new API code goes here.
+- `apps/hocuspocus` is the Hocuspocus server. It handles the realtime collaboration and stores each change to a document, a workspace and the user tree.
+- `apps/websocket` is the Socket.IO server. It sends live events to the app.
+- `apps/queue-worker` runs the BullMQ jobs. It processes document updates, for example the references between documents, and it does the import and export jobs. The queues are in `libs/queue`.
+- `libs/api-services` has code that more than one backend service uses, for example AI, S3, email, payments and the backend i18n.
+- `libs/shared-utils` has code that the frontend and the backend both use, for example the Y.js, TipTap and tldraw helpers.
+- `libs/search` has the Typesense search code.
+- `libs/config` has the server configuration. `libs/global-types` has shared types.
+- `prisma/schema.prisma` has the Prisma schema, and `prisma/migrations` has the migrations. `libs/prisma` has the Prisma client and the Prisma types.
+- `apps/www` is the Astro marketing site. `apps/docs` is the Astro user documentation.
+- `apps/cli` has maintenance commands.
+- The repository has no tests.
+- The text that a user can see is in these files, and `en-us.json` is the only language:
+  - `apps/frontend/public/locales/en-us.json` (the app)
+  - `libs/api-services/src/lib/i18n/locales/en-us.json` (the backend, for example emails)
+  - `apps/www/src/i18n/locales/en-us.json` (the marketing site)
+  - `apps/desktop/renderer/locales/en-us.json` (the desktop app)
+- FeyNote is a note-taking app for world-builders and tabletop RPG players. The users are mostly creatives, for example writers and game masters. Many users are not technical.
