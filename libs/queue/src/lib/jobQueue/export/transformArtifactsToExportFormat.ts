@@ -3,6 +3,7 @@ import {
   getMetaFromYArtifact,
   getTiptapContentFromYjsDoc,
   getTiptapServerExtensions,
+  sanitizeFilename,
 } from '@feynote/shared-utils';
 import { generateHTML } from '@tiptap/html';
 import { applyUpdate, Doc } from 'yjs';
@@ -12,6 +13,7 @@ import { ExportFormat } from '@feynote/prisma/types';
 
 export interface ArtifactExport {
   title: string;
+  extension: string;
   content: string;
 }
 
@@ -25,8 +27,11 @@ export const transformArtifactsToArtifactExports = (
     applyUpdate(yDoc, artifactSummary.yBin);
     const tiptap = getTiptapContentFromYjsDoc(yDoc, ARTIFACT_TIPTAP_BODY_KEY);
 
-    let title = getMetaFromYArtifact(yDoc).title;
-    title += type === 'markdown' ? '.md' : '.json';
+    const title = sanitizeFilename(
+      getMetaFromYArtifact(yDoc).title,
+      artifactSummary.id,
+    );
+    const extension = type === 'markdown' ? 'md' : 'json';
 
     switch (type) {
       case 'markdown': {
@@ -34,11 +39,11 @@ export const transformArtifactsToArtifactExports = (
         const html = generateHTML(tiptap, extensions);
         let markdown = `${artifactSummary.id}\n`;
         markdown += htmlToMarkdown(html);
-        return { title, content: markdown };
+        return { title, extension, content: markdown };
       }
       case 'json': {
         const content = JSON.stringify(tiptap);
-        return { title, content };
+        return { title, extension, content };
       }
     }
   });

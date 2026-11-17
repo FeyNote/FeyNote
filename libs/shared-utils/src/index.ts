@@ -27,6 +27,7 @@ export * from './lib/parsers/readableStreamToUint8Array';
 export * from './lib/payments/constants';
 export * from './lib/text/capitalize';
 export * from './lib/text/capitalizeEachWord';
+export * from './lib/text/sanitizeFilename';
 export * from './lib/tiptap/ARTIFACT_TIPTAP_BODY_KEY';
 export * from './lib/tiptap/getIdForJSONContent';
 export * from './lib/tiptap/getJSONContentById';

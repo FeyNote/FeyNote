@@ -11,6 +11,7 @@ import { artifactWithReferences } from './artifactReferenceSummary';
 import type { JobSummary } from '@feynote/prisma/types';
 import { JobProgressTracker } from '../JobProgressTracker';
 import { logger } from '@feynote/api-services';
+import { getUniqueExportFilename } from './getUniqueExportFilename';
 
 export const exportJobHandler = async (job: JobSummary) => {
   const jobFormat = job.meta.exportFormat;
@@ -45,6 +46,8 @@ export const exportJobHandler = async (job: JobSummary) => {
     stepCount: 2,
   });
 
+  const usedFilenames = new Set<string>();
+
   try {
     const batchSize = 50;
     let hasMore = true;
@@ -77,7 +80,13 @@ export const exportJobHandler = async (job: JobSummary) => {
         await new Promise<void>((resolve, reject) => {
           zipStream.entry(
             artifactExport.content,
-            { name: artifactExport.title },
+            {
+              name: getUniqueExportFilename(
+                usedFilenames,
+                artifactExport.title,
+                artifactExport.extension,
+              ),
+            },
             (err) => {
               if (err) reject(err);
               else resolve();
