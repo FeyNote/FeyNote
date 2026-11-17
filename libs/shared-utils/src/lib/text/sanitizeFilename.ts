@@ -1,5 +1,5 @@
 const UNSAFE_CHARS = /[/\\:*?"<>|\p{Cc}]/gu;
-const TRAILING_DOTS_SPACES = /[.\s]+$/;
+const TRAILING_DOTS_SPACES = /(?<![.\s])[.\s]+$/;
 const LEADING_DOTS_SPACES = /^[.\s]+/;
 const RESERVED_WINDOWS_NAMES = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\.|$)/i;
 const MAX_UTF8_BYTES = 200;
